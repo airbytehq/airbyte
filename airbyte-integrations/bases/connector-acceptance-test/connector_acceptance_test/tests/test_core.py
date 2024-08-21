@@ -1148,7 +1148,11 @@ class TestBasicRead(BaseTest):
 
         invalid_configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
-                # create ConfiguredAirbyteStream without validation
+                # Create ConfiguredAirbyteStream without validation.
+                #
+                # Care must be taken for the created object to be valid regardless.
+                # Connectors using the Bulk CDK will perform schema validation
+                # https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/command/ConfiguredCatalogFactory.kt#L29
                 ConfiguredAirbyteStream.construct(
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
