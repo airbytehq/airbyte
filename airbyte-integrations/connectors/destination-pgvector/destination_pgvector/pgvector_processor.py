@@ -9,6 +9,7 @@ from textwrap import dedent
 from typing import Any
 
 import dpath
+from pgvector.sqlalchemy import Vector
 import sqlalchemy
 from airbyte._processors.file.jsonl import JsonlWriter
 from airbyte.secrets import SecretString
@@ -120,7 +121,7 @@ class PGVectorProcessor(SqlProcessorBase):
             CHUNK_ID_COLUMN: self.type_converter_class.get_string_type(),
             METADATA_COLUMN: self.type_converter_class.get_json_type(),
             DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_string_type(),
-            EMBEDDING_COLUMN: f"VECTOR(FLOAT, {self.embedding_dimensions})",
+            EMBEDDING_COLUMN: Vector(self.embedding_dimensions),
         }
 
     # TODO: Delete if not needed.

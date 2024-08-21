@@ -5,33 +5,30 @@ from __future__ import annotations
 
 import json
 import logging
+import psycopg2
 from typing import Any
 
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
 from airbyte_cdk.models import DestinationSyncMode, Status
-from snowflake import connector
 
-from destination_snowflake_cortex.destination import DestinationSnowflakeCortex
+from destination_pgvector.destination import DestinationPGVector
 
 
-class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
-    def _init_snowflake_cortex(self):
-        pass
+class PGVectorIntegrationTest(BaseIntegrationTest):
 
     def setUp(self):
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())
-        self._init_snowflake_cortex()
 
     def tearDown(self):
         pass
 
     def test_check_valid_config(self):
-        outcome = DestinationSnowflakeCortex().check(logging.getLogger("airbyte"), self.config)
+        outcome = DestinationPGVector().check(logging.getLogger("airbyte"), self.config)
         assert outcome.status == Status.SUCCEEDED
 
     def test_check_invalid_config(self):
-        outcome = DestinationSnowflakeCortex().check(
+        outcome = DestinationPGVector().check(
             logging.getLogger("airbyte"),
             {
                 "processing": {
@@ -54,14 +51,12 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.FAILED
 
     def _get_db_connection(self):
-        return connector.connect(
-            account=self.config["indexing"]["host"],
-            role=self.config["indexing"]["role"],
-            warehouse=self.config["indexing"]["warehouse"],
-            database=self.config["indexing"]["database"],
-            schema=self.config["indexing"]["default_schema"],
+        return psycopg2.connect(
+            dbname=self.config["indexing"]["database"],
             user=self.config["indexing"]["username"],
             password=self.config["indexing"]["credentials"]["password"],
+            host=self.config["indexing"]["host"],
+            port=self.config["indexing"]["port"],
         )
 
     def _get_record_count(self, table_name):
@@ -127,7 +122,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         ]
 
         # initial sync with replace
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         _ = list(
             destination.write(
                 config=self.config,
@@ -162,7 +157,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         ]
 
         # initial sync with replace
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         list(
             destination.write(
                 config=self.config,
@@ -219,7 +214,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         ]
 
         # initial sync with replace
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         list(destination.write(self.config, catalog, [*first_four_records, first_state_message]))
         assert self._get_record_count("mystream") == 4
 
@@ -248,20 +243,20 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         ]
 
         # initial sync with replace
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         list(destination.write(self.config, catalog, [*records, first_state_message]))
         assert self._get_record_count("mystream") == 1
         first_written_record = self._get_all_records("mystream")[0]
         assert list(first_written_record.keys()) == [
-            "DOCUMENT_ID",
-            "CHUNK_ID",
-            "METADATA",
-            "DOCUMENT_CONTENT",
-            "EMBEDDING",
+            "document_id",
+            "chunk_id",
+            "metadata",
+            "document_content",
+            "embedding",
         ]
-        assert first_written_record.pop("EMBEDDING")
-        assert first_written_record.pop("CHUNK_ID")
-        metadata = first_written_record.pop("METADATA")
+        assert first_written_record.pop("embedding")
+        assert first_written_record.pop("chunk_id")
+        metadata = first_written_record.pop("metadata")
         _ = metadata
 
         # TODO: Fix the data type issue here (currently stringified):
@@ -269,8 +264,8 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         # assert metadata["int_col"] == 0
 
         assert first_written_record == {
-            "DOCUMENT_ID": "Stream_mystream_Key_0",
-            "DOCUMENT_CONTENT": '"str_col: Dogs are number 0"',
+            "document_id": "Stream_mystream_Key_0",
+            "document_content": "str_col: Dogs are number 0",
         }
 
     def test_write_with_chunk_size_5(self):
@@ -288,7 +283,7 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         ]
 
         # initial sync with replace
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         _ = list(
             destination.write(
                 config=self.config,
@@ -338,75 +333,30 @@ class SnowflakeCortexIntegrationTest(BaseIntegrationTest):
         ]
 
          # initial sync with replace
-        destination = DestinationSnowflakeCortex()
+        destination = DestinationPGVector()
         list(destination.write(self.config, catalog, [*records, first_state_message]))
         assert self._get_record_count("mystream") == 3
         first_written_record = self._get_all_records("mystream")[0]
         second_written_record = self._get_all_records("mystream")[1]
         third_written_record = self._get_all_records("mystream")[2]
         assert list(first_written_record.keys()) == [
-            "DOCUMENT_ID",
-            "CHUNK_ID",
-            "METADATA",
-            "DOCUMENT_CONTENT",
-            "EMBEDDING",
+            "document_id",
+            "chunk_id",
+            "metadata",
+            "document_content",
+            "embedding",
         ]
-        assert first_written_record.pop("EMBEDDING")
-        assert first_written_record.pop("CHUNK_ID")
-        metadata = first_written_record.pop("METADATA")
+        assert first_written_record.pop("embedding")
+        assert first_written_record.pop("chunk_id")
+        metadata = first_written_record.pop("metadata")
         _ = metadata
 
         assert first_written_record == {
-            "DOCUMENT_ID": "Stream_mystream_Key_0",
-            "DOCUMENT_CONTENT": '"str_col:"',
+            "document_id": "Stream_mystream_Key_0",
+            "document_content": "str_col:",
         }
-        assert second_written_record["DOCUMENT_ID"] == "Stream_mystream_Key_0"
-        assert second_written_record["DOCUMENT_CONTENT"] == '"Dogs are"'
-        assert third_written_record["DOCUMENT_ID"] == "Stream_mystream_Key_0"
-        assert third_written_record["DOCUMENT_CONTENT"] == '"number 0"'
-       
+        assert second_written_record["document_id"] == "Stream_mystream_Key_0"
+        assert second_written_record["document_content"] == "Dogs are"
+        assert third_written_record["document_id"] == "Stream_mystream_Key_0"
+        assert third_written_record["document_content"] == "number 0"
 
-
-    """
-    Following tests are not code specific, but are useful to confirm that the Cortex functions are available and behaving as expcected
-    """
-
-    def test_cortex_functions_available(self):
-        conn = self._get_db_connection()
-        cursor = conn.cursor()
-
-        query = """
-        SELECT SNOWFLAKE.CORTEX.EXTRACT_ANSWER(
-            $$Apple Vision Pro comprises approximately 300 components.[40] It has a curved laminated glass display on the front, an aluminum frame on its sides, a flexible cushion on the inside, and a removable, adjustable headband. The frame contains five sensors, six microphones, and 12 cameras.$$,
-            'How many cameras are there on the product?'
-        ) AS answer
-        """
-        try:
-            cursor.execute(query)
-        except Exception as e:
-            self.fail(f"Cortex functions might not be available in database: {e}")
-
-    def test_get_embeddings_using_cortex(self):
-        conn = self._get_db_connection()
-        cur = conn.cursor()
-        document_content_list = ["dogs are number 1", "dogs are number 2", "cats are nummber 1"]
-
-        cur.execute("""
-        CREATE TEMPORARY TABLE temp_document_content (
-            document_content STRING
-        )
-        """)
-        cur.executemany(
-            "INSERT INTO temp_document_content (document_content) VALUES (%s)",
-            document_content_list,
-        )
-
-        cur.execute("""
-        SELECT snowflake.cortex.embed_text('e5-base-v2', document_content) AS embedding
-        FROM temp_document_content
-        """)
-        processed_data = cur.fetchall()
-        self.assertTrue(processed_data, "No data found in the database")
-        cur.execute("DROP TABLE temp_document_content")
-        cur.close()
-        conn.close()
