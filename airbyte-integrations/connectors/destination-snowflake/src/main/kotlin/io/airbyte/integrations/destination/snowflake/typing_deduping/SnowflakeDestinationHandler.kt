@@ -423,7 +423,8 @@ class SnowflakeDestinationHandler(
                         )
                     val finalTableGenerationId =
                         if (isFinalTablePresent && !isFinalTableEmpty) {
-                            // for now, just use 0. this means we will always use a temp final table.
+                            // for now, just use 0. this means we will always use a temp final
+                            // table.
                             // platform has a workaround for this, so it's OK.
                             // TODO only fetch this on truncate syncs
                             // TODO once we have destination state, use that instead of a query

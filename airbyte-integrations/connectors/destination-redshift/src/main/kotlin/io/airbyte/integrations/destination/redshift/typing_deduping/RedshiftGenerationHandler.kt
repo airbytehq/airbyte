@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.redshift.typing_deduping
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
-import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 
 class RedshiftGenerationHandler(private val databaseName: String) : JdbcGenerationHandler {
