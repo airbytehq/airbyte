@@ -11,7 +11,7 @@ definitions:
   streams:
     Campaigns:
       type: DeclarativeStream
-      name: Campaigns
+      name: campaigns
       primary_key:
         - id
       retriever:
@@ -50,7 +50,7 @@ definitions:
           $ref: "#/schemas/Campaigns"
     EmailClicks:
       type: DeclarativeStream
-      name: EmailClicks
+      name: email_clicks
       primary_key:
         - id
       retriever:
@@ -87,7 +87,7 @@ definitions:
           $ref: "#/schemas/EmailClicks"
     ListMembership:
       type: DeclarativeStream
-      name: ListMembership
+      name: list_membership
       primary_key:
         - id
       retriever:
@@ -130,7 +130,7 @@ definitions:
           $ref: "#/schemas/ListMembership"
     Lists:
       type: DeclarativeStream
-      name: Lists
+      name: lists
       primary_key:
         - id
       retriever:
@@ -169,7 +169,7 @@ definitions:
           $ref: "#/schemas/Lists"
     ProspectAccounts:
       type: DeclarativeStream
-      name: ProspectAccounts
+      name: prospect_accounts
       primary_key:
         - id
       retriever:
@@ -212,7 +212,7 @@ definitions:
           $ref: "#/schemas/ProspectAccounts"
     Prospects:
       type: DeclarativeStream
-      name: Prospects
+      name: prospects
       primary_key:
         - id
       retriever:
@@ -251,7 +251,7 @@ definitions:
           $ref: "#/schemas/Prospects"
     Users:
       type: DeclarativeStream
-      name: Users
+      name: users
       primary_key:
         - id
       retriever:
@@ -288,7 +288,7 @@ definitions:
           $ref: "#/schemas/Users"
     VisitorActivities:
       type: DeclarativeStream
-      name: VisitorActivities
+      name: visitor_activities
       primary_key:
         - id
       retriever:
@@ -325,7 +325,7 @@ definitions:
           $ref: "#/schemas/VisitorActivities"
     Visitors:
       type: DeclarativeStream
-      name: Visitors
+      name: visitors
       primary_key:
         - id
       retriever:
@@ -364,7 +364,7 @@ definitions:
           $ref: "#/schemas/Visitors"
     Visits:
       type: DeclarativeStream
-      name: Visits
+      name: visits
       retriever:
         type: SimpleRetriever
         requester:
@@ -390,7 +390,7 @@ definitions:
           $ref: "#/schemas/Visits"
     Opportunities:
       type: DeclarativeStream
-      name: Opportunities
+      name: opportunities
       primary_key:
         - id
       retriever:
@@ -433,9 +433,7 @@ definitions:
     authenticator:
       type: OAuthAuthenticator
       refresh_request_body: {}
-      token_refresh_endpoint: >-
-        https://{{ 'test' if config['is_sandbox'] else 'login'
-        }}.salesforce.com/services/oauth2/token
+      token_refresh_endpoint: https://{{ 'test' if config['is_sandbox'] else 'login' }}.salesforce.com/services/oauth2/token
       grant_type: refresh_token
       client_id: '{{ config["client_id"] }}'
       client_secret: '{{ config["client_secret"] }}'
@@ -508,232 +506,672 @@ spec:
 schemas:
   Campaigns:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "name": { "type": ["null", "string"] },
-        "cost": { "type": ["null", "integer"] },
-      }
+      id:
+        type:
+          - integer
+      name:
+        type:
+          - 'null'
+          - string
+      cost:
+        type:
+          - 'null'
+          - integer
   EmailClicks:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "prospect_id": { "type": ["null", "integer"] },
-        "url": { "type": ["null", "string"], "format": "" },
-        "list_email_id": { "type": ["null", "integer"] },
-        "drip_program_action_id": { "type": ["null", "integer"] },
-        "email_template_id": { "type": ["null", "integer"] },
-        "tracker_redirect_id": { "type": ["null", "integer"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      prospect_id:
+        type:
+          - 'null'
+          - integer
+      url:
+        type:
+          - 'null'
+          - string
+        format: ''
+      list_email_id:
+        type:
+          - 'null'
+          - integer
+      drip_program_action_id:
+        type:
+          - 'null'
+          - integer
+      email_template_id:
+        type:
+          - 'null'
+          - integer
+      tracker_redirect_id:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   ListMembership:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "list_id": { "type": ["integer"] },
-        "prospect_id": { "type": ["integer"] },
-        "opted_out": { "type": ["null", "boolean"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      list_id:
+        type:
+          - integer
+      prospect_id:
+        type:
+          - integer
+      opted_out:
+        type:
+          - 'null'
+          - boolean
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   Lists:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "name": { "type": ["null", "string"] },
-        "is_public": { "type": ["null", "boolean"] },
-        "is_dynamic": { "type": ["null", "boolean"] },
-        "title": { "type": ["null", "string"] },
-        "description": { "type": ["null", "string"] },
-        "is_crm_visible": { "type": ["null", "boolean"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      name:
+        type:
+          - 'null'
+          - string
+      is_public:
+        type:
+          - 'null'
+          - boolean
+      is_dynamic:
+        type:
+          - 'null'
+          - boolean
+      title:
+        type:
+          - 'null'
+          - string
+      description:
+        type:
+          - 'null'
+          - string
+      is_crm_visible:
+        type:
+          - 'null'
+          - boolean
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   ProspectAccounts:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "name": { "type": ["null", "string"] },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "assigned_to": { "type": ["null", "object"] },
-      }
+      id:
+        type:
+          - integer
+      name:
+        type:
+          - 'null'
+          - string
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      assigned_to:
+        type:
+          - 'null'
+          - object
   Prospects:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "campaign_id": { "type": ["null", "integer"] },
-        "salutation": { "type": ["null", "string"] },
-        "first_name": { "type": ["null", "string"] },
-        "last_name": { "type": ["null", "string"] },
-        "email": { "type": ["null", "string"] },
-        "password": { "type": ["null", "string"] },
-        "company": { "type": ["null", "string"] },
-        "prospect_account_id": { "type": ["null", "integer"] },
-        "website": { "type": ["null", "string"] },
-        "job_title": { "type": ["null", "string"] },
-        "department": { "type": ["null", "string"] },
-        "country": { "type": ["null", "string"] },
-        "address_one": { "type": ["null", "string"] },
-        "address_two": { "type": ["null", "string"] },
-        "city": { "type": ["null", "string"] },
-        "state": { "type": ["null", "string"] },
-        "territory": { "type": ["null", "string"] },
-        "zip": { "type": ["null", "string"] },
-        "phone": { "type": ["null", "string"] },
-        "fax": { "type": ["null", "string"] },
-        "source": { "type": ["null", "string"] },
-        "annual_revenue": { "type": ["null", "string"] },
-        "employees": { "type": ["null", "string"] },
-        "industry": { "type": ["null", "string"] },
-        "years_in_business": { "type": ["null", "string"] },
-        "comments": { "type": ["null", "string"] },
-        "notes": { "type": ["null", "string"] },
-        "score": { "type": ["null", "integer"] },
-        "grade": { "type": ["null", "string"] },
-        "last_activity_at":
-          { "type": ["null", "string"], "format": "date-time" },
-        "recent_interaction": { "type": ["null", "string"] },
-        "crm_lead_fid": { "type": ["null", "string"] },
-        "crm_contact_fid": { "type": ["null", "string"] },
-        "crm_owner_fid": { "type": ["null", "string"] },
-        "crm_account_fid": { "type": ["null", "string"] },
-        "crm_last_sync": { "type": ["null", "string"], "format": "date-time" },
-        "crm_url": { "type": ["null", "string"] },
-        "is_do_not_email": { "type": ["null", "integer"] },
-        "is_do_not_call": { "type": ["null", "integer"] },
-        "opted_out": { "type": ["null", "integer"] },
-        "is_reviewed": { "type": ["null", "integer"] },
-        "is_starred": { "type": ["null", "integer"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      campaign_id:
+        type:
+          - 'null'
+          - integer
+      salutation:
+        type:
+          - 'null'
+          - string
+      first_name:
+        type:
+          - 'null'
+          - string
+      last_name:
+        type:
+          - 'null'
+          - string
+      email:
+        type:
+          - 'null'
+          - string
+      password:
+        type:
+          - 'null'
+          - string
+      company:
+        type:
+          - 'null'
+          - string
+      prospect_account_id:
+        type:
+          - 'null'
+          - integer
+      website:
+        type:
+          - 'null'
+          - string
+      job_title:
+        type:
+          - 'null'
+          - string
+      department:
+        type:
+          - 'null'
+          - string
+      country:
+        type:
+          - 'null'
+          - string
+      address_one:
+        type:
+          - 'null'
+          - string
+      address_two:
+        type:
+          - 'null'
+          - string
+      city:
+        type:
+          - 'null'
+          - string
+      state:
+        type:
+          - 'null'
+          - string
+      territory:
+        type:
+          - 'null'
+          - string
+      zip:
+        type:
+          - 'null'
+          - string
+      phone:
+        type:
+          - 'null'
+          - string
+      fax:
+        type:
+          - 'null'
+          - string
+      source:
+        type:
+          - 'null'
+          - string
+      annual_revenue:
+        type:
+          - 'null'
+          - string
+      employees:
+        type:
+          - 'null'
+          - string
+      industry:
+        type:
+          - 'null'
+          - string
+      years_in_business:
+        type:
+          - 'null'
+          - string
+      comments:
+        type:
+          - 'null'
+          - string
+      notes:
+        type:
+          - 'null'
+          - string
+      score:
+        type:
+          - 'null'
+          - integer
+      grade:
+        type:
+          - 'null'
+          - string
+      last_activity_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      recent_interaction:
+        type:
+          - 'null'
+          - string
+      crm_lead_fid:
+        type:
+          - 'null'
+          - string
+      crm_contact_fid:
+        type:
+          - 'null'
+          - string
+      crm_owner_fid:
+        type:
+          - 'null'
+          - string
+      crm_account_fid:
+        type:
+          - 'null'
+          - string
+      crm_last_sync:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      crm_url:
+        type:
+          - 'null'
+          - string
+      is_do_not_email:
+        type:
+          - 'null'
+          - integer
+      is_do_not_call:
+        type:
+          - 'null'
+          - integer
+      opted_out:
+        type:
+          - 'null'
+          - integer
+      is_reviewed:
+        type:
+          - 'null'
+          - integer
+      is_starred:
+        type:
+          - 'null'
+          - integer
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   Users:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "email": { "type": ["null", "string"] },
-        "first_name": { "type": ["null", "string"] },
-        "last_name": { "type": ["null", "string"] },
-        "job_title": { "type": ["null", "string"] },
-        "role": { "type": ["null", "string"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      email:
+        type:
+          - 'null'
+          - string
+      first_name:
+        type:
+          - 'null'
+          - string
+      last_name:
+        type:
+          - 'null'
+          - string
+      job_title:
+        type:
+          - 'null'
+          - string
+      role:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   VisitorActivities:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "prospect_id": { "type": ["null", "integer"] },
-        "visitor_id": { "type": ["null", "integer"] },
-        "campaign_id": { "type": ["null", "integer"] },
-        "type": { "type": ["null", "integer"] },
-        "type_name": { "type": ["null", "string"] },
-        "details": { "type": ["null", "string"] },
-        "email_id": { "type": ["null", "integer"] },
-        "email_template_id": { "type": ["null", "integer"] },
-        "list_email_id": { "type": ["null", "integer"] },
-        "form_id": { "type": ["null", "integer"] },
-        "form_handler_id": { "type": ["null", "integer"] },
-        "site_search_query_id": { "type": ["null", "integer"] },
-        "landing_page_id": { "type": ["null", "integer"] },
-        "paid_search_id_id": { "type": ["null", "integer"] },
-        "multivariate_test_variation_id": { "type": ["null", "integer"] },
-        "visitor_page_view_id": { "type": ["null", "integer"] },
-        "file_id": { "type": ["null", "integer"] },
-        "campaign": { "type": ["null", "object"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      prospect_id:
+        type:
+          - 'null'
+          - integer
+      visitor_id:
+        type:
+          - 'null'
+          - integer
+      campaign_id:
+        type:
+          - 'null'
+          - integer
+      type:
+        type:
+          - 'null'
+          - integer
+      type_name:
+        type:
+          - 'null'
+          - string
+      details:
+        type:
+          - 'null'
+          - string
+      email_id:
+        type:
+          - 'null'
+          - integer
+      email_template_id:
+        type:
+          - 'null'
+          - integer
+      list_email_id:
+        type:
+          - 'null'
+          - integer
+      form_id:
+        type:
+          - 'null'
+          - integer
+      form_handler_id:
+        type:
+          - 'null'
+          - integer
+      site_search_query_id:
+        type:
+          - 'null'
+          - integer
+      landing_page_id:
+        type:
+          - 'null'
+          - integer
+      paid_search_id_id:
+        type:
+          - 'null'
+          - integer
+      multivariate_test_variation_id:
+        type:
+          - 'null'
+          - integer
+      visitor_page_view_id:
+        type:
+          - 'null'
+          - integer
+      file_id:
+        type:
+          - 'null'
+          - integer
+      campaign:
+        type:
+          - 'null'
+          - object
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   Visitors:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "page_view_count": { "type": ["null", "integer"] },
-        "ip_address": { "type": ["null", "string"] },
-        "hostname": { "type": ["null", "string"] },
-        "campaign_parameter": { "type": ["null", "string"] },
-        "medium_parameter": { "type": ["null", "string"] },
-        "source_parameter": { "type": ["null", "string"] },
-        "content_parameter": { "type": ["null", "string"] },
-        "term_parameter": { "type": ["null", "string"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      page_view_count:
+        type:
+          - 'null'
+          - integer
+      ip_address:
+        type:
+          - 'null'
+          - string
+      hostname:
+        type:
+          - 'null'
+          - string
+      campaign_parameter:
+        type:
+          - 'null'
+          - string
+      medium_parameter:
+        type:
+          - 'null'
+          - string
+      source_parameter:
+        type:
+          - 'null'
+          - string
+      content_parameter:
+        type:
+          - 'null'
+          - string
+      term_parameter:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
   Visits:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "visitor_id": { "type": ["null", "integer"] },
-        "prospect_id": { "type": ["null", "integer"] },
-        "visitor_page_view_count": { "type": ["null", "integer"] },
-        "visitor_page_views": { "type": ["null", "object"] },
-        "first_visitor_page_view_at":
-          { "type": ["null", "string"], "format": "date-time" },
-        "last_visitor_page_view_at":
-          { "type": ["null", "string"], "format": "date-time" },
-        "duration_in_seconds": { "type": ["null", "integer"] },
-        "campaign_parameter": { "type": ["null", "string"] },
-        "medium_parameter": { "type": ["null", "string"] },
-        "source_parameter": { "type": ["null", "string"] },
-        "content_parameter": { "type": ["null", "string"] },
-        "term_parameter": { "type": ["null", "string"] },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-        "type": { "type": ["null", "integer"] },
-        "type_name": { "type": ["null", "string"] },
-        "details": { "type": ["null", "string"] },
-        "visit_id": { "type": ["null", "integer"] },
-        "campaign": { "type": ["null", "object"] },
-        "email_id": { "type": ["null", "integer"] },
-        "email": { "type": ["null", "object"] },
-        "list_email_id": { "type": ["null", "integer"] },
-        "email_template_id": { "type": ["null", "integer"] },
-      }
+      id:
+        type:
+          - integer
+      visitor_id:
+        type:
+          - 'null'
+          - integer
+      prospect_id:
+        type:
+          - 'null'
+          - integer
+      visitor_page_view_count:
+        type:
+          - 'null'
+          - integer
+      visitor_page_views:
+        type:
+          - 'null'
+          - object
+      first_visitor_page_view_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      last_visitor_page_view_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      duration_in_seconds:
+        type:
+          - 'null'
+          - integer
+      campaign_parameter:
+        type:
+          - 'null'
+          - string
+      medium_parameter:
+        type:
+          - 'null'
+          - string
+      source_parameter:
+        type:
+          - 'null'
+          - string
+      content_parameter:
+        type:
+          - 'null'
+          - string
+      term_parameter:
+        type:
+          - 'null'
+          - string
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      type:
+        type:
+          - 'null'
+          - integer
+      type_name:
+        type:
+          - 'null'
+          - string
+      details:
+        type:
+          - 'null'
+          - string
+      visit_id:
+        type:
+          - 'null'
+          - integer
+      campaign:
+        type:
+          - 'null'
+          - object
+      email_id:
+        type:
+          - 'null'
+          - integer
+      email:
+        type:
+          - 'null'
+          - object
+      list_email_id:
+        type:
+          - 'null'
+          - integer
+      email_template_id:
+        type:
+          - 'null'
+          - integer
   Opportunities:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    "$schema": http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
-      {
-        "id": { "type": ["integer"] },
-        "campaign_id": { "type": ["null", "integer"] },
-        "name": { "type": ["null", "string"] },
-        "value": { "type": ["null", "number"] },
-        "probability": { "type": ["null", "integer"] },
-        "type": { "type": ["null", "string"] },
-        "stage": { "type": ["null", "string"] },
-        "status": { "type": ["null", "string"] },
-        "closed_at": { "type": ["null", "string"], "format": "date-time" },
-        "created_at": { "type": ["null", "string"], "format": "date-time" },
-        "updated_at": { "type": ["null", "string"], "format": "date-time" },
-      }
+      id:
+        type:
+          - integer
+      campaign_id:
+        type:
+          - 'null'
+          - integer
+      name:
+        type:
+          - 'null'
+          - string
+      value:
+        type:
+          - 'null'
+          - number
+      probability:
+        type:
+          - 'null'
+          - integer
+      type:
+        type:
+          - 'null'
+          - string
+      stage:
+        type:
+          - 'null'
+          - string
+      status:
+        type:
+          - 'null'
+          - string
+      closed_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      created_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
+      updated_at:
+        type:
+          - 'null'
+          - string
+        format: date-time
