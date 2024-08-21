@@ -3,7 +3,7 @@ data:
   allowedHosts:
     hosts:
       - "*"
-    registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
