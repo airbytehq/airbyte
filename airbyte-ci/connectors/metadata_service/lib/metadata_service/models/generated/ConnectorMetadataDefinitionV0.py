@@ -7,7 +7,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field, constr
+from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
 from typing_extensions import Literal
 
 
@@ -93,6 +93,21 @@ class ResourceRequirements(BaseModel):
 class JobType(BaseModel):
     __root__: Literal["get_spec", "check_connection", "discover_schema", "sync", "reset_connection", "connection_updater", "replicate"] = (
         Field(..., description="enum that describes the different types of jobs that the platform runs.", title="JobType")
+    )
+
+
+class RolloutConfiguration(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    initialPercentage: Optional[conint(ge=0, le=100)] = Field(
+        0, description="The percentage of users that should receive the new version initially."
+    )
+    maxPercentage: Optional[conint(ge=0, le=100)] = Field(
+        50, description="The percentage of users who should receive the release candidate during the test phase before full rollout."
+    )
+    advanceDelayMinutes: Optional[conint(ge=10)] = Field(
+        10, description="The number of minutes to wait before advancing the rollout percentage."
     )
 
 
@@ -268,6 +283,8 @@ class ConnectorReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    isReleaseCandidate: Optional[bool] = Field(False, description="Whether the release is eligible to be a release candidate.")
+    rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: ConnectorBreakingChanges
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
