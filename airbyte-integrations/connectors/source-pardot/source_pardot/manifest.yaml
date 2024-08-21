@@ -1,0 +1,151 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - Campaigns
+
+definitions:
+  streams:
+    Campaigns:
+      type: DeclarativeStream
+      name: Campaigns
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: campaign/version/4/do/query
+          http_method: GET
+          request_parameters:
+            format: json
+            created_after: >-
+              pendulum.parse(start_date,
+              strict=False).strftime(self.time_filter_template)
+            sort_by: id
+            sort_order: ascending
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - campaign
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: id_greater_than
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"campaign\", {})[-1].get(\"id\", {}) }}"
+            stop_condition: "{{ not response.get(\"campaign\", {})[-1].get(\"id\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Campaigns"
+    EmailClicks:
+      type: DeclarativeStream
+      name: EmailClicks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: emailclicks/version/4/do/query
+          http_method: GET
+          request_parameters:
+            format: json
+            created_after: >-
+              pendulum.parse(start_date,
+              strict=False).strftime(self.time_filter_template)
+            sort_by: id
+            sort_order: ascending
+          request_headers:
+            Pardot-Business-Unit-Id: "{{ config[\"pardot_business_unit_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - result
+              - campaign
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: id_greater_than
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"campaign\", {})[-1].get(\"id\", {}) }}"
+            stop_condition: "{{ not response.get(\"campaign\", {})[-1].get(\"id\", {}) }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/EmailClicks"
+  base_requester:
+    type: HttpRequester
+    url_base: https://pi.pardot.com/api/
+    authenticator:
+      type: OAuthAuthenticator
+      refresh_request_body: {}
+      token_refresh_endpoint: >-
+        https://{{ 'test' if config['is_sandbox'] else 'login'
+        }}.salesforce.com/services/oauth2/token
+      grant_type: refresh_token
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/Campaigns"
+  - $ref: "#/definitions/streams/EmailClicks"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 1
+      client_refresh_token:
+        type: string
+        title: Refresh token
+        airbyte_secret: true
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Campaigns: true
+    EmailClicks: true
+  testedStreams: {}
+
+schemas:
+  Campaigns:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  EmailClicks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

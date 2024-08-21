@@ -1,48 +1,18 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
-from typing import Any, List, Mapping, Tuple
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
 
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-
-from .api import Pardot
-from .stream import Campaigns, EmailClicks, ListMembership, Lists, ProspectAccounts, Prospects, Users, VisitorActivities, Visitors, Visits
+WARNING: Do not modify this file.
+"""
 
 
-# Source
-class SourcePardot(AbstractSource):
-    @staticmethod
-    def _get_pardot_object(config: Mapping[str, Any]) -> Pardot:
-        pardot = Pardot(**config)
-        pardot.login()
-        return pardot
-
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        try:
-            pardot = self._get_pardot_object(config)
-            pardot.access_token
-            return True, None
-        except Exception as e:
-            return False, e
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        pardot = self._get_pardot_object(config)
-        auth = TokenAuthenticator(pardot.access_token)
-        args = {"authenticator": auth, "config": config}
-
-        return [
-            EmailClicks(**args),
-            Campaigns(**args),
-            ListMembership(**args),
-            Lists(**args),
-            ProspectAccounts(**args),
-            Prospects(**args),
-            Users(**args),
-            VisitorActivities(**args),
-            Visitors(**args),
-            Visits(parent_stream=Visitors(**args), **args),
-        ]
+# Declarative Source
+class SourcePardot(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
