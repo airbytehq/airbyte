@@ -37,7 +37,7 @@ dependencies {
     implementation 'org.bouncycastle:bctls-jdk18on:1.77'
 
     runtimeOnly 'com.google.guava:guava:33.2.0-jre'
-    runtimeOnly 'org.apache.commons:commons-compress:1.26.1'
+    runtimeOnly 'org.apache.commons:commons-compress:1.27.0'
 
     testFixturesApi 'org.jetbrains.kotlin:kotlin-test-junit'
     testFixturesApi 'org.jetbrains.kotlin:kotlin-reflect'

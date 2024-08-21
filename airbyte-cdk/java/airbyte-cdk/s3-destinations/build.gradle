@@ -28,11 +28,11 @@ dependencies {
     api 'org.apache.commons:commons-csv:1.10.0'
     api 'org.apache.commons:commons-text:1.11.0'
     api ('org.apache.hadoop:hadoop-aws:3.3.6') { exclude group: 'com.amazonaws', module: 'aws-java-sdk-bundle' }
-    api ('org.apache.hadoop:hadoop-common:3.3.6') {
+    api ('org.apache.hadoop:hadoop-common:3.4.0') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
     }
-    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.6') {
+    api ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
         exclude group: 'org.apache.zookeeper'
         exclude group: 'org.apache.hadoop', module: 'hadoop-yarn-common'
     }

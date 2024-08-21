@@ -99,7 +99,7 @@ class AirbyteJavaConnectorExtension {
 
                 implementation "com.google.guava:guava:31.1-jre"
                 implementation "commons-io:commons-io:2.7"
-                implementation "org.apache.commons:commons-compress:1.20"
+                implementation "org.apache.commons:commons-compress:1.27.0"
                 implementation "org.apache.commons:commons-lang3:3.11"
                 implementation "org.slf4j:slf4j-api:2.0.9"
 
