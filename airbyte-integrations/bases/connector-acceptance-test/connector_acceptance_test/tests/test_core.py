@@ -31,6 +31,7 @@ from airbyte_protocol.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
+    DestinationSyncMode,
     Status,
     SyncMode,
     TraceType,
@@ -1151,11 +1152,21 @@ class TestBasicRead(BaseTest):
                 ConfiguredAirbyteStream.construct(
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
+                        namespace="__AIRBYTE__namespace_that_does_not_exist",
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
                         supported_sync_modes=[SyncMode.full_refresh],
+                        source_defined_primary_key=[],
+                        source_defined_cursor=False,
+                        default_cursor_field=[],
+                        is_resumable=False,
                     ),
-                    sync_mode="INVALID",
-                    destination_sync_mode="INVALID",
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.append,
+                    primary_key=[],
+                    cursor_field=[],
+                    minimum_generation_id=1,
+                    generation_id=1,
+                    sync_id=1,
                 )
             ]
         )
