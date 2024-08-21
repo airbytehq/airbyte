@@ -62,8 +62,8 @@ public class MongoDbSource extends BaseConnector implements Source {
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         if (!checkOplogReadAccess(mongoClient)) {
           return new AirbyteConnectionStatus()
-                  .withMessage("User does not have read access to the oplog.rs collection in database local, which is required by CDC.")
-                  .withStatus(AirbyteConnectionStatus.Status.FAILED);
+              .withMessage("User does not have read access to the oplog.rs collection in database local, which is required by CDC.")
+              .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
 
         final String databaseName = sourceConfig.getDatabaseName();
