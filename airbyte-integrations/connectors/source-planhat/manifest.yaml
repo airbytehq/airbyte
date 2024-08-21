@@ -4813,7 +4813,8 @@ spec:
     properties:
       api_token:
         title: API Token
-        description: Your Planhat <a href="https://docs.planhat.com/#authentication">API
+        description:
+          Your Planhat <a href="https://docs.planhat.com/#authentication">API
           Access Token</a>
         type: string
         airbyte_secret: true
