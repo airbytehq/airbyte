@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import time
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_typesense.writer import TypesenseWriter
@@ -14,11 +14,15 @@ from typesense import Client
 
 
 def get_client(config: Mapping[str, Any]) -> Client:
-    node = {"host": config.get("host"), "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
+    hosts = config.get("host").split(",")
     path = config.get("path")
-    if path:
-        node["path"] = path
-    client = Client({"api_key": config.get("api_key"), "nodes": [node], "connection_timeout_seconds": 3600})
+    nodes = []
+    for host in hosts:
+        node = {"host": host, "port": config.get("port") or "8108", "protocol": config.get("protocol") or "https"}
+        if path:
+            node["path"] = path
+        nodes.append(node)
+    client = Client({"api_key": config.get("api_key"), "nodes": nodes, "connection_timeout_seconds": 3600})
 
     return client
 
@@ -50,7 +54,7 @@ class DestinationTypesense(Destination):
                 continue
         writer.flush()
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         logger.debug("TypeSense Destination Config Check")
         try:
             client = get_client(config=config)

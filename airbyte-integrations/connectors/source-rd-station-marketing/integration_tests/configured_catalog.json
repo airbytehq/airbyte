@@ -2,36 +2,121 @@
   "streams": [
     {
       "stream": {
+        "name": "analytics_conversions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["asset_updated_at"],
+        "source_defined_primary_key": [["asset_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "analytic_emails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["send_at"],
+        "source_defined_primary_key": [["campaign_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "analytics_funnel",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["reference_day"],
+        "source_defined_primary_key": [["reference_day"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "analytics_workflow_emails_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["workflow_id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "emails",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["update_time"]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "embeddables",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "fields",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["uuid"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "landing_pages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["update_time"]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "popups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
         "name": "segmentations",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["update_time"]
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "workflows",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

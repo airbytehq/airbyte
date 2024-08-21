@@ -2,13 +2,13 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/destination-teradata
   githubIssueLabel: destination-teradata
   icon: teradata.svg
   license: MIT
   name: Teradata Vantage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +21,23 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-TERADATA_SSL__CREDS
+          fileName: sslconfig.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-TERADATA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-TERADATA__FAILURE_CREDS
+          fileName: failureconfig.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -35,11 +35,15 @@ public abstract class MySqlInitialLoadStateManager implements SourceStateMessage
   }
 
   // Updates the {@link PrimaryKeyLoadStatus} for the state associated with the given pair
-  public abstract void updatePrimaryKeyLoadState(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus);
+  public void updatePrimaryKeyLoadState(final AirbyteStreamNameNamespacePair pair, final PrimaryKeyLoadStatus pkLoadStatus) {
+    pairToPrimaryKeyLoadStatus.put(pair, pkLoadStatus);
+  }
 
   // Returns the previous state emitted, represented as a {@link PrimaryKeyLoadStatus} associated with
   // the stream.
-  public abstract PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair);
+  public PrimaryKeyLoadStatus getPrimaryKeyLoadStatus(final AirbyteStreamNameNamespacePair pair) {
+    return pairToPrimaryKeyLoadStatus.get(pair);
+  }
 
   // Returns the current {@PrimaryKeyInfo}, associated with the stream. This includes the data type &
   // the column name associated with the stream.

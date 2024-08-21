@@ -17,19 +17,19 @@ definitions:
       extractor:
         type: DpathExtractor
         field_path: ["{{ parameters.name }}"]
-      paginator:
-        type: "DefaultPaginator"
-        page_size_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "{{ response['meta']['per_page'] }}"
-        pagination_strategy:
-          type: "PageIncrement"
-          page_size: 5
-        page_token_option:
-          type: "RequestOption"
-          inject_into: "request_parameter"
-          field_name: "{{ response['meta']['page'] }}"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "per_page"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 50
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
 
   calls_stream:
     type: DeclarativeStream

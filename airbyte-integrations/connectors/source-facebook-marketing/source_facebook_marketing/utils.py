@@ -28,7 +28,7 @@ def cast_to_type(input_date: DateOrDateTime, target_date: DateOrDateTime) -> Dat
 
 
 def validate_start_date(start_date: DateOrDateTime) -> DateOrDateTime:
-    today = cast_to_type(start_date, pendulum.today())
+    today = cast_to_type(start_date, pendulum.today(tz=pendulum.tz.UTC))
     retention_date = today.subtract(months=DATA_RETENTION_PERIOD)
     if retention_date.day != today.day:
         # `.subtract(months=37)` can be erroneous, for instance:

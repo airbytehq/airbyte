@@ -5,11 +5,12 @@ const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const { themes } = require('prism-react-renderer');
+const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
 
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
+const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHeaderInformation");
 const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
@@ -23,7 +24,7 @@ const config = {
   markdown: {
     mermaid: true,
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  themes: ["@docusaurus/theme-mermaid"],
   title: "Airbyte Documentation",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -79,8 +80,9 @@ const config = {
   ],
 
   clientModules: [
-    require.resolve("./src/scripts/fontAwesomeIcons.js"),
     require.resolve("./src/scripts/cloudStatus.js"),
+    require.resolve("./src/scripts/download-abctl-buttons.js"),
+    require.resolve("./src/scripts/fontAwesomeIcons.js"),
   ],
 
   presets: [
@@ -96,7 +98,11 @@ const config = {
           path: "../docs",
           exclude: ["**/*.inapp.md"],
           beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
-          remarkPlugins: [docsHeaderDecoration, productInformation],
+          remarkPlugins: [
+            docsHeaderDecoration,
+            enterpriseDocsHeaderInformation,
+            productInformation,
+          ],
         },
         blog: false,
         theme: {

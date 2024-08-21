@@ -2,10 +2,16 @@
   "customers": {
     "updated_at": "2023-07-11T13:07:45-07:00"
   },
+  "customer_journey_summary": {
+    "updated_at": "2023-04-24T18:00:10+00:00"
+  },
   "orders": {
     "deleted": {
       "deleted_at": ""
     },
+    "updated_at": "2023-04-24T11:00:10-07:00"
+  },
+  "order_agreements": {
     "updated_at": "2023-04-24T11:00:10-07:00"
   },
   "draft_orders": {
@@ -45,13 +51,7 @@
     "created_at": "2022-10-10T06:21:53-07:00"
   },
   "order_risks": {
-    "orders": {
-      "updated_at": "2023-04-24T07:03:06-07:00",
-      "deleted": {
-        "deleted_at": ""
-      }
-    },
-    "id": 6446736474301
+    "updated_at": "2023-04-24T18:00:10+00:00"
   },
   "transactions": {
     "orders": {
@@ -144,9 +144,6 @@
     }
   },
   "metafield_customers": {
-    "customers": {
-      "updated_at": "2023-04-24T06:53:48-07:00"
-    },
     "updated_at": "2023-04-13T04:50:10-07:00"
   },
   "metafield_orders": {
@@ -165,48 +162,18 @@
     "updated_at": "2023-04-24T07:18:06-07:00"
   },
   "metafield_products": {
-    "products": {
-      "updated_at": "2023-04-20T04:12:59-07:00",
-      "deleted": {
-        "deleted_at": ""
-      }
-    },
     "updated_at": "2023-04-14T04:04:46-07:00"
   },
   "product_images": {
-    "products": {
-      "updated_at": "2023-04-24T11:05:13-07:00",
-      "deleted": {
-        "deleted_at": "2023-09-05T13:32:22-07:00"
-      }
-    },
     "updated_at": "2023-04-24T10:27:15-07:00"
   },
   "metafield_product_images": {
-    "products": {
-      "updated_at": "",
-      "deleted": {
-        "deleted_at": "2023-09-05T13:32:22-07:00"
-      }
-    },
     "updated_at": "2023-04-24T10:32:19-07:00"
   },
   "product_variants": {
-    "id": 42778150305981,
-    "products": {
-      "updated_at": "",
-      "deleted": {
-        "deleted_at": "2023-09-05T13:32:22-07:00"
-      }
-    }
+    "updated_at": "2023-12-11T10:37:41+00:00"
   },
   "metafield_product_variants": {
-    "products": {
-      "updated_at": "",
-      "deleted": {
-        "deleted_at": "2023-09-05T13:32:22-07:00"
-      }
-    },
     "updated_at": "2023-04-14T03:29:27-07:00"
   },
   "collections": {

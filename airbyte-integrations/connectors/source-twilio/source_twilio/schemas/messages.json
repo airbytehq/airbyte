@@ -1,75 +1,97 @@
 {
   "properties": {
     "account_sid": {
+      "description": "The unique identifier for the account associated with this message.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API being used to send or receive this message.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The text body of the message.",
       "type": ["null", "string"]
     },
     "date_created": {
+      "description": "The date and time when the message was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_sent": {
+      "description": "The date and time when the message was sent.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the message was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "direction": {
+      "description": "The direction of the message, whether it's incoming or outgoing.",
       "type": ["null", "string"]
     },
     "error_code": {
+      "description": "The error code associated with the message, if any.",
       "type": ["null", "string"]
     },
     "error_message": {
+      "description": "The error message description if the message failed to send.",
       "type": ["null", "string"]
     },
     "from": {
+      "description": "The phone number or sender ID that the message originated from.",
       "type": ["null", "string"]
     },
     "messaging_service_sid": {
+      "description": "The unique identifier for the messaging service associated with the message.",
       "type": ["null", "string"]
     },
     "price_unit": {
+      "description": "The currency unit used for pricing of the message.",
       "type": ["null", "string"]
     },
     "num_media": {
+      "description": "The number of media files (e.g., images, videos) included in the message.",
       "type": ["null", "integer"]
     },
     "num_segments": {
+      "description": "The number of message segments if the message exceeds 160 characters.",
       "type": ["null", "integer"]
     },
     "price": {
+      "description": "The cost of sending the message.",
       "type": ["null", "number"]
     },
     "sid": {
+      "description": "The unique identifier for this message.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The status of the message (e.g., sent, delivered, failed).",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "Contains links to the subresources related to the message.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "feedback": {
+          "description": "URI to access feedback related to the message.",
           "type": ["null", "string"]
         },
         "media": {
+          "description": "URI to access media files associated with the message.",
           "type": ["null", "string"]
         }
       }
     },
     "to": {
+      "description": "The phone number or recipient ID that the message was sent to.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI for accessing detailed information about this message.",
       "type": ["null", "string"]
     }
   },

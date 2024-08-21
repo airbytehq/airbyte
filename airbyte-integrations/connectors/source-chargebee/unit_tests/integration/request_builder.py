@@ -125,3 +125,47 @@ class ChargebeeRequestBuilder:
             query_params=query_params,
             headers={"Authorization": f"Basic {base64.b64encode((str(self._site_api_key) + ':').encode('utf-8')).decode('utf-8')}"},
         )
+
+class ChargebeeSubstreamRequestBuilder(ChargebeeRequestBuilder):
+
+    @classmethod
+    def subscription_with_scheduled_changes_endpoint(cls, site: str, site_api_key: str) -> "ChargebeeRequestBuilder":
+        return cls("subscriptions", site, site_api_key)
+
+    def with_parent_id(self, parent_id: str) -> "ChargebeeSubstreamRequestBuilder":
+        self._parent_id = parent_id
+        return self
+
+    def with_endpoint_path(self, endpoint_path: str) -> "ChargebeeSubstreamRequestBuilder":
+        self._endpoint_path = endpoint_path
+        return self
+
+    def build(self) -> HttpRequest:
+        query_params= {}
+        if self._sort_by_asc:
+            query_params["sort_by[asc]"] = self._sort_by_asc
+        if self._sort_by_desc:
+            query_params["sort_by[desc]"] = self._sort_by_desc
+        if self._include_deleted:
+            query_params["include_deleted"] = self._include_deleted
+        if self._created_at_btw:
+            query_params["created_at[between]"] = self._created_at_btw
+        if self._updated_at_btw:
+            query_params["updated_at[between]"] = self._updated_at_btw
+        if self._occurred_at_btw:
+            query_params["occurred_at[between]"] = self._occurred_at_btw
+        if self._offset:
+            query_params["offset"] = self._offset
+        if self._limit:
+            query_params["limit"] = self._limit
+
+        if self._any_query_params:
+            if query_params:
+                raise ValueError(f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both.")
+            query_params = ANY_QUERY_PARAMS
+
+        return HttpRequest(
+            url=f"https://{self._site}.chargebee.com/api/v2/{self._resource}/{self._parent_id}/{self._endpoint_path}",
+            query_params=query_params,
+            headers={"Authorization": f"Basic {base64.b64encode((str(self._site_api_key) + ':').encode('utf-8')).decode('utf-8')}"},
+        )

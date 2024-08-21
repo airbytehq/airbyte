@@ -39,11 +39,11 @@ object YamlListToStandardDefinitions {
             )
         )
 
-    fun toStandardSourceDefinitions(yamlStr: String?): List<StandardSourceDefinition> {
+    fun toStandardSourceDefinitions(yamlStr: String?): List<StandardSourceDefinition?> {
         return verifyAndConvertToModelList(StandardSourceDefinition::class.java, yamlStr)
     }
 
-    fun toStandardDestinationDefinitions(yamlStr: String?): List<StandardDestinationDefinition> {
+    fun toStandardDestinationDefinitions(yamlStr: String?): List<StandardDestinationDefinition?> {
         return verifyAndConvertToModelList(StandardDestinationDefinition::class.java, yamlStr)
     }
 
@@ -54,7 +54,7 @@ object YamlListToStandardDefinitions {
     }
 
     @VisibleForTesting
-    fun <T> verifyAndConvertToModelList(klass: Class<T>, yamlStr: String?): List<T> {
+    fun <T> verifyAndConvertToModelList(klass: Class<T>, yamlStr: String?): List<T?> {
         val jsonNode = deserialize(yamlStr)
         val idName = CLASS_NAME_TO_ID_NAME[klass.canonicalName]
         checkYamlIsPresentWithNoDuplicates(jsonNode, idName)
@@ -88,9 +88,9 @@ object YamlListToStandardDefinitions {
         }
     }
 
-    private fun <T> toStandardXDefinitions(iter: Iterator<JsonNode>, c: Class<T>): List<T> {
+    private fun <T> toStandardXDefinitions(iter: Iterator<JsonNode>, c: Class<T>): List<T?> {
         val iterable = Iterable { iter }
-        val defList = ArrayList<T>()
+        val defList = ArrayList<T?>()
         for (n in iterable) {
             val def = `object`(n, c)
             defList.add(def)

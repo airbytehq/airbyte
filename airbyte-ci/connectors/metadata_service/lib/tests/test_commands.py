@@ -8,10 +8,16 @@ import pytest
 from click.testing import CliRunner
 from metadata_service import commands
 from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
-from metadata_service.validators.metadata_validator import ValidatorOptions
+from metadata_service.validators.metadata_validator import ValidatorOptions, validate_docker_image_tag_is_not_decremented
 from pydantic import BaseModel, ValidationError, error_wrappers
 from test_gcs_upload import stub_is_image_on_docker_hub
 
+NOT_TEST_VALIDATORS = [
+    # Not testing validate_docker_image_tag_is_not_decremented as its tested independently in test_validators
+    validate_docker_image_tag_is_not_decremented
+]
+
+PATCHED_VALIDATORS = [v for v in commands.PRE_UPLOAD_VALIDATORS if v not in NOT_TEST_VALIDATORS]
 
 # TEST VALIDATE COMMAND
 def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
@@ -19,7 +25,7 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
 
     # Mock dockerhub for base image checks
     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
-
+    mocker.patch("metadata_service.commands.PRE_UPLOAD_VALIDATORS", PATCHED_VALIDATORS)
     assert len(valid_metadata_yaml_files) > 0, "No files found"
 
     for file_path in valid_metadata_yaml_files:
@@ -27,8 +33,11 @@ def test_valid_metadata_yaml_files(mocker, valid_metadata_yaml_files, tmp_path):
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
 
-def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
+def test_invalid_metadata_yaml_files(mocker, invalid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
+
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
+    mocker.patch("metadata_service.commands.PRE_UPLOAD_VALIDATORS", PATCHED_VALIDATORS)
 
     assert len(invalid_metadata_yaml_files) > 0, "No files found"
 
@@ -160,47 +169,70 @@ def test_upload(
 
     if latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The latest metadata file for {metadata_file_path} was uploaded to latest_blob_id.", color="green")]
+            [mocker.call(f"The latest metadata file for {metadata_file_path} was uploaded to latest_blob_id.", fg="green")]
         )
         assert result.exit_code == 0
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The latest metadata file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
+        )
 
     if version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The versioned metadata file for {metadata_file_path} was uploaded to version_blob_id.", color="green")]
+            [mocker.call(f"The versioned metadata file for {metadata_file_path} was uploaded to version_blob_id.", fg="green")]
         )
         assert result.exit_code == 0
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The versioned metadata file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
+        )
 
     if icon_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
+            [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", fg="green")]
+        )
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The icon file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
         )
 
     if doc_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The versioned doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")]
+            [mocker.call(f"The versioned doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", fg="green")]
+        )
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The versioned doc file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
         )
 
     if doc_inapp_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [
-                mocker.call(
-                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green"
-                )
-            ]
+            [mocker.call(f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", fg="green")]
+        )
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The versioned inapp doc file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
         )
 
     if doc_latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The latest doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", color="green")]
+            [mocker.call(f"The latest doc file for {metadata_file_path} was uploaded to doc_latest_blob_id.", fg="green")]
+        )
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The latest doc file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
         )
 
     if doc_inapp_latest_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The latest inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", color="green")]
+            [mocker.call(f"The latest inapp doc file for {metadata_file_path} was uploaded to doc_inapp_latest_blob_id.", fg="green")]
+        )
+    else:
+        commands.click.secho.assert_has_calls(
+            [mocker.call(f"The latest inapp doc file for {metadata_file_path} was not uploaded. Reason: None", fg="yellow")]
         )
 
     if not (latest_uploaded or version_uploaded):
-        commands.click.secho.assert_has_calls([mocker.call(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")])
         # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
         assert result.exit_code == 5
 
@@ -243,4 +275,4 @@ def test_upload_with_errors(mocker, valid_metadata_yaml_files, tmp_path, error, 
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
     assert result.exit_code == 1
     if handled:
-        commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {str(error)}", color="red")
+        commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {str(error)}", fg="red")

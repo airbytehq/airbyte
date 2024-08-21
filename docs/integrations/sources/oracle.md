@@ -130,9 +130,12 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.5.2 | 2024-02-13 | [35225](https://github.com/airbytehq/airbyte/pull/35225) | Adopt CDK 0.20.4 |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.5.2   | 2024-02-13 | [35225](https://github.com/airbytehq/airbyte/pull/35225) | Adopt CDK 0.20.4                                                                                                                          |
 | 0.5.1   | 2024-01-24 | [34453](https://github.com/airbytehq/airbyte/pull/34453) | bump CDK version                                                                                                                          |
 | 0.5.0   | 2023-12-18 | [33485](https://github.com/airbytehq/airbyte/pull/33485) | Remove LEGACY state                                                                                                                       |
 | 0.4.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737) | License Update: Elv2                                                                                                                      |
@@ -161,3 +164,5 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 | 0.3.4   | 2021-09-01 | [6038](https://github.com/airbytehq/airbyte/pull/6038)   | Remove automatic filtering of system schemas.                                                                                             |
 | 0.3.3   | 2021-09-01 | [5779](https://github.com/airbytehq/airbyte/pull/5779)   | Ability to only discover certain schemas.                                                                                                 |
 | 0.3.2   | 2021-08-13 | [4699](https://github.com/airbytehq/airbyte/pull/4699)   | Added json config validator.                                                                                                              |
+
+</details>

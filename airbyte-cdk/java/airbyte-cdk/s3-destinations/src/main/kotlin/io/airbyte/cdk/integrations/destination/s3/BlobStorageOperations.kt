@@ -12,7 +12,7 @@ abstract class BlobStorageOperations protected constructor() {
     protected val blobDecorators: MutableList<BlobDecorator> = ArrayList()
 
     abstract fun getBucketObjectPath(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         writeDatetime: DateTime,
         customFormat: String
@@ -29,8 +29,9 @@ abstract class BlobStorageOperations protected constructor() {
     @Throws(Exception::class)
     abstract fun uploadRecordsToBucket(
         recordsData: SerializableBuffer,
-        namespace: String,
-        objectPath: String
+        namespace: String?,
+        objectPath: String,
+        generationId: Long,
     ): String?
 
     /** Remove files that were just stored in the bucket */
@@ -46,11 +47,28 @@ abstract class BlobStorageOperations protected constructor() {
      * @param pathFormat formatted string for the path
      */
     abstract fun cleanUpBucketObject(
-        namespace: String,
+        namespace: String?,
         streamName: String,
         objectPath: String,
         pathFormat: String
     )
+
+    /** Clean up all the objects matching the provided [keysToDelete] */
+    abstract fun cleanUpObjects(keysToDelete: List<String>)
+
+    /**
+     * List all the existing bucket objects for a given [namespace], [streamName], [objectPath] and
+     * an optional [currentGenerationId] which matches the [pathFormat] regex. The returned objects
+     * will be filtered with generationId metadata strictly less than [currentGenerationId]
+     * @return List of keys of the objects
+     */
+    abstract fun listExistingObjects(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String,
+        currentGenerationId: Long? = null // Sentinel default
+    ): List<String>
 
     abstract fun dropBucketObject(objectPath: String)
 
@@ -60,5 +78,18 @@ abstract class BlobStorageOperations protected constructor() {
 
     fun addBlobDecorator(blobDecorator: BlobDecorator) {
         blobDecorators.add(blobDecorator)
+    }
+
+    /**
+     * Provides the generationId from the last written object's metadata. If there are no objects in
+     * the given path format, returns nullå
+     */
+    open fun getStageGeneration(
+        namespace: String?,
+        streamName: String,
+        objectPath: String,
+        pathFormat: String
+    ): Long? {
+        return null
     }
 }

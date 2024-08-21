@@ -47,7 +47,7 @@ interface CdcTargetPosition<T> {
      * @param sourceOffset source offset params from heartbeat change event
      * @return the heartbeat position in a heartbeat change event or null
      */
-    fun extractPositionFromHeartbeatOffset(sourceOffset: Map<String?, *>?): T
+    fun extractPositionFromHeartbeatOffset(sourceOffset: Map<String?, *>): T
 
     /**
      * This function checks if the event we are processing in the loop is already behind the offset
@@ -70,7 +70,7 @@ interface CdcTargetPosition<T> {
      * @return Returns `true` if both offsets are at the same position. Otherwise, it returns
      * `false`
      */
-    fun isSameOffset(offsetA: Map<*, *>, offsetB: Map<String, String>): Boolean {
+    fun isSameOffset(offsetA: Map<String, String>, offsetB: Map<String, String>): Boolean {
         return false
     }
 }

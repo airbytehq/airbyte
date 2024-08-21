@@ -2,9 +2,11 @@
   "type": ["null", "object"],
   "properties": {
     "count": {
+      "description": "The number of tags associated with the fetched data.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the tag associated with the fetched data.",
       "type": ["null", "string"]
     }
   }

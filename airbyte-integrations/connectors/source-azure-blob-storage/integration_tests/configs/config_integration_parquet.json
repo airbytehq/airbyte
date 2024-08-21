@@ -1,0 +1,38 @@
+{
+  "azure_blob_storage_endpoint": "http://localhost:10000/account1",
+  "azure_blob_storage_account_name": "account1",
+  "credentials": {
+    "auth_type": "storage_account_key",
+    "azure_blob_storage_account_key": "key1"
+  },
+  "azure_blob_storage_container_name": "testcontainer",
+  "streams": [
+    {
+      "name": "users",
+      "file_type": "jsonl",
+      "globs": ["**/test_parquet_users*.parquet"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "parquet"
+      }
+    },
+    {
+      "name": "purchases",
+      "file_type": "jsonl",
+      "globs": ["**/test_parquet_purchases*.parquet"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "parquet"
+      }
+    },
+    {
+      "name": "products",
+      "file_type": "jsonl",
+      "globs": ["**/test_parquet_products*.parquet"],
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "parquet"
+      }
+    }
+  ]
+}

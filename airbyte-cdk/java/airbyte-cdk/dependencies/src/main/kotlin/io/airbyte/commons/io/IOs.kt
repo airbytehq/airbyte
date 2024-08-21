@@ -13,11 +13,13 @@ import java.util.*
 import org.apache.commons.io.input.ReversedLinesFileReader
 
 object IOs {
+    @JvmStatic
     fun writeFile(path: Path, fileName: String?, contents: String?): Path {
         val filePath = path.resolve(fileName)
         return writeFile(filePath, contents)
     }
 
+    @JvmStatic
     fun writeFile(filePath: Path, contents: ByteArray): Path {
         try {
             Files.write(filePath, contents)
@@ -27,6 +29,7 @@ object IOs {
         }
     }
 
+    @JvmStatic
     fun writeFile(filePath: Path, contents: String?): Path {
         try {
             Files.writeString(filePath, contents, StandardCharsets.UTF_8)
@@ -40,6 +43,7 @@ object IOs {
      * Writes a file to a random directory in the /tmp folder. Useful as a staging group for test
      * resources.
      */
+    @JvmStatic
     fun writeFileToRandomTmpDir(filename: String?, contents: String?): String {
         val source = Paths.get("/tmp", UUID.randomUUID().toString())
         try {
@@ -53,6 +57,7 @@ object IOs {
         }
     }
 
+    @JvmStatic
     fun readFile(path: Path, fileName: String?): String {
         return readFile(path.resolve(fileName))
     }
@@ -67,7 +72,8 @@ object IOs {
     }
 
     @Throws(IOException::class)
-    fun getTail(numLines: Int, path: Path?): List<String?> {
+    @JvmStatic
+    fun getTail(numLines: Int, path: Path?): List<String> {
         if (path == null) {
             return emptyList<String>()
         }
@@ -77,8 +83,9 @@ object IOs {
             return emptyList<String>()
         }
 
-        ReversedLinesFileReader(file, Charsets.UTF_8).use { fileReader ->
-            val lines: MutableList<String?> = ArrayList()
+        ReversedLinesFileReader.Builder().setFile(file).setCharset(Charsets.UTF_8).get().use {
+            fileReader ->
+            val lines: MutableList<String> = ArrayList()
             var line = fileReader.readLine()
             while (line != null && lines.size < numLines) {
                 lines.add(line)
@@ -90,6 +97,7 @@ object IOs {
         }
     }
 
+    @JvmStatic
     fun inputStream(path: Path): InputStream {
         try {
             return Files.newInputStream(path)
@@ -98,6 +106,7 @@ object IOs {
         }
     }
 
+    @JvmStatic
     fun silentClose(closeable: Closeable) {
         try {
             closeable.close()
@@ -106,6 +115,7 @@ object IOs {
         }
     }
 
+    @JvmStatic
     fun newBufferedReader(inputStream: InputStream): BufferedReader {
         return BufferedReader(InputStreamReader(inputStream, StandardCharsets.UTF_8))
     }

@@ -1,0 +1,166 @@
+{
+  "type": "object",
+  "properties": {
+    "union_of_objects_with_properties_identical": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "union_of_objects_with_properties_overlapping": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "flagged": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "union_of_objects_with_properties_nonoverlapping": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "flagged": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "union_of_objects_with_properties_contradicting": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "union_of_objects_with_properties_contradicting_unions": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": ["string", "integer"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": ["boolean", "number"]
+            }
+          }
+        }
+      ]
+    },
+    "union_of_objects_with_properties_contradicting_unions_overlapping": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": ["string", "integer"]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": ["integer", "number"]
+            }
+          }
+        }
+      ]
+    },
+    "compact_union_with_annotations": {
+      "type": ["object", "integer"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "compact_union_with_array_items": {
+      "type": ["object", "array"],
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

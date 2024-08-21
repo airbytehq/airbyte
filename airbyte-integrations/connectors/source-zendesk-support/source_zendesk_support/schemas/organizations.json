@@ -2,58 +2,73 @@
   "type": ["null", "object"],
   "properties": {
     "group_id": {
+      "description": "The ID of the group to which the organization belongs",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the organization was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "tags": {
+      "description": "List of tags associated with the organization",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "shared_tickets": {
+      "description": "Indicates if tickets are shared with this organization",
       "type": ["null", "boolean"]
     },
     "organization_fields": {
+      "description": "Custom fields associated with the organization",
       "type": ["null", "object"],
       "properties": {},
       "additionalProperties": true
     },
     "notes": {
+      "description": "Any notes or comments related to the organization",
       "type": ["null", "string"]
     },
     "domain_names": {
+      "description": "List of domain names associated with the organization",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "shared_comments": {
+      "description": "Indicates if comments are shared with this organization",
       "type": ["null", "boolean"]
     },
     "details": {
+      "description": "Additional details about the organization",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The date and time when the organization was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "name": {
+      "description": "The name of the organization",
       "type": ["null", "string"]
     },
     "external_id": {
+      "description": "The external ID of the organization",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL of the organization",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique ID of the organization",
       "type": ["null", "integer"]
     },
     "deleted_at": {
+      "description": "The date and time when the organization was deleted",
       "type": ["null", "string"],
       "format": "date-time"
     }

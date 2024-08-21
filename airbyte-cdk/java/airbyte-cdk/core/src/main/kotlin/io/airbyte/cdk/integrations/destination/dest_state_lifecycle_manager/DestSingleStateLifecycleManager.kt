@@ -7,7 +7,6 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import java.util.*
-import java.util.List
 
 /**
  * This [DestStateLifecycleManager] handles any state where there is a guarantee that any single
@@ -67,7 +66,7 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
         )
     }
 
-    override fun listCommitted(): Queue<AirbyteMessage>? {
+    override fun listCommitted(): Queue<AirbyteMessage> {
         return stateMessageToQueue(lastCommittedState)
     }
 
@@ -78,7 +77,7 @@ class DestSingleStateLifecycleManager : DestStateLifecycleManager {
     companion object {
         private fun stateMessageToQueue(stateMessage: AirbyteMessage?): Queue<AirbyteMessage> {
             return LinkedList(
-                if (stateMessage == null) emptyList<AirbyteMessage>() else List.of(stateMessage)
+                if (stateMessage == null) emptyList<AirbyteMessage>() else listOf(stateMessage)
             )
         }
     }

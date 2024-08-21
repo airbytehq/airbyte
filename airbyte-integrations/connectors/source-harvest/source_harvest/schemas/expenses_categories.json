@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "expense_category_id": {
+      "description": "Unique identifier for the expense category",
       "type": ["null", "integer"]
     },
     "expense_category_name": {
+      "description": "Name of the expense category",
       "type": ["null", "string"]
     },
     "total_amount": {
+      "description": "Total amount spent on this expense category",
       "type": ["null", "number"]
     },
     "billable_amount": {
+      "description": "The amount that can be billed to a client for this expense category",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "The currency in which the expenses are incurred",
       "type": ["null", "string"]
     },
     "from": {
+      "description": "Start date for the expenses",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "End date for the expenses",
       "type": ["null", "string"]
     }
   }

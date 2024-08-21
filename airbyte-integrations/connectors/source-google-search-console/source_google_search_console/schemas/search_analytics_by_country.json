@@ -3,29 +3,37 @@
   "type": "object",
   "properties": {
     "site_url": {
+      "description": "The URL of the site for which the search analytics data is being reported.",
       "type": ["null", "string"]
     },
     "search_type": {
+      "description": "The type of search (web search, image search, video search, etc.) for which the data is being reported.",
       "type": ["null", "string"]
     },
     "date": {
+      "description": "The date for which the search analytics data is being reported.",
       "type": ["null", "string"],
       "format": "date"
     },
     "country": {
+      "description": "The country for which the search analytics data is being reported.",
       "type": ["null", "string"]
     },
     "clicks": {
+      "description": "The number of times users clicked on the search result for a specific country.",
       "type": ["null", "integer"]
     },
     "impressions": {
+      "description": "The total number of times a search result was shown in search results for a specific country.",
       "type": ["null", "integer"]
     },
     "ctr": {
+      "description": "The click-through rate, i.e., the ratio of clicks to impressions for a specific country.",
       "type": ["null", "number"],
       "multipleOf": 1e-25
     },
     "position": {
+      "description": "The average position at which the site's search result appeared for a specific country.",
       "type": ["null", "number"],
       "multipleOf": 1e-25
     }
