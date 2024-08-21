@@ -110,7 +110,7 @@ class SnowflakeDestinationHandler(
 
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             LOGGER.error("SHOW command usage caused exception", e)
 
@@ -203,7 +203,7 @@ class SnowflakeDestinationHandler(
                 tableExists = true
             }
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             LOGGER.error("SHOW command usage caused exception", e)
 
@@ -241,7 +241,7 @@ class SnowflakeDestinationHandler(
 
             tableExists = true
 
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
 
             LOGGER.error("SHOW command usage caused exception", e)
 
@@ -759,7 +759,7 @@ class SnowflakeDestinationHandler(
 
                 }
 
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
 
                 LOGGER.error("SHOW command usage caused exception", e)
 
