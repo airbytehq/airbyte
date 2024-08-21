@@ -4,7 +4,7 @@
 
 import logging
 from collections import OrderedDict
-from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
@@ -12,24 +12,6 @@ from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import 
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-
-
-class PerPartitionKeySerializer:
-    """
-    We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
-    concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
-    since they are not hashable. By creating json string using the dict, we can have a use the dict as a key to the dict since strings are
-    hashable.
-    """
-
-    @staticmethod
-    def to_partition_key(to_serialize: Any) -> str:
-        # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
-        return json.dumps(to_serialize, indent=None, separators=(",", ":"), sort_keys=True)
-
-    @staticmethod
-    def to_partition(to_deserialize: Any) -> Mapping[str, Any]:
-        return json.loads(to_deserialize)  # type: ignore # The partition is known to be a dict, but the type hint is Any
 
 
 class CursorFactory:
@@ -70,7 +52,7 @@ class PerPartitionCursor(DeclarativeCursor):
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
-        self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = OrderedDict()
+        self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -87,7 +69,7 @@ class PerPartitionCursor(DeclarativeCursor):
             for cursor_slice in cursor.stream_slices():
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
-    def _ensure_partition_limit(self):
+    def _ensure_partition_limit(self) -> None:
         """
         Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
         """
