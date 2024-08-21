@@ -332,7 +332,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.2.17  | 2024-08-21 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix issue with CRM search streams when they have no `associations`  |
+| 4.2.17  | 2024-08-21 | [44538](https://github.com/airbytehq/airbyte/pull/44538) | Fix issue with CRM search streams when they have no `associations`  |
 | 4.2.16  | 2024-08-20 | [42919](https://github.com/airbytehq/airbyte/pull/42919) | Add support for Deal Splits |
 | 4.2.15  | 2024-08-08 | [43381](https://github.com/airbytehq/airbyte/pull/43381) | Fix associations retrieval for Engagements streams (calls, meetings, notes, tasks, emails) in Incremental with existing state |
 | 4.2.14  | 2024-07-27 | [42688](https://github.com/airbytehq/airbyte/pull/42688) | Update dependencies |
