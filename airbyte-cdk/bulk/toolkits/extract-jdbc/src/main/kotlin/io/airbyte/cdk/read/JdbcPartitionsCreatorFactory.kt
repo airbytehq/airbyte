@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.read
 
-import io.airbyte.cdk.command.MetadataYamlPropertySource.Companion.PROPERTY_PREFIX
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -69,4 +68,6 @@ class JdbcConcurrentPartitionsCreatorFactory<
         JdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }
 
-private const val MODE_PROPERTY = "$PROPERTY_PREFIX.jdbc.mode"
+const val JDBC_PROPERTY_PREFIX = "airbyte.connector.extract.jdbc"
+
+private const val MODE_PROPERTY = "$JDBC_PROPERTY_PREFIX.mode"

@@ -24,12 +24,16 @@ class JdbcPartitionsCreatorTest {
     @Test
     fun testConcurrentSnapshotWithCursor() {
         val stream = stream()
+
         val sharedState =
             sharedState(
-                withSampling = true,
-                maxSampleSize = 4,
-                expectedThroughputBytesPerSecond =
-                    1L, // absurdly low value to create many partitions
+                constants =
+                    DefaultJdbcSharedState.Constants(
+                        withSampling = true,
+                        maxSampleSize = 4,
+                        // absurdly low value to create many partitions
+                        expectedThroughputBytesPerSecond = 1L,
+                    ),
                 mockedQueries =
                     arrayOf(
                         TestFixtures.MockedQuery(
@@ -107,10 +111,13 @@ class JdbcPartitionsCreatorTest {
         val stream = stream(withCursor = false)
         val sharedState =
             sharedState(
-                withSampling = true,
-                maxSampleSize = 4,
-                expectedThroughputBytesPerSecond =
-                    1L, // absurdly low value to create many partitions
+                constants =
+                    DefaultJdbcSharedState.Constants(
+                        withSampling = true,
+                        maxSampleSize = 4,
+                        // absurdly low value to create many partitions
+                        expectedThroughputBytesPerSecond = 1L,
+                    ),
                 mockedQueries =
                     arrayOf(
                         TestFixtures.MockedQuery(
@@ -216,8 +223,11 @@ class JdbcPartitionsCreatorTest {
         val stream = stream(withCursor = false)
         val sharedState =
             sharedState(
-                withSampling = true,
-                maxSampleSize = 4,
+                constants =
+                    DefaultJdbcSharedState.Constants(
+                        withSampling = true,
+                        maxSampleSize = 4,
+                    ),
                 mockedQueries =
                     arrayOf(
                         TestFixtures.MockedQuery(
@@ -317,7 +327,7 @@ class JdbcPartitionsCreatorTest {
         val stream = stream()
         val sharedState =
             sharedState(
-                withSampling = true,
+                constants = DefaultJdbcSharedState.Constants(withSampling = true),
                 // The JdbcSequentialPartitionsCreator is not expected to query anything.
                 mockedQueries = arrayOf()
             )

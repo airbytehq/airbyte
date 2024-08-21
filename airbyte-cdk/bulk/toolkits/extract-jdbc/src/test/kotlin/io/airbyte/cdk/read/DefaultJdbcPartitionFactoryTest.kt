@@ -51,7 +51,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                 )
             )
@@ -87,7 +87,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                 )
             )
@@ -132,7 +132,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                     NoWhere,
                     OrderBy(id),
@@ -202,7 +202,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                     NoWhere,
                     OrderBy(id)
@@ -308,7 +308,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
@@ -365,7 +365,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id)
@@ -446,7 +446,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(
                         And(

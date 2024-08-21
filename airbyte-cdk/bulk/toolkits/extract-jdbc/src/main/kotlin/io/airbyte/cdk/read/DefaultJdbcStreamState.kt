@@ -26,7 +26,7 @@ class DefaultJdbcStreamState(
         }
 
     override val fetchSizeOrDefault: Int
-        get() = fetchSize ?: sharedState.defaultFetchSize
+        get() = fetchSize ?: sharedState.constants.defaultFetchSize
 
     override val limit: Long
         get() = fetchSizeOrDefault * transient.get().limitState.current

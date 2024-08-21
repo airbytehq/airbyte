@@ -32,6 +32,6 @@ class DefaultJdbcFetchSizeEstimatorTest {
         val sample = Sample(listOf<Long>(), Kind.EMPTY, 0L)
         val sharedState = sharedState(maxMemoryBytesForTesting = 700_000, maxConcurrency = 2)
         val estimator = sharedState.jdbcFetchSizeEstimator()
-        Assertions.assertEquals(sharedState.defaultFetchSize, estimator.apply(sample))
+        Assertions.assertEquals(sharedState.constants.defaultFetchSize, estimator.apply(sample))
     }
 }

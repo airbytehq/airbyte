@@ -71,32 +71,15 @@ object TestFixtures {
         global: Boolean = false,
         checkpointTargetInterval: Duration = Duration.ofMinutes(1),
         maxConcurrency: Int = 10,
-        withSampling: Boolean = false,
-        maxSampleSize: Int = DefaultJdbcSharedState.TABLE_SAMPLE_SIZE,
-        expectedThroughputBytesPerSecond: Long = DefaultJdbcSharedState.THROUGHPUT_BYTES_PER_SECOND,
-        minFetchSize: Int = DefaultJdbcSharedState.FETCH_SIZE_LOWER_BOUND,
-        defaultFetchSize: Int = DefaultJdbcSharedState.DEFAULT_FETCH_SIZE,
-        maxFetchSize: Int = DefaultJdbcSharedState.FETCH_SIZE_UPPER_BOUND,
-        memoryCapacityRatio: Double = DefaultJdbcSharedState.MEM_CAPACITY_RATIO,
-        estimatedRecordOverheadBytes: Long = DefaultJdbcSharedState.RECORD_OVERHEAD_BYTES,
-        estimatedFieldOverheadBytes: Long = DefaultJdbcSharedState.FIELD_OVERHEAD_BYTES,
-        maxMemoryBytesForTesting: Long = 1_000_000,
+        maxMemoryBytesForTesting: Long = 1_000_000L,
+        constants: DefaultJdbcSharedState.Constants = DefaultJdbcSharedState.Constants(),
         vararg mockedQueries: MockedQuery,
     ) =
         DefaultJdbcSharedState(
             StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency),
             BufferingOutputConsumer(TestClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
-            withSampling,
-            maxSampleSize,
-            expectedThroughputBytesPerSecond,
-            minFetchSize,
-            defaultFetchSize,
-            maxFetchSize,
-            memoryCapacityRatio,
-            estimatedRecordOverheadBytes,
-            estimatedFieldOverheadBytes,
-            maxMemoryBytesForTesting,
+            constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting)
         )
 
     fun DefaultJdbcSharedState.factory() =
