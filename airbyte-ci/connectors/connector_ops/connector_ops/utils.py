@@ -647,9 +647,9 @@ class Connector:
 
     @property
     def sbom_url(self) -> Optional[str]:
-    """
-    Fetches SBOM URL from the connector definition in the OSS registry, if it exists, None otherwise.
-    """
+        """
+        Fetches SBOM URL from the connector definition in the OSS registry, if it exists, None otherwise.
+        """
         metadata = self.metadata
         definition_id = metadata.get("definitionId")
         # We use the OSS registry as the source of truth for released connectors as the cloud registry can be a subset of the OSS registry.
