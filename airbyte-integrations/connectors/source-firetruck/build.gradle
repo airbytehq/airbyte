@@ -4,7 +4,11 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.source.oracle.OracleSource'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:InitialRAMPercentage=75.0',
+            '-XX:MaxRAMPercentage=75.0',
+    ]
 }
 
 
@@ -24,8 +28,8 @@ tasks.named('check').configure {
 }
 
 dependencies {
-    def vBulkCDK = '0.9'
-    def vMicronaut = '4.3.13'
+    def vBulkCDK = '0.12'
+    def vMicronaut = '4.6.1'
 
     ksp "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
 
@@ -39,7 +43,8 @@ dependencies {
 
     kspTest "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"
 
-    testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.1')
     testImplementation testFixtures("io.airbyte.bulk-cdk:bulk-cdk-core-extract:${vBulkCDK}")
+    testImplementation testFixtures("io.airbyte.bulk-cdk:bulk-cdk-toolkit-extract-jdbc:${vBulkCDK}")
     testImplementation 'org.testcontainers:oracle-xe'
 }

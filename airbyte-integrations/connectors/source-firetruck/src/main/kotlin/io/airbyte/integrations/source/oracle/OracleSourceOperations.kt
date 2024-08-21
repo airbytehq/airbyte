@@ -32,6 +32,7 @@ import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromNode
 import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
+import io.airbyte.cdk.read.GreaterOrEqual
 import io.airbyte.cdk.read.Lesser
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
@@ -196,6 +197,7 @@ class OracleSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryG
             is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
             is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
             is Equal -> "${column.sql()} = ?"
+            is GreaterOrEqual -> "${column.sql()} >= ?"
             is Greater -> "${column.sql()} > ?"
             is LesserOrEqual -> "${column.sql()} <= ?"
             is Lesser -> "${column.sql()} < ?"

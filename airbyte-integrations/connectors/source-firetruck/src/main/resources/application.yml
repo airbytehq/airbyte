@@ -1,0 +1,15 @@
+---
+airbyte:
+  connector:
+    extract:
+      jdbc:
+        mode: concurrent
+        with-sampling: true
+        table-sample-size: 1024
+        throughput-bytes-per-second: 10000000
+        min-fetch-size: 10
+        default-fetch-size: 1000
+        max-fetch-size: 10000000
+        memory-capacity-ratio: 0.6
+        estimated-record-overhead-bytes: 16
+        estimated-field-overhead-bytes: 16
