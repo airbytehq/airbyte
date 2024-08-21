@@ -189,7 +189,7 @@ You can segment the Ad Insights table into parts based on the following informat
 
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
-[![Alt Text](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21])]([Link URL](https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships))
+[![Image](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://www.google.com)
 
 ![Entity Relationship Diagram](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)[(Diagram)](https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships)
 
