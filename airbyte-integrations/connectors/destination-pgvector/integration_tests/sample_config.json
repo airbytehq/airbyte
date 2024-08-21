@@ -10,8 +10,7 @@
   },
   "indexing": {
     "host": "MYACCOUNT",
-    "role": "MYUSERNAME",
-    "warehouse": "COMPUTE_WH",
+    "port": 5432,
     "database": "MYDATABASE",
     "default_schema": "MYSCHEMA",
     "username": "MYUSERNAME",

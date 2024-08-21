@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake-cortex",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/pgvector",
   "connectionSpecification": {
     "title": "Destination Config",
     "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
@@ -313,48 +313,44 @@
         "type": "boolean"
       },
       "indexing": {
-        "title": "Snowflake Connection",
+        "title": "Postgres Connection",
         "type": "object",
         "properties": {
           "host": {
             "title": "Host",
-            "description": "Enter the account name you want to use to access the database. This is usually the identifier before .snowflakecomputing.com",
-            "order": 1,
+            "description": "Enter the account name you want to use to access the database.",
+            "order": 0,
             "examples": ["AIRBYTE_ACCOUNT"],
             "type": "string"
           },
-          "role": {
-            "title": "Role",
-            "description": "Enter the role that you want to use to access Snowflake",
-            "order": 2,
-            "examples": ["AIRBYTE_ROLE", "ACCOUNTADMIN"],
-            "type": "string"
-          },
-          "warehouse": {
-            "title": "Warehouse",
-            "description": "Enter the name of the warehouse that you want to use as a compute cluster",
-            "order": 3,
-            "examples": ["AIRBYTE_WAREHOUSE"],
-            "type": "string"
+          "port": {
+            "title": "Port",
+            "description": "Port of the database.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65536,
+            "default": 5432,
+            "examples": ["5432"],
+            "order": 1
           },
           "database": {
             "title": "Database",
             "description": "Enter the name of the database that you want to sync data into",
-            "order": 4,
+            "order": 2,
             "examples": ["AIRBYTE_DATABASE"],
             "type": "string"
           },
           "default_schema": {
             "title": "Default Schema",
             "description": "Enter the name of the default schema",
-            "order": 5,
+            "order": 3,
             "examples": ["AIRBYTE_SCHEMA"],
             "type": "string"
           },
           "username": {
             "title": "Username",
             "description": "Enter the name of the user you want to use to access the database",
-            "order": 6,
+            "order": 4,
             "examples": ["AIRBYTE_USER"],
             "type": "string"
           },
@@ -367,7 +363,7 @@
                 "description": "Enter the password you want to use to access the database",
                 "airbyte_secret": true,
                 "examples": ["AIRBYTE_PASSWORD"],
-                "order": 7,
+                "order": 0,
                 "type": "string"
               }
             },
@@ -376,14 +372,12 @@
         },
         "required": [
           "host",
-          "role",
-          "warehouse",
           "database",
           "default_schema",
           "username",
           "credentials"
         ],
-        "description": "Snowflake can be used to store vector data and retrieve embeddings.",
+        "description": "Postgres can be used to store vector data and retrieve embeddings.",
         "group": "indexing"
       }
     },
