@@ -55,7 +55,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """State setter, accept state serialized by state getter."""
         self._cursor.set_initial_state(value)
 
-    @property
+    @property  # type: ignore
     def cursor(self) -> Optional[AbstractFileBasedCursor]:
         return self._cursor
 

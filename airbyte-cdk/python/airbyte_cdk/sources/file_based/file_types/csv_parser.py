@@ -55,7 +55,11 @@ class _CsvReader:
             try:
                 headers = self._get_headers(fp, config_format, dialect_name)
             except UnicodeError:
-                raise EncodingError(FileBasedSourceError.ENCODING_ERROR, filename=file.uri) from None
+                file_name = file.uri
+                # Reduce huge file names in error messages
+                if "?" in file.uri:
+                    file_name = file.uri[: file.uri.find("?")]
+                raise EncodingError(FileBasedSourceError.ENCODING_ERROR, filename=file_name) from None
 
             rows_to_skip = (
                 config_format.skip_rows_before_header
