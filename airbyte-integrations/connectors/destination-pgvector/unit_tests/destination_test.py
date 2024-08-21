@@ -13,7 +13,7 @@ from destination_pgvector.config import ConfigModel
 from destination_pgvector.destination import DestinationPGVector
 
 
-class TestDestinationSnowflakeCortex(unittest.TestCase):
+class TestDestinationPGVector(unittest.TestCase):
     def setUp(self):
         self.config = {
             "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
