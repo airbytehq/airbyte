@@ -646,6 +646,20 @@ class Connector:
         return get(connector_entry, "generated.metrics.cloud.usage")
 
     @property
+    def sbom_url(self) -> Optional[str]:
+        metadata = self.metadata
+        definition_id = metadata.get("definitionId")
+        # We use the OSS registry as the source of truth for released connectors as the cloud registry can be a subset of the OSS registry.
+        oss_registry = download_catalog(OSS_CATALOG_URL)
+
+        all_connectors_of_type = oss_registry[f"{self.connector_type}s"]
+        connector_entry = find(all_connectors_of_type, {self.registry_primary_key_field: definition_id})
+        if not connector_entry:
+            return None
+
+        return get(connector_entry, "generated.sbomUrl")
+
+    @property
     def image_address(self) -> str:
         return f'{self.metadata["dockerRepository"]}:{self.metadata["dockerImageTag"]}'
 
