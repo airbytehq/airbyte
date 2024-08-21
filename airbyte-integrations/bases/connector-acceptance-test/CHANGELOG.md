@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.9.1
+
+Bug fixes for dagger execution caching and for failure trace message test case.
+
 ## 3.9.0
 
 Add support for using `manifest.yaml` as a spec input.
