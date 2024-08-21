@@ -66,7 +66,7 @@ class SourceIterable(YamlDeclarativeSource):
         # end date is provided for integration tests only
         start_date, end_date = config["start_date"], config.get("end_date")
         date_range = {"start_date": start_date, "end_date": end_date}
-        region = config["region"]
+        region = config["region"] or "US"
 
         # TODO: migrate streams below to low code as slicer logic will be migrated to generator based
         streams.extend(
