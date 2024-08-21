@@ -221,7 +221,7 @@ definitions:
     url_base: https://api.breezy.hr/v3/company/{{ config['company_id'] }}
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: AUTHORIZATION
