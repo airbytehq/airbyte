@@ -2250,7 +2250,6 @@ class Tickets(CRMSearchStream):
 
 class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
-    associations = []
     primary_key = "id"
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
