@@ -26,7 +26,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, EncodingError, FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -130,6 +130,13 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     stream_is_available,
                     reason,
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
+            except EncodingError as encoding_error:
+                raise AirbyteTracedException(
+                    internal_message="File encoding does not match configuration.",
+                    message=FileBasedSourceError.ENCODING_ERROR.value,
+                    exception=encoding_error,
+                    failure_type=FailureType.config_error,
+                )
             except Exception:
                 errors.append(f"Unable to connect to stream {stream.name} - {''.join(traceback.format_exc())}")
             else:
