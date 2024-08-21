@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, constr
@@ -24,6 +24,14 @@ class SecretStore(BaseModel):
 
     alias: Optional[str] = Field(None, description="The alias of the secret store which can map to its actual secret address")
     type: Optional[Literal["GSM"]] = Field(None, description="The type of the secret store")
+
+
+class TestConnections(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: str = Field(..., description="The connection name")
+    id: str = Field(..., description="The connection ID")
 
 
 class ReleaseStage(BaseModel):
@@ -130,6 +138,21 @@ class SourceFileInfo(BaseModel):
     registry_entry_generated_at: Optional[str] = None
 
 
+class ConnectorMetrics(BaseModel):
+    all: Optional[Any] = None
+    cloud: Optional[Any] = None
+    oss: Optional[Any] = None
+
+
+class ConnectorMetric(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    usage: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    sync_success_rate: Optional[Union[str, Literal["low", "medium", "high"]]] = None
+    connector_version: Optional[str] = None
+
+
 class Secret(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -161,14 +184,21 @@ class RemoteRegistries(BaseModel):
 class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
+    metrics: Optional[ConnectorMetrics] = None
+    sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")
 
 
 class ConnectorTestSuiteOptions(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    suite: Literal["unitTests", "integrationTests", "acceptanceTests"] = Field(..., description="Name of the configured test suite")
+    suite: Literal["unitTests", "integrationTests", "acceptanceTests", "liveTests"] = Field(
+        ..., description="Name of the configured test suite"
+    )
     testSecrets: Optional[List[Secret]] = Field(None, description="List of secrets required to run the test suite")
+    testConnections: Optional[List[TestConnections]] = Field(
+        None, description="List of sandbox cloud connections that tests can be run against"
+    )
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -226,7 +256,7 @@ class ConnectorBreakingChanges(BaseModel):
     )
 
 
-class Registry(BaseModel):
+class RegistryOverride(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -267,13 +297,14 @@ class Data(BaseModel):
     )
     releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
     protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
     connectorSubtype: Literal["api", "database", "datalake", "file", "custom", "message_queue", "unknown", "vectorstore"]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
         [], description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
     )
-    registries: Optional[Registry] = None
+    registryOverrides: Optional[RegistryOverride] = None
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None

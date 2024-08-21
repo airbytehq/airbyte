@@ -75,6 +75,8 @@ object JdbcCheckOperations {
                         listOf(dummyRecord),
                         outputSchema,
                         outputTableName,
+                        -1,
+                        -1,
                     )
                 }
             } finally {

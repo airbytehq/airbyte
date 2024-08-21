@@ -42,16 +42,19 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
+
   surveys_stream:
     $ref: "#/definitions/base_stream"
-    name: "surveys"
-    primary_key: "id"
     $parameters:
+      name: "surveys"
+      primary_key: "id"
       path: "nudges"
 
   responses_stream:
-    name: "responses"
-    primary_key: "id"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "responses"
+      primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -76,6 +79,7 @@ check:
   type: CheckStream
   stream_names:
     - "responses"
+    - "surveys"
 
 spec:
   type: Spec

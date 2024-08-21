@@ -1,4 +1,4 @@
-# Troubleshooting S3 Destinations
+# Troubleshooting Postgres Destinations
 
 ## Connector Limitations
 

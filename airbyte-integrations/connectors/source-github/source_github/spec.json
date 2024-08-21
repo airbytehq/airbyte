@@ -131,6 +131,16 @@
         "description": "List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 4,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
+      },
+      "max_waiting_time": {
+        "type": "integer",
+        "title": "Max Waiting Time (in minutes)",
+        "examples": [10, 30, 60],
+        "default": 10,
+        "minimum": 1,
+        "maximum": 60,
+        "description": "Max Waiting Time for rate limit. Set higher value to wait till rate limits will be resetted to continue sync",
+        "order": 5
       }
     }
   },

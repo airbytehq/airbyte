@@ -3,9 +3,9 @@
 #
 
 import json
+import logging
 from typing import Dict, Generator
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -24,7 +24,7 @@ SUPPORTED_SYNC_MODES = [SyncMode.full_refresh]
 
 
 class SourceFirebolt(Source):
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -45,7 +45,7 @@ class SourceFirebolt(Source):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: json) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
         For example, given valid credentials to a Postgres database,
@@ -79,7 +79,7 @@ class SourceFirebolt(Source):
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: json,
         catalog: ConfiguredAirbyteCatalog,
         state: Dict[str, any],

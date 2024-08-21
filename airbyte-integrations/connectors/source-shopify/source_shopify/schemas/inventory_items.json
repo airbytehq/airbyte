@@ -14,6 +14,10 @@
       "description": "The cost of the inventory item",
       "type": ["null", "number"]
     },
+    "currency_code": {
+      "description": "Currency of the money",
+      "type": ["null", "string"]
+    },
     "country_code_of_origin": {
       "description": "The country code indicating the origin of the inventory item",
       "type": ["null", "string"]
@@ -24,6 +28,10 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "duplicate_sku_count": {
+      "description": "The number of inventory items that share the same SKU with this item",
+      "type": ["null", "integer"]
     },
     "harmonized_system_code": {
       "description": "The harmonized system code for the inventory item",

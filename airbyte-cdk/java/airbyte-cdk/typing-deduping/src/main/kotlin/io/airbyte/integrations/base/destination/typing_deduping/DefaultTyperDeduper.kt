@@ -12,12 +12,15 @@ import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduperUtil.prepareSchemas
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.*
 import java.util.function.Supplier
+import kotlin.jvm.optionals.getOrDefault
+import org.apache.commons.lang3.ObjectUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.apache.commons.lang3.tuple.Pair
@@ -154,20 +157,30 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         LOGGER.info { "Final Table exists for stream ${stream.id.finalName}" }
                         // The table already exists. Decide whether we're writing to it directly, or
                         // using a tmp table.
-                        if (stream.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-                            if (!initialState.isFinalTableEmpty || initialState.isSchemaMismatch) {
+                        if (stream.minimumGenerationId != 0L) {
+                            if (
+                                initialState.isSchemaMismatch ||
+                                    (!initialState.isFinalTableEmpty &&
+                                        initialState.finalTableGenerationId != stream.generationId)
+                            ) {
+                                LOGGER.info { "Using temp final table" }
                                 // We want to overwrite an existing table. Write into a tmp table.
                                 // We'll overwrite the table at the
                                 // end of the sync.
                                 overwriteStreamsWithTmpTable.add(stream.id)
-                                // overwrite an existing tmp table if needed.
-                                destinationHandler.execute(
-                                    sqlGenerator.createTable(
-                                        stream,
-                                        TMP_OVERWRITE_TABLE_SUFFIX,
-                                        true
+                                if (
+                                    initialState.finalTempTableGenerationId != stream.generationId
+                                ) {
+                                    LOGGER.info { "Recreating temp final table" }
+                                    // overwrite an existing tmp table if needed.
+                                    destinationHandler.execute(
+                                        sqlGenerator.createTable(
+                                            stream,
+                                            TMP_OVERWRITE_TABLE_SUFFIX,
+                                            true
+                                        )
                                     )
-                                )
+                                }
                                 LOGGER.info {
                                     "Using temp final table for stream ${stream.id.finalName}, will overwrite existing table at end of sync"
                                 }
@@ -201,7 +214,22 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                         )
                     }
 
-                    initialRawTableStateByStream[stream.id] = initialState.initialRawTableStatus
+                    val maxRawTimestemp =
+                        initialState.initialRawTableStatus.maxProcessedTimestamp.getOrDefault(
+                            Instant.MAX
+                        )
+                    val maxTempRawTimestemp =
+                        initialState.initialTempRawTableStatus.maxProcessedTimestamp.getOrDefault(
+                            Instant.MAX
+                        )
+                    val ts = ObjectUtils.min(maxRawTimestemp, maxTempRawTimestemp)
+                    initialRawTableStateByStream[stream.id] =
+                        InitialRawTableStatus(
+                            true,
+                            initialState.initialRawTableStatus.hasUnprocessedRecords ||
+                                initialState.initialTempRawTableStatus.hasUnprocessedRecords,
+                            if (ts == Instant.MAX) Optional.empty() else Optional.of(ts)
+                        )
 
                     streamsWithSuccessfulSetup.add(
                         Pair.of(stream.id.originalNamespace, stream.id.originalName)
@@ -287,25 +315,18 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                     return@filter false
                 }
                 // Skip if we don't have any records for this stream.
-                val streamSyncSummary =
-                    streamSyncSummaries.getOrDefault(
-                        streamConfig.id.asStreamDescriptor(),
-                        StreamSyncSummary.DEFAULT
-                    )
-                val nonzeroRecords =
-                    streamSyncSummary.recordsWritten
-                        .map { r: Long ->
-                            r > 0
-                        } // If we didn't track record counts during the sync, assume we had nonzero
-                        // records for this stream
-                        .orElse(true)
+                val streamSyncSummary = streamSyncSummaries[streamConfig.id.asStreamDescriptor()]!!
+                val nonzeroRecords = streamSyncSummary.recordsWritten > 0
                 val unprocessedRecordsPreexist =
                     initialRawTableStateByStream[streamConfig.id]!!.hasUnprocessedRecords
                 // If this sync emitted records, or the previous sync left behind some unprocessed
                 // records,
                 // then the raw table has some unprocessed records right now.
                 // Run T+D if either of those conditions are true.
-                val shouldRunTypingDeduping = nonzeroRecords || unprocessedRecordsPreexist
+                val shouldRunTypingDeduping =
+                    (nonzeroRecords || unprocessedRecordsPreexist) &&
+                        streamSyncSummary.terminalStatus ==
+                            AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
                 if (!shouldRunTypingDeduping) {
                     LOGGER.info {
                         "Skipping typing and deduping for stream ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} because it had no records during this sync and no unprocessed records from a previous sync."
@@ -330,14 +351,18 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
      * table into the final table.
      */
     @Throws(Exception::class)
-    override fun commitFinalTables() {
+    override fun commitFinalTables(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>) {
         LOGGER.info { "Committing final tables" }
         val tableCommitTasks: MutableSet<CompletableFuture<Optional<Exception>>> = HashSet()
         for (streamConfig in parsedCatalog.streams) {
             if (
                 !streamsWithSuccessfulSetup.contains(
                     Pair.of(streamConfig.id.originalNamespace, streamConfig.id.originalName)
-                )
+                ) ||
+                    streamSyncSummaries
+                        .getValue(streamConfig.id.asStreamDescriptor())
+                        .terminalStatus !=
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
             ) {
                 LOGGER.warn {
                     "Skipping committing final table for for ${streamConfig.id.originalNamespace}.${streamConfig.id.originalName} " +
@@ -345,7 +370,7 @@ class DefaultTyperDeduper<DestinationState : MinimumDestinationState>(
                 }
                 continue
             }
-            if (DestinationSyncMode.OVERWRITE == streamConfig.destinationSyncMode) {
+            if (streamConfig.minimumGenerationId == streamConfig.generationId) {
                 tableCommitTasks.add(commitFinalTableTask(streamConfig))
             }
         }

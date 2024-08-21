@@ -10,6 +10,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps import build_customizatio
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.models.steps import StepStatus
+from tests.utils import mock_container
 
 pytestmark = [
     pytest.mark.anyio,
@@ -27,12 +28,16 @@ class TestBuildConnectorImage:
 
     @pytest.fixture
     def test_context_with_connector_with_base_image(self, test_context):
-        test_context.connector.metadata = {"connectorBuildOptions": {"baseImage": "xyz"}}
+        test_context.connector.metadata = {
+            "connectorBuildOptions": {"baseImage": "xyz"},
+            "dockerImageTag": "0.0.0",
+            "dockerRepository": "test",
+        }
         return test_context
 
     @pytest.fixture
     def test_context_with_connector_without_base_image(self, test_context):
-        test_context.connector.metadata = {}
+        test_context.connector.metadata = {"dockerImageTag": "0.0.0", "dockerRepository": "test"}
         return test_context
 
     @pytest.fixture
@@ -110,7 +115,8 @@ class TestBuildConnectorImage:
         return context
 
     async def test__run_using_base_image_with_mocks(self, mocker, test_context_with_connector_with_base_image, all_platforms):
-        container_built_from_base = mocker.AsyncMock()
+        container_built_from_base = mock_container()
+
         mocker.patch.object(
             python_connectors.BuildConnectorImages, "_build_from_base_image", mocker.AsyncMock(return_value=container_built_from_base)
         )
@@ -155,7 +161,7 @@ class TestBuildConnectorImage:
         assert await built_container.env_variable("MY_POST_BUILD_ENV_VAR") == "my_post_build_env_var_value"
 
     async def test__run_using_base_dockerfile_with_mocks(self, mocker, test_context_with_connector_without_base_image, all_platforms):
-        container_built_from_dockerfile = mocker.AsyncMock()
+        container_built_from_dockerfile = mock_container()
         mocker.patch.object(
             python_connectors.BuildConnectorImages, "_build_from_dockerfile", mocker.AsyncMock(return_value=container_built_from_dockerfile)
         )

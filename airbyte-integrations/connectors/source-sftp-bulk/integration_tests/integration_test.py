@@ -2,11 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import logging
 from copy import deepcopy
 from typing import Any, Mapping
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, Status
+from airbyte_cdk import ConfiguredAirbyteCatalog, Status
 from airbyte_cdk.test.entrypoint_wrapper import read
 from source_sftp_bulk import SourceSFTPBulk
 
@@ -56,6 +57,18 @@ def test_get_files_pattern_json_new_separator(configured_catalog: ConfiguredAirb
     source = SourceSFTPBulk(catalog=configured_catalog, config=config_password_all_jsonl, state=None)
     output = read(source=source, config=config_password_all_jsonl, catalog=configured_catalog)
     assert len(output.records) == 3
+
+
+def test_get_all_files_excel_xlsx(configured_catalog: ConfiguredAirbyteCatalog, config_password_all_excel_xlsx: Mapping[str, Any]):
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_password_all_excel_xlsx, state=None)
+    output = read(source=source, config=config_password_all_excel_xlsx, catalog=configured_catalog)
+    assert len(output.records) == 2
+
+
+def test_get_all_files_excel_xls(configured_catalog: ConfiguredAirbyteCatalog, config_password_all_excel_xls: Mapping[str, Any]):
+    source = SourceSFTPBulk(catalog=configured_catalog, config=config_password_all_excel_xls, state=None)
+    output = read(source=source, config=config_password_all_excel_xls, catalog=configured_catalog)
+    assert len(output.records) == 1
 
 
 def test_get_files_pattern_no_match_json(configured_catalog: ConfiguredAirbyteCatalog, config_password_all_jsonl: Mapping[str, Any]):

@@ -22,7 +22,7 @@ class TestBudgetStream(TestBulkStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "budget_empty")
         assert len(output.records) == 0
-        assert len(output.logs) == 10
+        assert len(output.logs) == 11
 
     @HttpMocker()
     def test_transform_records(self, http_mocker: HttpMocker):

@@ -12,6 +12,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
@@ -57,6 +58,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
 
   private static final long QUERY_TARGET_SIZE_GB = 1_073_741_824;
   private static final long DEFAULT_CHUNK_SIZE = 1_000_000;
+  private long MAX_CHUNK_SIZE = Long.MAX_VALUE;
   final Map<AirbyteStreamNameNamespacePair, TableSizeInfo> tableSizeInfoMap;
 
   public MySqlInitialLoadHandler(final JsonNode config,
@@ -73,6 +75,16 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
     this.initialLoadStateManager = initialLoadStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.tableSizeInfoMap = tableSizeInfoMap;
+    adjustChunkSizeLimitForMySQLVariants();
+  }
+
+  private void adjustChunkSizeLimitForMySQLVariants() {
+    // For PSDB, we need to limit the chunk size to 100k rows to avoid the query being killed by the
+    // server.
+    // Reference:
+    // https://planetscale.com/docs/reference/planetscale-system-limits
+    if (config.get(JdbcUtils.HOST_KEY).asText().toLowerCase().contains("psdb.cloud"))
+      MAX_CHUNK_SIZE = 100_000;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
@@ -80,7 +92,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final Instant emittedAt,
                                                                              final boolean decorateWithStartedStatus,
-                                                                             final boolean decorateWithCompletedStatus) {
+                                                                             final boolean decorateWithCompletedStatus,
+                                                                             final Optional<Duration> cdcInitialLoadTimeout) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -95,7 +108,7 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
               new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)));
         }
 
-        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt));
+        iteratorList.add(getIteratorForStream(airbyteStream, table, emittedAt, cdcInitialLoadTimeout));
         if (decorateWithCompletedStatus) {
           iteratorList.add(new StreamStatusTraceEmitterIterator(
               new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)));
@@ -109,7 +122,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
   public AutoCloseableIterator<AirbyteMessage> getIteratorForStream(
                                                                     @NotNull ConfiguredAirbyteStream airbyteStream,
                                                                     @NotNull TableInfo<CommonField<MysqlType>> table,
-                                                                    @NotNull Instant emittedAt) {
+                                                                    @NotNull Instant emittedAt,
+                                                                    @NotNull final Optional<Duration> cdcInitialLoadTimeout) {
 
     final AirbyteStream stream = airbyteStream.getStream();
     final String streamName = stream.getName();
@@ -122,7 +136,8 @@ public class MySqlInitialLoadHandler implements InitialLoadHandler<MysqlType> {
         .collect(Collectors.toList());
     final AutoCloseableIterator<AirbyteRecordData> queryStream =
         new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
-            calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
+            Long.min(calculateChunkSize(tableSizeInfoMap.get(pair), pair), MAX_CHUNK_SIZE), isCompositePrimaryKey(airbyteStream), emittedAt,
+            cdcInitialLoadTimeout);
     final AutoCloseableIterator<AirbyteMessage> recordIterator =
         getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
     final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, airbyteStream, pair);

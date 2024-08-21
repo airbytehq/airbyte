@@ -36,7 +36,8 @@ object DatabricksFileBufferFactory {
                                 JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
                                 JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
                                 JavaBaseConstants.COLUMN_NAME_DATA,
-                                JavaBaseConstants.COLUMN_NAME_AB_META
+                                JavaBaseConstants.COLUMN_NAME_AB_META,
+                                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
                             )
                         }
 
@@ -55,13 +56,15 @@ object DatabricksFileBufferFactory {
                             id: UUID,
                             formattedString: String,
                             emittedAt: Long,
-                            formattedAirbyteMetaString: String
+                            formattedAirbyteMetaString: String,
+                            generationId: Long,
                         ): List<Any> {
                             return listOf(
                                 id,
                                 Instant.ofEpochMilli(emittedAt),
                                 formattedString,
-                                formattedAirbyteMetaString
+                                formattedAirbyteMetaString,
+                                generationId,
                             )
                         }
                     }

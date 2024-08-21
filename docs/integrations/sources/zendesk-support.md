@@ -9,8 +9,11 @@ This page contains the setup guide and reference information for the [Zendesk Su
 ## Prerequisites
 
 - A Zendesk account with an Administrator role.
+- The unique Zendesk subdomain associated with the account.
 
 ## Setup guide
+
+## Set up Zendesk Support
 
 The Zendesk Support source connector supports two authentication methods:
 
@@ -50,12 +53,24 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 6. Click **Save**.
 <!-- /env:oss -->
 
-### Set up the Zendesk Support source connector
+### Set up the Zendesk Support connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Zendesk Support** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+<!-- env:cloud -->
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+4. Enter a name for the Zendesk Support connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+4. Enter a name for the Zendesk Support connector.
+<!-- /env:oss -->
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 
@@ -74,7 +89,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ## Supported sync modes
 
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -88,7 +103,7 @@ There are two types of incremental sync:
 2. Client-Side Incremental (API returns all available data and connector filters out only new records).
    :::
 
-## Supported streams
+## Supported Streams
 
 The Zendesk Support source connector supports the following streams:
 
@@ -162,9 +177,27 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.6.5   | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | migrate to cursor based pagination in stream `Organization memberships`                                                                                                                                                            |
+| 4.0.0   | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination                                                                                                                                                                                         |
+| 3.0.1   | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies                                                                                                                                                                                                                |
+| 3.0.0   | 2024-08-13 | [43446](https://github.com/airbytehq/airbyte/pull/43446) | `TicketMetrics` stream: updates cursor field to `generated_timestamp`                                                                                                                                                              |
+| 2.7.3   | 2024-08-12 | [43900](https://github.com/airbytehq/airbyte/pull/43900) | Update dependencies                                                                                                                                                                                                                |
+| 2.7.2   | 2024-08-10 | [43614](https://github.com/airbytehq/airbyte/pull/43614) | Update dependencies                                                                                                                                                                                                                |
+| 2.7.1   | 2024-08-03 | [41799](https://github.com/airbytehq/airbyte/pull/41799) | Update dependencies                                                                                                                                                                                                                |
+| 2.7.0   | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0                                                                                                                                                                                                              |
+| 2.6.13  | 2024-07-31 | [42892](https://github.com/airbytehq/airbyte/pull/42892) | Update BackoffStrategy interface to be up-to-date with latest parent interface.                                                                                                                                                    |
+| 2.6.12  | 2024-07-25 | [42519](https://github.com/airbytehq/airbyte/pull/42519) | Update error message for permission issue.                                                                                                                                                                                         |
+| 2.6.11  | 2024-07-18 | [42100](https://github.com/airbytehq/airbyte/pull/42100) | Raise config error on 403/404 status code.                                                                                                                                                                                         |
+| 2.6.10  | 2024-07-10 | [41436](https://github.com/airbytehq/airbyte/pull/41436) | Fix unit test                                                                                                                                                                                                                      |
+| 2.6.9   | 2024-07-10 | [41390](https://github.com/airbytehq/airbyte/pull/41390) | Update dependencies                                                                                                                                                                                                                |
+| 2.6.8   | 2024-07-09 | [40025](https://github.com/airbytehq/airbyte/pull/40025) | Update dependencies                                                                                                                                                                                                                |
+| 2.6.7   | 2024-07-09 | [41032](https://github.com/airbytehq/airbyte/pull/41032) | Use latest `CDK`: 3.0.0                                                                                                                                                                                                            |
+| 2.6.6   | 2024-06-27 | [40592](https://github.com/airbytehq/airbyte/pull/40592) | Updated to use latest `CDK` version, fixed `cursor pagination` logic                                                                                                                                                               |
+| 2.6.5   | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | Migrate to cursor based pagination in stream `Organization memberships`                                                                                                                                                            |
 | 2.6.4   | 2024-05-20 | [38310](https://github.com/airbytehq/airbyte/pull/38310) | Fix record filter for `Ticket Metrics` stream                                                                                                                                                                                      |
 | 2.6.3   | 2024-05-02 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Schema descriptions                                                                                                                                                                                                                |
 | 2.6.2   | 2024-02-05 | [37761](https://github.com/airbytehq/airbyte/pull/37761) | Add stop condition for `Ticket Audits` when recieved old records; Ignore 403 and 404 status codes.                                                                                                                                 |
@@ -177,7 +210,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 2.2.8   | 2024-02-09 | [35083](https://github.com/airbytehq/airbyte/pull/35083) | Manage dependencies with Poetry.                                                                                                                                                                                                   |
 | 2.2.7   | 2024-02-05 | [34840](https://github.com/airbytehq/airbyte/pull/34840) | Fix missing fields in schema                                                                                                                                                                                                       |
 | 2.2.6   | 2024-01-11 | [34064](https://github.com/airbytehq/airbyte/pull/34064) | Skip 504 Error for stream `Ticket Audits`                                                                                                                                                                                          |
-| 2.2.5   | 2024-01-08 | [34010](https://github.com/airbytehq/airbyte/pull/34010) | prepare for airbyte-lib                                                                                                                                                                                                            |
+| 2.2.5   | 2024-01-08 | [34010](https://github.com/airbytehq/airbyte/pull/34010) | Prepare for airbyte-lib                                                                                                                                                                                                            |
 | 2.2.4   | 2023-12-20 | [33680](https://github.com/airbytehq/airbyte/pull/33680) | Fix pagination issue for streams related to incremental export sync                                                                                                                                                                |
 | 2.2.3   | 2023-12-14 | [33435](https://github.com/airbytehq/airbyte/pull/33435) | Fix 504 Error for stream Ticket Audits                                                                                                                                                                                             |
 | 2.2.2   | 2023-12-01 | [33012](https://github.com/airbytehq/airbyte/pull/33012) | Increase number of retries for backoff policy to 10                                                                                                                                                                                |
@@ -195,9 +228,9 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 1.2.2   | 2023-08-30 | [29998](https://github.com/airbytehq/airbyte/pull/29998) | Fix typo in stream `AttributeDefinitions`: field condition                                                                                                                                                                         |
 | 1.2.1   | 2023-08-30 | [29991](https://github.com/airbytehq/airbyte/pull/29991) | Remove Custom availability strategy                                                                                                                                                                                                |
 | 1.2.0   | 2023-08-29 | [29940](https://github.com/airbytehq/airbyte/pull/29940) | Add undeclared fields to schemas                                                                                                                                                                                                   |
-| 1.1.1   | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | make `Organizations` stream incremental                                                                                                                                                                                            |
+| 1.1.1   | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | Make `Organizations` stream incremental                                                                                                                                                                                            |
 | 1.1.0   | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields`                                                                                                                                                                                                            |
-| 1.0.0   | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
+| 1.0.0   | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | Fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
 | 0.11.0  | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics`                                                                                                                                                                                                                |
 | 0.10.7  | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec                                                                                                                                                                                                |
 | 0.10.6  | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                                                                                                                               |
@@ -259,5 +292,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 | 0.1.2   | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513)   | Fixed TicketComments stream                                                                                                                                                                                                        |
 | 0.1.1   | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787)   | Fixed incremental logic for the ticket_comments stream                                                                                                                                                                             |
 | 0.1.0   | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861)   | Created CDK native zendesk connector                                                                                                                                                                                               |
+
+</details>
 
 </HideInUI>

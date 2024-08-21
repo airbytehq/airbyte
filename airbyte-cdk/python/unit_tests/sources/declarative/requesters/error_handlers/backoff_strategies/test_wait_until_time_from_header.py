@@ -6,6 +6,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
@@ -51,14 +52,14 @@ REGEX = "[-+]?\\d+"
 )
 @patch("time.time", return_value=1600000000.0)
 def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, min_wait, regex, expected_backoff_time):
-    response_mock = MagicMock()
+    response_mock = MagicMock(spec=requests.Response)
     response_mock.headers = {"wait_until": wait_until}
-    backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(
+    backoff_strategy = WaitUntilTimeFromHeaderBackoffStrategy(
         header=header,
         min_wait=min_wait,
         regex=regex,
         parameters={"wait_until": "wait_until", "regex": REGEX, "min_wait": SOME_BACKOFF_TIME},
         config={"wait_until": "wait_until", "regex": REGEX, "min_wait": SOME_BACKOFF_TIME},
     )
-    backoff = backoff_stratery.backoff(response_mock, 1)
+    backoff = backoff_strategy.backoff_time(response_mock, 1)
     assert backoff == expected_backoff_time

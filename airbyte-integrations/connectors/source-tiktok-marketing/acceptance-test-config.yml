@@ -51,6 +51,8 @@ acceptance_tests:
             bypass_reason: "Tested with daily granularity."
           - name: advertisers_reports_hourly
             bypass_reason: "Tested with daily granularity."
+          - name: audiences
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: campaigns_reports_hourly
             bypass_reason: "Tested with daily granularity."
           - name: creative_assets_portfolios
@@ -74,6 +76,8 @@ acceptance_tests:
             bypass_reason: "This stream is tested on the new style config."
           - name: advertisers
             bypass_reason: "This stream is tested on the new style config."
+          - name: audiences
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
           - name: campaigns
             bypass_reason: "This stream is tested on the new style config."
           - name: creative_assets_portfolios

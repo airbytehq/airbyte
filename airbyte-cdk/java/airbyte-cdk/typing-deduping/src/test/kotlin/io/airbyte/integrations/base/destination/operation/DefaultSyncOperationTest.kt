@@ -6,16 +6,10 @@ package io.airbyte.integrations.base.destination.operation
 
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler
-import io.airbyte.integrations.base.destination.typing_deduping.DestinationInitialStatus
-import io.airbyte.integrations.base.destination.typing_deduping.InitialRawTableStatus
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration
 import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState
-import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.mockk.clearMocks
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -77,6 +71,7 @@ class DefaultSyncOperationTest {
                         hasUnprocessedRecords = false,
                         maxProcessedTimestamp = Optional.empty(),
                     ),
+                initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
                 destinationState =
@@ -84,7 +79,9 @@ class DefaultSyncOperationTest {
                         needsSoftReset = false,
                         softResetMigrationCompleted = false,
                         nonSoftResetMigrationCompleted = false,
-                    )
+                    ),
+                finalTableGenerationId = null,
+                finalTempTableGenerationId = null,
             )
         every { destinationHandler.gatherInitialState(any()) } returns listOf(appendInitialStatus)
 
@@ -140,12 +137,18 @@ class DefaultSyncOperationTest {
         streamOperations.values.onEach { clearMocks(it) }
 
         syncOperation.finalizeStreams(
-            mapOf(appendStreamConfig.id.asStreamDescriptor() to StreamSyncSummary(Optional.of(42)))
+            mapOf(
+                appendStreamConfig.id.asStreamDescriptor() to
+                    StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+            )
         )
 
         verify(exactly = 1) {
             streamOperations.values.onEach {
-                it.finalizeTable(appendStreamConfig, StreamSyncSummary(Optional.of(42)))
+                it.finalizeTable(
+                    appendStreamConfig,
+                    StreamSyncSummary(42, AirbyteStreamStatus.COMPLETE)
+                )
             }
         }
         confirmVerified(destinationHandler)
@@ -168,6 +171,7 @@ class DefaultSyncOperationTest {
                         hasUnprocessedRecords = false,
                         maxProcessedTimestamp = Optional.empty(),
                     ),
+                initialTempRawTableStatus = mockk<InitialRawTableStatus>(),
                 isSchemaMismatch = true,
                 isFinalTableEmpty = false,
                 destinationState =
@@ -176,7 +180,9 @@ class DefaultSyncOperationTest {
                         needsSoftReset = true,
                         softResetMigrationCompleted = true,
                         nonSoftResetMigrationCompleted = true,
-                    )
+                    ),
+                finalTableGenerationId = null,
+                finalTempTableGenerationId = null,
             )
         every { destinationHandler.gatherInitialState(any()) } returns listOf(appendInitialStatus)
 
@@ -300,7 +306,7 @@ class DefaultSyncOperationTest {
                     "append_ns",
                     "append_stream"
                 ),
-                DestinationSyncMode.APPEND,
+                ImportType.APPEND,
                 listOf(),
                 Optional.empty(),
                 linkedMapOf(),

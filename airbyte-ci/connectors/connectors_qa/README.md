@@ -108,6 +108,28 @@ poe lint
 
 ## Changelog
 
+### 1.7.0
+
+Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`, 
+`CheckSourceSectionContent`, `CheckForAirbyteCloudSectionContent`, `CheckForAirbyteOpenSectionContent`, `CheckSupportedSyncModesSectionContent`, 
+`CheckTutorialsSectionContent`, `CheckChangelogSectionContent` checks that verifies that documentation file follow standard template.
+
+### 1.6.0
+
+Added `manifest-only` connectors support — they will run basic assets and metadata checks.
+
+### 1.5.1
+
+Bumped dependencies.
+
+### 1.5.0
+
+Added `AIRBYTE ENTERPRISE` to the list of allowed licenses, for use by Airbyte Enterprise connectors.
+
+### 1.4.0
+
+Added the `IntegrationTestsEnabledCheck` check that verifies if the integration tests are enabled for connectors with higher cloud usage.
+
 ### 1.3.2
 
 Removed documentation checks in `MedatadaCheck` since it's already verified in `DocumentationCheck`.

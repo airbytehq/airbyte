@@ -60,6 +60,14 @@ class DeclarativeStream(Stream):
         if not isinstance(value, property):
             self._primary_key = value
 
+    @property
+    def exit_on_rate_limit(self) -> bool:
+        return self.retriever.requester.exit_on_rate_limit  # type: ignore # abstract Retriever class has not requester attribute
+
+    @exit_on_rate_limit.setter
+    def exit_on_rate_limit(self, value: bool) -> None:
+        self.retriever.requester.exit_on_rate_limit = value  # type: ignore[attr-defined]
+
     @property  # type: ignore
     def name(self) -> str:
         """

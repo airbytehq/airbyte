@@ -1,9 +1,9 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   connectorSubtype: database
   connectorType: destination
   definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
@@ -22,7 +22,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
   releases:
     breakingChanges:
       0.1.0:

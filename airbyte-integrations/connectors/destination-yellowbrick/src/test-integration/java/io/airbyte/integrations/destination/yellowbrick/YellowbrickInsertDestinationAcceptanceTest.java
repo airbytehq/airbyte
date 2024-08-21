@@ -16,4 +16,8 @@ public class YellowbrickInsertDestinationAcceptanceTest extends YellowbrickDesti
     return Jsons.deserialize(Files.readString(Path.of("secrets/config.json")));
   }
 
+  public void testIncrementalDedupeSync() throws Exception {
+    super.testIncrementalDedupeSync();
+  }
+
 }

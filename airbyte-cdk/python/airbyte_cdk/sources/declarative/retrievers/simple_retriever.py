@@ -60,7 +60,7 @@ class SimpleRetriever(Retriever):
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
-    stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
+    stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
     cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
@@ -308,7 +308,7 @@ class SimpleRetriever(Retriever):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    def _read_page(
+    def _read_single_page(
         self,
         records_generator_fn: Callable[[Optional[requests.Response]], Iterable[StreamData]],
         stream_state: Mapping[str, Any],
@@ -367,7 +367,7 @@ class SimpleRetriever(Retriever):
                 self._partition_started[partition_key] = True
                 self._paginator.reset(reset_value=cursor_value)
 
-            yield from self._read_page(record_generator, stream_state, _slice)
+            yield from self._read_single_page(record_generator, stream_state, _slice)
         else:
             # Fixing paginator types has a long tail of dependencies
             self._paginator.reset()

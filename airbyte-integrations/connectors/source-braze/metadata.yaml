@@ -16,7 +16,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-braze
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -27,6 +27,10 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: braze_config_dev_null
+          id: 5df06901-b346-4401-81af-62b20deda255
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:

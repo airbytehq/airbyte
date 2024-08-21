@@ -169,6 +169,13 @@ Each table will contain 3 columns:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------- |
+| 0.0.3 | 2024-08-06 | [\#43342](https://github.com/airbytehq/airbyte/pull/43342) | Remove explicit Kotlin dependency. |
+| 0.0.2   | 2024-05-17 | [\#38329](https://github.com/airbytehq/airbyte/pull/38329) | Update CDK      |
 | 0.0.1   | 2024-03-02 | [\#35775](https://github.com/airbytehq/airbyte/pull/35775) | Initial release |
+
+</details>

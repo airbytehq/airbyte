@@ -10,7 +10,7 @@ import pipelines.dagger.actions.system.docker
 import requests
 from dagger import CacheSharingMode, CacheVolume, Container, ExecError
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.consts import AMAZONCORRETTO_IMAGE
+from pipelines.consts import AIRBYTE_SUBMODULE_DIR_NAME, AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.hacks import never_fail_exec
 from pipelines.helpers.utils import dagger_directory_as_zip_file, sh_dash_c
@@ -96,6 +96,8 @@ class GradleTask(Step, ABC):
             "tools/lib/lib.sh",
             "pyproject.toml",
         ] + self.build_include
+        # Support the edge case where the airbyte repo is used as a git submodule.
+        include += [f"{AIRBYTE_SUBMODULE_DIR_NAME}/{i}" for i in include]
 
         yum_packages_to_install = [
             "docker",  # required by :integrationTestJava.

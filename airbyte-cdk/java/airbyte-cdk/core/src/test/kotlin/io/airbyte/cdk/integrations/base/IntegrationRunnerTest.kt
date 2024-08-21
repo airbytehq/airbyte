@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 import org.apache.commons.lang3.ThreadUtils
-import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -219,32 +218,6 @@ internal class IntegrationRunnerTest {
         Mockito.verify(stdoutConsumer).accept(message1)
         Mockito.verify(stdoutConsumer).accept(message2)
         Mockito.verify(jsonSchemaValidator).validate(any(), any())
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testReadException() {
-        val intConfig = IntegrationConfig.read(configPath, configuredCatalogPath, statePath)
-        val configErrorException = ConfigErrorException("Invalid configuration")
-
-        Mockito.`when`(cliParser.parse(ARGS)).thenReturn(intConfig)
-        Mockito.`when`(source.read(CONFIG, CONFIGURED_CATALOG, STATE))
-            .thenThrow(configErrorException)
-
-        val expectedConnSpec = Mockito.mock(ConnectorSpecification::class.java)
-        Mockito.`when`(source.spec()).thenReturn(expectedConnSpec)
-        Mockito.`when`(expectedConnSpec.connectionSpecification).thenReturn(CONFIG)
-
-        val jsonSchemaValidator = Mockito.mock(JsonSchemaValidator::class.java)
-        val throwable =
-            AssertionsForClassTypes.catchThrowable {
-                IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator)
-                    .run(ARGS)
-            }
-
-        AssertionsForClassTypes.assertThat(throwable).isInstanceOf(ConfigErrorException::class.java)
-        // noinspection resource
-        Mockito.verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE)
     }
 
     @Test

@@ -8,7 +8,7 @@ data:
   icon: file-csv.svg
   license: MIT
   name: Local CSV
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

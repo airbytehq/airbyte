@@ -8,7 +8,10 @@ from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 _CONTACTS_FIELD = "contacts"
+_FORM_SUBMISSIONS_FIELD = "form-submissions"
 _LIST_MEMBERSHIPS_FIELD = "list-memberships"
+_MERGE_AUDITS_FIELD = "merge-audits"
+
 
 
 def _get_template() -> Dict[str, Any]:
@@ -27,12 +30,44 @@ class ContactsListMembershipBuilder:
         return self._template
 
 
+class ContactsMergeAuditsBuilder:
+    def __init__(self) -> None:
+        self._template: Dict[str, Any] = _get_template()[_CONTACTS_FIELD][0][_MERGE_AUDITS_FIELD][0]
+
+    def with_timestamp(self, timestamp: datetime) -> "ContactsMergeAuditsBuilder":
+        self._template["timestamp"] = int(timestamp.timestamp() * 1000)
+        return self
+
+    def build(self) -> Dict[str, Any]:
+        return self._template
+
+
+class ContactsFormSubmissionsBuilder:
+    def __init__(self) -> None:
+        self._template: Dict[str, Any] = _get_template()[_CONTACTS_FIELD][0][_FORM_SUBMISSIONS_FIELD][0]
+
+    def with_timestamp(self, timestamp: datetime) -> "ContactsFormSubmissionsBuilder":
+        self._template["timestamp"] = int(timestamp.timestamp() * 1000)
+        return self
+
+    def build(self) -> Dict[str, Any]:
+        return self._template
+
+
 class ContactBuilder:
     def __init__(self) -> None:
         self._template: Dict[str, Any] = _get_template()[_CONTACTS_FIELD][0]
 
     def with_list_memberships(self, memberships: List[ContactsListMembershipBuilder]) -> "ContactBuilder":
         self._template[_LIST_MEMBERSHIPS_FIELD] = [membership.build() for membership in memberships]
+        return self
+
+    def with_merge_audits(self, merge_audits: List[ContactsMergeAuditsBuilder]) -> "ContactBuilder":
+        self._template[_MERGE_AUDITS_FIELD] = [merge_audit.build() for merge_audit in merge_audits]
+        return self
+
+    def with_form_submissions(self, form_submissions: List[ContactsFormSubmissionsBuilder]) -> "ContactBuilder":
+        self._template[_FORM_SUBMISSIONS_FIELD] = [form_submission.build() for form_submission in form_submissions]
         return self
 
     def build(self) -> Dict[str, Any]:

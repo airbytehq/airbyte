@@ -1,0 +1,76 @@
+[
+  {
+    "id": 22,
+    "date_created": "2018-10-18T17:59:17",
+    "date_created_gmt": "2018-10-18T20:59:17",
+    "product_id": 22,
+    "status": "approved",
+    "reviewer": "John Doe",
+    "reviewer_email": "john.doe@example.com",
+    "review": "<p>Nice album!</p>\n",
+    "rating": 5,
+    "verified": false,
+    "reviewer_avatar_urls": {
+      "24": "https://secure.gravatar.com/avatar/8eb1b522f60d11fa897de1dc6351b7e8?s=24&d=mm&r=g",
+      "48": "https://secure.gravatar.com/avatar/8eb1b522f60d11fa897de1dc6351b7e8?s=48&d=mm&r=g",
+      "96": "https://secure.gravatar.com/avatar/8eb1b522f60d11fa897de1dc6351b7e8?s=96&d=mm&r=g"
+    },
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/reviews/22"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/reviews"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/22"
+        }
+      ]
+    }
+  },
+  {
+    "id": 20,
+    "date_created": "2018-09-08T21:47:19",
+    "date_created_gmt": "2018-09-09T00:47:19",
+    "product_id": 31,
+    "status": "approved",
+    "reviewer": "Claudio Sanches",
+    "reviewer_email": "john.doe@example.com",
+    "review": "<p>Now works just fine.</p>\n",
+    "rating": 1,
+    "verified": true,
+    "reviewer_avatar_urls": {
+      "24": "https://secure.gravatar.com/avatar/908480753c07509e76322dc17d305c8b?s=24&d=mm&r=g",
+      "48": "https://secure.gravatar.com/avatar/908480753c07509e76322dc17d305c8b?s=48&d=mm&r=g",
+      "96": "https://secure.gravatar.com/avatar/908480753c07509e76322dc17d305c8b?s=96&d=mm&r=g"
+    },
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/reviews/20"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/reviews"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/31"
+        }
+      ],
+      "reviewer": [
+        {
+          "embeddable": true,
+          "href": "https://example.com/wp-json/wp/v2/users/1"
+        }
+      ]
+    }
+  }
+]
