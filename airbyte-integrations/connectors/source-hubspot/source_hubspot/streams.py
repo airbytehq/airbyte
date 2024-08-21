@@ -1092,7 +1092,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     state_pk = "updatedAt"
     updated_at_field = "updatedAt"
     last_modified_field: str = None
-    associations: List[str] = None
+    associations: List[str] = []
     fully_qualified_name: str = None
 
     # added to guarantee the data types, declared for the stream's schema
