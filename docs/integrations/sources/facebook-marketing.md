@@ -191,7 +191,7 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 
 ![Entity Relationship Diagram](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)[(Diagram)](https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships)
 
-[<img src="https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21">](https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships)
+![Entity Relationship Diagram](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)(Diagram)(https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships)
 
 <!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
 
