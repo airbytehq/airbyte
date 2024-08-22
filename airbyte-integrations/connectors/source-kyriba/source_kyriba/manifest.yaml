@@ -1,0 +1,155 @@
+version: "0.4.3"
+definitions:
+  selector:
+    extractor:
+      field_path: ["results"]
+  requester:
+    url_base: "${gateway_url}/api/v1/"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      api_token: "{{ config['access_token'] }}"
+  retriever:
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "page.limit"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 100
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page.offset"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  incremental_sync:
+    type: "DatetimeBasedCursor"
+    cursor_field: "updateDateTime"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT1S"
+
+streams:
+  - name: "accounts"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "/accounts"
+    primary_key: "uuid"
+
+  - name: "cash_flows"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+    $parameters:
+      path: "/cash-flows"
+    primary_key: "uuid"
+    transformations:
+      - type: "RemoveFields"
+        field_paths: 
+          - ["date", "updateDateTime"]
+      - type: "AddFields"
+        fields:
+          - path: ["updateDateTime"]
+            value: "{{ record['date']['updateDateTime'] }}"
+
+  - name: "cash_balances_eod"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "/cash-balances/accounts/{{ stream_slice.account_uuid }}/balances"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: "SubstreamPartitionRouter"
+        parent_stream_configs:
+          - stream: 
+              $ref: "#/streams/accounts"
+            parent_key: "uuid"
+            partition_field: "account_uuid"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          endDate: "{{ stream_slice.endDate }}"
+          startDate: "{{ stream_slice.startDate }}"
+          intraday: false
+          actual: true
+          estimatedForecasts: false
+          confirmedForecasts: false
+          dateType: "VALUE"
+
+  - name: "cash_balances_intraday"
+    $ref: "#/streams/cash_balances_eod"
+    retriever:
+      $ref: "#/streams/cash_balances_eod/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          intraday: true
+
+  - name: "bank_balances_eod"
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      path: "/bank-balances/accounts/{{ stream_slice.account_uuid }}/balances"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        type: "SubstreamPartitionRouter"
+        parent_stream_configs:
+          - stream: 
+              $ref: "#/streams/accounts"
+            parent_key: "uuid"
+            partition_field: "account_uuid"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          date: "{{ stream_slice.date }}"
+          type: "END_OF_DAY"
+
+  - name: "bank_balances_intraday"
+    $ref: "#/streams/bank_balances_eod"
+    retriever:
+      $ref: "#/streams/bank_balances_eod/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          type: "INTRADAY"
+
+check:
+  stream_names:
+    - "accounts"
+
+spec:
+  documentation_url: https://docs.airbyte.com/integrations/sources/kyriba
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Kyriba Spec
+    type: object
+    required:
+      - domain
+      - username
+      - password
+      - start_date
+    properties:
+      domain:
+        type: string
+        description: Your Kyriba domain
+      username:
+        type: string
+        description: Your Kyriba username
+      password:
+        type: string
+        description: Your Kyriba password
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: Start date for collecting data (format YYYY-MM-DD)
+      end_date:
+        type: string
+        description: End date for collecting data (format YYYY-MM-DD)
