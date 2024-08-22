@@ -48,11 +48,6 @@ const plugin = () => {
           "generated_[oss|cloud].source_file_info.metadata_last_modified"
         );
 
-        const sbomUrl = getFromPaths(
-          registryEntry,
-          "generated_[oss|cloud].sbomUrl"
-        )
-
         const { version, isLatest, url } = parseCDKVersion(
           rawCDKVersion,
           latestPythonCdkVersion
@@ -75,7 +70,6 @@ const plugin = () => {
           syncSuccessRate,
           usageRate,
           lastUpdated,
-          sbomUrl,
         };
 
         firstHeading = false;
