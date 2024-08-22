@@ -195,7 +195,7 @@ definitions:
     url_base: https://cloud.getdbt.com/api/
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key_2\"] }}"
+      api_token: '{{ config["api_key_2"] }}'
 
 streams:
   - $ref: "#/definitions/streams/runs"
