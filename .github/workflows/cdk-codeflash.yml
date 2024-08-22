@@ -12,7 +12,8 @@ defaults:
 
 jobs:
   optimize:
-    name: Optimize new code in this PR
+    name:
+      Optimize new code in this PR
       # Only run codeflash if
       # 1. The contributor is not codeflash. To avoid infinite loops
       # 2. The pull request is not from a forked repository
@@ -29,7 +30,7 @@ jobs:
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
       - name: Install Airbyte CDK
         id: install-airbyte-cdk
         run: |
