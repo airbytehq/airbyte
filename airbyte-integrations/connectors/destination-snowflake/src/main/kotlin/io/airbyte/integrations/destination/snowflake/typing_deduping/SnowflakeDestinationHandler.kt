@@ -138,7 +138,7 @@ class SnowflakeDestinationHandler(
     ): InitialRawTableStatus {
         val rawTableName = id.rawName + suffix
 
-/*
+
         //TODO: Need to check if this query is using information_schema on Snowflake
 
         //var tableExists = false
@@ -177,7 +177,7 @@ class SnowflakeDestinationHandler(
 
 
 
- */
+ /*
 
         var tableExists = false
 
@@ -216,11 +216,16 @@ class SnowflakeDestinationHandler(
 
             //throw e
 
+
         }
+
+
+  */
+
 
 /*
 
-       //TODO: No need to do another query with uppercase names since show tables query is case-insensitive
+       //No need to do another query with uppercase names since show tables query is case-insensitive
 
         try {
             val showColumnsQuery =
