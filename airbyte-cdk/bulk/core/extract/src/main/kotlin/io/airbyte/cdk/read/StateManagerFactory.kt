@@ -22,11 +22,15 @@ import io.airbyte.cdk.output.FieldTypeMismatch
 import io.airbyte.cdk.output.InvalidIncrementalSyncMode
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.MultipleStreamsFound
+import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import jakarta.inject.Singleton
 
@@ -37,6 +41,7 @@ import jakarta.inject.Singleton
 @Singleton
 class StateManagerFactory(
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
+    val outputConsumer: OutputConsumer,
     val handler: CatalogValidationFailureHandler,
 ) {
     /** Generates a [StateManager] instance based on the provided inputs. */
@@ -101,14 +106,28 @@ class StateManagerFactory(
         val jsonSchemaProperties: JsonNode = stream.jsonSchema["properties"]
         val name: String = stream.name!!
         val namespace: String? = stream.namespace
+        val streamDescriptor = StreamDescriptor().withName(name).withNamespace(namespace)
+        val streamLabel: String = AirbyteStreamNameNamespacePair(name, namespace).toString()
         when (metadataQuerier.streamNames(namespace).filter { it == name }.size) {
             0 -> {
                 handler.accept(StreamNotFound(name, namespace))
+                outputConsumer.accept(
+                    AirbyteErrorTraceMessage()
+                        .withStreamDescriptor(streamDescriptor)
+                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+                        .withMessage("Stream '$streamLabel' not found or not accessible in source.")
+                )
                 return null
             }
             1 -> Unit
             else -> {
                 handler.accept(MultipleStreamsFound(name, namespace))
+                outputConsumer.accept(
+                    AirbyteErrorTraceMessage()
+                        .withStreamDescriptor(streamDescriptor)
+                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+                        .withMessage("Multiple streams '$streamLabel' found in source.")
+                )
                 return null
             }
         }
@@ -153,6 +172,12 @@ class StateManagerFactory(
             }
         if (streamFields.isEmpty()) {
             handler.accept(StreamHasNoFields(name, namespace))
+            outputConsumer.accept(
+                AirbyteErrorTraceMessage()
+                    .withStreamDescriptor(streamDescriptor)
+                    .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+                    .withMessage("Stream '$streamLabel' has no accessible fields.")
+            )
             return null
         }
 

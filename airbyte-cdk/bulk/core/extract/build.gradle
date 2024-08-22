@@ -4,6 +4,4 @@ dependencies {
     implementation 'hu.webarticum:tree-printer:3.2.1'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
-
-    testImplementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-jdbc')
 }
