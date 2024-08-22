@@ -158,6 +158,13 @@ definitions:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
     name: "events"
     $ref: "#/definitions/base_incremental_stream"
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          "fields[metric]": "name,created,updated,integration"
+          "include": "metric"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/events_schema"
