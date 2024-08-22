@@ -4,20 +4,20 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, Set
 
 from airbyte_cdk import StreamSlice
-from airbyte_cdk.sources.declarative.async_job.job import Job
+from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 
 
-class JobRepository(ABC):
+class AsyncJobRepository(ABC):
 
     @abstractmethod
-    def start(self, stream_slice: StreamSlice) -> Job:
+    def start(self, stream_slice: StreamSlice) -> AsyncJob:
         pass
 
     @abstractmethod
-    def update_jobs_status(self, jobs: Set[Job]) -> None:
+    def update_jobs_status(self, jobs: Set[AsyncJob]) -> None:
         pass
 
     @abstractmethod
-    def fetch_records(self, job: Job) -> Iterable[Mapping[str, Any]]:
+    def fetch_records(self, job: AsyncJob) -> Iterable[Mapping[str, Any]]:
         pass
 

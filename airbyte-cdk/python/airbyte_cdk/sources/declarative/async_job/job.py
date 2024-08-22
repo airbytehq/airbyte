@@ -5,7 +5,7 @@ from typing import Optional
 
 from airbyte_cdk.sources.declarative.async_job.timer import Timer
 
-class JobStatus(Enum):
+class AsyncJobStatus(Enum):
     NOT_STARTED = "NOT_STARTED"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -13,14 +13,14 @@ class JobStatus(Enum):
     TIMED_OUT = "TIMED_OUT"
 
 
-class Job:
+class AsyncJob:
     """
     Note that the timer will only stop once `update_status` is called so the job might be completed on the API side but until we query for
     it and call `ApiJob.update_status`, `ApiJob.status` will not reflect the actual API side status.
     """
     def __init__(self, api_job_id: str, timeout: Optional[timedelta] = None) -> None:
         self._api_job_id = api_job_id
-        self._status = JobStatus.NOT_STARTED
+        self._status = AsyncJobStatus.NOT_STARTED
 
         timeout = timeout if timeout else timedelta(minutes=60)
         self._timer = Timer(timeout)
@@ -30,15 +30,15 @@ class Job:
         return self._api_job_id
 
     @property
-    def status(self) -> JobStatus:
+    def status(self) -> AsyncJobStatus:
         if self._timer.has_timed_out():
-            return JobStatus.TIMED_OUT
+            return AsyncJobStatus.TIMED_OUT
         return self._status
 
-    def update_status(self, status: JobStatus) -> None:
-        if self._status != JobStatus.RUNNING and status == JobStatus.RUNNING:
+    def update_status(self, status: AsyncJobStatus) -> None:
+        if self._status != AsyncJobStatus.RUNNING and status == AsyncJobStatus.RUNNING:
             self._timer.start()
-        elif status in [JobStatus.FAILED, JobStatus.TIMED_OUT, JobStatus.COMPLETED]:
+        elif status in [AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT, AsyncJobStatus.COMPLETED]:
             self._timer.stop()
 
         self._status = status
