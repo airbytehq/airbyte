@@ -416,3 +416,31 @@ async def test_run_connector_python_registry_publish_pipeline(
 
         if expect_build_connector_called:
             publish_pipeline.steps.run_connector_build.assert_called_once()
+
+
+class TestPushConnectorImageToRegistry:
+    @pytest.mark.parametrize(
+        "is_pre_release, is_release_candidate, should_publish_latest",
+        [
+            (False, False, True),
+            (True, False, False),
+            (False, True, False),
+            (True, True, False),
+        ],
+    )
+    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, is_release_candidate, should_publish_latest):
+        publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
+        publish_context.docker_repository = "airbyte/source-pokeapi"
+        publish_context.pre_release = is_pre_release
+        publish_context.connector.metadata = {"releases": {"isReleaseCandidate": is_release_candidate}}
+        step = publish_pipeline.PushConnectorImageToRegistry(publish_context)
+        amd_built_container = mocker.Mock(publish=mocker.AsyncMock())
+        arm_built_container = mocker.Mock(publish=mocker.AsyncMock())
+        built_containers_per_platform = [amd_built_container, arm_built_container]
+        await step.run(built_containers_per_platform)
+        assert amd_built_container.publish.call_args_list[0][0][0] == "docker.io/airbyte/source-pokeapi:0.0.0"
+        if should_publish_latest:
+            assert amd_built_container.publish.await_count == 2, "Expected to publish the latest tag and the specific version tag"
+            assert amd_built_container.publish.call_args_list[1][0][0] == "docker.io/airbyte/source-pokeapi:latest"
+        else:
+            assert amd_built_container.publish.await_count == 1, "Expected to publish only the specific version tag"

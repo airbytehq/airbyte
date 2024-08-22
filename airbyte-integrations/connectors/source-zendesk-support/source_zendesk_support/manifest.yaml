@@ -190,6 +190,10 @@ definitions:
 
   tags_stream:
     $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
     $parameters:
       name: "tags"
       path: "tags"

@@ -171,7 +171,7 @@ class HttpResponseBuilder:
 
 def _get_unit_test_folder(execution_folder: str) -> FilePath:
     # FIXME: This function should be removed after the next CDK release to avoid breaking amazon-seller-partner test code.
-    return get_unit_test_folder(execution_folder)
+    return get_unit_test_folder(execution_folder)  # type: ignore # get_unit_test_folder is known to return a FilePath
 
 
 def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
