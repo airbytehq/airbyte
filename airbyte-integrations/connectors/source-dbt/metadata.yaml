@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - cloud.getdbt.com
   registryOverrides:
     oss:
       enabled: true
