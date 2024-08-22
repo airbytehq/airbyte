@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_s3"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 pytz = "==2024.1"
 wcmatch = "==8.4"
 python-snappy = "==0.6.1"
@@ -29,8 +29,12 @@ urllib3 = "<2"
 source-s3 = "source_s3.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
-extras = [ "file-based",]
-version = "^3"
+extras = ["file-based",]
+
+# Toggle one of the following lines to switch between the local CDK or the published version.
+# Uncomment `path` for local dev, or uncomment `version` for release.
+path = "../../../airbyte-cdk/python"
+# version = "^4"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
@@ -42,4 +46,3 @@ moto = "==4.2.14"
 docker = "^7.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pandas = "==2.0.3"
