@@ -163,7 +163,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          "fields%5Bmetric%5D": "name,created,updated,integration"
+          "fields[metric]": "name,created,updated,integration"
           "include": "metric"
     schema_loader:
       type: InlineSchemaLoader
