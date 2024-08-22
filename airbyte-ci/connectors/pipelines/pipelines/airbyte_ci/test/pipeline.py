@@ -298,7 +298,7 @@ async def run_and_log_poe_task_results(
     # Send pending status check
     update_commit_status_check(**{**commit_status_check_params, "state": "pending"})
     result = await run_poe_task(container, poe_task)
-    result.log(logger)
+    result.log(logger, verbose=True)
     # Send the final status check
     update_commit_status_check(**{**commit_status_check_params, "state": result.status.get_github_state()})
 
