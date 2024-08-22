@@ -32,7 +32,7 @@ class JobOrchestrator:
         self._slice_iterator = iter(slices)
         self._job_repository: JobRepository = job_repository
 
-    def create_get_completed_partitions(self) -> Iterable[AsyncPartition]:
+    def create_and_get_completed_partitions(self) -> Iterable[AsyncPartition]:
         raise NotImplementedError()
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Record]:
