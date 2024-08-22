@@ -14,8 +14,10 @@ data:
   name: Redshift
   registryOverrides:
     cloud:
+      dockerImageTag: 3.4.1
       enabled: true
     oss:
+      dockerImageTag: 3.4.1
       enabled: true
   releases:
     breakingChanges:
