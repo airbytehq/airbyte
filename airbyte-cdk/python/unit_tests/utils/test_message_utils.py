@@ -1,9 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import pytest
-from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
-from airbyte_cdk.utils.message_utils import get_stream_descriptor
-from airbyte_protocol.models import (
+from airbyte_cdk.models.airbyte_protocol import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
     AirbyteMessage,
@@ -17,6 +15,8 @@ from airbyte_protocol.models import (
     StreamDescriptor,
     Type,
 )
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
+from airbyte_cdk.utils.message_utils import get_stream_descriptor
 
 
 def test_get_record_message_stream_descriptor():

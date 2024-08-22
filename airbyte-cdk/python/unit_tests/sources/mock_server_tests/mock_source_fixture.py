@@ -9,12 +9,12 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 
 import pendulum
 import requests
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams import CheckpointMixin, IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from airbyte_protocol.models import ConnectorSpecification, SyncMode
 from requests import HTTPError
 
 

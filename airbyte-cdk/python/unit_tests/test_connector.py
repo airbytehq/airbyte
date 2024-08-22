@@ -113,7 +113,7 @@ class TestConnectorSpec:
 
     def test_spec_from_json_file(self, integration, use_json_spec):
         connector_spec = integration.spec(logger)
-        assert connector_spec.documentationUrl == AnyUrl("https://airbyte.com/#json")
+        assert connector_spec.documentationUrl == "https://airbyte.com/#json"
         assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
 
     def test_spec_from_improperly_formatted_json_file(self, integration, use_invalid_json_spec):
@@ -122,7 +122,7 @@ class TestConnectorSpec:
 
     def test_spec_from_yaml_file(self, integration, use_yaml_spec):
         connector_spec = integration.spec(logger)
-        assert connector_spec.documentationUrl == AnyUrl("https://airbyte.com/#yaml")
+        assert connector_spec.documentationUrl == "https://airbyte.com/#yaml"
         assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
 
     def test_multiple_spec_files_raises_exception(self, integration, use_yaml_spec, use_json_spec):

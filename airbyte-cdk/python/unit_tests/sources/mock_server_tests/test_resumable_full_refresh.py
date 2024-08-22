@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, SyncMode, Type
+from airbyte_cdk.models import AirbyteStateBlob, AirbyteStreamStatus, ConfiguredAirbyteCatalog, FailureType, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -20,7 +20,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStreamStatus, FailureType
 from unit_tests.sources.mock_server_tests.mock_source_fixture import SourceFixture
 from unit_tests.sources.mock_server_tests.test_helpers import emits_successful_sync_status_messages, validate_message_order
 

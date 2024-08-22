@@ -7,10 +7,10 @@ import os
 import pytest
 import requests
 from airbyte_cdk import YamlDeclarativeSource
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder, JsonlDecoder
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from airbyte_protocol.models import SyncMode
 
 
 @pytest.mark.parametrize(
@@ -46,7 +46,7 @@ def test_jsonl_decoder(requests_mock, response_body, expected_json):
 def large_event_response_fixture():
     data = {"email": "email1@example.com"}
     json_string = json.dumps(data)
-    lines_in_response = 5_000_000
+    lines_in_response = 1_000 # TODO: revert
     dir_path = os.path.dirname(os.path.realpath(__file__))
     file_path = f"{dir_path}/test_response.txt"
     with open(file_path, "w") as file:

@@ -6,10 +6,9 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Generic, List, Mapping, Optional, Set, Tuple, Type, TypeVar
 
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.source import TState
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
 
 @dataclass

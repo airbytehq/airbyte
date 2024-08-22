@@ -6,7 +6,14 @@ import concurrent
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import (
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    SyncMode,
+)
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.concurrent_source.thread_pool_manager import ThreadPoolManager
@@ -17,7 +24,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
-from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
 

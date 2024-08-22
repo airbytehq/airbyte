@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from orjson import orjson
 
 SUBSTREAM_MANIFEST: MutableMapping[str, Any] = {
     "version": "0.51.42",
@@ -424,7 +425,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
         output_data = [message.record.data for message in output if message.record]
 
         assert output_data == expected_records
-        final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
+        final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state
 
 
@@ -625,5 +626,5 @@ def test_incremental_parent_state_no_incremental_dependency(
         output_data = [message.record.data for message in output if message.record]
 
         assert output_data == expected_records
-        final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
+        final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state

@@ -17,6 +17,7 @@ import pytest
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from models.airbyte_protocol import ConnectorSpecificationSerializer
 from pytest import fixture
 from pytest import raises as pytest_raises
 
@@ -42,7 +43,7 @@ def create_schema(name: str, content: Mapping):
 
 
 @fixture
-def spec_object():
+def spec_object() -> ConnectorSpecification:
     spec = {
         "connectionSpecification": {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -54,7 +55,7 @@ def spec_object():
             },
         },
     }
-    yield ConnectorSpecification.parse_obj(spec)
+    yield ConnectorSpecificationSerializer.load(spec)
 
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):

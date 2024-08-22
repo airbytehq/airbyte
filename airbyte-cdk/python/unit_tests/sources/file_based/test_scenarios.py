@@ -11,14 +11,15 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils import message_utils
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog
+from models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from orjson import orjson
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
@@ -112,10 +113,10 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
     if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
         # Only check the last state emitted because we don't know the order the others will be in.
         # This may be needed for non-file-based concurrent scenarios too.
-        assert states[-1].state.stream.stream_state.dict() == expected_states[-1]
+        assert orjson.loads(orjson.dumps(states[-1].state.stream.stream_state)) == expected_states[-1]
     else:
         for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
-            assert actual.state.stream.stream_state.dict() == expected
+            assert orjson.loads(orjson.dumps(actual.state.stream.stream_state)) == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
@@ -229,7 +230,7 @@ def read(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.full_refresh)),
+        ConfiguredAirbyteCatalogSerializer.load(scenario.configured_catalog(SyncMode.full_refresh)),
     )
 
 
@@ -237,7 +238,7 @@ def read_with_state(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.incremental)),
+        ConfiguredAirbyteCatalogSerializer.load(scenario.configured_catalog(SyncMode.incremental)),
         scenario.input_state(),
     )
 

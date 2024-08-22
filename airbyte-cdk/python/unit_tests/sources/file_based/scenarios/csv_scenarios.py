@@ -2,12 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import SyncMode
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder

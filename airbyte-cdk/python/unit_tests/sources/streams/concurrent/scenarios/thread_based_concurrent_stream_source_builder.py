@@ -5,7 +5,7 @@ import json
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -19,7 +19,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
 

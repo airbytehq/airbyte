@@ -27,6 +27,9 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from models import AirbyteMessageSerializer
+from models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from orjson import orjson
 
 
 @pytest.fixture(name="destination")
@@ -230,7 +233,7 @@ class TestRun:
             ]
         )
         catalog_path = tmp_path / "catalog.json"
-        write_file(catalog_path, dummy_catalog.json(exclude_unset=True))
+        write_file(catalog_path, ConfiguredAirbyteCatalogSerializer.dump(dummy_catalog))
 
         args = {"command": "write", "config": config_path, "catalog": catalog_path}
         parsed_args = argparse.Namespace(**args)
@@ -244,7 +247,7 @@ class TestRun:
         validate_mock = mocker.patch("airbyte_cdk.destinations.destination.check_config_against_spec_or_exit")
         # mock input is a record followed by some state messages
         mocked_input: List[AirbyteMessage] = [_wrapped(_record("s1", {"k1": "v1"})), *expected_write_result]
-        mocked_stdin_string = "\n".join([record.json(exclude_unset=True) for record in mocked_input])
+        mocked_stdin_string = "\n".join([orjson.dumps(AirbyteMessageSerializer.dump(record)).decode() for record in mocked_input])
         mocked_stdin_string += "\n add this non-serializable string to verify the destination does not break on malformed input"
         mocked_stdin = io.TextIOWrapper(io.BytesIO(bytes(mocked_stdin_string, "utf-8")))
 

@@ -95,6 +95,7 @@ class TestInMemoryMessageRepository:
         Pydantic will fail if the log level is unknown but on our side, we should try to log at least
         """
         repo = InMemoryMessageRepository(Level.ERROR)
+        # TODO: for reviewers: should we fail here at all?
         with pytest.raises(ValidationError):
             repo.log_message(UNKNOWN_LEVEL, lambda: {"message": "this is a log message"})
 

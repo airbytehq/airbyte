@@ -5,8 +5,7 @@
 from typing import List
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, Type
-from airbyte_protocol.models import AirbyteStreamStatus
+from airbyte_cdk.models import AirbyteMessage, AirbyteStreamStatus, Type
 
 
 def emits_successful_sync_status_messages(status_messages: List[AirbyteStreamStatus]) -> bool:

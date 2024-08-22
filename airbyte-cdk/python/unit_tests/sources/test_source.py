@@ -24,6 +24,8 @@ from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
+from orjson import orjson
 from pydantic import ValidationError
 
 
@@ -74,7 +76,7 @@ def catalog():
             },
         ]
     }
-    return ConfiguredAirbyteCatalog.model_validate(configured_catalog)
+    return ConfiguredAirbyteCatalogSerializer.load(configured_catalog)
 
 
 @pytest.fixture
@@ -295,7 +297,7 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
         state_file.flush()
         with expected_error:
             actual = source.read_state(state_file.name)
-            assert actual == expected_state
+            assert AirbyteStateMessageSerializer.dump(actual[0]) == AirbyteStateMessageSerializer.dump(expected_state[0])
 
 
 def test_read_invalid_state(source):
@@ -330,9 +332,9 @@ def test_read_catalog(source):
             }
         ]
     }
-    expected = ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    expected = ConfiguredAirbyteCatalogSerializer.load(configured_catalog)
     with tempfile.NamedTemporaryFile("w") as catalog_file:
-        catalog_file.write(expected.json(exclude_unset=True))
+        catalog_file.write(orjson.dumps(ConfiguredAirbyteCatalogSerializer.dump(expected)).decode())
         catalog_file.flush()
         actual = source.read_catalog(catalog_file.name)
         assert actual == expected

@@ -23,6 +23,7 @@ from airbyte_cdk.models import (
     StreamDescriptor,
 )
 from airbyte_cdk.models import Type as MessageType
+from orjson import orjson
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _NO_PK = [[]]
@@ -501,7 +502,7 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read: Mock) -> No
     assert len(stream_read.slices[1].pages[1].records) == 1
     assert len(stream_read.slices[1].pages[2].records) == 0
 
-    assert stream_read.slices[1].state[0].stream.stream_state == AirbyteStateBlob(a_timestamp=123)
+    assert orjson.dumps(stream_read.slices[1].state[0].stream.stream_state).decode() == orjson.dumps(AirbyteStateBlob(a_timestamp=123)).decode()
 
 
 @patch("airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read")

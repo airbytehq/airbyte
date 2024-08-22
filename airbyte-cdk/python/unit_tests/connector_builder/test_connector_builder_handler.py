@@ -41,11 +41,14 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models.airbyte_protocol import AirbyteMessageSerializer, AirbyteStateStats
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
+from models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from orjson import orjson
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -487,11 +490,12 @@ def test_read():
     limits = TestReadLimits()
     with patch("airbyte_cdk.connector_builder.message_grouper.MessageGrouper.get_message_groups", return_value=stream_read) as mock:
         output_record = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits
+            source, "test_read", config, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_STATE, limits
         )
-        mock.assert_called_with(source, config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits.max_records)
+        mock.assert_called_with(source, config, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_STATE, limits.max_records)
         output_record.record.emitted_at = 1
-        assert output_record == expected_airbyte_message
+        assert orjson.dumps(AirbyteMessageSerializer.dump(output_record)).decode() == orjson.dumps(AirbyteMessageSerializer.dump(expected_airbyte_message)).decode()
+
 
 
 def test_config_update():
@@ -523,7 +527,7 @@ def test_config_update():
         return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, TestReadLimits()
+            source, "test_read", config, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, TestReadLimits()
         )
         assert output.record.data["latest_config_update"]
 
@@ -560,7 +564,7 @@ def test_read_returns_error_response(mock_from_exception):
 
     source = MockManifestDeclarativeSource()
     limits = TestReadLimits()
-    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_STATE, limits)
+    response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_STATE, limits)
 
     expected_stream_read = StreamRead(
         logs=[LogMessage("error_message - a stack trace", "ERROR")],
@@ -599,7 +603,7 @@ def test_handle_429_response():
 
     with patch("requests.Session.send", return_value=response) as mock_send:
         response = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, limits
+            source, "test_read", config, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, limits
         )
 
         mock_send.assert_called_once()

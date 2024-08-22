@@ -9,7 +9,7 @@ from typing import Any, Mapping
 import freezegun
 import pytest
 from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -82,7 +82,6 @@ from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFiel
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
-from airbyte_protocol.models import FailureType
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
