@@ -842,7 +842,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| ------- | ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.34.1  | [#44557](https://github.com/airbytehq/airbyte/pull/44557)  | Conditionally propagate parameters in manifest-only migration                                                                |
 | 4.34.0  | [#44551](https://github.com/airbytehq/airbyte/pull/44551)  | `connectors publish` do not push the `latest` tag when the current version is a release candidate.                           |
 | 4.33.1  | [#44465](https://github.com/airbytehq/airbyte/pull/44465)  | Ignore version check if only erd folder is changed                                                                           |
 | 4.33.0  | [#44377](https://github.com/airbytehq/airbyte/pull/44377)  | Upload connector SBOM to metadata service bucket on publish.                                                                 |
