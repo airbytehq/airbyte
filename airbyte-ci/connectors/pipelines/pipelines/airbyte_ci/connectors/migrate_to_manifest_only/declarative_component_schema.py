@@ -11,7 +11,9 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, Extra, Field
 from typing_extensions import Literal
 
-## This is a stupid hack. I've copied the current version of the models from the generated code and pasted them here since we can't access the CDK from the current directory.
+## WARNING
+## This is a hack. I've copied the current version of the models from the generated code and pasted them here since we can't access the CDK from the current directory.
+## These are from CDK 4.5.3.
 ## These models won't update alongside the CDK, so this is a temporary solution to unblock manifest-only migrations.
 
 
