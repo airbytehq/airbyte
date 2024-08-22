@@ -12,7 +12,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 import polars as pl
 from deprecated import deprecated
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, RecordMessage, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
@@ -92,13 +93,13 @@ class AbstractFileBasedStream(Stream):
         """
         ...
 
-    def read(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+    def read(
         self,
         configured_stream: ConfiguredAirbyteStream,
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
-        state_manager,
+        state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
         if not self.config.bulk_mode or self.config.bulk_mode == BulkMode.DISABLED:
@@ -122,20 +123,21 @@ class AbstractFileBasedStream(Stream):
         )
 
     def _records_df_to_record_messages(
+        self,
         dataframe: pl.DataFrame | pl.LazyFrame,
         /,
     ) -> Iterable[AirbyteMessage]:
-        return (AirbyteMessage(RecordMessage(data=record_data)) for record_data in dataframe.to_dict(orient="records"))
+        return (AirbyteMessage(AirbyteRecordMessage(data=record_data)) for record_data in dataframe.to_dict(orient="records"))
 
     def _bulk_read(
         self,
-        configured_stream: "ConfiguredAirbyteStream",
+        configured_stream: ConfiguredAirbyteStream,
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
-        state_manager,
+        state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
-    ) -> Iterable["AirbyteMessage"]:
+    ) -> Iterable[AirbyteMessage]:
         """Similar to the default `Stream.read()` method, but for bulk mode streams.
 
         This method will return iterable AirbyteMessages, and not StreamData. Callers can
