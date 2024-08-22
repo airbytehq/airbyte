@@ -25,6 +25,10 @@ dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
 
+# TODO: Remove this after the CDK is published.
+# Until then, `airbyte-ci` can't handle change of lock files when building.
+polars = { version = "^1.5.0" }
+
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
 
@@ -33,8 +37,8 @@ extras = ["file-based",]
 
 # Toggle one of the following lines to switch between the local CDK or the published version.
 # Uncomment `path` for local dev, or uncomment `version` for release.
-path = "../../../airbyte-cdk/python"
-# version = "^4"
+# path = "../../../airbyte-cdk/python"
+version = "^4"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
