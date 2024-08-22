@@ -29,7 +29,7 @@ and place them into `secrets/config.json`.
 ```
 poetry run python main.py spec
 poetry run python main.py check --config secrets/config.json
-cat examples/messages.jsonl | poetry run python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
+cat examples/messages.jsonl | poetry run python main.py write --config secrets/config.json --catalog examples/configured_catalog.json
 ```
 
 ### Locally running the connector docker image
