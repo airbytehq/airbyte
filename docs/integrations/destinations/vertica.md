@@ -158,6 +158,11 @@ Each stream will be mapped to a separate table in Vertica. Each table will conta
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                               | Subject                 |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------- |
 | 0.1.0   | 2023-05-29 | [\#25682](https://github.com/airbytehq/airbyte/pull/25682) | Add Vertica Destination |
+
+</details>

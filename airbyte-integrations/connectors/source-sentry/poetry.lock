@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "0.77.1"
+version = "0.78.3"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "airbyte_cdk-0.77.1-py3-none-any.whl", hash = "sha256:1530f4a5e44fc8a3e8f81132658222d9b89930385f7ecd9ef0a17a06cc16ea0b"},
-    {file = "airbyte_cdk-0.77.1.tar.gz", hash = "sha256:5a4526c3e83cae8144170ec823093b51962c21db8038058e467574ad7574e6c5"},
+    {file = "airbyte_cdk-0.78.3-py3-none-any.whl", hash = "sha256:699d61ace9f8ca4477e06af3ff1bc56856e955a444081a1701c41d94629dcd74"},
+    {file = "airbyte_cdk-0.78.3.tar.gz", hash = "sha256:192c2594d0e93140a7ec635fea3d4644318faada6aa986805752adf4caf9b126"},
 ]
 
 [package.dependencies]
@@ -32,7 +32,7 @@ requests_cache = "*"
 wcmatch = "8.4"
 
 [package.extras]
-file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
+file-based = ["avro (>=1.11.2,<1.12.0)", "fastavro (>=1.8.0,<1.9.0)", "markdown", "pdf2image (==1.16.3)", "pdfminer.six (==20221105)", "pyarrow (>=15.0.0,<15.1.0)", "pytesseract (==0.3.10)", "unstructured.pytesseract (>=0.3.12)", "unstructured[docx,pptx] (==0.10.27)"]
 sphinx-docs = ["Sphinx (>=4.2,<4.3)", "sphinx-rtd-theme (>=1.0,<1.1)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.0.271)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.4.0)"]
 
@@ -837,13 +837,13 @@ yaml = ["pyyaml (>=6.0.1)"]
 
 [[package]]
 name = "requests-mock"
-version = "1.12.0"
+version = "1.12.1"
 description = "Mock out responses from the requests package"
 optional = false
-python-versions = "*"
+python-versions = ">=3.5"
 files = [
-    {file = "requests-mock-1.12.0.tar.gz", hash = "sha256:4e34f2a2752f0b78397fb414526605d95fcdeab021ac1f26d18960e7eb41f6a8"},
-    {file = "requests_mock-1.12.0-py2.py3-none-any.whl", hash = "sha256:4f6fdf956de568e0bac99eee4ad96b391c602e614cc0ad33e7f5c72edd699e70"},
+    {file = "requests-mock-1.12.1.tar.gz", hash = "sha256:e9e12e333b525156e82a3c852f22016b9158220d2f47454de9cae8a77d371401"},
+    {file = "requests_mock-1.12.1-py2.py3-none-any.whl", hash = "sha256:b1e37054004cdd5e56c84454cc7df12b25f90f382159087f4b6915aaeef39563"},
 ]
 
 [package.dependencies]

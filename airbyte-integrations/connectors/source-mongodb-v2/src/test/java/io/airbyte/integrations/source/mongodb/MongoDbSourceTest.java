@@ -71,6 +71,7 @@ class MongoDbSourceTest {
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(source.checkOplogReadAccess(mongoClient)).thenReturn(true);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
@@ -125,6 +126,7 @@ class MongoDbSourceTest {
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(source.checkOplogReadAccess(mongoClient)).thenReturn(true);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
@@ -142,6 +144,7 @@ class MongoDbSourceTest {
     when(mongoDatabase.runCommand(any())).thenReturn(response);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
+    when(source.checkOplogReadAccess(mongoClient)).thenReturn(true);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
@@ -167,6 +170,7 @@ class MongoDbSourceTest {
   void testCheckOperationUnexpectedException() {
     final String expectedMessage = "This is just a test failure.";
     when(mongoClient.getDatabase(any())).thenThrow(new IllegalArgumentException(expectedMessage));
+    when(source.checkOplogReadAccess(mongoClient)).thenReturn(true);
 
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(airbyteSourceConfig);
     assertNotNull(airbyteConnectionStatus);
@@ -229,6 +233,7 @@ class MongoDbSourceTest {
     assertEquals(List.of(DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
     assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_PRIMARY_KEY)), stream.get().getSourceDefinedPrimaryKey());
     assertEquals(MongoCatalogHelper.SUPPORTED_SYNC_MODES, stream.get().getSupportedSyncModes());
+    assertEquals(true, stream.get().getIsResumable());
   }
 
   @Test

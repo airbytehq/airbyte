@@ -4,29 +4,28 @@ connector_image: airbyte/source-rss:dev
 acceptance_tests:
   spec:
     tests:
-      - config_path: "integration_tests/sample_config.json"
-        spec_path: "source_rss/spec.yaml"
+      - spec_path: "source_rss/spec.yaml"
   connection:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
   incremental:
     tests:
-      - config_path: "integration_tests/sample_config.json"
-        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"

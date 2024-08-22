@@ -3,50 +3,65 @@
   "type": "object",
   "properties": {
     "url": {
+      "description": "URL to access more details about the deployment.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the deployment.",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "Node identifier for the deployment.",
       "type": ["null", "string"]
     },
     "task": {
+      "description": "Indicates the type of task being performed in the deployment.",
       "type": ["null", "string"]
     },
     "original_environment": {
+      "description": "Original environment name before promotion or changes.",
       "type": ["null", "string"]
     },
     "environment": {
+      "description": "The deployment environment (e.g., staging, production).",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description provided for the deployment.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the deployment was created.",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The timestamp when the deployment was last updated.",
       "type": "string",
       "format": "date-time"
     },
     "statuses_url": {
+      "description": "URL to retrieve the statuses of the deployment.",
       "type": ["null", "string"]
     },
     "repository_url": {
+      "description": "URL of the repository where the deployment originated.",
       "type": ["null", "string"]
     },
     "creator": {
+      "description": "Details about the user who created the deployment.",
       "$ref": "user.json"
     },
     "sha": {
+      "description": "The SHA hash of the deployment.",
       "type": ["null", "string"]
     },
     "ref": {
+      "description": "The Git ref that was deployed.",
       "type": ["null", "string"]
     },
     "payload": {
+      "description": "Additional information or data associated with the deployment.",
       "oneOf": [
         {
           "type": "object",
@@ -62,15 +77,19 @@
       ]
     },
     "transient_environment": {
+      "description": "Indicates if the environment is temporary or not persistent.",
       "type": ["null", "boolean"]
     },
     "production_environment": {
+      "description": "Indicates if the deployment is in a production environment.",
       "type": ["null", "boolean"]
     },
     "performed_via_github_app": {
+      "description": "Indicates if the deployment was performed via a GitHub App.",
       "type": ["null", "string"]
     },
     "repository": {
+      "description": "Details about the repository where the deployment originated.",
       "type": "string"
     }
   }

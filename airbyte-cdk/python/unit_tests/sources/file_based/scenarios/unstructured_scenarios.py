@@ -77,6 +77,7 @@ simple_markdown_scenario = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -159,6 +160,7 @@ simple_txt_scenario = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -227,6 +229,7 @@ unstructured_invalid_file_type_discover_scenario_no_skip = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -277,6 +280,7 @@ unstructured_invalid_file_type_discover_scenario_skip = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -341,6 +345,7 @@ unstructured_invalid_file_type_read_scenario = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -421,6 +426,7 @@ simple_unstructured_scenario = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -499,6 +505,7 @@ corrupted_file_scenario = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -567,6 +574,7 @@ no_file_extension_unstructured_scenario = (
                     "source_defined_cursor": True,
                     "source_defined_primary_key": [["document_key"]],
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

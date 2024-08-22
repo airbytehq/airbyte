@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 object DebugUtil {
     @Suppress("deprecation")
     @Throws(Exception::class)
+    @JvmStatic
     fun debug(debugSource: Source) {
         val debugConfig = config
         val configuredAirbyteCatalog = catalog
@@ -34,7 +35,7 @@ object DebugUtil {
         debugSource.discover(debugConfig)
 
         val messageIterator = debugSource.read(debugConfig, configuredAirbyteCatalog, state)
-        messageIterator.forEachRemaining { message: AirbyteMessage? -> }
+        messageIterator.forEachRemaining { message: AirbyteMessage -> }
     }
 
     @get:Throws(Exception::class)

@@ -16,6 +16,7 @@ object Names {
      * @param s string to convert
      * @return cleaned string
      */
+    @JvmStatic
     fun toAlphanumericAndUnderscore(s: String): String {
         return Normalizer.normalize(s, Normalizer.Form.NFKD)
             .replace(

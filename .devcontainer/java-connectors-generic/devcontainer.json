@@ -42,8 +42,8 @@
   // Mark the root directory as 'safe' for git.
   "initializeCommand": "git config --add safe.directory /workspaces/airbyte",
 
-  // Install Gradle, `airbyte-ci` CLI, and Dagger (installed via airbyte-ci --help)
-  "postCreateCommand": "./gradlew --version && pipx install --editable ./airbyte-ci/connectors/pipelines/ || airbyte-ci --help || true",
+  // Install `airbyte-ci` and Gradle
+  "postCreateCommand": "make tools.airbyte-ci-dev.install && ./gradlew --version",
 
   "containerEnv": {
     // Deterministic Poetry virtual env location: `./.venv`

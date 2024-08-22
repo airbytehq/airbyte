@@ -1,0 +1,2935 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - products_stream
+definitions:
+  streams:
+    features_stream:
+      type: DeclarativeStream
+      name: features_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /features
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - features
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            reference_num:
+              type:
+                - "null"
+                - "string"
+            name:
+              type:
+                - "null"
+                - "string"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            url:
+              type:
+                - "null"
+                - "string"
+            resource:
+              type:
+                - "null"
+                - "string"
+            product_id:
+              type:
+                - "null"
+                - "string"
+    products_stream:
+      type: DeclarativeStream
+      name: products_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /products
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - products
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            reference_prefix:
+              type:
+                - "null"
+                - "string"
+            name:
+              type:
+                - "null"
+                - "string"
+            product_line:
+              type:
+                - "null"
+                - "boolean"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            workspace_type:
+              type:
+                - "null"
+                - "string"
+    idea_categories_stream:
+      type: DeclarativeStream
+      name: idea_categories_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /products/{{ stream_partition.id }}/idea_categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - idea_categories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: id
+                stream:
+                  type: DeclarativeStream
+                  name: products_stream
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: "{{ config['url'] }}/api/v1"
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['api_key'] }}"
+                      path: /products
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - products
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: page
+                      page_size_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: per_page
+                      pagination_strategy:
+                        type: PageIncrement
+                        page_size: 5
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: "http://json-schema.org/draft-07/schema#"
+                      type: "object"
+                      additionalProperties: true
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - "string"
+                        reference_prefix:
+                          type:
+                            - "null"
+                            - "string"
+                        name:
+                          type:
+                            - "null"
+                            - "string"
+                        product_line:
+                          type:
+                            - "null"
+                            - "boolean"
+                        created_at:
+                          type:
+                            - "null"
+                            - "string"
+                        workspace_type:
+                          type:
+                            - "null"
+                            - "string"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            name:
+              type:
+                - "null"
+                - "string"
+            parent_id:
+              type:
+                - "null"
+                - "string"
+            created_at:
+              type:
+                - "null"
+                - "string"
+    ideas_stream:
+      type: DeclarativeStream
+      name: ideas_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: ideas
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - ideas
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            name:
+              type:
+                - "null"
+                - "string"
+            reference_num:
+              type:
+                - "null"
+                - "string"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            updated_at:
+              type:
+                - "null"
+                - "string"
+            workflow_status:
+              type:
+                - "null"
+                - "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                name:
+                  type:
+                    - "null"
+                    - "string"
+                position:
+                  type:
+                    - "null"
+                    - "integer"
+                complete:
+                  type:
+                    - "null"
+                    - "boolean"
+                color:
+                  type:
+                    - "null"
+                    - "string"
+            description:
+              type:
+                - "null"
+                - "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                body:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+                attachments:
+                  type:
+                    - "null"
+                    - "array"
+            url:
+              type:
+                - "null"
+                - "string"
+            resource:
+              type:
+                - "null"
+                - "string"
+    idea_endorsements_stream:
+      type: DeclarativeStream
+      name: idea_endorsements_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /ideas/{{ stream_partition.id }}/endorsements
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - idea_endorsements
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: id
+                stream:
+                  type: DeclarativeStream
+                  name: ideas_stream
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: "{{ config['url'] }}/api/v1"
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['api_key'] }}"
+                      path: ideas
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - ideas
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: page
+                      page_size_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: per_page
+                      pagination_strategy:
+                        type: PageIncrement
+                        page_size: 5
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: "http://json-schema.org/draft-07/schema#"
+                      type: "object"
+                      additionalProperties: true
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - "string"
+                        name:
+                          type:
+                            - "null"
+                            - "string"
+                        reference_num:
+                          type:
+                            - "null"
+                            - "string"
+                        created_at:
+                          type:
+                            - "null"
+                            - "string"
+                        updated_at:
+                          type:
+                            - "null"
+                            - "string"
+                        workflow_status:
+                          type:
+                            - "null"
+                            - "object"
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - "string"
+                            name:
+                              type:
+                                - "null"
+                                - "string"
+                            position:
+                              type:
+                                - "null"
+                                - "integer"
+                            complete:
+                              type:
+                                - "null"
+                                - "boolean"
+                            color:
+                              type:
+                                - "null"
+                                - "string"
+                        description:
+                          type:
+                            - "null"
+                            - "object"
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - "string"
+                            body:
+                              type:
+                                - "null"
+                                - "string"
+                            created_at:
+                              type:
+                                - "null"
+                                - "string"
+                            attachments:
+                              type:
+                                - "null"
+                                - "array"
+                        url:
+                          type:
+                            - "null"
+                            - "string"
+                        resource:
+                          type:
+                            - "null"
+                            - "string"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            idea_id:
+              type:
+                - "null"
+                - "string"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            updated_at:
+              type:
+                - "null"
+                - "string"
+            value:
+              type:
+                - "null"
+                - "string"
+            link:
+              type:
+                - "null"
+                - "string"
+            weight:
+              type:
+                - "null"
+                - "integer"
+            endorsed_by_portal_user:
+              type: "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                name:
+                  type:
+                    - "null"
+                    - "string"
+                email:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+            endorsed_by_idea_user:
+              type: "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                name:
+                  type:
+                    - "null"
+                    - "string"
+                email:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+            endorsed_by_idea_organization:
+              type: "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                name:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+                url:
+                  type:
+                    - "null"
+                    - "string"
+                resource:
+                  type:
+                    - "null"
+                    - "string"
+            endorsed_by_user:
+              type: "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                name:
+                  type:
+                    - "null"
+                    - "string"
+                email:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+                updated_at:
+                  type:
+                    - "null"
+                    - "string"
+    idea_comments_stream:
+      type: DeclarativeStream
+      name: idea_comments_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /ideas/{{ stream_partition.id }}/idea_comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - idea_comments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: id
+                stream:
+                  type: DeclarativeStream
+                  name: ideas_stream
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: "{{ config['url'] }}/api/v1"
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['api_key'] }}"
+                      path: ideas
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path:
+                          - ideas
+                    paginator:
+                      type: DefaultPaginator
+                      page_token_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: page
+                      page_size_option:
+                        type: RequestOption
+                        inject_into: request_parameter
+                        field_name: per_page
+                      pagination_strategy:
+                        type: PageIncrement
+                        page_size: 5
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      $schema: "http://json-schema.org/draft-07/schema#"
+                      type: "object"
+                      additionalProperties: true
+                      properties:
+                        id:
+                          type:
+                            - "null"
+                            - "string"
+                        name:
+                          type:
+                            - "null"
+                            - "string"
+                        reference_num:
+                          type:
+                            - "null"
+                            - "string"
+                        created_at:
+                          type:
+                            - "null"
+                            - "string"
+                        updated_at:
+                          type:
+                            - "null"
+                            - "string"
+                        workflow_status:
+                          type:
+                            - "null"
+                            - "object"
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - "string"
+                            name:
+                              type:
+                                - "null"
+                                - "string"
+                            position:
+                              type:
+                                - "null"
+                                - "integer"
+                            complete:
+                              type:
+                                - "null"
+                                - "boolean"
+                            color:
+                              type:
+                                - "null"
+                                - "string"
+                        description:
+                          type:
+                            - "null"
+                            - "object"
+                          properties:
+                            id:
+                              type:
+                                - "null"
+                                - "string"
+                            body:
+                              type:
+                                - "null"
+                                - "string"
+                            created_at:
+                              type:
+                                - "null"
+                                - "string"
+                            attachments:
+                              type:
+                                - "null"
+                                - "array"
+                        url:
+                          type:
+                            - "null"
+                            - "string"
+                        resource:
+                          type:
+                            - "null"
+                            - "string"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            idea_id:
+              type:
+                - "null"
+                - "string"
+            body:
+              type:
+                - "null"
+                - "string"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            visibility:
+              type:
+                - "null"
+                - "string"
+            parent_idea_comment_id:
+              type:
+                - "null"
+                - "string"
+            idea_commenter_user:
+              type: "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                name_id:
+                  type:
+                    - "null"
+                    - "string"
+                email:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+                updated_at:
+                  type:
+                    - "null"
+                    - "string"
+            idea:
+              type: "object"
+              properties:
+                id:
+                  type:
+                    - "null"
+                    - "string"
+                reference_num:
+                  type:
+                    - "null"
+                    - "string"
+                name:
+                  type:
+                    - "null"
+                    - "string"
+                created_at:
+                  type:
+                    - "null"
+                    - "string"
+                updated_at:
+                  type:
+                    - "null"
+                    - "string"
+                workflow_status:
+                  type: "object"
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - "string"
+                    name:
+                      type:
+                        - "null"
+                        - "string"
+                    position:
+                      type:
+                        - "null"
+                        - "integer"
+                    complete:
+                      type:
+                        - "null"
+                        - "boolean"
+                    color:
+                      type:
+                        - "null"
+                        - "string"
+                description:
+                  type: "object"
+                  properties:
+                    id:
+                      type:
+                        - "null"
+                        - "string"
+                    body:
+                      type:
+                        - "null"
+                        - "string"
+                    created_at:
+                      type:
+                        - "null"
+                        - "string"
+                    attachments:
+                      type:
+                        - "null"
+                        - "array"
+                  url:
+                    type:
+                      - "null"
+                      - "string"
+                  resource:
+                    type:
+                      - "null"
+                      - "string"
+              attachments:
+                type:
+                  - "null"
+                  - "array"
+            attachments:
+              type:
+                - "null"
+                - "array"
+    users_stream:
+      type: DeclarativeStream
+      name: users_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            name:
+              type:
+                - "null"
+                - "string"
+            email:
+              type:
+                - "null"
+                - "string"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            updated_at:
+              type:
+                - "null"
+                - "string"
+            accessed_at:
+              type:
+                - "null"
+                - "string"
+            product_roles:
+              type:
+                - "null"
+                - "array"
+            enabled:
+              type:
+                - "null"
+                - "boolean"
+            paid_seat:
+              type:
+                - "null"
+                - "boolean"
+            administrator:
+              type:
+                - "null"
+                - "boolean"
+            administrator_roles:
+              type:
+                - "null"
+                - "object"
+            identity_provider:
+              type:
+                - "null"
+                - "object"
+    goals_stream:
+      type: DeclarativeStream
+      name: goals_stream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['url'] }}/api/v1"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: goals
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - goals
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 5
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $schema: "http://json-schema.org/draft-07/schema#"
+          type: "object"
+          additionalProperties: true
+          properties:
+            id:
+              type:
+                - "null"
+                - "string"
+            name:
+              type:
+                - "null"
+                - "string"
+            reference_num:
+              type:
+                - "null"
+                - "string"
+            effort:
+              type:
+                - "null"
+                - "number"
+            value:
+              type:
+                - "null"
+                - "number"
+            position:
+              type:
+                - "null"
+                - "number"
+            created_at:
+              type:
+                - "null"
+                - "string"
+            updated_at:
+              type:
+                - "null"
+                - "string"
+            product_id:
+              type:
+                - "null"
+                - "string"
+            progress:
+              type:
+                - "null"
+                - "number"
+            progress_source:
+              type:
+                - "null"
+                - "string"
+            url:
+              type:
+                - "null"
+                - "string"
+            resource:
+              type:
+                - "null"
+                - "string"
+            description:
+              type:
+                - "null"
+                - "object"
+            success_metric:
+              type:
+                - "null"
+                - "object"
+            project:
+              type:
+                - "null"
+                - "object"
+            timeframe:
+              type:
+                - "null"
+                - "object"
+            initiatives:
+              type:
+                - "null"
+                - "array"
+              items:
+                type:
+                  - "null"
+                  - "object"
+                additionalProperties: true
+            comments_count:
+              type:
+                - "null"
+                - "integer"
+            features:
+              type:
+                - "null"
+                - "array"
+              items:
+                type:
+                  - "null"
+                  - "object"
+                additionalProperties: true
+            releases:
+              type:
+                - "null"
+                - "array"
+            custom_fields:
+              type:
+                - "null"
+                - "array"
+            parent:
+              type:
+                - "null"
+                - "object"
+              additionalProperties: true
+            parents:
+              type:
+                - "null"
+                - "array"
+              items:
+                type:
+                  - "null"
+                  - "object"
+                additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['url'] }}/api/v1"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: features_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /features
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - features
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          reference_num:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          url:
+            type:
+              - "null"
+              - "string"
+          resource:
+            type:
+              - "null"
+              - "string"
+          product_id:
+            type:
+              - "null"
+              - "string"
+  - type: DeclarativeStream
+    name: products_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /products
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - products
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          reference_prefix:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          product_line:
+            type:
+              - "null"
+              - "boolean"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          workspace_type:
+            type:
+              - "null"
+              - "string"
+  - type: DeclarativeStream
+    name: idea_categories_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /products/{{ stream_partition.id }}/idea_categories
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - idea_categories
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: products_stream
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: "{{ config['url'] }}/api/v1"
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                    path: /products
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - products
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: page
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: per_page
+                    pagination_strategy:
+                      type: PageIncrement
+                      page_size: 5
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: "http://json-schema.org/draft-07/schema#"
+                    type: "object"
+                    additionalProperties: true
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - "string"
+                      reference_prefix:
+                        type:
+                          - "null"
+                          - "string"
+                      name:
+                        type:
+                          - "null"
+                          - "string"
+                      product_line:
+                        type:
+                          - "null"
+                          - "boolean"
+                      created_at:
+                        type:
+                          - "null"
+                          - "string"
+                      workspace_type:
+                        type:
+                          - "null"
+                          - "string"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          parent_id:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+  - type: DeclarativeStream
+    name: ideas_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: ideas
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - ideas
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          reference_num:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+          workflow_status:
+            type:
+              - "null"
+              - "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              position:
+                type:
+                  - "null"
+                  - "integer"
+              complete:
+                type:
+                  - "null"
+                  - "boolean"
+              color:
+                type:
+                  - "null"
+                  - "string"
+          description:
+            type:
+              - "null"
+              - "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              body:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+              attachments:
+                type:
+                  - "null"
+                  - "array"
+          url:
+            type:
+              - "null"
+              - "string"
+          resource:
+            type:
+              - "null"
+              - "string"
+  - type: DeclarativeStream
+    name: idea_endorsements_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /ideas/{{ stream_partition.id }}/endorsements
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - idea_endorsements
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: ideas_stream
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: "{{ config['url'] }}/api/v1"
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                    path: ideas
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - ideas
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: page
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: per_page
+                    pagination_strategy:
+                      type: PageIncrement
+                      page_size: 5
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: "http://json-schema.org/draft-07/schema#"
+                    type: "object"
+                    additionalProperties: true
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - "string"
+                      name:
+                        type:
+                          - "null"
+                          - "string"
+                      reference_num:
+                        type:
+                          - "null"
+                          - "string"
+                      created_at:
+                        type:
+                          - "null"
+                          - "string"
+                      updated_at:
+                        type:
+                          - "null"
+                          - "string"
+                      workflow_status:
+                        type:
+                          - "null"
+                          - "object"
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - "string"
+                          name:
+                            type:
+                              - "null"
+                              - "string"
+                          position:
+                            type:
+                              - "null"
+                              - "integer"
+                          complete:
+                            type:
+                              - "null"
+                              - "boolean"
+                          color:
+                            type:
+                              - "null"
+                              - "string"
+                      description:
+                        type:
+                          - "null"
+                          - "object"
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - "string"
+                          body:
+                            type:
+                              - "null"
+                              - "string"
+                          created_at:
+                            type:
+                              - "null"
+                              - "string"
+                          attachments:
+                            type:
+                              - "null"
+                              - "array"
+                      url:
+                        type:
+                          - "null"
+                          - "string"
+                      resource:
+                        type:
+                          - "null"
+                          - "string"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          idea_id:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+          value:
+            type:
+              - "null"
+              - "string"
+          link:
+            type:
+              - "null"
+              - "string"
+          weight:
+            type:
+              - "null"
+              - "integer"
+          endorsed_by_portal_user:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              email:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+          endorsed_by_idea_user:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              email:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+          endorsed_by_idea_organization:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+              url:
+                type:
+                  - "null"
+                  - "string"
+              resource:
+                type:
+                  - "null"
+                  - "string"
+          endorsed_by_user:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              email:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+              updated_at:
+                type:
+                  - "null"
+                  - "string"
+  - type: DeclarativeStream
+    name: idea_comments_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /ideas/{{ stream_partition.id }}/idea_comments
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - idea_comments
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: ideas_stream
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: "{{ config['url'] }}/api/v1"
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                    path: ideas
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - ideas
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: page
+                    page_size_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: per_page
+                    pagination_strategy:
+                      type: PageIncrement
+                      page_size: 5
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: "http://json-schema.org/draft-07/schema#"
+                    type: "object"
+                    additionalProperties: true
+                    properties:
+                      id:
+                        type:
+                          - "null"
+                          - "string"
+                      name:
+                        type:
+                          - "null"
+                          - "string"
+                      reference_num:
+                        type:
+                          - "null"
+                          - "string"
+                      created_at:
+                        type:
+                          - "null"
+                          - "string"
+                      updated_at:
+                        type:
+                          - "null"
+                          - "string"
+                      workflow_status:
+                        type:
+                          - "null"
+                          - "object"
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - "string"
+                          name:
+                            type:
+                              - "null"
+                              - "string"
+                          position:
+                            type:
+                              - "null"
+                              - "integer"
+                          complete:
+                            type:
+                              - "null"
+                              - "boolean"
+                          color:
+                            type:
+                              - "null"
+                              - "string"
+                      description:
+                        type:
+                          - "null"
+                          - "object"
+                        properties:
+                          id:
+                            type:
+                              - "null"
+                              - "string"
+                          body:
+                            type:
+                              - "null"
+                              - "string"
+                          created_at:
+                            type:
+                              - "null"
+                              - "string"
+                          attachments:
+                            type:
+                              - "null"
+                              - "array"
+                      url:
+                        type:
+                          - "null"
+                          - "string"
+                      resource:
+                        type:
+                          - "null"
+                          - "string"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          idea_id:
+            type:
+              - "null"
+              - "string"
+          body:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          visibility:
+            type:
+              - "null"
+              - "string"
+          parent_idea_comment_id:
+            type:
+              - "null"
+              - "string"
+          idea_commenter_user:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name_id:
+                type:
+                  - "null"
+                  - "string"
+              email:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+              updated_at:
+                type:
+                  - "null"
+                  - "string"
+          idea:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              reference_num:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+              updated_at:
+                type:
+                  - "null"
+                  - "string"
+              workflow_status:
+                type: "object"
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - "string"
+                  name:
+                    type:
+                      - "null"
+                      - "string"
+                  position:
+                    type:
+                      - "null"
+                      - "integer"
+                  complete:
+                    type:
+                      - "null"
+                      - "boolean"
+                  color:
+                    type:
+                      - "null"
+                      - "string"
+              description:
+                type: "object"
+                properties:
+                  id:
+                    type:
+                      - "null"
+                      - "string"
+                  body:
+                    type:
+                      - "null"
+                      - "string"
+                  created_at:
+                    type:
+                      - "null"
+                      - "string"
+                  attachments:
+                    type:
+                      - "null"
+                      - "array"
+                url:
+                  type:
+                    - "null"
+                    - "string"
+                resource:
+                  type:
+                    - "null"
+                    - "string"
+            attachments:
+              type:
+                - "null"
+                - "array"
+          attachments:
+            type:
+              - "null"
+              - "array"
+  - type: DeclarativeStream
+    name: users_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: users
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - users
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          email:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+          accessed_at:
+            type:
+              - "null"
+              - "string"
+          product_roles:
+            type:
+              - "null"
+              - "array"
+          enabled:
+            type:
+              - "null"
+              - "boolean"
+          paid_seat:
+            type:
+              - "null"
+              - "boolean"
+          administrator:
+            type:
+              - "null"
+              - "boolean"
+          administrator_roles:
+            type:
+              - "null"
+              - "object"
+          identity_provider:
+            type:
+              - "null"
+              - "object"
+  - type: DeclarativeStream
+    name: goals_stream
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['url'] }}/api/v1"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: goals
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - goals
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 5
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: "http://json-schema.org/draft-07/schema#"
+        type: "object"
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          reference_num:
+            type:
+              - "null"
+              - "string"
+          effort:
+            type:
+              - "null"
+              - "number"
+          value:
+            type:
+              - "null"
+              - "number"
+          position:
+            type:
+              - "null"
+              - "number"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+          product_id:
+            type:
+              - "null"
+              - "string"
+          progress:
+            type:
+              - "null"
+              - "number"
+          progress_source:
+            type:
+              - "null"
+              - "string"
+          url:
+            type:
+              - "null"
+              - "string"
+          resource:
+            type:
+              - "null"
+              - "string"
+          description:
+            type:
+              - "null"
+              - "object"
+          success_metric:
+            type:
+              - "null"
+              - "object"
+          project:
+            type:
+              - "null"
+              - "object"
+          timeframe:
+            type:
+              - "null"
+              - "object"
+          initiatives:
+            type:
+              - "null"
+              - "array"
+            items:
+              type:
+                - "null"
+                - "object"
+              additionalProperties: true
+          comments_count:
+            type:
+              - "null"
+              - "integer"
+          features:
+            type:
+              - "null"
+              - "array"
+            items:
+              type:
+                - "null"
+                - "object"
+              additionalProperties: true
+          releases:
+            type:
+              - "null"
+              - "array"
+          custom_fields:
+            type:
+              - "null"
+              - "array"
+          parent:
+            type:
+              - "null"
+              - "object"
+            additionalProperties: true
+          parents:
+            type:
+              - "null"
+              - "array"
+            items:
+              type:
+                - "null"
+                - "object"
+              additionalProperties: true
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/aha
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - url
+    properties:
+      api_key:
+        type: string
+        title: API Bearer Token
+        airbyte_secret: true
+        description: API Key
+        order: 0
+      url:
+        type: string
+        description: URL
+        title: Aha Url Instance
+        order: 1
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    features_stream: false
+    products_stream: false
+    idea_categories_stream: false
+    ideas_stream: false
+    idea_endorsements_stream: false
+    idea_comments_stream: false
+    users_stream: false
+    goals_stream: false
+schemas:
+  features_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      reference_num:
+        type:
+          - "null"
+          - "string"
+      name:
+        type:
+          - "null"
+          - "string"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      url:
+        type:
+          - "null"
+          - "string"
+      resource:
+        type:
+          - "null"
+          - "string"
+      product_id:
+        type:
+          - "null"
+          - "string"
+  products_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      reference_prefix:
+        type:
+          - "null"
+          - "string"
+      name:
+        type:
+          - "null"
+          - "string"
+      product_line:
+        type:
+          - "null"
+          - "boolean"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      workspace_type:
+        type:
+          - "null"
+          - "string"
+  idea_categories_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      name:
+        type:
+          - "null"
+          - "string"
+      parent_id:
+        type:
+          - "null"
+          - "string"
+      created_at:
+        type:
+          - "null"
+          - "string"
+  ideas_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      name:
+        type:
+          - "null"
+          - "string"
+      reference_num:
+        type:
+          - "null"
+          - "string"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      updated_at:
+        type:
+          - "null"
+          - "string"
+      workflow_status:
+        type:
+          - "null"
+          - "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          position:
+            type:
+              - "null"
+              - "integer"
+          complete:
+            type:
+              - "null"
+              - "boolean"
+          color:
+            type:
+              - "null"
+              - "string"
+      description:
+        type:
+          - "null"
+          - "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          body:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          attachments:
+            type:
+              - "null"
+              - "array"
+      url:
+        type:
+          - "null"
+          - "string"
+      resource:
+        type:
+          - "null"
+          - "string"
+  idea_endorsements_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      idea_id:
+        type:
+          - "null"
+          - "string"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      updated_at:
+        type:
+          - "null"
+          - "string"
+      value:
+        type:
+          - "null"
+          - "string"
+      link:
+        type:
+          - "null"
+          - "string"
+      weight:
+        type:
+          - "null"
+          - "integer"
+      endorsed_by_portal_user:
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          email:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+      endorsed_by_idea_user:
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          email:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+      endorsed_by_idea_organization:
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          url:
+            type:
+              - "null"
+              - "string"
+          resource:
+            type:
+              - "null"
+              - "string"
+      endorsed_by_user:
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          email:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+  idea_comments_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      idea_id:
+        type:
+          - "null"
+          - "string"
+      body:
+        type:
+          - "null"
+          - "string"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      visibility:
+        type:
+          - "null"
+          - "string"
+      parent_idea_comment_id:
+        type:
+          - "null"
+          - "string"
+      idea_commenter_user:
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          name_id:
+            type:
+              - "null"
+              - "string"
+          email:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+      idea:
+        type: "object"
+        properties:
+          id:
+            type:
+              - "null"
+              - "string"
+          reference_num:
+            type:
+              - "null"
+              - "string"
+          name:
+            type:
+              - "null"
+              - "string"
+          created_at:
+            type:
+              - "null"
+              - "string"
+          updated_at:
+            type:
+              - "null"
+              - "string"
+          workflow_status:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              name:
+                type:
+                  - "null"
+                  - "string"
+              position:
+                type:
+                  - "null"
+                  - "integer"
+              complete:
+                type:
+                  - "null"
+                  - "boolean"
+              color:
+                type:
+                  - "null"
+                  - "string"
+          description:
+            type: "object"
+            properties:
+              id:
+                type:
+                  - "null"
+                  - "string"
+              body:
+                type:
+                  - "null"
+                  - "string"
+              created_at:
+                type:
+                  - "null"
+                  - "string"
+              attachments:
+                type:
+                  - "null"
+                  - "array"
+            url:
+              type:
+                - "null"
+                - "string"
+            resource:
+              type:
+                - "null"
+                - "string"
+        attachments:
+          type:
+            - "null"
+            - "array"
+      attachments:
+        type:
+          - "null"
+          - "array"
+  users_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      name:
+        type:
+          - "null"
+          - "string"
+      email:
+        type:
+          - "null"
+          - "string"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      updated_at:
+        type:
+          - "null"
+          - "string"
+      accessed_at:
+        type:
+          - "null"
+          - "string"
+      product_roles:
+        type:
+          - "null"
+          - "array"
+      enabled:
+        type:
+          - "null"
+          - "boolean"
+      paid_seat:
+        type:
+          - "null"
+          - "boolean"
+      administrator:
+        type:
+          - "null"
+          - "boolean"
+      administrator_roles:
+        type:
+          - "null"
+          - "object"
+      identity_provider:
+        type:
+          - "null"
+          - "object"
+  goals_stream:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: "object"
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - "string"
+      name:
+        type:
+          - "null"
+          - "string"
+      reference_num:
+        type:
+          - "null"
+          - "string"
+      effort:
+        type:
+          - "null"
+          - "number"
+      value:
+        type:
+          - "null"
+          - "number"
+      position:
+        type:
+          - "null"
+          - "number"
+      created_at:
+        type:
+          - "null"
+          - "string"
+      updated_at:
+        type:
+          - "null"
+          - "string"
+      product_id:
+        type:
+          - "null"
+          - "string"
+      progress:
+        type:
+          - "null"
+          - "number"
+      progress_source:
+        type:
+          - "null"
+          - "string"
+      url:
+        type:
+          - "null"
+          - "string"
+      resource:
+        type:
+          - "null"
+          - "string"
+      description:
+        type:
+          - "null"
+          - "object"
+      success_metric:
+        type:
+          - "null"
+          - "object"
+      project:
+        type:
+          - "null"
+          - "object"
+      timeframe:
+        type:
+          - "null"
+          - "object"
+      initiatives:
+        type:
+          - "null"
+          - "array"
+        items:
+          type:
+            - "null"
+            - "object"
+          additionalProperties: true
+      comments_count:
+        type:
+          - "null"
+          - "integer"
+      features:
+        type:
+          - "null"
+          - "array"
+        items:
+          type:
+            - "null"
+            - "object"
+          additionalProperties: true
+      releases:
+        type:
+          - "null"
+          - "array"
+      custom_fields:
+        type:
+          - "null"
+          - "array"
+      parent:
+        type:
+          - "null"
+          - "object"
+        additionalProperties: true
+      parents:
+        type:
+          - "null"
+          - "array"
+        items:
+          type:
+            - "null"
+            - "object"
+          additionalProperties: true

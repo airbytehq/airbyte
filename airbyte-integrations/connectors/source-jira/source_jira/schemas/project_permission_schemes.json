@@ -3,24 +3,24 @@
   "type": "object",
   "properties": {
     "self": {
-      "type": ["null", "string"],
-      "description": "The URL of the issue level security item."
+      "description": "The URL of the issue level security item.",
+      "type": ["null", "string"]
     },
     "projectId": {
-      "type": ["null", "string"],
-      "description": "Id of the related project."
+      "description": "Id of the related project.",
+      "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"],
-      "description": "The ID of the issue level security item."
+      "description": "The ID of the issue level security item.",
+      "type": ["null", "string"]
     },
     "description": {
-      "type": ["null", "string"],
-      "description": "The description of the issue level security item."
+      "description": "The description of the issue level security item.",
+      "type": ["null", "string"]
     },
     "name": {
-      "type": ["null", "string"],
-      "description": "The name of the issue level security item."
+      "description": "The name of the issue level security item.",
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

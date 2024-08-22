@@ -16,11 +16,11 @@ class JsonSchemaTypeTest {
     @ParameterizedTest
     @ArgumentsSource(JsonSchemaTypeProvider::class)
     fun testFromJsonSchemaType(
-        type: String?,
+        type: String,
         airbyteType: String?,
         expectedJsonSchemaType: JsonSchemaType?
     ) {
-        Assertions.assertEquals(expectedJsonSchemaType, fromJsonSchemaType(type!!, airbyteType))
+        Assertions.assertEquals(expectedJsonSchemaType, fromJsonSchemaType(type, airbyteType))
     }
 
     class JsonSchemaTypeProvider : ArgumentsProvider {

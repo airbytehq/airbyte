@@ -21,3 +21,12 @@
 {"type": "RECORD", "record": {"stream": "integer_test_1", "emitted_at": 1602637589300, "data": { "data" : -12345 }}}
 {"type": "RECORD", "record": {"stream": "boolean_test_1", "emitted_at": 1602637589100, "data": { "data" : true }}}
 {"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "string_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "date_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "datetime_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "datetime_test_2"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "number_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "bignumber_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "integer_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+{"type": "TRACE", "trace": { "type": "STREAM_STATUS", "stream_status": {"stream_descriptor": {"name": "boolean_test_1"}, "status": "COMPLETE"}, "emitted_at": 1602637589101}}
+

@@ -12,7 +12,7 @@ data:
   icon: bigquery.svg
   license: ELv2
   name: BigQuery
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +21,18 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-BIGQUERY_CREDENTIALS__CREDS
+          fileName: credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-BIGQUERY_SAT__CREDS
+          fileName: sat-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

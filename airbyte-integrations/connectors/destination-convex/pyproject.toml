@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.2.8"
+name = "destination-convex"
+description = "Destination implementation for Convex."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/convex"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_convex"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "==0.37.0"
+
+[tool.poetry.scripts]
+destination-convex = "destination_convex.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+responses = "^0.13.3"
