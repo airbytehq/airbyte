@@ -18,13 +18,8 @@ from airbyte_cdk.connector_builder.models import (
     StreamReadSlices,
 )
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.utils.types import JsonType
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
-from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
-from airbyte_protocol.models.airbyte_protocol import (
+from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.models.airbyte_protocol import (
     AirbyteControlMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -34,7 +29,12 @@ from airbyte_protocol.models.airbyte_protocol import (
     OrchestratorType,
     TraceType,
 )
-from airbyte_protocol.models.airbyte_protocol import Type as MessageType
+from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.types import JsonType
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer, SchemaValidationException
 
 
 class MessageGrouper:

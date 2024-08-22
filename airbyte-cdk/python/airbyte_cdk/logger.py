@@ -7,10 +7,9 @@ import logging
 import logging.config
 from typing import Any, Mapping, Optional, Tuple
 
-from orjson import orjson
-
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer, Type, Level
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer, Level, Type
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from orjson import orjson
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -44,7 +43,7 @@ class AirbyteLogFormatter(logging.Formatter):
 
     # Transforming Python log levels to Airbyte protocol log levels
     level_mapping = {
-        logging.FATAL:Level.FATAL,
+        logging.FATAL: Level.FATAL,
         logging.ERROR: Level.ERROR,
         logging.WARNING: Level.WARN,
         logging.INFO: Level.INFO,
@@ -63,7 +62,6 @@ class AirbyteLogFormatter(logging.Formatter):
             message = filter_secrets(message)
             log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=airbyte_level, message=message))
             return orjson.dumps(AirbyteMessageSerializer.dump(log_message)).decode()
-
 
     @staticmethod
     def extract_extra_args_from_record(record: logging.LogRecord) -> Mapping[str, Any]:

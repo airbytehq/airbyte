@@ -3,7 +3,10 @@
 #
 
 
+from copy import copy
+
 from airbyte_cdk.models import AirbyteCatalog, SyncMode
+from airbyte_cdk.models.airbyte_protocol import AirbyteCatalogSerializer
 
 
 class CatalogHelper:
@@ -12,11 +15,11 @@ class CatalogHelper:
         """
         Updates the sync mode on all streams in this catalog to be full refresh
         """
-        coerced_catalog = catalog.copy()
+        coerced_catalog = copy(catalog)
         for stream in catalog.streams:
             stream.source_defined_cursor = False
             stream.supported_sync_modes = [SyncMode.full_refresh]
             stream.default_cursor_field = None
 
         # remove nulls
-        return AirbyteCatalog.parse_raw(coerced_catalog.model_dump_json(exclude_unset=True, exclude_none=True))
+        return AirbyteCatalogSerializer.load(AirbyteCatalogSerializer.dump(coerced_catalog))

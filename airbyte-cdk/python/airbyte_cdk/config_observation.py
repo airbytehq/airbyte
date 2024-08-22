@@ -10,9 +10,15 @@ import time
 from copy import copy
 from typing import Any, List, MutableMapping
 
+from airbyte_cdk.models import (
+    AirbyteControlConnectorConfigMessage,
+    AirbyteControlMessage,
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    OrchestratorType,
+    Type,
+)
 from orjson import orjson
-
-from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, OrchestratorType, Type, AirbyteMessageSerializer
 
 
 class ObservedDict(dict):  # type: ignore # disallow_any_generics is set to True, and dict is equivalent to dict[Any]

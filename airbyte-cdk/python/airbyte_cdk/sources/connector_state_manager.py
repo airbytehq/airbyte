@@ -3,11 +3,19 @@
 #
 
 import copy
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 from dataclasses import dataclass
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+
 from airbyte_cdk.models import Type as MessageType
-from pydantic import ConfigDict as V2ConfigDict
+from airbyte_cdk.models.airbyte_protocol import (
+    AirbyteMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStreamState,
+    StreamDescriptor,
+)
+from orjson import orjson
 
 
 @dataclass(frozen=True)
@@ -16,9 +24,9 @@ class HashableStreamDescriptor:
     Helper class that overrides the existing StreamDescriptor class that is auto generated from the Airbyte Protocol and
     freezes its fields so that it be used as a hash key. This is only marked public because we use it outside for unit tests.
     """
+
     name: str
     namespace: Optional[str] = None
-    # model_config = V2ConfigDict(extra="allow", frozen=True)
 
 
 class ConnectorStateManager:
@@ -51,7 +59,7 @@ class ConnectorStateManager:
         """
         stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
-            return stream_state.dict()  # type: ignore # mypy thinks dict() returns any, but it returns a dict
+            return orjson.loads(orjson.dumps(stream_state))  # type: ignore # mypy thinks dict() returns any, but it returns a dict
         return {}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]) -> None:

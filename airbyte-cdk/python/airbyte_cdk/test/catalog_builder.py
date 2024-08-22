@@ -2,7 +2,8 @@
 
 from typing import Any, Dict, List, Union, overload
 
-from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStreamSerializer
 
 
 class ConfiguredAirbyteStreamBuilder:
@@ -37,7 +38,7 @@ class ConfiguredAirbyteStreamBuilder:
         return self
 
     def build(self) -> ConfiguredAirbyteStream:
-        return ConfiguredAirbyteStream.parse_obj(self._stream)
+        return ConfiguredAirbyteStreamSerializer.load(self._stream)
 
 
 class CatalogBuilder:

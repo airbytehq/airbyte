@@ -26,10 +26,10 @@ from typing import Any, List, Mapping, Optional, Union
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.exception_handler import assemble_uncaught_exception
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.sources import Source
-from airbyte_protocol.models import (
+from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteStateMessage,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
@@ -37,7 +37,11 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.sources import Source
+from orjson import orjson
 from pydantic import ValidationError as V2ValidationError
+from serpyco_rs import SchemaValidationError
 
 
 class EntrypointOutput:
@@ -53,8 +57,8 @@ class EntrypointOutput:
     @staticmethod
     def _parse_message(message: str) -> AirbyteMessage:
         try:
-            return AirbyteMessage.parse_obj(json.loads(message))
-        except (json.JSONDecodeError, V2ValidationError):
+            return AirbyteMessageSerializer.load(orjson.loads(message))
+        except (orjson.JSONDecodeError, SchemaValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
 
@@ -188,7 +192,9 @@ def read(
     with tempfile.TemporaryDirectory() as tmp_directory:
         tmp_directory_path = Path(tmp_directory)
         config_file = make_file(tmp_directory_path / "config.json", config)
-        catalog_file = make_file(tmp_directory_path / "catalog.json", catalog.model_dump_json())
+        catalog_file = make_file(
+            tmp_directory_path / "catalog.json", orjson.dumps(ConfiguredAirbyteCatalogSerializer.dump(catalog)).decode()
+        )
         args = [
             "read",
             "--config",
@@ -201,7 +207,8 @@ def read(
                 [
                     "--state",
                     make_file(
-                        tmp_directory_path / "state.json", f"[{','.join([stream_state.model_dump_json() for stream_state in state])}]"
+                        tmp_directory_path / "state.json",
+                        f"[{','.join([orjson.dumps(AirbyteStateMessageSerializer.dump(stream_state)).decode() for stream_state in state])}]",
                     ),
                 ]
             )

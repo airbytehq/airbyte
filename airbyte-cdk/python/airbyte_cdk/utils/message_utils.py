@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.models import AirbyteMessage, Type
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 
 
 def get_stream_descriptor(message: AirbyteMessage) -> HashableStreamDescriptor:

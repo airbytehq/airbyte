@@ -7,7 +7,6 @@ from typing import Annotated, Any, Mapping
 import serpyco_rs
 from airbyte_protocol_dataclasses.models import *
 from orjson import orjson
-
 from serpyco_rs.metadata import Alias
 
 
@@ -38,7 +37,6 @@ class AirbyteStreamState:
 class AirbyteGlobalState:
     stream_states: List[AirbyteStreamState]
     shared_state: Optional[AirbyteStateBlob] = None
-
 
 
 @dataclass
@@ -81,6 +79,7 @@ def custom_type_resolver(t: type) -> serpyco_rs.CustomType | None:
         return AirbyteStateBlobType()
     return None
 
+
 # TODO: ref and move Serializers
 
 AirbyteStreamStateSerializer = serpyco_rs.Serializer(AirbyteStreamState, omit_none=True, custom_type_resolver=custom_type_resolver)
@@ -95,4 +94,3 @@ ConfiguredAirbyteStreamSerializer = serpyco_rs.Serializer(ConfiguredAirbyteStrea
 
 AdvancedAuthSerializer = serpyco_rs.Serializer(AdvancedAuth, omit_none=True)
 ConnectorSpecificationSerializer = serpyco_rs.Serializer(ConnectorSpecification, omit_none=True)
-

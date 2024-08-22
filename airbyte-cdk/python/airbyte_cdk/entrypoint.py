@@ -15,12 +15,11 @@ from functools import wraps
 from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
 from urllib.parse import urlparse
 
-from orjson import orjson
 import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
-from airbyte_cdk.models import AirbyteMessage, FailureType, Status, Type, AirbyteMessageSerializer
+from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, FailureType, Status, Type
 from airbyte_cdk.models.airbyte_protocol import AirbyteStateStats, ConnectorSpecification  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
@@ -29,7 +28,9 @@ from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 from requests import PreparedRequest, Response, Session
+
 logger = init_logger("airbyte")
 
 VALID_URL_SCHEMES = ["https"]
