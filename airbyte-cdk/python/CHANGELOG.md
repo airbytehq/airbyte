@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.5.3
+Cache the result of interpolated strings when the evaluated value is equal to its raw representation
+
 ## 4.5.2
 CDK: refactor error handling in abstract source
 
