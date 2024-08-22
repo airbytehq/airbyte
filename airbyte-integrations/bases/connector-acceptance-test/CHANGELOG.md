@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.9.2
+
+Relax test_oneof_usage criteria for constant value definitions.
+
 ## 3.9.1
 
 Bug fixes for dagger execution caching and for failure trace message test case.
