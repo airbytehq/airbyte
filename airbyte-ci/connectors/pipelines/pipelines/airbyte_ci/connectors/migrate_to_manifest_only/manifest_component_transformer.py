@@ -32,7 +32,7 @@ COMPONENT_TYPE_REGISTY: Dict[str, type] = {
     "CustomStateMigration": CustomStateMigration,
     "CustomTransformation": CustomTransformation,
     "JwtAuthenticator": JwtAuthenticator,
-    "0AuthAuthenticator": OAuthAuthenticator,
+    "OAuthAuthenticator": OAuthAuthenticator,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpResponseFilter": HttpResponseFilter,
     "JsonFileSchemaLoader": JsonFileSchemaLoader,
