@@ -13,6 +13,7 @@ data:
   dockerImageTag: 1.8.5
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
+  erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT

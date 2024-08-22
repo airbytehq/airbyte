@@ -31,6 +31,7 @@ from airbyte_protocol.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
+    DestinationSyncMode,
     Status,
     SyncMode,
     TraceType,
@@ -196,22 +197,32 @@ class TestSpec(BaseTest):
             assert common_props, f"There should be at least one common property for {oneof_path} subobjects. {docs_msg}"
 
             const_common_props = set()
+            enum_common_props = set()
             for common_prop in common_props:
                 if all(["const" in variant["properties"][common_prop] for variant in variants]):
                     const_common_props.add(common_prop)
-            assert (
-                len(const_common_props) == 1
-            ), f"There should be exactly one common property with 'const' keyword for {oneof_path} subobjects. {docs_msg}"
+                if all(["enum" in variant["properties"][common_prop] for variant in variants]):
+                    enum_common_props.add(common_prop)
+            assert len(const_common_props) == 1 or (
+                len(const_common_props) == 0 and len(enum_common_props) == 1
+            ), f"There should be exactly one common property with 'const' keyword (or equivalent) for {oneof_path} subobjects. {docs_msg}"
 
-            const_common_prop = const_common_props.pop()
+            const_common_prop = const_common_props.pop() if const_common_props else enum_common_props.pop()
             for n, variant in enumerate(variants):
                 prop_obj = variant["properties"][const_common_prop]
-                assert (
-                    "default" not in prop_obj or prop_obj["default"] == prop_obj["const"]
-                ), f"'default' needs to be identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
-                assert "enum" not in prop_obj or (
-                    len(prop_obj["enum"]) == 1 and prop_obj["enum"][0] == prop_obj["const"]
-                ), f"'enum' needs to be an array with a single item identical to const in common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`. {docs_msg}"
+                prop_info = f"common property {oneof_path}[{n}].{const_common_prop}. It's recommended to just use `const`."
+                if "const" in prop_obj:
+                    const_value = prop_obj["const"]
+                    assert (
+                        "default" not in prop_obj or prop_obj["default"] == const_value
+                    ), f"'default' needs to be identical to 'const' in {prop_info}. {docs_msg}"
+                    assert "enum" not in prop_obj or prop_obj["enum"] == [
+                        const_value
+                    ], f"'enum' needs to be an array with a single item identical to 'const' in {prop_info}. {docs_msg}"
+                else:
+                    assert (
+                        "enum" in prop_obj and "default" in prop_obj and prop_obj["enum"] == [prop_obj["default"]]
+                    ), f"'enum' needs to be an array with a single item identical to 'default' in {prop_info}. {docs_msg}"
 
     def test_required(self):
         """Check that connector will fail if any required field is missing"""
@@ -1147,15 +1158,29 @@ class TestBasicRead(BaseTest):
 
         invalid_configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
-                # create ConfiguredAirbyteStream without validation
+                # Create ConfiguredAirbyteStream without validation.
+                #
+                # Care must be taken for the created object to be valid regardless.
+                # Connectors using the Bulk CDK will perform schema validation
+                # https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/command/ConfiguredCatalogFactory.kt#L29
                 ConfiguredAirbyteStream.construct(
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
+                        namespace="__AIRBYTE__namespace_that_does_not_exist",
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
                         supported_sync_modes=[SyncMode.full_refresh],
+                        source_defined_primary_key=[],
+                        source_defined_cursor=False,
+                        default_cursor_field=[],
+                        is_resumable=False,
                     ),
-                    sync_mode="INVALID",
-                    destination_sync_mode="INVALID",
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.append,
+                    primary_key=[],
+                    cursor_field=[],
+                    minimum_generation_id=1,
+                    generation_id=1,
+                    sync_id=1,
                 )
             ]
         )

@@ -6,12 +6,16 @@ import jakarta.inject.Singleton
 import java.time.Duration
 
 /** Subtype of [Configuration] for sources. */
-interface SourceConfiguration : Configuration {
+interface SourceConfiguration : Configuration, SshTunnelConfiguration {
     /** Does READ generate states of type GLOBAL? */
     val global: Boolean
 
     /** During the READ operation, how often a feed should checkpoint, ideally. */
     val checkpointTargetInterval: Duration
+
+    /** Reader concurrency configuration. */
+    val maxConcurrency: Int
+    val resourceAcquisitionHeartbeat: Duration
 
     /**
      * Micronaut factory which glues [ConfigurationJsonObjectSupplier] and
