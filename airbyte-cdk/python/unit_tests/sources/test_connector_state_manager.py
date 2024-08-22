@@ -91,8 +91,8 @@ from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer
                         "shared_state": None,
                         "stream_states": [
                             {
-                                "stream_descriptor": StreamDescriptor(name="actors", namespace="public"),
-                                "stream_state": AirbyteStateBlob({"id": "mando_michael"}),
+                                "stream_descriptor": {"name":"actors", "namespace":"public"},
+                                "stream_state": {"id": "mando_michael"},
                             },
                         ],
                     },
