@@ -2,14 +2,13 @@
 
 Usage:
     pipx install uv
-    uv run get_secrets.py
+    uv run scripts/fetch_test_secrets.py
 """
 # Inline dependency metadata for `uv`:
 # /// script
 # requires-python = "==3.10"
 # dependencies = [
-#     "airbyte",
-#     "google-cloud-secret-manager",
+#     "airbyte",  # PyAirbyte
 # ]
 # ///
 
