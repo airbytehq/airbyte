@@ -22,5 +22,4 @@ class ColumnDefinition(name: String, type: String, columnSize: Int, isNullable: 
         this.columnSize = columnSize
         this.isNullable = isNullable
     }
-
 }
