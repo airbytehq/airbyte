@@ -46,6 +46,7 @@ data:
       - users
       - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
+  erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
     - language:python
     - cdk:low-code

@@ -96,9 +96,19 @@ class StateManager(
         initialState: OpaqueStateValue?,
         private val isCheckpointUnique: Boolean = true,
     ) : StateManagerScopedToFeed {
-        private var current: OpaqueStateValue? = initialState
-        private var pending: OpaqueStateValue? = initialState
-        private var pendingNumRecords: Long = 0L
+        private var current: OpaqueStateValue?
+        private var pending: OpaqueStateValue?
+        private var isPending: Boolean
+        private var pendingNumRecords: Long
+
+        init {
+            synchronized(this) {
+                current = initialState
+                pending = initialState
+                isPending = initialState != null
+                pendingNumRecords = 0L
+            }
+        }
 
         override fun current(): OpaqueStateValue? = synchronized(this) { current }
 
@@ -108,13 +118,14 @@ class StateManager(
         ) {
             synchronized(this) {
                 pending = state
+                isPending = true
                 pendingNumRecords += numRecords
             }
         }
 
         fun swap(): Pair<OpaqueStateValue?, Long>? {
             synchronized(this) {
-                if (isCheckpointUnique && pendingNumRecords == 0L && pending == current) {
+                if (isCheckpointUnique && !isPending) {
                     return null
                 }
                 val returnValue: Pair<OpaqueStateValue?, Long> = pending to pendingNumRecords
