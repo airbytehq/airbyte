@@ -33,8 +33,9 @@ class IterableStream(HttpStream, ABC):
 
     primary_key = "id"
 
-    def __init__(self, authenticator):
+    def __init__(self, authenticator, region):
         self._cred = authenticator
+        self._region = region
         self._slice_retry = 0
         super().__init__(authenticator)
 

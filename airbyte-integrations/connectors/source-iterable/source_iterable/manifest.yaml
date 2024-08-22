@@ -55,7 +55,7 @@ streams:
         path: lists
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -89,7 +89,7 @@ streams:
         path: lists/getUsers
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -127,8 +127,8 @@ streams:
                   requester:
                     type: HttpRequester
                     url_base: >-
-                      {{ 'https://api.eu.iterable.com/api/' if config['region']
-                      == 'EU' else 'https://api.iterable.com/api/' }}
+                      {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
+                      'https://api.iterable.com/api/' }}
                     path: lists
                     http_method: GET
                     request_parameters: {}
@@ -174,7 +174,7 @@ streams:
         path: campaigns
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -206,7 +206,7 @@ streams:
         path: channels
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -238,7 +238,7 @@ streams:
         path: messageTypes
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -270,7 +270,7 @@ streams:
         path: metadata
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -303,7 +303,7 @@ streams:
         path: export/data.json
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         http_method: GET
         authenticator:
@@ -359,7 +359,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: >-
-          {{ 'https://api.eu.iterable.com/api/' if config['region'] == 'EU' else
+          {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
           'https://api.iterable.com/api/' }}
         path: export/userEvents
         http_method: GET
@@ -404,8 +404,8 @@ streams:
                     path: lists/getUsers
                     type: HttpRequester
                     url_base: >-
-                      {{ 'https://api.eu.iterable.com/api/' if config['region']
-                      == 'EU' else 'https://api.iterable.com/api/' }}
+                      {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
+                      'https://api.iterable.com/api/' }}
                     http_method: GET
                     authenticator:
                       type: ApiKeyAuthenticator
@@ -442,8 +442,7 @@ streams:
                               requester:
                                 type: HttpRequester
                                 url_base: >-
-                                  {{ 'https://api.eu.iterable.com/api/' if
-                                  config['region'] == 'EU' else
+                                  {{ 'https://api.eu.iterable.com/api/' if config.get('region', "US") == 'EU' else
                                   'https://api.iterable.com/api/' }}
                                 path: lists
                                 http_method: GET
