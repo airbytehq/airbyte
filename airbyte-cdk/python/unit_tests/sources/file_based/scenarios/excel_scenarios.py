@@ -22,7 +22,11 @@ _multiple_excel_combine_schema_file = {
     "a.xlsx": {
         "contents": [
             {"col_double": 20.02, "col_string": "Robbers", "col_album": "The 1975"},
-            {"col_double": 20.23, "col_string": "Somebody Else", "col_album": "I Like It When You Sleep, for You Are So Beautiful yet So Unaware of It"},
+            {
+                "col_double": 20.23,
+                "col_string": "Somebody Else",
+                "col_album": "I Like It When You Sleep, for You Are So Beautiful yet So Unaware of It",
+            },
         ],
         "last_modified": "2023-06-05T03:54:07.000Z",
     },
@@ -60,14 +64,22 @@ _multiple_excel_stream_file = {
             {"col_title": "White Lies", "col_album": "IN_RETURN", "col_year": 2014, "col_vocals": True},
             {"col_title": "Wide Awake", "col_album": "THE_LAST_GOODBYE", "col_year": 2022, "col_vocals": True},
         ],
-        "last_modified": "2023-06-05T03:54:07.000Z"
+        "last_modified": "2023-06-05T03:54:07.000Z",
     },
     "california_festivals.xlsx": {
         "contents": [
-            {"col_name": "Lightning in a Bottle", "col_location": {"country": "USA", "state": "California", "city": "Buena Vista Lake"}, "col_attendance": 18000},
-            {"col_name": "Outside Lands", "col_location": {"country": "USA", "state": "California", "city": "San Francisco"}, "col_attendance": 220000},
+            {
+                "col_name": "Lightning in a Bottle",
+                "col_location": {"country": "USA", "state": "California", "city": "Buena Vista Lake"},
+                "col_attendance": 18000,
+            },
+            {
+                "col_name": "Outside Lands",
+                "col_location": {"country": "USA", "state": "California", "city": "San Francisco"},
+                "col_attendance": 220000,
+            },
         ],
-        "last_modified": "2023-06-06T03:54:07.000Z"
+        "last_modified": "2023-06-06T03:54:07.000Z",
     },
 }
 
@@ -407,7 +419,7 @@ multiple_streams_excel_scenario = (
                         "type": "object",
                         "properties": {
                             "col_name": {"type": ["null", "string"]},
-                            "col_location":  {"type": ["null", "string"]},
+                            "col_location": {"type": ["null", "string"]},
                             "col_attendance": {"type": ["null", "number"]},
                             "_ab_source_file_last_modified": {"type": "string"},
                             "_ab_source_file_url": {"type": "string"},

@@ -147,7 +147,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
     [
         pytest.param(None, None, 1, id="test_initial_sync_no_state"),
         pytest.param({"next_page_token": 10}, 10, 11, id="test_reset_with_next_page_token"),
-    ]
+    ],
 )
 def test_simple_retriever_resumable_full_refresh_cursor_page_increment(initial_state, expected_reset_value, expected_next_page):
     expected_records = [
@@ -184,7 +184,7 @@ def test_simple_retriever_resumable_full_refresh_cursor_page_increment(initial_s
             expected_records[5],
             expected_records[6],
             expected_records[7],
-        ]
+        ],
     ]
 
     page_increment_strategy = PageIncrement(config={}, page_size=5, parameters={})
@@ -230,11 +230,13 @@ def test_simple_retriever_resumable_full_refresh_cursor_page_increment(initial_s
             {"next_page_token": "https://for-all-mankind.nasa.com/api/v1/astronauts?next_page=tracy_stevens"},
             "https://for-all-mankind.nasa.com/api/v1/astronauts?next_page=tracy_stevens",
             "https://for-all-mankind.nasa.com/api/v1/astronauts?next_page=gordo_stevens",
-            id="test_reset_with_next_page_token"
+            id="test_reset_with_next_page_token",
         ),
-    ]
+    ],
 )
-def test_simple_retriever_resumable_full_refresh_cursor_reset_cursor_pagination(initial_state, expected_reset_value, expected_next_page, requests_mock):
+def test_simple_retriever_resumable_full_refresh_cursor_reset_cursor_pagination(
+    initial_state, expected_reset_value, expected_next_page, requests_mock
+):
     expected_records = [
         Record(data={"name": "ed_baldwin"}, associated_slice=None),
         Record(data={"name": "danielle_poole"}, associated_slice=None),
@@ -288,7 +290,7 @@ primary_key: []
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config={})
     response_body = {
         "data": [r.data for r in expected_records[:5]],
-        "next_page": "https://for-all-mankind.nasa.com/api/v1/astronauts?next_page=gordo_stevens"
+        "next_page": "https://for-all-mankind.nasa.com/api/v1/astronauts?next_page=gordo_stevens",
     }
     requests_mock.get("https://for-all-mankind.nasa.com/api/v1/astronauts", json=response_body)
     requests_mock.get("https://for-all-mankind.nasa.com/astronauts?next_page=tracy_stevens", json=response_body)
@@ -334,7 +336,10 @@ def test_simple_retriever_resumable_full_refresh_cursor_reset_skip_completed_str
     ]
 
     record_selector = MagicMock()
-    record_selector.select_records.return_value = [expected_records[0],expected_records[1],]
+    record_selector.select_records.return_value = [
+        expected_records[0],
+        expected_records[1],
+    ]
 
     page_increment_strategy = PageIncrement(config={}, page_size=5, parameters={})
     paginator = DefaultPaginator(config={}, pagination_strategy=page_increment_strategy, url_base="https://airbyte.io", parameters={})
@@ -463,13 +468,39 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
 @pytest.mark.parametrize(
     "test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping",
     [
-        ("test_do_not_ignore_stream_slicer_params_if_ignore_is_true_but_no_next_page_token", {"key_from_pagination": "1000"}, True, None, {"key_from_pagination": "1000"}),
-        ("test_do_not_ignore_stream_slicer_params_if_ignore_is_false_and_no_next_page_token", {"key_from_pagination": "1000"}, False, None, {"key_from_pagination": "1000", "key_from_slicer": "value"}),
-        ("test_ignore_stream_slicer_params_on_paginated_request", {"key_from_pagination": "1000"}, True, {"page": 2}, {"key_from_pagination": "1000"}),
-        ("test_do_not_ignore_stream_slicer_params_on_paginated_request", {"key_from_pagination": "1000"}, False, {"page": 2}, {"key_from_pagination": "1000", "key_from_slicer": "value"}),
+        (
+            "test_do_not_ignore_stream_slicer_params_if_ignore_is_true_but_no_next_page_token",
+            {"key_from_pagination": "1000"},
+            True,
+            None,
+            {"key_from_pagination": "1000"},
+        ),
+        (
+            "test_do_not_ignore_stream_slicer_params_if_ignore_is_false_and_no_next_page_token",
+            {"key_from_pagination": "1000"},
+            False,
+            None,
+            {"key_from_pagination": "1000", "key_from_slicer": "value"},
+        ),
+        (
+            "test_ignore_stream_slicer_params_on_paginated_request",
+            {"key_from_pagination": "1000"},
+            True,
+            {"page": 2},
+            {"key_from_pagination": "1000"},
+        ),
+        (
+            "test_do_not_ignore_stream_slicer_params_on_paginated_request",
+            {"key_from_pagination": "1000"},
+            False,
+            {"page": 2},
+            {"key_from_pagination": "1000", "key_from_slicer": "value"},
+        ),
     ],
 )
-def test_ignore_stream_slicer_parameters_on_paginated_requests(test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping):
+def test_ignore_stream_slicer_parameters_on_paginated_requests(
+    test_name, paginator_mapping, ignore_stream_slicer_parameters_on_paginated_requests, next_page_token, expected_mapping
+):
     # This test is separate from the other request options because request headers must be strings
     paginator = MagicMock()
     paginator.get_request_headers.return_value = paginator_mapping

@@ -416,8 +416,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             "properties": {
                                                 "filetype": {"title": "Filetype", "default": "excel", "const": "excel", "type": "string"}
                                             },
-                                            "required": ["filetype"]
-                                        }
+                                            "required": ["filetype"],
+                                        },
                                     ],
                                 },
                                 "schemaless": {
@@ -431,7 +431,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                     "description": "The number of resent files which will be used to discover the schema for this stream.",
                                     "exclusiveMinimum": 0,
                                     "type": "integer",
-                                }
+                                },
                             },
                             "required": ["name", "format"],
                         },
@@ -504,7 +504,7 @@ csv_analytics_scenario: TestScenario[InMemoryFilesSource] = (
                     "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Emit Record",
-                }
+                },
             ]
         }
     )
@@ -567,50 +567,52 @@ csv_analytics_scenario: TestScenario[InMemoryFilesSource] = (
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
                     "is_resumable": True,
-                }
+                },
             ]
         }
     )
-    .set_expected_records([
-        {
-            "data": {
-                "col1": "val11a",
-                "col2": "val12a",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "a.csv",
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
             },
-            "stream": "stream1",
-        },
-        {
-            "data": {
-                "col1": "val21a",
-                "col2": "val22a",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "a.csv",
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "stream1",
             },
-            "stream": "stream1",
-        },
-        {
-            "data": {
-                "col1": "val11b",
-                "col2": "val12b",
-                "col3": "val13b",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "b.csv",
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream2",
             },
-            "stream": "stream2",
-        },
-        {
-            "data": {
-                "col1": "val21b",
-                "col2": "val22b",
-                "col3": "val23b",
-                "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                "_ab_source_file_url": "b.csv",
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.csv",
+                },
+                "stream": "stream2",
             },
-            "stream": "stream2",
-        },
-    ])
+        ]
+    )
     .set_expected_analytics(
         [
             AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
@@ -3314,11 +3316,7 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
             "start_date": "2023-06-10T03:54:07.000000Z",
         }
     )
-    .set_source_builder(
-        FileBasedSourceBuilder()
-        .set_files({})
-        .set_file_type("csv")
-    )
+    .set_source_builder(FileBasedSourceBuilder().set_files({}).set_file_type("csv"))
     .set_expected_check_status("FAILED")
     .set_expected_catalog(
         {

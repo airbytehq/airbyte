@@ -225,8 +225,8 @@ class TemporaryExcelFilesStreamReader(InMemoryFilesStreamReader):
         df = pd.DataFrame(contents)
 
         with io.BytesIO() as fp:
-            writer = pd.ExcelWriter(fp, engine='xlsxwriter')
-            df.to_excel(writer, index=False, sheet_name='Sheet1')
+            writer = pd.ExcelWriter(fp, engine="xlsxwriter")
+            df.to_excel(writer, index=False, sheet_name="Sheet1")
             writer._save()
             fp.seek(0)
             return fp.read()

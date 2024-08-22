@@ -80,10 +80,12 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
                     self._cursor_field,
                     self._cursor_boundaries,
                     None,
-                    EpochValueConcurrentStreamStateConverter.get_end_provider()
+                    EpochValueConcurrentStreamStateConverter.get_end_provider(),
                 )
                 if self._cursor_field
-                else FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
+                else FinalStateCursor(
+                    stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
+                ),
             )
             for stream, state in zip(self._streams, stream_states)
         ]
@@ -135,6 +137,8 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         self._input_state = state
         return self
 
-    def build(self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]) -> StreamFacadeSource:
+    def build(
+        self, configured_catalog: Optional[Mapping[str, Any]], config: Optional[Mapping[str, Any]], state: Optional[TState]
+    ) -> StreamFacadeSource:
         threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
         return StreamFacadeSource(self._streams, threadpool, self._cursor_field, self._cursor_boundaries, state)

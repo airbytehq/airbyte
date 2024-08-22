@@ -63,16 +63,7 @@ def _create_justice_songs_request() -> RequestBuilder:
     return RequestBuilder.justice_songs_endpoint()
 
 
-RESPONSE_TEMPLATE = {
-    "object": "list",
-    "has_more": False,
-    "data": [
-        {
-            "id": "123",
-            "created_at": "2024-01-01T07:04:28.000Z"
-        }
-    ]
-}
+RESPONSE_TEMPLATE = {"object": "list", "has_more": False, "data": [{"id": "123", "created_at": "2024-01-01T07:04:28.000Z"}]}
 
 
 JUSTICE_SONGS_TEMPLATE = {
@@ -90,8 +81,8 @@ JUSTICE_SONGS_TEMPLATE = {
             "created_at": "2024-02-01T07:04:28.000Z",
             "name": "dukes",
             "album": "",
-        }
-    ]
+        },
+    ],
 }
 
 
@@ -104,7 +95,7 @@ def _create_response(pagination_has_more: bool = False) -> HttpResponseBuilder:
     return create_response_builder(
         response_template=RESPONSE_TEMPLATE,
         records_path=FieldPath("data"),
-        pagination_strategy=FieldUpdatePaginationStrategy(FieldPath("has_more"), pagination_has_more)
+        pagination_strategy=FieldUpdatePaginationStrategy(FieldPath("has_more"), pagination_has_more),
     )
 
 
@@ -125,12 +116,20 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         http_mocker.get(
             _create_justice_songs_request().build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=True)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         http_mocker.get(
             _create_justice_songs_request().with_page(1).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=True)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         http_mocker.get(
@@ -144,7 +143,10 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
         assert len(actual_messages.records) == 5
         assert len(actual_messages.state_messages) == 4
-        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
+        validate_message_order(
+            [Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.STATE, Type.STATE],
+            actual_messages.records_and_state_messages,
+        )
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(page=1)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 2.0
@@ -166,17 +168,31 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         http_mocker.get(
             _create_justice_songs_request().with_page(100).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=True)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         http_mocker.get(
             _create_justice_songs_request().with_page(101).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=True)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         http_mocker.get(
             _create_justice_songs_request().with_page(102).build(),
-            _create_response(pagination_has_more=False).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=False)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         source = SourceFixture()
@@ -185,7 +201,23 @@ class ResumableFullRefreshStreamTest(TestCase):
         assert emits_successful_sync_status_messages(actual_messages.get_stream_statuses("justice_songs"))
         assert len(actual_messages.records) == 8
         assert len(actual_messages.state_messages) == 4
-        validate_message_order([Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE, Type.STATE], actual_messages.records_and_state_messages)
+        validate_message_order(
+            [
+                Type.RECORD,
+                Type.RECORD,
+                Type.RECORD,
+                Type.STATE,
+                Type.RECORD,
+                Type.RECORD,
+                Type.RECORD,
+                Type.STATE,
+                Type.RECORD,
+                Type.RECORD,
+                Type.STATE,
+                Type.STATE,
+            ],
+            actual_messages.records_and_state_messages,
+        )
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(page=101)
         assert actual_messages.state_messages[0].state.sourceStats.recordCount == 3.0
@@ -205,25 +237,37 @@ class ResumableFullRefreshStreamTest(TestCase):
 
         http_mocker.get(
             _create_justice_songs_request().build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=True)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         http_mocker.get(
             _create_justice_songs_request().with_page(1).build(),
-            _create_response(pagination_has_more=True).with_pagination().with_record(record=_create_record("justice_songs")).with_record(record=_create_record("justice_songs")).build(),
+            _create_response(pagination_has_more=True)
+            .with_pagination()
+            .with_record(record=_create_record("justice_songs"))
+            .with_record(record=_create_record("justice_songs"))
+            .build(),
         )
 
         http_mocker.get(_create_justice_songs_request().with_page(2).build(), _create_response().with_status_code(status_code=400).build())
 
         source = SourceFixture()
-        actual_messages = read(source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh, {})]), expecting_exception=True)
+        actual_messages = read(
+            source, config=config, catalog=_create_catalog([("justice_songs", SyncMode.full_refresh, {})]), expecting_exception=True
+        )
 
         status_messages = actual_messages.get_stream_statuses("justice_songs")
         assert status_messages[-1] == AirbyteStreamStatus.INCOMPLETE
         assert len(actual_messages.records) == 4
         assert len(actual_messages.state_messages) == 2
 
-        validate_message_order([Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages)
+        validate_message_order(
+            [Type.RECORD, Type.RECORD, Type.STATE, Type.RECORD, Type.RECORD, Type.STATE], actual_messages.records_and_state_messages
+        )
         assert actual_messages.state_messages[0].state.stream.stream_descriptor.name == "justice_songs"
         assert actual_messages.state_messages[0].state.stream.stream_state == AirbyteStateBlob(page=1)
         assert actual_messages.state_messages[1].state.stream.stream_descriptor.name == "justice_songs"

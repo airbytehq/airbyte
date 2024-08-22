@@ -76,8 +76,8 @@ _A_PER_PARTITION_STATE = [
                     },
                 ],
                 "parent_state": {},
-            }
-        )
+            },
+        ),
     )
 ]
 
@@ -494,8 +494,10 @@ def test_read():
         )
         mock.assert_called_with(source, config, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_STATE, limits.max_records)
         output_record.record.emitted_at = 1
-        assert orjson.dumps(AirbyteMessageSerializer.dump(output_record)).decode() == orjson.dumps(AirbyteMessageSerializer.dump(expected_airbyte_message)).decode()
-
+        assert (
+            orjson.dumps(AirbyteMessageSerializer.dump(output_record)).decode()
+            == orjson.dumps(AirbyteMessageSerializer.dump(expected_airbyte_message)).decode()
+        )
 
 
 def test_config_update():
@@ -527,7 +529,12 @@ def test_config_update():
         return_value=refresh_request_response,
     ):
         output = handle_connector_builder_request(
-            source, "test_read", config, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_PER_PARTITION_STATE, TestReadLimits()
+            source,
+            "test_read",
+            config,
+            ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG),
+            _A_PER_PARTITION_STATE,
+            TestReadLimits(),
         )
         assert output.record.data["latest_config_update"]
 
@@ -588,13 +595,8 @@ def test_handle_429_response():
     response = _create_429_page_response({"result": [{"error": "too many requests"}], "_metadata": {"next": "next"}})
 
     # Add backoff strategy to avoid default endless backoff loop
-    TEST_READ_CONFIG["__injected_declarative_manifest"]['definitions']['retriever']['requester']['error_handler'] = {
-        "backoff_strategies": [
-            {
-                "type": "ConstantBackoffStrategy",
-                "backoff_time_in_seconds": 5
-            }
-        ]
+    TEST_READ_CONFIG["__injected_declarative_manifest"]["definitions"]["retriever"]["requester"]["error_handler"] = {
+        "backoff_strategies": [{"type": "ConstantBackoffStrategy", "backoff_time_in_seconds": 5}]
     }
 
     config = TEST_READ_CONFIG

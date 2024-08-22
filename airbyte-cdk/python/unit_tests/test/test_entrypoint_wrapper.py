@@ -39,7 +39,12 @@ from orjson import orjson
 
 
 def _a_state_message(stream_name: str, stream_state: Mapping[str, Any]) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(**stream_state))))
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(**stream_state))
+        ),
+    )
 
 
 def _a_status_message(stream_name: str, status: AirbyteStreamStatus) -> AirbyteMessage:
@@ -273,12 +278,16 @@ class EntrypointWrapperReadTest(TestCase):
     def test_given_state_message_and_records_when_read_then_output_has_records_and_state_message(self, entrypoint):
         entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_RECORD, _A_STATE_MESSAGE])
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)
-        assert [AirbyteMessageSerializer.dump(message) for message in output.records_and_state_messages] == [AirbyteMessageSerializer.dump(message) for message in (_A_RECORD, _A_STATE_MESSAGE)]
+        assert [AirbyteMessageSerializer.dump(message) for message in output.records_and_state_messages] == [
+            AirbyteMessageSerializer.dump(message) for message in (_A_RECORD, _A_STATE_MESSAGE)
+        ]
 
     @patch("airbyte_cdk.test.entrypoint_wrapper.AirbyteEntrypoint")
     def test_given_many_state_messages_and_records_when_read_then_output_has_records_and_state_message(self, entrypoint):
         state_value = {"state_key": "last state value"}
-        last_emitted_state = AirbyteStreamState(stream_descriptor=StreamDescriptor(name="stream_name"), stream_state=AirbyteStateBlob(**state_value))
+        last_emitted_state = AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="stream_name"), stream_state=AirbyteStateBlob(**state_value)
+        )
         entrypoint.return_value.run.return_value = _to_entrypoint_output([_A_STATE_MESSAGE, _a_state_message("stream_name", state_value)])
 
         output = read(self._a_source, _A_CONFIG, _A_CATALOG, _A_STATE)

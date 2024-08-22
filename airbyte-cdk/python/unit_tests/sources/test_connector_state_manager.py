@@ -48,11 +48,11 @@ from models.airbyte_protocol import AirbyteStateMessageSerializer
                         "shared_state": {"television": "better_call_saul"},
                         "stream_states": [
                             {
-                                "stream_descriptor": {"name":"actors", "namespace":"public"},
+                                "stream_descriptor": {"name": "actors", "namespace": "public"},
                                 "stream_state": {"id": "mando_michael"},
                             },
                             {
-                                "stream_descriptor": {"name":"actresses", "namespace": "public"},
+                                "stream_descriptor": {"name": "actresses", "namespace": "public"},
                                 "stream_state": {"id": "seehorn_rhea"},
                             },
                         ],
@@ -305,9 +305,9 @@ def test_update_state_for_stream(start_state, update_name, update_namespace, upd
 
     state_manager.update_state_for_stream(update_name, update_namespace, update_value)
 
-    assert state_manager.per_stream_states[
-        HashableStreamDescriptor(name=update_name, namespace=update_namespace)
-    ] == AirbyteStateBlob(update_value)
+    assert state_manager.per_stream_states[HashableStreamDescriptor(name=update_name, namespace=update_namespace)] == AirbyteStateBlob(
+        update_value
+    )
 
 
 @pytest.mark.parametrize(

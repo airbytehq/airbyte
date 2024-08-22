@@ -15,11 +15,7 @@ from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import M
 
 @pytest.mark.parametrize(
     "response_body, first_element",
-    [
-        ("", {}),
-        ("[]", {}),
-        ('{"healthcheck": {"status": "ok"}}', {"healthcheck": {"status": "ok"}})
-    ],
+    [("", {}), ("[]", {}), ('{"healthcheck": {"status": "ok"}}', {"healthcheck": {"status": "ok"}})],
 )
 def test_json_decoder(requests_mock, response_body, first_element):
     requests_mock.register_uri("GET", "https://airbyte.io/", text=response_body)
@@ -46,7 +42,7 @@ def test_jsonl_decoder(requests_mock, response_body, expected_json):
 def large_event_response_fixture():
     data = {"email": "email1@example.com"}
     json_string = json.dumps(data)
-    lines_in_response = 1_000 # TODO: revert
+    lines_in_response = 1_000  # TODO: revert
     dir_path = os.path.dirname(os.path.realpath(__file__))
     file_path = f"{dir_path}/test_response.txt"
     with open(file_path, "w") as file:
