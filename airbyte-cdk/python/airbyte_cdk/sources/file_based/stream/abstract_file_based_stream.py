@@ -191,12 +191,7 @@ class AbstractFileBasedStream(Stream):
             for records_df in records_dfs:
                 # Perform validation and envelope wrapping in bulk, then
                 # emit the record messages.
-                yield from self._records_df_to_record_messages(
-                    records_df,
-                    self.configured_json_schema,
-                    self.name,
-                    self.errors_collector,
-                )
+                yield from self._records_df_to_record_messages(records_df)
 
                 # if self.cursor_field:
                 #     # TODO: Implement cursor tracking for file-based streams.
