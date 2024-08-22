@@ -146,6 +146,50 @@ class H2SourceIntegrationTest {
         }
     }
 
+    @Test
+    fun testReadStreamStateTooFarAhead() {
+        H2TestFixture().use { h2: H2TestFixture ->
+            val configPojo =
+                H2SourceConfigurationJsonObject().apply {
+                    port = h2.port
+                    database = h2.database
+                    resumablePreferred = true
+                }
+            SyncsTestFixture.testReads(
+                configPojo,
+                h2::createConnection,
+                Companion::prelude,
+                "h2source/incremental-only-catalog.json",
+                "h2source/state-too-far-ahead.json",
+                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
+                    "h2source/expected-messages-stream-too-far-ahead.json",
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun testReadBadCatalog() {
+        H2TestFixture().use { h2: H2TestFixture ->
+            val configPojo =
+                H2SourceConfigurationJsonObject().apply {
+                    port = h2.port
+                    database = h2.database
+                    resumablePreferred = true
+                }
+            SyncsTestFixture.testReads(
+                configPojo,
+                h2::createConnection,
+                Companion::prelude,
+                "h2source/bad-catalog.json",
+                initialStateResource = null,
+                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
+                    "h2source/expected-messages-stream-bad-catalog.json",
+                ),
+            )
+        }
+    }
+
     companion object {
         @JvmStatic
         fun prelude(connection: Connection) {
