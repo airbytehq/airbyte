@@ -133,7 +133,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             except EncodingError as encoding_error:
                 raise AirbyteTracedException(
                     internal_message="File encoding does not match configuration.",
-                    message=FileBasedSourceError.ENCODING_ERROR.value,
+                    message=f"{FileBasedSourceError.ENCODING_ERROR.value} Expected encoding: {encoding_error.expected_encoding}.",
                     exception=encoding_error,
                     failure_type=FailureType.config_error,
                 )

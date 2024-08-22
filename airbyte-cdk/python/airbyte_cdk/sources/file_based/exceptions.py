@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Any, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.models import AirbyteMessage, FailureType
 from airbyte_cdk.utils import AirbyteTracedException
@@ -14,9 +14,7 @@ class FileBasedSourceError(Enum):
     GLOB_PARSE_ERROR = (
         "Error parsing glob pattern. Please refer to the glob pattern rules at https://facelessuser.github.io/wcmatch/glob/#split."
     )
-    ENCODING_ERROR = (
-        "Error decoding file. Please check that the configured encoding matches the encoding of the file. Default encoding is UTF-8."
-    )
+    ENCODING_ERROR = "Error decoding file. Please check that the configured encoding matches the encoding of the file. "
     ERROR_CASTING_VALUE = "Could not cast the value to the expected type."
     ERROR_CASTING_VALUE_UNRECOGNIZED_TYPE = "Could not cast the value to the expected type because the type is not recognized. Valid types are null, array, boolean, integer, number, object, and string."
     ERROR_DECODING_VALUE = "Expected a JSON-decodeable value but could not decode record."
@@ -80,7 +78,11 @@ class ConfigValidationError(BaseFileBasedSourceError):
 
 
 class EncodingError(BaseFileBasedSourceError):
-    pass
+    def __init__(self, error: Union[FileBasedSourceError, str], expected_encoding: Optional[str] = "utf8", **kwargs: Any):
+        super().__init__(error, **kwargs)
+        if expected_encoding is None:
+            expected_encoding = "utf8"
+        self.expected_encoding = expected_encoding
 
 
 class InvalidSchemaError(BaseFileBasedSourceError):
