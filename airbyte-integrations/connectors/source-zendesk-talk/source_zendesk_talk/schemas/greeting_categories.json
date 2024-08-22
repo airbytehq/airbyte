@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the greeting category.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the greeting category.",
       "type": ["null", "string"]
     }
   }

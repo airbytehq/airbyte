@@ -11,13 +11,12 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
-import java.util.Map
 import java.util.zip.GZIPInputStream
 
 abstract class S3BaseJsonlGzipDestinationAcceptanceTest : S3BaseJsonlDestinationAcceptanceTest() {
     override val formatConfig: JsonNode?
         get() = // config without compression defaults to GZIP
-        Jsons.jsonNode(Map.of("format_type", outputFormat, "flattening", Flattening.NO.value))
+        Jsons.jsonNode(mapOf("format_type" to outputFormat, "flattening" to Flattening.NO.value))
 
     @Throws(IOException::class)
     override fun getReader(s3Object: S3Object): BufferedReader {

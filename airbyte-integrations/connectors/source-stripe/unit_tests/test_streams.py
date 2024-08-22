@@ -188,6 +188,55 @@ refunds_api_objects = [
         "created": 1679568588,
         "currency": "eur",
     },
+    # Incremental `Events` endpoint response
+    {
+        "id": "evt_3NRL2GEcXtiJtvvh0kjreLyk",
+        "object": "event",
+        "api_version": "2020-08-27",
+        "created": 1666518588,
+        "data": {
+            "object": {
+                "id": "re_3NRL2GEcXtiJtvvh0ahgD9V8",
+                "object": "refund",
+                "amount": 15,
+                "balance_transaction": "txn_3NRL2GEcXtiJtvvh0uhS7L1l",
+                "charge": "ch_3NRL2GEcXtiJtvvh0XOSc8NL",
+                "created": 1666518588,
+                "currency": "usd",
+                "destination_details": {
+                    "card": {
+                        "reference": "7901352802291512",
+                        "reference_status": "available",
+                        "reference_type": "acquirer_reference_number",
+                        "type": "refund"
+                    },
+                    "type": "card"
+                },
+                "metadata": {},
+                "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
+                "reason": None,
+                "receipt_number": None,
+                "source_transfer_reversal": None,
+                "status": "succeeded",
+                "transfer_reversal": None
+            },
+            "previous_attributes": {
+                "destination_details": {
+                    "card": {
+                        "reference": None,
+                        "reference_status": "pending"
+                    }
+                }
+            }
+        },
+        "livemode": False,
+        "pending_webhooks": 0,
+        "request": {
+            "id": None,
+            "idempotency_key": None
+        },
+        "type": "charge.refund.updated"
+    }
 ]
 
 
@@ -268,7 +317,7 @@ refunds_api_objects = [
                     },
                     {
                         "json": {
-                            "data": [refunds_api_objects[-1]],
+                            "data": [refunds_api_objects[1]],
                             "has_more": False,
                         }
                     },
@@ -282,6 +331,7 @@ refunds_api_objects = [
                     "charge": "ch_3NYB8LAHLf1oYfwN3P6BxdKj",
                     "created": 1653299388,
                     "currency": "usd",
+                    "updated": 1653299388,
                 },
                 {
                     "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
@@ -290,19 +340,21 @@ refunds_api_objects = [
                     "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
                     "created": 1679568588,
                     "currency": "eur",
+                    "updated": 1679568588,
                 },
             ],
-            [{"created[gte]": 1631199615, "created[lte]": 1662735615}, {"created[gte]": 1662735616, "created[lte]": 1692802815}],
+            [{"created[gte]": 1632409215, "created[lte]": 1663945215}, {"created[gte]": 1663945216, "created[lte]": 1692802815}],
             "refunds",
             "full_refresh",
             {},
         ),
         (
             {
-                "/v1/refunds": [
+                "/v1/events":
+                [
                     {
                         "json": {
-                            "data": [refunds_api_objects[-1]],
+                            "data": [refunds_api_objects[2]],
                             "has_more": False,
                         }
                     },
@@ -310,15 +362,33 @@ refunds_api_objects = [
             },
             [
                 {
-                    "id": "re_Lf1oYfwN3EZRDIfF3NYB8LAH",
+                    "id": "re_3NRL2GEcXtiJtvvh0ahgD9V8",
                     "object": "refund",
                     "amount": 15,
-                    "charge": "ch_YfwN3P6BxdKj3NYB8LAHLf1o",
-                    "created": 1679568588,
-                    "currency": "eur",
+                    "balance_transaction": "txn_3NRL2GEcXtiJtvvh0uhS7L1l",
+                    "charge": "ch_3NRL2GEcXtiJtvvh0XOSc8NL",
+                    "created": 1666518588,
+                    "currency": "usd",
+                    "destination_details": {
+                        "card": {
+                            "reference": "7901352802291512",
+                            "reference_status": "available",
+                            "reference_type": "acquirer_reference_number",
+                            "type": "refund"
+                        },
+                        "type": "card"
+                    },
+                    "metadata": {},
+                    "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
+                    "reason": None,
+                    "receipt_number": None,
+                    "source_transfer_reversal": None,
+                    "status": "succeeded",
+                    "transfer_reversal": None,
+                    "updated": 1666518588
                 }
             ],
-            [{"created[gte]": 1665308989, "created[lte]": 1692802815}],
+            [{}],
             "refunds",
             "incremental",
             {"created": 1666518588},
@@ -333,7 +403,6 @@ def test_created_cursor_incremental_stream(
     stream = stream_by_name(stream_name, {"lookback_window_days": 14, **config})
     for url, response in requests_mock_map.items():
         requests_mock.get(url, response)
-
     slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
     assert slices == expected_slices
     records = read_from_stream(stream, sync_mode, state)

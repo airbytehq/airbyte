@@ -1,0 +1,379 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "companies",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contact_lists",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "deal_pipelines",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "deal_splits",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "deals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "email_events",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["created"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "email_subscriptions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "engagements",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["lastUpdated"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["lastUpdated"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_calls",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_emails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_meetings",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_notes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "engagements_tasks",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "forms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "goals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "line_items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "marketing_emails",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["updated"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "owners",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "owners_archived",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "products",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "contacts_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "companies_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "deals_property_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "subscription_changes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "tickets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ticket_pipelines",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "workflows",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "pets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "cars",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_merged_audit",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_web_analytics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "contacts_form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

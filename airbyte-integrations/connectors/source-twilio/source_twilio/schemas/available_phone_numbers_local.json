@@ -1,53 +1,70 @@
 {
   "properties": {
     "friendly_name": {
+      "description": "A user-friendly nickname for the phone number",
       "type": ["null", "string"]
     },
     "phone_number": {
+      "description": "The phone number itself",
       "type": ["null", "string"]
     },
     "lata": {
+      "description": "Local access and transport area code for the phone number",
       "type": ["null", "string"]
     },
     "rate_center": {
+      "description": "Rate center for the phone number",
       "type": ["null", "string"]
     },
     "latitude": {
+      "description": "Latitude coordinate of the phone number's location",
       "type": ["null", "string"]
     },
     "longitude": {
+      "description": "Longitude coordinate of the phone number's location",
       "type": ["null", "string"]
     },
     "locality": {
+      "description": "Locality or city associated with the phone number",
       "type": ["null", "string"]
     },
     "region": {
+      "description": "Region or state associated with the phone number",
       "type": ["null", "string"]
     },
     "postal_code": {
+      "description": "Postal code of the phone number's location",
       "type": ["null", "string"]
     },
     "iso_country": {
+      "description": "ISO country code of the phone number",
       "type": ["null", "string"]
     },
     "address_requirements": {
+      "description": "The requirements related to the address associated with the phone number",
       "type": ["null", "string"]
     },
     "beta": {
+      "description": "Indicator showing if the phone number is in beta testing",
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Object containing the capabilities of the available phone number",
       "properties": {
         "voice": {
+          "description": "Capability for Voice calls",
           "type": ["null", "boolean"]
         },
         "SMS": {
+          "description": "Capability for Short Message Service (Texting)",
           "type": ["null", "boolean"]
         },
         "MMS": {
+          "description": "Capability for Multimedia Messaging Service",
           "type": ["null", "boolean"]
         },
         "fax": {
+          "description": "Capability for Facsimile (Faxing)",
           "type": ["null", "boolean"]
         }
       },

@@ -1,0 +1,22 @@
+{
+  "processing": {
+    "text_fields": ["str_col"],
+    "metadata_fields": ["int_col"],
+    "chunk_size": 1000
+  },
+  "embedding": {
+    "mode": "openai",
+    "openai_key": "mykey"
+  },
+  "indexing": {
+    "host": "MYACCOUNT",
+    "role": "MYUSERNAME",
+    "warehouse": "COMPUTE_WH",
+    "database": "MYDATABASE",
+    "default_schema": "MYSCHEMA",
+    "username": "MYUSERNAME",
+    "credentials": {
+      "password": "xxxxxxx"
+    }
+  }
+}

@@ -3,63 +3,276 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "board_issues"
+        "name": "board_issues",
+        "namespace": null
       },
       "stream_state": {
-        "1": {
-          "updated": "2122-01-01T00:00:00Z"
-        },
-        "17": {
-          "updated": "2122-01-01T00:00:00Z"
-        },
-        "58": {
-          "updated": "2122-01-01T00:00:00Z"
-        }
+        "states": [
+          {
+            "partition": {
+              "board_id": 1,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated": "2222-10-12T13:43:50.735-0700"
+            }
+          },
+          {
+            "partition": {
+              "board_id": 17,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated": "2222-07-05T12:57:51.258-0700"
+            }
+          },
+          {
+            "partition": {
+              "board_id": 58,
+              "parent_slice": {}
+            },
+            "cursor": {
+              "updated": "2222-05-08T03:04:45.139-0700"
+            }
+          }
+        ]
       }
+    },
+    "sourceStats": {
+      "recordCount": 1.0
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "issues"
+        "name": "issues",
+        "namespace": null
       },
       "stream_state": {
-        "updated": "2122-01-01T00:00:00Z"
+        "states": [
+          {
+            "partition": {
+              "parent_slice": {},
+              "project_id": "10000"
+            },
+            "cursor": {
+              "updated": "2222-10-12T13:43:50.735-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {},
+              "project_id": "10016"
+            },
+            "cursor": {
+              "updated": "2222-07-05T12:57:51.258-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {},
+              "project_id": "10064"
+            },
+            "cursor": {
+              "updated": "2222-05-08T03:04:45.139-0700"
+            }
+          }
+        ]
       }
+    },
+    "sourceStats": {
+      "recordCount": 1.0
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "issue_comments"
+        "name": "issue_worklogs",
+        "namespace": null
       },
       "stream_state": {
-        "updated": "2122-01-01T00:00:00Z"
+        "updated": "2222-05-08T03:04:45.056-0700"
       }
+    },
+    "sourceStats": {
+      "recordCount": 21.0
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "issue_worklogs"
+        "name": "issue_comments",
+        "namespace": null
       },
       "stream_state": {
-        "updated": "2122-01-01T00:00:00Z"
+        "updated": "2222-12-08T06:32:22.567-0800"
       }
+    },
+    "sourceStats": {
+      "recordCount": 2.0
     }
   },
   {
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "sprint_issues"
+        "name": "sprint_issues",
+        "namespace": null
       },
       "stream_state": {
-        "updated": "2122-01-01T00:00:00Z"
+        "states": [
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 2
+            },
+            "cursor": {
+              "updated": "2222-10-12T13:30:02.307-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 3
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:57:26.258-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 4
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:57:48.978-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 5
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:57:56.925-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 6
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:58:03.147-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 7
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:58:10.710-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 8
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:58:18.778-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 9
+            },
+            "cursor": {
+              "updated": "2222-10-12T13:43:50.735-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 10
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:58:35.329-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 1,
+                "parent_slice": {}
+              },
+              "sprint_id": 11
+            },
+            "cursor": {
+              "updated": "2222-04-05T04:58:53.600-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 17,
+                "parent_slice": {}
+              },
+              "sprint_id": 2
+            },
+            "cursor": {
+              "updated": "2222-10-12T13:30:02.307-0700"
+            }
+          },
+          {
+            "partition": {
+              "parent_slice": {
+                "board_id": 58,
+                "parent_slice": {}
+              },
+              "sprint_id": 12
+            },
+            "cursor": {
+              "updated": "2222-05-08T03:04:45.139-0700"
+            }
+          }
+        ]
       }
+    },
+    "sourceStats": {
+      "recordCount": 1.0
     }
   }
 ]

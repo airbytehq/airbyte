@@ -22,7 +22,7 @@ internal class MockSqlGenerator : SqlGenerator {
         throw RuntimeException()
     }
 
-    override fun createSchema(schema: String?): Sql {
+    override fun createSchema(schema: String): Sql {
         return of("CREATE SCHEMA $schema")
     }
 
@@ -32,36 +32,32 @@ internal class MockSqlGenerator : SqlGenerator {
 
     override fun updateTable(
         stream: StreamConfig,
-        finalSuffix: String?,
+        finalSuffix: String,
         minRawTimestamp: Optional<Instant>,
         useExpensiveSaferCasting: Boolean
     ): Sql {
         val timestampFilter =
             minRawTimestamp
-                .map(Function { timestamp: Instant? -> " WHERE extracted_at > $timestamp" })
+                .map(Function { timestamp: Instant -> " WHERE extracted_at > $timestamp" })
                 .orElse("")
         val casting = if (useExpensiveSaferCasting) " WITH" else " WITHOUT" + " SAFER CASTING"
         return of(
-            ("UPDATE TABLE " + stream!!.id.finalTableId("", finalSuffix!!)).toString() +
+            ("UPDATE TABLE " + stream.id.finalTableId("", finalSuffix)).toString() +
                 casting +
                 timestampFilter
         )
     }
 
-    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String?): Sql {
+    override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
         return of(
             "OVERWRITE TABLE " +
-                stream!!.finalTableId("") +
+                stream.finalTableId("") +
                 " FROM " +
-                stream.finalTableId("", finalSuffix!!)
+                stream.finalTableId("", finalSuffix)
         )
     }
 
-    override fun migrateFromV1toV2(
-        streamId: StreamId,
-        namespace: String?,
-        tableName: String?
-    ): Sql {
+    override fun migrateFromV1toV2(streamId: StreamId, namespace: String, tableName: String): Sql {
         return of(
             "MIGRATE TABLE " +
                 java.lang.String.join(".", namespace, tableName) +

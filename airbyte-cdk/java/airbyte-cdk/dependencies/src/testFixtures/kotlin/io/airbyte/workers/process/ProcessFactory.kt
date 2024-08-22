@@ -51,8 +51,8 @@ interface ProcessFactory {
         jobMetadata: Map<String, String>,
         portMapping: Map<Int?, Int?>?,
         additionalEnvironmentVariables: Map<String, String>,
-        vararg args: String?
-    ): Process?
+        vararg args: String
+    ): Process
 
     companion object {
         /**

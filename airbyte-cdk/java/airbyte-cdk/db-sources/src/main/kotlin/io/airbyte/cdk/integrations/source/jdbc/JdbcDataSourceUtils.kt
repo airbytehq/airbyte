@@ -18,6 +18,7 @@ object JdbcDataSourceUtils {
      * @param defaultParameters connection properties map as specified by each Jdbc source
      * @throws IllegalArgumentException
      */
+    @JvmStatic
     fun assertCustomParametersDontOverwriteDefaultParameters(
         customParameters: Map<String, String>,
         defaultParameters: Map<String, String>
@@ -57,6 +58,7 @@ object JdbcDataSourceUtils {
      * @param config A configuration used to check Jdbc connection
      * @return A mapping of the default connection properties
      */
+    @JvmStatic
     fun getDefaultConnectionProperties(config: JsonNode): Map<String, String> {
         // NOTE that Postgres returns an empty map for some reason?
         return parseJdbcParameters(

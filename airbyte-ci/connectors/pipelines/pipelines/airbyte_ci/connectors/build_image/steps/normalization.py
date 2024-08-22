@@ -14,7 +14,7 @@ class BuildOrPullNormalization(Step):
     """A step to build or pull the normalization image for a connector according to the image name."""
 
     context: ConnectorContext
-    
+
     def __init__(self, context: ConnectorContext, normalization_image: str, build_platform: Platform) -> None:
         """Initialize the step to build or pull the normalization image.
 

@@ -3,42 +3,55 @@
   "type": "object",
   "properties": {
     "project_id": {
+      "description": "The unique identifier of the project to which the label belongs.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier for the label within the project.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name or title of the label for easy identification.",
       "type": ["null", "string"]
     },
     "color": {
+      "description": "The color code representation of the label for visual identification.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The textual description of the label indicating its purpose or meaning.",
       "type": ["null", "string"]
     },
     "description_html": {
+      "description": "The HTML formatted description of the label for display purposes.",
       "type": ["null", "string"]
     },
     "text_color": {
+      "description": "The color code representation for the text color of the label for contrast.",
       "type": ["null", "string"]
     },
     "subscribed": {
+      "description": "A flag indicating whether the user is subscribed to notifications for this label.",
       "type": ["null", "boolean"]
     },
     "priority": {
+      "description": "The priority level assigned to the label, if applicable.",
       "type": ["null", "integer"]
     },
     "is_project_label": {
+      "description": "A flag indicating whether the label is specifically created for the project.",
       "type": ["null", "boolean"]
     },
     "open_issues_count": {
+      "description": "The total count of open issues associated with this label.",
       "type": ["null", "integer"]
     },
     "closed_issues_count": {
+      "description": "The total count of closed issues associated with this label.",
       "type": ["null", "integer"]
     },
     "open_merge_requests_count": {
+      "description": "The total count of open merge requests associated with this label.",
       "type": ["null", "integer"]
     }
   }

@@ -7,7 +7,7 @@ The low-code framework involves editing a boilerplate [YAML file](../low-code-cd
 Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
 A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.
 
-By default, the schema of a stream's data is defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`. 
+By default, the schema of a stream's data is defined as a [JSONSchema](https://json-schema.org/) file in `<source_connector_name>/schemas/<stream_name>.json`.
 
 Alternately, the stream's data schema can be stored in YAML format inline in the YAML file, by including the optional `schema_loader` key. If the data schema is provided inline, any schema on disk for that stream will be ignored.
 
@@ -16,42 +16,42 @@ More information on how to define a stream's schema can be found [here](../../..
 The stream object is represented in the YAML file as:
 
 ```yaml
-  DeclarativeStream:
-    description: A stream whose behavior is described by a set of declarative low code components
-    type: object
-    additionalProperties: true
-    required:
-      - type
-      - retriever
-    properties:
-      type:
-        type: string
-        enum: [DeclarativeStream]
-      retriever:
-        "$ref": "#/definitions/Retriever"
-      schema_loader:
-        definition: The schema loader used to retrieve the schema for the current stream
+DeclarativeStream:
+  description: A stream whose behavior is described by a set of declarative low code components
+  type: object
+  additionalProperties: true
+  required:
+    - type
+    - retriever
+  properties:
+    type:
+      type: string
+      enum: [DeclarativeStream]
+    retriever:
+      "$ref": "#/definitions/Retriever"
+    schema_loader:
+      definition: The schema loader used to retrieve the schema for the current stream
+      anyOf:
+        - "$ref": "#/definitions/InlineSchemaLoader"
+        - "$ref": "#/definitions/JsonFileSchemaLoader"
+    stream_cursor_field:
+      definition: The field of the records being read that will be used during checkpointing
+      anyOf:
+        - type: string
+        - type: array
+          items:
+            - type: string
+    transformations:
+      definition: A list of transformations to be applied to each output record in the
+      type: array
+      items:
         anyOf:
-          - "$ref": "#/definitions/InlineSchemaLoader"
-          - "$ref": "#/definitions/JsonFileSchemaLoader"
-      stream_cursor_field:
-        definition: The field of the records being read that will be used during checkpointing
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              - type: string
-      transformations:
-        definition: A list of transformations to be applied to each output record in the
-        type: array
-        items:
-          anyOf:
-            - "$ref": "#/definitions/AddFields"
-            - "$ref": "#/definitions/CustomTransformation"
-            - "$ref": "#/definitions/RemoveFields"
-      $parameters:
-        type: object
-        additional_properties: true
+          - "$ref": "#/definitions/AddFields"
+          - "$ref": "#/definitions/CustomTransformation"
+          - "$ref": "#/definitions/RemoveFields"
+    $parameters:
+      type: object
+      additional_properties: true
 ```
 
 More details on streams and sources can be found in the [basic concepts section](../../cdk-python/basic-concepts.md).
@@ -73,7 +73,7 @@ It is described by:
 1. [Requester](./requester.md): Describes how to submit requests to the API source
 2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
 3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Partition router](./partition-router.md): Describes how to retrieve data across multiple resource locations 
+4. [Partition router](./partition-router.md): Describes how to retrieve data across multiple resource locations
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
@@ -83,26 +83,26 @@ Since the `Retriever` is defined as part of the Stream configuration, different 
 The schema of a retriever object is:
 
 ```yaml
-  retriever:
-    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
-    type: object
-    required:
-      - requester
-      - record_selector
-      - requester
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      requester:
-        "$ref": "#/definitions/Requester"
-      record_selector:
-        "$ref": "#/definitions/HttpSelector"
-      paginator:
-        "$ref": "#/definitions/Paginator"
-      stream_slicer:
-        "$ref": "#/definitions/StreamSlicer"
-  PrimaryKey:
-    type: string
+retriever:
+  description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
+  type: object
+  required:
+    - requester
+    - record_selector
+    - requester
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    requester:
+      "$ref": "#/definitions/Requester"
+    record_selector:
+      "$ref": "#/definitions/HttpSelector"
+    paginator:
+      "$ref": "#/definitions/Paginator"
+    stream_slicer:
+      "$ref": "#/definitions/StreamSlicer"
+PrimaryKey:
+  type: string
 ```
 
 ### Routing to Data that is Partitioned in Multiple Locations
@@ -120,7 +120,7 @@ During a sync where both are configured, the Cartesian product of these paramete
 For example, if we had a `DatetimeBasedCursor` requesting data over a 3-day range partitioned by day and a `ListPartitionRouter` with the following locations `A`, `B`, and `C`. This would result in the following combinations that will be used to request data.
 
 | Partition | Date Range                                |
-|-----------|-------------------------------------------|
+| --------- | ----------------------------------------- |
 | A         | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
 | B         | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
 | C         | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |

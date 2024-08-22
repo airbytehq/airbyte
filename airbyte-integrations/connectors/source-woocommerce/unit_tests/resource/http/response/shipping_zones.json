@@ -1,0 +1,46 @@
+[
+  {
+    "id": 0,
+    "name": "Rest of the World",
+    "order": 0,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones/0"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones/0/locations"
+        }
+      ]
+    }
+  },
+  {
+    "id": 5,
+    "name": "Brazil",
+    "order": 0,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones/5"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/shipping/zones/5/locations"
+        }
+      ]
+    }
+  }
+]

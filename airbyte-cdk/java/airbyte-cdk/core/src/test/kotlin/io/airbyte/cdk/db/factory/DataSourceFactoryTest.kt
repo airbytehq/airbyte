@@ -5,10 +5,8 @@ package io.airbyte.cdk.db.factory
 
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.integrations.JdbcConnector
-import java.util.Map
 import javax.sql.DataSource
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.testcontainers.containers.MySQLContainer
@@ -17,7 +15,7 @@ import org.testcontainers.containers.MySQLContainer
 internal class DataSourceFactoryTest : CommonFactoryTest() {
     @Test
     fun testCreatingDataSourceWithConnectionTimeoutSetAboveDefault() {
-        val connectionProperties = Map.of(CONNECT_TIMEOUT, "61")
+        val connectionProperties = mapOf(CONNECT_TIMEOUT to "61")
         val dataSource =
             DataSourceFactory.create(
                 username,
@@ -37,7 +35,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingPostgresDataSourceWithConnectionTimeoutSetBelowDefault() {
-        val connectionProperties = Map.of(CONNECT_TIMEOUT, "30")
+        val connectionProperties = mapOf(CONNECT_TIMEOUT to "30")
         val dataSource =
             DataSourceFactory.create(
                 username,
@@ -59,17 +57,17 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
     fun testCreatingMySQLDataSourceWithConnectionTimeoutSetBelowDefault() {
         MySQLContainer<Nothing>("mysql:8.0").use { mySQLContainer ->
             mySQLContainer.start()
-            val connectionProperties = Map.of(CONNECT_TIMEOUT, "5000")
+            val connectionProperties = mapOf(CONNECT_TIMEOUT to "5000")
             val dataSource =
                 DataSourceFactory.create(
-                    mySQLContainer.getUsername(),
-                    mySQLContainer.getPassword(),
-                    mySQLContainer.getDriverClassName(),
+                    mySQLContainer.username,
+                    mySQLContainer.password,
+                    mySQLContainer.driverClassName,
                     mySQLContainer.getJdbcUrl(),
                     connectionProperties,
                     JdbcConnector.getConnectionTimeout(
                         connectionProperties,
-                        mySQLContainer.getDriverClassName()
+                        mySQLContainer.driverClassName
                     )
                 )
             Assertions.assertNotNull(dataSource)
@@ -83,7 +81,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingDataSourceWithConnectionTimeoutSetWithZero() {
-        val connectionProperties = Map.of(CONNECT_TIMEOUT, "0")
+        val connectionProperties = mapOf(CONNECT_TIMEOUT to "0")
         val dataSource =
             DataSourceFactory.create(
                 username,
@@ -103,7 +101,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingPostgresDataSourceWithConnectionTimeoutNotSet() {
-        val connectionProperties = Map.of<String, String>()
+        val connectionProperties = mapOf<String, String>()
         val dataSource =
             DataSourceFactory.create(
                 username,
@@ -125,17 +123,17 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
     fun testCreatingMySQLDataSourceWithConnectionTimeoutNotSet() {
         MySQLContainer<Nothing>("mysql:8.0").use { mySQLContainer ->
             mySQLContainer.start()
-            val connectionProperties = Map.of<String, String>()
+            val connectionProperties = mapOf<String, String>()
             val dataSource =
                 DataSourceFactory.create(
-                    mySQLContainer.getUsername(),
-                    mySQLContainer.getPassword(),
-                    mySQLContainer.getDriverClassName(),
+                    mySQLContainer.username,
+                    mySQLContainer.password,
+                    mySQLContainer.driverClassName,
                     mySQLContainer.getJdbcUrl(),
                     connectionProperties,
                     JdbcConnector.getConnectionTimeout(
                         connectionProperties,
-                        mySQLContainer.getDriverClassName()
+                        mySQLContainer.driverClassName
                     )
                 )
             Assertions.assertNotNull(dataSource)
@@ -160,7 +158,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingADataSourceWithJdbcUrlAndConnectionProperties() {
-        val connectionProperties = Map.of("foo", "bar")
+        val connectionProperties = mapOf("foo" to "bar")
 
         val dataSource =
             DataSourceFactory.create(
@@ -182,7 +180,7 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
     @Test
     fun testCreatingADataSourceWithHostAndPort() {
         val dataSource =
-            DataSourceFactory.create(username, password, host, port!!, database, driverClassName)
+            DataSourceFactory.create(username, password, host, port, database, driverClassName)
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
@@ -193,14 +191,14 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingADataSourceWithHostPortAndConnectionProperties() {
-        val connectionProperties = Map.of("foo", "bar")
+        val connectionProperties = mapOf("foo" to "bar")
 
         val dataSource =
             DataSourceFactory.create(
                 username,
                 password,
                 host,
-                port!!,
+                port,
                 database,
                 driverClassName,
                 connectionProperties
@@ -218,14 +216,13 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
         val driverClassName = "Unknown"
 
         Assertions.assertThrows(RuntimeException::class.java) {
-            DataSourceFactory.create(username, password, host, port!!, database, driverClassName)
+            DataSourceFactory.create(username, password, host, port, database, driverClassName)
         }
     }
 
     @Test
     fun testCreatingAPostgresqlDataSource() {
-        val dataSource =
-            DataSourceFactory.createPostgres(username, password, host, port!!, database)
+        val dataSource = DataSourceFactory.createPostgres(username, password, host, port, database)
         Assertions.assertNotNull(dataSource)
         Assertions.assertEquals(HikariDataSource::class.java, dataSource.javaClass)
         Assertions.assertEquals(
@@ -249,24 +246,12 @@ internal class DataSourceFactoryTest : CommonFactoryTest() {
     companion object {
         private const val CONNECT_TIMEOUT = "connectTimeout"
 
-        var database: String? = null
-        lateinit var driverClassName: String
-        var host: String? = null
-        var jdbcUrl: String? = null
-        var password: String? = null
-        var port: Int? = null
-        var username: String? = null
-
-        @JvmStatic
-        @BeforeAll
-        fun setup(): Unit {
-            host = container!!.getHost()
-            port = container!!.getFirstMappedPort()
-            database = container!!.getDatabaseName()
-            username = container!!.getUsername()
-            password = container!!.getPassword()
-            driverClassName = container!!.getDriverClassName()
-            jdbcUrl = container!!.getJdbcUrl()
-        }
+        var database: String = container.databaseName
+        var driverClassName: String = container.driverClassName
+        var host: String = container.host
+        var jdbcUrl: String = container.getJdbcUrl()
+        var password: String = container.password
+        var port: Int = container.firstMappedPort
+        var username: String = container.username
     }
 }

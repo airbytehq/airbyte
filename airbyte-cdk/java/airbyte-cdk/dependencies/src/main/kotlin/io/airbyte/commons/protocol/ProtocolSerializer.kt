@@ -6,5 +6,5 @@ package io.airbyte.commons.protocol
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
 
 interface ProtocolSerializer {
-    fun serialize(configuredAirbyteCatalog: ConfiguredAirbyteCatalog): String?
+    fun serialize(configuredAirbyteCatalog: ConfiguredAirbyteCatalog): String
 }

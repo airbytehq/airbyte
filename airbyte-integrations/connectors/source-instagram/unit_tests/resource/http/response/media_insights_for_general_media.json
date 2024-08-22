@@ -1,0 +1,112 @@
+{
+  "data": [
+    {
+      "name": "impressions",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 10000
+        }
+      ],
+      "title": "Impressions",
+      "description": "The number of times your media was displayed.",
+      "id": "35076616084176123/insights/impressions/lifetime"
+    },
+    {
+      "name": "reach",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 8000
+        }
+      ],
+      "title": "Reach",
+      "description": "The number of unique accounts that viewed your media.",
+      "id": "35076616084176123/insights/reach/lifetime"
+    },
+    {
+      "name": "saved",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 200
+        }
+      ],
+      "title": "Saves",
+      "description": "The number of saves of your media.",
+      "id": "35076616084176123/insights/saved/lifetime"
+    },
+    {
+      "name": "video_views",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 5000
+        }
+      ],
+      "title": "Video Views",
+      "description": "The number of times your video was viewed.",
+      "id": "35076616084176123/insights/video_views/lifetime"
+    },
+    {
+      "name": "likes",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 150
+        }
+      ],
+      "title": "Likes",
+      "description": "The number of likes on your media.",
+      "id": "35076616084176123/insights/likes/lifetime"
+    },
+    {
+      "name": "comments",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 50
+        }
+      ],
+      "title": "Comments",
+      "description": "The number of comments on your media.",
+      "id": "35076616084176123/insights/comments/lifetime"
+    },
+    {
+      "name": "shares",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 25
+        }
+      ],
+      "title": "Shares",
+      "description": "The number of shares of your media.",
+      "id": "35076616084176123/insights/shares/lifetime"
+    },
+    {
+      "name": "follows",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 53
+        }
+      ],
+      "title": "Follows title",
+      "description": "Follows description.",
+      "id": "35076616084176123/insights/follows/lifetime"
+    },
+    {
+      "name": "profile_visits",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 9
+        }
+      ],
+      "title": "Profile visits title",
+      "description": "Profile visits description.",
+      "id": "35076616084176123/insights/profile_visits/lifetime"
+    }
+  ]
+}

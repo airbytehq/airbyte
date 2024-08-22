@@ -13,7 +13,7 @@ object CatalogDefinitionsConfig {
     val localConnectorCatalogPath: String
         get() {
             val customCatalogPath = EnvConfigs().localCatalogPath
-            if (customCatalogPath!!.isPresent) {
+            if (customCatalogPath.isPresent) {
                 return customCatalogPath.get()
             }
 

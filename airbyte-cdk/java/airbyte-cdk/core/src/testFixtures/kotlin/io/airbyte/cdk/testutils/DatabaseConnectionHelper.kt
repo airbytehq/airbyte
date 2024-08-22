@@ -21,9 +21,9 @@ object DatabaseConnectionHelper {
      * @return The configured [DataSource].
      */
     @JvmStatic
-    fun createDataSource(container: JdbcDatabaseContainer<*>?): DataSource? {
+    fun createDataSource(container: JdbcDatabaseContainer<*>): DataSource {
         return DataSourceFactory.create(
-            container!!.username,
+            container.username,
             container.password,
             container.driverClassName,
             container.jdbcUrl
@@ -38,9 +38,9 @@ object DatabaseConnectionHelper {
      * @return The configured [DSLContext].
      */
     @JvmStatic
-    fun createDslContext(container: JdbcDatabaseContainer<*>?, dialect: SQLDialect?): DSLContext? {
+    fun createDslContext(container: JdbcDatabaseContainer<*>, dialect: SQLDialect?): DSLContext? {
         return DSLContextFactory.create(
-            container!!.username,
+            container.username,
             container.password,
             container.driverClassName,
             container.jdbcUrl,

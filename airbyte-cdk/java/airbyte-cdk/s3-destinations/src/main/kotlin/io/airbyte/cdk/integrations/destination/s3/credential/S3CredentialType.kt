@@ -5,5 +5,6 @@ package io.airbyte.cdk.integrations.destination.s3.credential
 
 enum class S3CredentialType {
     ACCESS_KEY,
-    DEFAULT_PROFILE
+    DEFAULT_PROFILE,
+    ASSUME_ROLE
 }
