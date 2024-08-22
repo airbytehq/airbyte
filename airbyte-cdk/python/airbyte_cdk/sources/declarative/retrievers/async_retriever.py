@@ -9,21 +9,16 @@ from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.retrievers import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState, Record
 from airbyte_cdk.sources.streams.core import StreamData
 
 
-@dataclass
 class AsyncRetriever(Retriever):
-    stream_slicer: StreamSlicer
-    job_orchestrator_factory: Callable[[Iterable[StreamSlice]], AsyncJobOrchestrator]
-    parameters: InitVar[Mapping[str, Any]]
-                                       
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._stream_slicer = self.stream_slicer
-        self._job_orchestrator_factory = self.job_orchestrator_factory
+
+    def __init__(self, stream_slicer: StreamSlicer, job_orchestrator_factory: Callable[[Iterable[StreamSlice]], AsyncJobOrchestrator]) -> None:
+        self._stream_slicer = stream_slicer
+        self._job_orchestrator_factory = job_orchestrator_factory
         self.__job_orchestrator: Optional[AsyncJobOrchestrator] = None
-        self._parameters = parameters
 
     @property
     def state(self) -> StreamState:
@@ -54,20 +49,20 @@ class AsyncRetriever(Retriever):
         self.__job_orchestrator = self._job_orchestrator_factory(self._stream_slicer.stream_slices())
 
         for completed_partition in self._job_orchestrator.create_and_get_completed_partitions():
-            yield {"partition": completed_partition}
+            yield StreamSlice(
+                partition={"partition": completed_partition},
+                cursor_slice={}
+            )
 
     def read_records(
         self, 
         records_schema: Mapping[str, Any], 
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
-        if not stream_slice or "partition" not in stream_slice:
+        if not isinstance(stream_slice, StreamSlice) or "partition" not in stream_slice.partition:
             raise AirbyteTracedException(
                 message="Invalid arguments to AsyncJobRetriever.read_records: stream_slice is no optional. Please contact Airbyte Support",
                 failure_type=FailureType.system_error,
             )
-        yield from self._job_orchestrator.fetch_records(stream_slice["partition"])
-
-    
-
-    
+        for record in self._job_orchestrator.fetch_records(stream_slice["partition"]):
+            yield Record(record, stream_slice)
