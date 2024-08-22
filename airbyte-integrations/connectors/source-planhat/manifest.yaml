@@ -612,7 +612,7 @@ definitions:
     url_base: https://api.planhat.com
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_token\"] }}"
+      api_token: '{{ config["api_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/assets"
