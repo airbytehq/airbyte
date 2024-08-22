@@ -158,9 +158,9 @@ definitions:
     # Docs: https://developers.klaviyo.com/en/reference/get_events
     name: "events"
     $ref: "#/definitions/base_incremental_stream"
-    retriever: 
+    retriever:
       $ref: "#/definitions/base_retriever"
-      requester:  
+      requester:
         $ref: "#/definitions/requester"
         request_parameters:
           "fields%5Bmetric%5D": "name,created,updated,integration"
