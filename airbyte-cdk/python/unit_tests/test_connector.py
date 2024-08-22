@@ -15,7 +15,6 @@ import pytest
 import yaml
 from airbyte_cdk import Connector
 from airbyte_cdk.models import AirbyteConnectionStatus
-from pydantic import AnyUrl
 
 logger = logging.getLogger("airbyte")
 

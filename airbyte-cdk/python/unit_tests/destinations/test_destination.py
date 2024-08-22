@@ -28,7 +28,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from models import AirbyteMessageSerializer
-from models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
 from orjson import orjson
 
 
@@ -197,7 +197,7 @@ class TestRun:
         parsed_args = argparse.Namespace(**args)
         destination.run_cmd(parsed_args)
 
-        spec = {"type": "integer"}
+        spec = {'type': 'integer'}
         spec_msg = ConnectorSpecification(connectionSpecification=spec)
 
         mocker.patch.object(destination, "spec", return_value=spec_msg)
@@ -217,7 +217,7 @@ class TestRun:
         assert returned_check_result.type == Type.CONNECTION_STATUS
         assert returned_check_result.connectionStatus.status == Status.FAILED
         # the specific phrasing is not relevant, so only check for the keywords
-        assert "validation error" in returned_check_result.connectionStatus.message
+        assert 'validation error' in returned_check_result.connectionStatus.message
 
     def test_run_write(self, mocker, destination: Destination, tmp_path, monkeypatch):
         config_path, dummy_config = tmp_path / "config.json", {"user": "sherif"}

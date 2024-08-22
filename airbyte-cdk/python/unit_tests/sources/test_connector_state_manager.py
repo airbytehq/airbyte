@@ -9,7 +9,7 @@ import pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, HashableStreamDescriptor
-from models.airbyte_protocol import AirbyteStateMessageSerializer
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer
 
 
 @pytest.mark.parametrize(

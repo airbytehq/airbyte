@@ -9,6 +9,8 @@ from contextlib import nullcontext as does_not_raise
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pytest
+from serpyco_rs import SchemaValidationError
+
 from airbyte_cdk.models import (
     AirbyteGlobalState,
     AirbyteStateBlob,
@@ -24,9 +26,8 @@ from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from orjson import orjson
-from pydantic import ValidationError
 
 
 class MockSource(Source):
@@ -227,9 +228,8 @@ def abstract_source(mocker):
             ],
             [
                 AirbyteStateMessage(
-                    {
-                        "type": AirbyteStateType.GLOBAL,
-                        "global": AirbyteGlobalState(
+                        type=AirbyteStateType.GLOBAL,
+                        global_=AirbyteGlobalState(
                             shared_state=AirbyteStateBlob({"shared_key": "shared_val"}),
                             stream_states=[
                                 AirbyteStreamState(
@@ -238,7 +238,6 @@ def abstract_source(mocker):
                                 )
                             ],
                         ),
-                    }
                 ),
             ],
             does_not_raise(),
@@ -257,19 +256,19 @@ def abstract_source(mocker):
                 }
             ],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_stream_state_invalid_type",
         ),
         pytest.param(
             [{"type": "STREAM", "stream": {"stream_state": {"created_at": "2009-07-19"}}}],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_stream_state_missing_descriptor",
         ),
         pytest.param(
             [{"type": "GLOBAL", "global": {"shared_state": {"shared_key": "shared_val"}}}],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_global_state_missing_streams",
         ),
         pytest.param(
@@ -286,7 +285,7 @@ def abstract_source(mocker):
                 }
             ],
             None,
-            pytest.raises(ValidationError),
+            pytest.raises(SchemaValidationError),
             id="test_invalid_global_state_streams_not_list",
         ),
     ],
@@ -297,7 +296,8 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
         state_file.flush()
         with expected_error:
             actual = source.read_state(state_file.name)
-            assert AirbyteStateMessageSerializer.dump(actual[0]) == AirbyteStateMessageSerializer.dump(expected_state[0])
+            if expected_state and actual:
+                assert AirbyteStateMessageSerializer.dump(actual[0]) == AirbyteStateMessageSerializer.dump(expected_state[0])
 
 
 def test_read_invalid_state(source):

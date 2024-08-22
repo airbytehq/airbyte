@@ -16,7 +16,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     Level,
     Type,
 )
-from models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
 
 
 def _generate_record_message(index: int, stream: str = "example_stream", namespace: Optional[str] = None):
