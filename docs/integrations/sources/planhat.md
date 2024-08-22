@@ -26,39 +26,23 @@ This Source is capable of syncing the following core Streams:
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| assets | _id | DefaultPaginator | ✅ |  ❌  |
-
-| churn | _id | DefaultPaginator | ✅ |  ❌  |
-
-| companies | _id | DefaultPaginator | ✅ |  ❌  |
-
-| conversations | _id | DefaultPaginator | ✅ |  ❌  |
-
-| custom_fields | _id | DefaultPaginator | ✅ |  ❌  |
-
-| endusers | _id | DefaultPaginator | ✅ |  ❌  |
-
-| invoices | _id | DefaultPaginator | ✅ |  ❌  |
-
-| issues | _id | DefaultPaginator | ✅ |  ❌  |
-
-| licenses | _id | DefaultPaginator | ✅ |  ❌  |
-
-| nps | _id | DefaultPaginator | ✅ |  ❌  |
-
-| workflows | _id | DefaultPaginator | ✅ |  ❌  |
-
-| opportunities | _id | DefaultPaginator | ✅ |  ❌  |
-
-| objectives | _id | DefaultPaginator | ✅ |  ❌  |
-
-| sales | _id | DefaultPaginator | ✅ |  ❌  |
-
-| tasks | _id | DefaultPaginator | ✅ |  ❌  |
-
-| tickets | _id | DefaultPaginator | ✅ |  ❌  |
-
-| users | _id | DefaultPaginator | ✅ |  ❌  |
+| `assets` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `churn` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `companies` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `conversations` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `custom_fields` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `endusers` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `invoices` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `issues` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `licenses` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `nps` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `workflows` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `opportunities` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `objectives` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `sales` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `tasks` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `tickets` | `_id` | DefaultPaginator | ✅ |  ❌  |
+| `users` | `_id` | DefaultPaginator | ✅ |  ❌  |
 
 
 ## Changelog
