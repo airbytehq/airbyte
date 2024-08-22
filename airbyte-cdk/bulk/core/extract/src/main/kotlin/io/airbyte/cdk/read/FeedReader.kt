@@ -216,6 +216,7 @@ class FeedReader(
     private suspend fun awaitAllPartitionReaders(
         scheduled: Map<Long, Deferred<Result<PartitionReadCheckpoint>>>,
     ) {
+        // Waiting for other partitions to finish
         fun label(partitionReaderID: Long): String =
             "partition $partitionReaderID / ${scheduled.size} for '${feed.label}'"
         // This map stores known results for all  PartitionReader instances.

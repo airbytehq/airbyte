@@ -40,7 +40,10 @@ class DiscoverOperation(
                     val primaryKey: List<List<String>> = metadataQuerier.primaryKey(name, namespace)
                     val discoveredStream = DiscoveredStream(name, namespace, fields, primaryKey)
                     airbyteStreams.add(toAirbyteStream(discoveredStream))
+                    // TODO : Override sync modes, remove incremental w/pk, add cdc metadata if
+                    // global
                 }
+
             }
         }
         outputConsumer.accept(AirbyteCatalog().withStreams(airbyteStreams))
