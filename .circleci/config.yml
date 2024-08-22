@@ -10,63 +10,63 @@ jobs:
   dependencies_facebook:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-facebook-marketing
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_applovin:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-applovin
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_tiktok:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-tiktok-marketing
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_googleads:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-google-ads
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_ironsource:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-ironsource
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_mintegral:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-mintegral
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_snapchat:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-snapchat-marketing
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_unity:
     working_directory: ~/airbyte/airbyte-integrations/connectors/source-unity
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
   dependencies_destination_postgres:
     working_directory: ~/airbyte/airbyte-integrations/connectors/destination-postgres
     machine:
-      image: ubuntu-2004:202201-02
+      image: ubuntu-2204:2024.05.1
     steps:
       - checkout
 
