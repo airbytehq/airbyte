@@ -119,43 +119,6 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
         }
     }
 
-    private fun getFinalTableGeneration(id: StreamId, suffix: String): Long? {
-        val finalTable = bq.getTable(TableId.of(id.finalNamespace, id.finalName + suffix))
-        if (finalTable == null || !finalTable.exists()) {
-            return null
-        }
-
-        val tableDef = finalTable.getDefinition<StandardTableDefinition>()
-        val hasGenerationId: Boolean =
-            tableDef.schema
-                ?.fields
-                // Field doesn't have a hasColumn(String) method >.>
-                ?.any { it.name == JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID }
-                ?: false
-        if (!hasGenerationId) {
-            return null
-        }
-
-        val result =
-            bq.query(
-                QueryJobConfiguration.of(
-                    """
-                SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID}
-                FROM ${id.finalTableId(BigQuerySqlGenerator.QUOTE, suffix)}
-                """.trimIndent()
-                )
-            )
-        if (result.totalRows == 0L) {
-            return null
-        }
-        val value = result.iterateAll().first().get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value == null || value.isNull) {
-            0
-        } else {
-            value.longValue
-        }
-    }
-
     @Throws(InterruptedException::class)
     override fun execute(sql: Sql) {
         val transactions = sql.asSqlStrings("BEGIN TRANSACTION", "COMMIT TRANSACTION")
@@ -273,8 +236,13 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                             id
                         ), // Return a default state blob since we don't actually track state.
                     BigQueryDestinationState(false),
-                    finalTableGenerationId = getFinalTableGeneration(id, ""),
-                    finalTempTableGenerationId = getFinalTableGeneration(id, TMP_TABLE_SUFFIX)
+                    // for now, just use 0. this means we will always use a temp final table.
+                    // platform has a workaround for this, so it's OK.
+                    // TODO only fetch this on truncate syncs
+                    // TODO once we have destination state, use that instead of a query
+                    finalTableGenerationId = 0,
+                    // temp table is always empty until we commit, so always return null
+                    finalTempTableGenerationId = null,
                 )
             )
         }
