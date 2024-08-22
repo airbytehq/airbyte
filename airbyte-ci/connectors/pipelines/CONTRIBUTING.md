@@ -365,14 +365,27 @@ This function:
 - Uploads the report to remote storage if we're in CI
 - Updates the per connector commit status check
 
-## How to add task to a task
-To add a task to an existing Python project (eg the Python CDK),
-1. Define the task command (`codeflash = {cmd = "poetry run codeflash", help = "Run codeflash to check code quality."}`)
-2. Add the task to the list of poe_tasks (`poe_tasks = ["check-ci", "codeflash"]`)
-3. Define the environment variables that `required_environment_variables = ["CODEFLASH_API_KEY"]`
-4. Add the secret to the [repository's environment secrets](https://github.com/airbytehq/airbyte/settings/secrets/actions)
-5. Add the environment variable as input to the airbyte-ci Github action ([example](https://github.com/airbytehq/airbyte/pull/44427/files#diff-ce432ff29f2547c1bfdfd6d8080fc9798498b6a7bcf12c1206c9a82592b3e461R79-R81))
-6. Update the airbyte-ci Github action to pass to environment variable to the airbyte-ci runner ([example](https://github.com/airbytehq/airbyte/pull/44427/files#diff-ce432ff29f2547c1bfdfd6d8080fc9798498b6a7bcf12c1206c9a82592b3e461R155))
-7. Update the airbyte-ci-tests Github action to pass the secret as an input the to airbyte-ci action ([example](https://github.com/airbytehq/airbyte/pull/44427/files#diff-264f93156267ad623b4ce4baa3ce7419066186caf8fc67cae6881760c4c2eb67R92))
+## How to add CI to a Poetry package
 
-You can use [this PR](https://github.com/airbytehq/airbyte/pull/44427/) as reference.
+*You can use [this PR](https://github.com/airbytehq/airbyte/pull/44427/) as reference.*
+
+The `airbyte-ci test -p <path-to-poetry-package>` command is made to run CI on our poetry packages.
+*It's not well named ATM as it can do more than just run tests.*
+This command is made to run [`poe` tasks](https://poethepoet.natn.io/index.html) that are declared in `pyproject.toml` of the package.
+The idea is that the CI logic is declared in the package itself and `airbyte-ci` is just orchestrating the execution of the tasks.
+Configuring what's running in CI is done by adding a `[tool.airbyte_ci]` section in the `pyproject.toml` file of the package (example [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/pyproject.toml#L112)).
+
+So to add a `poe` task to be run automatically in CI you have to:
+1. Declare your package as an internal one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/airbyte_ci/test/__init__.py#L7) and [there](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/airbyte-ci-tests.yml#L46)
+2. Define the `poe` task in the `pyproject.toml` of the package under the `[tool.poe.tasks]` section.
+3. Add it to the list of `poe_tasks` in the `[tool.airbyte_ci]` section of the `pyproject.toml` file (this determines which poe tasks runs in CI).
+
+### `poe` tasks that depend on environment variables
+If your `poe` task depends on environment variables you have to declare them in the `required_environment_variables` list of the `[tool.airbyte_ci]` section of the `pyproject.toml` file. To set these env var in CI you have to add them to the `env` section of the `airbyte-ci-tests` Github action [here](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/airbyte-ci-tests.yml).
+
+### `poe` tasks that depend on a Docker engine
+If your `poe` task needs to interact with a Docker engine you have to set `mount_docker_socket = true` in the `[tool.airbyte_ci]` section of the `pyproject.toml` file. This will mount the docker socket of the Github runner to the container running the `poe` task.
+
+### `poe` tasks that depend on `extras`
+If your `poe` task depends on `extras` you have to declare them in the `poetry_extras` list of the `[tool.airbyte_ci]` section of the `pyproject.toml` file. This will install the extras when running the `poe` task. 
+
