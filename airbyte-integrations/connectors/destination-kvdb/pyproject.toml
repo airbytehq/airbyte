@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.10"
+version = "0.1.11"
 name = "destination-kvdb"
 description = "Destination implementation for kvdb."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -27,5 +27,5 @@ destination-kvdb = "destination_kvdb.run:run"
 requests-mock = "^1.9.3"
 freezegun = "^1.2"
 pytest-mock = "^3.6.1"
-pytest = "^6.2"
+pytest = "^8.3.2"
 responses = "^0.23.1"

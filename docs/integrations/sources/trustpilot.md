@@ -61,6 +61,7 @@ The Trustpilot connector should not run into any limits under normal usage. Plea
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.2.6 | 2024-08-17 | [44253](https://github.com/airbytehq/airbyte/pull/44253) | Update dependencies |
 | 0.2.5 | 2024-08-12 | [43819](https://github.com/airbytehq/airbyte/pull/43819) | Update dependencies |
 | 0.2.4 | 2024-08-10 | [43618](https://github.com/airbytehq/airbyte/pull/43618) | Update dependencies |
 | 0.2.3 | 2024-08-03 | [43213](https://github.com/airbytehq/airbyte/pull/43213) | Update dependencies |

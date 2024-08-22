@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.44.13'
+    cdkVersionRequired = '0.44.15'
     features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
@@ -15,7 +15,14 @@ application {
     mainClass = 'io.airbyte.integrations.destination.s3.S3DestinationRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 
+    // uncomment and replace to run locally
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
 }
+
+// uncomment to run locally
+//run {
+//    standardInput = System.in
+//}
 
 dependencies {
 

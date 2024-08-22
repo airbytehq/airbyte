@@ -339,6 +339,28 @@ def test_erd_url():
     assert result["erdUrl"] == "https://an-erd.com"
 
 
+def test_sbom_url():
+    """
+    Test that if when defined in the metadata, the sbom url will be populated in the registry
+    """
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "dockerRepository": "test-connector",
+            "dockerImageTag": "test-tag",
+            "generated": {"sbomUrl": "test-sbom-url"},
+        }
+    }
+    mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["generated"]["sbomUrl"] == "test-sbom-url"
+
+
 def test_support_level_default():
     """
     Test if supportLevel is defaulted to alpha in the registry entry.

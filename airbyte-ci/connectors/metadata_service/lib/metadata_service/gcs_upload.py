@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 import git
+import requests
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -237,6 +238,18 @@ def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_f
     return metadata_dict
 
 
+def _apply_sbom_url_to_metadata_file(metadata_dict: dict) -> dict:
+    """Apply sbom url to the metadata file before uploading it to GCS."""
+    try:
+        sbom_url = f"https://connectors.airbyte.com/files/sbom/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}.spdx.json"
+    except KeyError:
+        return metadata_dict
+    response = requests.head(sbom_url)
+    if response.ok:
+        metadata_dict = set_(metadata_dict, "data.generated.sbomUrl", sbom_url)
+    return metadata_dict
+
+
 def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
     """Write the metadata to a temporary file."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
@@ -263,7 +276,7 @@ def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, val
     metadata = _safe_load_metadata_file(original_metadata_file_path)
     metadata = _apply_prerelease_overrides(metadata, validator_opts)
     metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
-
+    metadata = _apply_sbom_url_to_metadata_file(metadata)
     return _write_metadata_to_tmp_file(metadata)
 
 
