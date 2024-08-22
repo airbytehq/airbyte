@@ -1,0 +1,3 @@
+{"stream": "ID_AND_NAME_CAT", "data": {"ID": "1", "NAME": "one"}, "emitted_at": 999999}
+{"stream": "ID_AND_NAME_CAT", "data": {"ID": "2", "NAME": "two"}, "emitted_at": 999999}
+{"stream": "ID_AND_NAME_CAT", "data": {"ID": "3", "NAME": "three"}, "emitted_at": 999999}

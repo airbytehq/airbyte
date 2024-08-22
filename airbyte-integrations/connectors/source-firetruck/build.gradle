@@ -28,7 +28,7 @@ tasks.named('check').configure {
 }
 
 dependencies {
-    def vBulkCDK = '0.12'
+    def vBulkCDK = '0.14'
     def vMicronaut = '4.6.1'
 
     ksp "io.micronaut:micronaut-inject-kotlin:${vMicronaut}"

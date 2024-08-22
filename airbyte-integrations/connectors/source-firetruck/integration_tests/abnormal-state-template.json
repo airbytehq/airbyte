@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "cursors": {
+          "ID": "9000"
+        }
+      },
+      "stream_descriptor": {
+        "name": "ID_AND_NAME_CAT",
+        "namespace": "%s"
+      }
+    }
+  }
+]

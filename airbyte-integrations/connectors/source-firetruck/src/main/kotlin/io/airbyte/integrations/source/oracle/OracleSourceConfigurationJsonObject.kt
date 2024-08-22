@@ -194,7 +194,7 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13,"display_type":"check"}""")
+    @JsonSchemaInject(json = """{"order":13}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +

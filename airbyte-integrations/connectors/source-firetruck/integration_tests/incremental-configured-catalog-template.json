@@ -1,0 +1,33 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ID_AND_NAME_CAT",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "NAME": {
+              "type": "string"
+            },
+            "ID": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": [],
+        "source_defined_cursor": false,
+        "source_defined_primary_key": [["ID"]],
+        "namespace": "%s",
+        "is_resumable": true
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["ID"],
+      "primary_key": [["ID"]],
+      "minimum_generation_id": 1,
+      "generation_id": 1,
+      "sync_id": 1
+    }
+  ]
+}
