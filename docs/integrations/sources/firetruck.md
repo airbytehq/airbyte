@@ -237,5 +237,6 @@ The connector is still incubating, this section only exists to satisfy Airbyte's
 - 0.0.14
 - 0.0.15
 - 0.0.16
+- 0.0.17
 
 </details>
