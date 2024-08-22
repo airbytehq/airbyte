@@ -58,6 +58,8 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.1 | 2024-08-17 | [44274](https://github.com/airbytehq/airbyte/pull/44274) | Update dependencies |
+| 3.4.0 | 2024-07-16 | [41969](https://github.com/airbytehq/airbyte/pull/41969) | Update to v4 CDK |
 | 3.3.3 | 2024-08-10 | [43575](https://github.com/airbytehq/airbyte/pull/43575) | Update dependencies |
 | 3.3.2 | 2024-08-03 | [43182](https://github.com/airbytehq/airbyte/pull/43182) | Update dependencies |
 | 3.3.1 | 2024-07-27 | [42391](https://github.com/airbytehq/airbyte/pull/42391) | Update dependencies |
