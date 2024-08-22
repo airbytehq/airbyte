@@ -9,11 +9,11 @@ from copy import deepcopy
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
-import pandas as pd
+import polars as pl
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
@@ -78,11 +78,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
-    def read_records_from_slice_as_dataframes(self, stream_slice: StreamSlice) -> Iterable[pd.DataFrame]:
-        """
-        Yield dataframes from from all remote files in `list_files_for_this_sync`.
-        """
-        ...
+    def read_records_from_slice_as_dataframes(
+        self,
+        stream_slice: StreamSlice,
+    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
+        """Yield dataframes from from all remote files in `list_files_for_this_sync`."""
+        for file in stream_slice["files"]:
+            yield from self.get_parser().parse_records_as_dataframes(
+                config=self.config,
+                file=file,
+                stream_reader=self.stream_reader,
+                logger=self.logger,
+            )
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
         """

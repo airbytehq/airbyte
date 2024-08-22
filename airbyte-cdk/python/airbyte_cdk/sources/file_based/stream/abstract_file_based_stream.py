@@ -2,16 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
+import logging
 from abc import abstractmethod
+from collections.abc import MutableMapping
 from functools import cache, cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 
-import pandas as pd
+import polars as pl
 from deprecated import deprecated
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, RecordMessage, SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector, FileBasedSourceError, RecordParseError, UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -22,6 +25,9 @@ from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.checkpoint import Cursor
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class AbstractFileBasedStream(Stream):
@@ -86,6 +92,149 @@ class AbstractFileBasedStream(Stream):
         """
         ...
 
+    def read(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+        self,
+        configured_stream: ConfiguredAirbyteStream,
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager,
+        internal_config: InternalConfig,
+    ) -> Iterable[StreamData]:
+        if not self.config.bulk_mode or self.config.bulk_mode == BulkMode.DISABLED:
+            # Use the default `Stream.read()` method if bulk mode is disabled.
+            return super().read(
+                configured_stream=configured_stream,
+                logger=logger,
+                slice_logger=slice_logger,
+                stream_state=stream_state,
+                state_manager=state_manager,
+                internal_config=internal_config,
+            )
+
+        return self._bulk_read(
+            configured_stream=configured_stream,
+            logger=logger,
+            slice_logger=slice_logger,
+            stream_state=stream_state,
+            state_manager=state_manager,
+            internal_config=internal_config,
+        )
+
+    def _records_df_to_record_messages(
+        dataframe: pl.DataFrame | pl.LazyFrame,
+        /,
+    ) -> Iterable[AirbyteMessage]:
+        return (AirbyteMessage(RecordMessage(data=record_data)) for record_data in dataframe.to_dict(orient="records"))
+
+    def _bulk_read(
+        self,
+        configured_stream: "ConfiguredAirbyteStream",
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager,
+        internal_config: InternalConfig,
+    ) -> Iterable["AirbyteMessage"]:
+        """Similar to the default `Stream.read()` method, but for bulk mode streams.
+
+        This method will return iterable AirbyteMessages, and not StreamData. Callers can
+        emit these messages directly to the output without further processing. This
+        is to take advantage of the bulk processing capabilities of file-based streams.
+        """
+        # Else we are in bulk mode, so we need to use the file-based read method.
+
+        ############################################################################################
+        # READER'S NOTE: The below was copied from the default `Stream.read()` method and modified
+        #                to use the file-based read method.
+        ############################################################################################
+
+        sync_mode = configured_stream.sync_mode
+        cursor_field = configured_stream.cursor_field
+        self.configured_json_schema = configured_stream.stream.json_schema
+
+        # WARNING: When performing a read() that uses incoming stream state, we MUST use the self.state that is defined as
+        # opposed to the incoming stream_state value. Because some connectors like ones using the file-based CDK modify
+        # state before setting the value on the Stream attribute, the most up-to-date state is derived from Stream.state
+        # instead of the stream_state parameter. This does not apply to legacy connectors using get_updated_state().
+        try:
+            stream_state = self.state  # type: ignore # we know the field might not exist...
+        except AttributeError:
+            pass
+
+        should_checkpoint = bool(state_manager)
+        checkpoint_reader = self._get_checkpoint_reader(
+            logger=logger, cursor_field=cursor_field, sync_mode=sync_mode, stream_state=stream_state
+        )
+
+        next_slice = checkpoint_reader.next()
+        record_counter = 0
+        stream_state_tracker = copy.deepcopy(stream_state)
+        while next_slice is not None:
+            if slice_logger.should_log_slice_message(logger):
+                yield slice_logger.create_slice_log_message(next_slice)
+
+            ############################################################################################
+            # READER'S NOTE: Nothing has been modified from the last note until here.
+            ############################################################################################
+            record_counter = 0
+
+            records_dfs: Iterable[pl.DataFrame | pl.LazyFrame] = self.read_records_as_dataframes(
+                sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
+                stream_slice=next_slice,
+                stream_state=stream_state,
+                cursor_field=cursor_field or None,
+            )
+
+            for records_df in records_dfs:
+                # Perform validation and envelope wrapping in bulk, then
+                # emit the record messages.
+                yield from self._records_df_to_record_messages(
+                    records_df,
+                    self.configured_json_schema,
+                    self.name,
+                    self.errors_collector,
+                )
+
+                # if self.cursor_field:
+                #     # TODO: Implement cursor tracking for file-based streams.
+                #     # In theory, this could be the file modified timestamps, in which case we don't
+                #     # need to do anything here.
+                #     # It could also (in theory) be a column in the file, in which case we would need
+                #     # to calculate max(self.cursor_field) for each dataframe, and use that to
+                #     # update the state tracker.
+
+                #     # OLD CODE:
+                #     # stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)
+                #     # self._observe_state(checkpoint_reader, stream_state_tracker)
+
+                # READER'S NOTE: Not changed below.
+                record_counter += records_df.shape[0]
+
+                checkpoint_interval = self.state_checkpoint_interval
+                checkpoint = checkpoint_reader.get_checkpoint()
+                if should_checkpoint and checkpoint_interval and record_counter % checkpoint_interval == 0 and checkpoint is not None:
+                    airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
+                    yield airbyte_state_message
+
+                if internal_config.is_limit_reached(record_counter):
+                    break
+                # READER'S NOTE: Not changed above, from last note until here.
+
+            # TODO: Replace this with a dataframe 'max' operation, or similar:
+            # self._observe_state(checkpoint_reader)
+            checkpoint_state = checkpoint_reader.get_checkpoint()
+            if should_checkpoint and checkpoint_state is not None:
+                airbyte_state_message = self._checkpoint_state(checkpoint_state, state_manager=state_manager)
+                yield airbyte_state_message
+
+            next_slice = checkpoint_reader.next()
+
+        checkpoint = checkpoint_reader.get_checkpoint()
+        if should_checkpoint and checkpoint is not None:
+            airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
+            yield airbyte_state_message
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -102,6 +251,23 @@ class AbstractFileBasedStream(Stream):
             raise ValueError("stream_slice must be set")
         return self.read_records_from_slice(stream_slice)
 
+    def read_records_as_dataframes(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
+        """
+        Yield dataframes from from all remote files in `list_files_for_this_sync`.
+        This method acts as an adapter between the generic Stream interface and the file-based's
+        stream since file-based streams manage their own states.
+        """
+        if stream_slice is None:
+            raise ValueError("stream_slice must be set")
+
+        return self.read_records_from_slice_as_dataframes(stream_slice)
+
     @abstractmethod
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """
@@ -110,7 +276,10 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @abstractmethod
-    def read_records_from_slice_as_dataframes(self, stream_slice: StreamSlice) -> Iterable[pd.DataFrame]:
+    def read_records_from_slice_as_dataframes(
+        self,
+        stream_slice: StreamSlice,
+    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
         """
         Yield dataframes from from all remote files in `list_files_for_this_sync`.
         """

@@ -6,7 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
-import pandas as pd
+import polars as pl
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -76,19 +76,19 @@ class FileTypeParser(ABC):
         """
         ...
 
-    @abstractmethod
-    def parse_records_to_dataframes(
+    # TODO: Consider making abstract
+    def parse_records_as_dataframes(
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
-    ) -> Iterable[pd.DataFrame]:
+    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
         """
         Parse records and emit as iterable of Pandas DataFrames.
         """
-        ...
+        raise NotImplementedError
 
     @property
     @abstractmethod

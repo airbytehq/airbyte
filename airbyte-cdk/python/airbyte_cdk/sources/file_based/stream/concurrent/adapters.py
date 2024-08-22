@@ -7,7 +7,7 @@ import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import pandas as pd
+import polars as pl
 from deprecated.classic import deprecated
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteStream, Level, SyncMode, Type
@@ -151,8 +151,11 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         yield from self._legacy_stream.read_records_from_slice(stream_slice)
 
-    def read_records_from_slice_as_dataframes(self, stream_slice: StreamSlice) -> Iterable[pd.DataFrame]:
-        yield from self._legacy_stream.read_records_from_slice_as_dataframes(stream_slice)
+    def read_records_from_slice_as_dataframes(
+        self,
+        stream_slice: StreamSlice,
+    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
+        return self._legacy_stream.read_records_from_slice_as_dataframes(stream_slice)
 
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         return self._legacy_stream.compute_slices()
