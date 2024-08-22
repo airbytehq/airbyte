@@ -44,7 +44,7 @@ class AirbyteStateMessage:
     type: Optional[AirbyteStateType] = None
     stream: Optional[AirbyteStreamState] = None
     # global_: Optional[AirbyteGlobalState] = None
-    global_: Annotated[AirbyteGlobalState, Alias("global")] | None = None
+    global_: Annotated[AirbyteGlobalState, Alias("global"), None] = None
     data: Optional[Dict[str, Any]] = None
     sourceStats: Optional[AirbyteStateStats] = None
     destinationStats: Optional[AirbyteStateStats] = None
