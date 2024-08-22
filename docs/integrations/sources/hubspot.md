@@ -104,7 +104,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 <FieldAnchor field="start_date">
 
-6. For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date. 
+6. For **Start date**, use the provided datepicker or enter the date in the following format: `yyyy-mm-ddThh:mm:ssZ`. Data added on and after this date will be replicated. If this is not set, "2006-06-01T00:00:00Z" (the date Hubspot was created) will be used as a start date.
 
 </FieldAnchor>
 
@@ -276,9 +276,9 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
   }
   ```
 
-- **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead. 
+- **Hubspot object labels** In Hubspot, a label can be applied to a stream that differs from the original API name of the stream. Hubspot's UI shows the label of the stream, whereas Airbyte shows the name of the stream. If you are having issues seeing a particular stream your user should have access to, search for the `name` of the Hubspot object instead.
 
-- **Unnesting top level properties**: Since version 1.5.0, in order to offer users access to nested fields, we also denest the top-level fields into individual fields in the destination. This is most commonly observed in the `properties` field, which is now split into each attribute in the destination. 
+- **Unnesting top level properties**: Since version 1.5.0, in order to offer users access to nested fields, we also denest the top-level fields into individual fields in the destination. This is most commonly observed in the `properties` field, which is now split into each attribute in the destination.
 
   For instance:
 
@@ -332,6 +332,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.17  | 2024-08-21 | [44538](https://github.com/airbytehq/airbyte/pull/44538) | Fix issue with CRM search streams when they have no `associations`  |
 | 4.2.16  | 2024-08-20 | [42919](https://github.com/airbytehq/airbyte/pull/42919) | Add support for Deal Splits |
 | 4.2.15  | 2024-08-08 | [43381](https://github.com/airbytehq/airbyte/pull/43381) | Fix associations retrieval for Engagements streams (calls, meetings, notes, tasks, emails) in Incremental with existing state |
 | 4.2.14  | 2024-07-27 | [42688](https://github.com/airbytehq/airbyte/pull/42688) | Update dependencies |
