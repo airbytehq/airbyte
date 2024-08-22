@@ -279,6 +279,10 @@ The traffic recorded on the control connector is passed to the target connector 
 
 ## Changelog
 
+### 0.18.5
+
+Relax test_oneof_usage criteria for constant value definitions in connector SPEC output.
+
 ### 0.18.4
 
 Bugfix: Use connection-retriever 0.7.2

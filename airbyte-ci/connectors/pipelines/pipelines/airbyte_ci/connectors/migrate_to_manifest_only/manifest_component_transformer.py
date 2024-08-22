@@ -3,11 +3,64 @@
 #
 
 import copy
+import logging
 import typing
-from typing import Any, Mapping
+from typing import Any, Mapping, Set, Type
+
+from pydantic import BaseModel
+
+from .declarative_component_schema import *
 
 PARAMETERS_STR = "$parameters"
 
+# Mapping of component type to the class that implements it. This is used to fetch the Pydantic model class for a component type
+COMPONENT_TYPE_REGISTY: Dict[str, type] = {
+    "BasicHttpAuthenticator": BasicHttpAuthenticator,
+    "BearerAuthenticator": BearerAuthenticator,
+    "ConstantBackoffStrategy": ConstantBackoffStrategy,
+    "CustomAuthenticator": CustomAuthenticator,
+    "CustomBackoffStrategy": CustomBackoffStrategy,
+    "CustomErrorHandler": CustomErrorHandler,
+    "CustomIncrementalSync": CustomIncrementalSync,
+    "CustomPaginationStrategy": CustomPaginationStrategy,
+    "CustomRecordExtractor": CustomRecordExtractor,
+    "CustomRecordFilter": CustomRecordFilter,
+    "CustomRequester": CustomRequester,
+    "CustomRetriever": CustomRetriever,
+    "CustomPartitionRouter": CustomPartitionRouter,
+    "CustomSchemaLoader": CustomSchemaLoader,
+    "CustomStateMigration": CustomStateMigration,
+    "CustomTransformation": CustomTransformation,
+    "JwtAuthenticator": JwtAuthenticator,
+    "OAuthAuthenticator": OAuthAuthenticator,
+    "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
+    "HttpResponseFilter": HttpResponseFilter,
+    "JsonFileSchemaLoader": JsonFileSchemaLoader,
+    "MinMaxDatetime": MinMaxDatetime,
+    "OffsetIncrement": OffsetIncrement,
+    "PageIncrement": PageIncrement,
+    "RecordFilter": RecordFilter,
+    "LegacySessionTokenAuthenticator": LegacySessionTokenAuthenticator,
+    "WaitTimeFromHeader": WaitTimeFromHeader,
+    "WaitUntilTimeFromHeader": WaitUntilTimeFromHeader,
+    "ApiKeyAuthenticator": ApiKeyAuthenticator,
+    "CursorPagination": CursorPagination,
+    "DatetimeBasedCursor": DatetimeBasedCursor,
+    "DefaultErrorHandler": DefaultErrorHandler,
+    "DefaultPaginator": DefaultPaginator,
+    "DpathExtractor": DpathExtractor,
+    "ListPartitionRouter": ListPartitionRouter,
+    "RecordSelector": RecordSelector,
+    "CompositeErrorHandler": CompositeErrorHandler,
+    "SelectiveAuthenticator": SelectiveAuthenticator,
+    "DeclarativeStream": DeclarativeStream,
+    "SessionTokenAuthenticator": SessionTokenAuthenticator,
+    "HttpRequester": HttpRequester,
+    "ParentStreamConfig": ParentStreamConfig,
+    "SimpleRetriever": SimpleRetriever,
+    "SubstreamPartitionRouter": SubstreamPartitionRouter,
+    "DeclarativeSource": DeclarativeSource,
+}
 
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CompositeErrorHandler
@@ -74,6 +127,15 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "SimpleRetriever.partition_router": "CustomPartitionRouter",
 }
 
+logger = logging.getLogger(__name__)
+
+
+def get_model_fields(model_class: Optional[Type[BaseModel]]) -> Set[str]:
+    """Fetches field names from a Pydantic model class if available."""
+    if model_class is not None:
+        return set(model_class.__fields__.keys())
+    return set()
+
 
 class ManifestComponentTransformer:
     def propagate_types_and_parameters(
@@ -112,6 +174,11 @@ class ManifestComponentTransformer:
         if "type" not in propagated_component or self._is_json_schema_object(propagated_component):
             return propagated_component
 
+        component_type = propagated_component.get("type", "")
+        model_class = COMPONENT_TYPE_REGISTY.get(component_type)
+        # Grab the list of expected fields for the component type
+        valid_fields = get_model_fields(model_class)
+
         # Combines parameters defined at the current level with parameters from parent components. Parameters at the current
         # level take precedence
         current_parameters = dict(copy.deepcopy(parent_parameters))
@@ -121,7 +188,9 @@ class ManifestComponentTransformer:
         # Parameters should be applied to the current component fields with the existing field taking precedence over parameters if
         # both exist
         for parameter_key, parameter_value in current_parameters.items():
-            propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
+            if parameter_key in valid_fields:
+                logger.info(f"Adding parameter {parameter_key} to {component_type}")
+                propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
 
         for field_name, field_value in propagated_component.items():
             if isinstance(field_value, dict):

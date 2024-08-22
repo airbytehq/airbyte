@@ -18,6 +18,7 @@ data:
   dockerImageTag: 4.4.1
   dockerRepository: airbyte/source-amazon-seller-partner
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  erdUrl: https://dbdocs.io/airbyteio/source-amazon-seller-partner?view=relationships
   githubIssueLabel: source-amazon-seller-partner
   icon: amazonsellerpartner.svg
   license: MIT
