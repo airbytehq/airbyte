@@ -57,7 +57,7 @@ class SnowflakeDestinationHandler(
                     namespace: String,
                     name: String
                 ): Long? {
-                    return null
+                    throw NotImplementedError()
                 }
             }
     ) {
@@ -421,6 +421,17 @@ class SnowflakeDestinationHandler(
                             streamConfig.id.asPair(),
                             toDestinationState(emptyObject())
                         )
+                    val finalTableGenerationId =
+                        if (isFinalTablePresent && !isFinalTableEmpty) {
+                            // for now, just use 0. this means we will always use a temp final
+                            // table.
+                            // platform has a workaround for this, so it's OK.
+                            // TODO only fetch this on truncate syncs
+                            // TODO once we have destination state, use that instead of a query
+                            0L
+                        } else {
+                            null
+                        }
                     return@map DestinationInitialStatus<SnowflakeState>(
                         streamConfig,
                         isFinalTablePresent,
@@ -429,7 +440,11 @@ class SnowflakeDestinationHandler(
                         isSchemaMismatch,
                         isFinalTableEmpty,
                         destinationState,
-                        finalTableGenerationId = null,
+                        finalTableGenerationId = finalTableGenerationId,
+                        // I think the temp final table gen is always null?
+                        // since the only time we T+D into the temp table
+                        // is when we're committing the sync anyway
+                        // (i.e. we'll immediately rename it to the real table)
                         finalTempTableGenerationId = null,
                     )
                 } catch (e: Exception) {
