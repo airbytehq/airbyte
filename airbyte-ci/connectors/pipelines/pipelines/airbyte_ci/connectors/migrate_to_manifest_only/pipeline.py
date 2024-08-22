@@ -166,7 +166,7 @@ class StripConnector(Step):
             resolved_manifest = ManifestReferenceResolver().preprocess_manifest(manifest)
             propagated_manifest = ManifestComponentTransformer().propagate_types_and_parameters("", resolved_manifest, {})
             cleaned_manifest = remove_parameters_from_manifest(propagated_manifest)
-            
+
             write_yaml(cleaned_manifest, root_manifest_path)
         except Exception as e:
             return StepResult(step=self, status=StepStatus.FAILURE, stdout=f"Failed to update version in manifest.yaml: {e}")

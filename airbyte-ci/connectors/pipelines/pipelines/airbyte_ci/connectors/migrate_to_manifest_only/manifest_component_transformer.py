@@ -3,61 +3,63 @@
 #
 
 import copy
-import typing
 import logging
+import typing
 from typing import Any, Mapping, Set, Type
-from .declarative_component_schema import *
+
 from pydantic import BaseModel
+
+from .declarative_component_schema import *
 
 PARAMETERS_STR = "$parameters"
 
 # Mapping of component type to the class that implements it. This is used to fetch the Pydantic model class for a component type
 COMPONENT_TYPE_REGISTY: Dict[str, type] = {
-    'BasicHttpAuthenticator': BasicHttpAuthenticator,
-    'BearerAuthenticator': BearerAuthenticator,
-    'ConstantBackoffStrategy': ConstantBackoffStrategy,
-    'CustomAuthenticator': CustomAuthenticator,
-    'CustomBackoffStrategy': CustomBackoffStrategy,
-    'CustomErrorHandler': CustomErrorHandler,
-    'CustomIncrementalSync': CustomIncrementalSync,
-    'CustomPaginationStrategy': CustomPaginationStrategy,
-    'CustomRecordExtractor': CustomRecordExtractor,
-    'CustomRecordFilter': CustomRecordFilter,
-    'CustomRequester': CustomRequester,
-    'CustomRetriever': CustomRetriever,
-    'CustomPartitionRouter': CustomPartitionRouter,
-    'CustomSchemaLoader': CustomSchemaLoader,
-    'CustomStateMigration': CustomStateMigration,
-    'CustomTransformation': CustomTransformation,
-    'JwtAuthenticator': JwtAuthenticator,
-    '0AuthAuthenticator': OAuthAuthenticator,
-    'ExponentialBackoffStrategy': ExponentialBackoffStrategy,
-    'HttpResponseFilter': HttpResponseFilter,
-    'JsonFileSchemaLoader': JsonFileSchemaLoader,
-    'MinMaxDatetime': MinMaxDatetime,
-    'OffsetIncrement': OffsetIncrement,
-    'PageIncrement': PageIncrement,
-    'RecordFilter': RecordFilter,
-    'LegacySessionTokenAuthenticator': LegacySessionTokenAuthenticator,
-    'WaitTimeFromHeader': WaitTimeFromHeader,
-    'WaitUntilTimeFromHeader': WaitUntilTimeFromHeader,
-    'ApiKeyAuthenticator': ApiKeyAuthenticator,
-    'CursorPagination': CursorPagination,
-    'DatetimeBasedCursor': DatetimeBasedCursor,
-    'DefaultErrorHandler': DefaultErrorHandler,
-    'DefaultPaginator': DefaultPaginator,
-    'DpathExtractor': DpathExtractor,
-    'ListPartitionRouter': ListPartitionRouter,
-    'RecordSelector': RecordSelector,
-    'CompositeErrorHandler': CompositeErrorHandler,
-    'SelectiveAuthenticator': SelectiveAuthenticator,
-    'DeclarativeStream': DeclarativeStream,
-    'SessionTokenAuthenticator': SessionTokenAuthenticator,
-    'HttpRequester': HttpRequester,
-    'ParentStreamConfig': ParentStreamConfig,
-    'SimpleRetriever': SimpleRetriever,
-    'SubstreamPartitionRouter': SubstreamPartitionRouter,
-    'DeclarativeSource': DeclarativeSource
+    "BasicHttpAuthenticator": BasicHttpAuthenticator,
+    "BearerAuthenticator": BearerAuthenticator,
+    "ConstantBackoffStrategy": ConstantBackoffStrategy,
+    "CustomAuthenticator": CustomAuthenticator,
+    "CustomBackoffStrategy": CustomBackoffStrategy,
+    "CustomErrorHandler": CustomErrorHandler,
+    "CustomIncrementalSync": CustomIncrementalSync,
+    "CustomPaginationStrategy": CustomPaginationStrategy,
+    "CustomRecordExtractor": CustomRecordExtractor,
+    "CustomRecordFilter": CustomRecordFilter,
+    "CustomRequester": CustomRequester,
+    "CustomRetriever": CustomRetriever,
+    "CustomPartitionRouter": CustomPartitionRouter,
+    "CustomSchemaLoader": CustomSchemaLoader,
+    "CustomStateMigration": CustomStateMigration,
+    "CustomTransformation": CustomTransformation,
+    "JwtAuthenticator": JwtAuthenticator,
+    "0AuthAuthenticator": OAuthAuthenticator,
+    "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
+    "HttpResponseFilter": HttpResponseFilter,
+    "JsonFileSchemaLoader": JsonFileSchemaLoader,
+    "MinMaxDatetime": MinMaxDatetime,
+    "OffsetIncrement": OffsetIncrement,
+    "PageIncrement": PageIncrement,
+    "RecordFilter": RecordFilter,
+    "LegacySessionTokenAuthenticator": LegacySessionTokenAuthenticator,
+    "WaitTimeFromHeader": WaitTimeFromHeader,
+    "WaitUntilTimeFromHeader": WaitUntilTimeFromHeader,
+    "ApiKeyAuthenticator": ApiKeyAuthenticator,
+    "CursorPagination": CursorPagination,
+    "DatetimeBasedCursor": DatetimeBasedCursor,
+    "DefaultErrorHandler": DefaultErrorHandler,
+    "DefaultPaginator": DefaultPaginator,
+    "DpathExtractor": DpathExtractor,
+    "ListPartitionRouter": ListPartitionRouter,
+    "RecordSelector": RecordSelector,
+    "CompositeErrorHandler": CompositeErrorHandler,
+    "SelectiveAuthenticator": SelectiveAuthenticator,
+    "DeclarativeStream": DeclarativeStream,
+    "SessionTokenAuthenticator": SessionTokenAuthenticator,
+    "HttpRequester": HttpRequester,
+    "ParentStreamConfig": ParentStreamConfig,
+    "SimpleRetriever": SimpleRetriever,
+    "SubstreamPartitionRouter": SubstreamPartitionRouter,
+    "DeclarativeSource": DeclarativeSource,
 }
 
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
@@ -127,11 +129,13 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
 
 logger = logging.getLogger(__name__)
 
+
 def get_model_fields(model_class: Optional[Type[BaseModel]]) -> Set[str]:
-    """ Fetches field names from a Pydantic model class if available. """
+    """Fetches field names from a Pydantic model class if available."""
     if model_class is not None:
         return set(model_class.__fields__.keys())
     return set()
+
 
 class ManifestComponentTransformer:
     def propagate_types_and_parameters(
@@ -169,7 +173,7 @@ class ManifestComponentTransformer:
         # * connection_specification is a Mapping
         if "type" not in propagated_component or self._is_json_schema_object(propagated_component):
             return propagated_component
-        
+
         component_type = propagated_component.get("type", "")
         model_class = COMPONENT_TYPE_REGISTY.get(component_type)
         # Grab the list of expected fields for the component type
