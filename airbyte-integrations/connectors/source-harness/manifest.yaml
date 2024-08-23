@@ -1,0 +1,240 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "data"
+        - "content"
+  requester:
+    type: HttpRequester
+    url_base: "{{ config['api_url'] }}"
+    http_method: "GET"
+    authenticator:
+      type: "ApiKeyAuthenticator"
+      header: "x-api-key"
+      api_token: "{{ config['api_key'] }}"
+    request_parameters:
+      accountIdentifier: "{{ config['account_id'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - "data"
+          - "content"
+    paginator:
+      type: NoPagination
+    requester:
+      type: HttpRequester
+      url_base: "{{ config['api_url'] }}"
+      http_method: "GET"
+      authenticator:
+        type: "ApiKeyAuthenticator"
+        header: "x-api-key"
+        api_token: "{{ config['api_key'] }}"
+      request_parameters:
+        accountIdentifier: "{{ config['account_id'] }}"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "data"
+            - "content"
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['api_url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: "ApiKeyAuthenticator"
+          header: "x-api-key"
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          accountIdentifier: "{{ config['account_id'] }}"
+  organizations_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "data"
+            - "content"
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['api_url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: "ApiKeyAuthenticator"
+          header: "x-api-key"
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          accountIdentifier: "{{ config['account_id'] }}"
+    name: "organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Organizations schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          organization:
+            type:
+              - object
+              - "null"
+            properties:
+              identifier:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              tags:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  identifier:
+                    type:
+                      - string
+                      - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          lastModifiedAt:
+            type:
+              - number
+              - "null"
+          harnessManaged:
+            type:
+              - boolean
+              - "null"
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "data"
+            - "content"
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['api_url'] }}"
+        http_method: "GET"
+        authenticator:
+          type: "ApiKeyAuthenticator"
+          header: "x-api-key"
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          accountIdentifier: "{{ config['account_id'] }}"
+        path: "/ng/api/organizations"
+    name: "organizations"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        title: Organizations schema
+        additionalProperties: true
+        type:
+          - object
+          - "null"
+        properties:
+          organization:
+            type:
+              - object
+              - "null"
+            properties:
+              identifier:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              description:
+                type:
+                  - string
+                  - "null"
+              tags:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  identifier:
+                    type:
+                      - string
+                      - "null"
+          createdAt:
+            type:
+              - number
+              - "null"
+          lastModifiedAt:
+            type:
+              - number
+              - "null"
+          harnessManaged:
+            type:
+              - boolean
+              - "null"
+check:
+  type: CheckStream
+  stream_names:
+    - "organizations"
+type: DeclarativeSource
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/harness
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Harness Spec
+    type: object
+    required:
+      - api_key
+      - account_id
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        title: API key
+        airbyte_secret: true
+      account_id:
+        type: string
+        title: Account ID
+        description: Harness Account ID
+      api_url:
+        type: string
+        title: API URL
+        description: The API URL for fetching data from Harness
+        default: https://app.harness.io
+        examples:
+          - https://my-harness-server.example.com
