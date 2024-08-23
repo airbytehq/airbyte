@@ -47,6 +47,7 @@ class SnowflakeV1V2Migrator(
             return database.queryJsons(
                 showSchemaQuery,
             ).isNotEmpty()
+
         } catch (e: Throwable) {
 
             LOGGER.error("SHOW command usage caused exception", e)

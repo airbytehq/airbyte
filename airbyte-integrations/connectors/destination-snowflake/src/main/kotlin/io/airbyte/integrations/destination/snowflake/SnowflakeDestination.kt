@@ -80,7 +80,7 @@ constructor(
                         UUID.randomUUID().toString().replace("-".toRegex(), "")
                 )
             val snowflakeDestinationHandler =
-                SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName)
+                SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName, dataSource)
             val snowflakeStagingClient = SnowflakeStagingClient(database)
             val snowflakeStorageOperation =
                 SnowflakeStorageOperation(
@@ -214,7 +214,7 @@ constructor(
             }
         val catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawTableSchemaName)
         val snowflakeDestinationHandler =
-            SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName)
+            SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName, getDataSource(config))
         val parsedCatalog: ParsedCatalog = catalogParser.parseCatalog(catalog)
         val disableTypeDedupe =
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)

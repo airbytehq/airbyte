@@ -115,20 +115,35 @@ constructor(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
         recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
-        val connection = dataSource.connection
-        return JdbcDatabase.Companion.toUnsafeStream<T>(
+
+        var connection = dataSource.connection
+
+        try {
+
+            return JdbcDatabase.Companion.toUnsafeStream<T>(
                 statementCreator.apply(connection).executeQuery(),
                 recordTransform
             )
-            .onClose(
-                Runnable {
-                    try {
-                        LOGGER.info { "closing connection" }
-                        connection.close()
-                    } catch (e: SQLException) {
-                        throw RuntimeException(e)
+                .onClose(
+                    Runnable {
+                        try {
+                            LOGGER.info { "closing connection" }
+                            connection.close()
+                        } catch (e: SQLException) {
+                            throw RuntimeException(e)
+                        }
                     }
-                }
-            )
+                )
+        } catch (e: Throwable) {
+
+            throw e
+
+        } finally {
+            if (connection != null) {
+                connection.close()
+            }
+        }
+
+
     }
 }

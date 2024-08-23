@@ -9,6 +9,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import java.util.stream.Stream
+import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -30,8 +31,9 @@ import org.mockito.kotlin.eq
 class SnowflakeDestinationHandlerTest {
 
     private val database = mock(JdbcDatabase::class.java)
+    private val dataSource = mock(DataSource::class.java)
     private val destinationHandler =
-        SnowflakeDestinationHandler("mock-database-name", database, "mock-schema")
+        SnowflakeDestinationHandler("mock-database-name", database, "mock-schema", dataSource)
 
     @ParameterizedTest
     @MethodSource("argumentsForExceptionThrownWithExecute")

@@ -226,6 +226,7 @@ class SnowflakeStorageOperationIntegrationTest {
                     config[JdbcUtils.DATABASE_KEY].asText(),
                     database,
                     config[JdbcUtils.SCHEMA_KEY].asText(),
+                    datasource
                 ),
                 0,
                 SnowflakeStagingClient(database),
