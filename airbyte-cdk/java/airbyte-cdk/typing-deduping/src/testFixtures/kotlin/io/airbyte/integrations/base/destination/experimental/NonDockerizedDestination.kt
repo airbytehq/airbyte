@@ -1,31 +1,32 @@
-package io.airbyte.integrations.base.destination
+package io.airbyte.integrations.base.destination.experimental
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.base.Command
 import io.airbyte.protocol.models.AirbyteMessage
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
 
-class DockerizedDestination(
+class NonDockerizedDestination(
     command: Command,
     config: JsonNode,
     catalog: ConfiguredAirbyteCatalog,
-): Destination {
+    // some other param to get whatever code we're actually running,
+    // i.e. equivalent to io.airbyte.integrations.base.destination.Destination
+): DestinationProcess {
     init {
-        // launch a docker container...
+        // invoke whatever CDK stuff exists to run a destination connector
+        // but use some reasonable interface instead of stdin/stdout
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        // push a message to the docker process' stdin
         TODO("Not yet implemented")
     }
 
     override fun readMessages(): List<AirbyteMessage> {
-        // read everything from the process' stdout
         TODO("Not yet implemented")
     }
 
     override fun waitUntilDone() {
-        // close stdin, wait until process exits
+        // send a "stdin closed" signal
         TODO("Not yet implemented")
     }
 }
