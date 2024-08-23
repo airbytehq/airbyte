@@ -198,7 +198,7 @@ class AirbyteEntrypoint(object):
         update_secrets(config_secrets)
 
     @staticmethod
-    def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> Any:
+    def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
         return orjson.dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode()
 
     @classmethod
