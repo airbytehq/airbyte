@@ -114,6 +114,7 @@ The Zendesk Support source connector supports the following streams:
 - [Article Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Attribute Definitions](https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions)
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
+- [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
@@ -138,6 +139,7 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
 - [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
+- [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
@@ -182,6 +184,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1   | 2024-08-23 | []() | Add `Automations` and `Triggers` stream                                                                                 |
 | 4.0.0   | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination                                                                                                                                                                                         |
 | 3.0.1   | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies                                                                                                                                                                                                                |
 | 3.0.0   | 2024-08-13 | [43446](https://github.com/airbytehq/airbyte/pull/43446) | `TicketMetrics` stream: updates cursor field to `generated_timestamp`                                                                                                                                                              |
