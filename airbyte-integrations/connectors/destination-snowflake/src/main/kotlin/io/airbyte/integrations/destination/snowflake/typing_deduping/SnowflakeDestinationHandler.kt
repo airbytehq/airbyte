@@ -78,6 +78,15 @@ class SnowflakeDestinationHandler(
 
     //TODO: Remove temporary code added for testing
 
+    @Throws(SQLException::class)
+    fun queryJsons_Local_Wrapper(sql: String?, vararg params: String): List<JsonNode> {
+        unsafeQuery_Local_Wrapper(sql, *params).use { stream ->
+            return stream.toList()
+        }
+    }
+
+    //TODO: Remove temporary code added for testing
+
     /**
      * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there
      * will be a database connection leak.
@@ -146,18 +155,21 @@ class SnowflakeDestinationHandler(
                         }
                     }
                 )
+
         } catch (e: Throwable) {
 
-            throw e
-
-        } finally {
             if (connection != null) {
                 connection.close()
             }
+
+            throw e
+
         }
 
-
     }
+
+    //------- End of code added for testing
+
 
     @Throws(SQLException::class)
     private fun getFinalTableRowCount(
@@ -167,172 +179,6 @@ class SnowflakeDestinationHandler(
         //LOGGER.info("Entering getFinalTableRowCount");
 
         val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-
-
-
-        //TODO: Remove code added for testing
-
-        //Check existing table
-        try {
-
-//            val showSchemaQuery = String.format(
-//                """
-//               SHOW TABLES LIKE '%s' IN %s.%s;
-//                """.trimIndent(),
-//                "OLD_LSN_TEST",
-//                "AIRBYTE_DEVELOP",
-//                "OLD_LSN_TEST"
-//            )
-
-            val showSchemaQuery = String.format(
-                """
-               SHOW TABLES LIKE '%s' IN %s.%s;
-                """.trimIndent(),
-                "USERS_FINAL",
-                "INTEGRATION_TEST_DESTINATION",
-                "SQL_GENERATOR_TEST_OCAMBZSAIO"
-            )
-
-            //TODO: Remove code added for testing
-
-            //var connection = dataSource.connection
-
-            val result = unsafeQuery_Local_Wrapper(showSchemaQuery)
-
-//            val result = database.queryJsons(
-//                showSchemaQuery,
-//            ).isNotEmpty()
-
-//            val result = database.queryJsons(
-//                showSchemaQuery,
-//            ).isNotEmpty()
-
-            println("result from show tables query=" + result)
-
-        } catch (e: Throwable) {
-
-            LOGGER.error("SHOW command usage caused exception", e)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exceptionNot throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
-            //throw e
-
-        }
-
-
-        //Check non-existing table
-        try {
-
-            val showSchemaQuery = String.format(
-                """
-               SHOW TABLES LIKE '%s' IN %s.%s;
-                """.trimIndent(),
-                "OLD_LSN_TEST-NON-EXISTING",
-                "AIRBYTE_DEVELOP",
-                "OLD_LSN_TEST"
-            )
-
-            val result = database.queryJsons(
-                showSchemaQuery,
-            ).isNotEmpty()
-
-            println("result from show tables query=" + result)
-
-        } catch (e: Throwable) {
-
-            LOGGER.error("SHOW command usage caused exception", e)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exceptionNot throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
-            //throw e
-
-        }
-
-        //Get columns in existing table
-        try {
-
-            val showColumnsQuery =
-                String.format(
-                    """
-                       SHOW COLUMNS IN TABLE %s.%s.%s;
-                    """.trimIndent(),
-                    "AIRBYTE_DEVELOP",
-                    "OLD_LSN_TEST",
-                    "OLD_LSN_TEST"
-                    )
-
-            val showColumnsResult = database.queryJsons(
-                showColumnsQuery
-            )
-
-            println(showColumnsResult)
-
-        } catch (e: Throwable) {
-
-            //TODO: Need to correctly handle the exception
-
-            LOGGER.error("Exception in SnowflakeV1V2Migrator.getTableIfExists: " + e.message)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exceptionNot throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
-            //throw e
-
-        }
-
-
-
-        //Get columns in existing table
-        try {
-
-            val showColumnsQuery =
-                String.format(
-                    """
-                       SHOW COLUMNS IN TABLE %s.%s.%s;
-                    """.trimIndent(),
-                    "AIRBYTE_DEVELOP",
-                    "OLD_LSN_TEST",
-                    "OLD_LSN_TEST-NON-EXISTING"
-                )
-
-            val showColumnsResult = database.queryJsons(
-                showColumnsQuery
-            )
-
-            println(showColumnsResult)
-
-        } catch (e: Throwable) {
-
-            //TODO: Need to correctly handle the exception
-
-            LOGGER.error("Exception in SnowflakeV1V2Migrator.getTableIfExists: " + e.message)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exceptionNot throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
-            //throw e
-
-        }
-
-        //------End of code added for testing
 
         try {
 
@@ -350,9 +196,11 @@ class SnowflakeDestinationHandler(
 
                             )
 
-                val showColumnsResult: List<JsonNode> = database.queryJsons(
-                    showColumnsQuery,
-                )
+//                val showColumnsResult: List<JsonNode> = database.queryJsons(
+//                    showColumnsQuery,
+//                )
+
+                val showColumnsResult: List<JsonNode> = queryJsons_Local_Wrapper(showColumnsQuery)
 
                 for (result in showColumnsResult) {
                     val tableSchema = result["schema_name"].asText()

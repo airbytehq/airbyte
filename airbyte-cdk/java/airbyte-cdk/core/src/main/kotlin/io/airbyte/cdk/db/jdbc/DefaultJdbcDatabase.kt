@@ -134,16 +134,16 @@ constructor(
                         }
                     }
                 )
+
         } catch (e: Throwable) {
 
-            throw e
-
-        } finally {
             if (connection != null) {
                 connection.close()
             }
-        }
 
+            throw e
+
+        }
 
     }
 }
