@@ -2,7 +2,8 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - oauth.reddit.com
+      - www.reddit.com
   registryOverrides:
     oss:
       enabled: true

@@ -1,6 +1,33 @@
 # Reddit
-Close #44561
-New Source: Reddit
+
+## Overview
+
+The Reddit source supports _Full Refresh_ as well as _Incremental_ syncs.
+
+_Full Refresh_ sync means every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
+_Incremental_ syn means only changed resources are copied from Recurly. For the first run, it will be a Full Refresh sync.
+
+
+## Steps for getting api_key
+
+We can make a POST request from postman with username and password of reddit inorder to get api_keys for making requests
+First make an app for getting id and secret for authentication
+1. Go to Reddit's App Preferences Page:
+- Visit `https://www.reddit.com/prefs/apps` and select `create another app` and input name and select `script` as option and redirect uri as `https://oauth.pstmn.io/v1/callback`
+
+2. Copy Your App Credentials:
+ - After creating the app, you will see the Client ID (below your app name) and Client Secret (labeled as "secret").
+ - Client ID: Copy this value as it will be your Authorization Username in Postman.
+ - Client Secret: Copy this value as it will be your Authorization Password in Postman.
+
+3. Visit postman web/app
+ - Make a new request with following guidelines
+ - Request - POST https://www.reddit.com/api/v1/access_token
+ - Authorization - Basic Auth - Username: YOUR_COPIED_USERNAME, Password: YOUR_COPIED_PASSWORD
+ - Body - x-www-form-urlencoded - grant_type: password, username: YOUR_REDDIT_USERNAME, password: YOUR_REDDIT_PASSWORD
+
+Hit send to receive api_key as response under `access_token`
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -17,15 +44,10 @@ New Source: Reddit
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | self | name | No pagination | ✅ |  ❌  |
-
 | search |  | DefaultPaginator | ✅ |  ❌  |
-
 | subreddit_search |  | DefaultPaginator | ✅ |  ❌  |
-
 | message_inbox |  | DefaultPaginator | ✅ |  ❌  |
-
 | subreddit_popular |  | DefaultPaginator | ✅ |  ❌  |
-
 | subreddit_explore |  | DefaultPaginator | ✅ |  ✅  |
 
 

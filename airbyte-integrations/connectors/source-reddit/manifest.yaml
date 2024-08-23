@@ -2,10 +2,6 @@ version: 4.5.4
 
 type: DeclarativeSource
 
-description: |-
-  Close #44561
-  New Source: Reddit
-
 check:
   type: CheckStream
   stream_names:
