@@ -21,7 +21,7 @@ import java.sql.SQLException
 import java.sql.Statement
 
 /** Default implementation of [MetadataQuerier]. */
-class JdbcMetadataQuerier(
+open class JdbcMetadataQuerier(
     val config: JdbcSourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: FieldTypeMapper,
