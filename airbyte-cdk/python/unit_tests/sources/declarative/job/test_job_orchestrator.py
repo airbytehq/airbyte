@@ -1,13 +1,14 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import logging
-from typing import List, Set, Mapping, Callable
+from typing import Callable, List, Mapping, Set
 from unittest import TestCase, mock
-from unittest.mock import Mock, call, MagicMock
+from unittest.mock import MagicMock, Mock, call
 
 import pytest
-
-from airbyte_cdk import StreamSlice, AirbyteTracedException
+from airbyte_cdk import AirbyteTracedException, StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
-from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncPartition, AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator, AsyncPartition
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 
 _ANY_STREAM_SLICE = Mock()

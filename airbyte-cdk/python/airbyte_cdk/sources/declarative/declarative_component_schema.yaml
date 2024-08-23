@@ -1151,6 +1151,7 @@ definitions:
         title: Retriever
         description: Component used to coordinate how records are extracted across stream slices and request pages.
         anyOf:
+          - "$ref": "#/definitions/AsyncRetriever"
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
       incremental_sync:
@@ -2317,6 +2318,49 @@ definitions:
         description: If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.
         type: boolean
         default: false
+      partition_router:
+        title: Partition Router
+        description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
+        default: []
+        anyOf:
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
+      $parameters:
+        type: object
+        additionalProperties: true
+  AsyncRetriever:
+    description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
+    type: object
+    required:
+      - type
+      - record_selector
+      - create_job_requester
+    properties:
+      type:
+        type: string
+        enum: [AsyncRetriever]
+      record_selector:
+        description: Component that describes how to extract records from a HTTP response.
+        "$ref": "#/definitions/RecordSelector"
+      create_job_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.

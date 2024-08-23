@@ -45,6 +45,7 @@ from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncRetriever as AsyncRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
@@ -135,7 +136,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
@@ -149,6 +150,10 @@ from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
+
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 
 
 class ModelToComponentFactory:
@@ -229,6 +234,7 @@ class ModelToComponentFactory:
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
+            AsyncRetrieverModel: self.create_async_retriever,
         }
 
         # Needed for the case where we need to perform a second parse on the fields of a custom component
@@ -1159,6 +1165,47 @@ class ModelToComponentFactory:
             cursor=cursor,
             config=config,
             ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
+            parameters=model.parameters or {},
+        )
+
+    def create_async_retriever(
+        self,
+        model: AsyncRetrieverModel,
+        config: Config,
+        *,
+        name: str,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        stream_slicer: Optional[StreamSlicer],
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
+        transformations: List[RecordTransformation],
+        **kwargs,
+    ) -> AsyncRetriever:
+
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        record_selector = self._create_component_from_model(
+            model=model.record_selector,
+            config=config,
+            decoder=decoder,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
+
+        create_job_requester = self._create_component_from_model(
+            model=model.create_job_requester, decoder=decoder, config=config, name=name
+        )
+        job_repository: AsyncJobRepository = AsyncHttpJobRepository(create_job_requester=create_job_requester)
+        job_orchestrator_factory = lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices)
+
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+
+        return AsyncRetriever(
+            name=name,
+            primary_key=primary_key,
+            create_job_requester=create_job_requester,
+            job_orchestrator_factory=job_orchestrator_factory,
+            record_selector=record_selector,
+            stream_slicer=stream_slicer,
+            config=config,
             parameters=model.parameters or {},
         )
 

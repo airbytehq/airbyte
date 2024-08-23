@@ -5,6 +5,7 @@ from typing import Optional
 
 from airbyte_cdk.sources.declarative.async_job.timer import Timer
 
+
 class AsyncJobStatus(Enum):
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -17,6 +18,7 @@ class AsyncJob:
     Note that the timer will only stop once `update_status` is called so the job might be completed on the API side but until we query for
     it and call `ApiJob.update_status`, `ApiJob.status` will not reflect the actual API side status.
     """
+
     def __init__(self, api_job_id: str, timeout: Optional[timedelta] = None) -> None:
         self._api_job_id = api_job_id
         self._status = AsyncJobStatus.RUNNING

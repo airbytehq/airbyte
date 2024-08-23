@@ -1,20 +1,20 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import logging
 import time
-from typing import Iterable, List, Set, Any, Mapping
+from typing import Any, Iterable, List, Mapping, Set
 
-from airbyte_protocol.models import FailureType
-
-from airbyte_cdk import StreamSlice, AirbyteTracedException
+from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
-
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 
 class AsyncPartition:
     """
     This bucket of api_jobs is a bit useless for this iteration but should become interesting when we will be able to split jobs
     """
+
     def __init__(self, jobs: List[AsyncJob], stream_slice: StreamSlice) -> None:
         self._jobs = jobs
         self._stream_slice = stream_slice
@@ -46,12 +46,12 @@ class AsyncPartition:
 
 
 class AsyncJobOrchestrator:
-    _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 2
+    _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 5
 
-    def __init__(self, job_repository: AsyncJobRepository, slices: Iterable[StreamSlice], logger: logging.Logger):
+    def __init__(self, job_repository: AsyncJobRepository, slices: Iterable[StreamSlice]):
         self._job_repository: AsyncJobRepository = job_repository
         self._slice_iterator = iter(slices)
-        self._logger = logger
+        self._logger = logging.getLogger("airbyte")
 
         self._running_partitions: List[AsyncPartition] = []
 
@@ -82,12 +82,15 @@ class AsyncJobOrchestrator:
 
             if self._logger.isEnabledFor(logging.DEBUG):
                 # if statement in order to avoid string formatting if we're not in debug mode
-                self._logger.debug(f"Polling status completed. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll...")
+                self._logger.debug(
+                    f"Polling status completed. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
+                )
             time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
 
     def _start_jobs(self) -> None:
         """
-        TODO Eventually, we need to cap the number of concurrent jobs. However, the first iteration is for sendgrid which only has one job
+        TODO Eventually, we need to cap the number of concurrent jobs.
+        However, the first iteration is for sendgrid which only has one job.
         """
         for _slice in self._slice_iterator:
             job = self._job_repository.start(_slice)

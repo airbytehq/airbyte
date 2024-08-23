@@ -1355,7 +1355,7 @@ class DeclarativeStream(BaseModel):
         extra = Extra.allow
 
     type: Literal['DeclarativeStream']
-    retriever: Union[CustomRetriever, SimpleRetriever] = Field(
+    retriever: Union[AsyncRetriever, CustomRetriever, SimpleRetriever] = Field(
         ...,
         description='Component used to coordinate how records are extracted across stream slices and request pages.',
         title='Retriever',
@@ -1607,6 +1607,48 @@ class SimpleRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class AsyncRetriever(BaseModel):
+    type: Literal['AsyncRetriever']
+    record_selector: RecordSelector = Field(
+        ...,
+        description='Component that describes how to extract records from a HTTP response.',
+    )
+    create_job_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API.',
+    )
+    paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
+        None,
+        description="Paginator component that describes how to navigate through the API's pages.",
+    )
+    ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
+        False,
+        description='If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.',
+    )
+    partition_router: Optional[
+        Union[
+            CustomPartitionRouter,
+            ListPartitionRouter,
+            SubstreamPartitionRouter,
+            List[
+                Union[
+                    CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter
+                ]
+            ],
+        ]
+    ] = Field(
+        [],
+        description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
+        title='Partition Router',
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class SubstreamPartitionRouter(BaseModel):
     type: Literal['SubstreamPartitionRouter']
     parent_stream_configs: List[ParentStreamConfig] = Field(
@@ -1623,3 +1665,4 @@ SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()
+AsyncRetriever.update_forward_refs()
