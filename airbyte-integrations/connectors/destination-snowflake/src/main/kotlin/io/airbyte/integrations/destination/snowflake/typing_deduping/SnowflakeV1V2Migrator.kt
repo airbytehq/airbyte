@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableN
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
 import java.util.*
+import javax.sql.DataSource
 import lombok.SneakyThrows
 import org.json.JSONObject
 import org.slf4j.Logger
@@ -24,7 +25,8 @@ import org.slf4j.LoggerFactory
 class SnowflakeV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
+    private val dataSource: DataSource
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
 
     private val LOGGER: Logger =
@@ -33,6 +35,8 @@ class SnowflakeV1V2Migrator(
     @SneakyThrows
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
+
+        var showSchemaResult : List<JsonNode> = listOf()
 
         try {
 
@@ -44,11 +48,22 @@ class SnowflakeV1V2Migrator(
                 databaseName,
             )
 
-            return database.queryJsons(
-                showSchemaQuery,
-            ).isNotEmpty()
+            showSchemaResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showSchemaQuery)
+
+            return showSchemaResult.isNotEmpty()
+
+//            return database.queryJsons(
+//                showSchemaQuery,
+//            ).isNotEmpty()
+//
 
         } catch (e: Throwable) {
+
+            //if(showSchemaResult != null && showSchemaResult.stream() != null) {
+            //    showSchemaResult.stream().close()
+            //}
+
+            showSchemaResult.stream().close()
 
             LOGGER.error("SHOW command usage caused exception", e)
 
@@ -86,6 +101,8 @@ class SnowflakeV1V2Migrator(
         // translates
         // VARIANT as VARCHAR
 
+        var showColumnsResult : List<JsonNode> = listOf()
+
         try {
 
             val showColumnsQuery =
@@ -98,9 +115,11 @@ class SnowflakeV1V2Migrator(
                     tableName,
                 )
 
-            val showColumnsResult = database.queryJsons(
-                showColumnsQuery
-            )
+//            val showColumnsResult = database.queryJsons(
+//                showColumnsQuery
+//            )
+
+            showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
 
             val columnsFromShowQuery = showColumnsResult
                 .stream()
@@ -128,8 +147,13 @@ class SnowflakeV1V2Migrator(
                 Optional.of(TableDefinition(columnsFromShowQuery))
             }
 
-
         } catch (e: Throwable) {
+
+            //if(showColumnsResult != null && showColumnsResult.stream() != null) {
+            //    showColumnsResult.stream().close()
+            //}
+
+            showColumnsResult.stream().close()
 
             //TODO: Need to correctly handle the exception
 

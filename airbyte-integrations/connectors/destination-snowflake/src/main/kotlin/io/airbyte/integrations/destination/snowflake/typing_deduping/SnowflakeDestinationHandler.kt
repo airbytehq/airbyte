@@ -4,7 +4,6 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.errorprone.annotations.MustBeClosed
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -12,7 +11,6 @@ import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
-import io.airbyte.commons.functional.CheckedFunction
 import io.airbyte.commons.json.Jsons.emptyObject
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
@@ -29,19 +27,17 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
-import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
 import java.sql.DatabaseMetaData
-import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
-import java.util.stream.Stream
 import javax.sql.DataSource
+import javax.xml.crypto.Data
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.apache.commons.text.StringSubstitutor
 import org.codehaus.jettison.json.JSONObject
@@ -75,102 +71,6 @@ class SnowflakeDestinationHandler(
     // We don't quote the database name in any queries, so just upcase it.
     private val databaseName = databaseName.uppercase(Locale.getDefault())
 
-
-    //TODO: Remove temporary code added for testing
-
-    @Throws(SQLException::class)
-    fun queryJsons_Local_Wrapper(sql: String?, vararg params: String): List<JsonNode> {
-        unsafeQuery_Local_Wrapper(sql, *params).use { stream ->
-            return stream.toList()
-        }
-    }
-
-    //TODO: Remove temporary code added for testing
-
-    /**
-     * It is "unsafe" because the caller must manually close the returned stream. Otherwise, there
-     * will be a database connection leak.
-     */
-    @MustBeClosed
-    @Throws(SQLException::class)
-    fun unsafeQuery_Local_Wrapper(sql: String?, vararg params: String): Stream<JsonNode> {
-        return unsafeQuery_Local_Helper(
-            { connection: Connection ->
-                val statement = connection.prepareStatement(sql)
-                var i = 1
-                for (param in params) {
-                    statement.setString(i, param)
-                    ++i
-                }
-                statement
-            },
-            { queryResult: ResultSet -> SnowflakeSourceOperations().rowToJson(queryResult) }
-        )
-    }
-
-
-    //TODO: Remove temporary code added for testing
-
-
-    /**
-     * You CANNOT assume that data will be returned from this method before the entire [ResultSet]
-     * is buffered in memory. Review the implementation of the database's JDBC driver or use the
-     * StreamingJdbcDriver if you need this guarantee. The caller should close the returned stream
-     * to release the database connection.
-     *
-     * @param statementCreator create a [PreparedStatement] from a [Connection].
-     * @param recordTransform transform each record of that result set into the desired type. do NOT
-     * just pass the [ResultSet] through. it is a stateful object will not be accessible if returned
-     * from recordTransform.
-     * @param <T> type that each record will be mapped to.
-     * @return Result of the query mapped to a stream.
-     * @throws SQLException SQL related exceptions. </T>
-     */
-    @MustBeClosed
-    @Throws(SQLException::class)
-    fun <T> unsafeQuery_Local_Helper(
-        statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
-        recordTransform: CheckedFunction<ResultSet, T, SQLException>
-    ): Stream<T> {
-
-        var connection = dataSource.connection
-
-        if(connection != null) {
-            println(connection)
-        }
-
-        try {
-
-            return JdbcDatabase.Companion.toUnsafeStream<T>(
-                statementCreator.apply(connection).executeQuery(),
-                recordTransform
-            )
-                .onClose(
-                    Runnable {
-                        try {
-                            LOGGER.info("closing connection")
-                            connection.close()
-                        } catch (e: SQLException) {
-                            throw RuntimeException(e)
-                        }
-                    }
-                )
-
-        } catch (e: Throwable) {
-
-            if (connection != null) {
-                connection.close()
-            }
-
-            throw e
-
-        }
-
-    }
-
-    //------- End of code added for testing
-
-
     @Throws(SQLException::class)
     private fun getFinalTableRowCount(
         streamIds: List<StreamId>
@@ -179,6 +79,8 @@ class SnowflakeDestinationHandler(
         //LOGGER.info("Entering getFinalTableRowCount");
 
         val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
+
+        var showColumnsResult: List<JsonNode> = listOf()
 
         try {
 
@@ -200,7 +102,7 @@ class SnowflakeDestinationHandler(
 //                    showColumnsQuery,
 //                )
 
-                val showColumnsResult: List<JsonNode> = queryJsons_Local_Wrapper(showColumnsQuery)
+                showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
 
                 for (result in showColumnsResult) {
                     val tableSchema = result["schema_name"].asText()
@@ -216,6 +118,12 @@ class SnowflakeDestinationHandler(
             }
 
         } catch (e: Throwable) {
+
+            //if(showColumnsResult != null && showColumnsResult.stream() != null) {
+            //    showColumnsResult.stream().close()
+            //}
+
+            showColumnsResult.stream().close()
 
             LOGGER.error("SHOW command usage caused exception", e)
 
@@ -247,7 +155,7 @@ class SnowflakeDestinationHandler(
         //TODO: Need to check if this query is using information_schema on Snowflake
 
         //var tableExists = false
-
+        /*
         var tableExists =
             database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
                 LOGGER.info(
@@ -282,9 +190,12 @@ class SnowflakeDestinationHandler(
 
 
 
- /*
+         */
+
 
         var tableExists = false
+
+        var showTablesResult: List<JsonNode> = listOf()
 
         try {
 
@@ -300,15 +211,23 @@ class SnowflakeDestinationHandler(
 
                     )
 
-            val showTablesResult: List<JsonNode> = database.queryJsons(
-                showTablesQuery,
-            )
+//            val showTablesResult: List<JsonNode> = database.queryJsons(
+//                showTablesQuery,
+//            )
+
+            showTablesResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showTablesQuery)
 
             if(showTablesResult.size > 0) {
                 tableExists = true
             }
 
         } catch (e: Throwable) {
+
+//            if(showTablesResult != null && showTablesResult.stream() != null) {
+//                showTablesResult.stream().close()
+//            }
+
+            showTablesResult.stream().close()
 
             LOGGER.error("SHOW command usage caused exception", e)
 
@@ -325,7 +244,6 @@ class SnowflakeDestinationHandler(
         }
 
 
-  */
 
 
 /*
@@ -628,7 +546,7 @@ class SnowflakeDestinationHandler(
         val destinationStates = getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
-        val existingTables = findExistingTables(database, databaseName, streamIds)
+        val existingTables = findExistingTables(database, databaseName, streamIds, dataSource)
         val tableRowCounts = getFinalTableRowCount(streamIds)
         return streamConfigs
             .stream()
@@ -799,6 +717,7 @@ class SnowflakeDestinationHandler(
     }
 
     companion object {
+
         private val LOGGER: Logger =
             LoggerFactory.getLogger(SnowflakeDestinationHandler::class.java)
         const val EXCEPTION_COMMON_PREFIX: String =
@@ -810,11 +729,16 @@ class SnowflakeDestinationHandler(
         fun findExistingTables(
             database: JdbcDatabase,
             databaseName: String,
-            streamIds: List<StreamId>
+            streamIds: List<StreamId>,
+            dataSource: DataSource
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
+
+            println(database)
 
             val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+
+            var showColumnsResult: List<JsonNode> = listOf()
 
             try {
 
@@ -831,9 +755,11 @@ class SnowflakeDestinationHandler(
                             stream.finalName,
                         )
 
-                    val showColumnsResult: List<JsonNode> = database.queryJsons(
-                        showColumnsQuery,
-                    )
+//                    val showColumnsResult: List<JsonNode> = database.queryJsons(
+//                        showColumnsQuery,
+//                    )
+
+                    showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
 
                     for (result in showColumnsResult) {
 
@@ -870,6 +796,12 @@ class SnowflakeDestinationHandler(
                 }
 
             } catch (e: Throwable) {
+
+//                if(showColumnsResult != null && showColumnsResult.stream() != null) {
+//                    showColumnsResult.stream().close()
+//                }
+
+                showColumnsResult.stream().close()
 
                 LOGGER.error("SHOW command usage caused exception", e)
 
