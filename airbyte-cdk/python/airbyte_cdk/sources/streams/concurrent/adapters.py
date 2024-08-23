@@ -369,7 +369,7 @@ class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
         try:
             # FacadeStream for concurrent has check_availability but mypy cannot recognize it since it is created dynamically
-            available, message = self._stream.check_availability(logger, self._source) # type: ignore
+            available, message = self._stream.check_availability(logger, self._source)  # type: ignore
             if available:
                 return StreamAvailable()
             else:
