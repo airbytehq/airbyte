@@ -1,8 +1,6 @@
 # Reddit
 This directory contains the manifest-only connector for `source-reddit`.
 
-Close #44561
-New Source: Reddit
 ## Usage
 
 - You can use this connector as any other connector in Airbyte Marketplace.
