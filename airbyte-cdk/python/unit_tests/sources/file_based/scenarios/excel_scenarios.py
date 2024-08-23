@@ -269,7 +269,7 @@ excel_all_types_scenario = (
                     "col_long": 1992,
                     "col_float": 999.09723456,
                     "col_string": "Love It If We Made It",
-                    "col_date": "2022-05-29T00:00:00",
+                    "col_date": "2022-05-29T00:00:00.000",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
