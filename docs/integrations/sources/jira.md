@@ -124,9 +124,11 @@ This connector outputs the following incremental streams:
 - [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get)
 - [PullRequests](https://docs.airbyte.com/integrations/sources/jira#experimental-tables)
 
+<HideInUI>
 ### Entity-Relationship Diagram (ERD)
 To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
 [![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-jira?view=relationships)
+</HideInUI>
 
 ## Experimental Tables
 

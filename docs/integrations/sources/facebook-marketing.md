@@ -189,9 +189,11 @@ You can segment the Ad Insights table into parts based on the following informat
 
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
 
+<HideInUI>
 ### Entity-Relationship Diagram (ERD)
 To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
 [![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-facebook-marketing?view=relationships)
+</HideInUI>
 
 <!-- Christo: the note below was commented out as its accuracy could not be verified. If it can be verified and clarified for users, it should be added back in.
 

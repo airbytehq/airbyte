@@ -167,9 +167,11 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
+<HideInUI>
 ### Entity-Relationship Diagram (ERD)
 To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
 [![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-shopify?view=relationships)
+</HideInUI>
 
 ## Capturing deleted records
 

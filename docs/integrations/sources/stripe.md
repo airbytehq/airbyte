@@ -129,9 +129,11 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
+<HideInUI>
 ### Entity-Relationship Diagram (ERD)
 To view the relationships between our supported streams, visit our Entity-Relationship Diagram. This will open a new window. 
 [![ERD](https://github.com/user-attachments/assets/b5ca62de-8d45-4f2f-a07b-34c9ea357b21)](https://dbdocs.io/airbyteio/source-stripe?view=relationships)
+</HideInUI>
 
 ### Data type map
 
