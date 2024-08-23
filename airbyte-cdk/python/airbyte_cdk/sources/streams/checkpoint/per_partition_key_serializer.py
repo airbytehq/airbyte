@@ -1,7 +1,8 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from orjson import orjson
 from typing import Any, Mapping
+
+from orjson import orjson
 
 
 class PerPartitionKeySerializer:

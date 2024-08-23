@@ -14,7 +14,6 @@ than that, there are integrations point that are annoying to integrate with usin
 * The entrypoint interface relies on file being written on the file system
 """
 
-from orjson import orjson
 import logging
 import re
 import tempfile
@@ -37,6 +36,7 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
+from orjson import orjson
 from pydantic import ValidationError as V2ValidationError
 
 

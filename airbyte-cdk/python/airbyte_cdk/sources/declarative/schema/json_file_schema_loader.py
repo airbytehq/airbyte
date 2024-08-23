@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import pkgutil
 import sys
 from dataclasses import InitVar, dataclass, field
@@ -12,6 +11,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from orjson import orjson
 
 
 def _default_file_path() -> str:

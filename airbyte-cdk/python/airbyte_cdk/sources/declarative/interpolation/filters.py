@@ -3,9 +3,10 @@
 #
 import base64
 import hashlib
-from orjson import orjson
 import re
 from typing import Any, Optional
+
+from orjson import orjson
 
 
 def hash(value: Any, hash_type: str = "md5", salt: Optional[str] = None) -> str:

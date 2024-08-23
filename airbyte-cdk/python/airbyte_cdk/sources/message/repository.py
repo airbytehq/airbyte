@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import logging
 from abc import ABC, abstractmethod
 from collections import deque
@@ -11,6 +10,7 @@ from typing import Callable, Deque, Iterable, List, Optional
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from orjson import orjson
 
 _LOGGER = logging.getLogger("MessageRepository")
 _SUPPORTED_MESSAGE_TYPES = {Type.CONTROL, Type.LOG}
@@ -80,7 +80,9 @@ class InMemoryMessageRepository(MessageRepository):
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
         if _is_severe_enough(self._log_level, level):
             self.emit_message(
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(orjson.dumps(message_provider()).decode())))
+                AirbyteMessage(
+                    type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(orjson.dumps(message_provider()).decode()))
+                )
             )
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:

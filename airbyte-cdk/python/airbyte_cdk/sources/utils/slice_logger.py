@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
+from orjson import orjson
 
 
 class SliceLogger(ABC):
@@ -27,7 +27,9 @@ class SliceLogger(ABC):
         printable_slice = dict(_slice) if _slice else _slice
         return AirbyteMessage(
             type=MessageType.LOG,
-            log=AirbyteLogMessage(level=Level.INFO, message=f"{SliceLogger.SLICE_LOG_PREFIX}{orjson.dumps(printable_slice, default=str).decode()}"),
+            log=AirbyteLogMessage(
+                level=Level.INFO, message=f"{SliceLogger.SLICE_LOG_PREFIX}{orjson.dumps(printable_slice, default=str).decode()}"
+            ),
         )
 
     @abstractmethod

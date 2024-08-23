@@ -3,7 +3,6 @@
 #
 
 import copy
-from orjson import orjson
 import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -33,6 +32,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
+from orjson import orjson
 
 """
 This module contains adapters to help enabling concurrency on Stream objects without needing to migrate to AbstractStream

@@ -3,7 +3,6 @@
 #
 
 
-from orjson import orjson
 import logging
 import os
 import pkgutil
@@ -12,6 +11,7 @@ from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
+from orjson import orjson
 
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:

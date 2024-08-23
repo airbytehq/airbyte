@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import unittest
 from typing import Any, Dict
 
@@ -17,6 +16,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from orjson import orjson
 
 
 class BaseIntegrationTest(unittest.TestCase):

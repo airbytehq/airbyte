@@ -1,8 +1,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from orjson import orjson
 from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
+
+from orjson import orjson
 
 ANY_QUERY_PARAMS = "any query_parameters"
 

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple
@@ -15,6 +14,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureTy
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 from langchain_core.documents.base import Document
+from orjson import orjson
 
 METADATA_STREAM_FIELD = "_ab_stream"
 METADATA_RECORD_ID_FIELD = "_ab_record_id"

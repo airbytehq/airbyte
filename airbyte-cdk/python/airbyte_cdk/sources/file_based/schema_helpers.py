@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
 from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
+from orjson import orjson
 
 JsonSchemaSupportedType = Union[List[str], Literal["string"], str]
 SchemaType = Mapping[str, Mapping[str, JsonSchemaSupportedType]]

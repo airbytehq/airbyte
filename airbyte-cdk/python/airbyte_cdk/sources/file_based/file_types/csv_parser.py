@@ -3,7 +3,6 @@
 #
 
 import csv
-from orjson import orjson
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -21,6 +20,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 
 DIALECT_NAME = "_config_dialect"
 

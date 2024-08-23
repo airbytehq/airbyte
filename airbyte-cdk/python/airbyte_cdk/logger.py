@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import logging
 import logging.config
 from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from orjson import orjson
 
 LOGGING_CONFIG = {
     "version": 1,

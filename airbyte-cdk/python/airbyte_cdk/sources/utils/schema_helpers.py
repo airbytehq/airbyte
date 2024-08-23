@@ -4,7 +4,6 @@
 
 
 import importlib
-from orjson import orjson
 import os
 import pkgutil
 from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
@@ -14,6 +13,7 @@ from airbyte_cdk.models import ConnectorSpecification, FailureType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from jsonschema import RefResolver, validate
 from jsonschema.exceptions import ValidationError
+from orjson import orjson
 from pydantic.v1 import BaseModel, Field
 
 

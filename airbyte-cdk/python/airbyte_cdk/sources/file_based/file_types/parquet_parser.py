@@ -3,7 +3,6 @@
 #
 
 import json
-from orjson import orjson
 import logging
 import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -17,6 +16,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
+from orjson import orjson
 from pyarrow import DictionaryArray, Scalar
 
 

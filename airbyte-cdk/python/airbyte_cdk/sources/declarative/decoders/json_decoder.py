@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, Generator, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from orjson import orjson
 
 logger = logging.getLogger("airbyte")
 

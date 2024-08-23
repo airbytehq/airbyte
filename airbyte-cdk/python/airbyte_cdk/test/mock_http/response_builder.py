@@ -1,13 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import functools
-from orjson import orjson
 from abc import ABC, abstractmethod
 from pathlib import Path as FilePath
 from typing import Any, Dict, List, Optional, Union
 
 from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.utils.data import get_unit_test_folder
+from orjson import orjson
 
 
 def _extract(path: List[str], response_template: Dict[str, Any]) -> Any:

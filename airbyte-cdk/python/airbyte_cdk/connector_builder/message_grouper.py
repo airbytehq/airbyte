@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from orjson import orjson
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
@@ -35,6 +34,7 @@ from airbyte_protocol.models.airbyte_protocol import (
     TraceType,
 )
 from airbyte_protocol.models.airbyte_protocol import Type as MessageType
+from orjson import orjson
 
 
 class MessageGrouper:
