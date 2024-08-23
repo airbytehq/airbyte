@@ -179,15 +179,28 @@ abctl local credentials
 Which should output something similar to:
 
 ```shell
-{
-  "password": "password",
-  "client-id": "client_id",
-  "client-secret": "client_secret"
-}
+Credentials:
+  Email: user@company.example
+  Password: random_password
+  Client-Id: 03ef466c-5558-4ca5-856b-4960ba7c161b
+  Client-Secret: m2UjnDO4iyBQ3IsRiy5GG3LaZWP6xs9I
 ```
 
-Use the value in the password field to authenticate to your new Airbyte instance. If you wish to configure 
-authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
+Use the value in the password field to authenticate to your new Airbyte instance.
+
+You can set your email and password with the `credentials` command using `abctl`. To set your email you can run:
+
+```shell
+abctl local credentials --email user@company.example
+```
+
+To set your password you can run:
+
+```shell
+abctl local credentials --password new_password
+```
+
+If you wish to configure authentication when install abctl, follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
 page.
 
 As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
@@ -354,14 +367,14 @@ For more advanced interactions (e.g. loading custom docker containers), read mor
 
 ### Unable To Locate User Email
 :::note
-In `abctl` [v0.11.0](https://github.com/airbytehq/abctl/releases/tag/v0.11.0), support for basic-auth was removed (as basic-auth support was removed from the `Airbyte Platform` in [v0.63.11](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.63.11), and replaced with a more secure randomly generated password.  When logging into Airbyte, the email (provided during registration) should be automatically populated and the randomly generated password can be fetched by running `abctl local credentials`.
+In `abctl` [v0.11.0](https://github.com/airbytehq/abctl/releases/tag/v0.11.0), support for basic-auth was removed (as basic-auth support was removed from the `Airbyte Platform` in [v0.63.11](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.63.11), and replaced with a more secure randomly generated password.  When logging into Airbyte, the email (provided during registration) should be automatically populated. Both the email and the randomly generated password can be fetched by running `abctl local credentials`.
 
 Airbyte is aware of situations where the email is not be automatically populated and we are working on addressing this within the `abctl` tool.  In the interim, some manually steps are required to retrieve the authentication email address when it is unknown.
 :::
 
-If the email address for authenticating is not automatically populated, and you are unsure what the login email should be, the email can be retrieved from the database used by Airbyte. If using an external database, you will need to connect to the database and execute the query `SELECT "email" FROM "user"`.  If using the database automatically included with the `abctl local install` command, you will need to install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) and execute the following command:
+If the email address for authenticating is not automatically populated, you can set an email with the following command:
 ```
-kubectl exec --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl -it airbyte-db-0 -- psql -U airbyte -d db-airbyte -t -A -c 'SELECT "email" FROM "user"'
+abctl local credentials --email <USER@COMPANY.EXAMPLE>
 ```
 
 The password for this user can be retrieved by running `abctl local credentials`.

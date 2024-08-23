@@ -8,14 +8,20 @@ import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TimePartitioning
 import com.google.common.collect.ImmutableList
-import io.airbyte.integrations.base.destination.typing_deduping.*
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
 import io.airbyte.integrations.base.destination.typing_deduping.Array
+import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.base.destination.typing_deduping.Struct
+import io.airbyte.integrations.base.destination.typing_deduping.Union
+import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler.Companion.clusteringMatches
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler.Companion.partitioningMatches
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler.Companion.schemaContainAllFinalTableV2AirbyteColumns
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator.Companion.toDialectType
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import java.util.*
+import java.util.Optional
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
@@ -52,7 +58,7 @@ class BigqueryDestinationHandlerTest {
         var stream =
             StreamConfig(
                 Mockito.mock(),
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 listOf(ColumnId("foo", "bar", "fizz")),
                 Optional.empty(),
                 LinkedHashMap(),
@@ -75,7 +81,7 @@ class BigqueryDestinationHandlerTest {
         stream =
             StreamConfig(
                 Mockito.mock(),
-                DestinationSyncMode.OVERWRITE,
+                ImportType.APPEND,
                 emptyList(),
                 Optional.empty(),
                 LinkedHashMap(),
@@ -103,7 +109,7 @@ class BigqueryDestinationHandlerTest {
         stream =
             StreamConfig(
                 Mockito.mock(),
-                DestinationSyncMode.APPEND_DEDUP,
+                ImportType.DEDUPE,
                 Stream.concat(expectedStreamColumnNames.stream(), Stream.of("d", "e"))
                     .map { name: String -> ColumnId(name, "foo", "bar") }
                     .collect(Collectors.toList()),

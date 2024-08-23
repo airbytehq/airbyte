@@ -1,0 +1,569 @@
+{
+  "streams": [
+    {
+      "name": "media",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "business_account_id": {
+            "description": "The unique identifier for the business account associated with the media.",
+            "type": ["null", "string"]
+          },
+          "page_id": {
+            "description": "The unique identifier for the Instagram page associated with the media.",
+            "type": ["null", "string"]
+          },
+          "caption": {
+            "description": "The caption or description provided for the media.",
+            "type": ["null", "string"]
+          },
+          "comments_count": {
+            "description": "The total number of comments received on the media.",
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "description": "The unique identifier for the media item.",
+            "type": ["null", "string"]
+          },
+          "ig_id": {
+            "description": "The Instagram-specific identifier for the media item.",
+            "type": ["null", "string"]
+          },
+          "is_comment_enabled": {
+            "description": "A flag indicating whether comments are enabled for the media.",
+            "type": ["null", "boolean"]
+          },
+          "like_count": {
+            "description": "The total number of likes received on the media.",
+            "type": ["null", "integer"]
+          },
+          "media_type": {
+            "description": "The type of media (e.g., image, video) of the media item.",
+            "type": ["null", "string"]
+          },
+          "media_product_type": {
+            "description": "The product type associated with the media (e.g., shopping product).",
+            "type": ["null", "string"]
+          },
+          "media_url": {
+            "description": "The URL for accessing the media content of the media item.",
+            "type": ["null", "string"]
+          },
+          "owner": {
+            "description": "Contains information about the owner of the post.",
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "description": "The unique identifier of the owner of the media item.",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "permalink": {
+            "description": "The permanent link to the media item on Instagram.",
+            "type": ["null", "string"]
+          },
+          "shortcode": {
+            "description": "The unique shortcode assigned to the media item.",
+            "type": ["null", "string"]
+          },
+          "thumbnail_url": {
+            "description": "The URL for accessing the thumbnail image of the media item.",
+            "type": ["null", "string"]
+          },
+          "timestamp": {
+            "description": "The date and time when the media item was created.",
+            "type": ["null", "string"],
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "username": {
+            "description": "The username of the owner of the media item.",
+            "type": ["null", "string"]
+          },
+          "children": {
+            "description": "Contains an array of media items that are part of the post.",
+            "type": ["null", "array"],
+            "items": {
+              "description": "Properties of each media item like image, caption, etc.",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "The unique identifier for the child media item.",
+                  "type": ["null", "string"]
+                },
+                "ig_id": {
+                  "description": "The Instagram-specific identifier for the child media item.",
+                  "type": ["null", "string"]
+                },
+                "media_type": {
+                  "description": "The type of media of the child item (e.g., image, video).",
+                  "type": ["null", "string"]
+                },
+                "media_url": {
+                  "description": "The URL for accessing the media content of the child item.",
+                  "type": ["null", "string"]
+                },
+                "owner": {
+                  "description": "Contains information about the owner of the media item.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "description": "The unique identifier of the owner of the child media item.",
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "permalink": {
+                  "description": "The permanent link to the child media item on Instagram.",
+                  "type": ["null", "string"]
+                },
+                "shortcode": {
+                  "description": "The unique shortcode assigned to the child media item.",
+                  "type": ["null", "string"]
+                },
+                "thumbnail_url": {
+                  "description": "The URL for accessing the thumbnail image of the child media item.",
+                  "type": ["null", "string"]
+                },
+                "timestamp": {
+                  "description": "The date and time when the child media item was created.",
+                  "type": ["null", "string"],
+                  "format": "date-time",
+                  "airbyte_type": "timestamp_with_timezone"
+                },
+                "username": {
+                  "description": "The username of the owner of the child media item.",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        },
+        "required": ["id"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": false
+    },
+    {
+      "name": "media_insights",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "business_account_id": {
+            "description": "The unique identifier of the Instagram business account associated with the media.",
+            "type": ["null", "string"]
+          },
+          "page_id": {
+            "description": "The unique identifier of the Instagram page where the media is posted.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier of the media.",
+            "type": ["null", "string"]
+          },
+          "ig_reels_avg_watch_time": {
+            "description": "The average watch time of Instagram Reels videos in seconds",
+            "type": ["null", "number"]
+          },
+          "ig_reels_video_view_total_time": {
+            "description": "The total watch time of Instagram Reels videos in seconds.",
+            "type": ["null", "number"]
+          },
+          "impressions": {
+            "description": "The number of times the media has been displayed to users.",
+            "type": ["null", "integer"]
+          },
+          "reach": {
+            "description": "The number of unique users who have seen the media.",
+            "type": ["null", "integer"]
+          },
+          "saved": {
+            "description": "The number of times users have saved the media.",
+            "type": ["null", "integer"]
+          },
+          "video_views": {
+            "description": "The total number of views on video media.",
+            "type": ["null", "integer"]
+          },
+          "comments": {
+            "description": "The number of comments received on the media.",
+            "type": ["null", "integer"]
+          },
+          "likes": {
+            "description": "The number of likes received on the media.",
+            "type": ["null", "integer"]
+          },
+          "shares": {
+            "description": "The number of times the media has been shared.",
+            "type": ["null", "integer"]
+          },
+          "total_interactions": {
+            "description": "The total number of interactions (likes, comments, shares) on the media.",
+            "type": ["null", "integer"]
+          },
+          "plays": {
+            "description": "The number of times the media has been played.",
+            "type": ["null", "integer"]
+          },
+          "ig_reels_aggregated_all_plays_count": {
+            "description": "The number of times of Instagram Reels gets reproduced after an impression is counted.",
+            "type": ["null", "integer"]
+          },
+          "clips_replays_count": {
+            "description": "The number of times the reel gets reproduced after the first one.",
+            "type": ["null", "integer"]
+          },
+          "follows": {
+            "description": "The number of accounts that started to follow the profile.",
+            "type": ["null", "integer"]
+          },
+          "profile_visits": {
+            "description": "The number of times the profile has been visited.",
+            "type": ["null", "integer"]
+          }
+        },
+        "required": ["id"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": false
+    },
+    {
+      "name": "users",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "page_id": {
+            "description": "The unique identifier for the user's associated Instagram page.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier for the user's account.",
+            "type": ["null", "string"]
+          },
+          "biography": {
+            "description": "The biography or description provided by the user in their profile.",
+            "type": ["null", "string"]
+          },
+          "ig_id": {
+            "description": "The Instagram ID associated with the user's account.",
+            "type": ["null", "integer"]
+          },
+          "followers_count": {
+            "description": "The number of followers the user has on Instagram.",
+            "type": ["null", "integer"]
+          },
+          "follows_count": {
+            "description": "The number of accounts that the user follows on Instagram.",
+            "type": ["null", "integer"]
+          },
+          "media_count": {
+            "description": "The total number of media items (posts) uploaded by the user.",
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "description": "The name displayed on the user's Instagram account.",
+            "type": ["null", "string"]
+          },
+          "profile_picture_url": {
+            "description": "The URL to the user's profile picture.",
+            "type": ["null", "string"]
+          },
+          "username": {
+            "description": "The username used by the user to log in to their Instagram account.",
+            "type": ["null", "string"]
+          },
+          "website": {
+            "description": "The website link provided by the user on their Instagram profile.",
+            "type": ["null", "string"]
+          }
+        },
+        "required": ["id"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": false
+    },
+    {
+      "name": "user_lifetime_insights",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "page_id": {
+            "description": "The identifier of the Instagram page associated with the insights",
+            "type": ["null", "string"]
+          },
+          "business_account_id": {
+            "description": "The identifier of the business account to which the insights belong",
+            "type": ["null", "string"]
+          },
+          "breakdown": {
+            "description": "The breakdown of the insights data, such as age, gender, location, etc.",
+            "type": ["null", "string"]
+          },
+          "metric": {
+            "description": "The specific metric or measure tracked in the insights data",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The actual value of the metric for the given breakdown and page",
+            "type": ["null", "object"]
+          }
+        },
+        "required": ["business_account_id", "breakdown"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["business_account_id"], ["breakdown"]],
+      "is_resumable": false
+    },
+    {
+      "name": "stories",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "business_account_id": {
+            "description": "The ID of the business account associated with the story.",
+            "type": ["null", "string"]
+          },
+          "page_id": {
+            "description": "ID of the page associated with the story.",
+            "type": ["null", "string"]
+          },
+          "caption": {
+            "description": "The caption associated with the story.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "Unique ID of the story.",
+            "type": ["null", "string"]
+          },
+          "ig_id": {
+            "description": "Instagram ID of the story.",
+            "type": ["null", "string"]
+          },
+          "like_count": {
+            "description": "Number of likes on the story.",
+            "type": ["null", "integer"]
+          },
+          "media_type": {
+            "description": "Type of media in the story (image, video, etc.).",
+            "type": ["null", "string"]
+          },
+          "media_product_type": {
+            "description": "Product type associated with the media in the story.",
+            "type": ["null", "string"]
+          },
+          "media_url": {
+            "description": "URL of the media in the story.",
+            "type": ["null", "string"]
+          },
+          "owner": {
+            "description": "The user who owns the story.",
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "description": "ID of the owner of the story.",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "permalink": {
+            "description": "Permanent link to the story.",
+            "type": ["null", "string"]
+          },
+          "shortcode": {
+            "description": "Shortcode identifier of the story.",
+            "type": ["null", "string"]
+          },
+          "thumbnail_url": {
+            "description": "URL of the thumbnail of the media in the story.",
+            "type": ["null", "string"]
+          },
+          "timestamp": {
+            "description": "Timestamp when the story was posted.",
+            "type": ["null", "string"],
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "username": {
+            "description": "Username associated with the story.",
+            "type": ["null", "string"]
+          }
+        },
+        "required": ["id"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": false
+    },
+    {
+      "name": "story_insights",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "business_account_id": {
+            "description": "The unique identifier of the business account associated with the story insights.",
+            "type": ["null", "string"]
+          },
+          "page_id": {
+            "description": "The unique identifier of the associated page where the story was posted.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier of the story insights record.",
+            "type": ["null", "string"]
+          },
+          "impressions": {
+            "description": "The number of times the story was viewed.",
+            "type": ["null", "integer"]
+          },
+          "reach": {
+            "description": "The number of unique accounts that viewed the story.",
+            "type": ["null", "integer"]
+          },
+          "replies": {
+            "description": "The number of replies or interactions generated by the story.",
+            "type": ["null", "integer"]
+          },
+          "follows": {
+            "description": "The number of accounts that started to follow the account.",
+            "type": ["null", "integer"]
+          },
+          "profile_visits": {
+            "description": "The number of times the profile was visited.",
+            "type": ["null", "integer"]
+          },
+          "shares": {
+            "description": "The number of times the story has been shared.",
+            "type": ["null", "integer"]
+          },
+          "total_interactions": {
+            "description\u00a8": "The number of replies and shares of the story.",
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "is_resumable": false
+    },
+    {
+      "name": "Api",
+      "json_schema": {
+        "type": "object",
+        "$schema": "http://json-schema.org/schema#",
+        "additionalProperties": true,
+        "properties": {
+          "account": {
+            "type": ["object", "null"],
+            "properties": {
+              "business_account_id": { "type": ["string", "null"] },
+              "page_id": { "type": ["string", "null"] }
+            }
+          },
+          "id": { "type": "string" }
+        },
+        "required": ["id"]
+      },
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["id"]],
+      "is_resumable": true
+    },
+    {
+      "name": "user_insights",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "page_id": {
+            "description": "The unique identifier for the user's Instagram page.",
+            "type": ["null", "string"]
+          },
+          "business_account_id": {
+            "description": "The unique identifier for the user's business account.",
+            "type": ["null", "string"]
+          },
+          "date": {
+            "description": "The date and time the insights data was fetched.",
+            "type": ["null", "string"],
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "follower_count": {
+            "description": "The total number of followers for the user's account.",
+            "type": ["null", "integer"]
+          },
+          "get_directions_clicks": {
+            "description": "The number of clicks to get directions to the user's business location.",
+            "type": ["null", "integer"]
+          },
+          "impressions": {
+            "description": "The total number of times the user's content has been displayed.",
+            "type": ["null", "integer"]
+          },
+          "phone_call_clicks": {
+            "description": "The number of clicks to call the user's business phone number.",
+            "type": ["null", "integer"]
+          },
+          "profile_views": {
+            "description": "The total number of views on the user's profile.",
+            "type": ["null", "integer"]
+          },
+          "reach": {
+            "description": "The total number of unique accounts that have seen the user's content.",
+            "type": ["null", "integer"]
+          },
+          "text_message_clicks": {
+            "description": "The number of clicks to send text messages to the user.",
+            "type": ["null", "integer"]
+          },
+          "website_clicks": {
+            "description": "The number of clicks on the website link in the user's profile.",
+            "type": ["null", "integer"]
+          },
+          "impressions_week": {
+            "description": "The total number of impressions in the last week.",
+            "type": ["null", "integer"]
+          },
+          "reach_week": {
+            "description": "The total reach in the last week.",
+            "type": ["null", "integer"]
+          },
+          "impressions_days_28": {
+            "description": "The total number of impressions in the last 28 days.",
+            "type": ["null", "integer"]
+          },
+          "reach_days_28": {
+            "description": "The total reach in the last 28 days.",
+            "type": ["null", "integer"]
+          },
+          "online_followers": {
+            "description": "The number of followers who are currently online.",
+            "type": ["null", "object"]
+          },
+          "email_contacts": {
+            "description": "The number of email contacts associated with the user's account.",
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["date"],
+      "source_defined_primary_key": [["business_account_id"], ["date"]],
+      "is_resumable": true
+    }
+  ]
+}
