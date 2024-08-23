@@ -13,6 +13,7 @@ import io.airbyte.cdk.read.SelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.Statement
 
@@ -47,6 +48,10 @@ class MysqlSourceMetadataQuerier(
     }
 
     override fun streamNamespaces(): List<String> = base.config.schemas.toList()
+
+    fun retrieveTables(dbmd: DatabaseMetaData, schemaPattern: String) : ResultSet {
+        return dbmd.getTables(schemaPattern, schemaPattern, null, null)
+    }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
