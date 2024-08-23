@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -193,8 +193,8 @@ definitions:
     url_base: https://{{ config['domain'] }}/
     authenticator:
       type: BasicHttpAuthenticator
-      password: "x"
-      username: "{{ config['api_key'] }}"
+      username: '{{ config["api_key"] }}'
+      password: x
 
 streams:
   - $ref: "#/definitions/streams/customers"
@@ -211,18 +211,29 @@ spec:
     required:
       - api_key
       - domain
+      - username
     properties:
       api_key:
         type: string
+        description: Maxio Advanced Billing/Chargify API Key.
         title: API Key
         order: 0
-        description: Maxio Advanced Billing/Chargify API Key.
         airbyte_secret: true
       domain:
         type: string
+        description: Chargify domain. Normally this domain follows the following format
         order: 1
         title: Domain
-        description: Chargify domain. Normally this domain follows the following format
+      username:
+        type: string
+        title: Username
+        order: 2
+      password:
+        type: string
+        title: Password
+        always_show: true
+        airbyte_secret: true
+        order: 3
     additionalProperties: true
 
 metadata:
@@ -232,6 +243,11 @@ metadata:
     invoices: false
     coupons: false
     transactions: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
 
 schemas:
   customers:
@@ -354,9 +370,6 @@ schemas:
     type:
       - "null"
       - object
-    $parameters:
-      field_path: subscription
-      path: subscriptions.json
     $schema: http://json-schema.org/draft-07/schema
     additionalProperties: true
     field_path: subscription
@@ -845,6 +858,10 @@ schemas:
           - object
         additionalProperties: true
         properties:
+          description:
+            type:
+              - "null"
+              - string
           accounting_code:
             type:
               - "null"
@@ -861,10 +878,6 @@ schemas:
             type:
               - "null"
               - integer
-          description:
-            type:
-              - "null"
-              - string
           expiration_interval:
             type:
               - "null"
@@ -911,15 +924,15 @@ schemas:
               - object
             additionalProperties: true
             properties:
+              description:
+                type:
+                  - "null"
+                  - string
               accounting_code:
                 type:
                   - "null"
                   - string
               created_at:
-                type:
-                  - "null"
-                  - string
-              description:
                 type:
                   - "null"
                   - string
@@ -1357,6 +1370,10 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
       allow_negative_balance:
         type:
           - "null"
@@ -1420,10 +1437,6 @@ schemas:
                 - "null"
                 - string
       created_at:
-        type:
-          - "null"
-          - string
-      description:
         type:
           - "null"
           - string
