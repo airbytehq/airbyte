@@ -21,7 +21,7 @@ import java.sql.SQLException
 import java.sql.Statement
 
 /** Default implementation of [MetadataQuerier]. */
-class JdbcMetadataQuerier(
+open class JdbcMetadataQuerier(
     val config: JdbcSourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: FieldTypeMapper,
@@ -46,13 +46,17 @@ class JdbcMetadataQuerier(
         return null
     }
 
+    fun retrieveTables(dbmd: DatabaseMetaData, schemaPattern: String) : ResultSet {
+        return dbmd.getTables(null, schemaPattern, null, null)
+    }
+
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
             for (schema in config.schemas + config.schemas.map { it.uppercase() }) {
-                dbmd.getTables(null, schema, null, null).use { rs: ResultSet ->
+                retrieveTables(dbmd, schema).use { rs: ResultSet ->
                     while (rs.next()) {
                         allTables.add(
                             TableName(
@@ -67,7 +71,7 @@ class JdbcMetadataQuerier(
             }
             log.info { "Discovered ${allTables.size} table(s) in schemas ${config.schemas}." }
             return@lazy allTables.toList().sortedBy {
-                "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}"
+                "${it.catalog ?: ""}.${it.schema ?: ""}.${it.name}.${it.type}"
             }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
