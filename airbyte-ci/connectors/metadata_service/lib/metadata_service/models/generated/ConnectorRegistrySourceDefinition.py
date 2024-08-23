@@ -228,3 +228,6 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
+    language: Optional[str] = Field(
+        None, description="The language the connector is written in"
+    )

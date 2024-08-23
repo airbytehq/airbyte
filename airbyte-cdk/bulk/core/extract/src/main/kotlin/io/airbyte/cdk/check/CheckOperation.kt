@@ -1,18 +1,20 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.check
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.*
+import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.SourceConfiguration
+import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.output.ExceptionClassifier
 import io.airbyte.cdk.output.OutputConsumer
-import io.airbyte.cdk.util.ApmTraceUtils
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
-import java.sql.SQLException
-import org.apache.commons.lang3.exception.ExceptionUtils
 
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
@@ -22,6 +24,7 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
     val configFactory: SourceConfigurationFactory<T, out SourceConfiguration>,
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val outputConsumer: OutputConsumer,
+    val exceptionClassifier: ExceptionClassifier,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -34,37 +37,15 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
             val config: SourceConfiguration = configFactory.make(pojo)
             log.info { "Connecting for config check." }
             metadataQuerierFactory.session(config).use { connectionCheck(it) }
-        } catch (e: SQLException) {
-            log.debug(e) { "SQLException while checking config." }
-            val message: String =
-                listOfNotNull(
-                        e.sqlState?.let { "State code: $it" },
-                        e.errorCode.takeIf { it != 0 }?.let { "Error code: $it" },
-                        e.message?.let { "Message: $it" },
-                    )
-                    .joinToString(separator = "; ")
-            ApmTraceUtils.addExceptionToTrace(e)
-            outputConsumer.accept(
-                AirbyteErrorTraceMessage()
-                    .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                    .withMessage(message)
-                    .withInternalMessage(e.toString())
-                    .withStackTrace(ExceptionUtils.getStackTrace(e)),
-            )
-            outputConsumer.accept(
-                AirbyteConnectionStatus()
-                    .withMessage(message)
-                    .withStatus(AirbyteConnectionStatus.Status.FAILED),
-            )
-            log.info { "Config check failed." }
-            return
         } catch (e: Exception) {
             log.debug(e) { "Exception while checking config." }
-            ApmTraceUtils.addExceptionToTrace(e)
-            outputConsumer.acceptTraceOnConfigError(e)
+            val errorTraceMessage: AirbyteErrorTraceMessage = exceptionClassifier.handle(e)
+            outputConsumer.accept(errorTraceMessage)
+            val connectionStatusMessage: String =
+                String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, errorTraceMessage.message)
             outputConsumer.accept(
                 AirbyteConnectionStatus()
-                    .withMessage(String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.message))
+                    .withMessage(connectionStatusMessage)
                     .withStatus(AirbyteConnectionStatus.Status.FAILED),
             )
             log.info { "Config check failed." }
@@ -101,9 +82,9 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
             }
         }
         if (n == 0) {
-            throw RuntimeException("Discovered zero tables.")
+            throw ConfigErrorException("Discovered zero tables.")
         } else {
-            throw RuntimeException("Unable to query any of the $n discovered table(s).")
+            throw ConfigErrorException("Unable to query any of the $n discovered table(s).")
         }
     }
 

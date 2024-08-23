@@ -1158,29 +1158,17 @@ class TestBasicRead(BaseTest):
 
         invalid_configured_catalog = ConfiguredAirbyteCatalog(
             streams=[
-                # Create ConfiguredAirbyteStream without validation.
-                #
-                # Care must be taken for the created object to be valid regardless.
-                # Connectors using the Bulk CDK will perform schema validation
-                # https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/core/base/src/main/kotlin/io/airbyte/cdk/command/ConfiguredCatalogFactory.kt#L29
+                # Create ConfiguredAirbyteStream which is deliberately invalid
+                # with regard to the Airbyte Protocol.
+                # This should cause the connector to fail.
                 ConfiguredAirbyteStream.construct(
                     stream=AirbyteStream(
                         name="__AIRBYTE__stream_that_does_not_exist",
-                        namespace="__AIRBYTE__namespace_that_does_not_exist",
                         json_schema={"type": "object", "properties": {"f1": {"type": "string"}}},
                         supported_sync_modes=[SyncMode.full_refresh],
-                        source_defined_primary_key=[],
-                        source_defined_cursor=False,
-                        default_cursor_field=[],
-                        is_resumable=False,
                     ),
-                    sync_mode=SyncMode.full_refresh,
-                    destination_sync_mode=DestinationSyncMode.append,
-                    primary_key=[],
-                    cursor_field=[],
-                    minimum_generation_id=1,
-                    generation_id=1,
-                    sync_id=1,
+                    sync_mode="INVALID",
+                    destination_sync_mode="INVALID",
                 )
             ]
         )
