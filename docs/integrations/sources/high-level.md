@@ -1,5 +1,6 @@
 # High Level
 Proxy connector for Go High Level (Lead Connector). Requires a paid subscription to the proxy service.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
