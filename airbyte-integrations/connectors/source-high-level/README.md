@@ -2,6 +2,7 @@
 This directory contains the manifest-only connector for `source-high-level`.
 
 Proxy connector for Go High Level (Lead Connector). Requires a paid subscription to the proxy service.
+
 ## Usage
 
 - You can use this connector as any other connector in Airbyte Marketplace.
