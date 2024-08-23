@@ -77,7 +77,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
+                        uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
 
