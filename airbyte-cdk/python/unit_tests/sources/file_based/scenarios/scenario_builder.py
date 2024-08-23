@@ -9,6 +9,7 @@ from typing import Any, Generic, List, Mapping, Optional, Set, Tuple, Type, Type
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.source import TState
+from models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer, AirbyteStateMessageSerializer
 
 
 @dataclass
@@ -79,7 +80,8 @@ class TestScenario(Generic[SourceType]):
         # exception to be raised as part of the actual check/discover/read commands
         # Note that to avoid a breaking change, we still attempt to automatically generate the catalog based on the streams
         if self.catalog:
-            return self.catalog.dict()  # type: ignore  # dict() is not typed
+            # return self.catalog.dict()  # type: ignore  # dict() is not typed
+            return ConfiguredAirbyteCatalogSerializer.dump(self.catalog)
 
         catalog: Mapping[str, Any] = {"streams": []}
         for stream in catalog["streams"]:
@@ -193,7 +195,8 @@ class TestScenarioBuilder(Generic[SourceType]):
         if self.source_builder is None:
             raise ValueError("source_builder is not set")
         if self._incremental_scenario_config and self._incremental_scenario_config.input_state:
-            state = [AirbyteStateMessage(s) for s in self._incremental_scenario_config.input_state]
+            # state = [AirbyteStateMessage(s) for s in self._incremental_scenario_config.input_state]
+            state = [AirbyteStateMessageSerializer.load(s) if isinstance(s, dict) else s for s in self._incremental_scenario_config.input_state]
         else:
             state = None
         source = self.source_builder.build(

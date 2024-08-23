@@ -2097,7 +2097,6 @@ csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSo
             {
                 "data": {
                     "col1": "2",
-                    "col2": None,
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
@@ -2308,7 +2307,6 @@ csv_strings_can_be_null_not_quoted_scenario: TestScenario[InMemoryFilesSource] =
             {
                 "data": {
                     "col1": "2",
-                    "col2": None,
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
                 },
@@ -3177,7 +3175,6 @@ csv_custom_null_values_scenario: TestScenario[InMemoryFilesSource] = (
         [
             {
                 "data": {
-                    "col1": None,
                     "col2": "na",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.csv",
