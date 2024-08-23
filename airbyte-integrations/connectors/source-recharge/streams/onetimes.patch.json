@@ -1,0 +1,11 @@
+{
+  "properties": {
+      "next_charge_scheduled_at": {
+      "type": [
+        "null",
+        "string"
+      ],
+        "format": null
+    }
+  }
+}
