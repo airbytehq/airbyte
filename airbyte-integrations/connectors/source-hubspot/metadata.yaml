@@ -13,6 +13,7 @@ data:
   dockerImageTag: 4.2.17
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  erdUrl: https://dbdocs.io/airbyteio/source-hubspot?view=relationships
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
   license: ELv2
