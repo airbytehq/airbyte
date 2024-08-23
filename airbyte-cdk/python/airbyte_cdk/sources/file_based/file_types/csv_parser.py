@@ -219,7 +219,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _get_cast_function(
-        deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger, schemaless: bool
+        deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger, schemaless: bool
     ) -> Callable[[Mapping[str, str]], Mapping[str, str]]:
         # Only cast values if the schema is provided
         if deduped_property_types and not schemaless:
@@ -243,7 +243,7 @@ class CsvParser(FileTypeParser):
         return value in null_values and (strings_can_be_null or deduped_property_type != "string")
 
     @staticmethod
-    def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
+    def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Dict[str, str]:
         """
         Transform the property types to be non-nullable and remove duplicate types if any.
         Sample input:
