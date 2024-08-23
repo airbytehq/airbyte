@@ -12,27 +12,16 @@ Proxy connector for Go High Level (Lead Connector). Requires a paid subscription
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | Contacts | id | DefaultPaginator | ✅ |  ❌  |
-
 | Payments | _id | DefaultPaginator | ✅ |  ❌  |
-
 | Form Submissions | id | DefaultPaginator | ✅ |  ❌  |
-
 | Custom Fields | id | No pagination | ✅ |  ❌  |
-
 | Transactions | _id | DefaultPaginator | ✅ |  ❌  |
-
 | Invoices | _id | DefaultPaginator | ✅ |  ❌  |
-
 | Opportunities | id | DefaultPaginator | ✅ |  ❌  |
-
 | Pipelines | id | No pagination | ✅ |  ❌  |
-
 | Subscriptions | _id | DefaultPaginator | ✅ |  ❌  |
-
 | Orders | _id | DefaultPaginator | ✅ |  ❌  |
-
 | Order | _id | No pagination | ✅ |  ❌  |
-
 | Contact Search | id | DefaultPaginator | ✅ |  ✅  |
 
 
