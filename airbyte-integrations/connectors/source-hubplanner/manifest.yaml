@@ -7,7 +7,7 @@ definitions:
       field_path: []
   requester:
     type: HttpRequester
-    url_base: "https://api.hubplanner.com/v1"
+    url_base: "https://api.hubplanner.com/v1/"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
