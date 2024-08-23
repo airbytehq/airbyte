@@ -63,8 +63,10 @@ class AirbyteMessage:
 
 
 class AirbyteStateBlobType(serpyco_rs.CustomType[AirbyteStateBlob, str]):
-    def serialize(self, value: AirbyteStateBlob) -> Dict[str, Any]:
-        return orjson.loads(orjson.dumps(value))
+    def serialize(self, value: AirbyteStateBlob | Dict[str, Any]) -> Dict[str, Any]:
+        # cant use orjson.dumps() directly because private attributes are excluded, e.g. "__ab_full_refresh_sync_complete"
+        # return orjson.loads(orjson.dumps(value))
+        return {k:v for k,v in value.__dict__.items()} if isinstance(value, AirbyteStateBlob) else value
 
     def deserialize(self, value: Dict[str, Any]) -> AirbyteStateBlob:
         return AirbyteStateBlob(value)
