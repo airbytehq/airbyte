@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+from orjson import orjson
 from copy import deepcopy
 from enum import Enum
 from functools import total_ordering
@@ -199,7 +199,7 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
 def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[Mapping[str, str]]:
     try:
         if isinstance(input_schema, str):
-            schema: Mapping[str, str] = json.loads(input_schema)
+            schema: Mapping[str, str] = orjson.loads(input_schema)
         else:
             schema = input_schema
         if not all(isinstance(s, str) for s in schema.values()):
@@ -207,7 +207,7 @@ def _parse_json_input(input_schema: Union[str, Mapping[str, str]]) -> Optional[M
                 FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA, details="Invalid input schema; nested schemas are not supported."
             )
 
-    except json.decoder.JSONDecodeError:
+    except orjson.JSONDecodeError:
         return None
 
     return schema

@@ -4,7 +4,7 @@
 
 
 import importlib
-import json
+from orjson import orjson
 import os
 import pkgutil
 from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
@@ -31,7 +31,7 @@ class JsonFileLoader:
     def __call__(self, uri: str) -> Dict[str, Any]:
         uri = uri.replace(self.uri_base, f"{self.uri_base}/{self.shared}/")
         with open(uri) as f:
-            data = json.load(f)
+            data = orjson.loads(f.read())
             if isinstance(data, dict):
                 return data
             else:
@@ -133,7 +133,7 @@ class ResourceSchemaLoader:
         if not raw_file:
             raise IOError(f"Cannot find file {schema_filename}")
         try:
-            raw_schema = json.loads(raw_file)
+            raw_schema = orjson.loads(raw_file)
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {schema_filename}") from err
 

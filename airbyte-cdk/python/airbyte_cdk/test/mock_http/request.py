@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-import json
+from orjson import orjson
 from typing import Any, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -66,9 +66,9 @@ class HttpRequest:
         if isinstance(body, Mapping):
             return body
         elif isinstance(body, bytes):
-            return json.loads(body.decode())  # type: ignore  # assumes return type of Mapping[str, Any]
+            return orjson.loads(body.decode())  # type: ignore  # assumes return type of Mapping[str, Any]
         elif isinstance(body, str):
-            return json.loads(body)  # type: ignore  # assumes return type of Mapping[str, Any]
+            return orjson.loads(body)  # type: ignore  # assumes return type of Mapping[str, Any]
         return None
 
     @staticmethod

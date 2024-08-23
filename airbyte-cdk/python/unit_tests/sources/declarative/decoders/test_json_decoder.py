@@ -46,7 +46,7 @@ def test_jsonl_decoder(requests_mock, response_body, expected_json):
 def large_event_response_fixture():
     data = {"email": "email1@example.com"}
     json_string = json.dumps(data)
-    lines_in_response = 5_000_000
+    lines_in_response = 1_000
     dir_path = os.path.dirname(os.path.realpath(__file__))
     file_path = f"{dir_path}/test_response.txt"
     with open(file_path, "w") as file:

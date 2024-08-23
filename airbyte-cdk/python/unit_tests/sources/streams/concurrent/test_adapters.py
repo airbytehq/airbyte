@@ -160,7 +160,7 @@ def test_stream_partition_raising_exception(exception_type, expected_display_mes
 @pytest.mark.parametrize(
     "_slice, expected_hash",
     [
-        pytest.param({"partition": 1, "k": "v"}, hash(("stream", '{"k": "v", "partition": 1}')), id="test_hash_with_slice"),
+        pytest.param({"partition": 1, "k": "v"}, hash(("stream", '{"k":"v","partition":1}')), id="test_hash_with_slice"),
         pytest.param(None, hash("stream"), id="test_hash_no_slice"),
     ],
 )

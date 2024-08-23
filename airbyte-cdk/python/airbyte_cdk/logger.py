@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+from orjson import orjson
 import logging
 import logging.config
 from typing import Any, Mapping, Optional, Tuple
@@ -55,7 +55,7 @@ class AirbyteLogFormatter(logging.Formatter):
         if airbyte_level == "DEBUG":
             extras = self.extract_extra_args_from_record(record)
             debug_dict = {"type": "DEBUG", "message": record.getMessage(), "data": extras}
-            return filter_secrets(json.dumps(debug_dict))
+            return filter_secrets(orjson.dumps(debug_dict).decode())
         else:
             message = super().format(record)
             message = filter_secrets(message)

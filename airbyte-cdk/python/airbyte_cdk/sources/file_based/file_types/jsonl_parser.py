@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import json
+
+from orjson import orjson
 import logging
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
 
@@ -100,7 +101,7 @@ class JsonlParser(FileTypeParser):
                 read_bytes += len(line)
                 accumulator += line  # type: ignore [operator]  # In reality, it's either bytes or string and we add the same type
                 try:
-                    record = json.loads(accumulator)
+                    record = orjson.loads(accumulator)
                     if had_json_parsing_error and not has_warned_for_multiline_json_object:
                         logger.warning(f"File at {file.uri} is using multiline JSON. Performance could be greatly reduced")
                         has_warned_for_multiline_json_object = True
@@ -108,7 +109,7 @@ class JsonlParser(FileTypeParser):
                     yield record
                     yielded_at_least_once = True
                     accumulator = self._instantiate_accumulator(line)
-                except json.JSONDecodeError:
+                except orjson.JSONDecodeError:
                     had_json_parsing_error = True
 
                 if read_limit and yielded_at_least_once and read_bytes >= self.MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE:

@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import functools
-import json
+from orjson import orjson
 from abc import ABC, abstractmethod
 from pathlib import Path as FilePath
 from typing import Any, Dict, List, Optional, Union
@@ -166,7 +166,7 @@ class HttpResponseBuilder:
 
     def build(self) -> HttpResponse:
         self._records_path.update(self._response, [record.build() for record in self._records])
-        return HttpResponse(json.dumps(self._response), self._status_code)
+        return HttpResponse(orjson.dumps(self._response).decode(), self._status_code)
 
 
 def _get_unit_test_folder(execution_folder: str) -> FilePath:
@@ -177,7 +177,7 @@ def _get_unit_test_folder(execution_folder: str) -> FilePath:
 def find_template(resource: str, execution_folder: str) -> Dict[str, Any]:
     response_template_filepath = str(get_unit_test_folder(execution_folder) / "resource" / "http" / "response" / f"{resource}.json")
     with open(response_template_filepath, "r") as template_file:
-        return json.load(template_file)  # type: ignore  # we assume the dev correctly set up the resource file
+        return orjson.loads(template_file.read())  # type: ignore  # we assume the dev correctly set up the resource file
 
 
 def create_record_builder(

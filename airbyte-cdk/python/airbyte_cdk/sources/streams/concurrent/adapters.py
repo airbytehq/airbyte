@@ -3,7 +3,7 @@
 #
 
 import copy
-import json
+from orjson import orjson
 import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -273,7 +273,7 @@ class StreamPartition(Partition):
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
-            s = json.dumps(self._slice, sort_keys=True)
+            s = orjson.dumps(self._slice, option=orjson.OPT_SORT_KEYS)
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)

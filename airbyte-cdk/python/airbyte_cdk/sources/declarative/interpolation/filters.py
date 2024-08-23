@@ -3,7 +3,7 @@
 #
 import base64
 import hashlib
-import json
+from orjson import orjson
 import re
 from typing import Any, Optional
 
@@ -102,7 +102,7 @@ def string(value: Any) -> str:
     """
     if isinstance(value, str):
         return value
-    ret = f'"""{json.dumps(value)}"""'
+    ret = f'"""{orjson.dumps(value).decode()}"""'
     return ret
 
 

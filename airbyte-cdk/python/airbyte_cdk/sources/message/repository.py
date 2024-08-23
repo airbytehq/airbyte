@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+from orjson import orjson
 import logging
 from abc import ABC, abstractmethod
 from collections import deque
@@ -80,7 +80,7 @@ class InMemoryMessageRepository(MessageRepository):
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:
         if _is_severe_enough(self._log_level, level):
             self.emit_message(
-                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(json.dumps(message_provider()))))
+                AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=level, message=filter_secrets(orjson.dumps(message_provider()).decode())))
             )
 
     def consume_queue(self) -> Iterable[AirbyteMessage]:

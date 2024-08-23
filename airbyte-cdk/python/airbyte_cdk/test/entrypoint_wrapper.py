@@ -14,7 +14,7 @@ than that, there are integrations point that are annoying to integrate with usin
 * The entrypoint interface relies on file being written on the file system
 """
 
-import json
+from orjson import orjson
 import logging
 import re
 import tempfile
@@ -53,8 +53,8 @@ class EntrypointOutput:
     @staticmethod
     def _parse_message(message: str) -> AirbyteMessage:
         try:
-            return AirbyteMessage.parse_obj(json.loads(message))
-        except (json.JSONDecodeError, V2ValidationError):
+            return AirbyteMessage.parse_obj(orjson.loads(message))
+        except (orjson.JSONDecodeError, V2ValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
 
@@ -213,5 +213,5 @@ def make_file(path: Path, file_contents: Optional[Union[str, Mapping[str, Any], 
     if isinstance(file_contents, str):
         path.write_text(file_contents)
     else:
-        path.write_text(json.dumps(file_contents))
+        path.write_text(orjson.dumps(file_contents).decode())
     return str(path)

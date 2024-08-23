@@ -3,6 +3,7 @@
 #
 
 import json
+from orjson import orjson
 import logging
 import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
@@ -118,7 +119,7 @@ class ParquetParser(FileTypeParser):
 
         # Convert month_day_nano_interval to array
         if parquet_value.type == pa.month_day_nano_interval():
-            return json.loads(json.dumps(parquet_value.as_py()))
+            return orjson.loads(json.dumps(parquet_value.as_py()))
 
         # Decode binary strings to utf-8
         if ParquetParser._is_binary(parquet_value.type):

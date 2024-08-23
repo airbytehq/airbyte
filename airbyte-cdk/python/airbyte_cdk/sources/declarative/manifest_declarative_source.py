@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+from orjson import orjson
 import logging
 import pkgutil
 import re
@@ -89,7 +89,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
             raise ValueError(f"Expected to generate a ConnectionChecker component, but received {check_stream.__class__}")
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
+        self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": orjson.dumps(self._source_config).decode()})
         stream_configs = self._stream_configs(self._source_config)
 
         source_streams = [
@@ -139,7 +139,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         in the project root.
         """
         self._configure_logger_level(logger)
-        self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
+        self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": orjson.dumps(self._source_config).decode()})
 
         spec = self._source_config.get("spec")
         if spec:

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+from orjson import orjson
 import pkgutil
 import sys
 from dataclasses import InitVar, dataclass, field
@@ -60,7 +60,7 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
         if not raw_json_file:
             raise IOError(f"Cannot find file {json_schema_path}")
         try:
-            raw_schema = json.loads(raw_json_file)
+            raw_schema = orjson.loads(raw_json_file)
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {json_schema_path}") from err
         self.package_name = resource

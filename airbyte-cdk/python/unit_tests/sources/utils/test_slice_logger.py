@@ -37,7 +37,7 @@ def test_should_log_slice_message(slice_logger, level, should_log):
     [
         pytest.param(None, "slice:null", id="test_none_slice"),
         pytest.param({}, "slice:{}", id="test_empty_slice"),
-        pytest.param({"key": "value"}, 'slice:{"key": "value"}', id="test_dict"),
+        pytest.param({"key": "value"}, 'slice:{"key":"value"}', id="test_dict"),
     ],
 )
 def test_create_slice_log_message(_slice, expected_message):

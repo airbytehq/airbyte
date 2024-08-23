@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import json
+from orjson import orjson
 from dataclasses import InitVar, dataclass, field
 from functools import partial
 from itertools import islice
@@ -455,7 +455,7 @@ class SimpleRetriever(Retriever):
     @staticmethod
     def _to_partition_key(to_serialize: Any) -> str:
         # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
-        return json.dumps(to_serialize, indent=None, separators=(",", ":"), sort_keys=True)
+        return orjson.dumps(to_serialize, option=orjson.OPT_SORT_KEYS)
 
 
 @dataclass

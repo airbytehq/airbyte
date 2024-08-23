@@ -201,7 +201,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
             type=MessageType.LOG,
             log=AirbyteLogMessage(
                 level=Level.INFO,
-                message='slice:{"partition_key": 1}',
+                message='slice:{"partition_key":1}',
             ),
         ),
         *records,

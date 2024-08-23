@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
+from orjson import orjson
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
@@ -310,7 +310,7 @@ class MessageGrouper:
         # form of a custom message object defined in the Airbyte protocol, but this unblocks us in the immediate while the
         # protocol change is worked on.
         try:
-            json_object: JsonType = json.loads(log_message.message)
+            json_object: JsonType = orjson.loads(log_message.message)
             return json_object
         except JSONDecodeError:
             return None
@@ -348,7 +348,7 @@ class MessageGrouper:
         return False
 
     def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
-        return json.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))  # type: ignore
+        return orjson.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))  # type: ignore
 
     @staticmethod
     def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:

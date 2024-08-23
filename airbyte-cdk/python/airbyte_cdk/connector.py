@@ -3,7 +3,7 @@
 #
 
 
-import json
+from orjson import orjson
 import logging
 import os
 import pkgutil
@@ -51,14 +51,14 @@ class BaseConnector(ABC, Generic[TConfig]):
             contents = file.read()
 
         try:
-            return json.loads(contents)
-        except json.JSONDecodeError as error:
+            return orjson.loads(contents)
+        except orjson.JSONDecodeError as error:
             raise ValueError(f"Could not read json file {file_path}: {error}. Please ensure that it is a valid JSON.")
 
     @staticmethod
     def write_config(config: TConfig, config_path: str) -> None:
         with open(config_path, "w") as fh:
-            fh.write(json.dumps(config))
+            fh.write(orjson.dumps(config).decode())
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
         """
@@ -78,8 +78,8 @@ class BaseConnector(ABC, Generic[TConfig]):
             spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
         elif json_spec:
             try:
-                spec_obj = json.loads(json_spec)
-            except json.JSONDecodeError as error:
+                spec_obj = orjson.loads(json_spec)
+            except orjson.JSONDecodeError as error:
                 raise ValueError(f"Could not read json spec file: {error}. Please ensure that it is a valid JSON.")
         else:
             raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")

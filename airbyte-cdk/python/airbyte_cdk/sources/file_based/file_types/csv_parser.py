@@ -3,7 +3,7 @@
 #
 
 import csv
-import json
+from orjson import orjson
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -308,14 +308,14 @@ class CsvParser(FileTypeParser):
                 elif python_type == dict:
                     try:
                         # we don't re-use _value_to_object here because we type the column as object as long as there is only one object
-                        cast_value = json.loads(value)
-                    except json.JSONDecodeError:
+                        cast_value = orjson.loads(value)
+                    except orjson.JSONDecodeError:
                         warnings.append(_format_warning(key, value, prop_type))
 
                 elif python_type == list:
                     try:
                         cast_value = _value_to_list(value)
-                    except (ValueError, json.JSONDecodeError):
+                    except (ValueError, orjson.JSONDecodeError):
                         warnings.append(_format_warning(key, value, prop_type))
 
                 elif python_type:
@@ -432,7 +432,7 @@ def _value_to_bool(value: str, true_values: Set[str], false_values: Set[str]) ->
 
 
 def _value_to_list(value: str) -> List[Any]:
-    parsed_value = json.loads(value)
+    parsed_value = orjson.loads(value)
     if isinstance(parsed_value, list):
         return parsed_value
     raise ValueError(f"Value {parsed_value} is not a valid list value")
