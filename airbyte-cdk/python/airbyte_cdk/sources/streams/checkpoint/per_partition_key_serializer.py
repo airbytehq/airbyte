@@ -15,8 +15,7 @@ class PerPartitionKeySerializer:
 
     @staticmethod
     def to_partition_key(to_serialize: Any) -> str:
-        # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
-        return orjson.dumps(to_serialize, option=orjson.OPT_SORT_KEYS).decode() # type: ignore # The partition is known to be a dict, but the type hint is Any
+        return orjson.dumps(to_serialize, option=orjson.OPT_SORT_KEYS).decode()  # type: ignore # The result is known to be a str, but the type hint is Any
 
     @staticmethod
     def to_partition(to_deserialize: Any) -> Mapping[str, Any]:

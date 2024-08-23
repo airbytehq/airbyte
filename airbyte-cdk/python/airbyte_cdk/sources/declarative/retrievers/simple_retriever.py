@@ -231,7 +231,7 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            return []
+            return []  # type: ignore
 
         self._last_response = response
         record_generator = self.record_selector.select_records(
@@ -246,6 +246,8 @@ class SimpleRetriever(Retriever):
             self._last_page_size += 1
             self._last_record = record
             yield record
+
+        return None
 
     @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -454,8 +456,7 @@ class SimpleRetriever(Retriever):
 
     @staticmethod
     def _to_partition_key(to_serialize: Any) -> str:
-        # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
-        return orjson.dumps(to_serialize, option=orjson.OPT_SORT_KEYS)
+        return orjson.dumps(to_serialize, option=orjson.OPT_SORT_KEYS).decode()  # type: ignore # The partition is known to be a dict, but the type hint is Any
 
 
 @dataclass
