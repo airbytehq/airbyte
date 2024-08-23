@@ -19,7 +19,6 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils import message_utils
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from orjson import orjson
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
