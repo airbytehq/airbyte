@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -38,17 +39,24 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     fun out(record: ObjectNode) {
-        val recordMessageData: ObjectNode = Jsons.objectNode()
         for (fieldName in streamFieldNames) {
-            recordMessageData.set<JsonNode>(fieldName, record[fieldName] ?: Jsons.nullNode())
+            outData.set<JsonNode>(fieldName, record[fieldName] ?: Jsons.nullNode())
         }
-        outputConsumer.accept(
-            AirbyteRecordMessage()
-                .withStream(stream.name)
-                .withNamespace(stream.namespace)
-                .withData(recordMessageData),
-        )
+        outputConsumer.accept(msg)
     }
+
+    private val outData: ObjectNode = Jsons.objectNode()
+
+    private val msg =
+        AirbyteMessage()
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(
+                AirbyteRecordMessage()
+                    .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
+                    .withStream(stream.name)
+                    .withNamespace(stream.namespace)
+                    .withData(outData)
+            )
 
     val streamFieldNames: List<String> = stream.fields.map { it.id }
 
@@ -69,7 +77,11 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
-                parameters = SelectQuerier.Parameters(streamState.fetchSize),
+                parameters =
+                    SelectQuerier.Parameters(
+                        reuseResultObject = true,
+                        fetchSize = streamState.fetchSize
+                    ),
             )
             .use { result: SelectQuerier.Result ->
                 for (record in result) {
@@ -109,7 +121,8 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
         selectQuerier
             .executeQuery(
                 q = partition.resumableQuery(limit),
-                parameters = SelectQuerier.Parameters(fetchSize),
+                parameters =
+                    SelectQuerier.Parameters(reuseResultObject = true, fetchSize = fetchSize),
             )
             .use { result: SelectQuerier.Result ->
                 for (record in result) {
