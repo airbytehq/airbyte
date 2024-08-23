@@ -1,28 +1,35 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
-import logging
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import Iterable, List, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Optional, Set
 
 import boto3.session
 import pendulum
 import pytz
 import smart_open
-from airbyte_cdk import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from botocore.credentials import RefreshableCredentials
 from botocore.exceptions import ClientError
 from botocore.session import get_session
+
+from airbyte_cdk import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
+
+
+if TYPE_CHECKING:
+    import logging
+    from collections.abc import Iterable
+
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
 
@@ -253,6 +260,27 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def _handle_regular_file(self, file):
         remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
         return remote_file
+
+    @property
+    def polars_storage_options(self) -> dict[str, Any]:
+        options = {
+            "aws_access_key_id": self.config.aws_access_key_id,
+            "aws_secret_access_key": self.config.aws_secret_access_key,
+        }
+        if self.config.region_name:
+            options["aws_region"] = self.config.region_name
+
+        return options
+
+    def get_qualified_uri(
+        self,
+        file_uri: str,
+    ) -> str:
+        """Returns the fully qualified URI for the given file URI."""
+        if "://" in file_uri:
+            return file_uri
+
+        return f"s3://{self.config.bucket}/{file_uri}"
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:

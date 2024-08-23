@@ -79,16 +79,21 @@ class JsonlParser(FileTypeParser):
         Currently this only returns an iterator containing a single data frame. This may
         be updated in the future to return an iterator with multiple DataFrames.
         """
+
+        # The URI isn't actually one; it's a relative path. It needs the absolute reference, for
+        # instance the 's3://' protocol, bucket name, etc.
+        actual_uri = stream_reader.get_qualified_uri(file.uri.split("#")[0])
+        storage_options = stream_reader.polars_storage_options
         match config.bulk_mode:
             case BulkMode.LAZY:
                 # Define the lazy dataframe but don't load it into memory.
-                yield pl.scan_ndjson(file.uri)
+                yield pl.scan_ndjson(actual_uri, storage_options=storage_options)
             case BulkMode.INMEM:
                 # Load the entire file into memory.
                 # In the future, we may avoid memory overflow by
                 # forcing a match batch size and returning an iterator
                 # of DataFrames.
-                yield pl.read_ndjson(file.uri)
+                yield pl.read_ndjson(actual_uri, storage_options=storage_options)
             case _:
                 # Default to loading the entire file into memory.
                 raise ValueError(f"Unsupported bulk mode: {config.bulk_mode}")

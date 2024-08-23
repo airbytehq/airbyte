@@ -3,6 +3,7 @@
 #
 
 import copy
+import datetime
 import logging
 from abc import abstractmethod
 from collections.abc import MutableMapping
@@ -13,6 +14,7 @@ import polars as pl
 from deprecated import deprecated
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import Type as _AirbyteMessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, FileBasedStreamConfig, PrimaryKeyType
@@ -125,9 +127,36 @@ class AbstractFileBasedStream(Stream):
     def _records_df_to_record_messages(
         self,
         dataframe: pl.DataFrame | pl.LazyFrame,
-        /,
     ) -> Iterable[AirbyteMessage]:
-        return (AirbyteMessage(AirbyteRecordMessage(data=record_data)) for record_data in dataframe.to_dict(orient="records"))
+        if isinstance(dataframe, pl.LazyFrame):
+            # Stream from the LazyFrame in chunks
+            # TODO: This is cheating for now. We just put it in a single dataframe.
+            # Note that this will fail if there is not enough memory.
+            stream = [dataframe.collect()]
+
+            for chunk in stream:
+                # Recursively process each chunk as a DataFrame
+                yield from self._records_df_to_record_messages(
+                    dataframe=chunk,
+                )
+            return
+
+        # If DataFrame, iterate over rows and create AirbyteMessages
+        record_generator = (
+            AirbyteMessage(
+                type=_AirbyteMessageType.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=self.name,
+                    data=record_data,
+                    emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
+                ),
+            )
+            # TODO: Consider named=False for better performance (but we need to manually map field names)
+            for record_data in dataframe.iter_rows(named=True)
+        )
+        # Uncomment for debugging:
+        # all_records = list(record_generator)
+        yield from record_generator
 
     def _bulk_read(
         self,
@@ -170,7 +199,8 @@ class AbstractFileBasedStream(Stream):
         )
 
         next_slice = checkpoint_reader.next()
-        record_counter = 0
+
+        record_counter: int | None = None  # MODIFIED: preserve "None" if not doing inline tallies
         stream_state_tracker = copy.deepcopy(stream_state)
         while next_slice is not None:
             if slice_logger.should_log_slice_message(logger):
@@ -179,7 +209,6 @@ class AbstractFileBasedStream(Stream):
             ############################################################################################
             # READER'S NOTE: Nothing has been modified from the last note until here.
             ############################################################################################
-            record_counter = 0
 
             records_dfs: Iterable[pl.DataFrame | pl.LazyFrame] = self.read_records_as_dataframes(
                 sync_mode=sync_mode,  # todo: change this interface to no longer rely on sync_mode for behavior
@@ -205,8 +234,13 @@ class AbstractFileBasedStream(Stream):
                 #     # stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)
                 #     # self._observe_state(checkpoint_reader, stream_state_tracker)
 
+                if isinstance(records_df, pl.DataFrame):
+                    record_counter = (record_counter or 0) + records_df.shape[0]
+                else:
+                    # TODO: Need another way to count records.
+                    pass
+
                 # READER'S NOTE: Not changed below.
-                record_counter += records_df.shape[0]
 
                 checkpoint_interval = self.state_checkpoint_interval
                 checkpoint = checkpoint_reader.get_checkpoint()

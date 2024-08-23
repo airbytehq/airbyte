@@ -89,6 +89,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 file=file,
                 stream_reader=self.stream_reader,
                 logger=self.logger,
+                discovered_schema=None,
             )
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:

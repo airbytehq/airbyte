@@ -284,6 +284,9 @@ acceptance_tests:
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
         timeout_seconds: 1800
       - config_path: secrets/v4_jsonl_newlines_config.json
+        # Note: This is not valid JSONL file because each line is not a valid json object.
+        # This config may not be parsable with the bulk processor.
+        # https://jsonlines.org/#each-line-is-a-valid-json-value
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
         timeout_seconds: 1800
       - config_path: secrets/zip_config_csv.json

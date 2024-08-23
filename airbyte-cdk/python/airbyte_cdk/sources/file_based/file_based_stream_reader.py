@@ -9,9 +9,10 @@ from enum import Enum
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
+from wcmatch.glob import GLOBSTAR, globmatch
+
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from wcmatch.glob import GLOBSTAR, globmatch
 
 
 class FileReadMode(Enum):
@@ -105,3 +106,17 @@ class AbstractFileBasedStreamReader(ABC):
         """
         prefixes = {glob.split("*")[0] for glob in globs}
         return set(filter(lambda x: bool(x), prefixes))
+
+    @abstractmethod
+    def get_qualified_uri(self, file_uri: str) -> str:
+        """Return a fully qualified URI for the given URI.
+
+        For example, if the source uses S3, this method would prepend the bucket name to the URI.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def polars_storage_options(self) -> dict[str, str]:
+        """Return storage options for the stream reader."""
+        ...
