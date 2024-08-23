@@ -80,8 +80,7 @@ class AsyncJobOrchestratorTest(TestCase):
 
         assert len(partitions) == 1
         assert partitions[0].status == AsyncJobStatus.COMPLETED
-        setting_status_on_start = call(AsyncJobStatus.RUNNING)
-        assert self._a_job.update_status.mock_calls == [setting_status_on_start] + [call(status) for status in status_updates]
+        assert self._a_job.update_status.mock_calls == [call(status) for status in status_updates]
 
     @mock.patch(sleep_mock_target)
     def test_given_one_job_still_running_when_create_and_get_completed_partitions_then_only_update_running_job_status(self, mock_sleep: MagicMock) -> None:

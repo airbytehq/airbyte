@@ -91,7 +91,6 @@ class AsyncJobOrchestrator:
         """
         for _slice in self._slice_iterator:
             job = self._job_repository.start(_slice)
-            job.update_status(AsyncJobStatus.RUNNING)
             self._running_partitions.append(AsyncPartition([job], _slice))
 
     def _get_running_jobs(self) -> Set[AsyncJob]:
