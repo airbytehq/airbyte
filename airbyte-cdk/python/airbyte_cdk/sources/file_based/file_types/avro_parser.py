@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import base64
+
 import logging
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 

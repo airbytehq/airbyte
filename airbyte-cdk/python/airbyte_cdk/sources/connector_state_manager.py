@@ -15,7 +15,6 @@ from airbyte_cdk.models.airbyte_protocol import (
     AirbyteStreamState,
     StreamDescriptor,
 )
-from orjson import orjson
 
 
 @dataclass(frozen=True)
