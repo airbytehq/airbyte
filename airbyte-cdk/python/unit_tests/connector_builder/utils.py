@@ -4,8 +4,7 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer
 
 
 def create_configured_catalog_dict(stream_name: str) -> Mapping[str, Any]:

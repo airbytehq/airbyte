@@ -12,13 +12,13 @@ from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteLogMessage, AirbyteMessage, SyncMode
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils import message_utils
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
 from orjson import orjson
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 

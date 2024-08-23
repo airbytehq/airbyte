@@ -13,9 +13,7 @@ class StateBuilder:
         self._state.append(
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
-                stream=AirbyteStreamState(
-                    stream_state=state, stream_descriptor=StreamDescriptor(**{"name": stream_name})
-                ),
+                stream=AirbyteStreamState(stream_state=state, stream_descriptor=StreamDescriptor(**{"name": stream_name})),
             )
         )
         return self

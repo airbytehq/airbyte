@@ -13,10 +13,10 @@ from airbyte_cdk.models.airbyte_protocol import (
     AirbyteRecordMessage,
     AirbyteStateMessage,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     Level,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
 
 
 def _generate_record_message(index: int, stream: str = "example_stream", namespace: Optional[str] = None):

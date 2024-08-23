@@ -41,13 +41,12 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessageSerializer
+from airbyte_cdk.models.airbyte_protocol import AirbyteMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, update_secrets
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
 from orjson import orjson
 from unit_tests.connector_builder.utils import create_configured_catalog
 

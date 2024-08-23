@@ -57,7 +57,7 @@ class ConnectorStateManager:
         :param namespace: Namespace of the stream being fetched
         :return: The per-stream state for a stream
         """
-        stream_state : AirbyteStateBlob = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
+        stream_state: AirbyteStateBlob = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
             # return orjson.loads(orjson.dumps(stream_state))  # type: ignore # mypy thinks dict() returns any, but it returns a dict
             return copy.deepcopy({k: v for k, v in stream_state.__dict__.items()})

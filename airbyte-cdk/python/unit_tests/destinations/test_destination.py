@@ -27,8 +27,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from models import AirbyteMessageSerializer
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from models import AirbyteMessageSerializer
 from orjson import orjson
 
 
