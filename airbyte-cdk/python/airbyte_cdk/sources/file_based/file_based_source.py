@@ -26,7 +26,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, EncodingError, FileBasedErrorsCollector, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -122,6 +122,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             )
 
         errors = []
+        tracebacks = []
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
@@ -130,18 +131,28 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     stream_is_available,
                     reason,
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
-            except EncodingError as encoding_error:
-                raise AirbyteTracedException(
-                    internal_message="File encoding does not match configuration.",
-                    message=f"{FileBasedSourceError.ENCODING_ERROR.value} Expected encoding: {encoding_error.expected_encoding}.",
-                    exception=encoding_error,
-                    failure_type=FailureType.config_error,
-                )
+            except AirbyteTracedException as ate:
+                errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
+                tracebacks.append(traceback.format_exc())
             except Exception:
-                errors.append(f"Unable to connect to stream {stream.name} - {''.join(traceback.format_exc())}")
+                errors.append(f"Unable to connect to stream {stream.name}")
+                tracebacks.append(traceback.format_exc())
             else:
                 if not stream_is_available and reason:
                     errors.append(reason)
+
+        if len(errors) == 1:
+            raise AirbyteTracedException(
+                internal_message=tracebacks[0],
+                message=f"{errors[0]}",
+                failure_type=FailureType.config_error,
+            )
+        elif len(errors) > 1:
+            raise AirbyteTracedException(
+                internal_message="\n".join(tracebacks),
+                message=f"{len(errors)} streams with errors: {', '.join(error for error in errors)}",
+                failure_type=FailureType.config_error,
+            )
 
         return not bool(errors), (errors or None)
 

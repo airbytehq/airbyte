@@ -13,7 +13,6 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, L
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
-    EncodingError,
     FileBasedSourceError,
     InvalidSchemaError,
     MissingSchemaError,
@@ -179,13 +178,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 exception=AirbyteTracedException(exception=config_exception),
                 failure_type=FailureType.config_error,
             )
-        except EncodingError as encoding_error:
-            raise AirbyteTracedException(
-                internal_message="File encoding does not match configuration.",
-                message=f"{FileBasedSourceError.ENCODING_ERROR.value} Expected encoding: {encoding_error.expected_encoding}.",
-                exception=encoding_error,
-                failure_type=FailureType.config_error,
-            )
+        except AirbyteTracedException as ate:
+            raise ate
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
         else:
@@ -286,8 +280,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             for task in done:
                 try:
                     base_schema = merge_schemas(base_schema, task.result())
-                except EncodingError as encoding_error:
-                    raise encoding_error
+                except AirbyteTracedException as ate:
+                    raise ate
                 except Exception as exc:
                     self.logger.error(f"An error occurred inferring the schema. \n {traceback.format_exc()}", exc_info=exc)
 

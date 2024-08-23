@@ -14,7 +14,7 @@ class FileBasedSourceError(Enum):
     GLOB_PARSE_ERROR = (
         "Error parsing glob pattern. Please refer to the glob pattern rules at https://facelessuser.github.io/wcmatch/glob/#split."
     )
-    ENCODING_ERROR = "Error decoding file. Please check that the configured encoding matches the encoding of the file. "
+    ENCODING_ERROR = "File encoding error. The configured encoding must match file encoding."
     ERROR_CASTING_VALUE = "Could not cast the value to the expected type."
     ERROR_CASTING_VALUE_UNRECOGNIZED_TYPE = "Could not cast the value to the expected type because the type is not recognized. Valid types are null, array, boolean, integer, number, object, and string."
     ERROR_DECODING_VALUE = "Expected a JSON-decodeable value but could not decode record."
@@ -75,14 +75,6 @@ class BaseFileBasedSourceError(Exception):
 
 class ConfigValidationError(BaseFileBasedSourceError):
     pass
-
-
-class EncodingError(BaseFileBasedSourceError):
-    def __init__(self, error: Union[FileBasedSourceError, str], expected_encoding: Optional[str] = "utf8", **kwargs: Any):
-        super().__init__(error, **kwargs)
-        if expected_encoding is None:
-            expected_encoding = "utf8"
-        self.expected_encoding = expected_encoding
 
 
 class InvalidSchemaError(BaseFileBasedSourceError):
