@@ -23,11 +23,12 @@ private val log = KotlinLogging.logger {}
 class MysqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
+
     override fun fields(
         streamName: String,
         streamNamespace: String?,
     ): List<Field> {
-        val table: TableName = base.findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
         return base
             .columnMetadata(table)
             .map { c: JdbcMetadataQuerier.ColumnMetadata ->
@@ -49,9 +50,44 @@ class MysqlSourceMetadataQuerier(
 
     override fun streamNamespaces(): List<String> = base.config.schemas.toList()
 
-    fun retrieveTables(dbmd: DatabaseMetaData, schemaPattern: String) : ResultSet {
-        return dbmd.getTables(schemaPattern, schemaPattern, null, null)
+    val memoizedTableNames: List<TableName> by lazy {
+        log.info { "Querying table names for catalog discovery." }
+        try {
+            val allTables = mutableSetOf<TableName>()
+            val dbmd: DatabaseMetaData = base.conn.metaData
+            for (schema in base.config.schemas + base.config.schemas.map { it.uppercase() }) {
+                dbmd.getTables(schema, schema, null, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        allTables.add(
+                            TableName(
+                                catalog = rs.getString("TABLE_CAT"),
+                                schema = rs.getString("TABLE_SCHEM"),
+                                name = rs.getString("TABLE_NAME"),
+                                type = rs.getString("TABLE_TYPE") ?: "",
+                            ),
+                        )
+                    }
+                }
+            }
+            log.info { "Discovered ${allTables.size} table(s) in schemas ${base.config.schemas}." }
+            return@lazy allTables.toList().sortedBy {
+                "${it.catalog ?: ""}.${it.schema}.${it.name}.${it.type}"
+            }
+        } catch (e: Exception) {
+            throw RuntimeException("Table name discovery query failed: ${e.message}", e)
+        }
     }
+
+    override fun streamNames(streamNamespace: String?): List<String> =
+        memoizedTableNames.filter { (it.schema ?: it.catalog) == streamNamespace }.map { it.name }
+    
+    fun findTableName(
+        streamName: String,
+        streamNamespace: String?,
+    ): TableName? =
+        memoizedTableNames.find {
+            it.name == streamName && (it.schema ?: it.catalog) == streamNamespace
+        }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
@@ -77,7 +113,7 @@ class MysqlSourceMetadataQuerier(
             }
             log.info { "Discovered all primary keys in ${schemas.size} Mysql schema(s)." }
             return@lazy results
-                .groupBy { base.findTableName(it.tableName, "public") }
+                .groupBy { findTableName(it.tableName, "public") }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
                     val pkRows: List<AllPrimaryKeysRow> =
@@ -106,7 +142,7 @@ class MysqlSourceMetadataQuerier(
         streamName: String,
         streamNamespace: String?,
     ): List<List<String>> {
-        val table: TableName = base.findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 

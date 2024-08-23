@@ -106,8 +106,7 @@ class MysqlSourceConfigurationFactory :
         }
         // Build JDBC URL
         val address = "%s:%d"
-        // TODO: Convert 1gb to a val and refer it in jsonObject.
-        val jdbcUrlFmt = "jdbc:mysql://${address}/1gb"
+        val jdbcUrlFmt = "jdbc:mysql://${address}"
         val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =
