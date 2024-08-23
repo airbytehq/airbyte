@@ -3,18 +3,21 @@
 #
 
 import logging
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, List, Mapping, Optional, Tuple, Type, Union, MutableMapping, Iterator
 
 import facebook_business
 import pendulum
 import requests
 from airbyte_cdk.models import (
     AdvancedAuth,
+    AirbyteStateMessage,
     AuthFlowType,
     ConnectorSpecification,
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
+    ConfiguredAirbyteCatalog,
+    AirbyteMessage,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -272,3 +275,28 @@ class SourceFacebookMarketing(AbstractSource):
             )
             streams.append(stream)
         return streams
+
+    def read(
+            self,
+            logger: logging.Logger,
+            config: Mapping[str, Any],
+            catalog: ConfiguredAirbyteCatalog,
+            state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        # Read records from the source and emit messages
+        for message in super().read(logger, config, catalog, state):
+            yield message
+
+        # Check if the access token is about to expire
+        # If it is, raise an exception to notify the user
+        config = self._validate_and_transform(config)
+        api = API(account_id=config.account_id, access_token=config.access_token, app_secret=config.client_secret)
+        expires_at = api.api.get_access_token_expiration()
+        if expires_at and pendulum.from_timestamp(expires_at) - pendulum.now() < pendulum.duration(days=7):
+            raise AirbyteTracedException(
+                message="Access token is about to expire, please re-authenticate",
+                internal_message="Access token is about to expire, please re-authenticate",
+                failure_type=FailureType.config_error,
+            )
+
+

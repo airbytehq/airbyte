@@ -6,6 +6,7 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import Optional
 
 import backoff
 import pendulum
@@ -192,6 +193,17 @@ class MyFacebookAdsApi(FacebookAdsApi):
         self._update_insights_throttle_limit(response)
         self._handle_call_rate_limit(response, params)
         return response
+
+    def get_access_token_expiration(self) -> Optional[int]:
+        """Get access token expiration time"""
+        try:
+            response = self.call("GET", "https://graph.facebook.com/debug_token", params={"input_token": MyFacebookAdsApi._access_token})
+            response_body = response.json()
+            return response_body.get("data", {}).get("expires_at", None)
+        except FacebookRequestError:
+            return None
+        except requests.exceptions.ConnectionError:
+            return None
 
 
 class API:
