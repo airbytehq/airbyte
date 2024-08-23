@@ -7,6 +7,7 @@ from .ConnectorMetadataDefinitionV0 import *
 from .ConnectorMetrics import *
 from .ConnectorPackageInfo import *
 from .ConnectorRegistryDestinationDefinition import *
+from .ConnectorRegistryReleases import *
 from .ConnectorRegistrySourceDefinition import *
 from .ConnectorRegistryV0 import *
 from .ConnectorReleases import *
