@@ -1,37 +1,33 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-kyriba
+  ab_internal:
+    ql: 100
+    sl: 100
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
-  definitionId: 62922370-ab0e-4e64-a04c-52050c45caba
-  dockerImageTag: 0.2.0
+  definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/source-kyriba
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
   githubIssueLabel: source-kyriba
   icon: kyriba.svg
   license: MIT
   name: Kyriba
-  releaseDate: 202
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-kyriba
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
   tags:
     - language:python
-    - cdk:low-code
-  ab_internal:
-    ql: 100
-    sl: 100
+    - cdk:python
   connectorTestSuitesOptions:
     - suite: unitTests
     # Disable acceptance tests for now
