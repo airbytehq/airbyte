@@ -1,0 +1,1493 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+    http_method: "GET"
+    request_headers:
+      Accept: "application/json"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-Api-Auth"
+      api_token: "{{ config['api_key'] }}"
+  datetime_cursor:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    step: "P1Y"
+    datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "P1D"
+    cursor_field: "created_time"
+    start_time_option:
+      type: RequestOption
+      field_name: "by_time[from]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "by_time[to]"
+      inject_into: "request_parameter"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: []
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "per_page"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+        start_from_page: 1
+      page_token_option:
+        type: "RequestOption"
+        field_name: "page"
+        inject_into: "request_parameter"
+    requester:
+      type: HttpRequester
+      url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+      http_method: "GET"
+      request_headers:
+        Accept: "application/json"
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: "X-Api-Auth"
+        api_token: "{{ config['api_key'] }}"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+  users_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "users"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+    name: "users"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - integer
+              - "null"
+          preference:
+            type:
+              - integer
+              - "null"
+          mobile_app_preference:
+            type:
+              - integer
+              - "null"
+          last_call_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          last_seen_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          confirmed:
+            type:
+              - boolean
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          teams:
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+  teams_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "teams"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+    name: "teams"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          users:
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+          omni_channel:
+            type:
+              - boolean
+              - "null"
+  calls_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "calls"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      step: "P1Y"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "P1D"
+      cursor_field: "created_time"
+      start_time_option:
+        type: RequestOption
+        field_name: "by_time[from]"
+        inject_into: "request_parameter"
+      end_time_option:
+        type: RequestOption
+        field_name: "by_time[to]"
+        inject_into: "request_parameter"
+    name: "calls"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          parent_call_id:
+            type:
+              - integer
+              - "null"
+          root_call_id:
+            type:
+              - integer
+              - "null"
+          phone_number_id:
+            type:
+              - integer
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          assigned_agent_id:
+            type:
+              - integer
+              - "null"
+          assigned_agent_name:
+            type:
+              - string
+              - "null"
+          assigned_team_id:
+            type:
+              - integer
+              - "null"
+          assigned_team_name:
+            type:
+              - string
+              - "null"
+          assigned_call_queue_id:
+            type:
+              - integer
+              - "null"
+          assigned_call_queue_name:
+            type:
+              - string
+              - "null"
+          assigned_ivr_id:
+            type:
+              - integer
+              - "null"
+          assigned_ivr_name:
+            type:
+              - string
+              - "null"
+          bill_duration:
+            type:
+              - number
+              - "null"
+          bill_duration_unit:
+            type:
+              - string
+              - "null"
+          created_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          call_notes:
+            type:
+              - string
+              - "null"
+          integrated_resources:
+            items:
+              properties:
+                integration_name:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+          recording:
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              transcription_url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              duration_unit:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          recording_to_redact:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              duration_unit:
+                type:
+                  - string
+                  - "null"
+          participants:
+            type:
+              - array
+              - "null"
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                call_id:
+                  type:
+                    - integer
+                    - "null"
+                caller_id:
+                  type:
+                    - integer
+                    - "null"
+                caller_number:
+                  type:
+                    - string
+                    - "null"
+                caller_name:
+                  type:
+                    - string
+                    - "null"
+                participant_id:
+                  type:
+                    - integer
+                    - "null"
+                participant_type:
+                  type:
+                    - string
+                    - "null"
+                connection_type:
+                  type:
+                    - number
+                    - "null"
+                call_status:
+                  type:
+                    - integer
+                    - "null"
+                duration:
+                  type:
+                    - integer
+                    - "null"
+                duration_unit:
+                  type:
+                    - string
+                    - "null"
+                cost:
+                  type:
+                    - number
+                    - "null"
+                cost_unit:
+                  type:
+                    - string
+                    - "null"
+                enqueued_time:
+                  type:
+                    - string
+                    - "null"
+                created_time:
+                  format: date-time
+                  type:
+                    - string
+                    - "null"
+                updated_time:
+                  format: date-time
+                  type:
+                    - string
+                    - "null"
+              type: object
+          parallel_call_groups:
+            type:
+              - array
+              - "null"
+  call_metrics_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "call_metrics"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          include: "life_cycle"
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      step: "P1Y"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "P1D"
+      cursor_field: "created_time"
+      start_time_option:
+        type: RequestOption
+        field_name: "by_time[from]"
+        inject_into: "request_parameter"
+      end_time_option:
+        type: RequestOption
+        field_name: "by_time[to]"
+        inject_into: "request_parameter"
+    name: "call_metrics"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          call_id:
+            type:
+              - integer
+              - "null"
+          ivr_time:
+            type:
+              - integer
+              - "null"
+          ivr_time_unit:
+            type:
+              - string
+              - "null"
+          hold_duration:
+            type:
+              - number
+              - "null"
+          hold_duration_unit:
+            type:
+              - string
+              - "null"
+          call_work_time:
+            type:
+              - number
+              - "null"
+          call_work_time_unit:
+            type:
+              - string
+              - "null"
+          total_ringing_time:
+            type:
+              - number
+              - "null"
+          total_ringing_time_unit:
+            type:
+              - string
+              - "null"
+          talk_time:
+            type:
+              - number
+              - "null"
+          talk_time_unit:
+            type:
+              - string
+              - "null"
+          answering_speed:
+            type:
+              - number
+              - "null"
+          answering_speed_unit:
+            type:
+              - string
+              - "null"
+          recording_duration:
+            type:
+              - number
+              - "null"
+          recording_duration_unit:
+            type:
+              - string
+              - "null"
+          bill_duration:
+            type:
+              - number
+              - "null"
+          bill_duration_unit:
+            type:
+              - string
+              - "null"
+          cost:
+            type:
+              - number
+              - "null"
+          cost_unit:
+            type:
+              - string
+              - "null"
+          csat:
+            properties:
+              transfer_made:
+                type:
+                  - boolean
+                  - "null"
+              outcome:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - number
+                  - "null"
+              time_unit:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          created_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          tags:
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+          life_cycle:
+            type:
+              - array
+              - "null"
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "users"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+        path: "/users"
+    name: "users"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          phone:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - integer
+              - "null"
+          preference:
+            type:
+              - integer
+              - "null"
+          mobile_app_preference:
+            type:
+              - integer
+              - "null"
+          last_call_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          last_seen_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          confirmed:
+            type:
+              - boolean
+              - "null"
+          language:
+            type:
+              - string
+              - "null"
+          time_zone:
+            type:
+              - string
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          teams:
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "teams"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+        path: "/teams"
+    name: "teams"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          users:
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+          omni_channel:
+            type:
+              - boolean
+              - "null"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "calls"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+        path: "/calls"
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+        type: MinMaxDatetime
+      step: "P1Y"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "P1D"
+      cursor_field: "created_time"
+      start_time_option:
+        type: RequestOption
+        field_name: "by_time[from]"
+        inject_into: "request_parameter"
+      end_time_option:
+        type: RequestOption
+        field_name: "by_time[to]"
+        inject_into: "request_parameter"
+    name: "calls"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          parent_call_id:
+            type:
+              - integer
+              - "null"
+          root_call_id:
+            type:
+              - integer
+              - "null"
+          phone_number_id:
+            type:
+              - integer
+              - "null"
+          phone_number:
+            type:
+              - string
+              - "null"
+          assigned_agent_id:
+            type:
+              - integer
+              - "null"
+          assigned_agent_name:
+            type:
+              - string
+              - "null"
+          assigned_team_id:
+            type:
+              - integer
+              - "null"
+          assigned_team_name:
+            type:
+              - string
+              - "null"
+          assigned_call_queue_id:
+            type:
+              - integer
+              - "null"
+          assigned_call_queue_name:
+            type:
+              - string
+              - "null"
+          assigned_ivr_id:
+            type:
+              - integer
+              - "null"
+          assigned_ivr_name:
+            type:
+              - string
+              - "null"
+          bill_duration:
+            type:
+              - number
+              - "null"
+          bill_duration_unit:
+            type:
+              - string
+              - "null"
+          created_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          call_notes:
+            type:
+              - string
+              - "null"
+          integrated_resources:
+            items:
+              properties:
+                integration_name:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+          recording:
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              transcription_url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              duration_unit:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          recording_to_redact:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - integer
+                  - "null"
+              url:
+                type:
+                  - string
+                  - "null"
+              duration:
+                type:
+                  - number
+                  - "null"
+              duration_unit:
+                type:
+                  - string
+                  - "null"
+          participants:
+            type:
+              - array
+              - "null"
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                call_id:
+                  type:
+                    - integer
+                    - "null"
+                caller_id:
+                  type:
+                    - integer
+                    - "null"
+                caller_number:
+                  type:
+                    - string
+                    - "null"
+                caller_name:
+                  type:
+                    - string
+                    - "null"
+                participant_id:
+                  type:
+                    - integer
+                    - "null"
+                participant_type:
+                  type:
+                    - string
+                    - "null"
+                connection_type:
+                  type:
+                    - number
+                    - "null"
+                call_status:
+                  type:
+                    - integer
+                    - "null"
+                duration:
+                  type:
+                    - integer
+                    - "null"
+                duration_unit:
+                  type:
+                    - string
+                    - "null"
+                cost:
+                  type:
+                    - number
+                    - "null"
+                cost_unit:
+                  type:
+                    - string
+                    - "null"
+                enqueued_time:
+                  type:
+                    - string
+                    - "null"
+                created_time:
+                  format: date-time
+                  type:
+                    - string
+                    - "null"
+                updated_time:
+                  format: date-time
+                  type:
+                    - string
+                    - "null"
+              type: object
+          parallel_call_groups:
+            type:
+              - array
+              - "null"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "call_metrics"
+      paginator:
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          field_name: "page"
+          inject_into: "request_parameter"
+      requester:
+        type: HttpRequester
+        url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
+        http_method: "GET"
+        request_headers:
+          Accept: "application/json"
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: "X-Api-Auth"
+          api_token: "{{ config['api_key'] }}"
+        request_parameters:
+          include: "life_cycle"
+        path: "/call_metrics"
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        type: MinMaxDatetime
+      end_datetime:
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+        type: MinMaxDatetime
+      step: "P1Y"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: "P1D"
+      cursor_field: "created_time"
+      start_time_option:
+        type: RequestOption
+        field_name: "by_time[from]"
+        inject_into: "request_parameter"
+      end_time_option:
+        type: RequestOption
+        field_name: "by_time[to]"
+        inject_into: "request_parameter"
+    name: "call_metrics"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - integer
+              - "null"
+          call_id:
+            type:
+              - integer
+              - "null"
+          ivr_time:
+            type:
+              - integer
+              - "null"
+          ivr_time_unit:
+            type:
+              - string
+              - "null"
+          hold_duration:
+            type:
+              - number
+              - "null"
+          hold_duration_unit:
+            type:
+              - string
+              - "null"
+          call_work_time:
+            type:
+              - number
+              - "null"
+          call_work_time_unit:
+            type:
+              - string
+              - "null"
+          total_ringing_time:
+            type:
+              - number
+              - "null"
+          total_ringing_time_unit:
+            type:
+              - string
+              - "null"
+          talk_time:
+            type:
+              - number
+              - "null"
+          talk_time_unit:
+            type:
+              - string
+              - "null"
+          answering_speed:
+            type:
+              - number
+              - "null"
+          answering_speed_unit:
+            type:
+              - string
+              - "null"
+          recording_duration:
+            type:
+              - number
+              - "null"
+          recording_duration_unit:
+            type:
+              - string
+              - "null"
+          bill_duration:
+            type:
+              - number
+              - "null"
+          bill_duration_unit:
+            type:
+              - string
+              - "null"
+          cost:
+            type:
+              - number
+              - "null"
+          cost_unit:
+            type:
+              - string
+              - "null"
+          csat:
+            properties:
+              transfer_made:
+                type:
+                  - boolean
+                  - "null"
+              outcome:
+                type:
+                  - string
+                  - "null"
+              time:
+                type:
+                  - number
+                  - "null"
+              time_unit:
+                type:
+                  - string
+                  - "null"
+            type:
+              - object
+              - "null"
+          created_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          updated_time:
+            format: date-time
+            type:
+              - string
+              - "null"
+          tags:
+            items:
+              properties:
+                id:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                default:
+                  type:
+                    - boolean
+                    - "null"
+              type: object
+            type:
+              - array
+              - "null"
+          life_cycle:
+            type:
+              - array
+              - "null"
+check:
+  type: CheckStream
+  stream_names:
+    - "users"
+    - "teams"
+    - "calls"
+    - "call_metrics"
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshcaller
+  connection_specification:
+    "$schema": https://json-schema.org/draft-07/schema#
+    title: Freshcaller Spec
+    type: object
+    required:
+      - domain
+      - api_key
+    additionalProperties: true
+    properties:
+      domain:
+        type: string
+        title: Domain for Freshcaller account
+        description: Used to construct Base URL for the Freshcaller APIs
+        examples:
+          - snaptravel
+      api_key:
+        type: string
+        title: API Key
+        description:
+          Freshcaller API Key. See the <a href="https://docs.airbyte.com/integrations/sources/freshcaller">docs</a>
+          for more information on how to obtain this key.
+        airbyte_secret: true
+      requests_per_minute:
+        title: Requests per minute
+        type: integer
+        description:
+          The number of requests per minute that this source allowed to
+          use. There is a rate limit of 50 requests per minute per app per account.
+      start_date:
+        title: Start Date
+        description: UTC date and time. Any data created after this date will be replicated.
+        format: date-time
+        type: string
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2022-01-01T12:00:00Z"
+      sync_lag_minutes:
+        title: Lag in minutes for each sync
+        type: integer
+        description:
+          Lag in minutes for each sync, i.e., at time T, data for the time
+          range [prev_sync_time, T-30] will be fetched
+type: DeclarativeSource
