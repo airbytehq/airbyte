@@ -58,8 +58,12 @@ class ConnectorStateManager:
         """
         stream_state: AirbyteStateBlob = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
-            # return orjson.loads(orjson.dumps(stream_state))  # type: ignore # mypy thinks dict() returns any, but it returns a dict
-            return copy.deepcopy({k: v for k, v in stream_state.__dict__.items()}) if isinstance(stream_state, AirbyteStateBlob) else copy.deepcopy(stream_state)
+            # TODO: check construction; stream_state should be json here; flaky tests??
+            return (
+                copy.deepcopy({k: v for k, v in stream_state.__dict__.items()})
+                if isinstance(stream_state, AirbyteStateBlob)
+                else copy.deepcopy(stream_state)
+            )
         return {}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]) -> None:
