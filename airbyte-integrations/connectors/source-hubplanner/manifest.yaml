@@ -33,7 +33,7 @@ definitions:
         field_name: "page"
     requester:
       type: HttpRequester
-      url_base: "https://api.hubplanner.com/v1"
+      url_base: "https://api.hubplanner.com/v1/"
       http_method: "GET"
       authenticator:
         type: ApiKeyAuthenticator
@@ -61,7 +61,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -89,7 +89,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -151,7 +151,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -365,7 +365,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -429,7 +429,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -491,7 +491,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -552,7 +552,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -947,7 +947,7 @@ definitions:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1136,7 +1136,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1198,7 +1198,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1412,7 +1412,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1476,7 +1476,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1538,7 +1538,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1599,7 +1599,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
@@ -1994,7 +1994,7 @@ streams:
           field_name: "page"
       requester:
         type: HttpRequester
-        url_base: "https://api.hubplanner.com/v1"
+        url_base: "https://api.hubplanner.com/v1/"
         http_method: "GET"
         authenticator:
           type: ApiKeyAuthenticator
