@@ -6,7 +6,6 @@ from typing import Optional
 from airbyte_cdk.sources.declarative.async_job.timer import Timer
 
 class AsyncJobStatus(Enum):
-    NOT_STARTED = "NOT_STARTED"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
@@ -20,16 +19,15 @@ class AsyncJob:
     """
     def __init__(self, api_job_id: str, timeout: Optional[timedelta] = None) -> None:
         self._api_job_id = api_job_id
-        self._status = AsyncJobStatus.NOT_STARTED
+        self._status = AsyncJobStatus.RUNNING
 
         timeout = timeout if timeout else timedelta(minutes=60)
         self._timer = Timer(timeout)
+        self._timer.start()
 
-    @property
     def api_job_id(self) -> str:
         return self._api_job_id
 
-    @property
     def status(self) -> AsyncJobStatus:
         if self._timer.has_timed_out():
             return AsyncJobStatus.TIMED_OUT

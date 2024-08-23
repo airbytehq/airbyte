@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from airbyte_protocol.models import ConnectorSpecification
 
-from airbyte_cdk import AbstractSource, Stream, DeclarativeStream, SinglePartitionRouter, StreamSlice
-from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
+from airbyte_cdk import AbstractSource, Stream, DeclarativeStream, SinglePartitionRouter, StreamSlice, init_logger
+from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.retrievers.async_retriever import AsyncRetriever
@@ -23,7 +23,8 @@ class MockAsyncJobRepository(AsyncJobRepository):
         return AsyncJob("a_job_id")
 
     def update_jobs_status(self, jobs: Set[AsyncJob]) -> None:
-        pass
+        for job in jobs:
+            job.update_status(AsyncJobStatus.COMPLETED)
 
     def fetch_records(self, job: AsyncJob) -> Iterable[Mapping[str, Any]]:
         yield from [{"record_field": 10}]
@@ -42,7 +43,7 @@ class MockSource(AbstractSource):
             DeclarativeStream(
                 retriever=AsyncRetriever(
                     stream_slicer=SinglePartitionRouter({}),
-                    job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(MockAsyncJobRepository(), stream_slices),
+                    job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(MockAsyncJobRepository(), stream_slices, init_logger("airbyte.MockSource")),
                 ),
                 config={},
                 parameters={},
@@ -52,7 +53,6 @@ class MockSource(AbstractSource):
                 stream_cursor_field="",  # the interface mentions that this is Optional but I get `'NoneType' object has no attribute 'eval'` by passing None
             )
         ]
-
 
 
 class JobDeclarativeStreamTest(TestCase):
