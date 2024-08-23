@@ -439,6 +439,8 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                 },
                 "required": ["streams"],
             },
+            "supportsDBT": False,
+            "supportsNormalization": False
         }
     )
     .set_expected_catalog(

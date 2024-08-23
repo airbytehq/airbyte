@@ -14,7 +14,7 @@ class StateBuilder:
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
-                    stream_state=AirbyteStateBlob(state), stream_descriptor=StreamDescriptor(**{"name": stream_name})
+                    stream_state=state, stream_descriptor=StreamDescriptor(**{"name": stream_name})
                 ),
             )
         )
