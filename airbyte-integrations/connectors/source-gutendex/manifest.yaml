@@ -1,12 +1,9 @@
-version: 0.78.1
-
+version: 4.3.2
 type: DeclarativeSource
-
 check:
   type: CheckStream
   stream_names:
     - books
-
 definitions:
   streams:
     books:
@@ -15,7 +12,8 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
+          url_base: https://gutendex.com/
           path: /books
           http_method: GET
           request_parameters:
@@ -48,14 +46,215 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/books"
+          type: object
+          $schema: http://json-schema.org/draft-04/schema#
+          additionalProperties: true
+          properties:
+            authors:
+              type: array
+              items:
+                type: object
+                properties:
+                  birth_year:
+                    type:
+                      - integer
+                      - "null"
+                  death_year:
+                    type:
+                      - integer
+                      - "null"
+                  name:
+                    type: string
+                required:
+                  - name
+                  - birth_year
+                  - death_year
+            bookshelves:
+              type: array
+              items:
+                type: string
+            copyright:
+              type:
+                - boolean
+                - "null"
+            download_count:
+              type: integer
+            formats:
+              type: object
+              properties:
+                application/epub+zip:
+                  type: string
+                application/octet-stream:
+                  type: string
+                application/rdf+xml:
+                  type: string
+                application/x-mobipocket-ebook:
+                  type: string
+                image/jpeg:
+                  type: string
+                text/html:
+                  type: string
+                text/plain; charset=us-ascii:
+                  type: string
+            id:
+              type: integer
+            languages:
+              type: array
+              items:
+                type: string
+            media_type:
+              type: string
+            subjects:
+              type: array
+              items:
+                type: string
+            title:
+              type: string
+            translators:
+              type: array
+              items:
+                type: object
+                properties:
+                  birth_year:
+                    type:
+                      - integer
+                      - "null"
+                  death_year:
+                    type:
+                      - integer
+                      - "null"
+                  name:
+                    type: string
+                required:
+                  - name
+                  - birth_year
+                  - death_year
   base_requester:
     type: HttpRequester
     url_base: https://gutendex.com/
-
 streams:
-  - $ref: "#/definitions/streams/books"
-
+  - type: DeclarativeStream
+    name: books
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://gutendex.com/
+        path: /books
+        http_method: GET
+        request_parameters:
+          author_year_start: "{{ config['author_year_start'] }}"
+          author_year_end: "{{ config['author_year_end'] }}"
+          copyright: "{{ config['copyright'] }}"
+          languages: "{{ config['languages'] }}"
+          search: "{{ config['search'] }}"
+          sort: "{{ config['sort'] }}"
+          topic: "{{ config['topic'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: body_data
+          field_name: page_size
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 32
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        properties:
+          authors:
+            type: array
+            items:
+              type: object
+              properties:
+                birth_year:
+                  type:
+                    - integer
+                    - "null"
+                death_year:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type: string
+              required:
+                - name
+                - birth_year
+                - death_year
+          bookshelves:
+            type: array
+            items:
+              type: string
+          copyright:
+            type:
+              - boolean
+              - "null"
+          download_count:
+            type: integer
+          formats:
+            type: object
+            properties:
+              application/epub+zip:
+                type: string
+              application/octet-stream:
+                type: string
+              application/rdf+xml:
+                type: string
+              application/x-mobipocket-ebook:
+                type: string
+              image/jpeg:
+                type: string
+              text/html:
+                type: string
+              text/plain; charset=us-ascii:
+                type: string
+          id:
+            type: integer
+          languages:
+            type: array
+            items:
+              type: string
+          media_type:
+            type: string
+          subjects:
+            type: array
+            items:
+              type: string
+          title:
+            type: string
+          translators:
+            type: array
+            items:
+              type: object
+              properties:
+                birth_year:
+                  type:
+                    - integer
+                    - "null"
+                death_year:
+                  type:
+                    - integer
+                    - "null"
+                name:
+                  type: string
+              required:
+                - name
+                - birth_year
+                - death_year
 spec:
   type: Spec
   connection_specification:
@@ -100,7 +299,7 @@ spec:
         examples:
           - true
           - false
-          - null
+          -
         order: 2
       languages:
         type: string
@@ -144,11 +343,9 @@ spec:
           - fantasy
         order: 6
     additionalProperties: true
-
 metadata:
   autoImportSchema:
     books: false
-
 schemas:
   books:
     type: object
