@@ -1,0 +1,4269 @@
+version: "4.3.2"
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "items"
+        - "*"
+        - "data"
+  requester:
+    type: HttpRequester
+    url_base: "https://api.getbase.com/v2"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_token'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path:
+          - "items"
+          - "*"
+          - "data"
+    requester:
+      type: HttpRequester
+      url_base: "https://api.getbase.com/v2"
+      http_method: "GET"
+      authenticator:
+        type: BearerAuthenticator
+        api_token: "{{ config['api_token'] }}"
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "per_page"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 2
+        start_from_page: 1
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+  call_outcomes_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  calls_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          user_id:
+            type:
+              - "null"
+              - number
+          summary:
+            type:
+              - "null"
+              - string
+          recording_url:
+            type:
+              - "null"
+              - string
+          outcome_id:
+            type:
+              - "null"
+              - number
+          duration:
+            type:
+              - "null"
+              - number
+          phone_number:
+            type:
+              - "null"
+              - string
+          incoming:
+            type:
+              - "null"
+              - boolean
+          missed:
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            type:
+              - "null"
+              - array
+          made_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  collaborations_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          collaborator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  contacts_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          is_organization:
+            type:
+              - "null"
+              - boolean
+          contact_id:
+            type:
+              - "null"
+              - number
+          parent_organization_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          customer_status:
+            type:
+              - "null"
+              - string
+          prospect_status:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          facebook:
+            type:
+              - "null"
+              - string
+          linkedin:
+            type:
+              - "null"
+              - string
+          skype:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          billing_address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          shipping_address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  deal_sources_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  deal_unqualified_reasons_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  deals_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - number
+              - string
+          currency:
+            type:
+              - "null"
+              - string
+          hot:
+            type:
+              - "null"
+              - boolean
+          stage_id:
+            type:
+              - "null"
+              - number
+          last_stage_change_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_stage_change_by_id:
+            type:
+              - "null"
+              - number
+          last_activity_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          source_id:
+            type:
+              - "null"
+              - number
+          loss_reason_id:
+            type:
+              - "null"
+              - number
+          unqualified_reason_id:
+            type:
+              - "null"
+              - number
+          dropbox_email:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - number
+          organization_id:
+            type:
+              - "null"
+              - number
+          estimated_close_date:
+            type:
+              - "null"
+              - string
+          customized_win_likelihood:
+            type:
+              - "null"
+              - number
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          added_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  leads_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          organization_name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          source_id:
+            type:
+              - "null"
+              - number
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          facebook:
+            type:
+              - "null"
+              - string
+          linkedin:
+            type:
+              - "null"
+              - string
+          skype:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          unqualified_reason_id:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  lead_conversions_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          lead_id:
+            type:
+              - "null"
+              - number
+          individual_id:
+            type:
+              - "null"
+              - number
+          organization_id:
+            type:
+              - "null"
+              - number
+          deal_id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  lead_sources_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  lead_unqualified_reasons_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  loss_reasons_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  notes_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          content:
+            type:
+              - "null"
+              - string
+          is_important:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          type:
+            type:
+              - "null"
+              - string
+  orders_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          deal_id:
+            type:
+              - "null"
+              - number
+          discount:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  pipelines_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          locale_key:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          disabled:
+            type:
+              - "null"
+              - boolean
+  products_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          sku:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          max_discount:
+            type:
+              - "null"
+              - number
+          max_markup:
+            type:
+              - "null"
+              - number
+          cost:
+            type:
+              - "null"
+              - string
+          version:
+            type:
+              - "null"
+              - integer
+          cost_currency:
+            type:
+              - "null"
+              - string
+          prices:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  stages_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          locale_key:
+            type:
+              - "null"
+              - string
+          position_hash:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          has_original_name:
+            type:
+              - "null"
+              - boolean
+          position:
+            type:
+              - "null"
+              - number
+          likelihood:
+            type:
+              - "null"
+              - number
+          pipeline_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  tags_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  tasks_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          completed:
+            type:
+              - "null"
+              - boolean
+          completed_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          due_date:
+            type:
+              - "null"
+              - string
+          overdue:
+            type:
+              - "null"
+              - boolean
+          remind_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  text_messages_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            type:
+              - "null"
+              - array
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          incoming:
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          resource_phone_number:
+            type:
+              - "null"
+              - string
+          sent_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          user_id:
+            type:
+              - "null"
+              - number
+          user_phone_number:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  users_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          invited:
+            type:
+              - "null"
+              - boolean
+          detached:
+            type:
+              - "null"
+              - boolean
+          sell_login_disabled:
+            type:
+              - "null"
+              - boolean
+          confirmed:
+            type:
+              - "null"
+              - boolean
+          phone_number:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          roles:
+            type:
+              - "null"
+              - array
+          team_name:
+            type:
+              - "null"
+              - string
+          group:
+            type:
+              - "null"
+              - object
+          reports_to:
+            type:
+              - "null"
+              - number
+          system_tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          timezone:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          zendesk_user_id:
+            type:
+              - "null"
+              - string
+          identity_type:
+            type:
+              - "null"
+              - string
+  visit_outcomes_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+  visits_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          outcome_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          visited_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          resource_address:
+            type:
+              - "null"
+              - string
+          rep_location_verification_status:
+            type:
+              - "null"
+              - string
+          summary:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+streams:
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/call_outcomes"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "call_outcomes"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/calls"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          user_id:
+            type:
+              - "null"
+              - number
+          summary:
+            type:
+              - "null"
+              - string
+          recording_url:
+            type:
+              - "null"
+              - string
+          outcome_id:
+            type:
+              - "null"
+              - number
+          duration:
+            type:
+              - "null"
+              - number
+          phone_number:
+            type:
+              - "null"
+              - string
+          incoming:
+            type:
+              - "null"
+              - boolean
+          missed:
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            type:
+              - "null"
+              - array
+          made_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "calls"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/collaborations"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          collaborator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "collaborations"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/contacts"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          is_organization:
+            type:
+              - "null"
+              - boolean
+          contact_id:
+            type:
+              - "null"
+              - number
+          parent_organization_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          customer_status:
+            type:
+              - "null"
+              - string
+          prospect_status:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          facebook:
+            type:
+              - "null"
+              - string
+          linkedin:
+            type:
+              - "null"
+              - string
+          skype:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          billing_address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          shipping_address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "contacts"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/leads"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          first_name:
+            type:
+              - "null"
+              - string
+          last_name:
+            type:
+              - "null"
+              - string
+          organization_name:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          source_id:
+            type:
+              - "null"
+              - number
+          title:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          industry:
+            type:
+              - "null"
+              - string
+          website:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          phone:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          fax:
+            type:
+              - "null"
+              - string
+          twitter:
+            type:
+              - "null"
+              - string
+          facebook:
+            type:
+              - "null"
+              - string
+          linkedin:
+            type:
+              - "null"
+              - string
+          skype:
+            type:
+              - "null"
+              - string
+          address:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          unqualified_reason_id:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+            properties: {}
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "leads"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/lead_conversions"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          lead_id:
+            type:
+              - "null"
+              - number
+          individual_id:
+            type:
+              - "null"
+              - number
+          organization_id:
+            type:
+              - "null"
+              - number
+          deal_id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "lead_conversions"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/lead_sources"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "lead_sources"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/lead_unqualified_reasons"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "lead_unqualified_reasons"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/deal_sources"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "deal_sources"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/deal_unqualified_reasons"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "deal_unqualified_reasons"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/deals"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          value:
+            type:
+              - "null"
+              - number
+              - string
+          currency:
+            type:
+              - "null"
+              - string
+          hot:
+            type:
+              - "null"
+              - boolean
+          stage_id:
+            type:
+              - "null"
+              - number
+          last_stage_change_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          last_stage_change_by_id:
+            type:
+              - "null"
+              - number
+          last_activity_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          source_id:
+            type:
+              - "null"
+              - number
+          loss_reason_id:
+            type:
+              - "null"
+              - number
+          unqualified_reason_id:
+            type:
+              - "null"
+              - number
+          dropbox_email:
+            type:
+              - "null"
+              - string
+          contact_id:
+            type:
+              - "null"
+              - number
+          organization_id:
+            type:
+              - "null"
+              - number
+          estimated_close_date:
+            type:
+              - "null"
+              - string
+          customized_win_likelihood:
+            type:
+              - "null"
+              - number
+          tags:
+            type:
+              - "null"
+              - array
+          custom_fields:
+            type:
+              - "null"
+              - object
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          added_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "deals"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/loss_reasons"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          creator_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "loss_reasons"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/notes"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          content:
+            type:
+              - "null"
+              - string
+          is_important:
+            type:
+              - "null"
+              - boolean
+          tags:
+            type:
+              - "null"
+              - array
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          type:
+            type:
+              - "null"
+              - string
+    name: "notes"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/orders"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          deal_id:
+            type:
+              - "null"
+              - number
+          discount:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "orders"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/pipelines"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          locale_key:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          disabled:
+            type:
+              - "null"
+              - boolean
+    name: "pipelines"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/products"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          description:
+            type:
+              - "null"
+              - string
+          sku:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          max_discount:
+            type:
+              - "null"
+              - number
+          max_markup:
+            type:
+              - "null"
+              - number
+          cost:
+            type:
+              - "null"
+              - string
+          version:
+            type:
+              - "null"
+              - integer
+          cost_currency:
+            type:
+              - "null"
+              - string
+          prices:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              additionalProperties: true
+              properties: {}
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "products"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/stages"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          category:
+            type:
+              - "null"
+              - string
+          locale_key:
+            type:
+              - "null"
+              - string
+          position_hash:
+            type:
+              - "null"
+              - string
+          active:
+            type:
+              - "null"
+              - boolean
+          has_original_name:
+            type:
+              - "null"
+              - boolean
+          position:
+            type:
+              - "null"
+              - number
+          likelihood:
+            type:
+              - "null"
+              - number
+          pipeline_id:
+            type:
+              - "null"
+              - number
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "stages"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/tags"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "tags"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/tasks"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          owner_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          completed:
+            type:
+              - "null"
+              - boolean
+          completed_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          due_date:
+            type:
+              - "null"
+              - string
+          overdue:
+            type:
+              - "null"
+              - boolean
+          remind_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "tasks"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/text_messages"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          associated_deal_ids:
+            type:
+              - "null"
+              - array
+          content:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          incoming:
+            type:
+              - "null"
+              - boolean
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          resource_phone_number:
+            type:
+              - "null"
+              - string
+          sent_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          user_id:
+            type:
+              - "null"
+              - number
+          user_phone_number:
+            type:
+              - "null"
+              - string
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "text_messages"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/users"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          email:
+            type:
+              - "null"
+              - string
+          status:
+            type:
+              - "null"
+              - string
+          invited:
+            type:
+              - "null"
+              - boolean
+          detached:
+            type:
+              - "null"
+              - boolean
+          sell_login_disabled:
+            type:
+              - "null"
+              - boolean
+          confirmed:
+            type:
+              - "null"
+              - boolean
+          phone_number:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+          roles:
+            type:
+              - "null"
+              - array
+          team_name:
+            type:
+              - "null"
+              - string
+          group:
+            type:
+              - "null"
+              - object
+          reports_to:
+            type:
+              - "null"
+              - number
+          system_tags:
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - string
+          timezone:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          deleted_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          zendesk_user_id:
+            type:
+              - "null"
+              - string
+          identity_type:
+            type:
+              - "null"
+              - string
+    name: "users"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/visit_outcomes"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          name:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "visit_outcomes"
+  - type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "items"
+            - "*"
+            - "data"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.getbase.com/v2"
+        http_method: "GET"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_token'] }}"
+        path: "/visits"
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "per_page"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 2
+          start_from_page: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
+    primary_key: "id"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - number
+          creator_id:
+            type:
+              - "null"
+              - number
+          outcome_id:
+            type:
+              - "null"
+              - number
+          resource_type:
+            type:
+              - "null"
+              - string
+          resource_id:
+            type:
+              - "null"
+              - number
+          visited_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          resource_address:
+            type:
+              - "null"
+              - string
+          rep_location_verification_status:
+            type:
+              - "null"
+              - string
+          summary:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+          updated_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+            airbyte_type: timestamp_with_timezone
+    name: "visits"
+check:
+  type: CheckStream
+  stream_names:
+    - leads
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/zendesk-sell
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Source Zendesk Sell Spec
+    type: object
+    additionalProperties: true
+    required:
+      - api_token
+    properties:
+      api_token:
+        title: API token
+        type: string
+        description: "The API token for authenticating to Zendesk Sell"
+        examples:
+          - "f23yhd630otl94y85a8bf384958473pto95847fd006da49382716or937ruw059"
+        airbyte_secret: true
+        order: 1
+type: DeclarativeSource

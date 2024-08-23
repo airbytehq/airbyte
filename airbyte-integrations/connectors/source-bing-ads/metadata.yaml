@@ -19,6 +19,7 @@ data:
   dockerImageTag: 2.7.3
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
   license: MIT
