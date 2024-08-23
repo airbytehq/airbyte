@@ -105,6 +105,12 @@ class DatabricksDestinationHandler(
                         isFinalTableSchemaMismatch,
                         isFinalTableEmpty,
                         MinimumDestinationState.Impl(needsSoftReset = false),
+                        // for now, just use 0. this means we will always use a temp final table.
+                        // platform has a workaround for this, so it's OK.
+                        // TODO only fetch this on truncate syncs
+                        // TODO once we have destination state, use that instead of a query
+                        finalTableGenerationId = 0,
+                        finalTempTableGenerationId = null,
                     )
                 } else {
                     // The final table doesn't exist, so no further querying to do.
@@ -116,6 +122,8 @@ class DatabricksDestinationHandler(
                         isSchemaMismatch = false,
                         isFinalTableEmpty = true,
                         destinationState = MinimumDestinationState.Impl(needsSoftReset = false),
+                        finalTableGenerationId = null,
+                        finalTempTableGenerationId = null,
                     )
                 }
             }
