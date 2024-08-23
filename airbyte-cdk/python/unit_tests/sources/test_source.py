@@ -227,16 +227,16 @@ def abstract_source(mocker):
             ],
             [
                 AirbyteStateMessage(
-                        type=AirbyteStateType.GLOBAL,
-                        global_=AirbyteGlobalState(
-                            shared_state=AirbyteStateBlob({"shared_key": "shared_val"}),
-                            stream_states=[
-                                AirbyteStreamState(
-                                    stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
-                                    stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
-                                )
-                            ],
-                        ),
+                    type=AirbyteStateType.GLOBAL,
+                    global_=AirbyteGlobalState(
+                        shared_state=AirbyteStateBlob({"shared_key": "shared_val"}),
+                        stream_states=[
+                            AirbyteStreamState(
+                                stream_descriptor=StreamDescriptor(name="movies", namespace="public"),
+                                stream_state=AirbyteStateBlob({"created_at": "2009-07-19"}),
+                            )
+                        ],
+                    ),
                 ),
             ],
             does_not_raise(),

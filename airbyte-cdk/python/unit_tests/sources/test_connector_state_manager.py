@@ -91,7 +91,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, H
                         "shared_state": None,
                         "stream_states": [
                             {
-                                "stream_descriptor": {"name":"actors", "namespace":"public"},
+                                "stream_descriptor": {"name": "actors", "namespace": "public"},
                                 "stream_state": {"id": "mando_michael"},
                             },
                         ],

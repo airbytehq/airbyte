@@ -113,10 +113,10 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
     if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
         # Only check the last state emitted because we don't know the order the others will be in.
         # This may be needed for non-file-based concurrent scenarios too.
-        assert {k:v for k,v in states[-1].state.stream.stream_state.__dict__.items()} == expected_states[-1]
+        assert {k: v for k, v in states[-1].state.stream.stream_state.__dict__.items()} == expected_states[-1]
     else:
         for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
-            assert {k:v for k,v in actual.state.stream.stream_state.__dict__.items()} == expected
+            assert {k: v for k, v in actual.state.stream.stream_state.__dict__.items()} == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")

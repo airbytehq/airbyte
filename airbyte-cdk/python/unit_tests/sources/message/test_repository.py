@@ -13,7 +13,6 @@ from airbyte_cdk.sources.message import (
     NoopMessageRepository,
 )
 
-
 A_CONTROL = AirbyteControlMessage(
     type=OrchestratorType.CONNECTOR_CONFIG,
     emitted_at=0,
