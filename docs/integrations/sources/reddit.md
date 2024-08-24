@@ -28,6 +28,12 @@ First make an app for getting id and secret for authentication
 
 Hit send to receive api_key as response under `access_token`
 
+## Records and rate limiting
+
+- The API has rate limiting as 100 queries per minute (QPM) per OAuth client id, it is dently handled with exponenential backoff strategy, with maximum 3 retries. Refer url for more information: `https://support.reddithelp.com/hc/en-us/articles/16160319875092-Reddit-Data-API-Wiki`
+If the api_key expires, user has to manually request for new access token through postman and try again.
+- The reddit api has a hard limit of fetch 1000 records for a single stream call with subsequent pagination.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |

@@ -48,12 +48,15 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
-                    action: IGNORE
+                    action: RETRY
                     http_codes:
                       - 429
-                    error_message: Rate limit hit... Retry after some time
+                    error_message: Rate limit hit... Retrying
         record_selector:
           type: RecordSelector
           extractor:
@@ -69,8 +72,8 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("data", {}).get("after", {}) }}'
-            stop_condition: '{{ not response.get("data", {}).get("after", {}) }}'
+            cursor_value: "{{ response.get(\"data\", {}).get(\"after\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"after\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -94,6 +97,9 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
@@ -115,8 +121,8 @@ definitions:
             field_name: after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("data", {}).get("after", {}) }}'
-            stop_condition: '{{ not response.get("data", {}).get("after", {}) }}'
+            cursor_value: "{{ response.get(\"data\", {}).get(\"after\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"after\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -140,6 +146,9 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
@@ -160,8 +169,8 @@ definitions:
             field_name: after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("data", {}).get("after", {}) }}'
-            stop_condition: '{{ not response.get("data", {}).get("after", {}) }}'
+            cursor_value: "{{ response.get(\"data\", {}).get(\"after\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"after\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -185,6 +194,9 @@ definitions:
             error_handlers:
               - type: DefaultErrorHandler
                 max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
                     action: RETRY
@@ -206,8 +218,8 @@ definitions:
             field_name: after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("data", {}).get("after", {}) }}'
-            stop_condition: '{{ not response.get("data", {}).get("after", {}) }}'
+            cursor_value: "{{ response.get(\"data\", {}).get(\"after\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"after\", {}) }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -251,12 +263,8 @@ definitions:
             field_name: after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("data", {}).get("after", {}) }}'
-            stop_condition: '{{ not response.get("data", {}).get("after", {}) }}'
-        partition_router:
-          type: ListPartitionRouter
-          values: "{{ config['subreddits'] }}"
-          cursor_field: subreddit
+            cursor_value: "{{ response.get(\"data\", {}).get(\"after\", {}) }}"
+            stop_condition: "{{ not response.get(\"data\", {}).get(\"after\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created
@@ -266,7 +274,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["start_date"] }}'
+          datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -277,7 +285,7 @@ definitions:
     url_base: https://oauth.reddit.com/
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/self"
@@ -361,40 +369,40 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     search:
-      hasRecords: true
-      streamHash: 2ceb08f9869135b1ec3dda656ba890d67bd09087
+      streamHash: 7aec03cdb9b35bef2951b4b1abb5a584d1f3c548
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     subreddit_search:
-      hasRecords: true
-      streamHash: b46dffea0bb8429f44d19a2e33de49a76c33b76a
+      streamHash: a992ce22d7c88d8ab8aa9065c4fa809cf397dd98
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     message_inbox:
-      hasRecords: true
-      streamHash: 49213bc8e699b97d5aadbe8e5a75b551cd047ed4
+      streamHash: 57c865d697c2c1d7e1156d4bdddb2e368c3d9977
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     subreddit_popular:
-      hasRecords: true
-      streamHash: e250488c8e38c7d4b66310a71176eb2bc6b79c35
+      streamHash: df685fc90131babaa5aea19a051f7508da27dec0
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     subreddit_explore:
-      hasRecords: true
-      streamHash: 5832176b5362e7a5b282939cd8de0a31251b5fd8
+      streamHash: b305db18d54f862858284d606b3fd6b06989e9e2
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -1117,6 +1125,443 @@ schemas:
             type:
               - number
               - "null"
+          crosspost_parent:
+            type:
+              - string
+              - "null"
+          crosspost_parent_list:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                all_awardings:
+                  type:
+                    - array
+                    - "null"
+                allow_live_comments:
+                  type:
+                    - boolean
+                    - "null"
+                archived:
+                  type:
+                    - boolean
+                    - "null"
+                author:
+                  type:
+                    - string
+                    - "null"
+                author_flair_richtext:
+                  type:
+                    - array
+                    - "null"
+                author_flair_type:
+                  type:
+                    - string
+                    - "null"
+                author_fullname:
+                  type:
+                    - string
+                    - "null"
+                author_is_blocked:
+                  type:
+                    - boolean
+                    - "null"
+                author_patreon_flair:
+                  type:
+                    - boolean
+                    - "null"
+                author_premium:
+                  type:
+                    - boolean
+                    - "null"
+                awarders:
+                  type:
+                    - array
+                    - "null"
+                can_gild:
+                  type:
+                    - boolean
+                    - "null"
+                can_mod_post:
+                  type:
+                    - boolean
+                    - "null"
+                clicked:
+                  type:
+                    - boolean
+                    - "null"
+                contest_mode:
+                  type:
+                    - boolean
+                    - "null"
+                created:
+                  type:
+                    - number
+                    - "null"
+                created_utc:
+                  type:
+                    - number
+                    - "null"
+                domain:
+                  type:
+                    - string
+                    - "null"
+                downs:
+                  type:
+                    - number
+                    - "null"
+                edited:
+                  type:
+                    - boolean
+                    - "null"
+                gilded:
+                  type:
+                    - number
+                    - "null"
+                gildings:
+                  type:
+                    - object
+                    - "null"
+                hidden:
+                  type:
+                    - boolean
+                    - "null"
+                hide_score:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_created_from_ads_ui:
+                  type:
+                    - boolean
+                    - "null"
+                is_crosspostable:
+                  type:
+                    - boolean
+                    - "null"
+                is_meta:
+                  type:
+                    - boolean
+                    - "null"
+                is_original_content:
+                  type:
+                    - boolean
+                    - "null"
+                is_reddit_media_domain:
+                  type:
+                    - boolean
+                    - "null"
+                is_robot_indexable:
+                  type:
+                    - boolean
+                    - "null"
+                is_self:
+                  type:
+                    - boolean
+                    - "null"
+                is_video:
+                  type:
+                    - boolean
+                    - "null"
+                link_flair_background_color:
+                  type:
+                    - string
+                    - "null"
+                link_flair_richtext:
+                  type:
+                    - array
+                    - "null"
+                link_flair_text_color:
+                  type:
+                    - string
+                    - "null"
+                link_flair_type:
+                  type:
+                    - string
+                    - "null"
+                locked:
+                  type:
+                    - boolean
+                    - "null"
+                media:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    reddit_video:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        bitrate_kbps:
+                          type:
+                            - number
+                            - "null"
+                        dash_url:
+                          type:
+                            - string
+                            - "null"
+                        duration:
+                          type:
+                            - number
+                            - "null"
+                        fallback_url:
+                          type:
+                            - string
+                            - "null"
+                        has_audio:
+                          type:
+                            - boolean
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                        hls_url:
+                          type:
+                            - string
+                            - "null"
+                        is_gif:
+                          type:
+                            - boolean
+                            - "null"
+                        scrubber_media_url:
+                          type:
+                            - string
+                            - "null"
+                        transcoding_status:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                media_embed:
+                  type:
+                    - object
+                    - "null"
+                media_only:
+                  type:
+                    - boolean
+                    - "null"
+                mod_reports:
+                  type:
+                    - array
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                no_follow:
+                  type:
+                    - boolean
+                    - "null"
+                num_comments:
+                  type:
+                    - number
+                    - "null"
+                num_crossposts:
+                  type:
+                    - number
+                    - "null"
+                over_18:
+                  type:
+                    - boolean
+                    - "null"
+                parent_whitelist_status:
+                  type:
+                    - string
+                    - "null"
+                permalink:
+                  type:
+                    - string
+                    - "null"
+                pinned:
+                  type:
+                    - boolean
+                    - "null"
+                pwls:
+                  type:
+                    - number
+                    - "null"
+                quarantine:
+                  type:
+                    - boolean
+                    - "null"
+                removed_by_category:
+                  type:
+                    - string
+                    - "null"
+                saved:
+                  type:
+                    - boolean
+                    - "null"
+                score:
+                  type:
+                    - number
+                    - "null"
+                secure_media:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    reddit_video:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        bitrate_kbps:
+                          type:
+                            - number
+                            - "null"
+                        dash_url:
+                          type:
+                            - string
+                            - "null"
+                        duration:
+                          type:
+                            - number
+                            - "null"
+                        fallback_url:
+                          type:
+                            - string
+                            - "null"
+                        has_audio:
+                          type:
+                            - boolean
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                        hls_url:
+                          type:
+                            - string
+                            - "null"
+                        is_gif:
+                          type:
+                            - boolean
+                            - "null"
+                        scrubber_media_url:
+                          type:
+                            - string
+                            - "null"
+                        transcoding_status:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                secure_media_embed:
+                  type:
+                    - object
+                    - "null"
+                selftext:
+                  type:
+                    - string
+                    - "null"
+                selftext_html:
+                  type:
+                    - string
+                    - "null"
+                send_replies:
+                  type:
+                    - boolean
+                    - "null"
+                spoiler:
+                  type:
+                    - boolean
+                    - "null"
+                stickied:
+                  type:
+                    - boolean
+                    - "null"
+                subreddit:
+                  type:
+                    - string
+                    - "null"
+                subreddit_id:
+                  type:
+                    - string
+                    - "null"
+                subreddit_name_prefixed:
+                  type:
+                    - string
+                    - "null"
+                subreddit_subscribers:
+                  type:
+                    - number
+                    - "null"
+                subreddit_type:
+                  type:
+                    - string
+                    - "null"
+                thumbnail:
+                  type:
+                    - string
+                    - "null"
+                thumbnail_height:
+                  type:
+                    - number
+                    - "null"
+                thumbnail_width:
+                  type:
+                    - number
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                total_awards_received:
+                  type:
+                    - number
+                    - "null"
+                treatment_tags:
+                  type:
+                    - array
+                    - "null"
+                ups:
+                  type:
+                    - number
+                    - "null"
+                upvote_ratio:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                url_overridden_by_dest:
+                  type:
+                    - string
+                    - "null"
+                user_reports:
+                  type:
+                    - array
+                    - "null"
+                visited:
+                  type:
+                    - boolean
+                    - "null"
+                whitelist_status:
+                  type:
+                    - string
+                    - "null"
+                wls:
+                  type:
+                    - number
+                    - "null"
           domain:
             type:
               - string
@@ -8921,6 +9366,49 @@ schemas:
                                   type:
                                     - number
                                     - "null"
+                        nsfw:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            resolutions:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  height:
+                                    type:
+                                      - number
+                                      - "null"
+                                  url:
+                                    type:
+                                      - string
+                                      - "null"
+                                  width:
+                                    type:
+                                      - number
+                                      - "null"
+                            source:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                height:
+                                  type:
+                                    - number
+                                    - "null"
+                                url:
+                                  type:
+                                    - string
+                                    - "null"
+                                width:
+                                  type:
+                                    - number
+                                    - "null"
                         obfuscated:
                           type:
                             - object
@@ -10089,17 +10577,42 @@ schemas:
             type:
               - string
               - "null"
-          author_flair_background_color:
+          author_cakeday:
             type:
-              - string
+              - boolean
               - "null"
-          author_flair_css_class:
+          author_flair_background_color:
             type:
               - string
               - "null"
           author_flair_richtext:
             type:
               - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                a:
+                  type:
+                    - string
+                    - "null"
+                e:
+                  type:
+                    - string
+                    - "null"
+                t:
+                  type:
+                    - string
+                    - "null"
+                u:
+                  type:
+                    - string
+                    - "null"
+          author_flair_template_id:
+            type:
+              - string
               - "null"
           author_flair_text:
             type:
@@ -10157,10 +10670,520 @@ schemas:
             type:
               - number
               - "null"
-          distinguished:
+          crosspost_parent:
             type:
               - string
               - "null"
+          crosspost_parent_list:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                all_awardings:
+                  type:
+                    - array
+                    - "null"
+                allow_live_comments:
+                  type:
+                    - boolean
+                    - "null"
+                archived:
+                  type:
+                    - boolean
+                    - "null"
+                author:
+                  type:
+                    - string
+                    - "null"
+                author_flair_richtext:
+                  type:
+                    - array
+                    - "null"
+                author_flair_type:
+                  type:
+                    - string
+                    - "null"
+                author_fullname:
+                  type:
+                    - string
+                    - "null"
+                author_is_blocked:
+                  type:
+                    - boolean
+                    - "null"
+                author_patreon_flair:
+                  type:
+                    - boolean
+                    - "null"
+                author_premium:
+                  type:
+                    - boolean
+                    - "null"
+                awarders:
+                  type:
+                    - array
+                    - "null"
+                can_gild:
+                  type:
+                    - boolean
+                    - "null"
+                can_mod_post:
+                  type:
+                    - boolean
+                    - "null"
+                clicked:
+                  type:
+                    - boolean
+                    - "null"
+                contest_mode:
+                  type:
+                    - boolean
+                    - "null"
+                created:
+                  type:
+                    - number
+                    - "null"
+                created_utc:
+                  type:
+                    - number
+                    - "null"
+                domain:
+                  type:
+                    - string
+                    - "null"
+                downs:
+                  type:
+                    - number
+                    - "null"
+                edited:
+                  type:
+                    - boolean
+                    - number
+                    - "null"
+                gilded:
+                  type:
+                    - number
+                    - "null"
+                gildings:
+                  type:
+                    - object
+                    - "null"
+                hidden:
+                  type:
+                    - boolean
+                    - "null"
+                hide_score:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_created_from_ads_ui:
+                  type:
+                    - boolean
+                    - "null"
+                is_crosspostable:
+                  type:
+                    - boolean
+                    - "null"
+                is_meta:
+                  type:
+                    - boolean
+                    - "null"
+                is_original_content:
+                  type:
+                    - boolean
+                    - "null"
+                is_reddit_media_domain:
+                  type:
+                    - boolean
+                    - "null"
+                is_robot_indexable:
+                  type:
+                    - boolean
+                    - "null"
+                is_self:
+                  type:
+                    - boolean
+                    - "null"
+                is_video:
+                  type:
+                    - boolean
+                    - "null"
+                link_flair_background_color:
+                  type:
+                    - string
+                    - "null"
+                link_flair_css_class:
+                  type:
+                    - string
+                    - "null"
+                link_flair_richtext:
+                  type:
+                    - array
+                    - "null"
+                link_flair_template_id:
+                  type:
+                    - string
+                    - "null"
+                link_flair_text:
+                  type:
+                    - string
+                    - "null"
+                link_flair_text_color:
+                  type:
+                    - string
+                    - "null"
+                link_flair_type:
+                  type:
+                    - string
+                    - "null"
+                locked:
+                  type:
+                    - boolean
+                    - "null"
+                media:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    reddit_video:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        bitrate_kbps:
+                          type:
+                            - number
+                            - "null"
+                        dash_url:
+                          type:
+                            - string
+                            - "null"
+                        duration:
+                          type:
+                            - number
+                            - "null"
+                        fallback_url:
+                          type:
+                            - string
+                            - "null"
+                        has_audio:
+                          type:
+                            - boolean
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                        hls_url:
+                          type:
+                            - string
+                            - "null"
+                        is_gif:
+                          type:
+                            - boolean
+                            - "null"
+                        scrubber_media_url:
+                          type:
+                            - string
+                            - "null"
+                        transcoding_status:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                media_embed:
+                  type:
+                    - object
+                    - "null"
+                media_only:
+                  type:
+                    - boolean
+                    - "null"
+                mod_reports:
+                  type:
+                    - array
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                no_follow:
+                  type:
+                    - boolean
+                    - "null"
+                num_comments:
+                  type:
+                    - number
+                    - "null"
+                num_crossposts:
+                  type:
+                    - number
+                    - "null"
+                over_18:
+                  type:
+                    - boolean
+                    - "null"
+                parent_whitelist_status:
+                  type:
+                    - string
+                    - "null"
+                permalink:
+                  type:
+                    - string
+                    - "null"
+                pinned:
+                  type:
+                    - boolean
+                    - "null"
+                post_hint:
+                  type:
+                    - string
+                    - "null"
+                preview:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    enabled:
+                      type:
+                        - boolean
+                        - "null"
+                    images:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          id:
+                            type:
+                              - string
+                              - "null"
+                          resolutions:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                height:
+                                  type:
+                                    - number
+                                    - "null"
+                                url:
+                                  type:
+                                    - string
+                                    - "null"
+                                width:
+                                  type:
+                                    - number
+                                    - "null"
+                          source:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              height:
+                                type:
+                                  - number
+                                  - "null"
+                              url:
+                                type:
+                                  - string
+                                  - "null"
+                              width:
+                                type:
+                                  - number
+                                  - "null"
+                          variants:
+                            type:
+                              - object
+                              - "null"
+                pwls:
+                  type:
+                    - number
+                    - "null"
+                quarantine:
+                  type:
+                    - boolean
+                    - "null"
+                saved:
+                  type:
+                    - boolean
+                    - "null"
+                score:
+                  type:
+                    - number
+                    - "null"
+                secure_media:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    reddit_video:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        bitrate_kbps:
+                          type:
+                            - number
+                            - "null"
+                        dash_url:
+                          type:
+                            - string
+                            - "null"
+                        duration:
+                          type:
+                            - number
+                            - "null"
+                        fallback_url:
+                          type:
+                            - string
+                            - "null"
+                        has_audio:
+                          type:
+                            - boolean
+                            - "null"
+                        height:
+                          type:
+                            - number
+                            - "null"
+                        hls_url:
+                          type:
+                            - string
+                            - "null"
+                        is_gif:
+                          type:
+                            - boolean
+                            - "null"
+                        scrubber_media_url:
+                          type:
+                            - string
+                            - "null"
+                        transcoding_status:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - number
+                            - "null"
+                secure_media_embed:
+                  type:
+                    - object
+                    - "null"
+                selftext:
+                  type:
+                    - string
+                    - "null"
+                selftext_html:
+                  type:
+                    - string
+                    - "null"
+                send_replies:
+                  type:
+                    - boolean
+                    - "null"
+                spoiler:
+                  type:
+                    - boolean
+                    - "null"
+                stickied:
+                  type:
+                    - boolean
+                    - "null"
+                subreddit:
+                  type:
+                    - string
+                    - "null"
+                subreddit_id:
+                  type:
+                    - string
+                    - "null"
+                subreddit_name_prefixed:
+                  type:
+                    - string
+                    - "null"
+                subreddit_subscribers:
+                  type:
+                    - number
+                    - "null"
+                subreddit_type:
+                  type:
+                    - string
+                    - "null"
+                thumbnail:
+                  type:
+                    - string
+                    - "null"
+                thumbnail_height:
+                  type:
+                    - number
+                    - "null"
+                thumbnail_width:
+                  type:
+                    - number
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                total_awards_received:
+                  type:
+                    - number
+                    - "null"
+                treatment_tags:
+                  type:
+                    - array
+                    - "null"
+                ups:
+                  type:
+                    - number
+                    - "null"
+                upvote_ratio:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                url_overridden_by_dest:
+                  type:
+                    - string
+                    - "null"
+                user_reports:
+                  type:
+                    - array
+                    - "null"
+                visited:
+                  type:
+                    - boolean
+                    - "null"
+                whitelist_status:
+                  type:
+                    - string
+                    - "null"
+                wls:
+                  type:
+                    - number
+                    - "null"
           domain:
             type:
               - string
@@ -10172,7 +11195,34 @@ schemas:
           edited:
             type:
               - boolean
+              - number
               - "null"
+          gallery_data:
+            type:
+              - object
+              - "null"
+            properties:
+              items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    caption:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    media_id:
+                      type:
+                        - string
+                        - "null"
           gilded:
             type:
               - number
@@ -10198,6 +11248,10 @@ schemas:
               - boolean
               - "null"
           is_crosspostable:
+            type:
+              - boolean
+              - "null"
+          is_gallery:
             type:
               - boolean
               - "null"
@@ -10237,6 +11291,27 @@ schemas:
             type:
               - array
               - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                a:
+                  type:
+                    - string
+                    - "null"
+                e:
+                  type:
+                    - string
+                    - "null"
+                t:
+                  type:
+                    - string
+                    - "null"
+                u:
+                  type:
+                    - string
+                    - "null"
           link_flair_template_id:
             type:
               - string
@@ -10406,44 +11481,7 @@ schemas:
               - object
               - "null"
             properties:
-              8x1k828eh6jd1:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  dashUrl:
-                    type:
-                      - string
-                      - "null"
-                  e:
-                    type:
-                      - string
-                      - "null"
-                  hlsUrl:
-                    type:
-                      - string
-                      - "null"
-                  id:
-                    type:
-                      - string
-                      - "null"
-                  isGif:
-                    type:
-                      - boolean
-                      - "null"
-                  status:
-                    type:
-                      - string
-                      - "null"
-                  x:
-                    type:
-                      - number
-                      - "null"
-                  "y":
-                    type:
-                      - number
-                      - "null"
-              jccxukjd4ojd1:
+              0521osovmfkd1:
                 type:
                   - object
                   - "null"
@@ -10502,7 +11540,7 @@ schemas:
                     type:
                       - string
                       - "null"
-              mhbwnqmbqmjd1:
+              2d1dib6vmfkd1:
                 type:
                   - object
                   - "null"
@@ -10519,27 +11557,6 @@ schemas:
                     type:
                       - string
                       - "null"
-                  o:
-                    type:
-                      - array
-                      - "null"
-                    items:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        u:
-                          type:
-                            - string
-                            - "null"
-                        x:
-                          type:
-                            - number
-                            - "null"
-                        "y":
-                          type:
-                            - number
-                            - "null"
                   p:
                     type:
                       - array
@@ -10582,7 +11599,420 @@ schemas:
                     type:
                       - string
                       - "null"
-              rzn6a7cw89jd1:
+              3rhl3xrmwdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              3uoq3om8ddkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              4ysppojeljkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              5tymkhlvmfkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              857h41hdrikd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              anioms3owdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              aqp1w19tcdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              b3md5jqnyfkd1:
                 type:
                   - object
                   - "null"
@@ -10618,6 +12048,1068 @@ schemas:
                   "y":
                     type:
                       - number
+                      - "null"
+              b3nvq6evmfkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              dhnagdtokgkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              f61ecqwvmfkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              g4925io8rikd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              iopp0qgbxdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              jiq7b5ecxdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              k1h1kzrbxdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              ls9gt6jt8dkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              mnhdu92wmfkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              qqjus7nnwdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              qutybb4cxdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              tvv022wbxdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              uhqvqfq0iekd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              um0tev7kkjkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              wjz5xk8wmfkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              wqjap50cxdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              z8wtfowzcdkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+              zyu5ikgbbjkd1:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  e:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  m:
+                    type:
+                      - string
+                      - "null"
+                  p:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        u:
+                          type:
+                            - string
+                            - "null"
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                  s:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      u:
+                        type:
+                          - string
+                          - "null"
+                      x:
+                        type:
+                          - number
+                          - "null"
+                      "y":
+                        type:
+                          - number
+                          - "null"
+                  status:
+                    type:
+                      - string
                       - "null"
           media_only:
             type:
@@ -10727,179 +13219,6 @@ schemas:
                       type:
                         - object
                         - "null"
-                      properties:
-                        gif:
-                          type:
-                            - object
-                            - "null"
-                          properties:
-                            resolutions:
-                              type:
-                                - array
-                                - "null"
-                              items:
-                                type:
-                                  - object
-                                  - "null"
-                                properties:
-                                  height:
-                                    type:
-                                      - number
-                                      - "null"
-                                  url:
-                                    type:
-                                      - string
-                                      - "null"
-                                  width:
-                                    type:
-                                      - number
-                                      - "null"
-                            source:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                height:
-                                  type:
-                                    - number
-                                    - "null"
-                                url:
-                                  type:
-                                    - string
-                                    - "null"
-                                width:
-                                  type:
-                                    - number
-                                    - "null"
-                        mp4:
-                          type:
-                            - object
-                            - "null"
-                          properties:
-                            resolutions:
-                              type:
-                                - array
-                                - "null"
-                              items:
-                                type:
-                                  - object
-                                  - "null"
-                                properties:
-                                  height:
-                                    type:
-                                      - number
-                                      - "null"
-                                  url:
-                                    type:
-                                      - string
-                                      - "null"
-                                  width:
-                                    type:
-                                      - number
-                                      - "null"
-                            source:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                height:
-                                  type:
-                                    - number
-                                    - "null"
-                                url:
-                                  type:
-                                    - string
-                                    - "null"
-                                width:
-                                  type:
-                                    - number
-                                    - "null"
-                        nsfw:
-                          type:
-                            - object
-                            - "null"
-                          properties:
-                            resolutions:
-                              type:
-                                - array
-                                - "null"
-                              items:
-                                type:
-                                  - object
-                                  - "null"
-                                properties:
-                                  height:
-                                    type:
-                                      - number
-                                      - "null"
-                                  url:
-                                    type:
-                                      - string
-                                      - "null"
-                                  width:
-                                    type:
-                                      - number
-                                      - "null"
-                            source:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                height:
-                                  type:
-                                    - number
-                                    - "null"
-                                url:
-                                  type:
-                                    - string
-                                    - "null"
-                                width:
-                                  type:
-                                    - number
-                                    - "null"
-                        obfuscated:
-                          type:
-                            - object
-                            - "null"
-                          properties:
-                            resolutions:
-                              type:
-                                - array
-                                - "null"
-                              items:
-                                type:
-                                  - object
-                                  - "null"
-                                properties:
-                                  height:
-                                    type:
-                                      - number
-                                      - "null"
-                                  url:
-                                    type:
-                                      - string
-                                      - "null"
-                                  width:
-                                    type:
-                                      - number
-                                      - "null"
-                            source:
-                              type:
-                                - object
-                                - "null"
-                              properties:
-                                height:
-                                  type:
-                                    - number
-                                    - "null"
-                                url:
-                                  type:
-                                    - string
-                                    - "null"
-                                width:
-                                  type:
-                                    - number
-                                    - "null"
           pwls:
             type:
               - number
@@ -11101,6 +13420,10 @@ schemas:
               - number
               - "null"
           subreddit_type:
+            type:
+              - string
+              - "null"
+          suggested_sort:
             type:
               - string
               - "null"
