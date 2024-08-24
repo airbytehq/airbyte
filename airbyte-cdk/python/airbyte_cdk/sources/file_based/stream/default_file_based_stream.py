@@ -290,8 +290,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
             return await self.get_parser().infer_schema(self.config, file, self.stream_reader, self.logger)
-        except EncodingError as encoding_error:
-            raise encoding_error
+        except AirbyteTracedException as ate:
+            raise ate
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
