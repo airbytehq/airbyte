@@ -35,7 +35,7 @@ class H2SourceIntegrationTest {
                     port = h2.port
                     database = h2.database + "_garbage"
                 }
-            SyncsTestFixture.testCheck(configPojo, "Error code: 90149")
+            SyncsTestFixture.testCheck(configPojo, "Database \"mem:.*_garbage\" not found")
         }
     }
 

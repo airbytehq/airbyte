@@ -235,3 +235,6 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
+    language: Optional[str] = Field(
+        None, description="The language the connector is written in"
+    )
