@@ -1,0 +1,795 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    calls:
+      type: DeclarativeStream
+      name: calls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['account_id'] }}/calls.json?"
+          http_method: GET
+          request_parameters:
+            fields: >-
+              call_type,company_id,company_name,company_time_zone,created_at,device_type,first_call,formatted_call_type,formatted_customer_location,formatted_business_phone_number,formatted_customer_name,prior_calls,formatted_customer_name_or_phone_number,formatted_customer_phone_number,formatted_duration,formatted_tracking_phone_number,formatted_tracking_source,formatted_value,good_lead_call_id,good_lead_call_time,lead_status,note,source,source_name,tags,total_calls,value,waveforms,tracker_id,speaker_percent,keywords,medium,campaign,referring_url,landing_page_url,last_requested_url,referrer_domain,utm_source,utm_medium,utm_term,utm_content,utm_campaign,utma,utmb,utmc,utmv,utmz,ga,gclid,fbclid,msclkid,milestones,timeline_url,keywords_spotted,call_highlights,agent_email,keypad_entries
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - calls
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: start_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: start_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P100D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/calls"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['account_id'] }}/text-messages.json?"
+          http_method: GET
+          request_parameters:
+            fields: >-
+              id,company_id,initial_tracker_id,current_tracker_id,customer_name,customer_phone_number,initial_tracking_number,current_tracking_number,last_message_at,state,company_time_zone,formatted_customer_phone_number,formatted_initial_tracking_number,formatted_current_tracking_number,formatted_customer_name,recent_messages
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - conversations
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_message_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: start_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P100D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['account_id'] }}/users.json?"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - users
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: start_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P100D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: "{{ config['account_id'] }}/companies.json?"
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - companies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ headers['link']['next']['url'] }}"
+            stop_condition: "{{ 'next' not in headers['link'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config.start_date }}"
+          datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: start_date
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: P100D
+        cursor_granularity: PT0.000001S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.callrail.com/v3/a/
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: Authorization
+      api_token: Token token={{ config.api_key }}
+
+streams:
+  - $ref: "#/definitions/streams/calls"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/companies"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - account_id
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: API access key
+        airbyte_secret: true
+        order: 0
+      account_id:
+        type: string
+        description: Account ID
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        description: Start getting data from that date.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "%Y-%m-%d"
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    calls: false
+    conversations: false
+    users: false
+    companies: false
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  calls:
+    type: object
+    properties:
+      agent_email:
+        type:
+          - "null"
+          - string
+      answered:
+        type:
+          - "null"
+          - boolean
+      business_phone_number:
+        type:
+          - "null"
+          - string
+      call_highlights:
+        type:
+          - "null"
+          - array
+        additionalProperties: true
+        items: {}
+      call_type:
+        type:
+          - "null"
+          - string
+      campaign:
+        type:
+          - "null"
+          - string
+      company_id:
+        type:
+          - "null"
+          - string
+      company_name:
+        type:
+          - "null"
+          - string
+      company_time_zone:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      customer_city:
+        type:
+          - "null"
+          - string
+      customer_country:
+        type:
+          - "null"
+          - string
+      customer_name:
+        type:
+          - "null"
+          - string
+      customer_phone_number:
+        type:
+          - "null"
+          - string
+      customer_state:
+        type:
+          - "null"
+          - string
+      device_type:
+        type:
+          - "null"
+          - string
+      direction:
+        type:
+          - "null"
+          - string
+      duration:
+        type:
+          - "null"
+          - integer
+      fbclid:
+        type:
+          - "null"
+          - string
+      first_call:
+        type:
+          - "null"
+          - boolean
+      formatted_business_phone_number:
+        type:
+          - "null"
+          - string
+      formatted_call_type:
+        type:
+          - "null"
+          - string
+      formatted_customer_location:
+        type:
+          - "null"
+          - string
+      formatted_customer_name:
+        type:
+          - "null"
+          - string
+      formatted_customer_name_or_phone_number:
+        type:
+          - "null"
+          - string
+      formatted_customer_phone_number:
+        type:
+          - "null"
+          - string
+      formatted_duration:
+        type:
+          - "null"
+          - string
+      formatted_tracking_phone_number:
+        type:
+          - "null"
+          - string
+      formatted_tracking_source:
+        type:
+          - "null"
+          - string
+      formatted_value:
+        type:
+          - "null"
+          - string
+      ga:
+        type:
+          - "null"
+          - string
+      gclid:
+        type:
+          - "null"
+          - string
+      good_lead_call_id:
+        type:
+          - "null"
+          - string
+      good_lead_call_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      id:
+        type:
+          - "null"
+          - string
+      keypad_entries:
+        type:
+          - "null"
+          - string
+      keywords:
+        type:
+          - "null"
+          - string
+      keywords_spotted:
+        type:
+          - "null"
+          - array
+        additionalProperties: true
+        items: {}
+      landing_page_url:
+        type:
+          - "null"
+          - string
+      last_requested_url:
+        type:
+          - "null"
+          - string
+      lead_status:
+        type:
+          - "null"
+          - string
+      medium:
+        type:
+          - "null"
+          - string
+      msclkid:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      prior_calls:
+        type:
+          - "null"
+          - integer
+      recording:
+        type:
+          - "null"
+          - string
+      recording_duration:
+        type:
+          - "null"
+          - integer
+      recording_player:
+        type:
+          - "null"
+          - string
+      referrer_domain:
+        type:
+          - "null"
+          - string
+      referring_url:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      source_name:
+        type:
+          - "null"
+          - string
+      speaker_percent:
+        type:
+          - "null"
+          - array
+        items: {}
+      start_time:
+        type:
+          - "null"
+          - string
+        format: date-time
+      tags:
+        type:
+          - "null"
+          - array
+        items: {}
+      timeline_url:
+        type:
+          - "null"
+          - string
+      total_calls:
+        type:
+          - "null"
+          - integer
+      tracker_id:
+        type:
+          - "null"
+          - string
+      tracking_phone_number:
+        type:
+          - "null"
+          - string
+      utm_campaign:
+        type:
+          - "null"
+          - string
+      utm_content:
+        type:
+          - "null"
+          - string
+      utm_medium:
+        type:
+          - "null"
+          - string
+      utm_source:
+        type:
+          - "null"
+          - string
+      utm_term:
+        type:
+          - "null"
+          - string
+      utma:
+        type:
+          - "null"
+          - string
+      utmb:
+        type:
+          - "null"
+          - string
+      utmc:
+        type:
+          - "null"
+          - string
+      utmv:
+        type:
+          - "null"
+          - string
+      utmz:
+        type:
+          - "null"
+          - string
+      value:
+        type:
+          - "null"
+          - string
+      voicemail:
+        type:
+          - "null"
+          - boolean
+      waveforms:
+        type:
+          - "null"
+          - array
+        items: {}
+    additionalProperties: true
+  conversations:
+    type: object
+    properties:
+      company_id:
+        type:
+          - "null"
+          - string
+      company_name:
+        type:
+          - "null"
+          - string
+      company_time_zone:
+        type:
+          - "null"
+          - string
+      current_tracker_id:
+        type:
+          - "null"
+          - string
+      current_tracking_number:
+        type:
+          - "null"
+          - string
+      customer_name:
+        type:
+          - "null"
+          - string
+      customer_phone_number:
+        type:
+          - "null"
+          - string
+      formatted_current_tracking_number:
+        type:
+          - "null"
+          - string
+      formatted_customer_name:
+        type:
+          - "null"
+          - string
+      formatted_customer_phone_number:
+        type:
+          - "null"
+          - string
+      formatted_initial_tracking_number:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      initial_tracker_id:
+        type:
+          - "null"
+          - string
+      initial_tracking_number:
+        type:
+          - "null"
+          - string
+      last_message_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      recent_messages:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            content:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+              format: date-time
+            direction:
+              type:
+                - "null"
+                - string
+      state:
+        type:
+          - "null"
+          - string
+      tracker_name:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  users:
+    type: object
+    properties:
+      accepted:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      email:
+        type:
+          - "null"
+          - string
+      first_name:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      last_name:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      role:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  companies:
+    type: object
+    properties:
+      callscore_enabled:
+        type:
+          - "null"
+          - boolean
+      callscribe_enabled:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      disabled_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      dni_active:
+        type:
+          - "null"
+          - boolean
+      form_capture:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - string
+      keyword_spotting_enabled:
+        type:
+          - "null"
+          - boolean
+      lead_scoring_enabled:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      script_url:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      swap_cookie_duration:
+        type: integer
+      swap_exclude_jquery:
+        type:
+          - "null"
+          - string
+      swap_landing_override:
+        type:
+          - "null"
+          - string
+      swap_ppc_override:
+        type:
+          - "null"
+          - string
+      time_zone:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
