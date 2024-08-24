@@ -144,6 +144,23 @@
           }
         }
       ]
+    },
+    "compact_union_with_annotations": {
+      "type": ["object", "integer"],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "compact_union_with_array_items": {
+      "type": ["object", "array"],
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

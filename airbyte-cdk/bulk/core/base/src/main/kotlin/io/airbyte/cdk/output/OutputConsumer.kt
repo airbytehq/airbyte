@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.output
 
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -21,7 +20,6 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.function.Consumer
-import org.apache.commons.lang3.exception.ExceptionUtils
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 @DefaultImplementation(StdoutOutputConsumer::class)
@@ -87,17 +85,6 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
             AirbyteTraceMessage()
                 .withType(AirbyteTraceMessage.Type.ANALYTICS)
                 .withAnalytics(analytics),
-        )
-    }
-
-    fun acceptTraceOnConfigError(e: Throwable) {
-        val configErrorException: ConfigErrorException = ConfigErrorException.unwind(e) ?: return
-        accept(
-            AirbyteErrorTraceMessage()
-                .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                .withMessage(configErrorException.message)
-                .withInternalMessage(e.toString())
-                .withStackTrace(ExceptionUtils.getStackTrace(e)),
         )
     }
 }
