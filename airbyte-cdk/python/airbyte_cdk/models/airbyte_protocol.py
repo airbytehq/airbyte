@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from dataclasses import InitVar
-from typing import Annotated, Mapping
+
+from dataclasses import InitVar, dataclass
+from typing import Annotated, Any, Dict, List, Mapping, Optional
 
 from airbyte_protocol_dataclasses.models import *
 from serpyco_rs.metadata import Alias
@@ -12,17 +13,18 @@ from serpyco_rs.metadata import Alias
 class AirbyteStateBlob:
     kwargs: InitVar[Mapping[str, Any]]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Set any attribute passed in through kwargs
         for arg in args:
             self.__dict__.update(arg)
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def __eq__(self, other: AirbyteStateBlob):
-        return bool(self.__dict__ == other.__dict__)
+    def __eq__(self, other: object) -> bool:
+        return False if not isinstance(other, AirbyteStateBlob) else bool(self.__dict__ == other.__dict__)
 
 
+# The following dataclasses have been redeclared to include the new version of AirbyteStateBlob
 @dataclass
 class AirbyteStreamState:
     stream_descriptor: StreamDescriptor
