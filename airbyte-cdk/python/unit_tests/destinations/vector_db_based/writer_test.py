@@ -7,7 +7,7 @@ from unittest.mock import ANY, MagicMock, call
 
 import pytest
 from airbyte_cdk.destinations.vector_db_based import ProcessingConfigModel, Writer
-from airbyte_cdk.models.airbyte_protocol import (
+from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,

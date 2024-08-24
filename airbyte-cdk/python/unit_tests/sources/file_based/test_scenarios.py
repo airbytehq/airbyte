@@ -11,8 +11,7 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteLogMessage, AirbyteMessage, SyncMode
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput

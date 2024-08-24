@@ -1,12 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from dataclasses import InitVar, dataclass, field
-from typing import Annotated, Any, Mapping
+from dataclasses import InitVar
+from typing import Annotated, Mapping
 
-import serpyco_rs
 from airbyte_protocol_dataclasses.models import *
-from orjson import orjson
 from serpyco_rs.metadata import Alias
 
 
@@ -14,8 +12,6 @@ from serpyco_rs.metadata import Alias
 class AirbyteStateBlob:
     kwargs: InitVar[Mapping[str, Any]]
 
-    # def __post_init__(self, kwargs):
-    #     self.__dict__.update(kwargs)
     def __init__(self, *args, **kwargs):
         # Set any attribute passed in through kwargs
         for arg in args:
@@ -60,38 +56,3 @@ class AirbyteMessage:
     state: Optional[AirbyteStateMessage] = None
     trace: Optional[AirbyteTraceMessage] = None
     control: Optional[AirbyteControlMessage] = None
-
-
-class AirbyteStateBlobType(serpyco_rs.CustomType[AirbyteStateBlob, str]):
-    def serialize(self, value: AirbyteStateBlob | Dict[str, Any]) -> Dict[str, Any]:
-        # cant use orjson.dumps() directly because private attributes are excluded, e.g. "__ab_full_refresh_sync_complete"
-        # return orjson.loads(orjson.dumps(value))
-        return {k: v for k, v in value.__dict__.items()} if isinstance(value, AirbyteStateBlob) else value
-
-    def deserialize(self, value: Dict[str, Any]) -> AirbyteStateBlob:
-        return AirbyteStateBlob(value)
-
-    def get_json_schema(self):
-        return {"type": "object"}
-
-
-def custom_type_resolver(t: type) -> serpyco_rs.CustomType | None:
-    if t is AirbyteStateBlob:
-        return AirbyteStateBlobType()
-    return None
-
-
-# TODO: ref and move Serializers
-
-AirbyteStreamStateSerializer = serpyco_rs.Serializer(AirbyteStreamState, omit_none=True, custom_type_resolver=custom_type_resolver)
-AirbyteStateMessageSerializer = serpyco_rs.Serializer(AirbyteStateMessage, omit_none=True, custom_type_resolver=custom_type_resolver)
-
-AirbyteMessageSerializer = serpyco_rs.Serializer(AirbyteMessage, omit_none=True, custom_type_resolver=custom_type_resolver)
-
-AirbyteCatalogSerializer = serpyco_rs.Serializer(AirbyteCatalog, omit_none=True)
-
-ConfiguredAirbyteCatalogSerializer = serpyco_rs.Serializer(ConfiguredAirbyteCatalog, omit_none=True)
-ConfiguredAirbyteStreamSerializer = serpyco_rs.Serializer(ConfiguredAirbyteStream, omit_none=True)
-
-AdvancedAuthSerializer = serpyco_rs.Serializer(AdvancedAuth, omit_none=True)
-ConnectorSpecificationSerializer = serpyco_rs.Serializer(ConnectorSpecification, omit_none=True)

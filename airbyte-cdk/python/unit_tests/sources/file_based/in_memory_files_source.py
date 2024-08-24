@@ -16,8 +16,7 @@ import avro.schema as avro_schema
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy

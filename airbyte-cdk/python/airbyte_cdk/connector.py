@@ -11,8 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecificationSerializer
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, ConnectorSpecificationSerializer
 
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:

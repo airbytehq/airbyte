@@ -16,10 +16,12 @@ from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
@@ -27,7 +29,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from orjson import orjson
 
 

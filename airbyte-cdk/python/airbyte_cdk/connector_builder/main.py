@@ -9,8 +9,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.connector_builder.connector_builder_handler import TestReadLimits, create_source, get_limits, read_stream, resolve_manifest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException

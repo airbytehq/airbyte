@@ -13,14 +13,15 @@ from airbyte_cdk.models import (
     AirbyteGlobalState,
     AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
     AirbyteStateType,
     AirbyteStreamState,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     StreamDescriptor,
     SyncMode,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.http import HttpStream

@@ -6,15 +6,8 @@ import copy
 from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.models.airbyte_protocol import (
-    AirbyteMessage,
-    AirbyteStateBlob,
-    AirbyteStateMessage,
-    AirbyteStateType,
-    AirbyteStreamState,
-    StreamDescriptor,
-)
 
 
 @dataclass(frozen=True)

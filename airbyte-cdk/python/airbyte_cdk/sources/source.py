@@ -8,8 +8,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Iterable, List, Mapping, Optional, TypeVar
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+)
 
 TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")

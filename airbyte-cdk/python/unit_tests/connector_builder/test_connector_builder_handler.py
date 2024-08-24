@@ -27,11 +27,13 @@ from airbyte_cdk.connector_builder.models import LogMessage, StreamRead, StreamR
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteRecordMessage,
     AirbyteStateMessage,
     AirbyteStream,
     AirbyteStreamState,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
@@ -41,7 +43,6 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator

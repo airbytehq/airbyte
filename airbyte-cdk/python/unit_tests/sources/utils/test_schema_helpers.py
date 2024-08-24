@@ -14,7 +14,7 @@ from pathlib import Path
 
 import jsonref
 import pytest
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, ConnectorSpecificationSerializer, FailureType
+from airbyte_cdk.models import ConnectorSpecification, ConnectorSpecificationSerializer, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture

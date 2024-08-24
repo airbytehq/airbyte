@@ -18,16 +18,17 @@ from airbyte_cdk.models import (
     AirbyteStateBlob,
     AirbyteStateMessage,
     AirbyteStreamState,
+    AirbyteStreamStateSerializer,
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     Level,
     StreamDescriptor,
     TraceType,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import AirbyteStreamStateSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, discover, read
 from airbyte_cdk.test.state_builder import StateBuilder

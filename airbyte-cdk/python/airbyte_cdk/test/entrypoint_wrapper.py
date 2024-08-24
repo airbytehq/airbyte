@@ -31,13 +31,14 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteMessageSerializer,
     AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
     AirbyteStreamStatus,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     Level,
     TraceType,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessageSerializer, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources import Source
 from orjson import orjson
 from pydantic import ValidationError as V2ValidationError

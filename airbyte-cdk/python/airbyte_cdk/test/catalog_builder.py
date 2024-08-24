@@ -2,8 +2,7 @@
 
 from typing import Any, Dict, List, Union, overload
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
-from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteStreamSerializer
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, ConfiguredAirbyteStreamSerializer, SyncMode
 
 
 class ConfiguredAirbyteStreamBuilder:

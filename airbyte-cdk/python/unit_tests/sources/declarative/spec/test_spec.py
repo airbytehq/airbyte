@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.models.airbyte_protocol import AdvancedAuth, AuthFlowType, ConnectorSpecification
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
 from airbyte_cdk.sources.declarative.spec.spec import Spec
 

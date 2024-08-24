@@ -5,8 +5,7 @@
 
 from copy import copy
 
-from airbyte_cdk.models import AirbyteCatalog, SyncMode
-from airbyte_cdk.models.airbyte_protocol import AirbyteCatalogSerializer
+from airbyte_cdk.models import AirbyteCatalog, AirbyteCatalogSerializer, SyncMode
 
 
 class CatalogHelper:

@@ -20,9 +20,11 @@ from airbyte_cdk.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteRecordMessage,
     AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStateStats,
     AirbyteStateType,
     AirbyteStream,
     AirbyteStreamState,
@@ -37,7 +39,6 @@ from airbyte_cdk.models import (
     TraceType,
     Type,
 )
-from airbyte_cdk.models.airbyte_protocol import AirbyteMessageSerializer, AirbyteStateStats
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.utils import AirbyteTracedException

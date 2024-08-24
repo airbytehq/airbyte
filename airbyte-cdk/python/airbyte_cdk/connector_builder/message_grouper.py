@@ -18,8 +18,7 @@ from airbyte_cdk.connector_builder.models import (
     StreamReadSlices,
 )
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.models.airbyte_protocol import (
+from airbyte_cdk.models import (
     AirbyteControlMessage,
     AirbyteLogMessage,
     AirbyteMessage,
@@ -29,6 +28,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     OrchestratorType,
     TraceType,
 )
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import JsonType

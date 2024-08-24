@@ -4,17 +4,17 @@
 
 
 import pytest
-from airbyte_cdk.models import StreamDescriptor
-from airbyte_cdk.models.airbyte_protocol import (
+from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
     AirbyteMessage,
     AirbyteMessageSerializer,
     AirbyteTraceMessage,
     FailureType,
     Status,
+    StreamDescriptor,
     TraceType,
 )
-from airbyte_cdk.models.airbyte_protocol import Type as MessageType
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from orjson import orjson
 
