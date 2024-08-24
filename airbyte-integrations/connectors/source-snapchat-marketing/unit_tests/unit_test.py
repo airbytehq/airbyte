@@ -23,6 +23,8 @@ config_mock = {
     "action_report_time": "impression",
     "swipe_up_attribution_window": "7_DAY",
     "view_attribution_window": "1_DAY",
+    "organization_ids": [],
+    "ad_account_ids": [],
 }
 
 response_organizations = {
@@ -48,14 +50,14 @@ def test_should_retry_403_error(requests_mock):
     stream.retriever.requester.error_handler.max_retries = 1
     
     with pytest.raises(UserDefinedBackoffException):
-        list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={"organization_id": "me"}, cursor_slice={})))
 
 
 def test_organizations(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     stream = find_stream("organizations", config_mock)
-    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={},
+    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={"organization_id": "me"},
                                                                                             cursor_slice={"start_time": "2024-01-01",
                                                                                                           "end_time": "2024-01-01"}),
                                   stream_state=None)
