@@ -39,6 +39,10 @@ response_organizations = {
     ]
 }
 
+def run_stream(stream):
+    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
+    for slice in slices:
+        yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
 
 def test_should_retry_403_error(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
@@ -50,17 +54,19 @@ def test_should_retry_403_error(requests_mock):
     stream.retriever.requester.error_handler.max_retries = 1
     
     with pytest.raises(UserDefinedBackoffException):
-        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={"organization_id": "me"}, cursor_slice={})))
+        run_stream(stream)
+        # list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={"organization_id": "me"}, cursor_slice={})))
 
 
 def test_organizations(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     stream = find_stream("organizations", config_mock)
-    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={"organization_id": "me"},
-                                                                                            cursor_slice={"start_time": "2024-01-01",
-                                                                                                          "end_time": "2024-01-01"}),
-                                  stream_state=None)
+    records = run_stream(stream)
+    # records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={"organization_id": "me"},
+    #                                                                                         cursor_slice={"start_time": "2024-01-01",
+    #                                                                                                       "end_time": "2024-01-01"}),
+    #                               stream_state=None)
     assert json.dumps(next(records).data, sort_keys=True) == json.dumps(
         {"id": "organization_id_1", "updated_at": "2024-02-05T22:35:17.819Z", "created_at": "2024-02-05T11:13:03.910Z"}, sort_keys=True)
 
@@ -83,12 +89,6 @@ response_adaccounts = {
         },
     ]
 }
-
-
-def run_stream(stream):
-    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
-    for slice in slices:
-        yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
 
 
 def test_accounts(requests_mock):
