@@ -10,13 +10,10 @@
         "states": [
           {
             "partition": {
-              "id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+              "adaccount_id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
               "parent_slice": {
-                "ad_account_id": "orgs",
                 "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
-                "parent_slice": {
-                  "organization_id": "me"
-                }
+                "parent_slice": {}
               }
             },
             "cursor": {
