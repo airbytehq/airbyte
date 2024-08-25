@@ -16,13 +16,11 @@ Each stream will be output into its own stream in Timeplus, with corresponding s
 
 ## Getting Started (Airbyte Cloud)
 
-Coming soon...
+Timeplus destination connector is available on Airbyte Cloud as a marketplace connector.
 
 ## Getting Started (Airbyte Open Source)
 
-You can follow the
-[Quickstart with Timeplus Ingestion API](https://docs.timeplus.com/quickstart-ingest-api) to createa
-a workspace and API key.
+You can follow the [Quickstart with Timeplus Ingestion API](https://docs.timeplus.com/quickstart-ingest-api) to create a workspace and API key.
 
 ### Setup the Timeplus Destination in Airbyte
 
@@ -41,6 +39,7 @@ You'll need the following information to configure the Timeplus destination:
 
 | Version | Date       | Pull Request                                              | Subject              |
 |:--------| :--------- | :-------------------------------------------------------- | :------------------- |
+| 0.1.18 | 2024-08-24 | [44707](https://github.com/airbytehq/airbyte/pull/44707) | Update dependencies |
 | 0.1.17 | 2024-08-24 | [44707](https://github.com/airbytehq/airbyte/pull/44707) | Update dependencies |
 | 0.1.16 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.1.15 | 2024-08-17 | [44363](https://github.com/airbytehq/airbyte/pull/44363) | Update dependencies |
