@@ -53,8 +53,7 @@ Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/destination-timeplus:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-timeplus:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-timeplus:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-timeplus:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+cat integration_tests/messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-timeplus:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Running our CI test suite
