@@ -79,6 +79,7 @@ Merge [API reference](https://api.merge.dev/api/ats/v1/) has v1 at present. The 
 
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.1.15 | 2024-08-24 | [44665](https://github.com/airbytehq/airbyte/pull/44665) | Update dependencies |
 | 0.1.14 | 2024-08-17 | [44297](https://github.com/airbytehq/airbyte/pull/44297) | Update dependencies |
 | 0.1.13 | 2024-08-12 | [43778](https://github.com/airbytehq/airbyte/pull/43778) | Update dependencies |
 | 0.1.12 | 2024-08-10 | [43661](https://github.com/airbytehq/airbyte/pull/43661) | Update dependencies |
