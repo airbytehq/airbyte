@@ -138,6 +138,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.2.4 | 2024-08-24 | [43783](https://github.com/airbytehq/airbyte/pull/43783) | Update dependencies |
 | 4.2.3 | 2024-08-19 | [44048](https://github.com/airbytehq/airbyte/pull/44048) | Fix include_deleted toggle |
 | 4.2.2 | 2024-08-03 | [42822](https://github.com/airbytehq/airbyte/pull/42822) | Update dependencies |
 | 4.2.1 | 2024-07-20 | [42375](https://github.com/airbytehq/airbyte/pull/42375) | Update dependencies |

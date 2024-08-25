@@ -143,7 +143,8 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.3.0 | 2024-08-18 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs  |
+| 1.3.0 | 2024-08-25 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs  |
+| 1.2.5 | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
 | 1.2.4 | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
 | 1.2.3 | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
 | 1.2.2 | 2024-08-10 | [43539](https://github.com/airbytehq/airbyte/pull/43539) | Update dependencies |
