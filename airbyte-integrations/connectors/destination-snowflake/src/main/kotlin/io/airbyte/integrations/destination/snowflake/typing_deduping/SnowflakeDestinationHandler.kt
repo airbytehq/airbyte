@@ -102,7 +102,11 @@ class SnowflakeDestinationHandler(
 //                    showColumnsQuery,
 //                )
 
-                showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
+                //showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
+
+                showColumnsResult = database.queryJsons(
+                    showColumnsQuery,
+                )
 
                 for (result in showColumnsResult) {
                     val tableSchema = result["schema_name"].asText()
@@ -117,7 +121,7 @@ class SnowflakeDestinationHandler(
 
             }
 
-        } catch (e: Throwable) {
+        } catch (e: SQLException) {
 
             //if(showColumnsResult != null && showColumnsResult.stream() != null) {
             //    showColumnsResult.stream().close()
@@ -215,13 +219,17 @@ class SnowflakeDestinationHandler(
 //                showTablesQuery,
 //            )
 
-            showTablesResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showTablesQuery)
+            //showTablesResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showTablesQuery)
+
+            showTablesResult = database.queryJsons(
+                showTablesQuery,
+            )
 
             if(showTablesResult.size > 0) {
                 tableExists = true
             }
 
-        } catch (e: Throwable) {
+        } catch (e: SQLException) {
 
 //            if(showTablesResult != null && showTablesResult.stream() != null) {
 //                showTablesResult.stream().close()
@@ -759,7 +767,11 @@ class SnowflakeDestinationHandler(
 //                        showColumnsQuery,
 //                    )
 
-                    showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
+                    //showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
+
+                    showColumnsResult = database.queryJsons(
+                        showColumnsQuery,
+                    )
 
                     for (result in showColumnsResult) {
 
@@ -795,7 +807,7 @@ class SnowflakeDestinationHandler(
 
                 }
 
-            } catch (e: Throwable) {
+            } catch (e: SQLException) {
 
 //                if(showColumnsResult != null && showColumnsResult.stream() != null) {
 //                    showColumnsResult.stream().close()

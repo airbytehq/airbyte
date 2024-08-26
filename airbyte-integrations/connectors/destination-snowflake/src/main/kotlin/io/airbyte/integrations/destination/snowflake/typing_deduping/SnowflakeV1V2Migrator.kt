@@ -14,9 +14,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
+import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
 import lombok.SneakyThrows
+import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,7 +50,11 @@ class SnowflakeV1V2Migrator(
                 databaseName,
             )
 
-            showSchemaResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showSchemaQuery)
+            //showSchemaResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showSchemaQuery)
+
+            showSchemaResult = database.queryJsons(
+                                    showSchemaQuery,
+                                )
 
             return showSchemaResult.isNotEmpty()
 
@@ -57,7 +63,7 @@ class SnowflakeV1V2Migrator(
 //            ).isNotEmpty()
 //
 
-        } catch (e: Throwable) {
+        } catch (e: SQLException) {
 
             //if(showSchemaResult != null && showSchemaResult.stream() != null) {
             //    showSchemaResult.stream().close()
@@ -119,7 +125,11 @@ class SnowflakeV1V2Migrator(
 //                showColumnsQuery
 //            )
 
-            showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
+            //showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
+
+            showColumnsResult = database.queryJsons(
+                showColumnsQuery
+            )
 
             val columnsFromShowQuery = showColumnsResult
                 .stream()
@@ -147,7 +157,7 @@ class SnowflakeV1V2Migrator(
                 Optional.of(TableDefinition(columnsFromShowQuery))
             }
 
-        } catch (e: Throwable) {
+        } catch (e: SQLException) {
 
             //if(showColumnsResult != null && showColumnsResult.stream() != null) {
             //    showColumnsResult.stream().close()
