@@ -141,7 +141,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 if not stream_is_available and reason:
                     errors.append(reason)
 
-        if len(errors) == 1:
+        if len(errors) == 1 and len(tracebacks) == 1:
             raise AirbyteTracedException(
                 internal_message=tracebacks[0],
                 message=f"{errors[0]}",
