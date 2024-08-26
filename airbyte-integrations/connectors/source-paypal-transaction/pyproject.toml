@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_paypal_transaction"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "0.82.0"
+python = "^3.10,<3.12"
+airbyte-cdk = {path = "../../../airbyte-cdk/python/", develop = true}
 
 
 [tool.poetry.scripts]

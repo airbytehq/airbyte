@@ -10,7 +10,8 @@ definitions:
         - "{{ parameters.field_path }}"
 
   requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_paypal_transaction.components.PaypalRequester
     url_base: 'https://api-m.{{ "sandbox." if config["is_sandbox"] }}paypal.com/'
     path: "{{ parameters.path }}"
     http_method: GET
@@ -94,7 +95,6 @@ definitions:
           - path:
               - transaction_id
             value: "{{ record['transaction_info']['transaction_id'] }}"
-            value_type: string
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: transaction_updated_date
