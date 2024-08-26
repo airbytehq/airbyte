@@ -2,7 +2,7 @@
 
 ## Upgrading to 4.0.0
 
-The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream.
+The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to refresh the stream in order to continue syncing data successfully.
 
 ### For Airbyte Open Source: Update the local connector image
 
