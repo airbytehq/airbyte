@@ -75,7 +75,6 @@ class AbstractSource(Source, ABC):
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
-        # streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         streams = []
         for stream in self.streams(config=config):
             try:
