@@ -177,6 +177,8 @@ class DebeziumRecordIterator<T>(
             if (!isEventTypeHandled(changeEventWithMetadata)) {
                 LOGGER.info { "WAL event type not handled: $next" }
                 continue
+            } else if (isEventTypeHandled(changeEventWithMetadata)){ // TEMP
+                continue
             }
 
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
