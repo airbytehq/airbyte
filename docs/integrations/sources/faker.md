@@ -104,6 +104,7 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.10 | 2024-08-24 | [44659](https://github.com/airbytehq/airbyte/pull/44659) | Update dependencies |
 | 6.2.9 | 2024-08-17 | [44221](https://github.com/airbytehq/airbyte/pull/44221) | Update dependencies |
 | 6.2.8 | 2024-08-12 | [43753](https://github.com/airbytehq/airbyte/pull/43753) | Update dependencies |
 | 6.2.7 | 2024-08-10 | [43570](https://github.com/airbytehq/airbyte/pull/43570) | Update dependencies |

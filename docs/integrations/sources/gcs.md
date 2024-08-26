@@ -151,6 +151,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.6.2 | 2024-08-24 | [44733](https://github.com/airbytehq/airbyte/pull/44733) | Update dependencies |
 | 0.6.1 | 2024-08-17 | [44285](https://github.com/airbytehq/airbyte/pull/44285) | Update dependencies |
 | 0.6.0 | 2024-08-15 | [44015](https://github.com/airbytehq/airbyte/pull/44015) | Add support for all FileBasedSpec file types |
 | 0.5.0 | 2024-08-14 | [44070](https://github.com/airbytehq/airbyte/pull/44070) | Update CDK v4 and Python 3.10 dependencies |
