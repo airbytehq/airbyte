@@ -54,7 +54,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """State setter, accept state serialized by state getter."""
         self._cursor.set_initial_state(value)
 
-    @property  # type: ignore # no suitable parent cursor type
+    @property  # type: ignore # mypy complains wrong type, but AbstractFileBasedCursor is parent of file-based cursors
     def cursor(self) -> Optional[AbstractFileBasedCursor]:
         return self._cursor
 
