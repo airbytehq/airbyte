@@ -28,7 +28,7 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-orbit
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:python
     - cdk:low-code
