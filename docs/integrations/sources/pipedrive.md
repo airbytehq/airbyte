@@ -112,6 +112,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------- |
+| 2.2.16 | 2024-08-24 | [44644](https://github.com/airbytehq/airbyte/pull/44644) | Update dependencies |
 | 2.2.15 | 2024-08-17 | [44316](https://github.com/airbytehq/airbyte/pull/44316) | Update dependencies |
 | 2.2.14 | 2024-08-12 | [43888](https://github.com/airbytehq/airbyte/pull/43888) | Update dependencies |
 | 2.2.13 | 2024-08-10 | [43679](https://github.com/airbytehq/airbyte/pull/43679) | Update dependencies |

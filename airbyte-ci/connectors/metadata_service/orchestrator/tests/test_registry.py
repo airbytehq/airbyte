@@ -443,3 +443,44 @@ def test_icon_url():
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["iconUrl"] == "test-icon-url"
+
+
+def test_set_language_from_tags():
+    """
+    Test if the language is set from the tags in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "tags": ["language:manifest-only", "key:value"],
+        }
+    }
+
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["language"] == "manifest-only"
+
+
+def test_language_from_tags_does_not_override_top_level_language():
+    """
+    Test if the language is not set from the tags if it is already set in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "language": "python",
+            "tags": ["language:manifest-only", "key:value"],
+        }
+    }
+
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["language"] == "python"
