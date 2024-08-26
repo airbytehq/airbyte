@@ -140,8 +140,4 @@ class AsyncJobOrchestratorTest(TestCase):
         assert self._job_repository.fetch_records.mock_calls == [call(first_job), call(second_job)]
 
     def _orchestrator(self, slices: List[StreamSlice]) -> AsyncJobOrchestrator:
-        return AsyncJobOrchestrator(
-            self._job_repository,
-            slices,
-            self._logger,
-        )
+        return AsyncJobOrchestrator(self._job_repository, slices)

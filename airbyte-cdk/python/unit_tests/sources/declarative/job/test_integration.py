@@ -16,6 +16,8 @@ from airbyte_protocol.models import ConnectorSpecification
 
 _A_STREAM_NAME = "a_stream_name"
 
+from unittest.mock import MagicMock
+
 
 class MockAsyncJobRepository(AsyncJobRepository):
 
@@ -39,18 +41,29 @@ class MockSource(AbstractSource):
         return ConnectorSpecification(connectionSpecification={})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        job_orchestrator_factory_fn = lambda stream_slices: AsyncJobOrchestrator(
+            MockAsyncJobRepository(create_job_requester=MagicMock()),
+            stream_slices,
+        )
+        
         return [
             DeclarativeStream(
                 retriever=AsyncRetriever(
+                    create_job_requester=MagicMock(),
+                    config=MagicMock(),
+                    record_selector=MagicMock(),
                     stream_slicer=SinglePartitionRouter({}),
-                    job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(MockAsyncJobRepository(), stream_slices, init_logger("airbyte.MockSource")),
+                    parameters={},
+                    job_orchestrator_factory=job_orchestrator_factory_fn,
                 ),
                 config={},
                 parameters={},
                 name=_A_STREAM_NAME,
                 primary_key=[],
                 schema_loader=InlineSchemaLoader({}, {}),
-                stream_cursor_field="",  # the interface mentions that this is Optional but I get `'NoneType' object has no attribute 'eval'` by passing None
+                # the interface mentions that this is Optional,
+                # but I get `'NoneType' object has no attribute 'eval'` by passing None
+                stream_cursor_field="",
             )
         ]
 
