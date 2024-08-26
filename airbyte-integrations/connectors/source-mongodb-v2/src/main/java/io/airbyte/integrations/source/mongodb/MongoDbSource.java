@@ -60,12 +60,6 @@ public class MongoDbSource extends BaseConnector implements Source {
     try {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
-        if (!checkOplogReadAccess(mongoClient)) {
-          return new AirbyteConnectionStatus()
-              .withMessage("User does not have read access to the oplog.rs collection in database local, which is required by CDC.")
-              .withStatus(AirbyteConnectionStatus.Status.FAILED);
-        }
-
         final String databaseName = sourceConfig.getDatabaseName();
         if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
           /*
@@ -174,21 +168,6 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
     return MongoConnectionUtils.createMongoClient(config);
-  }
-
-  protected boolean checkOplogReadAccess(final MongoClient mongoClient) {
-    try {
-      MongoDatabase localDb = mongoClient.getDatabase("local");
-      localDb.getCollection("oplog.rs").find().first();
-      LOGGER.info("User has read access to the oplog.rs collection.");
-      return true;
-    } catch (MongoCommandException | MongoSecurityException e) {
-      LOGGER.error("User does not have read access to the oplog.rs collection.", e);
-      return false;
-    } catch (Exception e) {
-      LOGGER.error("An error occurred while checking read access to the oplog.rs collection.", e);
-      return false;
-    }
   }
 
   List<AutoCloseableIterator<AirbyteMessage>> createFullRefreshIterators(final MongoDbSourceConfig sourceConfig,
