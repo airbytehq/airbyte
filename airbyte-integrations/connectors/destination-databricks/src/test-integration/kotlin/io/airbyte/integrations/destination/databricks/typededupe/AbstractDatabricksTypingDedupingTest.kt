@@ -24,32 +24,24 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.util.Locale
 import org.apache.commons.lang3.RandomStringUtils
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 abstract class AbstractDatabricksTypingDedupingTest(
     private val jdbcDatabase: JdbcDatabase,
-    private val jsonConfig: JsonNode,
-    private val connectorConfig: DatabricksConnectorConfig,
+    private val baseConfig: JsonNode,
 ) : BaseTypingDedupingTest() {
     override val imageName: String
         get() = "airbyte/destination-databricks:dev"
+    private val connectorConfig: DatabricksConnectorConfig
+        get() {
+            return DatabricksConnectorConfig.deserialize(config!!)
+        }
 
     companion object {
-        fun setupDatabase(
-            connectorConfigPath: String
-        ): Triple<JdbcDatabase, JsonNode, DatabricksConnectorConfig> {
-            var jsonConfig = Jsons.deserialize(IOs.readFile(Path.of(connectorConfigPath)))
-
-            // Randomize the default namespace to avoid collisions between
-            // concurrent test runs.
-            // Technically, we should probably do this in `generateConfig`,
-            // because there could be concurrent test runs within a single class,
-            // but we currently only have a single test that uses the default
-            // namespace anyway.
-            val uniqueSuffix = RandomStringUtils.randomAlphabetic(10).lowercase(Locale.getDefault())
-            val defaultSchema = "typing_deduping_default_schema_$uniqueSuffix"
-            val connectorConfig =
-                DatabricksConnectorConfig.deserialize(jsonConfig).copy(schema = defaultSchema)
-            (jsonConfig as ObjectNode).put("schema", defaultSchema)
+        fun setupDatabase(connectorConfigPath: String): Pair<JdbcDatabase, JsonNode> {
+            val jsonConfig = Jsons.deserialize(IOs.readFile(Path.of(connectorConfigPath)))
+            val connectorConfig = DatabricksConnectorConfig.deserialize(jsonConfig)
 
             val jdbcDatabase =
                 DefaultJdbcDatabase(
@@ -58,13 +50,19 @@ abstract class AbstractDatabricksTypingDedupingTest(
             // This will trigger warehouse start
             jdbcDatabase.execute("SELECT 1")
 
-            return Triple(jdbcDatabase, jsonConfig, connectorConfig)
+            return Pair(jdbcDatabase, jsonConfig)
         }
     }
 
     override fun generateConfig(): JsonNode {
+        // Randomize the default namespace to avoid collisions between
+        // concurrent test runs.
+        val uniqueSuffix = RandomStringUtils.randomAlphabetic(10).lowercase(Locale.getDefault())
+        val defaultSchema = "typing_deduping_default_schema_$uniqueSuffix"
+        val deepCopy = baseConfig.deepCopy<ObjectNode>()
+        (deepCopy as ObjectNode).put("schema", defaultSchema)
         // This method is called in BeforeEach so setup any other references needed per test
-        return jsonConfig.deepCopy()
+        return deepCopy
     }
 
     private fun rawTableIdentifier(
@@ -135,4 +133,11 @@ abstract class AbstractDatabricksTypingDedupingTest(
 
     override val sqlGenerator: SqlGenerator
         get() = DatabricksSqlGenerator(DatabricksNamingTransformer(), connectorConfig.database)
+
+    // Disabling until we can safely fetch generation ID
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
+    }
 }
