@@ -741,8 +741,11 @@ class SnowflakeDestinationHandler(
             dataSource: DataSource
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-            println(database)
-            println(dataSource)
+            println("From println: Inside findExistingTables: database=" + database)
+            println("From println: Inside findExistingTables: dataSource=" + dataSource)
+
+            LOGGER.info("From LOGGER.info: Inside findExistingTables: database=" + database)
+            LOGGER.info("From LOGGER.info: Inside findExistingTables: dataSource=" + dataSource)
 
             val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
