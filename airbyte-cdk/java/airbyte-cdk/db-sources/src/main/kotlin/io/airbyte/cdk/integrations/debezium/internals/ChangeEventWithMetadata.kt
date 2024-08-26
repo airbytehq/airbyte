@@ -30,7 +30,7 @@ class ChangeEventWithMetadata(private val event: ChangeEvent<String?, String?>) 
     val snapshotMetadata: SnapshotMetadata?
         get() {
             val metadataKey = eventValueAsJson?.get("source")?.get("snapshot")?.asText()
-            return metadataKey?.let { return SnapshotMetadata.fromString(metadataKey) } ?: null
+            return metadataKey?.let { return SnapshotMetadata.fromString(metadataKey) }
         }
 
     fun event(): ChangeEvent<String?, String?> {
