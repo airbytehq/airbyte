@@ -1,0 +1,393 @@
+version: "3.8"
+#https://github.com/compose-spec/compose-spec/blob/master/spec.md#using-extensions-as-fragments
+x-logging: &default-logging
+  options:
+    max-size: "100m"
+    max-file: "5"
+  driver: json-file
+services:
+  docker-proxy:
+      image: alpine/socat
+      command: -t 900 TCP-LISTEN:2375,fork,reuseaddr UNIX-CONNECT:/var/run/docker.sock
+      ports: 
+        - "2375"
+      user: root
+      volumes: 
+        - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
+      networks:
+        - airbyte_internal
+  # hook in case we need to add init behavior
+  # every root service (no depends_on) should depend on init
+  init:
+    image: airbyte/init:${VERSION}
+    logging: *default-logging
+    container_name: init
+    command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
+    environment:
+      - LOCAL_ROOT=${LOCAL_ROOT}
+      - HACK_LOCAL_ROOT_PARENT=${HACK_LOCAL_ROOT_PARENT}
+    volumes:
+      - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
+  bootloader:
+    image: airbyte/bootloader:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-bootloader
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
+      - CONNECTOR_REGISTRY_BASE_URL=${CONNECTOR_REGISTRY_BASE_URL:-}
+      - CONNECTOR_REGISTRY_SEED_PROVIDER=${CONNECTOR_REGISTRY_SEED_PROVIDER:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - LOCAL_CONNECTOR_CATALOG_PATH=${LOCAL_CONNECTOR_CATALOG_PATH}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+    networks:
+      - airbyte_internal
+    depends_on:
+      init:
+        condition: service_completed_successfully
+  db:
+    image: airbyte/db:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-db
+    restart: unless-stopped
+    environment:
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_USER=${DATABASE_USER}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - airbyte_internal
+  worker:
+    image: airbyte/worker:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-worker
+    restart: unless-stopped
+    environment:
+      - ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS=${ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS}
+      - ACTIVITY_MAX_ATTEMPT=${ACTIVITY_MAX_ATTEMPT}
+      - ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS=${ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS}
+      - AIRBYTE_INSTALLATION_ID=${AIRBYTE_INSTALLATION_ID:-}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - AIRBYTE_VERSION=${VERSION}
+      - APPLY_FIELD_SELECTION=${APPLY_FIELD_SELECTION}
+      - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
+      - AUTO_DISABLE_FAILING_CONNECTIONS=${AUTO_DISABLE_FAILING_CONNECTIONS}
+      - CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_ROOT=${CONFIG_ROOT}
+      - CONNECTOR_REGISTRY_BASE_URL=${CONNECTOR_REGISTRY_BASE_URL:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DOCKER_HOST=docker-proxy:2375
+      - FEATURE_FLAG_CLIENT=${FEATURE_FLAG_CLIENT}
+      - FIELD_SELECTION_WORKSPACES=${FIELD_SELECTION_WORKSPACES}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
+      - JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION:-}
+      - JOB_ERROR_REPORTING_SENTRY_DSN=${JOB_ERROR_REPORTING_SENTRY_DSN}
+      - JOB_ERROR_REPORTING_STRATEGY=${JOB_ERROR_REPORTING_STRATEGY}
+      - JOB_MAIN_CONTAINER_CPU_LIMIT=${JOB_MAIN_CONTAINER_CPU_LIMIT}
+      - JOB_MAIN_CONTAINER_CPU_REQUEST=${JOB_MAIN_CONTAINER_CPU_REQUEST}
+      - JOB_MAIN_CONTAINER_MEMORY_LIMIT=${JOB_MAIN_CONTAINER_MEMORY_LIMIT}
+      - JOB_MAIN_CONTAINER_MEMORY_REQUEST=${JOB_MAIN_CONTAINER_MEMORY_REQUEST}
+      - LAUNCHDARKLY_KEY=${LAUNCHDARKLY_KEY}
+      - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
+      - LOCAL_ROOT=${LOCAL_ROOT}
+      - LOG_CONNECTOR_MESSAGES=${LOG_CONNECTOR_MESSAGES}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - MAX_NOTIFY_WORKERS=${MAX_NOTIFY_WORKERS}
+      - MAX_CHECK_WORKERS=${MAX_CHECK_WORKERS}
+      - MAX_SYNC_WORKERS=${MAX_SYNC_WORKERS}
+      - METRIC_CLIENT=${METRIC_CLIENT}
+      - MICROMETER_METRICS_ENABLED=${MICROMETER_METRICS_ENABLED}
+      - MICROMETER_METRICS_STATSD_FLAVOR=${MICROMETER_METRICS_STATSD_FLAVOR}
+      - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
+      - OTEL_COLLECTOR_ENDPOINT=${OTEL_COLLECTOR_ENDPOINT}
+      - PUBLISH_METRICS=${PUBLISH_METRICS}
+      - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
+      - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY}
+      - SHOULD_RUN_NOTIFY_WORKFLOWS=${SHOULD_RUN_NOTIFY_WORKFLOWS}
+      - STATSD_HOST=${STATSD_HOST}
+      - STATSD_PORT=${STATSD_PORT}
+      - SYNC_JOB_INIT_RETRY_TIMEOUT_MINUTES=${SYNC_JOB_INIT_RETRY_TIMEOUT_MINUTES}
+      - SYNC_JOB_MAX_ATTEMPTS=${SYNC_JOB_MAX_ATTEMPTS}
+      - SYNC_JOB_MAX_TIMEOUT_DAYS=${SYNC_JOB_MAX_TIMEOUT_DAYS}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - STORAGE_BUCKET_ACTIVITY_PAYLOAD=${STORAGE_BUCKET_ACTIVITY_PAYLOAD}
+      - STORAGE_BUCKET_LOG=${STORAGE_BUCKET_LOG}
+      - STORAGE_BUCKET_STATE=${STORAGE_BUCKET_STATE}
+      - STORAGE_BUCKET_WORKLOAD_OUTPUT=${STORAGE_BUCKET_WORKLOAD_OUTPUT}
+      - STORAGE_TYPE=${STORAGE_TYPE}
+      - WORKFLOW_FAILURE_RESTART_DELAY_SECONDS=${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS}
+      - WORKLOAD_API_HOST=${WORKLOAD_API_URL}
+      - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+    configs:
+      - flags
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
+      - local_root:${LOCAL_ROOT}
+    ports:
+      - "9000"
+    networks:
+      - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
+  server:
+    image: airbyte/server:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-server
+    restart: unless-stopped
+    environment:
+      - AIRBYTE_API_HOST=${AIRBYTE_API_HOST}
+      - AIRBYTE_INSTALLATION_ID=${AIRBYTE_INSTALLATION_ID:-}
+      - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
+      - AIRBYTE_VERSION=${VERSION}
+      - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
+      - CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION:-}
+      - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
+      - CONFIG_DATABASE_URL=${CONFIG_DATABASE_URL:-}
+      - CONFIG_DATABASE_USER=${CONFIG_DATABASE_USER:-}
+      - CONFIG_ROOT=${CONFIG_ROOT}
+      - CONNECTOR_REGISTRY_BASE_URL=${CONNECTOR_REGISTRY_BASE_URL:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - FEATURE_FLAG_CLIENT=${FEATURE_FLAG_CLIENT}
+      - GITHUB_STORE_BRANCH=${GITHUB_STORE_BRANCH}
+      - JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION:-}
+      - JOB_ERROR_REPORTING_SENTRY_DSN=${JOB_ERROR_REPORTING_SENTRY_DSN}
+      - JOB_ERROR_REPORTING_STRATEGY=${JOB_ERROR_REPORTING_STRATEGY}
+      - JOB_MAIN_CONTAINER_CPU_LIMIT=${JOB_MAIN_CONTAINER_CPU_LIMIT}
+      - JOB_MAIN_CONTAINER_CPU_REQUEST=${JOB_MAIN_CONTAINER_CPU_REQUEST}
+      - JOB_MAIN_CONTAINER_MEMORY_LIMIT=${JOB_MAIN_CONTAINER_MEMORY_LIMIT}
+      - JOB_MAIN_CONTAINER_MEMORY_REQUEST=${JOB_MAIN_CONTAINER_MEMORY_REQUEST}
+      - LAUNCHDARKLY_KEY=${LAUNCHDARKLY_KEY}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - METRIC_CLIENT=${METRIC_CLIENT}
+      - MAX_NOTIFY_WORKERS=5
+      - MICROMETER_METRICS_ENABLED=${MICROMETER_METRICS_ENABLED}
+      - MICROMETER_METRICS_STATSD_FLAVOR=${MICROMETER_METRICS_STATSD_FLAVOR}
+      - MICRONAUT_ENVIRONMENTS=${SERVER_MICRONAUT_ENVIRONMENTS}
+      - NEW_SCHEDULER=${NEW_SCHEDULER}
+      - PUBLISH_METRICS=${PUBLISH_METRICS}
+      - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
+      - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY}
+      - SHOULD_RUN_NOTIFY_WORKFLOWS=${SHOULD_RUN_NOTIFY_WORKFLOWS}
+      - STATSD_HOST=${STATSD_HOST}
+      - STATSD_PORT=${STATSD_PORT}
+      - STORAGE_BUCKET_ACTIVITY_PAYLOAD=${STORAGE_BUCKET_ACTIVITY_PAYLOAD}
+      - STORAGE_BUCKET_LOG=${STORAGE_BUCKET_LOG}
+      - STORAGE_BUCKET_STATE=${STORAGE_BUCKET_STATE}
+      - STORAGE_BUCKET_WORKLOAD_OUTPUT=${STORAGE_BUCKET_WORKLOAD_OUTPUT}
+      - STORAGE_TYPE=${STORAGE_TYPE}
+      - TEMPORAL_HOST=${TEMPORAL_HOST}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - CONNECTOR_BUILDER_SERVER_API_HOST=${CONNECTOR_BUILDER_SERVER_API_HOST}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+    ports:
+      - "8001"
+    configs:
+      - flags
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
+      - data:${CONFIG_ROOT}
+      - local_root:${LOCAL_ROOT}
+      - ./configs:/app/configs:ro
+    networks:
+      - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
+  webapp:
+    image: airbyte/webapp:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-webapp
+    restart: unless-stopped
+    environment:
+      - AIRBYTE_SERVER_HOST=${AIRBYTE_SERVER_HOST}
+      - CONNECTOR_BUILDER_API_HOST=${CONNECTOR_BUILDER_API_HOST}
+      - KEYCLOAK_INTERNAL_HOST=localhost # placeholder to ensure the webapp's nginx config is valid
+    networks:
+      - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
+  airbyte-temporal:
+    image: airbyte/temporal:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-temporal
+    restart: unless-stopped
+    environment:
+      - DB=postgresql
+      - DB_PORT=${DATABASE_PORT}
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+      - LOG_LEVEL=${LOG_LEVEL}
+      - POSTGRES_PWD=${DATABASE_PASSWORD}
+      - POSTGRES_SEEDS=${DATABASE_HOST}
+      - POSTGRES_USER=${DATABASE_USER}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+    volumes:
+      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+    networks:
+      - airbyte_internal
+  airbyte-cron:
+    image: airbyte/cron:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-cron
+    restart: unless-stopped
+    environment:
+      - AIRBYTE_INSTALLATION_ID=${AIRBYTE_INSTALLATION_ID:-}
+      - AIRBYTE_VERSION=${VERSION}
+      - CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+      - CONNECTOR_REGISTRY_BASE_URL=${CONNECTOR_REGISTRY_BASE_URL:-}
+      - CONNECTOR_REGISTRY_SEED_PROVIDER=${CONNECTOR_REGISTRY_SEED_PROVIDER:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - METRIC_CLIENT=${METRIC_CLIENT}
+      - MICROMETER_METRICS_ENABLED=${MICROMETER_METRICS_ENABLED}
+      - MICROMETER_METRICS_STATSD_FLAVOR=${MICROMETER_METRICS_STATSD_FLAVOR}
+      - MICRONAUT_ENVIRONMENTS=${CRON_MICRONAUT_ENVIRONMENTS}
+      - PUBLISH_METRICS=${PUBLISH_METRICS}
+      - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY}
+      - STATSD_HOST=${STATSD_HOST}
+      - STATSD_PORT=${STATSD_PORT}
+      - TEMPORAL_HISTORY_RETENTION_IN_DAYS=${TEMPORAL_HISTORY_RETENTION_IN_DAYS}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - UPDATE_DEFINITIONS_CRON_ENABLED=${UPDATE_DEFINITIONS_CRON_ENABLED}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+    configs:
+      - flags
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
+    networks:
+      - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
+  airbyte-connector-builder-server:
+    image: airbyte/connector-builder-server:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-connector-builder-server
+    restart: unless-stopped
+    ports:
+      - 8080
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
+      - CDK_VERSION=${CDK_VERSION}
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
+      - METRIC_CLIENT=${METRIC_CLIENT}
+      - MICROMETER_METRICS_ENABLED=${MICROMETER_METRICS_ENABLED}
+      - MICROMETER_METRICS_STATSD_FLAVOR=${MICROMETER_METRICS_STATSD_FLAVOR}
+      - PYTHON_VERSION=${PYTHON_VERSION}
+      - SEGMENT_WRITE_KEY=${SEGMENT_WRITE_KEY}
+      - STATSD_HOST=${STATSD_HOST}
+      - STATSD_PORT=${STATSD_PORT}
+      - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+    networks:
+      - airbyte_internal
+    depends_on:
+      bootloader:
+        condition: service_completed_successfully
+  airbyte-proxy:
+    image: airbyte/proxy:${VERSION}
+    container_name: airbyte-proxy
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8003:8003"
+      - "8006:8006"
+    environment:
+      - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
+      - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
+      - BASIC_AUTH_PROXY_TIMEOUT=${BASIC_AUTH_PROXY_TIMEOUT}
+      - DD_LOGS_INJECTION=${DD_LOGS_INJECTION}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - CONTAINER_ORCHESTRATOR_JAVA_OPTS=${CONTAINER_ORCHESTRATOR_JAVA_OPTS}
+      - DD_DOGSTATSD_PORT=${DD_DOGSTATSD_PORT}
+      - DD_TRACE_AGENT_PORT=${DD_TRACE_AGENT_PORT}
+      - DD_AGENT_HOST=${DD_AGENT_HOST}
+    networks:
+      - airbyte_internal
+      - airbyte_public
+    depends_on:
+      - webapp
+      - server
+volumes:
+  workspace:
+    name: ${WORKSPACE_DOCKER_MOUNT}
+  local_root:
+    name: ${LOCAL_DOCKER_MOUNT}
+  # the data volume is only needed for backward compatibility; when users upgrade
+  # from an old Airbyte version that relies on file-based configs, the server needs
+  # to read this volume to copy their configs to the database
+  data:
+    name: ${DATA_DOCKER_MOUNT}
+  db:
+    name: ${DB_DOCKER_MOUNT}
+configs:
+  flags:
+    file: ./flags.yml
+networks:
+  airbyte_public:
+  airbyte_internal:
