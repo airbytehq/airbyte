@@ -5,7 +5,7 @@
 The Reddit source supports _Full Refresh_ as well as _Incremental_ syncs.
 
 _Full Refresh_ sync means every time a sync is run, Airbyte will copy all rows in the tables and columns you set up for replication into the destination in a new table.
-_Incremental_ syn means only changed resources are copied from Recurly. For the first run, it will be a Full Refresh sync.
+_Incremental_ sync means only changed resources are copied from Reddit. For the first run, it will be a Full Refresh sync.
 
 
 ## Steps for getting api_key
