@@ -6,19 +6,11 @@ products: all
 
 For each connection, you can select between three options that allow a sync to run. The three options for `Schedule Type` are:
 
-- Scheduled (e.g. every 24 hours, every 2 hours)
-- Cron
-- Manual
-
-## Sync Considerations
-
-- Only one sync per connection can run at a time.
-- If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
-- Syncs can run at most every 60 minutes in Airbyte Cloud. Reach out to [Sales](https://airbyte.com/company/talk-to-sales) if you require replication more frequently than once per hour.
-
-:::note
-For Scheduled or cron scheduled syncs, Airbyte guarantees syncs will initiate with a schedule accuracy of +/- 30 minutes.
-:::
+| Schedule Setting | Definition |
+|--|--| 
+| Scheduled | Runs the syncs at the specified time interval (e.g. every 24 hours, every 2 hours) | 
+| Cron | Runs the syncs based on the user-defined cron expression | 
+| Manual | You are required to run the syncs manually | 
 
 ## Scheduled syncs
 
@@ -62,3 +54,14 @@ When setting up the cron expression, you will also be asked to choose a time zon
 When the connection is set to replicate with `Manual` frequency, the sync will not automatically run.
 
 It can be triggered by clicking the "Sync Now" button at any time through the UI or be triggered through the API.
+
+
+## Sync Considerations
+
+- Only one sync per connection can run at a time.
+- If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
+- Syncs can run at most every 60 minutes in Airbyte Cloud. Reach out to [Sales](https://airbyte.com/company/talk-to-sales) if you require replication more frequently than once per hour.
+
+:::note
+For Scheduled or cron scheduled syncs, Airbyte guarantees syncs will initiate with a schedule accuracy of +/- 30 minutes.
+:::
