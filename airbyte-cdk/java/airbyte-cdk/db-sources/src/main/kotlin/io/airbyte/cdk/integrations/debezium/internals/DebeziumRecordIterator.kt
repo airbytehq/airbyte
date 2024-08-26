@@ -170,6 +170,7 @@ class DebeziumRecordIterator<T>(
                 continue
             }
 
+            LOGGER.info { "*** next: $next" }
             val changeEventWithMetadata = ChangeEventWithMetadata(next)
 
             // #41647: discard event type with op code 'm'
