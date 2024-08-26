@@ -3,7 +3,7 @@ data:
   allowedHosts:
     hosts:
       - oauth.reddit.com
-      - www.reddit.com
+      - reddit.com
   registryOverrides:
     oss:
       enabled: true
