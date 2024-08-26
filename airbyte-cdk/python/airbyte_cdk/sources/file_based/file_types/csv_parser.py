@@ -55,10 +55,6 @@ class _CsvReader:
             try:
                 headers = self._get_headers(fp, config_format, dialect_name)
             except UnicodeError:
-                file_name = file.uri
-                # Reduce huge file names in error messages
-                if "?" in file.uri:
-                    file_name = file.uri[: file.uri.find("?")]
                 raise AirbyteTracedException(
                     message=f"{FileBasedSourceError.ENCODING_ERROR.value} Expected encoding: {config_format.encoding}",
                 )

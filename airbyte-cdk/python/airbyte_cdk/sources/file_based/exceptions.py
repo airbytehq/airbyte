@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Union
 
 from airbyte_cdk.models import AirbyteMessage, FailureType
 from airbyte_cdk.utils import AirbyteTracedException
