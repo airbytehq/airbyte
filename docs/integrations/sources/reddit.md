@@ -22,13 +22,12 @@ First make an app to get the client ID and secret for authentication:
  - Client ID: Copy this value as it will be your Authorization Username in Postman.
  - Client Secret: Copy this value as it will be your Authorization Password in Postman.
 
-3. Visit postman web/app
- - Make a new request with following guidelines
- - Request - POST https://www.reddit.com/api/v1/access_token
- - Authorization - Basic Auth - Username: YOUR_COPIED_USERNAME, Password: YOUR_COPIED_PASSWORD
- - Body - x-www-form-urlencoded - grant_type: password, username: YOUR_REDDIT_USERNAME, password: YOUR_REDDIT_PASSWORD
+3. Visit Postman via web or app and make a new request with following guidelines:
+ - Request - POST `https://www.reddit.com/api/v1/access_token`
+ - Authorization - Basic Auth -`username: <YOUR_USERNAME>`, `password: <YOUR_PASSWORD>`
+ - Body - x-www-form-urlencoded - `grant_type: password, username: YOUR_REDDIT_USERNAME, password: YOUR_REDDIT_PASSWORD`
 
-Hit send to receive api_key as response under `access_token`
+Hit send to receive `api_key` in the response under `access_token`
 
 ## Records and rate limiting
 
