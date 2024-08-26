@@ -15,11 +15,11 @@ public record MongoDbStreamState(String id, InitialSnapshotStatus status, IdType
   private static byte getBinarySubType(final String id, final IdType idType) {
     byte binarySubType = 0;
     if (idType == IdType.BINARY) {
-      try{
+      try {
         UUID.fromString(id);
         binarySubType = (byte) 4;
-        //do something
-      } catch (IllegalArgumentException exception){
+        // do something
+      } catch (IllegalArgumentException exception) {
         // This is not a UUID, so assume it is a regular binary string from old state format
       }
     }
