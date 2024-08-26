@@ -11,9 +11,6 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 
 @dataclass
 class AsyncJobRepository:
-    create_job_requester: Requester
-    # update_job_requester: Requester
-    # download_job_requester: Requester
 
     @abstractmethod
     def start(self, stream_slice: StreamSlice) -> AsyncJob:

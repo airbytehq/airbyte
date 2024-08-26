@@ -72,6 +72,8 @@ class AsyncJobOrchestrator:
                 elif partition.status == AsyncJobStatus.RUNNING:
                     current_running_partitions.append(partition)
                 else:
+                    # FIXME salesforce will require retries
+                    # FIXME source-salesforce deletes the job if status is "Aborted" or "Failed"
                     status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
                     raise AirbyteTracedException(
                         message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
