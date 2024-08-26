@@ -182,6 +182,8 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1 | 2024-08-24 | [44692](https://github.com/airbytehq/airbyte/pull/44692) | Update dependencies |
+| 4.0.0 | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination |
 | 3.0.1 | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies |
 | 3.0.0 | 2024-08-13 | [43446](https://github.com/airbytehq/airbyte/pull/43446) | `TicketMetrics` stream: updates cursor field to `generated_timestamp` |
 | 2.7.3 | 2024-08-12 | [43900](https://github.com/airbytehq/airbyte/pull/43900) | Update dependencies |
