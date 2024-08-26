@@ -147,6 +147,11 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 message=f"{errors[0]}",
                 failure_type=FailureType.config_error,
             )
+        if len(errors) == 1 and len(tracebacks) == 0:
+            raise AirbyteTracedException(
+                message=f"{errors[0]}",
+                failure_type=FailureType.config_error,
+            )
         elif len(errors) > 1:
             raise AirbyteTracedException(
                 internal_message="\n".join(tracebacks),
