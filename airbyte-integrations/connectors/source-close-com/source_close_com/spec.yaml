@@ -16,11 +16,10 @@ connectionSpecification:
       title: Replication Start Date
       type: string
       description:
-        "The start date to sync data; all data after this date will be
-        replicated. Leave blank to retrieve all the data available in the account.
+        "The start date to sync data. Only data that was updated or created after this date will be
+        replicated. If left blank, the default will be one year prior to today's date.
         Format: YYYY-MM-DD."
       examples:
-        - "2021-01-01"
-      default: "2021-01-01"
+        - "2023-01-01"
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
       format: date

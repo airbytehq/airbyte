@@ -3,6 +3,7 @@
 #
 
 
+from datetime import datetime, timedelta
 import logging
 from abc import ABC
 from base64 import b64encode
@@ -65,10 +66,14 @@ class CloseComStream(HttpStream, ABC):
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
             params.update(next_page_token)
+            self.logger.info(f"REQUEST PARAMS -> Pagination: {next_page_token}")
 
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        total_results_metadata = response.json().get("total_results")
+        if total_results_metadata:
+            self.logger.info(f"RESPONSE METADATA -> Total Records Found: {total_results_metadata}")
         yield from response.json()["data"]
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -119,7 +124,23 @@ class IncrementalCloseComStream(CloseComStream):
         """
         if not current_stream_state:
             current_stream_state = {self.cursor_field: self.start_date}
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+
+        latest_value = latest_record.get(self.cursor_field)
+        current_value = current_stream_state.get(self.cursor_field)
+        max_value = max(filter(None, [latest_value, current_value]), default=None)
+        
+        return {self.cursor_field: max_value} if max_value is not None else {}
+    
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        params["_order_by"] = self.cursor_field
+        params[f"{self.cursor_field}__gte"] = stream_state.get(self.cursor_field, self.start_date)
+
+        return params
 
 
 class IncrementalCloseComStreamCustomFields(CloseComStreamCustomFields, IncrementalCloseComStream):
@@ -133,13 +154,6 @@ class CloseComActivitiesStream(IncrementalCloseComStream):
 
     cursor_field = "date_created"
     number_of_items_per_page = 100
-
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        if stream_state.get(self.cursor_field):
-            params["date_created__gte"] = stream_state.get(self.cursor_field)
-        return params
 
     def path(self, **kwargs) -> str:
         return f"activity/{self._type}"
@@ -263,13 +277,6 @@ class Events(IncrementalCloseComStream):
     def path(self, **kwargs) -> str:
         return "event"
 
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        if stream_state.get(self.cursor_field):
-            params["date_updated__gte"] = stream_state.get(self.cursor_field)
-        return params
-
 
 class Leads(IncrementalCloseComStreamCustomFields):
     """
@@ -281,12 +288,19 @@ class Leads(IncrementalCloseComStreamCustomFields):
 
     def path(self, **kwargs) -> str:
         return "lead"
-
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
+    
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        **kwargs
+    ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
-        if stream_state.get(self.cursor_field):
-            params["query"] = f"sort:updated date_updated >= {stream_state.get(self.cursor_field)}"
+
+        # Leads object uses advanced filtering with a "query" param, so we need to replace the default params
+        params_to_drop = ["_order_by", "date_updated__gte", "date_created__gte"]
+        for prop in params_to_drop:
+            params.pop(prop, None)
+        params["query"] = f"sort:updated date_updated >= {stream_state.get(self.cursor_field, self.start_date)}"
         return params
 
 
@@ -299,12 +313,8 @@ class CloseComTasksStream(IncrementalCloseComStream):
     number_of_items_per_page = 1000
 
     def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["_type"] = self._type
-        params["_order_by"] = self.cursor_field
-        if stream_state.get(self.cursor_field):
-            params["date_created__gte"] = stream_state.get(self.cursor_field)
         return params
 
     def path(self, **kwargs) -> str:
@@ -465,14 +475,6 @@ class Opportunities(IncrementalCloseComStreamCustomFields):
 
     def path(self, **kwargs) -> str:
         return "opportunity"
-
-    def request_params(self, stream_state=None, **kwargs):
-        stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        params["_order_by"] = self.cursor_field
-        if stream_state.get(self.cursor_field):
-            params["date_updated__gte"] = stream_state.get(self.cursor_field)
-        return params
 
 
 class Roles(CloseComStream):
@@ -718,7 +720,12 @@ class SourceCloseCom(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = Base64HttpAuthenticator(auth=(config["api_key"], ""))
-        args = {"authenticator": authenticator, "start_date": config["start_date"]}
+        args = {
+            "authenticator": authenticator,
+            "start_date": config.get(
+                "start_date", (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+            )
+        }
         return [
             CreatedActivities(**args),
             OpportunityStatusChangeActivities(**args),
