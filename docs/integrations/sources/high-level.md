@@ -1,5 +1,5 @@
 # High Level
-Proxy connector for Go High Level (Lead Connector). Requires a paid subscription to the proxy service.
+Proxy connector for [Go High Level](www.gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
 
 ## Configuration
 
@@ -33,6 +33,6 @@ Proxy connector for Go High Level (Lead Connector). Requires a paid subscription
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
-| 0.0.1 | 2024-08-23 | Initial release by Stockotaco via Connector Builder|
+| 0.0.1 | 2024-08-23 | Initial release by [@Stockotaco](https://github.com/stockotaco) via Connector Builder|
 
 </details>
