@@ -10,6 +10,7 @@ import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -72,7 +73,7 @@ object TestFixtures {
         checkpointTargetInterval: Duration = Duration.ofMinutes(1),
         maxConcurrency: Int = 10,
         maxMemoryBytesForTesting: Long = 1_000_000L,
-        constants: DefaultJdbcSharedState.Constants = DefaultJdbcSharedState.Constants(),
+        constants: DefaultJdbcConstants = DefaultJdbcConstants(),
         vararg mockedQueries: MockedQuery,
     ) =
         DefaultJdbcSharedState(

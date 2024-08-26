@@ -2,9 +2,9 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.NullFieldType
-import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.Limit
 import io.airbyte.cdk.read.SelectColumns
@@ -23,7 +23,7 @@ import java.sql.Statement
 
 /** Default implementation of [MetadataQuerier]. */
 class JdbcMetadataQuerier(
-    val constants: DefaultJdbcSharedState.Constants,
+    val constants: DefaultJdbcConstants,
     val config: JdbcSourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: FieldTypeMapper,
@@ -35,8 +35,8 @@ class JdbcMetadataQuerier(
 
     fun TableName.namespace(): String? =
         when (constants.namespaceKind) {
-            DefaultJdbcSharedState.Constants.NamespaceKind.CATALOG -> catalog
-            DefaultJdbcSharedState.Constants.NamespaceKind.SCHEMA -> schema
+            DefaultJdbcConstants.NamespaceKind.CATALOG -> catalog
+            DefaultJdbcConstants.NamespaceKind.SCHEMA -> schema
         }
 
     override fun streamNamespaces(): List<String> =
@@ -62,8 +62,8 @@ class JdbcMetadataQuerier(
             for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
                 val (catalog: String?, schema: String?) =
                     when (constants.namespaceKind) {
-                        DefaultJdbcSharedState.Constants.NamespaceKind.CATALOG -> namespace to null
-                        DefaultJdbcSharedState.Constants.NamespaceKind.SCHEMA -> null to namespace
+                        DefaultJdbcConstants.NamespaceKind.CATALOG -> namespace to null
+                        DefaultJdbcConstants.NamespaceKind.SCHEMA -> null to namespace
                     }
                 dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
                     while (rs.next()) {
@@ -328,7 +328,7 @@ class JdbcMetadataQuerier(
     class Factory(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: FieldTypeMapper,
-        val constants: DefaultJdbcSharedState.Constants,
+        val constants: DefaultJdbcConstants,
     ) : MetadataQuerier.Factory<JdbcSourceConfiguration> {
         /** The [JdbcSourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: JdbcSourceConfiguration): MetadataQuerier {

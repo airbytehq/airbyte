@@ -6,7 +6,7 @@ import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
 import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
 import io.airbyte.cdk.h2source.H2SourceOperations
-import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import java.sql.JDBCType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -22,7 +22,7 @@ class JdbcMetadataQuerierTest {
         JdbcMetadataQuerier.Factory(
             selectQueryGenerator = H2SourceOperations(),
             fieldTypeMapper = H2SourceOperations(),
-            constants = DefaultJdbcSharedState.Constants(),
+            constants = DefaultJdbcConstants(),
         )
 
     @Test
