@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import FrozenSet, Set, Union
@@ -57,12 +56,9 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     """
     # Ignore files with certain extensions
     modified_connectors = set()
-    start_time = time.time()
     for modified_file in modified_files:
         if not _is_ignored_file(modified_file):
             modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
-    end_time = time.time()
-    print(f"Time taken to find modified connectors: {end_time - start_time} seconds")
     return modified_connectors
 
 
