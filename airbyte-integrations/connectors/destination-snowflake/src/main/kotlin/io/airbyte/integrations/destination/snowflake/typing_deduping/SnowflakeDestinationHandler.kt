@@ -742,6 +742,7 @@ class SnowflakeDestinationHandler(
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
             println(database)
+            println(dataSource)
 
             val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
