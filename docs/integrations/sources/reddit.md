@@ -63,8 +63,8 @@ Hit send to receive `api_key` in the response under `access_token`
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-08-23 | Initial release by btkcodedev via Connector Builder|
+| Version          | Date       |Pull Request | Subject        |
+|------------------|------------|--------------|----------------|
+| 0.0.1 | 2024-08-23 |[44579](https://github.com/airbytehq/airbyte/pull/44579)| Initial release by [btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
