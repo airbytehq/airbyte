@@ -50,7 +50,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         )
 
         # Mount components file if it exists
-        components_file = self.context.connector.code_directory / COMPONENTS_FILE_PATH
+        components_file = self.context.connector.python_source_dir_path / COMPONENTS_FILE_PATH
         if components_file.exists():
             base_container = base_container.with_file(
                 f"source_declarative_manifest/{COMPONENTS_FILE_PATH}",
