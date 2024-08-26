@@ -342,7 +342,7 @@ class DebeziumRecordIterator<T>(
          */
         fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
             event.eventValueAsJson?.get("op")?.asText()?.let {
-                return it in listOf("c", "u", "d", "r", "t")
+                return it in listOf("c", "u", "d", "t")
             }
                 ?: return false
         }
