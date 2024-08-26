@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -53,13 +53,13 @@ definitions:
             field_path:
               - log_entries
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: id
-                partition_field: incident_id
-                stream:
-                  $ref: "#/definitions/streams/incidents"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: incident_id
+              stream:
+                $ref: "#/definitions/streams/incidents"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -153,7 +153,7 @@ definitions:
     url_base: https://api.pagerduty.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "Token token={{ config['token'] }}"
+      api_token: Token token={{ config['token'] }}
       inject_into:
         type: RequestOption
         field_name: Authorization
@@ -177,14 +177,14 @@ spec:
     properties:
       cutoff_days:
         type: integer
+        description: Fetch pipelines updated in the last number of days
         title: Cutoff Days
         default: 90
-        description: Fetch pipelines updated in the last number of days
         order: 0
       default_severity:
         type: string
-        title: Severity category
         description: A default severity category if not present
+        title: Severity category
         examples:
           - Sev1
           - Sev2
@@ -196,45 +196,46 @@ spec:
         order: 1
       exclude_services:
         type: array
+        description: >-
+          List of PagerDuty service names to ignore incidents from. If not set,
+          all incidents will be pulled.
         items:
           type: string
         title: Exclude Services
         examples:
           - service-1
           - service-2
-        description: >-
-          List of PagerDuty service names to ignore incidents from. If not set,
-          all incidents will be pulled.
         order: 2
       incident_log_entries_overview:
         type: boolean
-        title: Incident Log Entries Overview
         description: >-
           If true, will return a subset of log entries that show only the most
           important changes to the incident.
+        title: Incident Log Entries Overview
         default: true
         order: 3
       max_retries:
         type: integer
-        minimum: 0
-        maximum: 8
-        default: 5
-        title: Max Retries
         description: >-
           Maximum number of PagerDuty API request retries to perform upon
           connection errors. The source will pause for an exponentially
           increasing number of seconds before retrying.
+        minimum: 0
+        maximum: 8
+        default: 5
+        title: Max Retries
         order: 4
       page_size:
         type: integer
+        description: page size to use when querying PagerDuty API
         minimum: 1
         maximum: 25
         default: 25
         title: Page Size
-        description: page size to use when querying PagerDuty API
         order: 5
       service_details:
         type: array
+        description: List of PagerDuty service additional details to include.
         items:
           type: string
           enum:
@@ -243,24 +244,14 @@ spec:
             - integrations
             - auto_pause_notifications_parameters
         title: Service Details
-        description: List of PagerDuty service additional details to include.
         order: 6
       token:
         type: string
-        title: API key
         description: API key for PagerDuty API authentication
+        title: API key
         airbyte_secret: true
         order: 7
     additionalProperties: true
-
-metadata:
-  autoImportSchema:
-    incidents: false
-    incident_logs: false
-    teams: false
-    services: false
-    users: false
-    priorities: false
 
 schemas:
   incidents:
@@ -271,6 +262,10 @@ schemas:
     additionalProperties: true
     properties:
       type:
+        type:
+          - string
+          - "null"
+      description:
         type:
           - string
           - "null"
@@ -380,10 +375,6 @@ schemas:
           - string
           - "null"
       created_at:
-        type:
-          - string
-          - "null"
-      description:
         type:
           - string
           - "null"
@@ -625,6 +616,10 @@ schemas:
             type:
               - string
               - "null"
+          description:
+            type:
+              - string
+              - "null"
           account_id:
             type:
               - string
@@ -634,10 +629,6 @@ schemas:
               - string
               - "null"
           created_at:
-            type:
-              - string
-              - "null"
-          description:
             type:
               - string
               - "null"
@@ -1039,6 +1030,10 @@ schemas:
                 type:
                   - "null"
                   - string
+              description:
+                type:
+                  - "null"
+                  - string
               account_id:
                 type:
                   - "null"
@@ -1048,10 +1043,6 @@ schemas:
                   - "null"
                   - string
               created_at:
-                type:
-                  - "null"
-                  - string
-              description:
                 type:
                   - "null"
                   - string
@@ -1442,11 +1433,11 @@ schemas:
         type:
           - "null"
           - string
-      default_role:
+      description:
         type:
           - "null"
           - string
-      description:
+      default_role:
         type:
           - "null"
           - string
@@ -1483,6 +1474,10 @@ schemas:
     additionalProperties: true
     properties:
       type:
+        type:
+          - "null"
+          - string
+      description:
         type:
           - "null"
           - string
@@ -1537,10 +1532,6 @@ schemas:
           - "null"
           - string
       created_at:
-        type:
-          - "null"
-          - string
-      description:
         type:
           - "null"
           - string
@@ -1679,6 +1670,10 @@ schemas:
         type:
           - "null"
           - string
+      description:
+        type:
+          - "null"
+          - string
       avatar_url:
         type:
           - "null"
@@ -1789,10 +1784,6 @@ schemas:
               type:
                 - "null"
                 - string
-      description:
-        type:
-          - "null"
-          - string
       email:
         type:
           - "null"
@@ -1901,6 +1892,10 @@ schemas:
         type:
           - "null"
           - string
+      description:
+        type:
+          - "null"
+          - string
       account_id:
         type:
           - "null"
@@ -1910,10 +1905,6 @@ schemas:
           - "null"
           - string
       created_at:
-        type:
-          - "null"
-          - string
-      description:
         type:
           - "null"
           - string
