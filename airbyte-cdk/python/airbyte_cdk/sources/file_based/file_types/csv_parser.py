@@ -21,6 +21,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from pydantic import Field, validator
 
 DIALECT_NAME = "_config_dialect"
 
@@ -164,9 +165,11 @@ class CsvParser(FileTypeParser):
         #  sources will likely require one. Rather than modify the interface now we can wait until the real use case
         config_format = _extract_format(config)
         type_inferrer_by_field: Dict[str, _TypeInferrer] = defaultdict(
-            lambda: _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
-            if config_format.inference_type != InferenceType.NONE
-            else _DisabledTypeInferrer()
+            lambda: (
+                _JsonTypeInferrer(config_format.true_values, config_format.false_values, config_format.null_values)
+                if config_format.inference_type != InferenceType.NONE
+                else _DisabledTypeInferrer()
+            )
         )
         data_generator = self._csv_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
         read_bytes = 0
@@ -293,49 +296,34 @@ class CsvParser(FileTypeParser):
 
         for key, value in row.items():
             prop_type = deduped_property_types.get(key)
-            cast_value: Any = value
-
-            if prop_type in TYPE_PYTHON_MAPPING and prop_type is not None:
+            if prop_type in TYPE_PYTHON_MAPPING and prop_type:
                 _, python_type = TYPE_PYTHON_MAPPING[prop_type]
 
-                if python_type is None:
-                    if value == "":
-                        cast_value = None
-                    else:
-                        warnings.append(_format_warning(key, value, prop_type))
-
-                elif python_type == bool:
-                    try:
+                try:
+                    if python_type is None:
+                        cast_value = None if value == "" else value
+                    elif python_type == bool:
                         cast_value = _value_to_bool(value, config_format.true_values, config_format.false_values)
-                    except ValueError:
-                        warnings.append(_format_warning(key, value, prop_type))
-
-                elif python_type == dict:
-                    try:
-                        # we don't re-use _value_to_object here because we type the column as object as long as there is only one object
+                    elif python_type == dict:
                         cast_value = json.loads(value)
-                    except json.JSONDecodeError:
-                        warnings.append(_format_warning(key, value, prop_type))
-
-                elif python_type == list:
-                    try:
+                    elif python_type == list:
                         cast_value = _value_to_list(value)
-                    except (ValueError, json.JSONDecodeError):
-                        warnings.append(_format_warning(key, value, prop_type))
-
-                elif python_type:
-                    try:
+                    else:
                         cast_value = _value_to_python_type(value, python_type)
-                    except ValueError:
-                        warnings.append(_format_warning(key, value, prop_type))
-
-                result[key] = cast_value
+                    result[key] = cast_value
+                except (ValueError, json.JSONDecodeError):
+                    warnings.append(_format_warning(key, value, prop_type))
+                    result[key] = value  # fallback to the original value
 
         if warnings:
-            logger.warning(
-                f"{FileBasedSourceError.ERROR_CASTING_VALUE.value}: {','.join([w for w in warnings])}",
-            )
+            logger.warning(f"{FileBasedSourceError.ERROR_CASTING_VALUE.value}: {','.join(warnings)}")
         return result
+
+    @validator("quote_char", "escape_char")
+    def validate_single_character(cls, v: str, field: Field) -> str:
+        if v is not None and len(v) != 1:
+            raise ValueError(f"{field.name} should only be one character")
+        return v
 
 
 class _TypeInferrer(ABC):
