@@ -8,12 +8,14 @@ _Full Refresh_ sync means every time a sync is run, Airbyte will copy all rows i
 _Incremental_ sync means only changed resources are copied from Reddit. For the first run, it will be a Full Refresh sync.
 
 
-## Steps for getting api_key
+## Steps for getting `api_key`
 
-We can make a POST request from postman with username and password of reddit inorder to get api_keys for making requests
-First make an app for getting id and secret for authentication
+You can make a POST request from Postman to exchange your Reddit username and password for an `api_key` authorized to make requests.
+
+First make an app to get the client ID and secret for authentication:
+
 1. Go to Reddit's App Preferences Page:
-- Visit `https://www.reddit.com/prefs/apps` and select `create another app` and input name and select `script` as option and redirect uri as `https://oauth.pstmn.io/v1/callback`
+- Visit `https://www.reddit.com/prefs/apps`, select `create another app` and input an app name. Select the `script` option and set the redirect URI as `https://oauth.pstmn.io/v1/callback`.
 
 2. Copy Your App Credentials:
  - After creating the app, you will see the Client ID (below your app name) and Client Secret (labeled as "secret").
