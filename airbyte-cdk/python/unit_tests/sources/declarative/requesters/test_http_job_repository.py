@@ -22,7 +22,6 @@ class SendgridHttpJobRepositoryTest(TestCase):
             config=config,
             parameters={},
         )
-        decoder = JsonDecoder(parameters={})
         message_repository = Mock()
         error_handler = DefaultErrorHandler(config=config, parameters={})
         request_options_provider = None
@@ -40,8 +39,7 @@ class SendgridHttpJobRepositoryTest(TestCase):
             parameters={},
             message_repository=message_repository,
             use_cache=False,
-            decoder=decoder,
-            stream_response=decoder.is_stream_response() if decoder else False,
+            stream_response=False,
         )
 
         self._polling_job_requester = HttpRequester(
@@ -57,8 +55,7 @@ class SendgridHttpJobRepositoryTest(TestCase):
             parameters={},
             message_repository=message_repository,
             use_cache=False,
-            decoder=decoder,
-            stream_response=decoder.is_stream_response() if decoder else False,
+            stream_response=False,
         )
 
         self._download_job_requester = HttpRequester(
@@ -74,13 +71,12 @@ class SendgridHttpJobRepositoryTest(TestCase):
             parameters={},
             message_repository=message_repository,
             use_cache=False,
-            decoder=decoder,
             stream_response=True,
         )
 
 
-        self._status_extractor = DpathExtractor(decoder=decoder, field_path=["status"], config={}, parameters={} or {})
-        self._urls_extractor = DpathExtractor(decoder=decoder, field_path=["urls"], config={}, parameters={} or {})
+        self._status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["status"], config={}, parameters={} or {})
+        self._urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["urls"], config={}, parameters={} or {})
 
     def test_sendgrid(self) -> None:
         repository = AsyncHttpJobRepository(

@@ -96,7 +96,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         content_type, params = requests.utils._parse_content_type_header(content_type)
 
         if "charset" in params:
-            # FIXME this was part of salesforce code but seems to return a list instead of a string
+            # FIXME this was part of salesforce code but it is unclear why it is needed (see https://airbytehq-team.slack.com/archives/C02U9R3AF37/p1724693926504639)
             return params["charset"].strip("'\"")
 
         return self._DEFAULT_ENCODING
