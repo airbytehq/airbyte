@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import FrozenSet, Set, Union
@@ -24,12 +25,10 @@ def _find_modified_connectors(
     file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
 ) -> Set[Connector]:
     """Find all connectors impacted by the file change."""
+    active_connectors = {conn for conn in all_connectors if conn.support_level != "archived"}
     modified_connectors = set()
 
-    for connector in all_connectors:
-        if connector.support_level == "archived":
-            main_logger.info(f"Skipping connector '{connector}' due to 'archived' support level.")
-            continue
+    for connector in active_connectors:
         if Path(file_path).is_relative_to(Path(connector.code_directory)) or file_path == connector.documentation_file_path:
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
             modified_connectors.add(connector)
@@ -58,9 +57,12 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     """
     # Ignore files with certain extensions
     modified_connectors = set()
+    start_time = time.time()
     for modified_file in modified_files:
         if not _is_ignored_file(modified_file):
             modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
+    end_time = time.time()
+    print(f"Time taken to find modified connectors: {end_time - start_time} seconds")
     return modified_connectors
 
 
