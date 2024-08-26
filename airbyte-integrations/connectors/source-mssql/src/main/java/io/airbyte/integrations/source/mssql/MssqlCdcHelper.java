@@ -83,7 +83,7 @@ public class MssqlCdcHelper {
     } else {
       // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
       // is rotated out. This will also end up read streaming changes from the transaction_log.
-      props.setProperty("snapshot.mode", "initial_only");
+      props.setProperty("snapshot.mode", "no_data");
     }
 
     props.setProperty("snapshot.isolation.mode", "read_committed");
