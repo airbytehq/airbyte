@@ -341,6 +341,8 @@ class DebeziumRecordIterator<T>(
          * snapshots) t: truncate, m: message
          */
         fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
+            LOGGER.info { "*** isEventTypeHandled for ${event.eventValueAsJson}" }
+            LOGGER.info { "*** op ${event.eventValueAsJson?.get("op")?.asText()}" }
             event.eventValueAsJson?.get("op")?.asText()?.let {
                 return it in listOf("c", "u", "d", "t")
             }
