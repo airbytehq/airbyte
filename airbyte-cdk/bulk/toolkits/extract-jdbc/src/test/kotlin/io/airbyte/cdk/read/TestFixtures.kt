@@ -119,7 +119,7 @@ object TestFixtures {
             get() = TODO("Not yet implemented")
         override val jdbcProperties: Map<String, String>
             get() = TODO("Not yet implemented")
-        override val schemas: Set<String>
+        override val namespaces: Set<String>
             get() = TODO("Not yet implemented")
         override val realPort: Int
             get() = TODO("Not yet implemented")

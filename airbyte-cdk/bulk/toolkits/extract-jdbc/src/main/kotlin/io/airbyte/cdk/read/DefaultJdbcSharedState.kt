@@ -38,8 +38,16 @@ class DefaultJdbcSharedState(
         /** Estimated bytes used as overhead for each column value in a [java.sql.ResultSet]. */
         val estimatedFieldOverheadBytes: Long = FIELD_OVERHEAD_BYTES,
         /** Overrides the JVM heap capacity to provide determinism in tests. */
-        val maxMemoryBytesForTesting: Long? = null
+        val maxMemoryBytesForTesting: Long? = null,
+        /** Whether the namespace field denotes a JDBC schema or a JDBC catalog. */
+        val namespaceKind: NamespaceKind = NamespaceKind.SCHEMA,
     ) {
+
+        enum class NamespaceKind {
+            SCHEMA,
+            CATALOG,
+        }
+
         companion object {
 
             // Sampling defaults.
