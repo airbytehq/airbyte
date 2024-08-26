@@ -1,5 +1,5 @@
 # High Level
-Proxy connector for [Go High Level](www.gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
+Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
 
 ## Configuration
 

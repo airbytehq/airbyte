@@ -1,7 +1,7 @@
 # High Level
 This directory contains the manifest-only connector for `source-high-level`.
 
-Proxy connector for [Go High Level](www.gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
+Proxy connector for [Go High Level](https://gohighlevel.com) (Lead Connector). Requires a paid subscription to the proxy service.
 
 ## Usage
 
