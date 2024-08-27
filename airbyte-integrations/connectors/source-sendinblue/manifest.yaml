@@ -1,4 +1,4 @@
-version: 0.78.5
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -136,7 +136,7 @@ definitions:
     url_base: https://api.sendinblue.com/v3
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: api-key
@@ -157,19 +157,13 @@ spec:
     properties:
       api_key:
         type: string
-        title: API Key
-        airbyte_secret: true
         description: >-
           Your API Key. See <a
           href="https://developers.sendinblue.com/docs/getting-started">here</a>.
+        title: API Key
+        airbyte_secret: true
         order: 0
     additionalProperties: true
-
-metadata:
-  autoImportSchema:
-    campaigns: false
-    templates: false
-    contacts: false
 
 schemas:
   campaigns:
