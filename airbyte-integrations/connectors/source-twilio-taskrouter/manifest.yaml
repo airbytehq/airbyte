@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -72,13 +72,13 @@ definitions:
             page_size: 50
             cursor_value: "{{response['meta']['next_page_url']}}"
         partition_router:
-          - type: SubstreamPartitionRouter
-            parent_stream_configs:
-              - type: ParentStreamConfig
-                parent_key: sid
-                partition_field: id
-                stream:
-                  $ref: "#/definitions/streams/workspaces"
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: sid
+              partition_field: id
+              stream:
+                $ref: "#/definitions/streams/workspaces"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -88,8 +88,8 @@ definitions:
     url_base: https://taskrouter.twilio.com
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config['account_sid'] }}"
-      password: "{{ config['auth_token'] }}"
+      username: '{{ config["account_sid"] }}'
+      password: '{{ config["auth_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/workspaces"
@@ -106,8 +106,8 @@ spec:
     properties:
       account_sid:
         type: string
-        title: Account SID
         description: Twilio Account ID
+        title: Account SID
         airbyte_secret: true
         order: 0
       auth_token:
@@ -117,11 +117,6 @@ spec:
         title: Auth Token
         order: 1
     additionalProperties: true
-
-metadata:
-  autoImportSchema:
-    workspaces: false
-    workers: false
 
 schemas:
   workspaces:
