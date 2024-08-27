@@ -90,8 +90,8 @@ class SnowflakeDestinationHandler(
                     String.format(
 
                             """
-                        SHOW TABLES LIKE '%s' IN %s.%s;
-                                """.trimIndent(),
+                                SHOW TABLES LIKE '%s' IN "%s"."%s";
+                            """.trimIndent(),
                             stream.finalName,
                             databaseName,
                             stream.finalNamespace,
@@ -207,8 +207,8 @@ class SnowflakeDestinationHandler(
                 String.format(
 
                     """
-                        SHOW TABLES LIKE '%s' IN %s.%s;
-                                """.trimIndent(),
+                        SHOW TABLES LIKE '%s' IN "%s"."%s";
+                    """.trimIndent(),
                     rawTableName,
                     databaseName,
                     id.rawNamespace,
@@ -760,7 +760,7 @@ class SnowflakeDestinationHandler(
                         String.format(
 
                             """
-                                SHOW COLUMNS IN TABLE %s.%s.%s;
+                                SHOW COLUMNS IN TABLE "%s"."%s"."%s";
                             """.trimIndent(),
                             databaseName,
                             stream.finalNamespace,

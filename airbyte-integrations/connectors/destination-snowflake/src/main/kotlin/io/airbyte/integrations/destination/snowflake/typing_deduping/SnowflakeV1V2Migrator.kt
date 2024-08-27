@@ -44,7 +44,7 @@ class SnowflakeV1V2Migrator(
 
             val showSchemaQuery = String.format(
                 """
-               SHOW SCHEMAS LIKE '%s' IN DATABASE %s;
+               SHOW SCHEMAS LIKE '%s' IN DATABASE "%s";
                 """.trimIndent(),
                 streamConfig!!.id.rawNamespace,
                 databaseName,
@@ -114,7 +114,7 @@ class SnowflakeV1V2Migrator(
             val showColumnsQuery =
                 String.format(
                     """
-                       SHOW COLUMNS IN TABLE %s.%s.%s;
+                       SHOW COLUMNS IN TABLE "%s"."%s"."%s";
                     """.trimIndent(),
                     databaseName,
                     namespace,
