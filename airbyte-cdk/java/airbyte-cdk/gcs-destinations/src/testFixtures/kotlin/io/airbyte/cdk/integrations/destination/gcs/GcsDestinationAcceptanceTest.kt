@@ -130,7 +130,7 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
      * * Construct the GCS destination config.
      * * Construct the GCS client.
      */
-    override fun setup(testEnv: TestDestinationEnv, TEST_SCHEMAS: HashSet<String>) {
+    override fun setup(testEnv: TestDestinationEnv, testSchemas: HashSet<String>) {
         val baseConfigJson = baseConfigJson
         // Set a random GCS bucket path for each integration test
         val configJson = Jsons.clone(baseConfigJson)

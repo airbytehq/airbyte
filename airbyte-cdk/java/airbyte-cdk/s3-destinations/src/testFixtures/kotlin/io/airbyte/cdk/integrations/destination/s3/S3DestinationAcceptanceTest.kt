@@ -143,7 +143,7 @@ protected constructor(
      * * Construct the S3 destination config.
      * * Construct the S3 client.
      */
-    override fun setup(testEnv: TestDestinationEnv, TEST_SCHEMAS: HashSet<String>) {
+    override fun setup(testEnv: TestDestinationEnv, testSchemas: HashSet<String>) {
         val baseConfigJson = baseConfigJson
         // Set a random s3 bucket path for each integration test
         val configJson = Jsons.clone(baseConfigJson)
