@@ -79,11 +79,11 @@ public class MssqlCdcHelper {
     // the snapshot.mode needs to be initial_only since we don't want to continue streaming changes
     // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode
     if (isSnapshot) {
-      props.setProperty("snapshot.mode", "initial_only");
+      props.setProperty("snapshot.mode", "recovery");
     } else {
       // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
       // is rotated out. This will also end up read streaming changes from the transaction_log.
-      props.setProperty("snapshot.mode", "recovery");
+      props.setProperty("snapshot.mode", "when_needed");
     }
 
     props.setProperty("snapshot.isolation.mode", "read_committed");
