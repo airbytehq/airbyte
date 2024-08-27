@@ -21,10 +21,9 @@ def get_connector_modified_files(connector: Connector, all_modified_files: Set[P
 
 
 def _find_modified_connectors(
-    file_path: Union[str, Path], all_connectors: Set[Connector], dependency_scanning: bool = True
+    file_path: Union[str, Path], active_connectors: Set[Connector], dependency_scanning: bool = True
 ) -> Set[Connector]:
     """Find all connectors impacted by the file change."""
-    active_connectors = {conn for conn in all_connectors if conn.support_level != "archived"}
     modified_connectors = set()
 
     for connector in active_connectors:
@@ -56,9 +55,11 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     """
     # Ignore files with certain extensions
     modified_connectors = set()
+    active_connectors = {conn for conn in all_connectors if conn.support_level != "archived"}
+    main_logger.info(f"Checking for modified files. Skipping {len(all_connectors) - len(active_connectors)} connectors with support level 'archived'.")
     for modified_file in modified_files:
         if not _is_ignored_file(modified_file):
-            modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
+            modified_connectors.update(_find_modified_connectors(modified_file, active_connectors, dependency_scanning))
     return modified_connectors
 
 
