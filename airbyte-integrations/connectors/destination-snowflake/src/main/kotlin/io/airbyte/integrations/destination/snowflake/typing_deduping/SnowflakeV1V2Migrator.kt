@@ -27,8 +27,7 @@ import org.slf4j.LoggerFactory
 class SnowflakeV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,
-    private val databaseName: String,
-    private val dataSource: DataSource
+    private val databaseName: String
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
 
     private val LOGGER: Logger =
