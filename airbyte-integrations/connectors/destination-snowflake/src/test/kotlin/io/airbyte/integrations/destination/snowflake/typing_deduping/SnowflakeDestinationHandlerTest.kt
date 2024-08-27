@@ -31,9 +31,8 @@ import org.mockito.kotlin.eq
 class SnowflakeDestinationHandlerTest {
 
     private val database = mock(JdbcDatabase::class.java)
-    private val dataSource = mock(DataSource::class.java)
     private val destinationHandler =
-        SnowflakeDestinationHandler("mock-database-name", database, "mock-schema", dataSource)
+        SnowflakeDestinationHandler("mock-database-name", database, "mock-schema")
 
     @ParameterizedTest
     @MethodSource("argumentsForExceptionThrownWithExecute")

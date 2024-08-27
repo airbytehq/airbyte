@@ -48,8 +48,7 @@ import org.slf4j.LoggerFactory
 class SnowflakeDestinationHandler(
     databaseName: String,
     private val database: JdbcDatabase,
-    rawTableSchema: String,
-    private val dataSource: DataSource
+    rawTableSchema: String
 ) :
     JdbcDestinationHandler<SnowflakeState>(
         databaseName,
@@ -554,7 +553,7 @@ class SnowflakeDestinationHandler(
         val destinationStates = getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
-        val existingTables = findExistingTables(database, databaseName, streamIds, dataSource)
+        val existingTables = findExistingTables(database, databaseName, streamIds)
         val tableRowCounts = getFinalTableRowCount(streamIds)
         return streamConfigs
             .stream()
@@ -737,15 +736,8 @@ class SnowflakeDestinationHandler(
         fun findExistingTables(
             database: JdbcDatabase,
             databaseName: String,
-            streamIds: List<StreamId>,
-            dataSource: DataSource
+            streamIds: List<StreamId>
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
-
-            println("From println: Inside findExistingTables: database=" + database)
-            println("From println: Inside findExistingTables: dataSource=" + dataSource)
-
-            LOGGER.info("From LOGGER.info: Inside findExistingTables: database=" + database)
-            LOGGER.info("From LOGGER.info: Inside findExistingTables: dataSource=" + dataSource)
 
             val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()

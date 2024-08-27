@@ -120,9 +120,6 @@ constructor(
 
         try {
 
-            println("From println: Entering unsafeQuery")
-            LOGGER.info {"From LOGGER.info: Entering unsafeQuery"}
-
             return JdbcDatabase.Companion.toUnsafeStream<T>(
                 statementCreator.apply(connection).executeQuery(),
                 recordTransform
@@ -140,14 +137,7 @@ constructor(
 
         } catch (e: Throwable) {
 
-            println("From println: Inside DefaultJdbcDatabase: Handling exception")
-            LOGGER.error {"From LOGGER.error: Inside DefaultJdbcDatabase: Handling exception"}
-
             if (connection != null) {
-
-                println("From println: Inside DefaultJdbcDatabase: Closing connection")
-                LOGGER.error {"From LOGGER.error: Inside DefaultJdbcDatabase: Closing connection"}
-
                 connection.close()
             }
 
