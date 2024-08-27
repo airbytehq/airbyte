@@ -56,7 +56,9 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
     # Ignore files with certain extensions
     modified_connectors = set()
     active_connectors = {conn for conn in all_connectors if conn.support_level != "archived"}
-    main_logger.info(f"Checking for modified files. Skipping {len(all_connectors) - len(active_connectors)} connectors with support level 'archived'.")
+    main_logger.info(
+        f"Checking for modified files. Skipping {len(all_connectors) - len(active_connectors)} connectors with support level 'archived'."
+    )
     for modified_file in modified_files:
         if not _is_ignored_file(modified_file):
             modified_connectors.update(_find_modified_connectors(modified_file, active_connectors, dependency_scanning))
