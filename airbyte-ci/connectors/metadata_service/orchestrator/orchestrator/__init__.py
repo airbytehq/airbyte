@@ -25,6 +25,7 @@ from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
+    remove_latest_metadata_partitions,
     generate_cloud_registry,
     generate_oss_registry,
     generate_registry_entry,
@@ -203,6 +204,7 @@ JOBS = [
     generate_nightly_reports,
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
+    remove_latest_metadata_partitions,
     generate_stale_gcs_latest_metadata_file,
 ]
 
