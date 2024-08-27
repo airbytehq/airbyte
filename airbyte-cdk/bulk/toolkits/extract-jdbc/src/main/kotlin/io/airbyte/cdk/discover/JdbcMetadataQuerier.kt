@@ -3,6 +3,8 @@ package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.read.From
@@ -23,6 +25,7 @@ import java.sql.Statement
 
 /** Default implementation of [MetadataQuerier]. */
 class JdbcMetadataQuerier(
+    val constants: DefaultJdbcConstants,
     val config: JdbcSourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: FieldTypeMapper,
@@ -33,11 +36,18 @@ class JdbcMetadataQuerier(
 
     private val log = KotlinLogging.logger {}
 
+    fun TableName.namespace(): String? =
+        when (constants.namespaceKind) {
+            NamespaceKind.CATALOG_AND_SCHEMA,
+            NamespaceKind.CATALOG -> catalog
+            NamespaceKind.SCHEMA -> schema
+        }
+
     override fun streamNamespaces(): List<String> =
-        memoizedTableNames.mapNotNull { it.schema ?: it.catalog }.distinct()
+        memoizedTableNames.mapNotNull { it.namespace() }.distinct()
 
     override fun streamNames(streamNamespace: String?): List<String> =
-        memoizedTableNames.filter { (it.schema ?: it.catalog) == streamNamespace }.map { it.name }
+        memoizedTableNames.filter { it.namespace() == streamNamespace }.map { it.name }
 
     fun <T> swallow(supplier: () -> T): T? {
         try {
@@ -53,8 +63,14 @@ class JdbcMetadataQuerier(
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = conn.metaData
-            for (schema in config.schemas + config.schemas.map { it.uppercase() }) {
-                dbmd.getTables(null, schema, null, null).use { rs: ResultSet ->
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+                dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         allTables.add(
                             TableName(
@@ -67,10 +83,8 @@ class JdbcMetadataQuerier(
                     }
                 }
             }
-            log.info { "Discovered ${allTables.size} table(s) in schemas ${config.schemas}." }
-            return@lazy allTables.toList().sortedBy {
-                "${it.catalog ?: ""}.${it.schema!!}.${it.name}.${it.type}"
-            }
+            log.info { "Discovered ${allTables.size} table(s) in namespaces ${config.namespaces}." }
+            return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
@@ -80,9 +94,7 @@ class JdbcMetadataQuerier(
         streamName: String,
         streamNamespace: String?,
     ): TableName? =
-        memoizedTableNames.find {
-            it.name == streamName && (it.schema ?: it.catalog) == streamNamespace
-        }
+        memoizedTableNames.find { it.name == streamName && it.namespace() == streamNamespace }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
         val joinMap: Map<TableName, TableName> =
@@ -92,7 +104,7 @@ class JdbcMetadataQuerier(
         try {
             val dbmd: DatabaseMetaData = conn.metaData
             memoizedTableNames
-                .filter { it.catalog != null || it.schema != null }
+                .filter { it.namespace() != null }
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
@@ -223,7 +235,7 @@ class JdbcMetadataQuerier(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
-                From(table.name, table.schema ?: table.catalog),
+                From(table.name, table.namespace()),
                 limit = Limit(0),
             )
         return selectQueryGenerator.generate(querySpec.optimize()).sql
@@ -326,11 +338,13 @@ class JdbcMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
+        val constants: DefaultJdbcConstants,
     ) : MetadataQuerier.Factory<JdbcSourceConfiguration> {
         /** The [JdbcSourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: JdbcSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             return JdbcMetadataQuerier(
+                constants,
                 config,
                 selectQueryGenerator,
                 fieldTypeMapper,

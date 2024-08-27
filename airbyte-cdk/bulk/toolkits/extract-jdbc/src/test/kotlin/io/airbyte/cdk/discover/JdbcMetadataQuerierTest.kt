@@ -7,6 +7,7 @@ import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
 import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
 import io.airbyte.cdk.h2source.H2SourceOperations
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import java.sql.JDBCType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -23,6 +24,7 @@ class JdbcMetadataQuerierTest {
             selectQueryGenerator = H2SourceOperations(),
             fieldTypeMapper = H2SourceOperations(),
             checkQueries = JdbcCheckQueries().apply { queries = listOf() },
+            constants = DefaultJdbcConstants(),
         )
 
     @Test
