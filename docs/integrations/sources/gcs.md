@@ -151,7 +151,8 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.6.3 | 2024-08-27 | [44796](https://github.com/airbytehq/airbyte/pull/44796) | Fix empty list of globs when prefix empty                               |
+| 0.6.4 | 2024-08-27 | [44796](https://github.com/airbytehq/airbyte/pull/44796) | Fix empty list of globs when prefix empty                               |
+| 0.6.3 | 2024-08-26 | [44781](https://github.com/airbytehq/airbyte/pull/44781) | Set file signature URL expiration limit default to max                  |
 | 0.6.2 | 2024-08-24 | [44733](https://github.com/airbytehq/airbyte/pull/44733) | Update dependencies                                                     |
 | 0.6.1 | 2024-08-17 | [44285](https://github.com/airbytehq/airbyte/pull/44285) | Update dependencies                                                     |
 | 0.6.0 | 2024-08-15 | [44015](https://github.com/airbytehq/airbyte/pull/44015) | Add support for all FileBasedSpec file types                            |
