@@ -30,6 +30,7 @@ class AirbyteStateBlob:
             Checks equality between two `AirbyteStateBlob` instances based on their internal dictionaries.
             Returns `False` if the other object is not an instance of `AirbyteStateBlob`.
     """
+
     kwargs: InitVar[Mapping[str, Any]]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -60,7 +61,9 @@ class AirbyteGlobalState:
 class AirbyteStateMessage:
     type: Optional[AirbyteStateType] = None
     stream: Optional[AirbyteStreamState] = None
-    global_: Annotated[AirbyteGlobalState | None, Alias("global")] = None # "global" is a reserved keyword in python ⇒ Alias is used for (de-)serialization
+    global_: Annotated[
+        AirbyteGlobalState | None, Alias("global")
+    ] = None  # "global" is a reserved keyword in python ⇒ Alias is used for (de-)serialization
     data: Optional[Dict[str, Any]] = None
     sourceStats: Optional[AirbyteStateStats] = None
     destinationStats: Optional[AirbyteStateStats] = None
