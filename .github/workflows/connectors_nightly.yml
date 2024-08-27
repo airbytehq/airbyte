@@ -1,9 +1,10 @@
 name: Connector Ops CI - Connectors Nightly Tests
 
 on:
-  schedule:
-    # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
-    - cron: "0 0 * * *"
+  # TODO: re-enable nightlies
+  #  schedule:
+  #    # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
+  #    - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
       test-connectors-options:
