@@ -8,7 +8,7 @@ import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.output.ExceptionClassifier
+import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
@@ -24,7 +24,7 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
     val configFactory: SourceConfigurationFactory<T, out SourceConfiguration>,
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val outputConsumer: OutputConsumer,
-    val exceptionClassifier: ExceptionClassifier,
+    val exceptionHandler: ExceptionHandler,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -36,10 +36,14 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
             log.info { "Building internal connector configuration object." }
             val config: SourceConfiguration = configFactory.make(pojo)
             log.info { "Connecting for config check." }
-            metadataQuerierFactory.session(config).use { connectionCheck(it) }
+            metadataQuerierFactory.session(config).use {
+                connectionCheck(it)
+                it.extraChecks()
+            }
         } catch (e: Exception) {
             log.debug(e) { "Exception while checking config." }
-            val errorTraceMessage: AirbyteErrorTraceMessage = exceptionClassifier.handle(e)
+            val errorTraceMessage: AirbyteErrorTraceMessage = exceptionHandler.handle(e)
+            errorTraceMessage.failureType = AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR
             outputConsumer.accept(errorTraceMessage)
             val connectionStatusMessage: String =
                 String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, errorTraceMessage.message)
