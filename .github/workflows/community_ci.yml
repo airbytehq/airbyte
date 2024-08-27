@@ -198,7 +198,7 @@ jobs:
     permissions:
       statuses: write
     env:
-      MAIN_BRANCH_NAME: "master"
+      MAIN_BRANCH_NAME: "augustin/08-27-community-ci_support_regression_tests_on_forks"
 
     steps:
       # This checkouts a fork which can contain untrusted code
@@ -234,7 +234,7 @@ jobs:
           git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ github.event.pull_request.head.sha }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test"
