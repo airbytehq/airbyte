@@ -45,7 +45,7 @@ protected constructor(
         configuredCatalog.streams.forEach {
             it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
         }
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         for (stream in catalog.streams) {
             val streamName = stream.name

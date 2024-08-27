@@ -100,10 +100,6 @@ class SnowflakeInternalStagingDestinationAcceptanceTest :
         catalogFilename: String,
         configName: String
     ) {
-        if (!normalizationFromDefinition()) {
-            return
-        }
-
         val catalog = deserialize(readResource(catalogFilename), AirbyteCatalog::class.java)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
         val messages: List<AirbyteMessage> =
@@ -113,7 +109,7 @@ class SnowflakeInternalStagingDestinationAcceptanceTest :
                 .toList()
 
         val config = deserialize(readFile(Path.of(configName)))
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         val defaultSchema = getDefaultSchema(config)
         val actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)

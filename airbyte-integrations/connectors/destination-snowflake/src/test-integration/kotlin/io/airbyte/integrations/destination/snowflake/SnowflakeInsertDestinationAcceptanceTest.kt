@@ -82,10 +82,6 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
         return true
     }
 
-    override fun supportsInDestinationNormalization(): Boolean {
-        return true
-    }
-
     override fun getFailCheckConfig(): JsonNode? {
         val invalidConfig: JsonNode = Jsons.clone<JsonNode>(config)
         (invalidConfig["credentials"] as ObjectNode).put("password", "wrong password")
@@ -283,7 +279,7 @@ open class SnowflakeInsertDestinationAcceptanceTest : DestinationAcceptanceTest(
                 .collect(Collectors.toList())
 
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog)
     }
 
     companion object {

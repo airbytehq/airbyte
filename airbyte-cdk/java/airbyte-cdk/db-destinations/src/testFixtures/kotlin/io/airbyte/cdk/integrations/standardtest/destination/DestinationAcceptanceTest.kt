@@ -22,7 +22,6 @@ import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.commons.util.MoreIterators
 import io.airbyte.configoss.JobGetSpecConfig
-import io.airbyte.configoss.OperatorDbt
 import io.airbyte.configoss.StandardCheckConnectionInput
 import io.airbyte.configoss.StandardCheckConnectionOutput
 import io.airbyte.configoss.WorkerDestinationConfig
@@ -45,15 +44,12 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import io.airbyte.workers.exception.TestHarnessException
-import io.airbyte.workers.general.DbtTransformationRunner
 import io.airbyte.workers.general.DefaultCheckConnectionTestHarness
 import io.airbyte.workers.general.DefaultGetSpecTestHarness
 import io.airbyte.workers.helper.ConnectorConfigUpdater
 import io.airbyte.workers.helper.EntrypointEnvChecker
 import io.airbyte.workers.internal.AirbyteDestination
 import io.airbyte.workers.internal.DefaultAirbyteDestination
-import io.airbyte.workers.normalization.DefaultNormalizationRunner
-import io.airbyte.workers.normalization.NormalizationRunner
 import io.airbyte.workers.process.AirbyteIntegrationLauncher
 import io.airbyte.workers.process.DockerProcessFactory
 import io.airbyte.workers.process.ProcessFactory
@@ -112,17 +108,6 @@ abstract class DestinationAcceptanceTest(
     /** Name of the docker image that the tests will run against. */
     protected abstract val imageName: String
 
-    protected open fun supportsInDestinationNormalization(): Boolean {
-        return false
-    }
-
-    protected fun inDestinationNormalizationFlags(shouldNormalize: Boolean): Map<String, String> {
-        if (shouldNormalize && supportsInDestinationNormalization()) {
-            return java.util.Map.of("NORMALIZATION_TECHNIQUE", "LEGACY")
-        }
-        return emptyMap()
-    }
-
     private val imageNameWithoutTag: String
         get() =
             if (imageName.contains(":"))
@@ -140,13 +125,6 @@ abstract class DestinationAcceptanceTest(
         } catch (e: IOException) {
             throw UncheckedIOException(e)
         }
-    }
-
-    protected fun getNormalizationImageName(): String? {
-        val metadata = readMetadata()["data"] ?: return null
-        val normalizationConfig = metadata["normalizationConfig"] ?: return null
-        val normalizationRepository = normalizationConfig["normalizationRepository"] ?: return null
-        return normalizationRepository.asText() + ":" + NORMALIZATION_VERSION
     }
 
     /**
@@ -286,13 +264,6 @@ abstract class DestinationAcceptanceTest(
         }
     }
 
-    protected open fun normalizationFromDefinition(): Boolean {
-        val metadata = readMetadata()["data"] ?: return false
-        val normalizationConfig = metadata["normalizationConfig"] ?: return false
-        return normalizationConfig.has("normalizationRepository") &&
-            normalizationConfig.has("normalizationTag")
-    }
-
     protected open fun dbtFromDefinition(): Boolean {
         val metadata = readMetadata()["data"] ?: return false
         val supportsDbt = metadata["supportsDbt"]
@@ -301,14 +272,6 @@ abstract class DestinationAcceptanceTest(
 
     protected open val destinationDefinitionKey: String
         get() = imageNameWithoutTag
-
-    protected open fun getNormalizationIntegrationType(): String? {
-        val metadata = readMetadata()["data"] ?: return null
-        val normalizationConfig = metadata["normalizationConfig"] ?: return null
-        val normalizationIntegrationType =
-            normalizationConfig["normalizationIntegrationType"] ?: return null
-        return normalizationIntegrationType.asText()
-    }
 
     /**
      * Detects if a destination implements append dedup mode from the spec.json that should include
@@ -497,7 +460,7 @@ abstract class DestinationAcceptanceTest(
 
         val config = getConfig()
         val defaultSchema = getDefaultSchema(config)
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
         retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema)
     }
 
@@ -534,7 +497,7 @@ abstract class DestinationAcceptanceTest(
         val concatenated = lotsOfRecordAndStateBlocks.flatten() + traceMessages
 
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, concatenated, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, concatenated, configuredCatalog)
     }
 
     /** Verify that the integration overwrites the first sync with the second sync. */
@@ -566,7 +529,7 @@ abstract class DestinationAcceptanceTest(
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
 
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog)
 
         // We need to make sure that other streams\tables\files in the same location will not be
         // affected\deleted\overridden by our activities during first, second or any future sync.
@@ -594,7 +557,7 @@ abstract class DestinationAcceptanceTest(
                 message.trace.streamStatus.streamDescriptor.name = DUMMY_CATALOG_NAME
             }
         // sync dummy data
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog)
 
         // Run second sync
         val configuredCatalog2 = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
@@ -648,7 +611,7 @@ abstract class DestinationAcceptanceTest(
                     )
             )
 
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog2, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog2)
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema)
 
@@ -726,30 +689,9 @@ abstract class DestinationAcceptanceTest(
                     )
             )
 
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog)
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema)
-    }
-
-    @Test
-    fun normalizationFromDefinitionValueShouldBeCorrect() {
-        if (normalizationFromDefinition()) {
-            var normalizationRunnerFactorySupportsDestinationImage: Boolean
-            try {
-                DefaultNormalizationRunner(
-                    processFactory,
-                    getNormalizationImageName(),
-                    getNormalizationIntegrationType()
-                )
-                normalizationRunnerFactorySupportsDestinationImage = true
-            } catch (e: IllegalStateException) {
-                normalizationRunnerFactorySupportsDestinationImage = false
-            }
-            Assertions.assertEquals(
-                normalizationFromDefinition(),
-                normalizationRunnerFactorySupportsDestinationImage
-            )
-        }
     }
 
     /**
@@ -792,7 +734,7 @@ abstract class DestinationAcceptanceTest(
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
 
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog)
         val descriptor = StreamDescriptor()
         descriptor.name = catalog.streams[0].name
         val secondSyncMessages: List<AirbyteMessage> =
@@ -841,7 +783,7 @@ abstract class DestinationAcceptanceTest(
                     )
             )
 
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog)
 
         val expectedMessagesAfterSecondSync: MutableList<AirbyteMessage> = ArrayList()
         expectedMessagesAfterSecondSync.addAll(firstSyncMessages)
@@ -858,8 +800,8 @@ abstract class DestinationAcceptanceTest(
     @ArgumentsSource(DataArgumentsProvider::class)
     @Test
     @Throws(Exception::class)
-    fun testIncrementalSyncWithNormalizationDropOneColumn() {
-        if (!normalizationFromDefinition() || !supportIncrementalSchemaChanges()) {
+    fun testIncrementalSyncWithTypingDedupingDropOneColumn() {
+        if (!supportsTypingDeduping() || !supportIncrementalSchemaChanges()) {
             return
         }
 
@@ -897,7 +839,7 @@ abstract class DestinationAcceptanceTest(
                 .toMutableList()
 
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         val defaultSchema = getDefaultSchema(config)
         var actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
@@ -923,7 +865,7 @@ abstract class DestinationAcceptanceTest(
             )
         )
 
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         // assert the removed field is missing on the new messages
         actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
@@ -950,7 +892,7 @@ abstract class DestinationAcceptanceTest(
     // Normalization is a pretty slow process. Increase our test timeout.
     @Timeout(value = 300, unit = TimeUnit.SECONDS)
     open fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
-        if (!normalizationFromDefinition()) {
+        if (!supportsTypingDeduping()) {
             return
         }
 
@@ -966,7 +908,7 @@ abstract class DestinationAcceptanceTest(
             }
 
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         val defaultSchema = getDefaultSchema(config)
         val actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
@@ -1015,12 +957,7 @@ abstract class DestinationAcceptanceTest(
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val config = getConfig()
-        runSyncAndVerifyStateOutput(
-            config,
-            firstSyncMessages,
-            configuredCatalog,
-            supportsNormalization()
-        )
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog)
 
         val secondSyncMessages: List<AirbyteMessage> =
             Lists.newArrayList(
@@ -1067,7 +1004,7 @@ abstract class DestinationAcceptanceTest(
                             .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
                     )
             )
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog)
 
         val expectedMessagesAfterSecondSync: MutableList<AirbyteMessage> = ArrayList()
         expectedMessagesAfterSecondSync.addAll(firstSyncMessages)
@@ -1103,7 +1040,7 @@ abstract class DestinationAcceptanceTest(
             expectedMessagesAfterSecondSync,
             defaultSchema
         )
-        if (normalizationFromDefinition()) {
+        if (supportsTypingDeduping()) {
             val actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
             assertSameMessages(expectedMessages, actualMessages, true)
         }
@@ -1112,145 +1049,6 @@ abstract class DestinationAcceptanceTest(
     protected open val maxRecordValueLimit: Int
         /** @return the max limit length allowed for values in the destination. */
         get() = 1000000000
-
-    @Test
-    @Throws(Exception::class)
-    open fun testCustomDbtTransformations() {
-        if (!dbtFromDefinition()) {
-            return
-        }
-
-        val config = getConfig()
-
-        // This may throw IllegalStateException "Requesting normalization, but it is not included in
-        // the
-        // normalization mappings"
-        // We indeed require normalization implementation of the 'transform_config' function for
-        // this
-        // destination,
-        // because we make sure to install required dbt dependency in the normalization docker image
-        // in
-        // order to run
-        // this test successfully and that we are able to convert a destination 'config.json' into a
-        // dbt
-        // 'profiles.yml'
-        // (we don't actually rely on normalization running anything else here though)
-        val runner =
-            DbtTransformationRunner(
-                processFactory,
-                DefaultNormalizationRunner(
-                    processFactory,
-                    getNormalizationImageName(),
-                    getNormalizationIntegrationType()
-                )
-            )
-        runner.start()
-        val transformationRoot = Files.createDirectories(jobRoot.resolve("transform"))
-        val dbtConfig =
-            OperatorDbt() // Forked from https://github.com/dbt-labs/jaffle_shop because they made a
-                // change that would have
-                // required a dbt version upgrade
-                // https://github.com/dbt-labs/jaffle_shop/commit/b1680f3278437c081c735b7ea71c2ff9707bc75f#diff-27386df54b2629c1191d8342d3725ed8678413cfa13b5556f59d69d33fae5425R20
-                // We're actually two commits upstream of that, because the previous commit
-                // (https://github.com/dbt-labs/jaffle_shop/commit/ec36ae177ab5cb79da39ff8ab068c878fbac13a0) also
-                // breaks something
-                // TODO once we're on DBT 1.x, switch this back to using the main branch
-                .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
-                .withGitRepoBranch("pre_dbt_upgrade")
-                .withDockerImage(getNormalizationImageName())
-        //
-        // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
-        //
-        // This dbt project transforms raw data from an app database into a customers and orders
-        // model ready
-        // for analytics.
-        // The repo is a self-contained playground dbt project, useful for testing out scripts, and
-        // communicating some of the core dbt concepts:
-        //
-        // 1. First, it tests if connection to the destination works.
-        dbtConfig.withDbtArguments("debug")
-        if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt debug Failed.")
-        }
-        // 2. Install any dependencies packages, if any
-        dbtConfig.withDbtArguments("deps")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt deps Failed.")
-        }
-        // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data
-        // sets.
-        // This materializes the CSVs as tables in your target schema.
-        // Note that a typical dbt project does not require this step since dbt assumes your raw
-        // data is
-        // already in your warehouse.
-        dbtConfig.withDbtArguments("seed")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt seed Failed.")
-        }
-        // 4. Run the models:
-        // Note: If this steps fails, it might mean that you need to make small changes to the SQL
-        // in the
-        // models folder to adjust for the flavor of SQL of your target database.
-        dbtConfig.withDbtArguments("run")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt run Failed.")
-        }
-        // 5. Test the output of the models and tables have been properly populated:
-        dbtConfig.withDbtArguments("test")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt test Failed.")
-        }
-        // 6. Generate dbt documentation for the project:
-        // This step is commented out because it takes a long time, but is not vital for Airbyte
-        // dbtConfig.withDbtArguments("docs generate");
-        // if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig))
-        // {
-        // throw new WorkerException("dbt docs generate Failed.");
-        // }
-        runner.close()
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testCustomDbtTransformationsFailure() {
-        if (!normalizationFromDefinition() || !dbtFromDefinition()) {
-            // we require normalization implementation for this destination, because we make sure to
-            // install
-            // required dbt dependency in the normalization docker image in order to run this test
-            // successfully
-            // (we don't actually rely on normalization running anything here though)
-            return
-        }
-
-        val config = getConfig()
-
-        val runner =
-            DbtTransformationRunner(
-                processFactory,
-                DefaultNormalizationRunner(
-                    processFactory,
-                    getNormalizationImageName(),
-                    getNormalizationIntegrationType()
-                )
-            )
-        runner.start()
-        val transformationRoot = Files.createDirectories(jobRoot.resolve("transform"))
-        val dbtConfig =
-            OperatorDbt()
-                .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
-                .withGitRepoBranch("main")
-                .withDockerImage("fishtownanalytics/dbt:0.19.1")
-                .withDbtArguments("debug")
-        if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt debug Failed.")
-        }
-
-        dbtConfig.withDbtArguments("test")
-        Assertions.assertFalse(
-            runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig),
-            "dbt test should fail, as we haven't run dbt run on this project yet"
-        )
-    }
 
     /** Verify the destination uses the namespace field if it is set. */
     @Test
@@ -1284,7 +1082,7 @@ abstract class DestinationAcceptanceTest(
 
         val config = getConfig()
         val defaultSchema = getDefaultSchema(config)
-        runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog)
         retrieveRawRecordsAndAssertSameMessages(catalog, messagesWithNewNamespace, defaultSchema)
     }
 
@@ -1338,7 +1136,7 @@ abstract class DestinationAcceptanceTest(
 
         val config = getConfig()
         val defaultSchema = getDefaultSchema(config)
-        runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog)
         retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema)
     }
 
@@ -1396,7 +1194,7 @@ abstract class DestinationAcceptanceTest(
 
         val config = getConfig()
         try {
-            runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog, false)
+            runSyncAndVerifyStateOutput(config, messagesWithNewNamespace, configuredCatalog)
             // Add to the list of schemas to clean up.
             testSchemas.add(namespaceInCatalog)
         } catch (e: Exception) {
@@ -1464,7 +1262,7 @@ abstract class DestinationAcceptanceTest(
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog)
         val stream = catalog.streams[0]
 
         // Run second sync with new fields on the message
@@ -1518,12 +1316,7 @@ abstract class DestinationAcceptanceTest(
             )
 
         // Run sync and verify that all message were written without failing
-        runSyncAndVerifyStateOutput(
-            config,
-            secondSyncMessagesWithNewFields,
-            configuredCatalog2,
-            false
-        )
+        runSyncAndVerifyStateOutput(config, secondSyncMessagesWithNewFields, configuredCatalog2)
         val destinationOutput =
             retrieveRecords(testEnv, stream.name, getDefaultSchema(config)!!, stream.jsonSchema)
         // Remove state message
@@ -1561,7 +1354,7 @@ abstract class DestinationAcceptanceTest(
             MoreResources.readResource("users_with_generation_id_messages.txt").trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
         val generationId = configuredCatalog.streams[0].generationId
         val stream = configuredCatalog.streams[0].stream
         val destinationOutput =
@@ -1692,7 +1485,7 @@ abstract class DestinationAcceptanceTest(
         val datetimeFieldMeta = toTimeTypeMap(schemasByStreamName, "date-time")
         val timeFieldMeta = toTimeTypeMap(schemasByStreamName, "time")
 
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
         for (stream in configuredCatalog.streams) {
             val name = stream.stream.name
             val schema = stream.stream.jsonSchema
@@ -1776,7 +1569,7 @@ abstract class DestinationAcceptanceTest(
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
-        runSyncAndVerifyStateOutput(config, messagesIn, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messagesIn, configuredCatalog)
 
         // Collect destination data, using the correct transformed schema
         val destinationSchemaStr =
@@ -1950,13 +1743,11 @@ abstract class DestinationAcceptanceTest(
         config: JsonNode,
         messages: List<AirbyteMessage>,
         catalog: ConfiguredAirbyteCatalog,
-        runNormalization: Boolean,
     ) {
         runSyncAndVerifyStateOutput(
             config,
             messages,
             catalog,
-            runNormalization,
             imageName,
             verifyIndividualStateAndCounts
         )
@@ -1967,11 +1758,10 @@ abstract class DestinationAcceptanceTest(
         config: JsonNode,
         messages: List<AirbyteMessage>,
         catalog: ConfiguredAirbyteCatalog,
-        runNormalization: Boolean,
         imageName: String,
         verifyIndividualStateAndCounts: Boolean
     ) {
-        val destinationOutput = runSync(config, messages, catalog, runNormalization, imageName)
+        val destinationOutput = runSync(config, messages, catalog, imageName)
 
         var expected = messages.filter { it.type == Type.STATE }
         var actual = destinationOutput.filter { it.type == Type.STATE }
@@ -2017,7 +1807,6 @@ abstract class DestinationAcceptanceTest(
         config: JsonNode,
         messages: List<AirbyteMessage>,
         catalog: ConfiguredAirbyteCatalog,
-        runNormalization: Boolean,
         imageName: String,
     ): List<AirbyteMessage> {
         val destinationConfig =
@@ -2036,7 +1825,7 @@ abstract class DestinationAcceptanceTest(
         destination.start(
             destinationConfig,
             jobRoot,
-            inDestinationNormalizationFlags(runNormalization)
+            emptyMap(),
         )
         messages.forEach(
             Consumer { message: AirbyteMessage ->
@@ -2061,31 +1850,6 @@ abstract class DestinationAcceptanceTest(
 
         destination.close()
 
-        if (!runNormalization || (supportsInDestinationNormalization())) {
-            return destinationOutput
-        }
-
-        val runner: NormalizationRunner =
-            DefaultNormalizationRunner(
-                processFactory,
-                getNormalizationImageName(),
-                getNormalizationIntegrationType()
-            )
-        runner.start()
-        val normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"))
-        if (
-            !runner.normalize(
-                JOB_ID,
-                JOB_ATTEMPT,
-                normalizationRoot,
-                destinationConfig.destinationConnectionConfiguration,
-                destinationConfig.catalog,
-                null
-            )
-        ) {
-            throw TestHarnessException("Normalization Failed.")
-        }
-        runner.close()
         return destinationOutput
     }
 
@@ -2374,36 +2138,36 @@ abstract class DestinationAcceptanceTest(
         configuredCatalog: ConfiguredAirbyteCatalog,
         messages: List<AirbyteMessage>
     ) {
-        if (normalizationFromDefinition()) {
-            LOGGER.info { "Normalization is supported! Run test with normalization." }
-            runAndCheckWithNormalization(messages, configuredCatalog, catalog)
+        if (supportsTypingDeduping()) {
+            LOGGER.info { "T+D is supported! We will verify the final tables." }
+            runAndCheckWithFinalTables(messages, configuredCatalog, catalog)
         } else {
-            LOGGER.info { "Normalization is not supported! Run test without normalization." }
-            runAndCheckWithoutNormalization(messages, configuredCatalog, catalog)
+            LOGGER.info { "T+D is not supported! We will only verify the raw tables." }
+            runAndCheckWithRawTables(messages, configuredCatalog, catalog)
         }
     }
 
     @Throws(Exception::class)
-    private fun runAndCheckWithNormalization(
+    private fun runAndCheckWithFinalTables(
         messages: List<AirbyteMessage>,
         configuredCatalog: ConfiguredAirbyteCatalog,
         catalog: AirbyteCatalog
     ) {
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         val actualMessages = retrieveNormalizedRecords(catalog, getDefaultSchema(config))
         assertSameMessages(messages, actualMessages, true)
     }
 
     @Throws(Exception::class)
-    private fun runAndCheckWithoutNormalization(
+    private fun runAndCheckWithRawTables(
         messages: List<AirbyteMessage>,
         configuredCatalog: ConfiguredAirbyteCatalog,
         catalog: AirbyteCatalog
     ) {
         val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
         retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config))
     }
 
@@ -2438,13 +2202,12 @@ abstract class DestinationAcceptanceTest(
         }
     }
 
-    private fun supportsNormalization(): Boolean {
-        return supportsInDestinationNormalization() || normalizationFromDefinition()
+    /** Destinations should override this if they provide typing+deduping. */
+    open fun supportsTypingDeduping(): Boolean {
+        return false
     }
 
     companion object {
-        private const val NORMALIZATION_VERSION = "dev"
-
         private const val JOB_ID = "0"
         private const val JOB_ATTEMPT = 0
 

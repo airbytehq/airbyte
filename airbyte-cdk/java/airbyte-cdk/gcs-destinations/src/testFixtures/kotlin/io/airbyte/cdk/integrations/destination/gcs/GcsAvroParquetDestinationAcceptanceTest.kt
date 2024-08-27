@@ -37,7 +37,7 @@ abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUpl
         val config = this.getConfig()
         val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog)
 
         for (stream in catalog.streams) {
             val streamName = stream.name

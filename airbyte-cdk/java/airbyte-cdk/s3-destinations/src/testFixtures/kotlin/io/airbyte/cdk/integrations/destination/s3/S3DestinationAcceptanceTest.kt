@@ -317,7 +317,6 @@ protected constructor(
             config,
             firstSyncMessages,
             catalogPair.first,
-            runNormalization = false,
             "airbyte/destination-s3:0.6.4",
             verifyIndividualStateAndCounts = false,
         )
@@ -329,7 +328,7 @@ protected constructor(
 
         // Run and verify only second sync messages are present.
         val secondSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first)
 
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
@@ -359,7 +358,7 @@ protected constructor(
             getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.APPEND, 42, 0, 1)
         val config = getConfig()
         val firstSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first)
 
         // Run second sync, even though the previous one was incomplete, intentionally incrementing
         // genId and minGenId
@@ -369,7 +368,7 @@ protected constructor(
 
         // Run and verify only second sync messages are present.
         val secondSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first)
 
         // Run third sync.
         val catalogPair3 =
@@ -377,7 +376,7 @@ protected constructor(
 
         // Run and verify only second sync messages are present.
         val thirdSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, thirdSyncMessages, catalogPair3.first, false)
+        runSyncAndVerifyStateOutput(config, thirdSyncMessages, catalogPair3.first)
 
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
@@ -404,7 +403,7 @@ protected constructor(
                 catalogPair.first,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
             )
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first)
 
         // Change the generationId, we always assume platform sends a monotonically increasing
         // number
@@ -413,7 +412,7 @@ protected constructor(
 
         // Run and verify only second sync messages are present.
         val secondSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first)
 
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
@@ -445,11 +444,11 @@ protected constructor(
             )
         assertThrows<TestHarnessException>(
             "Should not succeed the sync when Trace message is INCOMPLETE"
-        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false) }
+        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first) }
 
         // Run second sync with the same messages from the previous failed sync.
         val secondSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair.first)
 
         // verify records are preserved from first failed sync + second sync.
         val defaultSchema = getDefaultSchema(config)
@@ -479,7 +478,7 @@ protected constructor(
             )
         assertThrows<TestHarnessException>(
             "Should not succeed the sync when Trace message is INCOMPLETE"
-        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false) }
+        ) { runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first) }
 
         // Run second failed attempt of same generation
         val catalogPair2 =
@@ -492,7 +491,7 @@ protected constructor(
 
         assertThrows<TestHarnessException>(
             "Should not succeed the sync when Trace message is INCOMPLETE"
-        ) { runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false) }
+        ) { runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first) }
 
         // Verify our delayed delete logic creates no data downtime.
         val defaultSchema = getDefaultSchema(config)
@@ -507,7 +506,7 @@ protected constructor(
         val catalogPair3 =
             getTestCatalog(SyncMode.FULL_REFRESH, DestinationSyncMode.OVERWRITE, 43, 13, 13)
         val thirdSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, thirdSyncMessages, catalogPair3.first, false)
+        runSyncAndVerifyStateOutput(config, thirdSyncMessages, catalogPair3.first)
 
         retrieveRawRecordsAndAssertSameMessages(
             catalogPair.second,
@@ -539,7 +538,7 @@ protected constructor(
                 catalogPair.first,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
             )
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first)
 
         // We need to make sure that other streams\tables\files in the same location will not be
         // affected\deleted\overridden by our activities during first, second or any future sync.
@@ -568,11 +567,11 @@ protected constructor(
                 message.trace.streamStatus.streamDescriptor.name = dummyCatalogStream
             }
         // sync dummy data
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog)
 
         // Run second sync
         val secondSyncMessages: List<AirbyteMessage> = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair.first)
 
         // Verify records of both syncs are preserved.
         val defaultSchema = getDefaultSchema(config)
@@ -610,11 +609,11 @@ protected constructor(
                 catalogPair.first,
                 AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE,
             )
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, firstSyncMessages, catalogPair.first)
 
         // Second sync
         val secondSyncMessages: List<AirbyteMessage> = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair.first)
 
         // Verify records
         val defaultSchema = getDefaultSchema(config)
@@ -650,7 +649,6 @@ protected constructor(
             config,
             firstSyncMessages,
             catalogPair.first,
-            runNormalization = false,
             "airbyte/destination-s3:0.6.4",
             verifyIndividualStateAndCounts = false,
         )
@@ -663,7 +661,7 @@ protected constructor(
 
         // Run and verify only second sync messages are present.
         val secondSyncMessages = getSyncMessagesFixture2()
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first, false)
+        runSyncAndVerifyStateOutput(config, secondSyncMessages, catalogPair2.first)
 
         val defaultSchema = getDefaultSchema(config)
         retrieveRawRecordsAndAssertSameMessages(
