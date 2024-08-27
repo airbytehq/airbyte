@@ -42,10 +42,9 @@ class MockSource(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         job_orchestrator_factory_fn = lambda stream_slices: AsyncJobOrchestrator(
-            MockAsyncJobRepository(create_job_requester=MagicMock()),
-            stream_slices,
+            MockAsyncJobRepository(), stream_slices,
         )
-        
+
         return [
             DeclarativeStream(
                 retriever=AsyncRetriever(
@@ -77,8 +76,8 @@ class JobDeclarativeStreamTest(TestCase):
 
     def test_godo(self) -> None:
         output = read(
-            self._source,
-            self._CONFIG,
+            self._source, 
+            self._CONFIG, 
             CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_A_STREAM_NAME)).build()
         )
 

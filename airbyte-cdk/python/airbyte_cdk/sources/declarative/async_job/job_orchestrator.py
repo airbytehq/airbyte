@@ -1,13 +1,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 import logging
 import time
-from typing import Any, Iterable, List, Mapping, Set
+from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
+
+LOGGER = logging.getLogger("airbyte")
 
 
 class AsyncPartition:
@@ -51,56 +54,148 @@ class AsyncJobOrchestrator:
     def __init__(self, job_repository: AsyncJobRepository, slices: Iterable[StreamSlice]):
         self._job_repository: AsyncJobRepository = job_repository
         self._slice_iterator = iter(slices)
-        self._logger = logging.getLogger("airbyte")
-
         self._running_partitions: List[AsyncPartition] = []
-
-    def create_and_get_completed_partitions(self) -> Iterable[AsyncPartition]:
-        while True:
-            self._start_jobs()
-            if not self._running_partitions:
-                break
-
-            self._job_repository.update_jobs_status(self._get_running_jobs())
-
-            current_running_partitions: List[AsyncPartition] = []
-            for partition in self._running_partitions:
-                if partition.status == AsyncJobStatus.COMPLETED:
-                    job_ids = list(map(lambda job: job.api_job_id(), {job for job in partition.jobs}))
-                    self._logger.info(f"The following jobs for stream slice {partition.stream_slice} have been completed: {job_ids}.")
-                    yield partition
-                elif partition.status == AsyncJobStatus.RUNNING:
-                    current_running_partitions.append(partition)
-                else:
-                    # FIXME salesforce will require retries
-                    # FIXME source-salesforce deletes the job if status is "Aborted" or "Failed"
-                    status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
-                    raise AirbyteTracedException(
-                        message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
-                        failure_type=FailureType.system_error,
-                    )
-
-            self._running_partitions = current_running_partitions
-
-            if self._logger.isEnabledFor(logging.DEBUG):
-                # if statement in order to avoid string formatting if we're not in debug mode
-                self._logger.debug(
-                    f"Polling status completed. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
-                )
-            time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
 
     def _start_jobs(self) -> None:
         """
+        Start the jobs for each slice in the slice iterator.
+        This method iterates over the slice iterator and starts a job for each slice.
+        The started jobs are added to the running partitions.
+        Returns:
+            None
+
         TODO Eventually, we need to cap the number of concurrent jobs.
         However, the first iteration is for sendgrid which only has one job.
         """
+
         for _slice in self._slice_iterator:
             job = self._job_repository.start(_slice)
             self._running_partitions.append(AsyncPartition([job], _slice))
 
     def _get_running_jobs(self) -> Set[AsyncJob]:
+        """
+        Returns a set of running AsyncJob objects.
+
+        Returns:
+            Set[AsyncJob]: A set of AsyncJob objects that are currently running.
+        """
         return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.RUNNING}
 
+    def _update_jobs_status(self) -> None:
+        """
+        Update the status of all running jobs in the repository.
+        """
+        running_jobs = self._get_running_jobs()
+        self._job_repository.update_jobs_status(running_jobs)
+
+    def _wait_on_status_update(self) -> None:
+        """
+        Waits for a specified amount of time between status updates.
+
+        This method is used to introduce a delay between status updates in order to avoid excessive polling.
+        The duration of the delay is determined by the value of `_WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS`.
+
+        Returns:
+            None
+        """
+        time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
+
+    def _process_completed_partition(self, partition: AsyncPartition) -> AsyncPartition:
+        """
+        Process a completed partition.
+        Args:
+            partition (AsyncPartition): The completed partition to process.
+        Returns:
+            AsyncPartition: The processed partition.
+        """
+        job_ids = list(map(lambda job: job.api_job_id(), {job for job in partition.jobs}))
+        LOGGER.info(f"The following jobs for stream slice {partition.stream_slice} have been completed: {job_ids}.")
+        # remove completed partitions from the list of running partitions
+        self._running_partitions.remove(partition)
+
+        return partition
+
+    def _process_partition_with_other_status(self, partition: AsyncPartition) -> AirbyteTracedException:
+        """
+        Process a partition with other status.
+        Args:
+            partition (AsyncPartition): The partition to process.
+        Returns:
+            AirbyteTracedException: An exception indicating that at least one job could not be completed.
+        Raises:
+            AirbyteTracedException: If at least one job could not be completed.
+        """
+        # FIXME salesforce will require retries
+        # FIXME source-salesforce deletes the job if status is "Aborted" or "Failed"
+
+        status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
+        raise AirbyteTracedException(
+            message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
+            failure_type=FailureType.system_error,
+        )
+
+    def _process_running_partitions(self) -> Generator[AsyncPartition, Any, None]:
+        """
+        Process the running partitions.
+
+        Yields:
+            AsyncPartition: The processed partition.
+
+        Raises:
+            Any: Any exception raised during processing.
+        """
+        for partition in self._running_partitions:
+            if partition.status == AsyncJobStatus.COMPLETED:
+                yield self._process_completed_partition(partition)
+            elif partition.status != AsyncJobStatus.RUNNING:
+                self._process_partition_with_other_status(partition)
+
+    def _log_polling_partitions(self) -> None:
+        """
+        Logs the status of the polling partitions.
+
+        This method logs the number of running partitions and the wait time before the next poll.
+
+        Returns:
+            None
+        """
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            # if statement in order to avoid string formatting if we're not in debug mode
+            LOGGER.debug(
+                f"Polling status completed. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
+            )
+
+    def create_and_get_completed_partitions(self) -> Iterable[Optional[AsyncPartition]]:
+        """
+        Creates and retrieves completed partitions.
+        This method continuously starts jobs, updates job status, processes running partitions,
+        logs polling partitions, and waits for status updates. It yields completed partitions
+        as they become available.
+
+        Returns:
+            An iterable of completed partitions, represented as AsyncPartition objects.
+            Each partition is wrapped in an Optional, allowing for None values.
+        """
+        while True:
+            self._start_jobs()
+            if not self._running_partitions:
+                break
+
+            self._update_jobs_status()
+            yield from self._process_running_partitions()
+
+            self._log_polling_partitions()
+            self._wait_on_status_update()
+
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:
+        """
+        Fetches records from the given partition's jobs.
+
+        Args:
+            partition (AsyncPartition): The partition containing the jobs.
+
+        Yields:
+            Iterable[Mapping[str, Any]]: The fetched records from the jobs.
+        """
         for job in partition.jobs:
             yield from self._job_repository.fetch_records(job)

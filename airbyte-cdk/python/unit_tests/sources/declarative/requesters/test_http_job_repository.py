@@ -1,8 +1,10 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Mapping
 from unittest import TestCase
 from unittest.mock import Mock
 
-from airbyte_cdk import DpathExtractor, HttpRequester, BearerAuthenticator, JsonDecoder, HttpMethod
+from airbyte_cdk import BearerAuthenticator, DpathExtractor, HttpMethod, HttpRequester, JsonDecoder
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler

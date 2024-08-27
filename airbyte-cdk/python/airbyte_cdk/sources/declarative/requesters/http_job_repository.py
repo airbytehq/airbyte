@@ -3,20 +3,19 @@ import os
 import uuid
 from contextlib import closing
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, Set, Optional, Tuple, Dict
+from typing import Any, Dict, Iterable, Mapping, Optional, Set, Tuple
 
 import pandas as pd
 import requests
-from airbyte_protocol.models import FailureType
-from numpy import nan
-from requests import Response
-
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
+from numpy import nan
+from requests import Response
 
 
 @dataclass
@@ -49,8 +48,12 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
     def update_jobs_status(self, jobs: Set[AsyncJob]) -> None:
         for job in jobs:
-            polling_response = self.polling_job_requester.send_request(stream_slice={"create_job_response": self._create_job_response_by_id[job.api_job_id()]})
-            status = next(self.status_extractor.extract_records(polling_response), None)  # the naming is really weird here but it does not extract records but a single status
+            polling_response = self.polling_job_requester.send_request(
+                stream_slice={"create_job_response": self._create_job_response_by_id[job.api_job_id()]}
+            )
+            status = next(
+                self.status_extractor.extract_records(polling_response), None
+            )  # the naming is really weird here but it does not extract records but a single status
             status = self.status_mapping[status]
             job.update_status(status)
 
