@@ -30,17 +30,14 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.from
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
-import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.time.Instant
 import java.util.*
 import java.util.stream.Collectors
-import javax.sql.DataSource
-import javax.xml.crypto.Data
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.apache.commons.text.StringSubstitutor
-import org.codehaus.jettison.json.JSONObject
+import org.json.JSONObject
 import org.jooq.SQLDialect
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,7 +45,7 @@ import org.slf4j.LoggerFactory
 class SnowflakeDestinationHandler(
     databaseName: String,
     private val database: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
 ) :
     JdbcDestinationHandler<SnowflakeState>(
         databaseName,
@@ -75,10 +72,7 @@ class SnowflakeDestinationHandler(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
 
-        //LOGGER.info("Entering getFinalTableRowCount");
-
         val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-
         var showColumnsResult: List<JsonNode> = listOf()
 
         try {
@@ -122,26 +116,12 @@ class SnowflakeDestinationHandler(
 
         } catch (e: SQLException) {
 
-            //if(showColumnsResult != null && showColumnsResult.stream() != null) {
-            //    showColumnsResult.stream().close()
-            //}
-
             showColumnsResult.stream().close()
 
-            LOGGER.error("SHOW command usage caused exception", e)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exception. Not throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
+            //Not re-throwing the exception since the SQLException occurs when the table does not exist
             //throw e
 
         }
-
-        LOGGER.info("tableRowCountsFromShowQuery=" + tableRowCountsFromShowQuery)
 
         return tableRowCountsFromShowQuery
     }
@@ -152,73 +132,22 @@ class SnowflakeDestinationHandler(
         id: StreamId,
         suffix: String,
     ): InitialRawTableStatus {
+
         val rawTableName = id.rawName + suffix
-
-
-        //TODO: Need to check if this query is using information_schema on Snowflake
-
-        //var tableExists = false
-        /*
-        var tableExists =
-            database.executeMetadataQuery { databaseMetaData: DatabaseMetaData ->
-                LOGGER.info(
-                    "Retrieving table from Db metadata: {} {}",
-                    id.rawNamespace,
-                    rawTableName
-                )
-                try {
-                    val rs =
-                        databaseMetaData.getTables(
-                            databaseName,
-                            id.rawNamespace,
-                            rawTableName,
-                            null
-                        )
-                    // When QUOTED_IDENTIFIERS_IGNORE_CASE is set to true, the raw table is
-                    // interpreted as uppercase
-                    // in db metadata calls. check for both
-                    val rsUppercase =
-                        databaseMetaData.getTables(
-                            databaseName,
-                            id.rawNamespace.uppercase(),
-                            rawTableName.uppercase(),
-                            null
-                        )
-                    rs.next() || rsUppercase.next()
-                } catch (e: SQLException) {
-                    LOGGER.error("Failed to retrieve table metadata", e)
-                    throw RuntimeException(e)
-                }
-            }
-
-
-
-         */
-
-
         var tableExists = false
-
         var showTablesResult: List<JsonNode> = listOf()
 
         try {
 
             val showTablesQuery =
                 String.format(
-
                     """
                         SHOW TABLES LIKE '%s' IN "%s"."%s";
                     """.trimIndent(),
                     rawTableName,
                     databaseName,
                     id.rawNamespace,
-
                     )
-
-//            val showTablesResult: List<JsonNode> = database.queryJsons(
-//                showTablesQuery,
-//            )
-
-            //showTablesResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showTablesQuery)
 
             showTablesResult = database.queryJsons(
                 showTablesQuery,
@@ -230,70 +159,12 @@ class SnowflakeDestinationHandler(
 
         } catch (e: SQLException) {
 
-//            if(showTablesResult != null && showTablesResult.stream() != null) {
-//                showTablesResult.stream().close()
-//            }
-
             showTablesResult.stream().close()
 
-            LOGGER.error("SHOW command usage caused exception", e)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exception. Not throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
-            //throw e
-
-
-        }
-
-
-
-
-/*
-
-       //No need to do another query with uppercase names since show tables query is case-insensitive
-
-        try {
-            val showColumnsQuery =
-                String.format(
-
-                    """
-                        SHOW TABLES LIKE '%s' IN %s.%s;
-                                """.trimIndent(),
-                    rawTableName.uppercase(),
-                    databaseName,
-                    id.rawNamespace.uppercase(),
-
-                    )
-
-            val showColumnsResult: List<JsonNode> = database.queryJsons(
-                showColumnsQuery,
-            )
-
-            tableExists = true
-
-        } catch (e: Throwable) {
-
-            LOGGER.error("SHOW command usage caused exception", e)
-
-            e.printStackTrace()
-
-            //TODO: Need to throw exception. Not throwing exception during development
-            // Negative tests fail because the schema does not exist but the SHOW table throws error
-            // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-            // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
+            //Not re-throwing the exception since the SQLException occurs when the table does not exist
             //throw e
 
         }
-
-
- */
-
 
         if (!tableExists) {
             return InitialRawTableStatus(
@@ -804,24 +675,9 @@ class SnowflakeDestinationHandler(
                 }
 
             } catch (e: SQLException) {
-
-//                if(showColumnsResult != null && showColumnsResult.stream() != null) {
-//                    showColumnsResult.stream().close()
-//                }
-
                 showColumnsResult.stream().close()
 
-                LOGGER.error("SHOW command usage caused exception", e)
-
-                LOGGER.error("existingTablesFromShowQuery=" + existingTablesFromShowQuery)
-
-                e.printStackTrace()
-
-                //TODO: Need to throw exceptionNot throwing exception during development
-                // Negative tests fail because the schema does not exist but the SHOW table throws error
-                // net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:
-                // Table 'INTEGRATION_TEST_DESTINATION.SQL_GENERATOR_TEST_PQCJYMURVO.USERS_FINAL' does not exist or not authorized.
-
+                //Not re-throwing the exception since the SQLException occurs when the table does not exist
                 //throw e
 
             }
@@ -829,8 +685,6 @@ class SnowflakeDestinationHandler(
             return existingTablesFromShowQuery
 
         }
-
     }
-
 }
 

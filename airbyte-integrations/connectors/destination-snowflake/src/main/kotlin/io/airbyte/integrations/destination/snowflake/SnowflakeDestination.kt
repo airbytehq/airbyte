@@ -224,7 +224,7 @@ constructor(
                     nameTransformer,
                     database,
                     databaseName,
-                    sqlGenerator
+                    sqlGenerator,
                 ),
                 SnowflakeAbMetaAndGenIdMigration(database),
             )
