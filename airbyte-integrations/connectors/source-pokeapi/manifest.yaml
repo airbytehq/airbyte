@@ -1,4 +1,4 @@
-version: 0.78.5
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -46,8 +46,8 @@ spec:
     properties:
       pokemon_name:
         type: string
-        title: Pokemon Name
         description: Pokemon requested from the API.
+        title: Pokemon Name
         pattern: ^[a-z0-9_\-]+$
         enum:
           - bulbasaur
