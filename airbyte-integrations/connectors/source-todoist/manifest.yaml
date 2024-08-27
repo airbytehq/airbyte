@@ -1,4 +1,4 @@
-version: 0.79.1
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -51,7 +51,7 @@ definitions:
     url_base: https://api.todoist.com/rest/v2
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config['token'] }}"
+      api_token: '{{ config["token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/tasks"
@@ -72,17 +72,17 @@ spec:
         order: 0
     additionalProperties: true
 
-metadata:
-  autoImportSchema:
-    tasks: false
-    projects: false
-
 schemas:
   tasks:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties:
+      description:
+        type:
+          - "null"
+          - string
+        description: Additional details or notes about the task
       assignee_id:
         type:
           - "null"
@@ -113,12 +113,8 @@ schemas:
           - "null"
           - string
         description: The unique identifier of the user who created the task
-      description:
-        type:
-          - "null"
-          - string
-        description: Additional details or notes about the task
       due:
+        description: The due date and time of the task
         anyOf:
           - type:
               - "null"
@@ -143,7 +139,6 @@ schemas:
                 type:
                   - "null"
                   - string
-        description: The due date and time of the task
       duration:
         type:
           - "null"
