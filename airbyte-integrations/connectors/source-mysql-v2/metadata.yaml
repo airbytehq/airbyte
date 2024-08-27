@@ -13,7 +13,7 @@ data:
   dockerRepository: airbyte/source-mysql-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/firetruck
   githubIssueLabel: source-mysql-v2
-  icon: oracle.svg
+  icon: mysql.svg
   license: Airbyte Enterprise
   name: Mysqlv2 Source
   registryOverrides:
@@ -25,13 +25,4 @@ data:
   supportLevel: community
   tags:
     - language:java
-  connectorTestSuitesOptions:
-    - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE_ORACLE_PERFORMANCE_TEST_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
