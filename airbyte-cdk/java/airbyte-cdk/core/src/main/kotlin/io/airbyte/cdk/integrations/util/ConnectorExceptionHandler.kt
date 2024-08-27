@@ -182,7 +182,10 @@ open class ConnectorExceptionHandler {
         for (error in connectorErrorDictionary) {
             if (
                 error.failureType == failureType &&
-                    e!!.message?.lowercase()?.matches(error.regexMatchingPattern.lowercase().toRegex())!!
+                    e!!
+                        .message
+                        ?.lowercase()
+                        ?.matches(error.regexMatchingPattern.lowercase().toRegex())!!
             )
                 return true
         }
@@ -200,7 +203,8 @@ open class ConnectorExceptionHandler {
             return true
         }
         for (error in connectorErrorDictionary) {
-            if (e.message!!.lowercase().matches(error.regexMatchingPattern.lowercase().toRegex())) return true
+            if (e.message!!.lowercase().matches(error.regexMatchingPattern.lowercase().toRegex()))
+                return true
         }
         return false
     }
