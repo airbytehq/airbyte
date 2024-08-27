@@ -7,7 +7,7 @@ import pkgutil
 import re
 from copy import deepcopy
 from importlib import metadata
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 
 import yaml
 from airbyte_cdk.models import (
