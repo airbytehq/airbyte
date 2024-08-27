@@ -25,8 +25,7 @@ class TransientErrorException(
 ) : ConnectorErrorException(displayMessage, exception)
 
 /** See [io.airbyte.cdk.output.SystemError]. */
-class SystemErrorException
-private constructor(
+class SystemErrorException(
     displayMessage: String?,
     exception: Throwable? = null,
 ) : ConnectorErrorException(displayMessage, exception)
