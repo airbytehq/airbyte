@@ -6,6 +6,7 @@ import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
 import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
 import io.airbyte.cdk.h2source.H2SourceOperations
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import java.sql.JDBCType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -17,7 +18,12 @@ class JdbcMetadataQuerierTest {
         h2.execute("CREATE TABLE kv (k INT PRIMARY KEY, v VARCHAR(60))")
     }
 
-    val factory = JdbcMetadataQuerier.Factory(H2SourceOperations(), H2SourceOperations())
+    val factory =
+        JdbcMetadataQuerier.Factory(
+            selectQueryGenerator = H2SourceOperations(),
+            fieldTypeMapper = H2SourceOperations(),
+            constants = DefaultJdbcConstants(),
+        )
 
     @Test
     fun test() {
