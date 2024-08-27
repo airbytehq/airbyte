@@ -146,7 +146,7 @@ for more information.
 | Version | Date       | Pull Request                                             | Subject                                                                                                                   |
 
 | :------ |:-----------|:---------------------------------------------------------| :------------------------------------------------------------------------------------------------------------------------ |
-| 3.2.0 | 2024-08-27 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v4.5.4 |
+| 3.2.0 | 2024-08-27 | [44840](https://github.com/airbytehq/airbyte/pull/44840) | Migrate to CDK v4.5.4 |
 | 3.1.0   | 2024-07-13 | [41937](https://github.com/airbytehq/airbyte/pull/41937) | New metrics added for `StoryInsights` and `MediaInsights` streams.                                                        |
 | 3.0.22 | 2024-07-27 | [42721](https://github.com/airbytehq/airbyte/pull/42721) | Update dependencies |
 | 3.0.21 | 2024-07-20 | [42346](https://github.com/airbytehq/airbyte/pull/42346) | Update dependencies |
