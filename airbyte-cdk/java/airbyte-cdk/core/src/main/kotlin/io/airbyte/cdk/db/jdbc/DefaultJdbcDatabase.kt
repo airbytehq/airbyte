@@ -115,7 +115,6 @@ constructor(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
         recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
-
         var connection = dataSource.connection
 
         try {
