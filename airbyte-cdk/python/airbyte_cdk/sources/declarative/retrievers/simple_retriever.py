@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 from dataclasses import InitVar, dataclass, field
 from functools import partial
 from itertools import islice
@@ -229,7 +230,7 @@ class SimpleRetriever(Retriever):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Record]:
-        if not response:
+        if response is None:
             self._last_response = None
             return []  # type: ignore
 
