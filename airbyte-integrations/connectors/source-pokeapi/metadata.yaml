@@ -16,14 +16,14 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
   connectorSubtype: api
   connectorType: source
-  definitionId: cb3f4d1a-67e2-4515-8756-ddb31fd31eb4
+  definitionId: 54ad8137-8f55-4e18-9b42-5cd18dbdf40c
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: icon.svg
   license: MIT
   name: PokeAPI
-  releaseDate: 2024-08-23
+  releaseDate: 2024-08-27
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
