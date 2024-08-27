@@ -1,10 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+
 import json
 from unittest import TestCase
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.sources.declarative.async_job.job import AsyncJobStatus
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
@@ -76,9 +78,9 @@ class HttpJobRepositoryTest(TestCase):
         )
 
         self._repository = AsyncHttpJobRepository(
-            create_job_requester=self._create_job_requester,
-            polling_job_requester=self._polling_job_requester,
-            download_job_requester=self._download_job_requester,
+            creation_requester=self._create_job_requester,
+            polling_requester=self._polling_job_requester,
+            download_requester=self._download_job_requester,
             status_extractor=DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["status"], config={}, parameters={} or {}),
             status_mapping={
                 "ready": AsyncJobStatus.COMPLETED,

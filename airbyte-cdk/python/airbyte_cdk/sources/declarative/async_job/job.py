@@ -1,17 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+
 from datetime import timedelta
-from enum import Enum
 from typing import Optional
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.timer import Timer
 
-
-class AsyncJobStatus(Enum):
-    RUNNING = "RUNNING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-    TIMED_OUT = "TIMED_OUT"
+from .status import AsyncJobStatus
 
 
 class AsyncJob:

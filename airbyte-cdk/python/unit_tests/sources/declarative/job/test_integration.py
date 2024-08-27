@@ -1,13 +1,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple
 from unittest import TestCase
 
-from airbyte_cdk import AbstractSource, DeclarativeStream, SinglePartitionRouter, Stream, StreamSlice, init_logger
-from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
+from airbyte_cdk import AbstractSource, DeclarativeStream, SinglePartitionRouter, Stream, StreamSlice
+from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.retrievers.async_retriever import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
@@ -48,7 +50,8 @@ class MockSource(AbstractSource):
         return [
             DeclarativeStream(
                 retriever=AsyncRetriever(
-                    create_job_requester=MagicMock(),
+                    name="test_async_retriever",
+                    primary_key="id",
                     config=MagicMock(),
                     record_selector=MagicMock(),
                     stream_slicer=SinglePartitionRouter({}),

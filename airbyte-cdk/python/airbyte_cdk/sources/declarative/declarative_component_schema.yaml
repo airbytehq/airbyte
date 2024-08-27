@@ -2342,13 +2342,36 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  AsyncJobStatusMap:
+    description: Matches the api job status to Async Job Status.
+    type: object
+    required:
+      - running
+      - completed
+      - failed
+      - timeout
+    properties:
+      type:
+        type: string
+        enum: [AsyncJobStatusMap]
+      running:
+        type: string
+      completed:
+        type: string
+      failed:
+        type: string
+      timeout:
+        type: string
   AsyncRetriever:
     description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object
     required:
       - type
       - record_selector
-      - create_job_requester
+      - status_mapping
+      - creation_requester
+      - polling_requester
+      - download_requester
     properties:
       type:
         type: string
@@ -2356,8 +2379,32 @@ definitions:
       record_selector:
         description: Component that describes how to extract records from a HTTP response.
         "$ref": "#/definitions/RecordSelector"
-      create_job_requester:
-        description: Requester component that describes how to prepare HTTP requests to send to the source API.
+      status_mapping:
+        description: Async Job Status to Airbyte CDK Async Job Status mapping.
+        anyOf:
+          - "$ref": "#/definitions/AsyncJobStatusMap"
+      status_extractor:
+        description: Responsible for fetching the actual status of the async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      urls_extractor:
+        description: Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      creation_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      polling_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      download_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"

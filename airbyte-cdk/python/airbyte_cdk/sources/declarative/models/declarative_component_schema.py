@@ -881,6 +881,14 @@ class LegacySessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class AsyncJobStatusMap(BaseModel):
+    type: Optional[Literal['AsyncJobStatusMap']] = None
+    running: str
+    completed: str
+    failed: str
+    timeout: str
+
+
 class ValueType(Enum):
     string = 'string'
     number = 'number'
@@ -1613,17 +1621,27 @@ class AsyncRetriever(BaseModel):
         ...,
         description='Component that describes how to extract records from a HTTP response.',
     )
-    create_job_requester: Union[CustomRequester, HttpRequester] = Field(
-        ...,
-        description='Requester component that describes how to prepare HTTP requests to send to the source API.',
+    status_mapping: AsyncJobStatusMap = Field(
+        ..., description='Async Job Status to Airbyte CDK Async Job Status mapping.'
     )
-    paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
+    status_extractor: Optional[Union[CustomRecordExtractor, DpathExtractor]] = Field(
+        None, description='Responsible for fetching the actual status of the async job.'
+    )
+    urls_extractor: Optional[Union[CustomRecordExtractor, DpathExtractor]] = Field(
         None,
-        description="Paginator component that describes how to navigate through the API's pages.",
+        description='Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.',
     )
-    ignore_stream_slicer_parameters_on_paginated_requests: Optional[bool] = Field(
-        False,
-        description='If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.',
+    creation_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
+        None,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.',
+    )
+    polling_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
+        None,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.',
+    )
+    download_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
+        None,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.',
     )
     partition_router: Optional[
         Union[

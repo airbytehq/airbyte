@@ -5,8 +5,9 @@ import time
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
-from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
+from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
@@ -73,7 +74,12 @@ class AsyncPartition:
 class AsyncJobOrchestrator:
     _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 5
 
-    def __init__(self, job_repository: AsyncJobRepository, slices: Iterable[StreamSlice], number_of_retries: Optional[int] = None):
+    def __init__(
+        self,
+        job_repository: AsyncJobRepository,
+        slices: Iterable[StreamSlice],
+        number_of_retries: Optional[int] = None,
+    ) -> None:
         self._job_repository: AsyncJobRepository = job_repository
         self._slice_iterator = iter(slices)
         self._running_partitions: List[AsyncPartition] = []

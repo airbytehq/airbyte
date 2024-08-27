@@ -7,21 +7,16 @@ from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobO
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
-from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
-from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-from typing_extensions import Literal
 
 
 @dataclass
 class AsyncRetriever(Retriever):
-    create_job_requester: Requester
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     job_orchestrator_factory: Callable[[Iterable[StreamSlice]], AsyncJobOrchestrator]

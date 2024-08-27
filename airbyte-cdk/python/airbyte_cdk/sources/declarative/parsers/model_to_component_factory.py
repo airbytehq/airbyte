@@ -45,6 +45,7 @@ from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncJobStatusMap as AsyncJobStatusMapModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncRetriever as AsyncRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
@@ -153,6 +154,7 @@ ComponentDefinition = Mapping[str, Any]
 
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatusMap
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 
 
@@ -235,6 +237,7 @@ class ModelToComponentFactory:
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
             AsyncRetrieverModel: self.create_async_retriever,
+            AsyncJobStatusMapModel: self.create_async_job_status_mapping,
         }
 
         # Needed for the case where we need to perform a second parse on the fields of a custom component
@@ -1168,6 +1171,9 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
+    def create_async_job_status_mapping(self, model: AsyncJobStatusMapModel, config: Config, **kwargs: Any) -> AsyncJobStatusMap:
+        return AsyncJobStatusMap(model=model, parameters={})
+
     def create_async_retriever(
         self,
         model: AsyncRetrieverModel,
@@ -1189,19 +1195,26 @@ class ModelToComponentFactory:
             transformations=transformations,
             client_side_incremental_sync=client_side_incremental_sync,
         )
-
-        create_job_requester = self._create_component_from_model(
-            model=model.create_job_requester, decoder=decoder, config=config, name=name
-        )
-        job_repository: AsyncJobRepository = AsyncHttpJobRepository(create_job_requester=create_job_requester)
-        job_orchestrator_factory = lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices)
-
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+        creation_requester = self._create_component_from_model(model=model.creation_requester, decoder=decoder, config=config, name=name)
+        polling_requester = self._create_component_from_model(model=model.polling_requester, decoder=decoder, config=config, name=name)
+        download_requester = self._create_component_from_model(model=model.download_requester, decoder=decoder, config=config, name=name)
+        status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
+        urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
+        status_mapping = self._create_component_from_model(model=model.status_mapping, config=config, name=name)
+        job_repository: AsyncJobRepository = AsyncHttpJobRepository(
+            creation_requester=creation_requester,
+            polling_requester=polling_requester,
+            download_requester=download_requester,
+            status_extractor=status_extractor,
+            status_mapping=status_mapping.parse_input(),
+            urls_extractor=urls_extractor,
+        )
+        job_orchestrator_factory = lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices)
 
         return AsyncRetriever(
             name=name,
             primary_key=primary_key,
-            create_job_requester=create_job_requester,
             job_orchestrator_factory=job_orchestrator_factory,
             record_selector=record_selector,
             stream_slicer=stream_slicer,

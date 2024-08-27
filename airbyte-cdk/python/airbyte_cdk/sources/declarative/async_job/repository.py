@@ -6,7 +6,6 @@ from typing import Any, Iterable, Mapping, Set
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
-from airbyte_cdk.sources.declarative.requesters.requester import Requester
 
 
 @dataclass

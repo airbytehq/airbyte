@@ -1,4 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+
 import os
 import uuid
 from contextlib import closing
@@ -7,8 +9,9 @@ from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import pandas as pd
 import requests
-from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
+from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.types import StreamSlice
@@ -20,9 +23,9 @@ from requests import Response
 
 @dataclass
 class AsyncHttpJobRepository(AsyncJobRepository):
-    create_job_requester: Requester
-    polling_job_requester: Requester
-    download_job_requester: Requester
+    creation_requester: Requester
+    polling_requester: Requester
+    download_requester: Requester
     status_extractor: DpathExtractor
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
@@ -35,10 +38,10 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         self._DOWNLOAD_CHUNK_SIZE = 1024 * 1024 * 10
 
     def start(self, stream_slice: StreamSlice) -> AsyncJob:
-        response: Optional[requests.Response] = self.create_job_requester.send_request(stream_slice=stream_slice)
+        response: Optional[requests.Response] = self.creation_requester.send_request(stream_slice=stream_slice)
         if not response:
             raise AirbyteTracedException(
-                internal_message="Always expect a response or an exception from create_job_requester",
+                internal_message="Always expect a response or an exception from creation_requester",
                 failure_type=FailureType.system_error,
             )
 
@@ -49,7 +52,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
     def update_jobs_status(self, jobs: Iterable[AsyncJob]) -> None:
         for job in jobs:
-            polling_response: requests.Response = self.polling_job_requester.send_request(
+            polling_response: requests.Response = self.polling_requester.send_request(
                 stream_slice=StreamSlice(
                     partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]}, cursor_slice={}
                 )
@@ -72,7 +75,6 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):  # type: ignore  # the typing is really weird here but it does not extract records but any and we assume the connector developer has configured this properly
             # FIXME salesforce will require pagination here
             file_path, encoding = self._download_to_file(url)
-            print("downloaded")
             yield from self._read_with_chunks(file_path, encoding)
 
         yield from []
@@ -81,7 +83,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
     def _download_to_file(self, url: str) -> Tuple[str, str]:
         tmp_file = str(uuid.uuid4())
-        streamed_response = self.download_job_requester.send_request(stream_slice=StreamSlice(partition={"url": url}, cursor_slice={}))
+        streamed_response = self.download_requester.send_request(stream_slice=StreamSlice(partition={"url": url}, cursor_slice={}))
         with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
             response_encoding = self._get_response_encoding(response.headers or {})
             for chunk in response.iter_content(chunk_size=self._DOWNLOAD_CHUNK_SIZE):
@@ -112,7 +114,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         return self._DEFAULT_ENCODING
 
-    def _filter_null_bytes(self, b: bytes):
+    def _filter_null_bytes(self, b: bytes) -> bytes:
         """
         https://github.com/airbytehq/airbyte/issues/8300
         """
