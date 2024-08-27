@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, Generator, Mapping
 
 import requests
+from orjson import orjson
+
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 logger = logging.getLogger("airbyte")
@@ -72,4 +73,4 @@ class JsonlDecoder(Decoder):
         # TODO???: set delimiter? usually it is `\n` but maybe it would be useful to set optional?
         #  https://github.com/airbytehq/airbyte-internal-issues/issues/8436
         for record in response.iter_lines():
-            yield json.loads(record)
+            yield orjson.loads(record)
