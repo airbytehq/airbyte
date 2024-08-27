@@ -1,4 +1,4 @@
-version: 4.3.0
+version: 4.5.4
 
 type: DeclarativeSource
 
@@ -44,6 +44,20 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2021-01-01T12:00:00.000000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_at_after
+          inject_into: request_parameter
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -89,6 +103,20 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2021-01-01T12:00:00.000000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_at_after
+          inject_into: request_parameter
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -131,6 +159,20 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2021-01-01T12:00:00.000000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_at_after
+          inject_into: request_parameter
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -173,6 +215,20 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2021-01-01T12:00:00.000000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_at_after
+          inject_into: request_parameter
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -215,6 +271,20 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: last_modified_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "2021-01-01T12:00:00.000000Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_at_after
+          inject_into: request_parameter
       transformations:
         - type: RemoveFields
           field_pointers:
@@ -813,28 +883,35 @@ metadata:
   testedStreams:
     buyers:
       hasRecords: true
-      streamHash: ad3b77e5e4bc0f26045868015a0212df38310005
+      streamHash: 42df9768f201d8c6f8e4e74dc1c52038c3f97f0c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     listings:
       hasRecords: true
-      streamHash: 9e391351ec531c781570e3cf80e5cd68f4e5d8ca
+      streamHash: 531bc82045821cbb805f3dbdfcbad86a1a4c40aa
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     contracts:
       hasRecords: true
-      streamHash: 8f77ac2973f513cc2024ed1dbfd5a4117e30bdc5
+      streamHash: 050aec6260dcc6e14540bc2dc6ec9906ce2cda7a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     opportunities:
       hasRecords: true
-      streamHash: f266453b1a7e60ea94a6ad084e94adf4a042391e
+      streamHash: 27fdd277c8e7e048cf89c561fdf9dfd2249dcd62
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    private_offers:
+      hasRecords: true
+      streamHash: 2063987de5dd1edd3fecc8cd06439754849a55e5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -855,7 +932,7 @@ metadata:
       responsesAreSuccessful: true
     analytics_aws_cosell_opportunities:
       hasRecords: true
-      streamHash: 1eeeea6f1e1e0a200413788adc6f5aa3fc1cf3c6
+      streamHash: fd44d5607cd92cec327190cee98fa1be1f98885f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -896,14 +973,14 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     analytics_gcp_marketplace_disbursements:
-      hasRecords: false
+      hasRecords: true
       streamHash: c46f61da59ecad24b01ac56f74951e82aba6fcb0
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     analytics_gcp_marketplace_disbursements_summary:
-      hasRecords: false
+      hasRecords: true
       streamHash: 658824422d77db198900cff2786352aae2af5e4d
       hasResponse: true
       primaryKeysAreUnique: true
@@ -923,13 +1000,28 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    analytics_gcp_marketplace_incremental_daily_insights:
+      streamHash: 4e2e23ccd147f195565d67819a4e479883252161
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    analytics_gcp_marketplace_monthly_insights:
+      streamHash: d69fa7068a99810b95c70d8a12d14c4b721c10a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     analytics_gcp_marketplace_incremental_monthly_insights:
-      hasRecords: false
+      hasRecords: true
       streamHash: 9d2f4e5c90adc766e4a20442b4ee76c67502beca
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+  assist: {}
 
 schemas:
   buyers:
@@ -963,6 +1055,8 @@ schemas:
           - "null"
       id:
         type: string
+      last_modified_at:
+        type: string
       latest_contract_id:
         type:
           - string
@@ -981,6 +1075,7 @@ schemas:
           - "null"
     required:
       - id
+      - last_modified_at
   listings:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1008,6 +1103,8 @@ schemas:
           - "null"
       id:
         type: string
+      last_modified_at:
+        type: string
       long_description:
         type:
           - string
@@ -1026,6 +1123,7 @@ schemas:
           - "null"
     required:
       - id
+      - last_modified_at
   contracts:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1077,6 +1175,8 @@ schemas:
           - "null"
       id:
         type: string
+      last_modified_at:
+        type: string
       latest_offer_id:
         type:
           - string
@@ -1099,6 +1199,7 @@ schemas:
           - "null"
     required:
       - id
+      - last_modified_at
   opportunities:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1143,9 +1244,7 @@ schemas:
       id:
         type: string
       last_modified_at:
-        type:
-          - string
-          - "null"
+        type: string
       stage:
         type:
           - string
@@ -1164,6 +1263,7 @@ schemas:
           - "null"
     required:
       - id
+      - last_modified_at
   private_offers:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1211,6 +1311,8 @@ schemas:
           - "null"
       id:
         type: string
+      last_modified_at:
+        type: string
       listing_id:
         type:
           - string
@@ -1233,6 +1335,7 @@ schemas:
           - "null"
     required:
       - id
+      - last_modified_at
   analytics_aws_marketplace_disbursements:
     type: object
     $schema: http://json-schema.org/schema#
