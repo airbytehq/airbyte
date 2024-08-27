@@ -32,6 +32,7 @@ data class ConnectorErrorProfile(
     val externalMessage: String,
     val sampleInternalMessage: String,
     val referenceLinks: List<String> = emptyList(),
+    var regexPattern: Pattern = Pattern.compile(".*"),
 ) {
     init {
         require(isValidRegex(regexMatchingPattern)) {
@@ -43,7 +44,7 @@ data class ConnectorErrorProfile(
 
     private fun isValidRegex(regexString: String): Boolean {
         return try {
-            Pattern.compile(regexString)
+            regexPattern = Pattern.compile(regexString, Pattern.CASE_INSENSITIVE)
             true
         } catch (e: PatternSyntaxException) {
             false
@@ -144,10 +145,8 @@ open class ConnectorExceptionHandler {
      */
     open fun translateConnectorSpecificErrorMessage(e: Throwable?): String? {
         if (e == null) return null
-        for (error in connectorErrorDictionary) {
-            if (e.message?.lowercase()?.matches(error.regexMatchingPattern.lowercase().toRegex())!!)
-                return error.externalMessage
-        }
+        for (error in connectorErrorDictionary)
+            if (error.regexPattern.matcher(e.message).matches()) return error.externalMessage
         return null
     }
 
@@ -179,16 +178,9 @@ open class ConnectorExceptionHandler {
             return true
         }
 
-        for (error in connectorErrorDictionary) {
-            if (
-                error.failureType == failureType &&
-                    e!!
-                        .message
-                        ?.lowercase()
-                        ?.matches(error.regexMatchingPattern.lowercase().toRegex())!!
-            )
-                return true
-        }
+        for (error in connectorErrorDictionary) if (error.failureType == failureType &&
+            error.regexPattern.matcher(e!!.message).matches())
+            return true
         return false
     }
 
@@ -197,15 +189,15 @@ open class ConnectorExceptionHandler {
      *  a known transient exception, a config exception, or an exception whose error messages have been
      *  stored as part of the error profile in the error dictionary.
      * */
+    @VisibleForTesting
     private fun isRecognizableError(e: Throwable?): Boolean {
         if (e?.message == null) return false
         if (e is TransientErrorException || e is ConfigErrorException) {
             return true
         }
-        for (error in connectorErrorDictionary) {
-            if (e.message!!.lowercase().matches(error.regexMatchingPattern.lowercase().toRegex()))
+        for (error in connectorErrorDictionary)
+            if (error.regexPattern.matcher(e.message).matches())
                 return true
-        }
         return false
     }
 }
