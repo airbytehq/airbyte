@@ -4,6 +4,7 @@ package io.airbyte.integrations.source.mysql
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
+import io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
@@ -29,8 +30,8 @@ class MysqlSourceMetadataQuerier(
         streamNamespace: String?,
     ): List<Field> {
         val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
-        return base
-            .columnMetadata(table)
+        if (table !in memoizedColumnMetadata) return listOf()
+        return memoizedColumnMetadata[table]!!
             .map { c: JdbcMetadataQuerier.ColumnMetadata ->
                 val udt: UserDefinedType? =
                     when (c.type) {
@@ -40,6 +41,86 @@ class MysqlSourceMetadataQuerier(
                 c.copy(type = udt ?: c.type)
             }
             .map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
+    }
+
+    val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
+        val joinMap: Map<TableName, TableName> =
+            memoizedTableNames.associateBy { it.copy(type = "") }
+        val results = mutableListOf<Pair<TableName, ColumnMetadata>>()
+        log.info { "Querying column names for catalog discovery." }
+        try {
+            val dbmd: DatabaseMetaData = base.conn.metaData
+            memoizedTableNames
+                .filter { it.catalog != null || it.schema != null }
+                .map { it.catalog to it.schema }
+                .distinct()
+                .forEach { (catalog: String?, schema: String?) ->
+                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val (
+                                tableName: io.airbyte.cdk.discover.TableName,
+                                metadata: io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
+                            ) =
+                                columnMetadataFromResultSet(rs, isPseudoColumn = true)
+                            val joinedTableName: TableName = joinMap[tableName] ?: continue
+                            results.add(joinedTableName to metadata)
+                        }
+                    }
+                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val (
+                                tableName: io.airbyte.cdk.discover.TableName,
+                                metadata: io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
+                            ) =
+                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                            val joinedTableName: TableName = joinMap[tableName] ?: continue
+                            results.add(joinedTableName to metadata)
+                        }
+                    }
+                }
+            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
+        } catch (e: Exception) {
+            throw RuntimeException("Column name discovery query failed: ${e.message}", e)
+        }
+        return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
+            (_, columnMetadataByTable: List<ColumnMetadata>) ->
+            columnMetadataByTable.filter { it.ordinal == null } +
+                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+        }
+    }
+
+    private fun columnMetadataFromResultSet(
+        rs: ResultSet,
+        isPseudoColumn: Boolean,
+    ): Pair<TableName, ColumnMetadata> {
+        val tableName =
+            TableName(
+                catalog = rs.getString("TABLE_CAT"),
+                schema = rs.getString("TABLE_SCHEM"),
+                name = rs.getString("TABLE_NAME"),
+                type = "",
+            )
+        val type =
+            SystemType(
+                typeName = if (isPseudoColumn) null else rs.getString("TYPE_NAME"),
+                typeCode = rs.getInt("DATA_TYPE"),
+                precision = rs.getInt("COLUMN_SIZE").takeUnless { rs.wasNull() },
+                scale = rs.getInt("DECIMAL_DIGITS").takeUnless { rs.wasNull() },
+            )
+        val metadata =
+            ColumnMetadata(
+                name = rs.getString("COLUMN_NAME"),
+                label = rs.getString("COLUMN_NAME"),
+                type = type,
+                nullable =
+                    when (rs.getString("IS_NULLABLE")?.uppercase()) {
+                        "NO" -> false
+                        "YES" -> true
+                        else -> null
+                    },
+                ordinal = if (isPseudoColumn) null else rs.getInt("ORDINAL_POSITION"),
+            )
+        return tableName to metadata
     }
 
     val allUDTsByFQName: Map<String, UserDefinedType> by lazy {
@@ -80,7 +161,7 @@ class MysqlSourceMetadataQuerier(
 
     override fun streamNames(streamNamespace: String?): List<String> =
         memoizedTableNames.filter { (it.schema ?: it.catalog) == streamNamespace }.map { it.name }
-    
+
     fun findTableName(
         streamName: String,
         streamNamespace: String?,
@@ -91,7 +172,7 @@ class MysqlSourceMetadataQuerier(
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
         val results = mutableListOf<AllPrimaryKeysRow>()
-        val schemas: List<String> = base.streamNamespaces()
+        val schemas: List<String> = streamNamespaces()
         val sql: String = PK_QUERY_FMTSTR.format(schemas.joinToString { "\'$it\'" })
         log.info { "Querying Mysql system tables for all primary keys for catalog discovery." }
         try {
