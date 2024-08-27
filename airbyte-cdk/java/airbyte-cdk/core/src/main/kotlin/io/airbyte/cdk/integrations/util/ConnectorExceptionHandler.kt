@@ -145,7 +145,7 @@ open class ConnectorExceptionHandler {
     open fun translateConnectorSpecificErrorMessage(e: Throwable?): String? {
         if (e == null) return null
         for (error in connectorErrorDictionary) {
-            if (e.message?.lowercase()?.matches(error.regexMatchingPattern.toRegex())!!)
+            if (e.message?.lowercase()?.matches(error.regexMatchingPattern.lowercase().toRegex())!!)
                 return error.externalMessage
         }
         return null
@@ -182,7 +182,7 @@ open class ConnectorExceptionHandler {
         for (error in connectorErrorDictionary) {
             if (
                 error.failureType == failureType &&
-                    e!!.message?.matches(error.regexMatchingPattern.toRegex())!!
+                    e!!.message?.lowercase()?.matches(error.regexMatchingPattern.lowercase().toRegex())!!
             )
                 return true
         }
@@ -200,7 +200,7 @@ open class ConnectorExceptionHandler {
             return true
         }
         for (error in connectorErrorDictionary) {
-            if (e.message!!.matches(error.regexMatchingPattern.toRegex())) return true
+            if (e.message!!.lowercase().matches(error.regexMatchingPattern.lowercase().toRegex())) return true
         }
         return false
     }
