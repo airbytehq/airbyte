@@ -14,7 +14,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
 import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 import kotlin.system.exitProcess
 import org.jetbrains.annotations.VisibleForTesting
 
@@ -32,23 +31,11 @@ data class ConnectorErrorProfile(
     val externalMessage: String,
     val sampleInternalMessage: String,
     val referenceLinks: List<String> = emptyList(),
-    var regexPattern: Pattern = Pattern.compile(".*"),
 ) {
+    val regexPattern: Pattern = Pattern.compile(regexMatchingPattern, Pattern.CASE_INSENSITIVE)
     init {
-        require(isValidRegex(regexMatchingPattern)) {
-            "regexMatchingPattern is not a valid regular expression string"
-        }
         require(externalMessage.isNotBlank()) { "externalMessage must not be blank" }
         require(sampleInternalMessage.isNotBlank()) { "sampleInternalMessage must not be blank" }
-    }
-
-    private fun isValidRegex(regexString: String): Boolean {
-        return try {
-            regexPattern = Pattern.compile(regexString, Pattern.CASE_INSENSITIVE)
-            true
-        } catch (e: PatternSyntaxException) {
-            false
-        }
     }
 }
 
@@ -145,8 +132,8 @@ open class ConnectorExceptionHandler {
      */
     open fun translateConnectorSpecificErrorMessage(e: Throwable?): String? {
         if (e == null) return null
-        for (error in connectorErrorDictionary)
-            if (error.regexPattern.matcher(e.message).matches()) return error.externalMessage
+        for (error in connectorErrorDictionary) if (error.regexPattern.matcher(e.message).matches())
+            return error.externalMessage
         return null
     }
 
@@ -178,8 +165,9 @@ open class ConnectorExceptionHandler {
             return true
         }
 
-        for (error in connectorErrorDictionary) if (error.failureType == failureType &&
-            error.regexPattern.matcher(e!!.message).matches())
+        for (error in connectorErrorDictionary) if (
+            error.failureType == failureType && error.regexPattern.matcher(e!!.message).matches()
+        )
             return true
         return false
     }
@@ -195,9 +183,8 @@ open class ConnectorExceptionHandler {
         if (e is TransientErrorException || e is ConfigErrorException) {
             return true
         }
-        for (error in connectorErrorDictionary)
-            if (error.regexPattern.matcher(e.message).matches())
-                return true
+        for (error in connectorErrorDictionary) if (error.regexPattern.matcher(e.message).matches())
+            return true
         return false
     }
 }
