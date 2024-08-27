@@ -3,6 +3,7 @@ from datetime import timedelta
 from enum import Enum
 from typing import Optional
 
+from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.timer import Timer
 
 
@@ -19,8 +20,9 @@ class AsyncJob:
     it and call `ApiJob.update_status`, `ApiJob.status` will not reflect the actual API side status.
     """
 
-    def __init__(self, api_job_id: str, timeout: Optional[timedelta] = None) -> None:
+    def __init__(self, api_job_id: str, job_parameters: StreamSlice, timeout: Optional[timedelta] = None) -> None:
         self._api_job_id = api_job_id
+        self._job_parameters = job_parameters
         self._status = AsyncJobStatus.RUNNING
 
         timeout = timeout if timeout else timedelta(minutes=60)
@@ -34,6 +36,9 @@ class AsyncJob:
         if self._timer.has_timed_out():
             return AsyncJobStatus.TIMED_OUT
         return self._status
+
+    def job_parameters(self) -> StreamSlice:
+        return self._job_parameters
 
     def update_status(self, status: AsyncJobStatus) -> None:
         if self._status != AsyncJobStatus.RUNNING and status == AsyncJobStatus.RUNNING:

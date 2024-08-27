@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
+from typing import Any, Generator, Iterable, List, Mapping, Set, Optional
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
@@ -17,14 +17,35 @@ class AsyncPartition:
     """
     This bucket of api_jobs is a bit useless for this iteration but should become interesting when we will be able to split jobs
     """
+    _MAX_NUMBER_OF_ATTEMPTS = 3
 
     def __init__(self, jobs: List[AsyncJob], stream_slice: StreamSlice) -> None:
-        self._jobs = jobs
+        self._attempts_per_job = {job: 0 for job in jobs}
         self._stream_slice = stream_slice
 
+    def has_reached_max_attempt(self) -> bool:
+        return any(map(lambda attempt_count: attempt_count >= self._MAX_NUMBER_OF_ATTEMPTS, self._attempts_per_job.values()))
+
+    def replace_job(self, job_to_replace: AsyncJob, new_jobs: List[AsyncJob]) -> None:
+        current_attempt_count = self._attempts_per_job.pop(job_to_replace, None)
+        if current_attempt_count is None:
+            raise ValueError("Could not find job to replace")
+        elif current_attempt_count >= self._MAX_NUMBER_OF_ATTEMPTS:
+            raise ValueError(f"Max attempt reached for job in partition {self._stream_slice}")
+
+        new_attempt_count = current_attempt_count + 1
+        for job in new_jobs:
+            self._attempts_per_job[job] = new_attempt_count
+
+    def should_split(self, job: AsyncJob) -> bool:
+        """
+        Not used right now but once we support job split, we should split based on the number of attempts
+        """
+        return False
+
     @property
-    def jobs(self) -> List[AsyncJob]:
-        return self._jobs
+    def jobs(self) -> Iterable[AsyncJob]:
+        return self._attempts_per_job.keys()
 
     @property
     def stream_slice(self) -> StreamSlice:
@@ -51,7 +72,7 @@ class AsyncPartition:
 class AsyncJobOrchestrator:
     _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 5
 
-    def __init__(self, job_repository: AsyncJobRepository, slices: Iterable[StreamSlice]):
+    def __init__(self, job_repository: AsyncJobRepository, slices: Iterable[StreamSlice], number_of_retries: Optional[int] = None):
         self._job_repository: AsyncJobRepository = job_repository
         self._slice_iterator = iter(slices)
         self._running_partitions: List[AsyncPartition] = []
@@ -67,6 +88,11 @@ class AsyncJobOrchestrator:
         TODO Eventually, we need to cap the number of concurrent jobs.
         However, the first iteration is for sendgrid which only has one job.
         """
+        for partition in self._running_partitions:
+            for job in list(partition.jobs):  # we create a list from the generator as `replace_job` will change _attempts_per_job during the iteration
+                if job.status() in [AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT]:
+                    new_job = self._job_repository.start(job.job_parameters())
+                    partition.replace_job(job, [new_job])
 
         for _slice in self._slice_iterator:
             job = self._job_repository.start(_slice)
@@ -100,7 +126,7 @@ class AsyncJobOrchestrator:
         """
         time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
 
-    def _process_completed_partition(self, partition: AsyncPartition) -> AsyncPartition:
+    def _process_completed_partition(self, partition: AsyncPartition) -> None:
         """
         Process a completed partition.
         Args:
@@ -110,29 +136,6 @@ class AsyncJobOrchestrator:
         """
         job_ids = list(map(lambda job: job.api_job_id(), {job for job in partition.jobs}))
         LOGGER.info(f"The following jobs for stream slice {partition.stream_slice} have been completed: {job_ids}.")
-        # remove completed partitions from the list of running partitions
-        self._running_partitions.remove(partition)
-
-        return partition
-
-    def _process_partition_with_other_status(self, partition: AsyncPartition) -> AirbyteTracedException:
-        """
-        Process a partition with other status.
-        Args:
-            partition (AsyncPartition): The partition to process.
-        Returns:
-            AirbyteTracedException: An exception indicating that at least one job could not be completed.
-        Raises:
-            AirbyteTracedException: If at least one job could not be completed.
-        """
-        # FIXME salesforce will require retries
-        # FIXME source-salesforce deletes the job if status is "Aborted" or "Failed"
-
-        status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
-        raise AirbyteTracedException(
-            message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
-            failure_type=FailureType.system_error,
-        )
 
     def _process_running_partitions(self) -> Generator[AsyncPartition, Any, None]:
         """
@@ -144,11 +147,24 @@ class AsyncJobOrchestrator:
         Raises:
             Any: Any exception raised during processing.
         """
+        current_running_partitions: List[AsyncPartition] = []
         for partition in self._running_partitions:
             if partition.status == AsyncJobStatus.COMPLETED:
-                yield self._process_completed_partition(partition)
-            elif partition.status != AsyncJobStatus.RUNNING:
-                self._process_partition_with_other_status(partition)
+                self._process_completed_partition(partition)
+                yield partition
+            elif partition.status == AsyncJobStatus.RUNNING:
+                current_running_partitions.append(partition)
+            elif partition.has_reached_max_attempt():
+                # FIXME source-salesforce deletes the job if status is "Aborted" or "Failed"
+                status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
+                raise AirbyteTracedException(
+                    message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
+                    failure_type=FailureType.system_error,
+                )
+            else:
+                # job will be restarted in `_start_job`
+                current_running_partitions.insert(0, partition)
+        self._running_partitions = current_running_partitions
 
     def _log_polling_partitions(self) -> None:
         """
@@ -165,7 +181,7 @@ class AsyncJobOrchestrator:
                 f"Polling status completed. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
             )
 
-    def create_and_get_completed_partitions(self) -> Iterable[Optional[AsyncPartition]]:
+    def create_and_get_completed_partitions(self) -> Iterable[AsyncPartition]:
         """
         Creates and retrieves completed partitions.
         This method continuously starts jobs, updates job status, processes running partitions,

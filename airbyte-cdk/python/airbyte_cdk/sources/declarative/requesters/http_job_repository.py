@@ -44,7 +44,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         job_id: str = str(uuid.uuid4())  # FIXME is there value to extract the id from the response?
         self._create_job_response_by_id[job_id] = response
 
-        return AsyncJob(api_job_id=job_id)
+        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice)
 
     def update_jobs_status(self, jobs: Set[AsyncJob]) -> None:
         for job in jobs:
