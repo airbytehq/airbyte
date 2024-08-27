@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Any, Generator, Iterable, List, Mapping, Set, Optional
+from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStatus
@@ -17,6 +17,7 @@ class AsyncPartition:
     """
     This bucket of api_jobs is a bit useless for this iteration but should become interesting when we will be able to split jobs
     """
+
     _MAX_NUMBER_OF_ATTEMPTS = 3
 
     def __init__(self, jobs: List[AsyncJob], stream_slice: StreamSlice) -> None:
@@ -89,7 +90,9 @@ class AsyncJobOrchestrator:
         However, the first iteration is for sendgrid which only has one job.
         """
         for partition in self._running_partitions:
-            for job in list(partition.jobs):  # we create a list from the generator as `replace_job` will change _attempts_per_job during the iteration
+            for job in list(
+                partition.jobs
+            ):  # we create a list from the generator as `replace_job` will change _attempts_per_job during the iteration
                 if job.status() in [AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT]:
                     new_job = self._job_repository.start(job.job_parameters())
                     partition.replace_job(job, [new_job])

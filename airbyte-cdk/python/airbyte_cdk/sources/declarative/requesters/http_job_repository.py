@@ -3,7 +3,7 @@ import os
 import uuid
 from contextlib import closing
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Mapping, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import pandas as pd
 import requests
@@ -28,8 +28,8 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     urls_extractor: DpathExtractor
 
     def __post_init__(self) -> None:
-        self._create_job_response_by_id: Mapping[str, Response] = {}
-        self._polling_job_response_by_id: Mapping[str, Response] = {}
+        self._create_job_response_by_id: Dict[str, Response] = {}
+        self._polling_job_response_by_id: Dict[str, Response] = {}
 
         self._DEFAULT_ENCODING = "utf-8"
         self._DOWNLOAD_CHUNK_SIZE = 1024 * 1024 * 10
@@ -47,22 +47,29 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         return AsyncJob(api_job_id=job_id, job_parameters=stream_slice)
 
-    def update_jobs_status(self, jobs: Set[AsyncJob]) -> None:
+    def update_jobs_status(self, jobs: Iterable[AsyncJob]) -> None:
         for job in jobs:
-            polling_response = self.polling_job_requester.send_request(
-                stream_slice={"create_job_response": self._create_job_response_by_id[job.api_job_id()]}
+            polling_response: requests.Response = self.polling_job_requester.send_request(
+                stream_slice=StreamSlice(
+                    partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]}, cursor_slice={}
+                )
             )
-            status = next(
+            api_status = next(  # type: ignore  # the typing is really weird here but it does not extract records but any and we assume the connector developer has configured this properly
                 self.status_extractor.extract_records(polling_response), None
-            )  # the naming is really weird here but it does not extract records but a single status
-            status = self.status_mapping[status]
-            job.update_status(status)
+            )
+            job_status = self.status_mapping.get(api_status, None)
+            if job_status is None:
+                raise ValueError(
+                    f"API status `{api_status}` is unknown. Contact the connector developer to make sure this status is supported."
+                )
+            job.update_status(job_status)
 
-            if status == AsyncJobStatus.COMPLETED:
+            if job_status == AsyncJobStatus.COMPLETED:
                 self._polling_job_response_by_id[job.api_job_id()] = polling_response
 
     def fetch_records(self, job: AsyncJob) -> Iterable[Mapping[str, Any]]:
-        for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):
+        url: str
+        for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):  # type: ignore  # the typing is really weird here but it does not extract records but any and we assume the connector developer has configured this properly
             # FIXME salesforce will require pagination here
             file_path, encoding = self._download_to_file(url)
             print("downloaded")
@@ -74,7 +81,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
     def _download_to_file(self, url: str) -> Tuple[str, str]:
         tmp_file = str(uuid.uuid4())
-        streamed_response = self.download_job_requester.send_request(stream_slice={"url": url})
+        streamed_response = self.download_job_requester.send_request(stream_slice=StreamSlice(partition={"url": url}, cursor_slice={}))
         with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
             response_encoding = self._get_response_encoding(response.headers or {})
             for chunk in response.iter_content(chunk_size=self._DOWNLOAD_CHUNK_SIZE):

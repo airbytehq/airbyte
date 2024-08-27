@@ -22,7 +22,7 @@ from unittest.mock import MagicMock
 class MockAsyncJobRepository(AsyncJobRepository):
 
     def start(self, stream_slice: StreamSlice) -> AsyncJob:
-        return AsyncJob("a_job_id")
+        return AsyncJob("a_job_id", StreamSlice(partition={}, cursor_slice={}))
 
     def update_jobs_status(self, jobs: Set[AsyncJob]) -> None:
         for job in jobs:

@@ -1,42 +1,45 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
-from typing import Mapping
+import json
 from unittest import TestCase
 from unittest.mock import Mock
 
-from airbyte_cdk import BearerAuthenticator, DpathExtractor, HttpMethod, HttpRequester, JsonDecoder
+import pytest
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJobStatus
-from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+
+_ANY_CONFIG = {}
+_ANY_SLICE = StreamSlice(partition={}, cursor_slice={})
+_URL_BASE = "https://api.sendgrid.com/v3/"
+_EXPORT_PATH = "marketing/contacts/exports"
+_EXPORT_URL = f"{_URL_BASE}{_EXPORT_PATH}"
+_A_JOB_ID = "a-job-id"
+_ANOTHER_JOB_ID = "another-job-id"
+_JOB_FIRST_URL = "https://job.result.api.com/1"
+_JOB_SECOND_URL = "https://job.result.api.com/2"
+_A_CSV_WITH_ONE_RECORD = """id,value
+a_record_id,a_value
+"""
 
 
-class SendgridHttpJobRepositoryTest(TestCase):
+class HttpJobRepositoryTest(TestCase):
     def setUp(self) -> None:
-        url_base = "https://api.sendgrid.com/v3/"
-        config = {"api_key": <put API key here>, "start_date": "2019-05-20T13:43:57Z"}
-        authenticator = BearerAuthenticator(
-            token_provider=InterpolatedStringTokenProvider(
-                config=config,
-                api_token="{{ config['api_key'] }}",
-                parameters={},
-            ),
-            config=config,
-            parameters={},
-        )
         message_repository = Mock()
-        error_handler = DefaultErrorHandler(config=config, parameters={})
-        request_options_provider = None
+        error_handler = DefaultErrorHandler(config=_ANY_CONFIG, parameters={})
 
         self._create_job_requester = HttpRequester(
-            name="sendgrid contacts export: create_job",
-            url_base=url_base,
-            path="marketing/contacts/exports",
-            authenticator=authenticator,
+            name="stream <name>: create_job",
+            url_base=_URL_BASE,
+            path=_EXPORT_PATH,
             error_handler=error_handler,
             http_method=HttpMethod.POST,
-            request_options_provider=request_options_provider,
-            config=config,
+            config=_ANY_CONFIG,
             disable_retries=False,
             parameters={},
             message_repository=message_repository,
@@ -45,14 +48,12 @@ class SendgridHttpJobRepositoryTest(TestCase):
         )
 
         self._polling_job_requester = HttpRequester(
-            name="sendgrid contacts export: polling",
-            url_base=url_base,
-            path="marketing/contacts/exports/{{stream_slice['create_job_response'].json()['id'] }}",
-            authenticator=authenticator,
+            name="stream <name>: polling",
+            url_base=_URL_BASE,
+            path=_EXPORT_PATH + "/{{stream_slice['create_job_response'].json()['id']}}",
             error_handler=error_handler,
             http_method=HttpMethod.GET,
-            request_options_provider=request_options_provider,
-            config=config,
+            config=_ANY_CONFIG,
             disable_retries=False,
             parameters={},
             message_repository=message_repository,
@@ -61,14 +62,12 @@ class SendgridHttpJobRepositoryTest(TestCase):
         )
 
         self._download_job_requester = HttpRequester(
-            name="sendgrid contacts export: fetch_result",
+            name="stream <name>: fetch_result",
             url_base="",
             path="{{stream_slice['url']}}",
-            authenticator=None,
             error_handler=error_handler,
             http_method=HttpMethod.GET,
-            request_options_provider=request_options_provider,
-            config=config,
+            config=_ANY_CONFIG,
             disable_retries=False,
             parameters={},
             message_repository=message_repository,
@@ -76,29 +75,104 @@ class SendgridHttpJobRepositoryTest(TestCase):
             stream_response=True,
         )
 
-
-        self._status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["status"], config={}, parameters={} or {})
-        self._urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["urls"], config={}, parameters={} or {})
-
-    def test_sendgrid(self) -> None:
-        repository = AsyncHttpJobRepository(
+        self._repository = AsyncHttpJobRepository(
             create_job_requester=self._create_job_requester,
             polling_job_requester=self._polling_job_requester,
             download_job_requester=self._download_job_requester,
-            status_extractor=self._status_extractor,
+            status_extractor=DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["status"], config={}, parameters={} or {}),
             status_mapping={
                 "ready": AsyncJobStatus.COMPLETED,
                 "failure": AsyncJobStatus.FAILED,
                 "pending": AsyncJobStatus.RUNNING,
             },
-            urls_extractor=self._urls_extractor,
+            urls_extractor=DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["urls"], config={}, parameters={} or {}),
         )
 
-        job = repository.start({})
-        while job.status() != AsyncJobStatus.COMPLETED:
-            repository.update_jobs_status([job])
-        records = list(repository.fetch_records(job))
-        print("yay!!")
-        print(records)
+        self._http_mocker = HttpMocker()
+        self._http_mocker.__enter__()
 
+    def tearDown(self) -> None:
+        self._http_mocker.__exit__(None, None, None)
 
+    def test_given_different_statuses_when_update_jobs_status_then_update_status_properly(self) -> None:
+        self._mock_create_response(_A_JOB_ID)
+        self._http_mocker.get(
+            HttpRequest(url=f"{_EXPORT_URL}/{_A_JOB_ID}"),
+            [
+                HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "pending"})),
+                HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "failure"})),
+                HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "ready"})),
+            ]
+        )
+        job = self._repository.start(_ANY_SLICE)
+
+        self._repository.update_jobs_status([job])
+        assert job.status() == AsyncJobStatus.RUNNING
+        self._repository.update_jobs_status([job])
+        assert job.status() == AsyncJobStatus.FAILED
+        self._repository.update_jobs_status([job])
+        assert job.status() == AsyncJobStatus.COMPLETED
+
+    def test_given_unknown_status_when_update_jobs_status_then_raise_error(self) -> None:
+        self._mock_create_response(_A_JOB_ID)
+        self._http_mocker.get(
+            HttpRequest(url=f"{_EXPORT_URL}/{_A_JOB_ID}"),
+            HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "invalid_status"})),
+        )
+        job = self._repository.start(_ANY_SLICE)
+
+        with pytest.raises(ValueError):
+            self._repository.update_jobs_status([job])
+
+    def test_given_multiple_jobs_when_update_jobs_status_then_all_the_jobs_are_updated(self) -> None:
+        self._mock_create_response(_A_JOB_ID)
+        self._http_mocker.get(
+            HttpRequest(url=f"{_EXPORT_URL}/{_A_JOB_ID}"),
+            HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "ready"})),
+        )
+        self._mock_create_response(_ANOTHER_JOB_ID)
+        self._http_mocker.get(
+            HttpRequest(url=f"{_EXPORT_URL}/{_ANOTHER_JOB_ID}"),
+            HttpResponse(body=json.dumps({"id": _A_JOB_ID, "status": "ready"})),
+        )
+        a_job = self._repository.start(_ANY_SLICE)
+        another_job = self._repository.start(_ANY_SLICE)
+
+        self._repository.update_jobs_status([a_job, another_job])
+
+        assert a_job.status() == AsyncJobStatus.COMPLETED
+        assert another_job.status() == AsyncJobStatus.COMPLETED
+
+    def test_given_multiple_urls_when_fetch_records_then_fetch_from_multiple_urls(self) -> None:
+        self._mock_create_response(_A_JOB_ID)
+        self._http_mocker.get(
+            HttpRequest(url=f"{_EXPORT_URL}/{_A_JOB_ID}"),
+            HttpResponse(body=json.dumps({
+                "id": _A_JOB_ID,
+                "status": "ready",
+                "urls": [
+                    _JOB_FIRST_URL,
+                    _JOB_SECOND_URL,
+                ]
+            }))
+        )
+        self._http_mocker.get(
+            HttpRequest(url=_JOB_FIRST_URL),
+            HttpResponse(body=_A_CSV_WITH_ONE_RECORD),
+        )
+        self._http_mocker.get(
+            HttpRequest(url=_JOB_SECOND_URL),
+            HttpResponse(body=_A_CSV_WITH_ONE_RECORD),
+        )
+
+        job = self._repository.start(_ANY_SLICE)
+        self._repository.update_jobs_status([job])
+        records = list(self._repository.fetch_records(job))
+
+        assert len(records) == 2
+
+    def _mock_create_response(self, job_id: str) -> None:
+        self._http_mocker.post(
+            HttpRequest(url=_EXPORT_URL),
+            HttpResponse(body=json.dumps({"id": job_id})),
+        )
