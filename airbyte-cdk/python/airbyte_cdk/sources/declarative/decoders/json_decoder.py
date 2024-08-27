@@ -7,9 +7,8 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Generator, Mapping
 
 import requests
-from orjson import orjson
-
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from orjson import orjson
 
 logger = logging.getLogger("airbyte")
 
