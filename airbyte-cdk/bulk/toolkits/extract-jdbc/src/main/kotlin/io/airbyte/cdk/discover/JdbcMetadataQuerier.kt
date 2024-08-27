@@ -3,6 +3,7 @@ package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.read.From
@@ -35,8 +36,9 @@ class JdbcMetadataQuerier(
 
     fun TableName.namespace(): String? =
         when (constants.namespaceKind) {
-            DefaultJdbcConstants.NamespaceKind.CATALOG -> catalog
-            DefaultJdbcConstants.NamespaceKind.SCHEMA -> schema
+            NamespaceKind.CATALOG_AND_SCHEMA,
+            NamespaceKind.CATALOG -> catalog
+            NamespaceKind.SCHEMA -> schema
         }
 
     override fun streamNamespaces(): List<String> =
@@ -62,8 +64,9 @@ class JdbcMetadataQuerier(
             for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
                 val (catalog: String?, schema: String?) =
                     when (constants.namespaceKind) {
-                        DefaultJdbcConstants.NamespaceKind.CATALOG -> namespace to null
-                        DefaultJdbcConstants.NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
                 dbmd.getTables(catalog, schema, null, null).use { rs: ResultSet ->
                     while (rs.next()) {

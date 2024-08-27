@@ -35,6 +35,7 @@ data class DefaultJdbcConstants(
     enum class NamespaceKind {
         SCHEMA,
         CATALOG,
+        CATALOG_AND_SCHEMA
     }
 
     companion object {
