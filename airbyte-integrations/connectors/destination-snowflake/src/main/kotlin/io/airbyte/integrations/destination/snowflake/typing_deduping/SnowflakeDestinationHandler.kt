@@ -76,25 +76,19 @@ class SnowflakeDestinationHandler(
         var showColumnsResult: List<JsonNode> = listOf()
 
         try {
-
             for (stream in streamIds) {
-
                 val showColumnsQuery =
                     String.format(
-
                             """
                                 SHOW TABLES LIKE '%s' IN "%s"."%s";
                             """.trimIndent(),
                             stream.finalName,
                             databaseName,
                             stream.finalNamespace,
-
                             )
-
                 showColumnsResult = database.queryJsons(
                     showColumnsQuery,
                 )
-
                 for (result in showColumnsResult) {
                     val tableSchema = result["schema_name"].asText()
                     val tableName = result["name"].asText()
@@ -105,16 +99,11 @@ class SnowflakeDestinationHandler(
                         rowCount.toInt()
                 }
             }
-
         } catch (e: SQLException) {
-
             showColumnsResult.stream().close()
-
             //Not re-throwing the exception since the SQLException occurs when the table does not exist
             //throw e
-
         }
-
         return tableRowCountsFromShowQuery
     }
 
@@ -130,7 +119,6 @@ class SnowflakeDestinationHandler(
         var showTablesResult: List<JsonNode> = listOf()
 
         try {
-
             val showTablesQuery =
                 String.format(
                     """
@@ -140,22 +128,16 @@ class SnowflakeDestinationHandler(
                     databaseName,
                     id.rawNamespace,
                     )
-
             showTablesResult = database.queryJsons(
                 showTablesQuery,
             )
-
             if(showTablesResult.size > 0) {
                 tableExists = true
             }
-
         } catch (e: SQLException) {
-
             showTablesResult.stream().close()
-
             //Not re-throwing the exception since the SQLException occurs when the table does not exist
             //throw e
-
         }
 
         if (!tableExists) {
@@ -604,16 +586,12 @@ class SnowflakeDestinationHandler(
 
             val existingTablesFromShowQuery =
                 LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-
             var showColumnsResult: List<JsonNode> = listOf()
 
             try {
-
                 for (stream in streamIds) {
-
                     val showColumnsQuery =
                         String.format(
-
                             """
                                 SHOW COLUMNS IN TABLE "%s"."%s"."%s";
                             """.trimIndent(),
@@ -621,13 +599,11 @@ class SnowflakeDestinationHandler(
                             stream.finalNamespace,
                             stream.finalName,
                         )
-
                     showColumnsResult = database.queryJsons(
                         showColumnsQuery,
                     )
 
                     for (result in showColumnsResult) {
-
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
                         val columnName = result["column_name"].asText()
@@ -635,7 +611,6 @@ class SnowflakeDestinationHandler(
 
                         //TODO: Need to check if there are other datatype differences
                         // between the original approach and the new approach with SHOW queries
-
                         if(dataType.equals("FIXED")) {
                             dataType = "NUMBER"
                         } else if(dataType.equals("REAL")) {
@@ -657,19 +632,13 @@ class SnowflakeDestinationHandler(
                                 fromIsNullableSnowflakeString(isNullable),
                             )
                     }
-
                 }
-
             } catch (e: SQLException) {
                 showColumnsResult.stream().close()
-
                 //Not re-throwing the exception since the SQLException occurs when the table does not exist
                 //throw e
-
             }
-
             return existingTablesFromShowQuery
-
         }
     }
 }

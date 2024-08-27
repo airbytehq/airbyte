@@ -38,7 +38,6 @@ class SnowflakeV1V2Migrator(
         var showSchemaResult : List<JsonNode> = listOf()
 
         try {
-
             val showSchemaQuery = String.format(
                 """
                SHOW SCHEMAS LIKE '%s' IN DATABASE "%s";
@@ -50,19 +49,13 @@ class SnowflakeV1V2Migrator(
             showSchemaResult = database.queryJsons(
                                     showSchemaQuery,
                                 )
-
             return showSchemaResult.isNotEmpty()
-
         } catch (e: SQLException) {
-
             showSchemaResult.stream().close()
-
             //Not re-throwing the exception since the SQLException occurs when the table does not exist
             //throw e
         }
-
         return false;
-
     }
 
     override fun schemaMatchesExpectation(
@@ -87,7 +80,6 @@ class SnowflakeV1V2Migrator(
         var showColumnsResult : List<JsonNode> = listOf()
 
         try {
-
             val showColumnsQuery =
                 String.format(
                     """
@@ -97,11 +89,9 @@ class SnowflakeV1V2Migrator(
                     namespace,
                     tableName,
                 )
-
             showColumnsResult = database.queryJsons(
                 showColumnsQuery
             )
-
             val columnsFromShowQuery = showColumnsResult
                 .stream()
                 .collect(
@@ -129,12 +119,9 @@ class SnowflakeV1V2Migrator(
             }
 
         } catch (e: SQLException) {
-
             showColumnsResult.stream().close()
-
             //Not re-throwing the exception since the SQLException occurs when the table does not exist
             //throw e
-
         }
 
         return Optional.empty()

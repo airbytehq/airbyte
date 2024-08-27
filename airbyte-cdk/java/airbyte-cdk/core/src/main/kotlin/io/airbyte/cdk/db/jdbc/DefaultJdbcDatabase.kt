@@ -118,7 +118,6 @@ constructor(
         var connection = dataSource.connection
 
         try {
-
             return JdbcDatabase.Companion.toUnsafeStream<T>(
                 statementCreator.apply(connection).executeQuery(),
                 recordTransform
@@ -133,16 +132,12 @@ constructor(
                         }
                     }
                 )
-
         } catch (e: Throwable) {
-
+            //Close the connection and rethrow the exception
             if (connection != null) {
                 connection.close()
             }
-
             throw e
-
         }
-
     }
 }
