@@ -1,0 +1,23 @@
+# CI/CD
+/.github/ @airbytehq/dev-tooling
+
+# Build customization file change
+/airbyte-integrations/connectors/**/build_customization.py @airbytehq/dev-tooling
+
+# Java connectors catch-all
+/buildSrc/ @airbytehq/dbsources @airbytehq/destinations
+/airbyte-integrations/connectors/source-*/**/*.java @airbytehq/dbsources
+/airbyte-integrations/connectors/source-*/**/*.kt @airbytehq/dbsources
+/airbyte-integrations/connectors/source-*/**/*.gradle @airbytehq/dbsources
+/airbyte-integrations/connectors/destination-*/**/*.java @airbytehq/destinations
+/airbyte-integrations/connectors/destination-*/**/*.kt @airbytehq/destinations
+/airbyte-integrations/connectors/destination-*/**/*.gradle @airbytehq/destinations
+
+# Java-based certified or incubating source connectors
+/airbyte-integrations/connectors/source-firetruck/ @airbytehq/dbsources
+
+# Java-based certified or incubating destination connectors
+## TEMPLATE: /airbyte-integrations/connectors/destination-???/ @airbytehq/destinations
+
+# Python critical connectors
+## TEMPLATE: /airbyte-integrations/connectors/???-???/ @airbytehq/python-team
