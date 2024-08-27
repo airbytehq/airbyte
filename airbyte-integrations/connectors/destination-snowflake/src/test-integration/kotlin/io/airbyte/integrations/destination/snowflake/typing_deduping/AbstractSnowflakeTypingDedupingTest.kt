@@ -390,10 +390,105 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+
+    @Test
+    @Throws(Exception::class)
+    fun testRawTableLoadWithSuperVarcharLimitation() {
+        val record1 =
+            """
+                           {"type": "RECORD",
+                             "record":{
+                               "emitted_at": 1000,
+                               "data": {
+                                 "id1": 1,
+                                 "id2": 200,
+                                 "updated_at": "2000-01-01T00:00:00Z",
+                                 "_ab_cdc_deleted_at": null,
+                                 "name": "PLACE_HOLDER",
+                                 "address": {"city": "San Francisco", "state": "CA"}}
+                             }
+                           }
+                           
+                           """.trimIndent()
+        val record2 =
+            """
+                           {"type": "RECORD",
+                             "record":{
+                               "emitted_at": 1000,
+                               "data": {
+                                 "id1": 2,
+                                 "id2": 201,
+                                 "updated_at": "2000-01-01T00:00:00Z",
+                                 "_ab_cdc_deleted_at": null,
+                                 "name": "PLACE_HOLDER",
+                                 "address": {"city": "New York", "state": "NY"}}
+                             }
+                           }
+                           
+                           """.trimIndent()
+        val largeString1 =
+            generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE)
+        val largeString2 =
+            generateRandomString(
+                SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE + 2
+            )
+        val catalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    java.util.List.of(
+                        ConfiguredAirbyteStream()
+                            .withSyncId(42)
+                            .withGenerationId(43)
+                            .withMinimumGenerationId(0)
+                            .withSyncMode(SyncMode.FULL_REFRESH)
+                            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+                            .withStream(
+                                AirbyteStream()
+                                    .withNamespace(streamNamespace)
+                                    .withName(streamName)
+                                    .withJsonSchema(schema)
+                            )
+                    )
+                )
+        val message1 = deserialize(record1, AirbyteMessage::class.java)
+        message1.record.namespace = streamNamespace
+        message1.record.stream = streamName
+        (message1.record.data as ObjectNode).put("name", largeString1)
+        val message2 = deserialize(record2, AirbyteMessage::class.java)
+        message2.record.namespace = streamNamespace
+        message2.record.stream = streamName
+        (message2.record.data as ObjectNode).put("name", largeString2)
+
+        // message1 should be preserved which is just on limit, message2 should be nulled.
+        runSync(catalog, java.util.List.of(message1, message2))
+
+        // Add verification.
+        val expectedRawRecords = readRecords("dat/sync1_recordnull_expectedrecords_raw.jsonl")
+        val expectedFinalRecords = readRecords("dat/sync1_recordnull_expectedrecords_final.jsonl")
+        // Only replace for first record, second record should be nulled by transformer.
+        (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("name", largeString1)
+        (expectedFinalRecords[0] as ObjectNode).put("name", largeString1)
+        verifySyncResult(expectedRawRecords, expectedFinalRecords, disableFinalTableComparison())
+    }
+
     private val defaultSchema: String
         get() = config!!["schema"].asText()
 
+    protected fun generateRandomString(totalLength: Int): String {
+        return RANDOM.ints('a'.code, 'z'.code + 1)
+            .limit(totalLength.toLong())
+            .collect(
+                { StringBuilder() },
+                { obj: java.lang.StringBuilder, codePoint: Int -> obj.appendCodePoint(codePoint) },
+                { obj: java.lang.StringBuilder, s: java.lang.StringBuilder? -> obj.append(s) }
+            )
+            .toString()
+    }
+
     companion object {
+
+        private val RANDOM = Random()
+
         @JvmStatic
         val FINAL_METADATA_COLUMN_NAMES: Map<String, String> =
             java.util.Map.of(

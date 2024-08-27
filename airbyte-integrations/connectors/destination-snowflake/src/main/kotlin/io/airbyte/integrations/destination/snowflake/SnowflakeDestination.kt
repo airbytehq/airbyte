@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.snowflake
 
 import com.fasterxml.jackson.databind.JsonNode
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.factory.DataSourceFactory.close
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.db.jdbc.JdbcUtils
@@ -20,8 +21,11 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
 import io.airbyte.cdk.integrations.destination.async.buffers.BufferManager
+import io.airbyte.cdk.integrations.destination.async.deser.AirbyteMessageDeserializer
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage
 import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordMessage
+import io.airbyte.cdk.integrations.destination.async.state.FlushFailure
 import io.airbyte.cdk.integrations.destination.operation.SyncOperation
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.staging.operation.StagingStreamOperations
@@ -36,6 +40,7 @@ import io.airbyte.integrations.destination.snowflake.operation.SnowflakeStagingC
 import io.airbyte.integrations.destination.snowflake.operation.SnowflakeStorageOperation
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSuperLimitationTransformer
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
@@ -266,12 +271,26 @@ constructor(
             },
             onFlush = DefaultFlush(optimalFlushBatchSize, syncOperation),
             catalog = catalog,
-            bufferManager = BufferManager(defaultNamespace, snowflakeBufferMemoryLimit)
+            bufferManager = BufferManager(defaultNamespace, snowflakeBufferMemoryLimit),
+            FlushFailure(),
+            Executors.newFixedThreadPool(5),
+            AirbyteMessageDeserializer(getDataTransformer(parsedCatalog, defaultNamespace)),
         )
     }
 
     override val isV2Destination: Boolean
         get() = true
+
+    @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
+    private fun getDataTransformer(
+        parsedCatalog: ParsedCatalog?,
+        defaultNamespace: String?
+    ): StreamAwareDataTransformer {
+        // Redundant override to keep in consistent with InsertDestination. TODO: Unify these 2
+        // classes with
+        // composition.
+        return SnowflakeSuperLimitationTransformer(parsedCatalog, defaultNamespace!!)
+    }
 
     @Throws(Exception::class)
     override fun getConsumer(
