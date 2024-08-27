@@ -74,16 +74,20 @@ class SimpleRetriever(Retriever, ComponentConstructor[SimpleRetrieverModel]):
         cls,
         model: SimpleRetrieverModel,
         config: Config,
-        name: str,
-        primary_key: Optional[Union[str, List[str], List[List[str]]]],
-        stream_slicer: Optional[StreamSlicer],
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
+        name: Optional[str] = None,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]] = None,
+        stream_slicer: Optional[StreamSlicer] = None,
         stop_condition_on_cursor: bool = False,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation] = [],
         **kwargs: Any,
-    ) -> dict:
+    ) -> Mapping[str, Any]:
+        if name is None:
+            raise ValueError("name is required to resolve dependencies for SimpleRetriever")
+
         decoder = dependency_constructor(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         requester = dependency_constructor(model=model.requester, decoder=decoder, config=config, name=name)
         record_selector = dependency_constructor(

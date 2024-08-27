@@ -66,12 +66,18 @@ class HttpRequester(Requester, ComponentConstructor[HttpRequesterModel]):
         cls,
         model: HttpRequesterModel,
         config: Config,
-        decoder: Decoder,
-        name: str,
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
+        name: Optional[str] = None,
+        decoder: Optional[Decoder] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
+        if name is None:
+            raise ValueError("name is required to resolve dependencies for HttpRequester")
+        if decoder is None:
+            raise ValueError("decoder is required to resolve dependencies for HttpRequester")
+
         authenticator = (
             dependency_constructor(model=model.authenticator, config=config, url_base=model.url_base, name=name, decoder=decoder)
             if model.authenticator

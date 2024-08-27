@@ -38,7 +38,7 @@ class ListPartitionRouter(PartitionRouter, ComponentConstructor[ListPartitionRou
         model: ListPartitionRouterModel,
         config: Config,
         dependency_constructor: Callable[..., Any],
-        additional_flags: Optional[Mapping[str, Any]],
+        additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
         request_option = (

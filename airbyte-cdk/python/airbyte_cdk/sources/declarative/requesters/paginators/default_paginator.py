@@ -110,11 +110,14 @@ class DefaultPaginator(
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         *,
-        url_base: str,
+        url_base: Optional[str] = None,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
         decoder: Optional[Decoder] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
+        if url_base is None:
+            raise ValueError("url_base is required to resolve dependencies for DefaultPaginator")
+
         if decoder:
             decoder_to_use = decoder
         elif model.decoder:

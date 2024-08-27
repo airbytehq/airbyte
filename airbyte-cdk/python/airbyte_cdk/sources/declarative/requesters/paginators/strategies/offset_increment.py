@@ -49,11 +49,14 @@ class OffsetIncrement(PaginationStrategy, ComponentConstructor[OffsetIncrementMo
         cls,
         model: OffsetIncrementModel,
         config: Config,
-        decoder: Decoder,
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
+        decoder: Optional[Decoder] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
+        if decoder is None:
+            raise ValueError("decoder is required to resolve dependencies for OffsetIncrement")
         if not isinstance(decoder, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return {

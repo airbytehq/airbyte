@@ -48,7 +48,7 @@ class MinMaxDatetime(ComponentConstructor[MinMaxDatetimeModel]):
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         return {
             "datetime": model.datetime,
             "datetime_format": model.datetime_format or "",

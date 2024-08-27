@@ -67,9 +67,10 @@ class DpathExtractor(RecordExtractor, ComponentConstructor[DpathExtractorModel])
         config: Config,
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
         decoder: Optional[Decoder] = None,
         **kwargs: Any,
-    ) -> Optional[Mapping[str, Any]]:
+    ) -> Mapping[str, Any]:
         if decoder:
             decoder_to_use = decoder
         elif model.decoder:

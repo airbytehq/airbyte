@@ -43,11 +43,14 @@ class LegacyToPerPartitionStateMigration(StateMigration, ComponentConstructor[Le
         cls,
         model: LegacyToPerPartitionStateMigrationModel,
         config: Config,
-        declarative_stream: DeclarativeStreamModel,
         dependency_constructor: Callable[..., Any],
         additional_flags: Optional[Mapping[str, Any]] = None,
+        *,
+        declarative_stream: Optional[DeclarativeStreamModel] = None,
         **kwargs: Any,
     ) -> Mapping[str, Any]:
+        if declarative_stream is None:
+            raise ValueError("declarative_stream is required to resolve dependencies for LegacyToPerPartitionStateMigration.")
         retriever = declarative_stream.retriever
 
         # VERIFY

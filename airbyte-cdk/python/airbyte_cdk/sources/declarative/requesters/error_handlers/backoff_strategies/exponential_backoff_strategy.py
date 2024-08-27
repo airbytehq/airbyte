@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, Optional, Union
+from typing import Any, Callable, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -33,6 +33,8 @@ class ExponentialBackoffStrategy(BackoffStrategy, ComponentConstructor[Exponenti
         cls,
         model: ExponentialBackoffStrategyModel,
         config: Config,
+        dependency_constructor: Callable[..., Any],
+        additional_flags: Optional[Mapping[str, Any]] = None,
         **kwargs: Any,
     ) -> Optional[Mapping[str, Any]]:
         return {"factor": model.factor or 5, "parameters": model.parameters or {}, "config": config}
