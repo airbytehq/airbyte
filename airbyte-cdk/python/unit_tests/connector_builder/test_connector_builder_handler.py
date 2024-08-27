@@ -280,13 +280,13 @@ def _mocked_send(self, request, **kwargs) -> requests.Response:
 
 
 def test_handle_resolve_manifest(valid_resolve_manifest_config_file, dummy_catalog):
-    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patched_handle:
+    with mock.patch.object(connector_builder.main, "handle_connector_builder_request", return_value=AirbyteMessage(type=MessageType.RECORD)) as patched_handle:
         handle_request(["read", "--config", str(valid_resolve_manifest_config_file), "--catalog", str(dummy_catalog)])
         assert patched_handle.call_count == 1
 
 
 def test_handle_test_read(valid_read_config_file, configured_catalog):
-    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
+    with mock.patch.object(connector_builder.main, "handle_connector_builder_request", return_value=AirbyteMessage(type=MessageType.RECORD)) as patch:
         handle_request(["read", "--config", str(valid_read_config_file), "--catalog", str(configured_catalog)])
         assert patch.call_count == 1
 
