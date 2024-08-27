@@ -11,6 +11,25 @@ from serpyco_rs.metadata import Alias
 
 @dataclass
 class AirbyteStateBlob:
+    """
+    A dataclass that dynamically sets attributes based on provided keyword arguments and positional arguments.
+    Used to "mimic" pydantic Basemodel with ConfigDict(extra='allow') option.
+
+    The `AirbyteStateBlob` class allows for flexible instantiation by accepting any number of keyword arguments
+    and positional arguments. These are used to dynamically update the instance's attributes. This class is useful
+    in scenarios where the attributes of an object are not known until runtime and need to be set dynamically.
+
+    Attributes:
+        kwargs (InitVar[Mapping[str, Any]]): A dictionary of keyword arguments used to set attributes dynamically.
+
+    Methods:
+        __init__(*args: Any, **kwargs: Any) -> None:
+            Initializes the `AirbyteStateBlob` by setting attributes from the provided arguments.
+
+        __eq__(other: object) -> bool:
+            Checks equality between two `AirbyteStateBlob` instances based on their internal dictionaries.
+            Returns `False` if the other object is not an instance of `AirbyteStateBlob`.
+    """
     kwargs: InitVar[Mapping[str, Any]]
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -41,7 +60,7 @@ class AirbyteGlobalState:
 class AirbyteStateMessage:
     type: Optional[AirbyteStateType] = None
     stream: Optional[AirbyteStreamState] = None
-    global_: Annotated[AirbyteGlobalState | None, Alias("global")] = None
+    global_: Annotated[AirbyteGlobalState | None, Alias("global")] = None # "global" is a reserved keyword in python ⇒ Alias is used for (de-)serialization
     data: Optional[Dict[str, Any]] = None
     sourceStats: Optional[AirbyteStateStats] = None
     destinationStats: Optional[AirbyteStateStats] = None
