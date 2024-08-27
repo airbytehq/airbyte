@@ -155,16 +155,28 @@ class AsyncJobOrchestrator:
             elif partition.status == AsyncJobStatus.RUNNING:
                 current_running_partitions.append(partition)
             elif partition.has_reached_max_attempt():
-                # FIXME source-salesforce deletes the job if status is "Aborted" or "Failed"
-                status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
-                raise AirbyteTracedException(
-                    message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
-                    failure_type=FailureType.system_error,
-                )
+                self._process_partitions_with_errors(partition)
             else:
                 # job will be restarted in `_start_job`
                 current_running_partitions.insert(0, partition)
         self._running_partitions = current_running_partitions
+
+    def _process_partitions_with_errors(self, partition: AsyncPartition) -> None:
+        """
+        Process a partition with status errors (FAILED and TIMEOUT).
+
+        Args:
+            partition (AsyncPartition): The partition to process.
+        Returns:
+            AirbyteTracedException: An exception indicating that at least one job could not be completed.
+        Raises:
+            AirbyteTracedException: If at least one job could not be completed.
+        """
+        status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
+        raise AirbyteTracedException(
+            message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
+            failure_type=FailureType.system_error,
+        )
 
     def _log_polling_partitions(self) -> None:
         """

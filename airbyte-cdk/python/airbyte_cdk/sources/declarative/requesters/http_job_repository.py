@@ -32,6 +32,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         self._polling_job_response_by_id: Mapping[str, Response] = {}
 
         self._DEFAULT_ENCODING = "utf-8"
+        self._DOWNLOAD_CHUNK_SIZE = 1024 * 1024 * 10
 
     def start(self, stream_slice: StreamSlice) -> AsyncJob:
         response: Optional[requests.Response] = self.create_job_requester.send_request(stream_slice=stream_slice)
@@ -76,7 +77,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         streamed_response = self.download_job_requester.send_request(stream_slice={"url": url})
         with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
             response_encoding = self._get_response_encoding(response.headers or {})
-            for chunk in response.iter_content(chunk_size=1024):
+            for chunk in response.iter_content(chunk_size=self._DOWNLOAD_CHUNK_SIZE):
                 data_file.write(self._filter_null_bytes(chunk))
         # check the file exists
         if os.path.isfile(tmp_file):
