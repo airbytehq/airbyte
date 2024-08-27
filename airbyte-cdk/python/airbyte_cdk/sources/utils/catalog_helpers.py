@@ -14,11 +14,9 @@ class CatalogHelper:
         """
         Updates the sync mode on all streams in this catalog to be full refresh
         """
-        coerced_catalog = copy(catalog)
         for stream in catalog.streams:
             stream.source_defined_cursor = False
             stream.supported_sync_modes = [SyncMode.full_refresh]
             stream.default_cursor_field = None
 
-        # remove nulls
-        return AirbyteCatalogSerializer.load(AirbyteCatalogSerializer.dump(coerced_catalog))
+        return catalog
