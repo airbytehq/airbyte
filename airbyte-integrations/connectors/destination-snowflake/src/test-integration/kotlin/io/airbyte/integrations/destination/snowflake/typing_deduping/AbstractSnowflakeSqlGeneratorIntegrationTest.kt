@@ -37,22 +37,14 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.commons.text.StringSubstitutor
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.function.Executable
-import org.mockito.Mockito.mock
 
 abstract class AbstractSnowflakeSqlGeneratorIntegrationTest :
     BaseSqlGeneratorIntegrationTest<SnowflakeState>() {
     override val supportsSafeCast: Boolean
         get() = true
 
-    private val config =
-        Jsons.deserialize(
-            Files.readString(Paths.get("secrets/1s1t_internal_staging_config.json"))
-        )
-    private val datasource =
-        SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
-
     override val destinationHandler: SnowflakeDestinationHandler
-        get() = SnowflakeDestinationHandler(databaseName, database, namespace.uppercase(), datasource)
+        get() = SnowflakeDestinationHandler(databaseName, database, namespace.uppercase())
 
     override fun buildStreamId(
         namespace: String,

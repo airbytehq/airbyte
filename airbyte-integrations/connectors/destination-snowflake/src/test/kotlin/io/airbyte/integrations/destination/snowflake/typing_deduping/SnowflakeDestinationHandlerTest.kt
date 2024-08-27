@@ -9,7 +9,6 @@ import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import java.util.stream.Stream
-import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows

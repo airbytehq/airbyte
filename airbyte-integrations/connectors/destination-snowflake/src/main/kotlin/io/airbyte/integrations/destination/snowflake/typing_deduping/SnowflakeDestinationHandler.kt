@@ -91,12 +91,6 @@ class SnowflakeDestinationHandler(
 
                             )
 
-//                val showColumnsResult: List<JsonNode> = database.queryJsons(
-//                    showColumnsQuery,
-//                )
-
-                //showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
-
                 showColumnsResult = database.queryJsons(
                     showColumnsQuery,
                 )
@@ -110,8 +104,6 @@ class SnowflakeDestinationHandler(
                         .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
                         rowCount.toInt()
                 }
-
-
             }
 
         } catch (e: SQLException) {
@@ -186,9 +178,9 @@ class SnowflakeDestinationHandler(
                                 .createStatement()
                                 .executeQuery(
                                     StringSubstitutor(
-                                        java.util.Map.of(
-                                            "raw_table",
-                                            id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            java.util.Map.of(
+                                                "raw_table",
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
                                             )
                                         )
                                         .replace(
@@ -214,14 +206,14 @@ class SnowflakeDestinationHandler(
                         }, // The query will always return exactly one record, so use .get(0)
                         { record: ResultSet -> record.getString("MIN_TIMESTAMP_UTC") }
                     )
-                    .first(),
+                    .first()
             )
         if (minUnloadedTimestamp.isPresent) {
             return InitialRawTableStatus(
                 rawTableExists = true,
                 hasUnprocessedRecords = true,
                 maxProcessedTimestamp =
-                minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
+                    minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
             )
         }
 
@@ -629,12 +621,6 @@ class SnowflakeDestinationHandler(
                             stream.finalNamespace,
                             stream.finalName,
                         )
-
-//                    val showColumnsResult: List<JsonNode> = database.queryJsons(
-//                        showColumnsQuery,
-//                    )
-
-                    //showColumnsResult = SnowflakeDatabaseManager(dataSource).queryJsons_Local_Wrapper(showColumnsQuery)
 
                     showColumnsResult = database.queryJsons(
                         showColumnsQuery,
