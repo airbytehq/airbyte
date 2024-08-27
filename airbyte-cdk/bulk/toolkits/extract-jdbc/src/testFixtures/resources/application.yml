@@ -1,6 +1,11 @@
 ---
 airbyte:
   connector:
+    check:
+      jdbc:
+        queries:
+          - SELECT DATABASE_PATH() FROM DUAL
+
     extract:
       jdbc:
         mode: sequential
