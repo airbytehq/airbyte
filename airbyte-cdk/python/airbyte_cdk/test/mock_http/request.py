@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, Callable, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from orjson import orjson
@@ -64,13 +64,9 @@ class HttpRequest:
 
     @staticmethod
     def _to_mapping(body: Optional[Union[str, bytes, Mapping[str, Any]]]) -> Optional[Mapping[str, Any]]:
-        if isinstance(body, Mapping):
-            return body
-        elif isinstance(body, bytes):
-            return orjson.loads(body.decode())  # type: ignore  # assumes return type of Mapping[str, Any]
-        elif isinstance(body, str):
-            return orjson.loads(body)  # type: ignore  # assumes return type of Mapping[str, Any]
-        return None
+        if isinstance(body, (bytes, str)):
+            return orjson.loads(body) if isinstance(body, str) else orjson.loads(body.decode())
+        return body if isinstance(body, Mapping) else None
 
     @staticmethod
     def _to_bytes(body: Optional[Union[str, bytes]]) -> bytes:
@@ -86,3 +82,12 @@ class HttpRequest:
 
     def __repr__(self) -> str:
         return f"HttpRequest(request={self._parsed_url}, headers={self._headers}, body={self._body!r})"
+
+    def _construct_url(self, url: str) -> Callable:
+        parsed_url = urlparse(url)
+        if not parsed_url.query and self._query_params:
+            encoded_query = urlencode(self._query_params, doseq=True)
+            return urlparse(f"{url}?{encoded_query}")
+        elif parsed_url.query and self._query_params:
+            raise ValueError("If query params are provided as part of the url, `query_params` should be empty")
+        return parsed_url
