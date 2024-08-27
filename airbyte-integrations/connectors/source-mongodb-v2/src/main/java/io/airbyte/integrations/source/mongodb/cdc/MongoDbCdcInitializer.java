@@ -167,7 +167,9 @@ public class MongoDbCdcInitializer {
         .map(Jsons::clone)
         .toList());
     final var startedCdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
-        .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
+        .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream))).toList();
+
+    final List<String> startedCdcStreamNameList = startedCdcStreamList.stream()
         .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
 
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
@@ -253,7 +255,8 @@ public class MongoDbCdcInitializer {
        */
       final var propertiesManager =
           new MongoDbDebeziumPropertiesManager(defaultDebeziumProperties, config.getDatabaseConfig(), incrementalOnlyStreamsCatalog,
-              startedCdcStreamList);
+              startedCdcStreamNameList);
+      mongoDbCdcStateHandler.setCdcStreamList(startedCdcStreamList);
       final var eventConverter =
           new MongoDbDebeziumEventConverter(cdcMetadataInjector, incrementalOnlyStreamsCatalog, emittedAt, config.getDatabaseConfig());
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(

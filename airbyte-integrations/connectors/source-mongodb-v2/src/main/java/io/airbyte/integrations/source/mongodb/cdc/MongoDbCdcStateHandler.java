@@ -7,9 +7,13 @@ package io.airbyte.integrations.source.mongodb.cdc;
 import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
+import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +42,13 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
 
     final AirbyteStateMessage stateMessage = stateManager.toState();
     return new AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage);
+  }
+
+  public void setCdcStreamList(List<ConfiguredAirbyteStream> streamList) {
+    streamList.stream().forEach(configuredAirbyteStream -> {
+      stateManager.updateStreamState(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace(),
+          stateManager.getStreamState(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace()).orElse(null));
+    });
   }
 
   @Override
