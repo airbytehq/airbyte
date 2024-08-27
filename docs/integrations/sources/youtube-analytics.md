@@ -86,7 +86,7 @@ Quota usage is not an issue because data is retrieved once and then filtered, so
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------- |
-| 0.2.0   | 2024-07-27 | [x](https://github.com/airbytehq/airbyte/pull/x)         | Migrate to LowCode                             |
+| 0.2.0   | 2024-07-27 | [42838](https://github.com/airbytehq/airbyte/pull/42838) | Migrate to LowCode                             |
 | 0.1.6   | 2024-06-17 | [39529](https://github.com/airbytehq/airbyte/pull/39529) | Pin CDK version to 0.38.0                      |
 | 0.1.5   | 2024-05-21 | [38546](https://github.com/airbytehq/airbyte/pull/38546) | [autopull] base image + poetry + up_to_date    |
 | 0.1.4   | 2023-05-22 | [26420](https://github.com/airbytehq/airbyte/pull/26420) | Migrate to advancedAuth                        |
