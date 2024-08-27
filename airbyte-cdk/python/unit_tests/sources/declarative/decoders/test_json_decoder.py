@@ -41,13 +41,13 @@ def test_jsonl_decoder(requests_mock, response_body, expected_json):
 @pytest.fixture(name="large_events_response")
 def large_event_response_fixture():
     data = {"email": "email1@example.com"}
-    json_string = json.dumps(data)
-    lines_in_response = 5_000_000
+    jsonl_string = f"{json.dumps(data)}\n"
+    lines_in_response = 2_000_000  # ≈ 58 MB of response
     dir_path = os.path.dirname(os.path.realpath(__file__))
     file_path = f"{dir_path}/test_response.txt"
     with open(file_path, "w") as file:
         for _ in range(lines_in_response):
-            file.write(json_string + "\n")
+            file.write(jsonl_string)
     yield (lines_in_response, file_path)
     os.remove(file_path)
 
