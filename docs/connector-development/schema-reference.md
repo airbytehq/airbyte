@@ -2,6 +2,7 @@
 
 :::note
 You only need this if you're building a connector with Python or Java CDKs.
+If you're using Connector Builder, you can use [declared schemas](./connector-builder-ui/record-processing#declared-schema) instead.
 :::
 
 This document provides instructions on how to create a static schema for your Airbyte stream, which is necessary for integrating data from various sources.
