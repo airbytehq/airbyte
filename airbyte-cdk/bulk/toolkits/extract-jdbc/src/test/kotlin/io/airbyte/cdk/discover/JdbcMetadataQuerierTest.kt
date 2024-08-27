@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
 import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
@@ -22,6 +23,7 @@ class JdbcMetadataQuerierTest {
         JdbcMetadataQuerier.Factory(
             selectQueryGenerator = H2SourceOperations(),
             fieldTypeMapper = H2SourceOperations(),
+            checkQueries = JdbcCheckQueries().apply { queries = listOf() },
             constants = DefaultJdbcConstants(),
         )
 

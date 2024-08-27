@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
@@ -28,6 +29,7 @@ class JdbcMetadataQuerier(
     val config: JdbcSourceConfiguration,
     val selectQueryGenerator: SelectQueryGenerator,
     val fieldTypeMapper: FieldTypeMapper,
+    val checkQueries: JdbcCheckQueries,
     jdbcConnectionFactory: JdbcConnectionFactory,
 ) : MetadataQuerier {
     val conn: Connection = jdbcConnectionFactory.get()
@@ -321,6 +323,10 @@ class JdbcMetadataQuerier(
         val columnName: String,
     )
 
+    override fun extraChecks() {
+        checkQueries.executeAll(conn)
+    }
+
     override fun close() {
         log.info { "Closing JDBC connection." }
         conn.close()
@@ -331,6 +337,7 @@ class JdbcMetadataQuerier(
     class Factory(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: FieldTypeMapper,
+        val checkQueries: JdbcCheckQueries,
         val constants: DefaultJdbcConstants,
     ) : MetadataQuerier.Factory<JdbcSourceConfiguration> {
         /** The [JdbcSourceConfiguration] is deliberately not injected in order to support tests. */
@@ -341,6 +348,7 @@ class JdbcMetadataQuerier(
                 config,
                 selectQueryGenerator,
                 fieldTypeMapper,
+                checkQueries,
                 jdbcConnectionFactory,
             )
         }
