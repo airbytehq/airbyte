@@ -198,7 +198,7 @@ jobs:
     permissions:
       statuses: write
     env:
-      MAIN_BRANCH_NAME: "augustin/08-27-community-ci_support_regression_tests_on_forks"
+      MAIN_BRANCH_NAME: "master"
 
     steps:
       # This checkouts a fork which can contain untrusted code
