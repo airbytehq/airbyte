@@ -12,14 +12,24 @@ private val LOGGER = KotlinLogging.logger {}
 
 class ChangeEventWithMetadata(private val event: ChangeEvent<String?, String?>) {
     val eventKeyAsJson: JsonNode?
-        get() = event.key()?.let { Jsons.deserialize(it) }.also { it ?: LOGGER.warn { "Event key is null $event" } }
+        get() =
+            event
+                .key()
+                ?.let { Jsons.deserialize(it) }
+                .also { it ?: LOGGER.warn { "Event key is null $event" } }
     val eventValueAsJson: JsonNode?
-        get() = event.value()?.let { Jsons.deserialize(it) }.also { it ?: LOGGER.warn { "Event value is null $event" } }
+        get() =
+            event
+                .value()
+                ?.let { Jsons.deserialize(it) }
+                .also { it ?: LOGGER.warn { "Event value is null $event" } }
 
     val snapshotMetadata: SnapshotMetadata?
         get() {
             val metadataKey = eventValueAsJson?.get("source")?.get("snapshot")?.asText()
-            return metadataKey?.let { return SnapshotMetadata.fromString(metadataKey) }
+            return metadataKey?.let {
+                return SnapshotMetadata.fromString(metadataKey)
+            }
         }
 
     val isSnapshotEvent: Boolean
