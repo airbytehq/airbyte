@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening
-import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.commons.json.Jsons
 import java.io.IOException
 import java.io.InputStreamReader
@@ -23,7 +22,6 @@ import org.apache.commons.csv.QuoteMode
 
 abstract class GcsBaseCsvDestinationAcceptanceTest :
     GcsDestinationAcceptanceTest(FileUploadFormat.CSV) {
-    override fun getProtocolVersion() = ProtocolVersion.V1
 
     override val formatConfig: JsonNode?
         get() =

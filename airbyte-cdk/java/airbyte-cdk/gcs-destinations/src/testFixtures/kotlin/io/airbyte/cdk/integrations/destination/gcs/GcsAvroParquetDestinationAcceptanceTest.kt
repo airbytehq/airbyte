@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.destination.gcs
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.avro.JsonSchemaType
-import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.resources.MoreResources
@@ -27,7 +26,6 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 
 abstract class GcsAvroParquetDestinationAcceptanceTest(fileUploadFormat: FileUploadFormat) :
     GcsDestinationAcceptanceTest(fileUploadFormat) {
-    override fun getProtocolVersion() = ProtocolVersion.V1
 
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)

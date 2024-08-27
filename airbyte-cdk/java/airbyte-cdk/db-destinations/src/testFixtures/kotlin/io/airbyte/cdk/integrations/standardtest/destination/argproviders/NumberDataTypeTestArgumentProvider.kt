@@ -3,19 +3,15 @@
  */
 package io.airbyte.cdk.integrations.standardtest.destination.argproviders
 
-import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
-import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil
 import java.util.stream.Stream
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 
 class NumberDataTypeTestArgumentProvider : ArgumentsProvider {
-    private lateinit var protocolVersion: ProtocolVersion
 
     @Throws(Exception::class)
     override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
-        protocolVersion = ArgumentProviderUtil.getProtocolVersion(context)
         return Stream.of(
             getArguments(NUMBER_DATA_TYPE_TEST_CATALOG, NUMBER_DATA_TYPE_TEST_MESSAGES),
             getArguments(NUMBER_DATA_TYPE_ARRAY_TEST_CATALOG, NUMBER_DATA_TYPE_ARRAY_TEST_MESSAGES)
@@ -23,10 +19,7 @@ class NumberDataTypeTestArgumentProvider : ArgumentsProvider {
     }
 
     private fun getArguments(catalogFile: String, messageFile: String): Arguments {
-        return Arguments.of(
-            ArgumentProviderUtil.prefixFileNameByVersion(catalogFile, protocolVersion),
-            ArgumentProviderUtil.prefixFileNameByVersion(messageFile, protocolVersion)
-        )
+        return Arguments.of(catalogFile, messageFile)
     }
 
     companion object {

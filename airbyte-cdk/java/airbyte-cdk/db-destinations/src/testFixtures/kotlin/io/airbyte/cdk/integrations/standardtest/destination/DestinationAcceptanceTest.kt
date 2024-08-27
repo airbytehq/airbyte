@@ -13,7 +13,6 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.standardtest.destination.*
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider
-import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.BasicTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.features.EnvVariableFeatureFlags
@@ -555,9 +554,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -567,9 +564,7 @@ abstract class DestinationAcceptanceTest(
         }
         val firstSyncMessages: List<AirbyteMessage> =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.messageFile
                 )
                 .trim()
                 .lines()
@@ -585,9 +580,7 @@ abstract class DestinationAcceptanceTest(
         val dummyCatalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -680,9 +673,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -783,9 +774,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -801,9 +790,7 @@ abstract class DestinationAcceptanceTest(
 
         val firstSyncMessages: List<AirbyteMessage> =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.messageFile
                 )
                 .trim()
                 .lines()
@@ -884,9 +871,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        ProtocolVersion.V0
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -910,9 +895,7 @@ abstract class DestinationAcceptanceTest(
 
         var messages =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        ProtocolVersion.V0
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.messageFile
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
@@ -933,9 +916,7 @@ abstract class DestinationAcceptanceTest(
         // timestamps.
         messages =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        ProtocolVersion.V0
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.messageFile
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
@@ -1017,9 +998,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -1036,9 +1015,7 @@ abstract class DestinationAcceptanceTest(
 
         val firstSyncMessages =
             MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.messageFile
                 )
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
@@ -1295,9 +1272,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -1309,11 +1284,7 @@ abstract class DestinationAcceptanceTest(
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
 
         val messages =
-            MoreResources.readResource(
-                    DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
-                )
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile)
                 .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
@@ -1337,9 +1308,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -1360,8 +1329,7 @@ abstract class DestinationAcceptanceTest(
         catalog.streams.addAll(diffNamespaceStreams)
 
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messageFile: String =
-            DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())
+        val messageFile: String = DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile
         val ns1Messages =
             MoreResources.readResource(messageFile).trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
@@ -1418,9 +1386,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.NAMESPACE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.NAMESPACE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -1430,11 +1396,7 @@ abstract class DestinationAcceptanceTest(
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
 
         val messages =
-            MoreResources.readResource(
-                    DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
-                )
+            MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.messageFile)
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val messagesWithNewNamespace =
@@ -1495,9 +1457,7 @@ abstract class DestinationAcceptanceTest(
         val catalog =
             Jsons.deserialize<AirbyteCatalog>(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -1507,11 +1467,7 @@ abstract class DestinationAcceptanceTest(
         }
 
         val firstSyncMessages =
-            MoreResources.readResource(
-                    DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
-                )
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile)
                 .trim()
                 .lines()
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
@@ -1605,15 +1561,14 @@ abstract class DestinationAcceptanceTest(
     fun testAirbyteFields() {
         val configuredCatalog =
             Jsons.deserialize(
-                MoreResources.readResource("v0/users_with_generation_id_configured_catalog.json"),
+                MoreResources.readResource("users_with_generation_id_configured_catalog.json"),
                 ConfiguredAirbyteCatalog::class.java
             )
         val config = getConfig()
         val messages =
-            MoreResources.readResource("v0/users_with_generation_id_messages.txt")
-                .trim()
-                .lines()
-                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
+            MoreResources.readResource("users_with_generation_id_messages.txt").trim().lines().map {
+                Jsons.deserialize(it, AirbyteMessage::class.java)
+            }
         val preRunTime = Instant.now()
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
         val generationId = configuredCatalog.streams[0].generationId
@@ -1727,12 +1682,12 @@ abstract class DestinationAcceptanceTest(
     fun testAirbyteTimeTypes() {
         val configuredCatalog =
             Jsons.deserialize(
-                MoreResources.readResource("v0/every_time_type_configured_catalog.json"),
+                MoreResources.readResource("every_time_type_configured_catalog.json"),
                 ConfiguredAirbyteCatalog::class.java
             )
         val config = getConfig()
         val messages =
-            MoreResources.readResource("v0/every_time_type_messages.txt").trim().lines().map {
+            MoreResources.readResource("every_time_type_messages.txt").trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
@@ -1821,12 +1776,12 @@ abstract class DestinationAcceptanceTest(
         // Run the sync
         val configuredCatalog =
             Jsons.deserialize(
-                MoreResources.readResource("v0/problematic_types_configured_catalog.json"),
+                MoreResources.readResource("problematic_types_configured_catalog.json"),
                 ConfiguredAirbyteCatalog::class.java
             )
         val config = getConfig()
         val messagesIn =
-            MoreResources.readResource("v0/problematic_types_messages_in.txt").trim().lines().map {
+            MoreResources.readResource("problematic_types_messages_in.txt").trim().lines().map {
                 Jsons.deserialize(it, AirbyteMessage::class.java)
             }
 
@@ -1835,9 +1790,9 @@ abstract class DestinationAcceptanceTest(
         // Collect destination data, using the correct transformed schema
         val destinationSchemaStr =
             if (!expectUnionsPromotedToDisjointRecords) {
-                MoreResources.readResource("v0/problematic_types_coerced_schemaless_schema.json")
+                MoreResources.readResource("problematic_types_coerced_schemaless_schema.json")
             } else {
-                MoreResources.readResource("v0/problematic_types_disjoint_union_schema.json")
+                MoreResources.readResource("problematic_types_disjoint_union_schema.json")
             }
         val destinationSchema = Jsons.deserialize(destinationSchemaStr, JsonNode::class.java)
         val actual =
@@ -1852,12 +1807,10 @@ abstract class DestinationAcceptanceTest(
         val expectedMessages =
             if (!expectUnionsPromotedToDisjointRecords) {
                     MoreResources.readResource(
-                        "v0/problematic_types_coerced_schemaless_messages_out.txt"
+                        "problematic_types_coerced_schemaless_messages_out.txt"
                     )
                 } else { // expectSchemalessObjectsCoercedToStrings
-                    MoreResources.readResource(
-                        "v0/problematic_types_disjoint_union_messages_out.txt"
-                    )
+                    MoreResources.readResource("problematic_types_disjoint_union_messages_out.txt")
                 }
                 .trim()
                 .lines()
@@ -2394,16 +2347,6 @@ abstract class DestinationAcceptanceTest(
         return false
     }
 
-    /**
-     * The method should be overridden if destination connector support newer protocol version
-     * otherwise [io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion.V0] is used
-     *
-     * NOTE: Method should be public in a sake of java reflection
-     *
-     * @return
-     */
-    open fun getProtocolVersion(): ProtocolVersion = ProtocolVersion.V0
-
     private fun checkTestCompatibility(
         testCompatibility: DataTypeTestArgumentProvider.TestCompatibility
     ): Boolean {
@@ -2432,119 +2375,6 @@ abstract class DestinationAcceptanceTest(
             it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
         }
         val messages = readMessagesFromFile(messagesFilename)
-
-        runAndCheck(catalog, configuredCatalog, messages)
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testSyncNumberNanDataType() {
-        // NaN/Infinity protocol supports started from V1 version or higher
-        val numericTypesSupport = specialNumericTypesSupportTest
-        if (getProtocolVersion() == ProtocolVersion.V0 || !numericTypesSupport.supportNumberNan) {
-            return
-        }
-        val catalog =
-            readCatalogFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.NUMBER_TYPE_CATALOG,
-                    getProtocolVersion()
-                )
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages =
-            readMessagesFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.NAN_TYPE_MESSAGE,
-                    getProtocolVersion()
-                )
-            )
-
-        runAndCheck(catalog, configuredCatalog, messages)
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testSyncIntegerNanDataType() {
-        // NaN/Infinity protocol supports started from V1 version or higher
-        val numericTypesSupport = specialNumericTypesSupportTest
-        if (getProtocolVersion() == ProtocolVersion.V0 || !numericTypesSupport.supportIntegerNan) {
-            return
-        }
-        val catalog =
-            readCatalogFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.INTEGER_TYPE_CATALOG,
-                    getProtocolVersion()
-                )
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages =
-            readMessagesFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.NAN_TYPE_MESSAGE,
-                    getProtocolVersion()
-                )
-            )
-
-        runAndCheck(catalog, configuredCatalog, messages)
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testSyncNumberInfinityDataType() {
-        // NaN/Infinity protocol supports started from V1 version or higher
-        val numericTypesSupport = specialNumericTypesSupportTest
-        if (
-            getProtocolVersion() == ProtocolVersion.V0 || !numericTypesSupport.supportNumberInfinity
-        ) {
-            return
-        }
-        val catalog =
-            readCatalogFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.NUMBER_TYPE_CATALOG,
-                    getProtocolVersion()
-                )
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages =
-            readMessagesFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.INFINITY_TYPE_MESSAGE,
-                    getProtocolVersion()
-                )
-            )
-
-        runAndCheck(catalog, configuredCatalog, messages)
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testSyncIntegerInfinityDataType() {
-        // NaN/Infinity protocol supports started from V1 version or higher
-        val numericTypesSupport = specialNumericTypesSupportTest
-        if (
-            getProtocolVersion() == ProtocolVersion.V0 ||
-                !numericTypesSupport.supportIntegerInfinity
-        ) {
-            return
-        }
-        val catalog =
-            readCatalogFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.INTEGER_TYPE_CATALOG,
-                    getProtocolVersion()
-                )
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages =
-            readMessagesFromFile(
-                ArgumentProviderUtil.prefixFileNameByVersion(
-                    DataTypeTestArgumentProvider.Companion.INFINITY_TYPE_MESSAGE,
-                    getProtocolVersion()
-                )
-            )
 
         runAndCheck(catalog, configuredCatalog, messages)
     }
@@ -2731,21 +2561,6 @@ abstract class DestinationAcceptanceTest(
                 "Pellentesque elementum vehicula egestas. Sed volutpat velit arcu, at imperdiet sapien consectetur facilisis. Suspendisse porttitor tincidunt interdum. Morbi gravida faucibus tortor, ut rutrum magna tincidunt a. Morbi eu nisi eget dui finibus hendrerit sit amet in augue. Aenean imperdiet lacus enim, a volutpat nulla placerat at. Suspendisse nibh ipsum, venenatis vel maximus ut, fringilla nec felis. Sed risus mi, egestas quis quam ullamcorper, pharetra vestibulum diam.\n" +
                 "\n" +
                 "Praesent finibus scelerisque elit, accumsan condimentum risus mattis vitae. Donec tristique hendrerit facilisis. Curabitur metus purus, venenatis non elementum id, finibus eu augue. Quisque posuere rhoncus ligula, et vehicula erat pulvinar at. Pellentesque vel quam vel lectus tincidunt congue quis id sapien. Ut efficitur mauris vitae pretium iaculis. Aliquam consectetur iaculis nisi vitae laoreet. Integer vel odio quis diam mattis tempor eget nec est. Donec iaculis facilisis neque, at dictum magna vestibulum ut. Sed malesuada non nunc ac consequat. Maecenas tempus lectus a nisl congue, ac venenatis diam viverra. Nam ac justo id nulla iaculis lobortis in eu ligula. Vivamus et ligula id sapien efficitur aliquet. Curabitur est justo, tempus vitae mollis quis, tincidunt vitae felis. Vestibulum molestie laoreet justo, nec mollis purus vulputate at.")
-
-        protected val specialNumericTypesSupportTest: SpecialNumericTypes
-            /**
-             * NaN and Infinity test are not supported by default. Please override this method to
-             * specify NaN/Infinity types support example:
-             *
-             * <pre>
-             *
-             * protected SpecialNumericTypes getSpecialNumericTypesSupportTest() { return
-             * SpecialNumericTypes.builder() .supportNumberNan(true) .supportIntegerNan(true)
-             * .build(); } </pre> *
-             *
-             * @return SpecialNumericTypes with support flags
-             */
-            get() = SpecialNumericTypes()
 
         @Throws(IOException::class)
         private fun readCatalogFromFile(catalogFilename: String): AirbyteCatalog {

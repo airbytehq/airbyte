@@ -224,9 +224,7 @@ protected constructor(
         val catalog =
             Jsons.deserialize(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )
@@ -287,9 +285,7 @@ protected constructor(
 
     private fun getSyncMessagesFixture2(): List<AirbyteMessage> {
         return MoreResources.readResource(
-                DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                    getProtocolVersion(),
-                ),
+                DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.messageFile,
             )
             .trim()
             .lines()
@@ -553,9 +549,7 @@ protected constructor(
         val dummyCatalog =
             Jsons.deserialize(
                 MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
+                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.catalogFile
                 ),
                 AirbyteCatalog::class.java
             )

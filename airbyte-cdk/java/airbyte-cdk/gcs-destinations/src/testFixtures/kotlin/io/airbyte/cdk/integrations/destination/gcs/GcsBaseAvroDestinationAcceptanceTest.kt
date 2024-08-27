@@ -9,7 +9,6 @@ import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
-import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.json.Jsons
 import java.util.*
@@ -90,6 +89,4 @@ abstract class GcsBaseAvroDestinationAcceptanceTest :
         }
         return resultDataTypes
     }
-
-    override fun getProtocolVersion() = ProtocolVersion.V1
 }

@@ -11,7 +11,6 @@ import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter.Companion.getHadoopConfig
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
-import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.json.Jsons
 import java.io.IOException
@@ -26,8 +25,6 @@ import org.apache.parquet.hadoop.ParquetReader
 
 abstract class GcsBaseParquetDestinationAcceptanceTest :
     GcsAvroParquetDestinationAcceptanceTest(FileUploadFormat.PARQUET) {
-    override fun getProtocolVersion() = ProtocolVersion.V1
-
     override val formatConfig: JsonNode?
         get() =
             Jsons.jsonNode(java.util.Map.of("format_type", "Parquet", "compression_codec", "GZIP"))

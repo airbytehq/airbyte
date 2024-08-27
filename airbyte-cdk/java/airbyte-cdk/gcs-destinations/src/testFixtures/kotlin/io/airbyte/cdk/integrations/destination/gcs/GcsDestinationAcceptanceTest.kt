@@ -14,7 +14,6 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
-import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.io.IOs
@@ -55,10 +54,6 @@ abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUplo
 
     protected val baseConfigJson: JsonNode
         get() = Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)))
-
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
 
     override fun getConfig(): JsonNode {
         return configJson!!

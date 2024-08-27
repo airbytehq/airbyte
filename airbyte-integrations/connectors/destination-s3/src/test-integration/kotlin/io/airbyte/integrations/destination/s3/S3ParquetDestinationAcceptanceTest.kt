@@ -18,10 +18,6 @@ import io.airbyte.protocol.models.v0.CatalogHelpers
 import org.junit.jupiter.api.Test
 
 class S3ParquetDestinationAcceptanceTest : S3BaseParquetDestinationAcceptanceTest() {
-    override fun getProtocolVersion(): ProtocolVersion {
-        return ProtocolVersion.V1
-    }
-
     override fun getTestDataComparator(): TestDataComparator {
         return S3AvroParquetTestDataComparator()
     }
