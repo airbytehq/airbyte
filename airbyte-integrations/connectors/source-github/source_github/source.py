@@ -50,6 +50,7 @@ from .streams import (
     Tags,
     TeamMembers,
     TeamMemberships,
+    TeamRepos,
     Teams,
     Users,
     WorkflowJobs,
@@ -264,6 +265,7 @@ class SourceGithub(AbstractSource):
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
         teams_stream = Teams(**organization_args)
+        team_repos_stream = TeamRepos(parent=teams_stream, **repository_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
@@ -301,6 +303,7 @@ class SourceGithub(AbstractSource):
             Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
             teams_stream,
+            team_repos_stream,
             team_members_stream,
             Users(**organization_args),
             Workflows(**repository_args_with_start_date),
