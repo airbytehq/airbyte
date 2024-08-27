@@ -65,28 +65,26 @@ class AirbyteBulkConnectorExtension {
         }
 
         String micronautVersion = null
-        {
-            // Use a temporary configuration to find the Micronaut version
-            // in the transitive dependencies of the Bulk CDK base.
-            def tempConfiguration = project.configurations.detachedConfiguration()
-            def baseDependency = (cdk == "local")
-                    ? project.dependencies.create(fromSource.first)
-                    : project.dependencies.create(fromJar.first)
-            tempConfiguration.dependencies.add(baseDependency)
-            tempConfiguration.resolvedConfiguration.firstLevelModuleDependencies.each {resolvedDependency ->
-                resolvedDependency.children.each { transitiveDependency ->
-                    if (micronautVersion == null &&
-                            transitiveDependency.moduleGroup == TARGET_GROUP &&
-                            transitiveDependency.moduleName == TARGET_MODULE) {
-                        micronautVersion = transitiveDependency.moduleVersion
-                    }
+        // Use a temporary configuration to find the Micronaut version
+        // in the transitive dependencies of the Bulk CDK base.
+        def tempConfiguration = project.configurations.detachedConfiguration()
+        def baseDependency = (cdk == "local")
+                ? project.dependencies.create(fromSource.first)
+                : project.dependencies.create(fromJar.first)
+        tempConfiguration.dependencies.add(baseDependency)
+        tempConfiguration.resolvedConfiguration.firstLevelModuleDependencies.each {resolvedDependency ->
+            resolvedDependency.children.each { transitiveDependency ->
+                if (micronautVersion == null &&
+                        transitiveDependency.moduleGroup == TARGET_GROUP &&
+                        transitiveDependency.moduleName == TARGET_MODULE) {
+                    micronautVersion = transitiveDependency.moduleVersion
                 }
             }
-            if (micronautVersion == null) {
-                throw new IllegalArgumentException(
-                        "Micronaut version number not found; $TARGET_GROUP:$TARGET_MODULE is not a transitive dependency."
-                )
-            }
+        }
+        if (micronautVersion == null) {
+            throw new IllegalArgumentException(
+                    "Micronaut version number not found; $TARGET_GROUP:$TARGET_MODULE is not a transitive dependency."
+            )
         }
         final String kspDependency = "io.micronaut:micronaut-inject-kotlin:$micronautVersion"
 
