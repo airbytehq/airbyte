@@ -128,6 +128,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -149,6 +150,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -167,6 +169,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -185,6 +188,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -203,6 +207,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -221,6 +226,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -240,6 +246,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -259,6 +266,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -277,6 +285,7 @@ workflows:
           executor:
             name: aws-ecr/default
             use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
