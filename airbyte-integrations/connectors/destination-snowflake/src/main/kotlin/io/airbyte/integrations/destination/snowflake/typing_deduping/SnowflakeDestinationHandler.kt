@@ -123,7 +123,7 @@ class SnowflakeDestinationHandler(
 
         val rawTableName = id.rawName + suffix
         var tableExists = false
-        var showTablesResult: List<JsonNode> = listOf()
+
 
         try {
             val showTablesQuery =
@@ -139,7 +139,7 @@ class SnowflakeDestinationHandler(
 //                    databaseName,
 //                    id.rawNamespace,
 //                    )
-            showTablesResult = database.queryJsons(
+            val showTablesResult = database.queryJsons(
                 showTablesQuery,
             )
             if(showTablesResult.size > 0) {
