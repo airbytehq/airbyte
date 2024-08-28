@@ -39,7 +39,9 @@ In order to connect, you need:
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                        |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------- |
+|:--------| :--------- | :-------------------------------------------------------- | :----------------------------- |
+| 0.1.17 | 2024-08-24 | [44632](https://github.com/airbytehq/airbyte/pull/44632) | Update dependencies |
+| 0.1.16 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.1.15 | 2024-08-17 | [44269](https://github.com/airbytehq/airbyte/pull/44269) | Update dependencies |
 | 0.1.14 | 2024-08-10 | [43462](https://github.com/airbytehq/airbyte/pull/43462) | Update dependencies |
 | 0.1.13 | 2024-08-03 | [43200](https://github.com/airbytehq/airbyte/pull/43200) | Update dependencies |

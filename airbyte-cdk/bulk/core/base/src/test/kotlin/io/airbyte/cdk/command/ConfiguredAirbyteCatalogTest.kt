@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.Field
@@ -69,7 +70,35 @@ class ConfiguredAirbyteCatalogTest {
         Assertions.assertEquals(expected, actual)
     }
 
+    @Test
+    fun testSchemaViolation() {
+        // Check that JSON is valid.
+        Assertions.assertDoesNotThrow {
+            Jsons.readTree(ResourceUtils.readResource(INVALID_CATALOG_RESOURCE))
+        }
+        // Check that schema is invalid.
+        Assertions.assertThrows(ConfigErrorException::class.java) {
+            ConfiguredCatalogFactory().makeFromTestResource(INVALID_CATALOG_RESOURCE)
+        }
+    }
+
+    @Test
+    fun testNoNamespace() {
+        // Check that JSON is valid.
+        Assertions.assertDoesNotThrow {
+            Jsons.readTree(ResourceUtils.readResource(NO_NAMESPACE_CATALOG_RESOURCE))
+        }
+        // Check that schema validation is not too strict.
+        // Some validators may believe that the namespace cannot be null,
+        // despite it not being a required field.
+        Assertions.assertDoesNotThrow {
+            ConfiguredCatalogFactory().makeFromTestResource(NO_NAMESPACE_CATALOG_RESOURCE)
+        }
+    }
+
     companion object {
         const val CATALOG_RESOURCE = "command/catalog.json"
+        const val INVALID_CATALOG_RESOURCE = "command/catalog-invalid.json"
+        const val NO_NAMESPACE_CATALOG_RESOURCE = "command/catalog-no-namespace.json"
     }
 }
