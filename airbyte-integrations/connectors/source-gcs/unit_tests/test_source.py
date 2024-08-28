@@ -33,7 +33,7 @@ def _mock_encoding_error():
     DefaultFileBasedAvailabilityStrategy.check_availability_and_parsability = Mock(side_effect=AirbyteTracedException(message="encoding error"))
 
 
-def test_check_connection_with_bad_encoding(logger):
+def test_check_connection_with_airbyte_traced_exception(logger):
     config = SourceGCS.read_config(f"{_config_path()}/config_bad_encoding_single_stream.json")
     catalog = SourceGCS.read_catalog(f"{_catalog_path()}/catalog_bad_encoding.json")
     source = _source_gcs(catalog, config)
@@ -45,7 +45,7 @@ def test_check_connection_with_bad_encoding(logger):
     assert re.search(r"^Unable to connect.+encoding error", ate.value.message)
 
 
-def test_check_connection_with_bad_encoding_multiple_failures(logger):
+def test_check_connection_with_airbyte_traced_exception_multiple_failures(logger):
     config = SourceGCS.read_config(f"{_config_path()}/config_bad_encoding.json")
     catalog = SourceGCS.read_catalog(f"{_catalog_path()}/catalog_bad_encoding.json")
     source = _source_gcs(catalog, config)
