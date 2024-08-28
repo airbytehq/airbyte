@@ -140,6 +140,18 @@ class PushConnectorImageToRegistry(Step):
     def latest_docker_image_name(self) -> str:
         return f"{self.context.docker_repository}:latest"
 
+    @property
+    def should_push_latest_tag(self) -> bool:
+        """
+        We don't want to push the latest tag for release candidates or pre-releases.
+
+        Returns:
+            bool: True if the latest tag should be pushed, False otherwise.
+        """
+        is_release_candidate = self.context.connector.metadata.get("releases", {}).get("isReleaseCandidate", False)
+        is_pre_release = self.context.pre_release
+        return not is_release_candidate and not is_pre_release
+
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
@@ -147,7 +159,7 @@ class PushConnectorImageToRegistry(Step):
                 platform_variants=built_containers_per_platform[1:],
                 forced_compression=ImageLayerCompression.Gzip,
             )
-            if not self.context.pre_release:
+            if self.should_push_latest_tag:
                 image_ref = await built_containers_per_platform[0].publish(
                     f"docker.io/{self.latest_docker_image_name}",
                     platform_variants=built_containers_per_platform[1:],

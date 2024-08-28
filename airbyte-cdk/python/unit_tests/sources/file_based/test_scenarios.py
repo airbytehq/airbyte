@@ -182,12 +182,11 @@ def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Tes
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
-        with pytest.raises(expected_exc):
-            output = check(capsys, tmp_path, scenario)
-            if expected_msg:
-                # expected_msg is a string. what's the expected value field?
-                assert expected_msg in output["message"]  # type: ignore
-                assert output["status"] == scenario.expected_check_status
+        with pytest.raises(expected_exc) as exc:
+            check(capsys, tmp_path, scenario)
+
+        if expected_msg:
+            assert expected_msg in exc.value.message
 
     else:
         output = check(capsys, tmp_path, scenario)
