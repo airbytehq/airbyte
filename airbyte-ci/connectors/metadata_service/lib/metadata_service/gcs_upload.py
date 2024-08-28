@@ -45,10 +45,24 @@ class UploadedFile:
 
 
 @dataclass(frozen=True)
+class DeletedFile:
+    id: str
+    deleted: bool
+    description: str
+    blob_id: Optional[str]
+
+
+@dataclass(frozen=True)
 class MetadataUploadInfo:
     metadata_uploaded: bool
     metadata_file_path: str
     uploaded_files: List[UploadedFile]
+
+
+@dataclass(frozen=True)
+class MetadataDeleteInfo:
+    metadata_deleted: bool
+    deleted_files: List[DeletedFile]
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -116,6 +130,14 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
         blob_to_save.cache_control = "no-cache"
 
     blob_to_save.upload_from_filename(file_path)
+
+    return True
+
+
+def _delete_blob_from_gcs(blob_to_delete: storage.blob.Blob) -> bool:
+    """Deletes a blob from the bucket."""
+    print(f"Deleting {blob_to_delete.name}...")
+    blob_to_delete.delete()
 
     return True
 
@@ -279,6 +301,16 @@ def _apply_modifications_to_metadata_file(original_metadata_file_path: Path, val
     return _write_metadata_to_tmp_file(metadata)
 
 
+def _get_storage_client() -> storage.Client:
+    gcs_creds = os.environ.get("GCS_CREDENTIALS")
+    if not gcs_creds:
+        raise ValueError("Please set the GCS_CREDENTIALS env var.")
+
+    service_account_info = json.loads(gcs_creds)
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
+    return storage.Client(credentials=credentials)
+
+
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
 
@@ -304,13 +336,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
     should_upload_release_candidate = is_release_candidate and not is_pre_release
     should_upload_latest = not is_release_candidate and not is_pre_release
-    gcs_creds = os.environ.get("GCS_CREDENTIALS")
-    if not gcs_creds:
-        raise ValueError("Please set the GCS_CREDENTIALS env var.")
 
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    storage_client = storage.Client(credentials=credentials)
+    storage_client = _get_storage_client()
     bucket = storage_client.bucket(bucket_name)
     docs_path = Path(validator_opts.docs_path)
 
@@ -400,4 +427,125 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
                 blob_id=doc_inapp_latest_blob_id,
             ),
         ],
+    )
+
+
+def delete_release_candidate_from_gcs(bucket_name: str, docker_repository, connector_version) -> MetadataDeleteInfo:
+    """Delete a release candidate from a GCS bucket.
+    The release candidate and version metadata file will be deleted.
+    We first check that the release candidate metadata file hash matches the version metadata file hash.
+
+    Args:
+        bucket_name (str): Name of the GCS bucket from which the release candidate will be deleted.
+        docker_repository (str): Name of the connector docker image.
+        connector_version (str): Version of the connector.
+    """
+    storage_client = _get_storage_client()
+    bucket = storage_client.bucket(bucket_name)
+
+    version_path = get_metadata_remote_file_path(docker_repository, connector_version)
+    rc_path = get_metadata_remote_file_path(docker_repository, RELEASE_CANDIDATE_GCS_FOLDER_NAME)
+
+    version_blob = bucket.blob(version_path)
+    rc_blob = bucket.blob(rc_path)
+
+    if not version_blob.exists():
+        raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket. ")
+    if not rc_blob.exists():
+        raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket. ")
+    if rc_blob.md5_hash != version_blob.md5_hash:
+        raise ValueError(
+            f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete."
+        )
+
+    deleted_files = []
+    rc_blob.delete()
+    deleted_files.append(
+        DeletedFile(
+            id="release_candidate_metadata",
+            deleted=True,
+            description="release candidate metadata",
+            blob_id=rc_blob.id,
+        )
+    )
+    version_blob.delete()
+    deleted_files.append(
+        DeletedFile(
+            id="version_metadata",
+            deleted=True,
+            description="versioned metadata",
+            blob_id=version_blob.id,
+        )
+    )
+
+    return MetadataDeleteInfo(
+        metadata_deleted=True,
+        deleted_files=deleted_files,
+    )
+
+
+def promote_release_candidate_in_gcs(
+    bucket_name: str, docker_repository, connector_version
+) -> Tuple[MetadataUploadInfo, MetadataDeleteInfo]:
+    """Promote a release candidate to the latest version in a GCS bucket.
+    The release candidate metadata file will be copied to the latest metadata file and then deleted.
+    We first check that the release candidate metadata file hash matches the version metadata file hash.
+
+    Args:
+        bucket_name (str): Name of the GCS bucket from which the release candidate will be deleted.
+        docker_repository (str): Name of the connector docker image.
+        connector_version (str): Version of the connector.
+    """
+
+    storage_client = _get_storage_client()
+    bucket = storage_client.bucket(bucket_name)
+
+    version_path = get_metadata_remote_file_path(docker_repository, connector_version)
+    rc_path = get_metadata_remote_file_path(docker_repository, RELEASE_CANDIDATE_GCS_FOLDER_NAME)
+    latest_path = get_metadata_remote_file_path(docker_repository, LATEST_GCS_FOLDER_NAME)
+
+    version_blob = bucket.blob(version_path)
+    latest_blob = bucket.blob(latest_path)
+    rc_blob = bucket.blob(rc_path)
+
+    if not version_blob.exists():
+        raise FileNotFoundError(f"Version metadata file {version_path} does not exist in the bucket.")
+    if not rc_blob.exists():
+        raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket.")
+
+    if rc_blob.md5_hash != version_blob.md5_hash:
+        raise ValueError(
+            f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to promote."
+        )
+
+    uploaded_files = []
+    deleted_files = []
+
+    bucket.copy_blob(rc_blob, bucket, latest_blob)
+    uploaded_files.append(
+        UploadedFile(
+            id="latest_metadata",
+            uploaded=True,
+            description="latest metadata",
+            blob_id=latest_blob.id,
+        )
+    )
+
+    rc_blob.delete()
+    deleted_files.append(
+        DeletedFile(
+            id="release_candidate_metadata",
+            deleted=True,
+            description="release candidate metadata",
+            blob_id=rc_blob.id,
+        )
+    )
+
+    return MetadataUploadInfo(
+        metadata_uploaded=True,
+        metadata_file_path=str(version_path),
+        uploaded_files=uploaded_files,
+    ), MetadataDeleteInfo(
+        metadata_deleted=True,
+        deleted_files=deleted_files,
     )
