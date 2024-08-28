@@ -25,7 +25,6 @@ keywords = ["airbyte", "connector-development-kit", "cdk"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-airbyte-protocol-models-pdv2 = "^0.12.2"
 airbyte-protocol-models-dataclasses = "^0.13"
 backoff = "*"
 cachetools = "*"

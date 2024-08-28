@@ -149,20 +149,6 @@ files = [
 ]
 
 [[package]]
-name = "airbyte-protocol-models-pdv2"
-version = "0.12.2"
-description = "Declares the Airbyte Protocol."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "airbyte_protocol_models_pdv2-0.12.2-py3-none-any.whl", hash = "sha256:8b3f9d0388928547cdf2e9134c0d589e4bcaa6f63bf71a21299f6824bfb7ad0e"},
-    {file = "airbyte_protocol_models_pdv2-0.12.2.tar.gz", hash = "sha256:130c9ab289f3f53749ce63ff1abbfb67a44b7e5bd2794865315a2976138b672b"},
-]
-
-[package.dependencies]
-pydantic = ">=2.7.2,<3.0.0"
-
-[[package]]
 name = "alabaster"
 version = "0.7.16"
 description = "A light, configurable Sphinx theme"
@@ -5386,4 +5372,4 @@ vector-db-based = ["cohere", "langchain", "openai", "tiktoken"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ec71e2d2f4e10aed63845467b9ba6157e3181f0b06a703fd2eba98e374694f85"
+content-hash = "1759d8574c392cf39fccff997263873168087159c5f741314ceff6db4e5a32af"
