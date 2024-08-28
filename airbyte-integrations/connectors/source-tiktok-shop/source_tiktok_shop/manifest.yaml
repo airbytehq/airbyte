@@ -22,7 +22,7 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
           request_headers:
             content-type: application/json
@@ -51,7 +51,7 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
           request_headers:
@@ -77,8 +77,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
-            stop_condition: "{{ not response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -96,10 +96,10 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
-            locale: "{{ config[\"locale_code\"] }}"
+            locale: '{{ config["locale_code"] }}'
           request_headers:
             content-type: application/json
             x-tts-access-token: token-from-oauth #--FIX w/ custom auth
@@ -127,7 +127,7 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
           request_headers:
@@ -166,10 +166,10 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
-            locale: "{{ config[\"locale_code\"] }}"
+            locale: '{{ config["locale_code"] }}'
           request_headers:
             content-type: application/json
             x-tts-access-token: token-from-oauth #--FIX w/ custom auth
@@ -205,7 +205,7 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
             return_under_review_version: "true"
@@ -244,7 +244,7 @@ definitions:
           http_method: POST
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
           request_headers:
@@ -270,8 +270,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
-            stop_condition: "{{ not response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -280,7 +280,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -292,7 +292,7 @@ definitions:
           inject_into: body_json
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"end_date\"] }}"
+          datetime: '{{ config["end_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -309,10 +309,10 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             category_ids: "[{{ stream_partition['category_id'] }}]"
-            locale: "{{ config[\"locale_code\"] }}"
+            locale: '{{ config["locale_code"] }}'
           request_headers:
             content-type: application/json
             x-tts-access-token: token-from-oauth #--FIX w/ custom auth
@@ -348,7 +348,7 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
             ids: "[{{ stream_partition['order_id'] }}]"
@@ -387,7 +387,7 @@ definitions:
           http_method: POST
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
           request_headers:
@@ -413,8 +413,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
-            stop_condition: "{{ not response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -423,7 +423,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -435,7 +435,7 @@ definitions:
           inject_into: body_json
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"end_date\"] }}"
+          datetime: '{{ config["end_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -454,7 +454,7 @@ definitions:
           http_method: GET
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
           request_headers:
@@ -491,7 +491,7 @@ definitions:
           http_method: POST
           request_parameters:
             sign: sign #--FIX w/ custom auth
-            app_key: "{{ config[\"app_key\"] }}"
+            app_key: '{{ config["app_key"] }}'
             timestamp: "{{ timestamp(now_utc()) }}"
             shop_cipher: shop_cipher #--FIX
           request_headers:
@@ -517,8 +517,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 100
-            cursor_value: "{{ response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
-            stop_condition: "{{ not response.get(\"data\", {}).get(\"next_page_token\", {}) }}"
+            cursor_value: '{{ response.get("data", {}).get("next_page_token", {}) }}'
+            stop_condition: '{{ not response.get("data", {}).get("next_page_token", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -527,7 +527,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -539,7 +539,7 @@ definitions:
           inject_into: body_json
         end_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"end_date\"] }}"
+          datetime: '{{ config["end_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
