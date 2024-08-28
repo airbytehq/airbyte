@@ -145,6 +145,35 @@
           "creative_type": {"type": ["string", "null"]}
         }
       }
+    },
+    "creative_sets": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "creative_set_id": {"type": ["integer", "null"]},
+          "combination_method": {"type": ["integer", "null"]},
+          "offer_id":  {"type": ["integer", "null"]},
+          "creative_set_name": {"type": ["string", "null"]},
+          "ad_outputs":  {"type": ["array", "null"]},
+          "geo": {"type": ["array", "null"]},
+          "creatives":  {
+            "type": ["array", "null"],
+            "items": {
+              "type": "object",
+              "properties": {
+                "creative_md5": {"type": ["string", "null"]},
+                "creative_name": {"type": ["string", "null"]},
+                "audit_reason": {"type": ["string", "null"]},
+                "audit_status": {"type": ["integer", "null"]},
+                "created_at": {"type": ["string", "null"]},
+                "dimension": {"type": ["string", "null"]},
+                "creative_type": {"type": ["string", "null"]}
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

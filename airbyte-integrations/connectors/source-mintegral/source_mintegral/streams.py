@@ -22,7 +22,7 @@ class MintegralStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()["data"]
         if response_json["limit"] * response_json["page"] < response_json["total"]:
-            return {"limit": self.page_size, "ext_fields": "creatives", "page": response_json["page"] + 1}
+            return {"limit": self.page_size, "ext_fields": "creatives,creative_sets", "page": response_json["page"] + 1}
         return None
 
     def request_params(
@@ -36,7 +36,7 @@ class MintegralStream(HttpStream, ABC):
         else:
             return {
                 "limit": self.page_size,
-                "ext_fields": "creatives"
+                "ext_fields": "creatives,creative_sets"
             }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
