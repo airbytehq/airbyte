@@ -2,7 +2,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Optional
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler

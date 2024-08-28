@@ -79,11 +79,11 @@ class AbstractSource(Source, ABC):
         for stream in self.streams(config=config):
             try:
                 streams.append(stream.as_airbyte_stream())
-            except Exception as e:
-                self.discover_error_handler().handle_discover_error(stream.logger, e, stream)
+            except Exception as exception:
+                self.discover_error_handler().handle_discover_error(logger=stream.logger, exception=exception, stream=stream)
 
         if not streams:
-            raise Exception("No streams were discovered in the source. Please check the source configuration.")
+            raise AirbyteTracedException(message="No streams were discovered in the source. Please check the source configuration.", failure_type=FailureType.config_error)
 
         return AirbyteCatalog(streams=streams)
 
