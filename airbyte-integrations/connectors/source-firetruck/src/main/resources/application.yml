@@ -13,3 +13,11 @@ airbyte:
         memory-capacity-ratio: 0.6
         estimated-record-overhead-bytes: 16
         estimated-field-overhead-bytes: 16
+
+    check:
+      jdbc:
+        queries:
+          - >-
+            SELECT 'version "' || banner || '" < 19 is not supported'
+            FROM (SELECT banner, REGEXP_SUBSTR(banner, '\d+') AS major_version FROM v$version)
+            WHERE major_version < 19

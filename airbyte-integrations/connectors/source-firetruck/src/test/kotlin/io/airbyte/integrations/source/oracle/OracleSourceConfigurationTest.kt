@@ -69,7 +69,7 @@ class OracleSourceConfigurationTest {
             )
         Assertions.assertEquals(expectedProperties, conf.jdbcProperties)
         Assertions.assertEquals("FOO", conf.defaultSchema)
-        Assertions.assertEquals(setOf("FOO"), conf.schemas)
+        Assertions.assertEquals(setOf("FOO"), conf.namespaces)
     }
 
     @Test

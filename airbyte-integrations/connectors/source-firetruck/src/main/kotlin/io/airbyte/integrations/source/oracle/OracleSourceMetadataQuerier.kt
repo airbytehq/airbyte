@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.oracle
 
+import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.GenericUserDefinedType
@@ -11,6 +12,7 @@ import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.discover.UserDefinedArray
 import io.airbyte.cdk.discover.UserDefinedType
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -304,17 +306,21 @@ WHERE
     @Singleton
     @Primary
     class Factory(
+        val constants: DefaultJdbcConstants,
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
+        val checkQueries: JdbcCheckQueries,
     ) : MetadataQuerier.Factory<OracleSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: OracleSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(
+                    constants,
                     config,
                     selectQueryGenerator,
                     fieldTypeMapper,
+                    checkQueries,
                     jdbcConnectionFactory,
                 )
             return OracleSourceMetadataQuerier(base)
