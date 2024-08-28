@@ -90,12 +90,12 @@ definitions:
           fields:
             - path:
                 - email_hash
-              value: "{{ record[\"email\"] | hash(\"md5\") }}"
+              value: '{{ record["email"] | hash("md5") }}'
         - type: AddFields
           fields:
             - path:
                 - phone_number_hash
-              value: "{{ record[\"phone_number\"] | hash(\"md5\") }}"
+              value: '{{ record["phone_number"] | hash("md5") }}'
         - type: RemoveFields
           field_pointers:
             - - email
@@ -114,7 +114,7 @@ definitions:
     url_base: https://api.lu.ma/public/v1
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: x-luma-api-key
