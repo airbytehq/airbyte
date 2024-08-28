@@ -49,7 +49,7 @@ class ConnectorStateManager:
         :param namespace: Namespace of the stream being fetched
         :return: The per-stream state for a stream
         """
-        stream_state: AirbyteStateBlob = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
+        stream_state: AirbyteStateBlob | None = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
             return copy.deepcopy({k: v for k, v in stream_state.__dict__.items()})
         return {}
@@ -102,19 +102,19 @@ class ConnectorStateManager:
 
         if is_global:
             global_state = state[0].global_  # type: ignore # We verified state is a list in _is_global_state
-            shared_state = copy.deepcopy(global_state.shared_state, {})
+            shared_state = copy.deepcopy(global_state.shared_state, {})  # type: ignore[union-attr] # global_state has shared_state
             streams = {
                 HashableStreamDescriptor(
                     name=per_stream_state.stream_descriptor.name, namespace=per_stream_state.stream_descriptor.namespace
                 ): per_stream_state.stream_state
-                for per_stream_state in global_state.stream_states
+                for per_stream_state in global_state.stream_states  # type: ignore[union-attr] # global_state has shared_state
             }
             return shared_state, streams
         else:
             streams = {
                 HashableStreamDescriptor(
-                    name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace
-                ): per_stream_state.stream.stream_state
+                    name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace # type: ignore[union-attr] # stream has stream_descriptor
+                ): per_stream_state.stream.stream_state  # type: ignore[union-attr] # stream has stream_state
                 for per_stream_state in state
                 if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore # state is always a list of AirbyteStateMessage if is_per_stream is True
             }
