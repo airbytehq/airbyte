@@ -7,7 +7,9 @@ from __future__ import annotations
 import logging
 import importlib
 import inspect
+import os
 import re
+import sys
 from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
@@ -483,12 +485,29 @@ class ModelToComponentFactory:
 
         kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
         return custom_component_class(**kwargs)
-
+    
     @staticmethod
-    def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
+    def get_module_base():
+        """Gets the base module of the current script"""
+        main_module = sys.modules['__main__']
+        main_module_file = getattr(main_module, '__file__', None)
+        if main_module_file:
+            main_dir = os.path.dirname(main_module_file)
+            parent_dir = os.path.dirname(main_dir)
+
+            for item in os.listdir(parent_dir):
+                if os.path.isdir(os.path.join(parent_dir, item)) and re.match(r'source_*', item):
+                    return item
+        return None
+
+    def _get_class_from_fully_qualified_class_name(self, full_qualified_class_name: str) -> Any:
+        main_module = self.get_module_base()
+        print(f"Main module: {main_module}")
         split = full_qualified_class_name.split(".")
         print(f"Split: {split}")
         module = ".".join(split[:-1])
+        if module != main_module:
+            module = f"{main_module}.{module}"
         print(f"Module: {module}")
         class_name = split[-1]
         print(f"Class: {class_name}")
