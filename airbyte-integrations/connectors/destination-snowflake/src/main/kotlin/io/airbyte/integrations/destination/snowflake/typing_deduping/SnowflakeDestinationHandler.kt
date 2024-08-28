@@ -38,7 +38,6 @@ import java.util.*
 import java.util.stream.Collectors
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.apache.commons.text.StringSubstitutor
-import org.json.JSONObject
 import org.jooq.SQLDialect
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -593,13 +592,7 @@ class SnowflakeDestinationHandler(
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
                         val columnName = result["column_name"].asText()
-                        //TODO: Remove the dataTypeOLD
-                        var dataTypeOLD = changeDataTypeFromShowQuery(JSONObject(result["data_type"].asText()).getString("type"))
-                        var dataType = changeDataTypeFromShowQuery(ObjectMapper().readTree(result["data_type"].asText()).path("type").asText())
-
-                        println("dataTypeOLD=" + dataTypeOLD)
-                        println("dataType=" + dataType)
-
+                        val dataType = changeDataTypeFromShowQuery(ObjectMapper().readTree(result["data_type"].asText()).path("type").asText())
                         val isNullable = result["null?"].asText()
                         val tableDefinition =
                             existingTablesFromShowQuery

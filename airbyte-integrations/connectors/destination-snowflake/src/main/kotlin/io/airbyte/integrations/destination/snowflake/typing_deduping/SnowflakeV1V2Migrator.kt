@@ -15,11 +15,9 @@ import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.changeDataTypeFromShowQuery
-import java.sql.SQLException
 import java.util.*
 import lombok.SneakyThrows
 import net.snowflake.client.jdbc.SnowflakeSQLException
-import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -90,8 +88,6 @@ class SnowflakeV1V2Migrator(
                         map[row["column_name"].asText()] =
                             ColumnDefinition(
                                 row["column_name"].asText(),
-                                //row["data_type"].asText(),
-                                //changeDataTypeFromShowQuery(JSONObject(row["data_type"].asText()).getString("type")),
                                 changeDataTypeFromShowQuery(ObjectMapper().readTree(row["data_type"].asText()).path("type").asText()),
                                 0,
                                 row["null?"].asText().toBoolean(),
