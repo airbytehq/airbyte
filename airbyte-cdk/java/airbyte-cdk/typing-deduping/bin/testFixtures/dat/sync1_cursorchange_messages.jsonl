@@ -1,4 +1,0 @@
-{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": 200, "old_cursor": 0, "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}}}}
-{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": 200, "old_cursor": 1, "_ab_cdc_deleted_at": null, "name": "Alice", "address": {"city": "Los Angeles", "state": "CA"}}}}
-{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 1, "id2": 201, "old_cursor": 2, "name": "Bob", "address": {"city": "Boston", "state": "MA"}}}}
-{"type": "RECORD", "record": {"emitted_at": 1000, "data": {"id1": 2, "id2": 200, "old_cursor": 3, "name": "Charlie", "age": "this is not an integer", "registration_date": "this is not a date"}}}
