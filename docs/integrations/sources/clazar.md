@@ -112,7 +112,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 1.0.0   | 2024-08-30 | [43718](https://github.com/airbytehq/airbyte/pull/43718) | Using incremental APIs for online data                                    |
+| 1.0.0   | 2024-08-30 | [44855](https://github.com/airbytehq/airbyte/pull/44855) | Using incremental APIs for online data                                    |
 | 0.3.0   | 2024-08-21 | [44523](https://github.com/airbytehq/airbyte/pull/44523) | Refactor connector to manifest-only format                                |
 | 0.2.6   | 2024-08-17 | [44217](https://github.com/airbytehq/airbyte/pull/44217) | Update dependencies                                                       |
 | 0.2.5   | 2024-08-12 | [43768](https://github.com/airbytehq/airbyte/pull/43768) | Update dependencies                                                       |
