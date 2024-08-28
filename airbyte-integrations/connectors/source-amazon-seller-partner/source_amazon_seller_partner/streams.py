@@ -140,6 +140,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, CheckpointMixin, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         stream_data = response.json()
+
         next_page_token = stream_data.get("payload").get(self.next_page_token_field)
         if next_page_token:
             return {self.next_page_token_field: next_page_token}
