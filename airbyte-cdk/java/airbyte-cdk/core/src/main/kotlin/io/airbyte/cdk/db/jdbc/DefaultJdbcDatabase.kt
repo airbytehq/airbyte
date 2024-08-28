@@ -115,6 +115,31 @@ constructor(
         statementCreator: CheckedFunction<Connection, PreparedStatement, SQLException>,
         recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
+
+
+        //TODO: Temporary version of code for testing the .use for connection
+
+        dataSource.connection.use { connection ->
+
+            return JdbcDatabase.Companion.toUnsafeStream<T>(
+                statementCreator.apply(connection).executeQuery(),
+                recordTransform
+            )
+                .onClose(
+                    Runnable {
+                        try {
+                            LOGGER.info { "closing connection" }
+                            connection.close()
+                        } catch (e: SQLException) {
+                            throw RuntimeException(e)
+                        }
+                    }
+                )
+
+        }
+
+
+        /* NEW VERSION OF WORKING CODE
         var connection = dataSource.connection
 
         try {
@@ -139,5 +164,8 @@ constructor(
             }
             throw e
         }
+
+         */
+
     }
 }
