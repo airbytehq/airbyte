@@ -332,9 +332,11 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
@@ -400,9 +402,11 @@ class ModelToComponentFactory:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             config=config,
             parameters=model.parameters or {},
         )
@@ -485,25 +489,23 @@ class ModelToComponentFactory:
 
         kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
         return custom_component_class(**kwargs)
-    
+
     @staticmethod
     def get_module_base():
         """Gets the base module of the current script"""
-        main_module = sys.modules['__main__']
-        main_module_file = getattr(main_module, '__file__', None)
-        print(f"Main module file: {main_module_file}")
+        main_module = sys.modules.get("__main__")
+        main_module_file = getattr(main_module, "__file__", None)
 
-        if main_module_file:
-            main_dir = os.path.dirname(main_module_file)
-            print(f"Main dir: {main_dir}")
-            parent_dir = os.path.dirname(main_dir)
-            print(f"Parent dir: {parent_dir}")
+        if not main_module_file:
+            return None
 
-            for item in os.listdir(parent_dir):
-                print(f"Checking dir_item: {item}")
-                if os.path.isdir(os.path.join(parent_dir, item)) and re.match(r'source_.*', item):
-                    print(f"Found matching item: {item}")
-                    return item
+        main_dir = os.path.dirname(main_module_file)
+        parent_dir = os.path.dirname(main_dir)
+
+        for item in os.scandir(parent_dir):
+            if item.is_dir() and re.match(r"source_.*", item.name):
+                return item.name
+
         return None
 
     def _get_class_from_fully_qualified_class_name(self, full_qualified_class_name: str) -> Any:
