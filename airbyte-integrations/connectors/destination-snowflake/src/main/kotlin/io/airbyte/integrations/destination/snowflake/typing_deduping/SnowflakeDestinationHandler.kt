@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -26,7 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.changeDataTypeFromShowQuery
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
@@ -76,14 +77,19 @@ class SnowflakeDestinationHandler(
             val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
             for (stream in streamIds) {
                 val showColumnsQuery =
-                    String.format(
-                            """
-                                SHOW TABLES LIKE '%s' IN "%s"."%s";
-                            """.trimIndent(),
-                            stream.finalName,
-                            databaseName,
-                            stream.finalNamespace,
-                            )
+                    """
+                    SHOW TABLES LIKE '${stream.finalName}' IN "$databaseName"."${stream.finalNamespace}";
+                    """.trimIndent()
+
+//                    String.format(
+//                            """
+//                                SHOW TABLES LIKE '%s' IN "%s"."%s";
+//                            """.trimIndent(),
+//                            stream.finalName,
+//                            databaseName,
+//                            stream.finalNamespace,
+//                            )
+
                 val showColumnsResult = database.queryJsons(
                     showColumnsQuery,
                 )
@@ -121,14 +127,18 @@ class SnowflakeDestinationHandler(
 
         try {
             val showTablesQuery =
-                String.format(
                     """
-                        SHOW TABLES LIKE '%s' IN "%s"."%s";
-                    """.trimIndent(),
-                    rawTableName,
-                    databaseName,
-                    id.rawNamespace,
-                    )
+                        SHOW TABLES LIKE '$rawTableName' IN "$databaseName"."${id.rawNamespace}";
+                    """.trimIndent()
+
+//            String.format(
+//                    """
+//                        SHOW TABLES LIKE '%s' IN "%s"."%s";
+//                    """.trimIndent(),
+//                    rawTableName,
+//                    databaseName,
+//                    id.rawNamespace,
+//                    )
             showTablesResult = database.queryJsons(
                 showTablesQuery,
             )
@@ -592,14 +602,19 @@ class SnowflakeDestinationHandler(
                     LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
                 for (stream in streamIds) {
                     val showColumnsQuery =
-                        String.format(
-                            """
-                                SHOW COLUMNS IN TABLE "%s"."%s"."%s";
-                            """.trimIndent(),
-                            databaseName,
-                            stream.finalNamespace,
-                            stream.finalName,
-                        )
+                        """
+                        SHOW COLUMNS IN TABLE "$databaseName"."${stream.finalNamespace}"."${stream.finalName}";
+                        """.trimIndent()
+
+//                        String.format(
+//                            """
+//                                SHOW COLUMNS IN TABLE "%s"."%s"."%s";
+//                            """.trimIndent(),
+//                            databaseName,
+//                            stream.finalNamespace,
+//                            stream.finalName,
+//                        )
+
                     val showColumnsResult = database.queryJsons(
                         showColumnsQuery,
                     )
@@ -607,15 +622,12 @@ class SnowflakeDestinationHandler(
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
                         val columnName = result["column_name"].asText()
-                        var dataType = JSONObject(result["data_type"].asText()).getString("type")
+                        //TODO: Remove the dataTypeOLD
+                        var dataTypeOLD = changeDataTypeFromShowQuery(JSONObject(result["data_type"].asText()).getString("type"))
+                        var dataType = changeDataTypeFromShowQuery(ObjectMapper().readTree(result["data_type"].asText()).path("type").asText())
 
-                        //TODO: Need to check if there are other datatype differences
-                        // between the original approach and the new approach with SHOW queries
-                        if(dataType.equals("FIXED")) {
-                            dataType = "NUMBER"
-                        } else if(dataType.equals("REAL")) {
-                            dataType = "FLOAT"
-                        }
+                        println("dataTypeOLD=" + dataTypeOLD)
+                        println("dataType=" + dataType)
 
                         val isNullable = result["null?"].asText()
                         val tableDefinition =
@@ -629,7 +641,7 @@ class SnowflakeDestinationHandler(
                                 columnName,
                                 dataType,
                                 0,
-                                fromIsNullableSnowflakeString(isNullable),
+                                isNullable.toBoolean()
                             )
                     }
                 }

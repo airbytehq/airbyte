@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
@@ -13,7 +14,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.changeDataTypeFromShowQuery
 import java.sql.SQLException
 import java.util.*
 import lombok.SneakyThrows
@@ -37,13 +38,18 @@ class SnowflakeV1V2Migrator(
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
 
         try {
-            val showSchemaQuery = String.format(
+            val showSchemaQuery =
                 """
-               SHOW SCHEMAS LIKE '%s' IN DATABASE "%s";
-                """.trimIndent(),
-                streamConfig!!.id.rawNamespace,
-                databaseName,
-            )
+                SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE "$databaseName";
+                """.trimIndent()
+
+//                String.format(
+//                """
+//               SHOW SCHEMAS LIKE '%s' IN DATABASE "%s";
+//                """.trimIndent(),
+//                streamConfig!!.id.rawNamespace,
+//                databaseName,
+//            )
 
             val showSchemaResult = database.queryJsons(
                                     showSchemaQuery,
@@ -79,14 +85,19 @@ class SnowflakeV1V2Migrator(
 
         try {
             val showColumnsQuery =
-                String.format(
                     """
-                       SHOW COLUMNS IN TABLE "%s"."%s"."%s";
-                    """.trimIndent(),
-                    databaseName,
-                    namespace,
-                    tableName,
-                )
+                       SHOW COLUMNS IN TABLE "$databaseName"."$namespace"."$tableName";
+                    """.trimIndent()
+
+//                String.format(
+//                    """
+//                       SHOW COLUMNS IN TABLE "%s"."%s"."%s";
+//                    """.trimIndent(),
+//                    databaseName,
+//                    namespace,
+//                    tableName,
+//                )
+
             val showColumnsResult = database.queryJsons(
                 showColumnsQuery
             )
@@ -99,9 +110,10 @@ class SnowflakeV1V2Migrator(
                             ColumnDefinition(
                                 row["column_name"].asText(),
                                 //row["data_type"].asText(),
-                                JSONObject(row["data_type"].asText()).getString("type"),
+                                //changeDataTypeFromShowQuery(JSONObject(row["data_type"].asText()).getString("type")),
+                                changeDataTypeFromShowQuery(ObjectMapper().readTree(row["data_type"].asText()).path("type").asText()),
                                 0,
-                                fromIsNullableSnowflakeString(row["null?"].asText()),
+                                row["null?"].asText().toBoolean(),
                             )
                     },
                     { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
