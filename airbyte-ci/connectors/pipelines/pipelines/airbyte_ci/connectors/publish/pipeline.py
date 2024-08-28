@@ -14,9 +14,14 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Container, ExecError, File, ImageLayerCompression, Platform, QueryError
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
-from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
+from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
+from pipelines.airbyte_ci.metadata.pipeline import (
+    MetadataPromoteReleaseCandidate,
+    MetadataRollbackReleaseCandidate,
+    MetadataUpload,
+    MetadataValidation,
+)
 from pipelines.airbyte_ci.steps.python_registry import PublishToPythonRegistry, PythonRegistryPublishContext
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
@@ -172,6 +177,36 @@ class PushConnectorImageToRegistry(Step):
                 self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
                 await anyio.sleep(5)
                 return await self._run(built_containers_per_platform, attempts - 1)
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
+
+
+class PushVersionImageAsLatest(Step):
+    context: PublishConnectorContext
+    title = "Push existing version image as latest"
+
+    @property
+    def latest_docker_image_name(self) -> str:
+        return f"{self.context.docker_repository}:latest"
+
+    async def _run(self, attempts: int = 3) -> StepResult:
+        per_platform_containers = [
+            self.context.dagger_client.container(platform=platform).from_(f"docker.io/{self.context.docker_image}")
+            for platform in consts.BUILD_PLATFORMS
+        ]
+
+        try:
+            image_ref = await per_platform_containers[0].publish(
+                f"docker.io/{self.latest_docker_image_name}",
+                platform_variants=per_platform_containers[1:],
+                forced_compression=ImageLayerCompression.Gzip,
+            )
+            return StepResult(step=self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
+        except QueryError as e:
+            if attempts > 0:
+                self.context.logger.error(str(e))
+                self.context.logger.warn(f"Failed to publish {self.context.docker_image}. Retrying. {attempts} attempts left.")
+                await anyio.sleep(5)
+                return await self._run(attempts - 1)
             return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e))
 
 
@@ -350,8 +385,6 @@ class UploadSbom(Step):
 
 
 # Pipeline
-
-
 async def run_connector_publish_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a publish pipeline for a single connector.
 
@@ -365,6 +398,8 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
     Returns:
         ConnectorReport: The reports holding publish results.
     """
+
+    assert context.rollout_mode == RolloutMode.PUBLISH, "This pipeline can only run in publish mode."
 
     metadata_upload_step = MetadataUpload(
         context=context,
@@ -507,6 +542,56 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
         return results, True
 
     return results, False
+
+
+async def run_connector_rollback_pipeline(context: PublishConnectorContext) -> ConnectorReport:
+    """Run a rollback pipeline for a single connector.
+
+    1. Check if the current metadata is a release candidate
+    2. Delete the metadata files for the release candidate and its version from the metadata service bucket.
+
+    Returns:
+        ConnectorReport: The reports holding rollback results.
+    """
+
+    async with context:
+        assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
+        assert context.connector.metadata.get("releases", {}).get(
+            "isReleaseCandidate", False
+        ), "This pipeline can only run for release candidates."
+        results = [
+            await MetadataRollbackReleaseCandidate(context, context.metadata_bucket_name, context.metadata_service_gcs_credentials).run()
+        ]
+
+    return ConnectorReport(context, results, name="ROLLBACK RESULTS")
+
+
+async def run_connector_promote_pipeline(context: PublishConnectorContext) -> ConnectorReport:
+    """Run a promote pipeline for a single connector.
+
+    1. Publish the release candidate version docker image with the latest tag.
+    2. Copy the release candidate metadata files to the latest release metadata files.
+
+    Returns:
+        ConnectorReport: The reports holding promote results.
+    """
+
+    async with context:
+        assert context.rollout_mode == RolloutMode.PROMOTE, "This pipeline can only run in promote mode."
+        assert context.connector.metadata.get("releases", {}).get(
+            "isReleaseCandidate", False
+        ), "This pipeline can only run for release candidates."
+
+        results = []
+        metadata_promote_result = await MetadataPromoteReleaseCandidate(
+            context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
+        ).run()
+        results.append(metadata_promote_result)
+        if metadata_promote_result.status is StepStatus.FAILURE:
+            return ConnectorReport(context, results, name="PROMOTE RESULTS")
+        publish_latest_tag_results = await PushVersionImageAsLatest(context).run()
+        results.append(publish_latest_tag_results)
+    return ConnectorReport(context, results, name="PROMOTE RESULTS")
 
 
 def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:

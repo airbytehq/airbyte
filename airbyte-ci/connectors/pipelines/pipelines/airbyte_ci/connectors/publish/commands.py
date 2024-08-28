@@ -8,8 +8,13 @@ from typing import TYPE_CHECKING
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
-from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
-from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
+from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
+from pipelines.airbyte_ci.connectors.publish.pipeline import (
+    reorder_contexts,
+    run_connector_promote_pipeline,
+    run_connector_publish_pipeline,
+    run_connector_rollback_pipeline,
+)
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
@@ -19,9 +24,15 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 from pipelines.models.secrets import Secret
 
 if TYPE_CHECKING:
-    from typing import Iterable, List
+    from typing import Callable, Dict, Iterable, List
 
     from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+
+ROLLOUT_MODE_TO_PIPELINE_FUNCTION: Dict[RolloutMode, Callable] = {
+    RolloutMode.PUBLISH: run_connector_publish_pipeline,
+    RolloutMode.PROMOTE: run_connector_promote_pipeline,
+    RolloutMode.ROLLBACK: run_connector_rollback_pipeline,
+}
 
 
 def filter_out_third_party_connectors(
@@ -96,6 +107,20 @@ def filter_out_third_party_connectors(
     default=DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL,
     envvar="PYTHON_REGISTRY_CHECK_URL",
 )
+@click.option(
+    "--promote-release-candidate",
+    help="Promote a release candidate to a main release.",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+)
+@click.option(
+    "--rollback-release-candidate",
+    help="Rollback a release candidate to a previous version.",
+    type=click.BOOL,
+    default=False,
+    is_flag=True,
+)
 @click.pass_context
 async def publish(
     ctx: click.Context,
@@ -108,7 +133,18 @@ async def publish(
     python_registry_token: Secret,
     python_registry_url: str,
     python_registry_check_url: str,
+    promote_release_candidate: bool,
+    rollback_release_candidate: bool,
 ) -> bool:
+
+    if promote_release_candidate and rollback_release_candidate:
+        raise click.UsageError("You can't promote and rollback a release candidate at the same time.")
+    elif promote_release_candidate:
+        rollout_mode = RolloutMode.PROMOTE
+    elif rollback_release_candidate:
+        rollout_mode = RolloutMode.ROLLBACK
+    else:
+        rollout_mode = RolloutMode.PUBLISH
 
     ctx.obj["selected_connectors_with_modified_files"] = filter_out_third_party_connectors(
         ctx.obj["selected_connectors_with_modified_files"]
@@ -155,6 +191,7 @@ async def publish(
                 python_registry_token=python_registry_token,
                 python_registry_url=python_registry_url,
                 python_registry_check_url=python_registry_check_url,
+                rollout_mode=rollout_mode,
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
@@ -164,8 +201,8 @@ async def publish(
 
     ran_publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
-        run_connector_publish_pipeline,
-        "Publishing connectors",
+        ROLLOUT_MODE_TO_PIPELINE_FUNCTION[rollout_mode],
+        f"{rollout_mode.value} connectors",
         ctx.obj["concurrency"],
         ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],

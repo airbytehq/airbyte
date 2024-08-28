@@ -4,6 +4,7 @@
 
 """Module declaring context related classes."""
 
+from enum import Enum
 from typing import List, Optional
 
 import asyncclick as click
@@ -14,6 +15,12 @@ from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL_PREFIX
 from pipelines.helpers.utils import format_duration
 from pipelines.models.secrets import Secret
+
+
+class RolloutMode(Enum):
+    ROLLBACK = "Rollback"
+    PUBLISH = "Publish"
+    PROMOTE = "Promote"
 
 
 class PublishConnectorContext(ConnectorContext):
@@ -38,6 +45,7 @@ class PublishConnectorContext(ConnectorContext):
         git_repo_url: str,
         python_registry_url: str,
         python_registry_check_url: str,
+        rollout_mode: RolloutMode,
         gha_workflow_run_url: Optional[str] = None,
         dagger_logs_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -56,7 +64,9 @@ class PublishConnectorContext(ConnectorContext):
         self.python_registry_token = python_registry_token
         self.python_registry_url = python_registry_url
         self.python_registry_check_url = python_registry_check_url
-        pipeline_name = f"Publish {connector.technical_name}"
+        self.rollout_mode = rollout_mode
+
+        pipeline_name = f"{rollout_mode.value} {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
         if use_local_cdk and not self.pre_release:
@@ -124,7 +134,7 @@ class PublishConnectorContext(ConnectorContext):
     def create_slack_message(self) -> str:
 
         docker_hub_url = f"https://hub.docker.com/r/{self.connector.metadata['dockerRepository']}/tags"
-        message = f"*Publish <{docker_hub_url}|{self.docker_image}>*\n"
+        message = f"*{self.rollout_mode.value} <{docker_hub_url}|{self.docker_image}>*\n"
         if self.is_ci:
             message += f"🤖 <{self.gha_workflow_run_url}|GitHub Action workflow>\n"
         else:
