@@ -27,7 +27,7 @@ import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
-import org.testcontainers.containers.MysqlContainer
+import org.testcontainers.containers.MySQLContainer
 
 private val log = KotlinLogging.logger {}
 
@@ -176,7 +176,7 @@ class MysqlSourceDatatypeIntegrationTest {
     }
 
     companion object {
-        lateinit var dbContainer: MysqlContainer
+        lateinit var dbContainer: MySQLContainer<*>
 
         fun config(): MysqlSourceConfigurationJsonObject =
             MysqlContainerFactory.config(dbContainer)
