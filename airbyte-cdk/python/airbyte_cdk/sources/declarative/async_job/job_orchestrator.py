@@ -84,6 +84,13 @@ class AsyncJobOrchestrator:
         self._slice_iterator = iter(slices)
         self._running_partitions: List[AsyncPartition] = []
 
+    def _replace_failed_jobs(self, partition: AsyncPartition) -> None:
+        failed_status_jobs = (AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT)
+        jobs_to_replace = [job for job in partition.jobs if job.status() in failed_status_jobs]
+        for job in jobs_to_replace:
+            new_job = self._job_repository.start(job.job_parameters())
+            partition.replace_job(job, [new_job])
+
     def _start_jobs(self) -> None:
         """
         Start the jobs for each slice in the slice iterator.
@@ -96,12 +103,7 @@ class AsyncJobOrchestrator:
         However, the first iteration is for sendgrid which only has one job.
         """
         for partition in self._running_partitions:
-            for job in list(
-                partition.jobs
-            ):  # we create a list from the generator as `replace_job` will change _attempts_per_job during the iteration
-                if job.status() in [AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT]:
-                    new_job = self._job_repository.start(job.job_parameters())
-                    partition.replace_job(job, [new_job])
+            self._replace_failed_jobs(partition)
 
         for _slice in self._slice_iterator:
             job = self._job_repository.start(_slice)
@@ -121,11 +123,14 @@ class AsyncJobOrchestrator:
         Update the status of all running jobs in the repository.
         """
         running_jobs = self._get_running_jobs()
-        self._job_repository.update_jobs_status(running_jobs)
+        if running_jobs:
+            # update the status only if there are RUNNING jobs
+            self._job_repository.update_jobs_status(running_jobs)
 
     def _wait_on_status_update(self) -> None:
         """
         Waits for a specified amount of time between status updates.
+
 
         This method is used to introduce a delay between status updates in order to avoid excessive polling.
         The duration of the delay is determined by the value of `_WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS`.
@@ -133,7 +138,9 @@ class AsyncJobOrchestrator:
         Returns:
             None
         """
-        time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
+        # wait only when there are running partitions
+        if self._running_partitions:
+            time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
 
     def _process_completed_partition(self, partition: AsyncPartition) -> None:
         """
@@ -158,16 +165,18 @@ class AsyncJobOrchestrator:
         """
         current_running_partitions: List[AsyncPartition] = []
         for partition in self._running_partitions:
-            if partition.status == AsyncJobStatus.COMPLETED:
-                self._process_completed_partition(partition)
-                yield partition
-            elif partition.status == AsyncJobStatus.RUNNING:
-                current_running_partitions.append(partition)
-            elif partition.has_reached_max_attempt():
-                self._process_partitions_with_errors(partition)
-            else:
-                # job will be restarted in `_start_job`
-                current_running_partitions.insert(0, partition)
+            match partition.status:
+                case AsyncJobStatus.COMPLETED:
+                    self._process_completed_partition(partition)
+                    yield partition
+                case AsyncJobStatus.RUNNING:
+                    current_running_partitions.append(partition)
+                case _ if partition.has_reached_max_attempt():
+                    self._process_partitions_with_errors(partition)
+                case _:
+                    # job will be restarted in `_start_job`
+                    current_running_partitions.insert(0, partition)
+        # update the referenced list with running partitions
         self._running_partitions = current_running_partitions
 
     def _process_partitions_with_errors(self, partition: AsyncPartition) -> None:
@@ -220,7 +229,6 @@ class AsyncJobOrchestrator:
 
             self._update_jobs_status()
             yield from self._process_running_partitions()
-
             self._log_polling_partitions()
             self._wait_on_status_update()
 

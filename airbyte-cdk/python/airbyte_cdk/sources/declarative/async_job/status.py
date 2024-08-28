@@ -21,14 +21,29 @@ class AsyncJobStatusMap:
     parameters: InitVar[Mapping[str, Any]]
 
     def parse_input(self) -> Mapping[str, AsyncJobStatus]:
-        processed_mapping = {}
+        """
+        Parses the input and returns a mapping of status values.
+
+        Returns:
+            A mapping of status values where the keys are the input values and the values are the corresponding AsyncJobStatus.
+
+        Example:
+            {
+                'running': AsyncJobStatus.RUNNING,
+                'completed': AsyncJobStatus.COMPLETED,
+                'failed': AsyncJobStatus.FAILED,
+                'timeout': AsyncJobStatus.TIMED_OUT,
+            }
+        """
+        status_mapping = {}
         for key, value in self.model.dict().items():
-            if key == "running":
-                processed_mapping[value] = AsyncJobStatus.RUNNING
-            elif key == "completed":
-                processed_mapping[value] = AsyncJobStatus.COMPLETED
-            elif key == "failed":
-                processed_mapping[value] = AsyncJobStatus.FAILED
-            elif key == "timeout":
-                processed_mapping[value] = AsyncJobStatus.TIMED_OUT
-        return processed_mapping
+            match key:
+                case "running":
+                    status_mapping[value] = AsyncJobStatus.RUNNING
+                case "completed":
+                    status_mapping[value] = AsyncJobStatus.COMPLETED
+                case "failed":
+                    status_mapping[value] = AsyncJobStatus.FAILED
+                case "timeout":
+                    status_mapping[value] = AsyncJobStatus.TIMED_OUT
+        return status_mapping
