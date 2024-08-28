@@ -54,10 +54,8 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(expectedSsh, conf.sshTunnel)
         val expectedSshOpts = SshConnectionOptions(1_000.milliseconds, 2_000.milliseconds, ZERO)
         Assertions.assertEquals(expectedSshOpts, conf.sshConnectionOptions)
-        val expectedUrl =
-            "jdbc:mysql:thin:@(DESCRIPTION=" +
-                "(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%d))" +
-                "(CONNECT_DATA=(SERVICE_NAME=FREEPDB1)))"
+        val expectedUrl = "jdbc:mysql://%s:%d"
+
         Assertions.assertEquals(expectedUrl, conf.jdbcUrlFmt)
         val expectedProperties =
             mapOf(
@@ -90,10 +88,7 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals("localhost", conf.realHost)
         Assertions.assertEquals(12345, conf.realPort)
         Assertions.assertEquals(SshNoTunnelMethod, conf.sshTunnel)
-        val expectedUrl =
-            "jdbc:mysql:thin:@(DESCRIPTION=" +
-                "(ADDRESS=(PROTOCOL=TCPS)(HOST=%s)(PORT=%d))" +
-                "(CONNECT_DATA=(SID=DB_SID)))"
+        val expectedUrl = "jdbc:mysql://%s:%d"
         Assertions.assertEquals(expectedUrl, conf.jdbcUrlFmt)
         Assertions.assertNotNull(conf.jdbcProperties["javax.net.ssl.trustStore"])
         Assertions.assertNotNull(conf.jdbcProperties["javax.net.ssl.trustStorePassword"])

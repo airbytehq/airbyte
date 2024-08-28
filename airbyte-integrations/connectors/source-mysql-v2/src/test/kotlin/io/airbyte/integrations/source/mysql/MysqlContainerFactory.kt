@@ -8,7 +8,7 @@ import org.testcontainers.containers.MySQLContainer
 import org.testcontainers.utility.DockerImageName
 
 object MysqlContainerFactory {
-    const val COMPATIBLE_NAME = "gvenzl/mysql-xe"
+    const val COMPATIBLE_NAME = "mysql:8.0"
     private val log = KotlinLogging.logger {}
 
     init {
@@ -55,7 +55,7 @@ object MysqlContainerFactory {
             username = mySQLContainer.username
             password = mySQLContainer.password
             jdbcUrlParams = ""
-            schemas = listOf(mySQLContainer.username)
+            schemas = listOf("test")
             checkpointTargetIntervalSeconds = 60
             concurrency = 1
         }
