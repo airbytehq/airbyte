@@ -61,7 +61,6 @@ class MysqlSourceConfigurationTest {
             mapOf(
                 "user" to "FOO",
                 "password" to "BAR",
-                "mysql.jdbc.useFetchSizeWithLongColumn" to "true",
                 "mysql.net.encryption_client" to "REQUIRED",
                 "mysql.net.encryption_types_client" to "( 3DES168 )",
             )

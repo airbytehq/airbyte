@@ -55,15 +55,7 @@ class MysqlSourceConfigurationFactory :
         val jdbcProperties = mutableMapOf<String, String>()
         jdbcProperties["user"] = pojo.username
         pojo.password?.let { jdbcProperties["password"] = it }
-        /*
-         * The property useFetchSizeWithLongColumn required to select LONG or LONG RAW columns.
-         * Mysql recommends avoiding LONG and LONG RAW columns. Use LOB instead.
-         * They are included in Mysql only for legacy reasons.
-         *
-         * THIS IS A THIN ONLY PROPERTY. IT SHOULD NOT BE USED WITH ANY OTHER DRIVERS.
-         *
-         */
-        jdbcProperties["mysql.jdbc.useFetchSizeWithLongColumn"] = "true"
+
         // Parse URL parameters.
         val pattern = "^([^=]+)=(.*)$".toRegex()
         for (pair in (pojo.jdbcUrlParams ?: "").trim().split("&".toRegex())) {
