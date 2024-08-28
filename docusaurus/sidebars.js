@@ -69,6 +69,7 @@ function getSourceConnectors() {
     "readme",
     "postgres",
     "mongodb-v2",
+    "mssql",
     "mysql",
   ]);
 }
@@ -147,6 +148,22 @@ const sourceMysql = {
   ],
 };
 
+const sourceMssql = {
+  type: "category",
+  label: "MS SQL Server (MSSQL)",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mssql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mssql/mssql-troubleshooting",
+    },
+  ],
+};
+
 const destinationS3 = {
   type: "category",
   label: "S3",
@@ -156,15 +173,15 @@ const destinationS3 = {
   },
   items: [
     {
-       type: "doc",
-       label: "Migration Guide",
-       id: "integrations/destinations/s3-migrations",
+      type: "doc",
+      label: "Migration Guide",
+      id: "integrations/destinations/s3-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    }
+    },
   ],
 };
 
@@ -350,6 +367,7 @@ const connectorCatalog = {
         sourcePostgres,
         sourceMongoDB,
         sourceMysql,
+        sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -446,10 +464,8 @@ const connectionConfigurations = {
   items: [
     "using-airbyte/core-concepts/sync-schedules",
     "using-airbyte/core-concepts/namespaces",
-    {
-      type: "doc",
-      id: "using-airbyte/schema-change-management",
-    },
+    "using-airbyte/configuring-schema",
+    "using-airbyte/schema-change-management",
     {
       type: "category",
       label: "Sync Modes",
@@ -462,6 +478,7 @@ const connectionConfigurations = {
         "using-airbyte/core-concepts/sync-modes/incremental-append",
         "using-airbyte/core-concepts/sync-modes/full-refresh-append",
         "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
+        "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
       ],
     },
   ],
@@ -534,9 +551,9 @@ module.exports = {
       items: [
         "cloud/managing-airbyte-cloud/review-connection-status",
         "cloud/managing-airbyte-cloud/review-connection-timeline",
-        "operator-guides/browsing-output-logs",
-        "operator-guides/clear",
         "operator-guides/refreshes",
+        "operator-guides/clear",
+        "operator-guides/browsing-output-logs",
         "cloud/managing-airbyte-cloud/manage-connection-state",
       ],
     },
@@ -567,11 +584,14 @@ module.exports = {
         },
       ],
     },
-    "operator-guides/upgrading-airbyte",
     {
-      type: "doc",
-      label: "Managing Connector Updates",
-      id: "managing-airbyte/connector-updates",
+      type: "category",
+      label: "Upgrading Airbyte",
+      link: {
+        type: "doc",
+        id: "operator-guides/upgrading-airbyte",
+      },
+      items: ["managing-airbyte/connector-updates"],
     },
     {
       type: "category",

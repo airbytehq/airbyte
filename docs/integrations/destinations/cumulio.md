@@ -161,20 +161,21 @@ data less frequently** rather than _smaller amounts of data more frequently_!
 
 | Version | Date       | Pull Request                                              | Subject                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
-| 0.1.15  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
-| 0.1.14  | 2024-08-17 | [44283](https://github.com/airbytehq/airbyte/pull/44283) | Update dependencies |
-| 0.1.13  | 2024-08-10 | [43695](https://github.com/airbytehq/airbyte/pull/43695) | Update dependencies |
-| 0.1.12  | 2024-08-03 | [43178](https://github.com/airbytehq/airbyte/pull/43178) | Update dependencies |
-| 0.1.11  | 2024-07-27 | [42780](https://github.com/airbytehq/airbyte/pull/42780) | Update dependencies |
-| 0.1.10  | 2024-07-20 | [42281](https://github.com/airbytehq/airbyte/pull/42281) | Update dependencies |
-| 0.1.9   | 2024-07-13 | [41711](https://github.com/airbytehq/airbyte/pull/41711) | Update dependencies |
-| 0.1.8   | 2024-07-10 | [41341](https://github.com/airbytehq/airbyte/pull/41341) | Update dependencies |
-| 0.1.7   | 2024-07-09 | [41104](https://github.com/airbytehq/airbyte/pull/41104) | Update dependencies |
-| 0.1.6   | 2024-07-06 | [40763](https://github.com/airbytehq/airbyte/pull/40763) | Update dependencies |
-| 0.1.5   | 2024-06-26 | [40507](https://github.com/airbytehq/airbyte/pull/40507) | Update dependencies |
-| 0.1.4   | 2024-06-21 | [39930](https://github.com/airbytehq/airbyte/pull/39930) | Update dependencies |
-| 0.1.3   | 2024-06-06 | [39292](https://github.com/airbytehq/airbyte/pull/39292) | [autopull] Upgrade base image to v1.2.2 |
-| 0.1.2   | 2024-05-20 | [38371](https://github.com/airbytehq/airbyte/pull/38371) | [autopull] base image + poetry + up_to_date |
+| 0.1.16 | 2024-08-24 | [44656](https://github.com/airbytehq/airbyte/pull/44656) | Update dependencies |
+| 0.1.15 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.1.14 | 2024-08-17 | [44283](https://github.com/airbytehq/airbyte/pull/44283) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43695](https://github.com/airbytehq/airbyte/pull/43695) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43178](https://github.com/airbytehq/airbyte/pull/43178) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42780](https://github.com/airbytehq/airbyte/pull/42780) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42281](https://github.com/airbytehq/airbyte/pull/42281) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41711](https://github.com/airbytehq/airbyte/pull/41711) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41341](https://github.com/airbytehq/airbyte/pull/41341) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41104](https://github.com/airbytehq/airbyte/pull/41104) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40763](https://github.com/airbytehq/airbyte/pull/40763) | Update dependencies |
+| 0.1.5 | 2024-06-26 | [40507](https://github.com/airbytehq/airbyte/pull/40507) | Update dependencies |
+| 0.1.4 | 2024-06-21 | [39930](https://github.com/airbytehq/airbyte/pull/39930) | Update dependencies |
+| 0.1.3 | 2024-06-06 | [39292](https://github.com/airbytehq/airbyte/pull/39292) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.2 | 2024-05-20 | [38371](https://github.com/airbytehq/airbyte/pull/38371) | [autopull] base image + poetry + up_to_date |
 | 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector                                |
 | 0.1.0   | 2023-02-16 |                                                           | Initial release of Cumul.io's Destination connector |
 
