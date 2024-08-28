@@ -116,7 +116,6 @@ constructor(
         recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
 
-
         //TODO: Temporary version of code for testing the .use for connection
 
         dataSource.connection.use { connection ->
