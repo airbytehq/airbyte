@@ -311,6 +311,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.17  | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK. |
 | 3.6.16  | 2024-08-15 | [44119](https://github.com/airbytehq/airbyte/pull/44119)   | Fix incorrect final state on initial read in CDC mode.                                                                                                                    |
 | 3.6.15  | 2024-08-12 | [43945](https://github.com/airbytehq/airbyte/pull/43945)   | Add missing replication slot config error.                                                                                                                                |
 | 3.6.14  | 2024-08-08 | [43418](https://github.com/airbytehq/airbyte/pull/43418)   | Adopt latest CDK.                                                                                                                                                         |
