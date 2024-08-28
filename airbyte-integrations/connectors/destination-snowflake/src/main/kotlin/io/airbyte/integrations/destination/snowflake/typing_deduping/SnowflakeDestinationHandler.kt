@@ -106,7 +106,7 @@ class SnowflakeDestinationHandler(
             return tableRowCountsFromShowQuery
 
         } catch (e: SnowflakeSQLException) {
-            if(e.message != null && e.message!!.contains("Object does not exist")) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
                 return LinkedHashMap<String, LinkedHashMap<String, Int>>()
             } else {
                 throw e
@@ -146,7 +146,7 @@ class SnowflakeDestinationHandler(
                 tableExists = true
             }
         } catch (e: SnowflakeSQLException) {
-            if(e.message != null && e.message!!.contains("Object does not exist")) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
                 tableExists = false
             } else {
                 throw e
@@ -647,7 +647,7 @@ class SnowflakeDestinationHandler(
                 }
                 return existingTablesFromShowQuery
             } catch (e: SnowflakeSQLException) {
-                if(e.message != null && e.message!!.contains("Object does not exist")) {
+                if(e.message != null && e.message!!.contains("does not exist")) {
                     return LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
                 } else {
                     throw e

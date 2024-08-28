@@ -56,7 +56,7 @@ class SnowflakeV1V2Migrator(
                                 )
             return showSchemaResult.isNotEmpty()
         } catch (e: SnowflakeSQLException) {
-            if(e.message != null && e.message!!.contains("Object does not exist")) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
                 return false
             } else {
                 throw e
@@ -127,7 +127,7 @@ class SnowflakeV1V2Migrator(
                 Optional.of(TableDefinition(columnsFromShowQuery))
             }
         } catch (e: SnowflakeSQLException) {
-            if(e.message != null && e.message!!.contains("Object does not exist")) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
                 return Optional.empty()
             } else {
                 throw e
