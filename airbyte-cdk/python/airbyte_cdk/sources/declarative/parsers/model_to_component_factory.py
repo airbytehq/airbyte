@@ -487,23 +487,20 @@ class ModelToComponentFactory:
         return custom_component_class(**kwargs)
     
     @staticmethod
-    def get_module_base():
+    def get_module_base() -> Optional[str]:
         """Gets the base module of the current script"""
         main_module = sys.modules['__main__']
         main_module_file = getattr(main_module, '__file__', None)
         print(f"Main module file: {main_module_file}")
 
-        if main_module_file:
-            main_dir = os.path.dirname(main_module_file)
-            print(f"Main dir: {main_dir}")
-            parent_dir = os.path.dirname(main_dir)
-            print(f"Parent dir: {parent_dir}")
+        main_dir = os.path.dirname(main_module_file)
+        print(f"Main dir: {main_dir}")
+        print(f"Main dir items: {os.listdir(main_dir)}")     
 
-            for item in os.listdir(parent_dir):
-                print(f"Checking dir_item: {item}")
-                if os.path.isdir(os.path.join(parent_dir, item)) and re.match(r'source_.*', item):
-                    print(f"Found matching item: {item}")
-                    return item
+        for item in os.listdir(main_dir):
+            if os.path.isdir(os.path.join(main_dir, item)) and re.match(r'source_.*', item):
+                print(f"Found matching item: {item}")
+                return item
         return None
 
     def _get_class_from_fully_qualified_class_name(self, full_qualified_class_name: str) -> Any:
@@ -511,11 +508,15 @@ class ModelToComponentFactory:
         print(f"Main module: {main_module}")
         split = full_qualified_class_name.split(".")
         print(f"Split: {split}")
-        module = ".".join(split[:-1])
-        if module != main_module:
-            module = f"{main_module}.{module}"
-        print(f"Module: {module}")
+
+        if split[0] != main_module:
+            # Prepend the main module only if the class name does not already contain it
+            module = f"{main_module}." + ".".join(split[:-1])
+        else:
+            module = ".".join(split[:-1])
+        
         class_name = split[-1]
+        print(f"Module: {module}")
         print(f"Class: {class_name}")
         try:
             return getattr(importlib.import_module(module), class_name)
