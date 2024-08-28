@@ -394,21 +394,21 @@ abstract class AbstractSnowflakeTypingDedupingTest(
     @Test
     @Throws(Exception::class)
     fun testRawTableLoadWithSuperVarcharLimitation() {
+
         val record1 =
             """
                            {"type": "RECORD",
                              "record":{
                                "emitted_at": 1000,
                                "data": {
-                                 "id1": 1,
-                                 "id2": 200,
-                                 "updated_at": "2000-01-01T00:00:00Z",
-                                 "_ab_cdc_deleted_at": null,
-                                 "name": "PLACE_HOLDER",
-                                 "address": {"city": "San Francisco", "state": "CA"}}
+                                 "ID1": 1,
+                                 "ID2": 200,
+                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
+                                 "_AB_CDC_DELETED_AT": null,
+                                 "NAME": "PLACE_HOLDER",
+                                 "ADDRESS": {"CITY": "San Francisco", "STATE": "CA"}}
                              }
                            }
-                           
                            """.trimIndent()
         val record2 =
             """
@@ -416,16 +416,48 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                              "record":{
                                "emitted_at": 1000,
                                "data": {
-                                 "id1": 2,
-                                 "id2": 201,
-                                 "updated_at": "2000-01-01T00:00:00Z",
-                                 "_ab_cdc_deleted_at": null,
-                                 "name": "PLACE_HOLDER",
-                                 "address": {"city": "New York", "state": "NY"}}
+                                 "ID1": 2,
+                                 "ID2": 201,
+                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
+                                 "_AB_CDC_DELETED_AT": null,
+                                 "NAME": "PLACE_HOLDER",
+                                 "ADDRESS": {"CITY": "New York", "STATE": "NY"}}
                              }
                            }
-                           
                            """.trimIndent()
+
+//        val record1 =
+//            """
+//                           {"type": "RECORD",
+//                             "record":{
+//                               "emitted_at": 1000,
+//                               "data": {
+//                                 "id1": 1,
+//                                 "id2": 200,
+//                                 "updated_at": "2000-01-01T00:00:00Z",
+//                                 "_ab_cdc_deleted_at": null,
+//                                 "name": "PLACE_HOLDER",
+//                                 "address": {"city": "San Francisco", "state": "CA"}}
+//                             }
+//                           }
+//                           """.trimIndent()
+//        val record2 =
+//            """
+//                           {"type": "RECORD",
+//                             "record":{
+//                               "emitted_at": 1000,
+//                               "data": {
+//                                 "id1": 2,
+//                                 "id2": 201,
+//                                 "updated_at": "2000-01-01T00:00:00Z",
+//                                 "_ab_cdc_deleted_at": null,
+//                                 "name": "PLACE_HOLDER",
+//                                 "address": {"city": "New York", "state": "NY"}}
+//                             }
+//                           }
+//                           """.trimIndent()
+
+
         val largeString1 =
             generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE)
         val largeString2 =
@@ -453,11 +485,11 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         val message1 = deserialize(record1, AirbyteMessage::class.java)
         message1.record.namespace = streamNamespace
         message1.record.stream = streamName
-        (message1.record.data as ObjectNode).put("name", largeString1)
+        (message1.record.data as ObjectNode).put("NAME", largeString1)
         val message2 = deserialize(record2, AirbyteMessage::class.java)
         message2.record.namespace = streamNamespace
         message2.record.stream = streamName
-        (message2.record.data as ObjectNode).put("name", largeString2)
+        (message2.record.data as ObjectNode).put("NAME", largeString2)
 
         // message1 should be preserved which is just on limit, message2 should be nulled.
         runSync(catalog, java.util.List.of(message1, message2))
@@ -466,8 +498,8 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         val expectedRawRecords = readRecords("dat/sync1_recordnull_expectedrecords_raw.jsonl")
         val expectedFinalRecords = readRecords("dat/sync1_recordnull_expectedrecords_final.jsonl")
         // Only replace for first record, second record should be nulled by transformer.
-        (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("name", largeString1)
-        (expectedFinalRecords[0] as ObjectNode).put("name", largeString1)
+        (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("NAME", largeString1)
+        (expectedFinalRecords[0] as ObjectNode).put("NAME", largeString1)
         verifySyncResult(expectedRawRecords, expectedFinalRecords, disableFinalTableComparison())
     }
 
