@@ -74,6 +74,7 @@ class SnowflakeDestinationHandler(
 
         try {
             val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
+
             for (stream in streamIds) {
                 val showColumnsQuery =
                     """
@@ -93,7 +94,6 @@ class SnowflakeDestinationHandler(
                 }
             }
             return tableRowCountsFromShowQuery
-
         } catch (e: SnowflakeSQLException) {
             if(e.message != null && e.message!!.contains("does not exist")) {
                 return LinkedHashMap<String, LinkedHashMap<String, Int>>()
@@ -102,7 +102,6 @@ class SnowflakeDestinationHandler(
             }
         }
     }
-
 
     @Throws(Exception::class)
     private fun getInitialRawTableState(
