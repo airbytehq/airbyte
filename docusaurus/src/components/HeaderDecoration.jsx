@@ -236,7 +236,6 @@ const ConnectorMetadataCallout = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
-  sbomUrl,
 }) => (
   <Callout className={styles.connectorMetadataCallout}>
     <dl className={styles.connectorMetadata}>
@@ -282,7 +281,6 @@ const ConnectorMetadataCallout = ({
               lastUpdated
             ).fromNow()})`}</span>
           )}
-
         </MetadataStat>
       )}
       {cdkVersion && (
@@ -293,13 +291,6 @@ const ConnectorMetadataCallout = ({
           {isLatestCDK && (
             <span className={styles.deemphasizeText}>{"(Latest)"}</span>
           )}
-        </MetadataStat>
-      )}
-      {sbomUrl && (
-        <MetadataStat label="SBOM">
-          <a target="_blank" href={sbomUrl}>
-            SPDX JSON
-          </a>
         </MetadataStat>
       )}
       {syncSuccessRate && (
@@ -348,7 +339,6 @@ export const HeaderDecoration = ({
   syncSuccessRate,
   usageRate,
   lastUpdated,
-  sbomUrl,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -379,7 +369,6 @@ export const HeaderDecoration = ({
         syncSuccessRate={syncSuccessRate}
         usageRate={usageRate}
         lastUpdated={lastUpdated}
-        sbomUrl={sbomUrl}
       />
     </>
   );
