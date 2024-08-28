@@ -233,6 +233,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.1 | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK. |
 | 3.7.0   | 2024-08-13 | [44013](https://github.com/airbytehq/airbyte/pull/44013)   | Upgrading to Debezium 2.7.1.Final                                                                                                               |
 | 3.6.9   | 2024-08-08 | [43410](https://github.com/airbytehq/airbyte/pull/43410)   | Adopt latest CDK.                                                                                                                               |
 | 3.6.8   | 2024-07-30 | [42869](https://github.com/airbytehq/airbyte/pull/42869)   | Adopt latest CDK.                                                                                                                               |

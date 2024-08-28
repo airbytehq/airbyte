@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.h2.H2TestFixture
@@ -77,7 +78,7 @@ class JdbcSelectQuerierTest {
 
     private fun runTest(
         q: SelectQuery,
-        vararg expected: String,
+        vararg expectedJson: String,
     ) {
         val configPojo: H2SourceConfigurationJsonObject =
             H2SourceConfigurationJsonObject().apply {
@@ -86,7 +87,21 @@ class JdbcSelectQuerierTest {
             }
         val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
         val querier: SelectQuerier = JdbcSelectQuerier(JdbcConnectionFactory(config))
+        // Vanilla query
+        val expected: List<JsonNode> = expectedJson.map(Jsons::readTree)
         val actual: List<ObjectNode> = querier.executeQuery(q).use { it.asSequence().toList() }
-        Assertions.assertIterableEquals(expected.toList().map(Jsons::readTree), actual)
+        Assertions.assertIterableEquals(expected, actual)
+        // Query with reuseResultObject = true
+        querier.executeQuery(q, SelectQuerier.Parameters(reuseResultObject = true)).use {
+            var i = 0
+            var previous: ObjectNode? = null
+            for (record in it) {
+                if (i > 0) {
+                    Assertions.assertTrue(previous === record)
+                }
+                Assertions.assertEquals(expected[i++], record)
+                previous = record
+            }
+        }
     }
 }

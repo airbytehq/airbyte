@@ -335,7 +335,7 @@ data class TestCase(
             )
             for (actualState in actual!!) {
                 Assertions.assertTrue(
-                    actualState in expected,
+                    actualState.toString() in expected.map { it.toString() },
                     "$actualState should be in $expected",
                 )
             }
