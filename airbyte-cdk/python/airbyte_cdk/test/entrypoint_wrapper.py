@@ -84,7 +84,7 @@ class EntrypointOutput:
 
     @property
     def logs(self) -> List[AirbyteMessage]:
-        return self._get_message_by_types([Type.LOG])
+        return [msg for msg in self._messages if msg.type == Type.LOG]
 
     @property
     def trace_messages(self) -> List[AirbyteMessage]:
@@ -123,7 +123,11 @@ class EntrypointOutput:
 
     def is_in_logs(self, pattern: str) -> bool:
         """Check if any log message case-insensitive matches the pattern."""
-        return any(re.search(pattern, entry.log.message, flags=re.IGNORECASE) for entry in self.logs)  # type: ignore[union-attr] # log has `message`
+        regex = re.compile(pattern, flags=re.IGNORECASE)
+        for log in self.logs:
+            if regex.search(log.log.message):  # type: ignore[union-attr] # log has `message`
+                return True
+        return False
 
     def is_not_in_logs(self, pattern: str) -> bool:
         """Check if no log message matches the case-insensitive pattern."""
