@@ -58,8 +58,8 @@ class Contacts(SendgridStream):
 
     @default_backoff_handler(max_tries=5, factor=15)
     def _send_http_request(self, method: str, url: str, stream: bool = False, enable_auth: bool = True):
-        headers = self._session.auth.get_auth_header() if enable_auth else None
-        response = self._session.request(method, url=url, headers=headers, stream=stream)
+        headers = self._http_client._session.auth.get_auth_header() if enable_auth else None
+        response = self._http_client._session.request(method, url=url, headers=headers, stream=stream)
         if response.status_code not in [200, 202]:
             self.logger.error(f"error body: {response.text}")
         response.raise_for_status()

@@ -16,8 +16,8 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_sendgrid"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+python = "^3.10,<3.12"
+airbyte_cdk = { path = "../../../airbyte-cdk/python", develop = true }
 pandas = "^2.1.1"
 
 [tool.poetry.scripts]
