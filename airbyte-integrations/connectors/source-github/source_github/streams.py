@@ -1460,7 +1460,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         break_point = None
         # the state is updated only in the end of the sync as records are sorted in reverse order
-        new_state = None
+        new_state = self.state
         if start_point:
             break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
         for record in super(SemiIncrementalMixin, self).read_records(
@@ -1470,7 +1470,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
             created_at = record["created_at"]
             if not start_point or cursor_value > start_point:
                 yield record
-                new_state = self._get_updated_state(new_state or self.state, record)
+                new_state = self._get_updated_state(new_state, record)
             if break_point and created_at < break_point:
                 break
         self.state = new_state
