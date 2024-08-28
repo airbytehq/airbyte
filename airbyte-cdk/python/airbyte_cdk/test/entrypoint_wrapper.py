@@ -58,7 +58,7 @@ class EntrypointOutput:
     @staticmethod
     def _parse_message(message: str) -> AirbyteMessage:
         try:
-            return AirbyteMessageSerializer.load(orjson.loads(message))
+            return AirbyteMessageSerializer.load(orjson.loads(message))  # type: ignore[no-any-return] # Serializer.load() always returns AirbyteMessage
         except (orjson.JSONDecodeError, SchemaValidationError):
             # The platform assumes that logs that are not of AirbyteMessage format are log messages
             return AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message=message))
