@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+
+  <Appenders>
+    <Console name="ConsoleJSONAppender" target="SYSTEM_OUT">
+      <!--#30781 - we set log4j's ConsoleAppender to use a buffer of 32KB. In order to ensure that the log write out is atomic-->
+      <!-- We cap both the log message and the printed stacktrace to 16KB bytes each. combined with other json character-->
+      <!-- this will ensure that we stay below 32768 characters-->
+      <JsonTemplateLayout eventTemplateUri="classpath:AirbyteLogMessageTemplate.json" maxStringLength="16000"/>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="INFO" additivity="false">
+      <AppenderRef ref="ConsoleJSONAppender"/>
+    </Root>
+  </Loggers>
+</Configuration>

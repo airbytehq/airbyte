@@ -1,44 +1,57 @@
 {
   "properties": {
     "id": {
+      "description": "The unique identifier for the metafield",
       "type": ["null", "integer"]
     },
     "namespace": {
+      "description": "The namespace for grouping metafields",
       "type": ["null", "string"]
     },
     "key": {
+      "description": "The key associated with the metafield for identifying purposes",
       "type": ["null", "string"]
     },
     "value": {
+      "description": "The actual value of the metafield",
       "type": ["null", "string"]
     },
     "value_type": {
+      "description": "The type that the value of the metafield represents (e.g., URL, text)",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the metafield content",
       "type": ["null", "string"]
     },
     "owner_id": {
+      "description": "The unique identifier of the entity that owns the metafield",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "The date and time when the metafield was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the metafield was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "owner_resource": {
+      "description": "The resource type that owns the metafield (e.g., product, variant)",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "The data type of the metafield value (e.g., string, integer)",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "The unique identifier for the metafield in the GraphQL Admin API",
       "type": ["null", "string"]
     },
     "shop_url": {
+      "description": "The URL of the shop where the metafield is associated",
       "type": ["null", "string"]
     }
   },

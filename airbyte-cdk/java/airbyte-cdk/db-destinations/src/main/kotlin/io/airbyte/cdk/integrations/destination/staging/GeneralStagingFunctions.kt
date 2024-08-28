@@ -8,10 +8,7 @@ import io.airbyte.cdk.integrations.destination.StreamSyncSummary
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
@@ -38,62 +35,58 @@ object GeneralStagingFunctions {
         typerDeduper: TyperDeduper
     ): OnStartFunction {
         return OnStartFunction {
-            log.info(
-                "Preparing raw tables in destination started for {} streams",
-                writeConfigs.size
-            )
+            log.info {
+                "Preparing raw tables in destination started for ${writeConfigs.size} streams"
+            }
             typerDeduper.prepareSchemasAndRunMigrations()
 
             // Create raw tables
             val queryList: MutableList<String> = ArrayList()
             for (writeConfig in writeConfigs) {
-                val schema = writeConfig.outputSchemaName
+                val schema = writeConfig.rawNamespace
                 val stream = writeConfig.streamName
-                val dstTableName = writeConfig.outputTableName
+                val dstTableName = writeConfig.rawTableName
                 val stageName = stagingOperations.getStageName(schema, dstTableName)
                 val stagingPath =
                     stagingOperations.getStagingPath(
-                        SerialStagingConsumerFactory.Companion.RANDOM_CONNECTION_ID,
+                        RANDOM_CONNECTION_ID,
                         schema,
                         stream,
-                        writeConfig.outputTableName,
+                        writeConfig.rawTableName,
                         writeConfig.writeDatetime
                     )
 
-                log.info(
-                    "Preparing staging area in destination started for schema {} stream {}: target table: {}, stage: {}",
-                    schema,
-                    stream,
-                    dstTableName,
-                    stagingPath
-                )
+                log.info {
+                    "Preparing staging area in destination started for schema $schema stream $stream: target table: $dstTableName, stage: $stagingPath"
+                }
 
                 stagingOperations.createSchemaIfNotExists(database, schema)
                 stagingOperations.createTableIfNotExists(database, schema, dstTableName)
                 stagingOperations.createStageIfNotExists(database, stageName)
 
-                when (writeConfig.syncMode) {
-                    DestinationSyncMode.OVERWRITE ->
+                when (writeConfig.minimumGenerationId) {
+                    writeConfig.generationId ->
                         queryList.add(
-                            stagingOperations.truncateTableQuery(database, schema, dstTableName)
+                            stagingOperations.truncateTableQuery(
+                                database,
+                                schema,
+                                dstTableName,
+                            )
                         )
-                    DestinationSyncMode.APPEND,
-                    DestinationSyncMode.APPEND_DEDUP -> {}
+                    0L -> {}
                     else ->
                         throw IllegalStateException(
-                            "Unrecognized sync mode: " + writeConfig.syncMode
+                            "Invalid minGenerationId ${writeConfig.minimumGenerationId} for stream ${writeConfig.streamName}. GenerationId=${writeConfig.generationId}"
                         )
                 }
-                log.info(
-                    "Preparing staging area in destination completed for schema {} stream {}",
-                    schema,
-                    stream
-                )
+                log.info {
+                    "Preparing staging area in destination completed for schema $schema stream $stream"
+                }
             }
 
             typerDeduper.prepareFinalTables()
 
-            log.info("Executing finalization of tables.")
+            log.info { "Executing finalization of tables." }
             stagingOperations.executeTransaction(database, queryList)
         }
     }
@@ -107,38 +100,20 @@ object GeneralStagingFunctions {
         database: JdbcDatabase?,
         stageName: String?,
         stagingPath: String?,
-        stagedFiles: List<String?>?,
+        stagedFiles: List<String>?,
         tableName: String?,
         schemaName: String?,
         stagingOperations: StagingOperations,
-        streamNamespace: String?,
-        streamName: String?,
-        typerDeduperValve: TypeAndDedupeOperationValve,
-        typerDeduper: TyperDeduper
     ) {
         try {
-            val rawTableInsertLock =
-                typerDeduper.getRawTableInsertLock(streamNamespace!!, streamName!!)
-            rawTableInsertLock.lock()
-            try {
-                stagingOperations.copyIntoTableFromStage(
-                    database,
-                    stageName,
-                    stagingPath,
-                    stagedFiles,
-                    tableName,
-                    schemaName
-                )
-            } finally {
-                rawTableInsertLock.unlock()
-            }
-
-            val streamId = AirbyteStreamNameNamespacePair(streamName, streamNamespace)
-            typerDeduperValve.addStreamIfAbsent(streamId)
-            if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-                typerDeduper.typeAndDedupe(streamId.namespace, streamId.name, false)
-                typerDeduperValve.updateTimeAndIncreaseInterval(streamId)
-            }
+            stagingOperations.copyIntoTableFromStage(
+                database,
+                stageName,
+                stagingPath,
+                stagedFiles,
+                tableName,
+                schemaName
+            )
         } catch (e: Exception) {
             throw RuntimeException("Failed to upload data from stage $stagingPath", e)
         }
@@ -162,41 +137,38 @@ object GeneralStagingFunctions {
         typerDeduper: TyperDeduper
     ): OnCloseFunction {
         return OnCloseFunction {
-            hasFailed: Boolean,
+            _: Boolean,
             streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary> ->
             // After moving data from staging area to the target table (airybte_raw) clean up the
             // staging
             // area (if user configured)
-            log.info("Cleaning up destination started for {} streams", writeConfigs.size)
+            log.info { "Cleaning up destination started for ${writeConfigs.size} streams" }
             typerDeduper.typeAndDedupe(streamSyncSummaries)
             for (writeConfig in writeConfigs) {
-                val schemaName = writeConfig.outputSchemaName
+                val schemaName = writeConfig.rawNamespace
                 if (purgeStagingData) {
                     val stageName =
-                        stagingOperations.getStageName(schemaName, writeConfig.outputTableName)
+                        stagingOperations.getStageName(schemaName, writeConfig.rawTableName)
                     val stagePath =
                         stagingOperations.getStagingPath(
                             RANDOM_CONNECTION_ID,
                             schemaName,
                             writeConfig.streamName,
-                            writeConfig.outputTableName,
+                            writeConfig.rawTableName,
                             writeConfig.writeDatetime
                         )
-                    log.info(
-                        "Cleaning stage in destination started for stream {}. schema {}, stage: {}",
-                        writeConfig.streamName,
-                        schemaName,
-                        stagePath
-                    )
+                    log.info {
+                        "Cleaning stage in destination started for stream ${writeConfig.streamName}. schema $schemaName, stage: $stagePath"
+                    }
                     // TODO: This is another weird manifestation of Redshift vs Snowflake using
                     // either or variables from
                     // stageName/StagingPath.
                     stagingOperations.dropStageIfExists(database, stageName, stagePath)
                 }
             }
-            typerDeduper.commitFinalTables()
+            typerDeduper.commitFinalTables(streamSyncSummaries)
             typerDeduper.cleanup()
-            log.info("Cleaning up destination completed.")
+            log.info { "Cleaning up destination completed." }
         }
     }
 }

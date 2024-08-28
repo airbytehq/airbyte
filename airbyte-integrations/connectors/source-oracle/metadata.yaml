@@ -16,7 +16,7 @@ data:
   icon: oracle.svg
   license: ELv2
   name: Oracle DB
-  registries:
+  registryOverrides:
     cloud:
       dockerImageTag: 0.5.2
       dockerRepository: airbyte/source-oracle-strict-encrypt
@@ -27,4 +27,13 @@ data:
   supportLevel: community
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE_ORACLE_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

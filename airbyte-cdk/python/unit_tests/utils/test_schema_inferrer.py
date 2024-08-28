@@ -159,6 +159,92 @@ NOW = 1234567
             {"my_stream": {"field_A": {"type": ["string", "null"]}}},
             id="test_null_string",
         ),
+        pytest.param(
+            [
+                {
+                    "stream": "data_with_nested_arrays",
+                    "data": {
+                        "root_property_object": {
+                            "property_array": [
+                                {
+                                    "title": "Nested_1",
+                                    "type": "multi-value",
+                                    "value": ["XL"]
+                                },
+                                {
+                                    "title": "Nested_2",
+                                    "type": "location",
+                                    "value": {
+                                        "nested_key_1": "GB",
+                                        "nested_key_2": "United Kingdom"
+                                    }
+                                }
+                            ],
+                        }
+                    }
+                },
+            ],
+            {
+                "data_with_nested_arrays": {
+                    "root_property_object": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "property_array": {
+                                "type": [
+                                    "array",
+                                    "null"
+                                ],
+                                "items": {
+                                    "type": [
+                                        "object",
+                                        "null"
+                                    ],
+                                    "properties": {
+                                        "title": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "type": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "value": {
+                                            "anyOf": [
+                                                {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "nested_key_1": {
+                                                            "type": "string"
+                                                        },
+                                                        "nested_key_2": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            id="test_data_with_nested_arrays",
+        ),
     ],
 )
 def test_schema_derivation(input_records: List, expected_schemas: Mapping):

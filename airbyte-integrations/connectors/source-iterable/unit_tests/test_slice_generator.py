@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
+
 import freezegun
 import pendulum
 import pytest
@@ -92,3 +94,11 @@ def test_datetime_wrong_range():
     end_day = pendulum.parse("2000")
     with pytest.raises(StopIteration):
         next(RangeSliceGenerator.make_datetime_ranges(start_day, end_day, 1))
+
+
+def test_reduce_range():
+    slice_generator = AdjustableSliceGenerator(start_date=datetime(2022, 1, 1), end_date=datetime(2022, 1, 31))
+    next(slice_generator)
+    reduced_slice = slice_generator.reduce_range()
+    assert reduced_slice.start_date == datetime(2022, 1, 1)
+    assert reduced_slice.end_date == datetime(2022, 1, 31)

@@ -7,8 +7,8 @@ from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
+from airbyte_cdk.sources.types import Config
 
 
 @dataclass
@@ -24,10 +24,17 @@ class ConstantBackoffStrategy(BackoffStrategy):
     parameters: InitVar[Mapping[str, Any]]
     config: Config
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         if not isinstance(self.backoff_time_in_seconds, InterpolatedString):
             self.backoff_time_in_seconds = str(self.backoff_time_in_seconds)
-        self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, parameters=parameters)
+        if isinstance(self.backoff_time_in_seconds, float):
+            self.backoff_time_in_seconds = InterpolatedString.create(str(self.backoff_time_in_seconds), parameters=parameters)
+        else:
+            self.backoff_time_in_seconds = InterpolatedString.create(self.backoff_time_in_seconds, parameters=parameters)
 
-    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
-        return self.backoff_time_in_seconds.eval(self.config)
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        return self.backoff_time_in_seconds.eval(self.config)  # type: ignore # backoff_time_in_seconds is always cast to an interpolated string

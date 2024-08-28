@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import Any, Dict, Mapping
 
 from source_gcs.spec import SourceGCSSpec

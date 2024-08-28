@@ -9,7 +9,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 /** Database object for interacting with a Jooq connection. */
-open class Database(private val dslContext: DSLContext?) {
+open class Database(protected val dslContext: DSLContext) {
     @Throws(SQLException::class)
     open fun <T> query(transform: ContextQueryFunction<T>): T? {
         return transform.query(dslContext)
@@ -17,7 +17,7 @@ open class Database(private val dslContext: DSLContext?) {
 
     @Throws(SQLException::class)
     open fun <T> transaction(transform: ContextQueryFunction<T>): T? {
-        return dslContext!!.transactionResult { configuration: Configuration? ->
+        return dslContext.transactionResult { configuration: Configuration ->
             transform.query(DSL.using(configuration))
         }
     }

@@ -46,13 +46,9 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             Container: The builder container, with installed dependencies.
         """
         ONLY_BUILD_FILES = ["pyproject.toml", "poetry.lock", "poetry.toml", "setup.py", "requirements.txt", "README.md"]
-        
+
         builder = await with_python_connector_installed(
-            self.context,
-            base_container,
-            str(self.context.connector.code_directory),
-            install_root_package=False,
-            include=ONLY_BUILD_FILES
+            self.context, base_container, str(self.context.connector.code_directory), install_root_package=False, include=ONLY_BUILD_FILES
         )
         return builder
 
@@ -65,7 +61,6 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         self.logger.info(f"Building connector from base image in metadata for {platform}")
         base = self._get_base_container(platform)
         customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
-        entrypoint = build_customization.get_entrypoint(self.context.connector)
         main_file_name = build_customization.get_main_file_name(self.context.connector)
 
         builder = await self._create_builder_container(customized_base)
@@ -74,7 +69,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
         connector_snake_case_name = self.context.connector.technical_name.replace("-", "_")
 
-        connector_container = (
+        base_connector_container = (
             # copy python dependencies from builder to connector container
             customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
@@ -83,11 +78,9 @@ class BuildConnectorImages(BuildConnectorImagesBase):
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=[connector_snake_case_name])).directory(connector_snake_case_name),
             )
-            .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
-            .with_entrypoint(entrypoint)
-            .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])
-            .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])
         )
+
+        connector_container = build_customization.apply_airbyte_entrypoint(base_connector_container, self.context.connector)
         customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
         return customized_connector
 

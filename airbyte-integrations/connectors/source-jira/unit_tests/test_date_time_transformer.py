@@ -3,8 +3,7 @@
 #
 
 import pytest
-from source_jira.source import SourceJira
-from source_jira.streams import ApplicationRoles
+from conftest import find_stream
 
 
 @pytest.mark.parametrize(
@@ -18,9 +17,7 @@ from source_jira.streams import ApplicationRoles
     ],
 )
 def test_converting_date_to_date_time(origin_item, sub_schema, expected, config):
-    authenticator = SourceJira().get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-    stream = ApplicationRoles(**args)
+    stream = find_stream("issue_comments", config)
     actual = stream.transformer.default_convert(origin_item, sub_schema)
     assert actual == expected
 
@@ -28,9 +25,7 @@ def test_converting_date_to_date_time(origin_item, sub_schema, expected, config)
 def test_converting_date_with_incorrect_format_returning_original_value(config, caplog):
     sub_schema = {"type": "string", "format": "date-time"}
     incorrectly_formatted_date = "incorrectly_formatted_date"
-    authenticator = SourceJira().get_authenticator(config=config)
-    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-    stream = ApplicationRoles(**args)
+    stream = find_stream("issue_comments", config)
     actual = stream.transformer.default_convert(incorrectly_formatted_date, sub_schema)
     assert actual == incorrectly_formatted_date
     assert f"{incorrectly_formatted_date}: doesn't match expected format." in caplog.text

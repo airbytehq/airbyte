@@ -41,6 +41,7 @@ sudo usermod -a -G docker $USER
 sudo yum install -y docker-compose-plugin
 docker compose version
 ```
+
 If you encounter an error on this part, you might prefer to follow the documentation to [install the docker compose plugin manually](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually) (_make sure to do it for all users_).
 
 4. To close the SSH connection, run the following command in your SSH session on the instance terminal:

@@ -5,7 +5,6 @@ package io.airbyte.cdk.db
 
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import java.lang.Boolean
 import java.util.*
 import kotlin.IllegalStateException
 import kotlin.Int
@@ -115,11 +114,11 @@ object IncrementalUtils {
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.NUMBER_V1,
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.INTEGER_V1 -> {
                 // todo (cgardens) - handle big decimal. this is currently an overflow risk.
-                java.lang.Double.compare(original.toDouble(), candidate.toDouble())
+                original.toDouble().compareTo(candidate.toDouble())
             }
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN,
             JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.BOOLEAN_V1 -> {
-                Boolean.compare(original.toBoolean(), candidate.toBoolean())
+                original.toBoolean().compareTo(candidate.toBoolean())
             }
             else ->
                 throw IllegalStateException(

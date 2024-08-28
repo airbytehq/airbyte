@@ -5,33 +5,55 @@ data:
   allowedHosts:
     hosts:
       - api.chartmogul.com
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-chartmogul
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.1@sha256:775f3f28381e2bb18d84ecccd35624b3de6f2cf62fb481fe7809091435f8eb26
   connectorSubtype: api
   connectorType: source
   definitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
-  dockerImageTag: 1.0.0
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: "This version separates the `customer_count` stream into multiple streams (daily, weekly, monthly, quarterly). Users previously using the `customer_count` stream will need to run a reset to enable the new streams and continue syncing."
-        upgradeDeadline: "2023-11-29"
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-chartmogul
-  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   githubIssueLabel: source-chartmogul
   icon: chartmogul.svg
   license: MIT
   name: Chartmogul
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-chartmogul
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: 2022-01-10
+  releases:
+    breakingChanges:
+      1.0.0:
+        message:
+          "This version separates the `customer_count` stream into multiple
+          streams (daily, weekly, monthly, quarterly). Users previously using the
+          `customer_count` stream will need to run a reset to enable the new streams
+          and continue syncing."
+        upgradeDeadline: "2023-11-29"
   releaseStage: beta
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: chartmogul_config_dev_null
+          id: 07daa31c-b7d0-4d3e-81c6-e6b7786a5c29
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CHARTMOGUL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

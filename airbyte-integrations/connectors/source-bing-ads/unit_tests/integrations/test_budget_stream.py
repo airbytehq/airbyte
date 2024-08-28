@@ -22,7 +22,7 @@ class TestBudgetStream(TestBulkStream):
         self.auth_client(http_mocker)
         output, _ = self.read_stream(self.stream_name, SyncMode.full_refresh, self._config, "budget_empty")
         assert len(output.records) == 0
-        assert len(output.logs) == 10
+        assert len(output.logs) == 11
 
     @HttpMocker()
     def test_transform_records(self, http_mocker: HttpMocker):
@@ -41,7 +41,7 @@ class TestBudgetStream(TestBulkStream):
         assert output.most_recent_state.stream_state.dict().get(self.account_id) == {self.cursor_field: "2024-01-01T12:54:12.028+00:00"}
 
     @HttpMocker()
-    @freeze_time("204-02-26")  # mock current time as stream data available for 30 days only
+    @freeze_time("2024-02-26")  # mock current time as stream data available for 30 days only
     def test_incremental_read_with_state(self, http_mocker: HttpMocker):
         state = self._state("budget_state", self.stream_name)
         self.auth_client(http_mocker)

@@ -2,21 +2,30 @@ data:
   ab_internal:
     ql: 200
     sl: 100
+  allowedHosts:
+    hosts:
+      - api.sendinblue.com
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
   connectorSubtype: api
   connectorType: source
   definitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-sendinblue
   documentationUrl: https://docs.airbyte.com/integrations/sources/sendinblue
   githubIssueLabel: source-sendinblue
   icon: sendinblue.svg
   license: MIT
   name: Sendinblue
+  releaseDate: 2022-11-01
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-sendinblue
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -24,6 +33,18 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sendinblue_config_dev_null
+          id: 9dc930cc-4faa-47e7-b45d-f63f60b8ee9e
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SENDINBLUE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

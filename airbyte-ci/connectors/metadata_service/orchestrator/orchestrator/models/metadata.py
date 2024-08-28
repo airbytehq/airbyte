@@ -4,9 +4,12 @@
 
 from typing import Any, Optional, Tuple
 
+import orchestrator.hacks as HACKS
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from orchestrator.config import CONNECTOR_DEPENDENCY_FILE_NAME, CONNECTOR_DEPENDENCY_FOLDER, get_public_url_for_gcs_file
 from pydantic import BaseModel, ValidationError
+from pydash import get
 
 
 class PydanticDelayValidationMixin:
@@ -51,6 +54,8 @@ class LatestMetadataEntry(BaseModel):
     icon_url: Optional[str] = None
     bucket_name: Optional[str] = None
     file_path: Optional[str] = None
+    etag: Optional[str] = None
+    last_modified: Optional[str] = None
 
     @property
     def is_latest_version_path(self) -> bool:
@@ -59,3 +64,17 @@ class LatestMetadataEntry(BaseModel):
         """
         ending_path = f"latest/{METADATA_FILE_NAME}"
         return self.file_path.endswith(ending_path)
+
+    @property
+    def dependency_file_url(self) -> Optional[str]:
+        if not self.bucket_name or not self.metadata_definition:
+            return None
+
+        connector_technical_name = get(self.metadata_definition, "data.dockerRepository")
+        connector_version = get(self.metadata_definition, "data.dockerImageTag")
+        sanitized_connector_technical_name = HACKS.sanitize_docker_repo_name_for_dependency_file(connector_technical_name)
+
+        file_path = (
+            f"{CONNECTOR_DEPENDENCY_FOLDER}/{sanitized_connector_technical_name}/{connector_version}/{CONNECTOR_DEPENDENCY_FILE_NAME}"
+        )
+        return get_public_url_for_gcs_file(self.bucket_name, file_path)

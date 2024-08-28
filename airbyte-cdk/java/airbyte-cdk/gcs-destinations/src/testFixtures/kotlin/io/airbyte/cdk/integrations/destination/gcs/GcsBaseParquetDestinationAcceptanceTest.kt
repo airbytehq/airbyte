@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.gcs
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectReader
 import io.airbyte.cdk.integrations.destination.gcs.parquet.GcsParquetWriter
-import io.airbyte.cdk.integrations.destination.s3.S3Format
-import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants
+import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroRecordFactory
 import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetWriter.Companion.getHadoopConfig
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.getFieldNameUpdater
 import io.airbyte.cdk.integrations.destination.s3.util.AvroRecordHelper.pruneAirbyteJson
@@ -25,7 +25,7 @@ import org.apache.parquet.avro.AvroReadSupport
 import org.apache.parquet.hadoop.ParquetReader
 
 abstract class GcsBaseParquetDestinationAcceptanceTest :
-    GcsAvroParquetDestinationAcceptanceTest(S3Format.PARQUET) {
+    GcsAvroParquetDestinationAcceptanceTest(FileUploadFormat.PARQUET) {
     override fun getProtocolVersion() = ProtocolVersion.V1
 
     override val formatConfig: JsonNode?
@@ -37,17 +37,17 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
     @Throws(IOException::class, URISyntaxException::class)
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
+        streamName: String,
+        namespace: String,
         streamSchema: JsonNode
     ): List<JsonNode> {
-        val nameUpdater = getFieldNameUpdater(streamName!!, namespace, streamSchema)
+        val nameUpdater = getFieldNameUpdater(streamName, namespace, streamSchema)
 
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val jsonRecords: MutableList<JsonNode> = LinkedList()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             val uri = URI(String.format("s3a://%s/%s", `object`.bucketName, `object`.key))
             val path = Path(uri)
             val hadoopConfig = GcsParquetWriter.getHadoopConfig(config)
@@ -60,7 +60,8 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
                         GcsDestinationAcceptanceTest.Companion.MAPPER.reader()
                     var record: GenericData.Record?
                     while ((parquetReader.read().also { record = it }) != null) {
-                        val jsonBytes = AvroConstants.JSON_CONVERTER.convertToJson(record)
+                        val jsonBytes =
+                            AvroRecordFactory.createV1JsonToAvroConverter().convertToJson(record)
                         var jsonRecord = jsonReader.readTree(jsonBytes)
                         jsonRecord = nameUpdater.getJsonWithOriginalFieldNames(jsonRecord!!)
                         jsonRecords.add(pruneAirbyteJson(jsonRecord))
@@ -73,14 +74,14 @@ abstract class GcsBaseParquetDestinationAcceptanceTest :
 
     @Throws(Exception::class)
     override fun retrieveDataTypesFromPersistedFiles(
-        streamName: String?,
-        namespace: String?
+        streamName: String,
+        namespace: String
     ): Map<String?, Set<Schema.Type?>?> {
         val objectSummaries = getAllSyncedObjects(streamName, namespace)
         val resultDataTypes: MutableMap<String?, Set<Schema.Type?>?> = HashMap()
 
-        for (objectSummary in objectSummaries!!) {
-            val `object` = s3Client!!.getObject(objectSummary!!.bucketName, objectSummary.key)
+        for (objectSummary in objectSummaries) {
+            val `object` = s3Client!!.getObject(objectSummary.bucketName, objectSummary.key)
             val uri = URI(String.format("s3a://%s/%s", `object`.bucketName, `object`.key))
             val path = Path(uri)
             val hadoopConfig = getHadoopConfig(config)

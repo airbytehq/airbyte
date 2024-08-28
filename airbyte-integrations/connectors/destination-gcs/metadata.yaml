@@ -8,7 +8,7 @@ data:
   icon: googlecloudstorage.svg
   license: ELv2
   name: Google Cloud Storage (GCS)
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -27,4 +27,17 @@ data:
     sl: 100
     ql: 300
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-GCS_NO_MULTIPART_ROLE_CREDS
+          fileName: insufficient_roles_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-GCS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
