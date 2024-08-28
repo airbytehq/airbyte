@@ -1,0 +1,34 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/e2e-test",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "protocol_version": "0.2.1",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "E2E Test (/dev/null) Destination Spec",
+    "type": "object",
+    "required": ["test_destination"],
+    "properties": {
+      "test_destination": {
+        "title": "Test Destination",
+        "type": "object",
+        "description": "The type of destination to be used",
+        "oneOf": [
+          {
+            "title": "Silent",
+            "required": ["test_destination_type"],
+            "properties": {
+              "test_destination_type": {
+                "type": "string",
+                "const": "SILENT",
+                "default": "SILENT"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users_10m",
+        "namespace": "PERF_TEST_HARNESS",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "age": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "gender": {
+              "type": "string"
+            },
+            "height": {
+              "type": "number"
+            },
+            "weight": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "language": {
+              "type": "string"
+            },
+            "telephone": {
+              "type": "string"
+            },
+            "blood_type": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "occupation": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "nationality": {
+              "type": "string"
+            },
+            "academic_degree": {
+              "type": "string"
+            }
+          }
+        },
+        "default_cursor_field": [],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"]],
+      "cursor_field": ["updated_at"],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
