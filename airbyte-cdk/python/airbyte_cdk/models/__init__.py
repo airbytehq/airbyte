@@ -64,9 +64,7 @@ from .airbyte_protocol_serializers import (
 AirbyteStreamStateSerializer,
 AirbyteStateMessageSerializer,
 AirbyteMessageSerializer,
-AirbyteCatalogSerializer,
 ConfiguredAirbyteCatalogSerializer,
 ConfiguredAirbyteStreamSerializer,
-AdvancedAuthSerializer,
 ConnectorSpecificationSerializer,
 )
