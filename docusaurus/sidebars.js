@@ -147,6 +147,22 @@ const sourceMysql = {
   ],
 };
 
+const sourceMssql = {
+  type: "category",
+  label: "MS SQL Server (MSSQL)",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mssql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mssql/mssql-troubleshooting",
+    },
+  ],
+};
+
 const destinationS3 = {
   type: "category",
   label: "S3",
@@ -350,6 +366,7 @@ const connectorCatalog = {
         sourcePostgres,
         sourceMongoDB,
         sourceMysql,
+        sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
