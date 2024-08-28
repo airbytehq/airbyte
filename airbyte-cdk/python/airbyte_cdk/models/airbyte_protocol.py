@@ -61,9 +61,9 @@ class AirbyteGlobalState:
 class AirbyteStateMessage:
     type: Optional[AirbyteStateType] = None  # type: ignore [name-defined]
     stream: Optional[AirbyteStreamState] = None
-    global_: Annotated[
-        AirbyteGlobalState | None, Alias("global")
-    ] = None  # "global" is a reserved keyword in python ⇒ Alias is used for (de-)serialization
+    global_: Annotated[AirbyteGlobalState | None, Alias("global")] = (
+        None  # "global" is a reserved keyword in python ⇒ Alias is used for (de-)serialization
+    )
     data: Optional[Dict[str, Any]] = None
     sourceStats: Optional[AirbyteStateStats] = None  # type: ignore [name-defined]
     destinationStats: Optional[AirbyteStateStats] = None  # type: ignore [name-defined]

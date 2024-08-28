@@ -35,7 +35,7 @@ from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from orjson import orjson
+from orjson import dumps, orjson
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
@@ -206,7 +206,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
-        return orjson.dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode()  # type: ignore[no-any-return] # orjson.dumps(message).decode() always returns string
+        return dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode()
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:
