@@ -47,7 +47,7 @@ class AirbyteStateBlob:
 # The following dataclasses have been redeclared to include the new version of AirbyteStateBlob
 @dataclass
 class AirbyteStreamState:
-    stream_descriptor: StreamDescriptor
+    stream_descriptor: StreamDescriptor  # type: ignore [name-defined]
     stream_state: Optional[AirbyteStateBlob] = None
 
 
@@ -59,24 +59,24 @@ class AirbyteGlobalState:
 
 @dataclass
 class AirbyteStateMessage:
-    type: Optional[AirbyteStateType] = None
+    type: Optional[AirbyteStateType] = None  # type: ignore [name-defined]
     stream: Optional[AirbyteStreamState] = None
     global_: Annotated[
         AirbyteGlobalState | None, Alias("global")
     ] = None  # "global" is a reserved keyword in python ⇒ Alias is used for (de-)serialization
     data: Optional[Dict[str, Any]] = None
-    sourceStats: Optional[AirbyteStateStats] = None
-    destinationStats: Optional[AirbyteStateStats] = None
+    sourceStats: Optional[AirbyteStateStats] = None  # type: ignore [name-defined]
+    destinationStats: Optional[AirbyteStateStats] = None  # type: ignore [name-defined]
 
 
 @dataclass
 class AirbyteMessage:
-    type: Type
-    log: Optional[AirbyteLogMessage] = None
-    spec: Optional[ConnectorSpecification] = None
-    connectionStatus: Optional[AirbyteConnectionStatus] = None
-    catalog: Optional[AirbyteCatalog] = None
-    record: Optional[AirbyteRecordMessage] = None
+    type: Type  # type: ignore [name-defined]
+    log: Optional[AirbyteLogMessage] = None  # type: ignore [name-defined]
+    spec: Optional[ConnectorSpecification] = None  # type: ignore [name-defined]
+    connectionStatus: Optional[AirbyteConnectionStatus] = None  # type: ignore [name-defined]
+    catalog: Optional[AirbyteCatalog] = None  # type: ignore [name-defined]
+    record: Optional[AirbyteRecordMessage] = None  # type: ignore [name-defined]
     state: Optional[AirbyteStateMessage] = None
-    trace: Optional[AirbyteTraceMessage] = None
-    control: Optional[AirbyteControlMessage] = None
+    trace: Optional[AirbyteTraceMessage] = None  # type: ignore [name-defined]
+    control: Optional[AirbyteControlMessage] = None  # type: ignore [name-defined]
