@@ -43,6 +43,7 @@ from airbyte_cdk.sources import Source
 from orjson import orjson
 from pydantic import ValidationError as V2ValidationError
 from serpyco_rs import SchemaValidationError
+from airbyte_protocol_dataclasses.models import *
 
 
 class EntrypointOutput:
@@ -119,7 +120,7 @@ class EntrypointOutput:
         return [message for message in self._messages if message.type in message_types]
 
     def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
-        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]  # type: ignore[union-attr] # trace has `type`
+        return [message for message in self._messages if message.type == Type.TRACE and message.trace.type == trace_type]  # type: ignore[union-attr]
 
     def is_in_logs(self, pattern: str) -> bool:
         """Check if any log message case-insensitive matches the pattern."""
@@ -128,6 +129,13 @@ class EntrypointOutput:
     def is_not_in_logs(self, pattern: str) -> bool:
         """Check if no log message matches the case-insensitive pattern."""
         return not self.is_in_logs(pattern)
+
+    def _parse_messages(self, messages: List[str]):
+        for message in messages:
+            try:
+                self._messages.append(self._parse_message(message))
+            except V2ValidationError as exception:
+                raise ValueError("All messages are expected to be AirbyteMessage") from exception
 
 
 def _run_command(source: Source, args: List[str], expecting_exception: bool = False) -> EntrypointOutput:
