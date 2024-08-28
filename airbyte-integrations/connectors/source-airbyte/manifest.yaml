@@ -22,8 +22,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"next\", {}) }}"
-            stop_condition: "{{ not response.get(\"next\", {}) }}"
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
         requester:
           $ref: "#/definitions/base_requester"
           path: https://api.airbyte.com/v1/jobs
@@ -64,7 +64,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
@@ -85,8 +85,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"next\", {}) }}"
-            stop_condition: "{{ not response.get(\"next\", {}) }}"
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
         requester:
           $ref: "#/definitions/base_requester"
           path: https://api.airbyte.com/v1/workspaces
@@ -114,8 +114,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"next\", {}) }}"
-            stop_condition: "{{ not response.get(\"next\", {}) }}"
+            cursor_value: '{{ response.get("next", {}) }}'
+            stop_condition: '{{ not response.get("next", {}) }}'
         requester:
           $ref: "#/definitions/base_requester"
           path: https://api.airbyte.com/v1/connections
