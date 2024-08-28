@@ -60,7 +60,7 @@ private val LOGGER = KotlinLogging.logger {}
 // execution.
 @Execution(ExecutionMode.CONCURRENT)
 abstract class BaseTypingDedupingTest {
-    protected var DIFFER: RecordDiffer? = null
+    protected var DIFFER: LegacyRecordDiffer? = null
 
     private var randomSuffix: String? = null
     protected var config: JsonNode? = null
@@ -205,7 +205,7 @@ abstract class BaseTypingDedupingTest {
 
         val generator = sqlGenerator
         DIFFER =
-            RecordDiffer(
+            LegacyRecordDiffer(
                 rawMetadataColumnNames,
                 finalMetadataColumnNames,
                 generator.buildColumnId("id1") to AirbyteProtocolType.INTEGER,

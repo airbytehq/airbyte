@@ -22,8 +22,13 @@ import org.junit.jupiter.api.function.Executable
 /**
  * Utility class to generate human-readable diffs between expected and actual records. Assumes 1s1t
  * output format.
+ *
+ * Prefer [io.airbyte.cdk.test.RecordDiffer], which operates on strongly-typed objects instead of
+ * JsonNodes. This class is effectively deprecated; we're just keeping it around so that
+ * [BaseTypingDedupingTest] and [BaseSqlGeneratorIntegrationTest] continue to function. Once those
+ * classes are using the new RecordDiffer, we should remove this class.
  */
-class RecordDiffer
+class LegacyRecordDiffer
 @SafeVarargs
 constructor(
     private val rawRecordColumnNames: Map<String, String>,
