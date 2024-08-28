@@ -20,7 +20,7 @@ EXEC sys.sp_cdc_enable_table
     @source_name   = N'<table>',
     @role_name     = NULL
 ```
-Note: You may want to set a `@role_name` or any other params similarly to how they were set when CDC was enabled in the first place.
+Note: You may want to set a `@role_name` or any other arguments similarly to how they were set when CDC was enabled in the first place.
 
 You can validate which columns are being captured by running the following query:
 ```sql
