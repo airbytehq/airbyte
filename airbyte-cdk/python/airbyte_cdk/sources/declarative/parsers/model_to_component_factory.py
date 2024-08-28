@@ -493,14 +493,17 @@ class ModelToComponentFactory:
         main_module_file = getattr(main_module, '__file__', None)
         print(f"Main module file: {main_module_file}")
 
+        if not main_module_file:
+            return None
+        
         main_dir = os.path.dirname(main_module_file)
         print(f"Main dir: {main_dir}")
         print(f"Main dir items: {os.listdir(main_dir)}")     
 
-        for item in os.listdir(main_dir):
-            if os.path.isdir(os.path.join(main_dir, item)) and re.match(r'source_.*', item):
-                print(f"Found matching item: {item}")
-                return item
+        for item in os.scandir(main_dir):
+            if item.is_dir() and re.match(r'source_.*', item.name):
+                print(f"Found matching item: {item.name}")
+                return item.name
         return None
 
     def _get_class_from_fully_qualified_class_name(self, full_qualified_class_name: str) -> Any:
