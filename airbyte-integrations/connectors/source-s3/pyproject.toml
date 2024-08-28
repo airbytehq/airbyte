@@ -23,7 +23,10 @@ python-snappy = "==0.6.1"
 dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
-airbyte-cdk = "^4.5.4"
+
+[tool.poetry.dependencies.airbyte-cdk]
+version = "^4.5.4"
+extras = [ "file_based",]
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
@@ -38,4 +41,4 @@ moto = "==4.2.14"
 docker = "^7.0.0"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
-pandas = "==2.0.3"
+pandas = "^2.0.3"
