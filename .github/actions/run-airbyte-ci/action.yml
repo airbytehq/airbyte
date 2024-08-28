@@ -34,6 +34,10 @@ inputs:
     description: "GCP credentials for GCP Secret Manager"
     required: false
     default: ""
+  gcp_integration_tester_credentials:
+    description: "GCP credentials for integration tests"
+    required: false
+    default: ""
   git_repo_url:
     description: "Git repository URL"
     default: https://github.com/airbytehq/airbyte.git

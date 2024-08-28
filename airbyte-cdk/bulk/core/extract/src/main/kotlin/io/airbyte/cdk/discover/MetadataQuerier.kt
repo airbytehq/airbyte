@@ -24,6 +24,9 @@ interface MetadataQuerier : AutoCloseable {
         streamNamespace: String?,
     ): List<List<String>>
 
+    /** Executes extra checks which throw a [io.airbyte.cdk.ConfigErrorException] on failure. */
+    fun extraChecks()
+
     /** Factory for [MetadataQuerier] instances. */
     fun interface Factory<T : SourceConfiguration> {
         /** An implementation might open a connection to build a [MetadataQuerier] instance. */
