@@ -209,3 +209,23 @@ class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
             file_writer.flush()
             fp.seek(0)
             return fp.read()
+
+
+class TemporaryExcelFilesStreamReader(InMemoryFilesStreamReader):
+    """
+    A file reader that writes RemoteFiles to a temporary file and then reads them back.
+    """
+
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        return io.BytesIO(self._make_file_contents(file.uri))
+
+    def _make_file_contents(self, file_name: str) -> bytes:
+        contents = self.files[file_name]["contents"]
+        df = pd.DataFrame(contents)
+
+        with io.BytesIO() as fp:
+            writer = pd.ExcelWriter(fp, engine='xlsxwriter')
+            df.to_excel(writer, index=False, sheet_name='Sheet1')
+            writer._save()
+            fp.seek(0)
+            return fp.read()

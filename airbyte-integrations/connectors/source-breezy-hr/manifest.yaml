@@ -1,0 +1,535 @@
+version: 4.5.2
+
+type: DeclarativeSource
+
+description: An Airbyte source for Breezy applicant tracking system.
+
+check:
+  type: CheckStream
+  stream_names:
+    - positions
+
+definitions:
+  streams:
+    positions:
+      type: DeclarativeStream
+      name: positions
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /positions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitUntilTimeFromHeader
+                    header: X-RateLimit-Reset
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 400
+                      - 401
+                      - 500
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - type
+              value: "{{ record['type']['name'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - country_id
+              value: "{{ record['location']['country']['id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - application_form
+        - type: RemoveFields
+          field_pointers:
+            - - friendly_id
+        - type: RemoveFields
+          field_pointers:
+            - - experience
+        - type: RemoveFields
+          field_pointers:
+            - - education
+        - type: RemoveFields
+          field_pointers:
+            - - requisition_id
+        - type: RemoveFields
+          field_pointers:
+            - - description
+        - type: RemoveFields
+          field_pointers:
+            - - category
+        - type: RemoveFields
+          field_pointers:
+            - - all_admins
+        - type: RemoveFields
+          field_pointers:
+            - - all_users
+        - type: RemoveFields
+          field_pointers:
+            - - bias_enabled
+        - type: RemoveFields
+          field_pointers:
+            - - questionnaire_id
+        - type: RemoveFields
+          field_pointers:
+            - - scorecard_id
+        - type: RemoveFields
+          field_pointers:
+            - - candidate_type
+        - type: RemoveFields
+          field_pointers:
+            - - creator_id
+        - type: AddFields
+          fields:
+            - path:
+                - position_id
+              value: "{{ record['_id'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - _id
+        - type: AddFields
+          fields:
+            - path:
+                - country_name
+              value: "{{ record['location']['country']['name'] }}"
+        - type: RemoveFields
+          field_pointers:
+            - - location
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/positions"
+    candidates:
+      type: DeclarativeStream
+      name: candidates
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /position/{{stream_partition.positions}}/candidates
+          http_method: GET
+          request_parameters:
+            sort: updated_date
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 100
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 5
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    predicate: "{{ response.status_code == 429 }}"
+                    http_codes:
+                      - 429
+                    error_message: Failed with Error 429 status code, retrying again
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 400
+                      - 401
+                      - 500
+                    error_message: Failed with Error 400, 401 or 500 status codes
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: position_id
+              partition_field: positions
+              stream:
+                $ref: "#/definitions/streams/positions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - stage
+              value: "{{ record['stage']['name'] }}"
+        - type: AddFields
+          fields:
+            - path:
+                - pos_id
+              value: >-
+                {{stream_partition.positions}}-{% set id = record['_id'] if
+                record.get('_id') else "" %} {{ id }}
+        - type: AddFields
+          fields:
+            - path:
+                - position_id
+              value: >-
+                {% set id = record['pos_id'].split('- ')[0] if
+                record.get('pos_id', None) else "" %} {{ id }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/candidates"
+    pipelines:
+      type: DeclarativeStream
+      name: pipelines
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /pipelines
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - "*"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - pipeline
+        - type: RemoveFields
+          field_pointers:
+            - - creation_date
+        - type: RemoveFields
+          field_pointers:
+            - - updated_date
+        - type: RemoveFields
+          field_pointers:
+            - - type
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pipelines"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.breezy.hr/v3/company/{{ config['company_id'] }}
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: AUTHORIZATION
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/positions"
+  - $ref: "#/definitions/streams/candidates"
+  - $ref: "#/definitions/streams/pipelines"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - company_id
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      company_id:
+        type: string
+        order: 1
+        title: Company ID
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    positions: false
+    candidates: false
+    pipelines: false
+  testedStreams: {}
+
+schemas:
+  positions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      country_id:
+        type:
+          - string
+          - "null"
+      country_name:
+        type:
+          - string
+          - "null"
+      creation_date:
+        type:
+          - string
+          - "null"
+      custom_attributes:
+        type:
+          - array
+          - "null"
+      department:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      org_type:
+        type:
+          - string
+          - "null"
+      pipeline_id:
+        type:
+          - string
+          - "null"
+      position_id:
+        type:
+          - number
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+  candidates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      assigned_to:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          email_address:
+            type:
+              - string
+              - "null"
+          hex_color:
+            type:
+              - string
+              - "null"
+          initial:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      bias_status:
+        type:
+          - string
+          - "null"
+      creation_date:
+        type:
+          - string
+          - "null"
+      email_address:
+        type:
+          - string
+          - "null"
+      headline:
+        type:
+          - string
+          - "null"
+      initial:
+        type:
+          - string
+          - "null"
+      meta_id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      origin:
+        type:
+          - string
+          - "null"
+      overall_score:
+        type:
+          - object
+          - "null"
+        properties:
+          average_score:
+            type:
+              - number
+              - "null"
+          good:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          neutral:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          poor:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          score:
+            type:
+              - number
+              - "null"
+          scored_count:
+            type:
+              - number
+              - "null"
+          very_good:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          very_poor:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+      phone_number:
+        type:
+          - string
+          - "null"
+      pos_id:
+        type:
+          - string
+          - "null"
+      position_id:
+        type:
+          - string
+          - "null"
+      profile_photo_url:
+        type:
+          - string
+          - "null"
+      resume:
+        type:
+          - object
+          - "null"
+        properties:
+          _id:
+            type:
+              - string
+              - "null"
+          error:
+            type:
+              - boolean
+              - "null"
+          file_name:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+      source:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      stage:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+  pipelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"

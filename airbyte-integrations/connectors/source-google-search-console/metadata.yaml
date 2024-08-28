@@ -13,6 +13,7 @@ data:
   dockerImageTag: 1.5.3
   dockerRepository: airbyte/source-google-search-console
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
+  erdUrl: https://dbdocs.io/airbyteio/source-google-search-console?view=relationships
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
   license: Elv2
@@ -22,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-search-console
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

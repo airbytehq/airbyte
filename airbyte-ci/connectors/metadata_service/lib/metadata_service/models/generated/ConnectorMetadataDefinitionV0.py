@@ -7,7 +7,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field, constr
+from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
 from typing_extensions import Literal
 
 
@@ -93,6 +93,21 @@ class ResourceRequirements(BaseModel):
 class JobType(BaseModel):
     __root__: Literal["get_spec", "check_connection", "discover_schema", "sync", "reset_connection", "connection_updater", "replicate"] = (
         Field(..., description="enum that describes the different types of jobs that the platform runs.", title="JobType")
+    )
+
+
+class RolloutConfiguration(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    initialPercentage: Optional[conint(ge=0, le=100)] = Field(
+        0, description="The percentage of users that should receive the new version initially."
+    )
+    maxPercentage: Optional[conint(ge=0, le=100)] = Field(
+        50, description="The percentage of users who should receive the release candidate during the test phase before full rollout."
+    )
+    advanceDelayMinutes: Optional[conint(ge=10)] = Field(
+        10, description="The number of minutes to wait before advancing the rollout percentage."
     )
 
 
@@ -185,6 +200,7 @@ class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
     metrics: Optional[ConnectorMetrics] = None
+    sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")
 
 
 class ConnectorTestSuiteOptions(BaseModel):
@@ -255,7 +271,7 @@ class ConnectorBreakingChanges(BaseModel):
     )
 
 
-class Registry(BaseModel):
+class RegistryOverride(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -267,6 +283,8 @@ class ConnectorReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    isReleaseCandidate: Optional[bool] = Field(False, description="Whether the release is eligible to be a release candidate.")
+    rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: ConnectorBreakingChanges
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
@@ -296,13 +314,14 @@ class Data(BaseModel):
     )
     releaseDate: Optional[date] = Field(None, description="The date when this connector was first released, in yyyy-mm-dd format.")
     protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
+    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
     connectorSubtype: Literal["api", "database", "datalake", "file", "custom", "message_queue", "unknown", "vectorstore"]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None
     tags: Optional[List[str]] = Field(
         [], description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
     )
-    registries: Optional[Registry] = None
+    registryOverrides: Optional[RegistryOverride] = None
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
