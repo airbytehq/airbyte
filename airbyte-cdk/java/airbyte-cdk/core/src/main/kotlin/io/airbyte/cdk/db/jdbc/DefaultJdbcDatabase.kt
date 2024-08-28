@@ -116,54 +116,19 @@ constructor(
         recordTransform: CheckedFunction<ResultSet, T, SQLException>
     ): Stream<T> {
 
-        //TODO: Temporary version of code for testing the .use for connection
-
-        dataSource.connection.use { connection ->
-            return JdbcDatabase.Companion.toUnsafeStream<T>(
-                statementCreator.apply(connection).executeQuery(),
-                recordTransform
-            )
-                .onClose(
-                    Runnable {
-                        try {
-                            LOGGER.info { "closing connection" }
-                            connection.close()
-                        } catch (e: SQLException) {
-                            throw RuntimeException(e)
-                        }
-                    }
-                )
-
-        }
-
-
-        /* NEW VERSION OF WORKING CODE
-        var connection = dataSource.connection
-
+        val connection = dataSource.connection
         try {
-            return JdbcDatabase.Companion.toUnsafeStream<T>(
+            return toUnsafeStream(
                 statementCreator.apply(connection).executeQuery(),
                 recordTransform
             )
-                .onClose(
-                    Runnable {
-                        try {
-                            LOGGER.info { "closing connection" }
-                            connection.close()
-                        } catch (e: SQLException) {
-                            throw RuntimeException(e)
-                        }
-                    }
-                )
+            .onClose{
+                    LOGGER.info { "closing connection" }
+                    connection.close()
+                }
         } catch (e: Throwable) {
-            //Close the connection and rethrow the exception
-            if (connection != null) {
-                connection.close()
-            }
+            connection.close()
             throw e
         }
-
-         */
-
     }
 }

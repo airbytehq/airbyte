@@ -72,10 +72,8 @@ class SnowflakeDestinationHandler(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
 
-        val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-        var showColumnsResult: List<JsonNode> = listOf()
-
         try {
+            val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
             for (stream in streamIds) {
                 val showColumnsQuery =
                     String.format(
@@ -86,7 +84,7 @@ class SnowflakeDestinationHandler(
                             databaseName,
                             stream.finalNamespace,
                             )
-                showColumnsResult = database.queryJsons(
+                val showColumnsResult = database.queryJsons(
                     showColumnsQuery,
                 )
                 for (result in showColumnsResult) {
@@ -99,12 +97,15 @@ class SnowflakeDestinationHandler(
                         rowCount.toInt()
                 }
             }
-        } catch (e: SQLException) {
-            showColumnsResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+            return tableRowCountsFromShowQuery
+
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("Object does not exist")) {
+                return LinkedHashMap<String, LinkedHashMap<String, Int>>()
+            } else {
+                throw e
+            }
         }
-        return tableRowCountsFromShowQuery
     }
 
 
@@ -134,10 +135,12 @@ class SnowflakeDestinationHandler(
             if(showTablesResult.size > 0) {
                 tableExists = true
             }
-        } catch (e: SQLException) {
-            showTablesResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("Object does not exist")) {
+                tableExists = false
+            } else {
+                throw e
+            }
         }
 
         if (!tableExists) {
@@ -584,11 +587,9 @@ class SnowflakeDestinationHandler(
             streamIds: List<StreamId>
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-            val existingTablesFromShowQuery =
-                LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-            var showColumnsResult: List<JsonNode> = listOf()
-
             try {
+                val existingTablesFromShowQuery =
+                    LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
                 for (stream in streamIds) {
                     val showColumnsQuery =
                         String.format(
@@ -599,10 +600,9 @@ class SnowflakeDestinationHandler(
                             stream.finalNamespace,
                             stream.finalName,
                         )
-                    showColumnsResult = database.queryJsons(
+                    val showColumnsResult = database.queryJsons(
                         showColumnsQuery,
                     )
-
                     for (result in showColumnsResult) {
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
@@ -633,12 +633,15 @@ class SnowflakeDestinationHandler(
                             )
                     }
                 }
-            } catch (e: SQLException) {
-                showColumnsResult.stream().close()
-                //Not re-throwing the exception since the SQLException occurs when the table does not exist
-                //throw e
+                return existingTablesFromShowQuery
+            } catch (e: SnowflakeSQLException) {
+                if(e.message != null && e.message!!.contains("Object does not exist")) {
+                    return LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+                } else {
+                    throw e
+                }
             }
-            return existingTablesFromShowQuery
+
         }
     }
 }

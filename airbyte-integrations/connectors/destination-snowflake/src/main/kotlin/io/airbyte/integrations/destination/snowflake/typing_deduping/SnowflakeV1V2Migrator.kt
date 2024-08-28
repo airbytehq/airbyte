@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.from
 import java.sql.SQLException
 import java.util.*
 import lombok.SneakyThrows
+import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.json.JSONObject
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -35,8 +36,6 @@ class SnowflakeV1V2Migrator(
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
 
-        var showSchemaResult : List<JsonNode> = listOf()
-
         try {
             val showSchemaQuery = String.format(
                 """
@@ -46,16 +45,17 @@ class SnowflakeV1V2Migrator(
                 databaseName,
             )
 
-            showSchemaResult = database.queryJsons(
+            val showSchemaResult = database.queryJsons(
                                     showSchemaQuery,
                                 )
             return showSchemaResult.isNotEmpty()
-        } catch (e: SQLException) {
-            showSchemaResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("Object does not exist")) {
+                return false
+            } else {
+                throw e
+            }
         }
-        return false;
     }
 
     override fun schemaMatchesExpectation(
@@ -77,8 +77,6 @@ class SnowflakeV1V2Migrator(
         // translates
         // VARIANT as VARCHAR
 
-        var showColumnsResult : List<JsonNode> = listOf()
-
         try {
             val showColumnsQuery =
                 String.format(
@@ -89,7 +87,7 @@ class SnowflakeV1V2Migrator(
                     namespace,
                     tableName,
                 )
-            showColumnsResult = database.queryJsons(
+            val showColumnsResult = database.queryJsons(
                 showColumnsQuery
             )
             val columnsFromShowQuery = showColumnsResult
@@ -111,20 +109,18 @@ class SnowflakeV1V2Migrator(
                         obj.putAll(m!!)
                     },
                 )
-
             return if (columnsFromShowQuery.isEmpty()) {
                 Optional.empty()
             } else {
                 Optional.of(TableDefinition(columnsFromShowQuery))
             }
-
-        } catch (e: SQLException) {
-            showColumnsResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("Object does not exist")) {
+                return Optional.empty()
+            } else {
+                throw e
+            }
         }
-
-        return Optional.empty()
     }
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
