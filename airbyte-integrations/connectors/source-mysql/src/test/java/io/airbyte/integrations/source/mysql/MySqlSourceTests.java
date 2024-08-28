@@ -1,88 +1,158 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource.PrimaryKeyAttributesFromDb;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.util.Properties;
+import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.BaseImage;
+import io.airbyte.integrations.source.mysql.MySQLTestDatabase.ContainerModifier;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.MySQLContainer;
 
 public class MySqlSourceTests {
 
-  private static final String TEST_USER = "test";
-  private static final String TEST_PASSWORD = "test";
-  private static MySQLContainer<?> container;
-
-  private JsonNode config;
-  private Database database;
+  public MySqlSource source() {
+    return new MySqlSource();
+  }
 
   @Test
   public void testSettingTimezones() throws Exception {
-    // start DB
-    container = new MySQLContainer<>("mysql:8.0")
-        .withUsername(TEST_USER)
-        .withPassword(TEST_PASSWORD)
-        .withEnv("MYSQL_ROOT_HOST", "%")
-        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
-        .withEnv("TZ", "Europe/Moscow");
-    container.start();
-    Properties properties = new Properties();
-    properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
-    DriverManager.getConnection(container.getJdbcUrl(), properties);
-    final String dbName = Strings.addRandomSuffix("db", "_", 10);
-    config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
-
-    try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
-      connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-      connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8, ContainerModifier.MOSCOW_TIMEZONE)) {
+      final var config = testdb.testConfigBuilder()
+          .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "serverTimezone=Europe/Moscow")
+          .withoutSsl()
+          .build();
+      final AirbyteConnectionStatus check = source().check(config);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus(), check.getMessage());
     }
-    AirbyteConnectionStatus check = new MySqlSource().check(config);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
-
-    // cleanup
-    container.close();
   }
 
-  private static JsonNode getConfig(MySQLContainer dbContainer, String dbName, String jdbcParams) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
-        .put("jdbc_url_params", jdbcParams)
-        .build());
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertTrue(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().startsWith(EXPECTED_JDBC_ESCAPED_URL));
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:mysql://localhost:1111/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
+  }
+
+  @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/pull/23908#issuecomment-1463753684, enable once communication is out")
+  public void testNullCursorValueShouldThrowException() {
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)
+        .with("CREATE TABLE null_cursor_table(id INTEGER NULL);")
+        .with("INSERT INTO null_cursor_table(id) VALUES (1), (2), (NULL);")
+        .with("CREATE VIEW null_cursor_view(id) AS SELECT null_cursor_table.id FROM null_cursor_table;")) {
+      final var config = testdb.testConfigBuilder().withoutSsl().build();
+
+      final var tableStream = new ConfiguredAirbyteStream()
+          .withCursorField(Lists.newArrayList("id"))
+          .withDestinationSyncMode(DestinationSyncMode.APPEND)
+          .withSyncMode(SyncMode.INCREMENTAL)
+          .withStream(CatalogHelpers.createAirbyteStream(
+              "null_cursor_table",
+              testdb.getDatabaseName(),
+              Field.of("id", JsonSchemaType.STRING))
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+      final var tableCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(tableStream));
+      final var tableThrowable = catchThrowable(() -> MoreIterators.toSet(source().read(config, tableCatalog, null)));
+      assertThat(tableThrowable).isInstanceOf(ConfigErrorException.class).hasMessageContaining(NULL_CURSOR_EXCEPTION_MESSAGE_CONTAINS);
+
+      final var viewStream = new ConfiguredAirbyteStream()
+          .withCursorField(Lists.newArrayList("id"))
+          .withDestinationSyncMode(DestinationSyncMode.APPEND)
+          .withSyncMode(SyncMode.INCREMENTAL)
+          .withStream(CatalogHelpers.createAirbyteStream(
+              "null_cursor_view",
+              testdb.getDatabaseName(),
+              Field.of("id", JsonSchemaType.STRING))
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+      final var viewCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(viewStream));
+      final var viewThrowable = catchThrowable(() -> MoreIterators.toSet(source().read(config, viewCatalog, null)));
+      assertThat(viewThrowable).isInstanceOf(ConfigErrorException.class).hasMessageContaining(NULL_CURSOR_EXCEPTION_MESSAGE_CONTAINS);
+    }
+  }
+
+  static private final String NULL_CURSOR_EXCEPTION_MESSAGE_CONTAINS = "The following tables have invalid columns " +
+      "selected as cursor, please select a column with a well-defined ordering with no null values as a cursor.";
+
+  @Test
+  void testParseJdbcParameters() {
+    Map<String, String> parameters =
+        MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
+    assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
+    assertEquals("bar", parameters.get("foo"));
+  }
+
+  @Test
+  public void testJDBCSessionVariable() throws Exception {
+    try (final var testdb = MySQLTestDatabase.in(BaseImage.MYSQL_8)) {
+      final var config = testdb.testConfigBuilder()
+          .with(JdbcUtils.JDBC_URL_PARAMS_KEY, "sessionVariables=MAX_EXECUTION_TIME=28800000")
+          .withoutSsl()
+          .build();
+      final AirbyteConnectionStatus check = source().check(config);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+    }
+  }
+
+  @Test
+  public void testPrimaryKeyOrder() {
+    final List<PrimaryKeyAttributesFromDb> primaryKeys = new ArrayList<>();
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col1", 3));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol1", 3));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col2", 2));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol2", 2));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-a", "col3", 1));
+    primaryKeys.add(new PrimaryKeyAttributesFromDb("stream-b", "xcol3", 1));
+
+    final Map<String, List<String>> result = AbstractJdbcSource.aggregatePrimateKeys(primaryKeys);
+    assertEquals(2, result.size());
+    assertTrue(result.containsKey("stream-a"));
+    assertEquals(3, result.get("stream-a").size());
+    assertEquals(Arrays.asList("col3", "col2", "col1"), result.get("stream-a"));
+
+    assertTrue(result.containsKey("stream-b"));
+    assertEquals(3, result.get("stream-b").size());
+    assertEquals(Arrays.asList("xcol3", "xcol2", "xcol1"), result.get("stream-b"));
   }
 
 }

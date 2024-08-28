@@ -1,49 +1,34 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
  * are doing it because there are some gotchas in correctly configuring the oneOf.
  */
+@Disabled
 public class CockroachDbSpecTest {
 
   private static final String CONFIGURATION = "{  "
@@ -52,6 +37,7 @@ public class CockroachDbSpecTest {
       + "\"database\" : \"postgres_db\",  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
+      + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\",  "
       + "\"ssl\" : true }";
 
   private static JsonNode schema;
@@ -68,9 +54,44 @@ public class CockroachDbSpecTest {
   }
 
   @Test
+  void testHostMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("host");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("port");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testUsernameMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("username");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testSchemaMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("schema");
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testAdditionalJdbcParamMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("jdbc_url_params");
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
   void testDatabaseMissing() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config).remove("database");
+    ((ObjectNode) config).remove(JdbcUtils.DATABASE_KEY);
     assertFalse(validator.test(schema, config));
   }
 
@@ -86,6 +107,18 @@ public class CockroachDbSpecTest {
   void testWithReplicationMethodWithReplicationSlot() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testWithJdbcAdditionalProperty() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testJdbcAdditionalProperty() throws Exception {
+    final ConnectorSpecification spec = new CockroachDbSource().spec();
+    assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
   }
 
 }

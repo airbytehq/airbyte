@@ -1,0 +1,17 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "type": {
+      "type": ["null", "string"]
+    },
+    "currencyCode": {
+      "type": ["null", "string"]
+    },
+    "centAmount": {
+      "type": ["null", "number"]
+    },
+    "fractionDigits": {
+      "type": ["null", "number"]
+    }
+  }
+}

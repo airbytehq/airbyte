@@ -1,0 +1,20 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.44.2'
+    features = ['db-destinations', 'typing-deduping', 'datastore-postgres']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestinationStrictEncrypt'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation project(':airbyte-integrations:connectors:destination-postgres')
+
+    integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:destination-postgres'))
+}

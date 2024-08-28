@@ -1,0 +1,35 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "catering": {
+      "type": ["boolean", "null"]
+    },
+    "delivery": {
+      "type": ["boolean", "null"]
+    },
+    "groups": {
+      "type": ["boolean", "null"]
+    },
+    "kids": {
+      "type": ["boolean", "null"]
+    },
+    "outdoor": {
+      "type": ["boolean", "null"]
+    },
+    "pickup": {
+      "type": ["boolean", "null"]
+    },
+    "reserve": {
+      "type": ["boolean", "null"]
+    },
+    "takeout": {
+      "type": ["boolean", "null"]
+    },
+    "waiter": {
+      "type": ["boolean", "null"]
+    },
+    "walkins": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

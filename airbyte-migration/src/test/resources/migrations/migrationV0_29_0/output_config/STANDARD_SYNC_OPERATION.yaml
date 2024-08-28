@@ -1,9 +1,0 @@
----
-#  operation attached to a connection.
-- operationId: "8f75e15a-a427-4f12-94ff-b3130df50f92"
-  workspaceId: "763a9b47-f5fa-45c0-8caa-00b51f108183"
-  name: "default-normalization"
-  operatorType: "normalization"
-  operatorNormalization:
-    option: "basic"
-  tombstone: false

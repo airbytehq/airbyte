@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "string"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "created_by_name": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "new_pipeline_name": {
+      "type": ["null", "string"]
+    },
+    "users": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "opportunity_value_period": {
+      "type": ["null", "string"]
+    },
+    "old_pipeline_name": {
+      "type": ["null", "string"]
+    },
+    "opportunity_confidence": {
+      "type": ["null", "integer"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "lead_id": {
+      "type": ["null", "string"]
+    },
+    "new_status_id": {
+      "type": ["null", "string"]
+    },
+    "new_status_label": {
+      "type": ["null", "string"]
+    },
+    "new_status_type": {
+      "type": ["null", "string"]
+    },
+    "new_pipeline_id": {
+      "type": ["null", "string"]
+    },
+    "old_status_id": {
+      "type": ["null", "string"]
+    },
+    "old_status_label": {
+      "type": ["null", "string"]
+    },
+    "old_status_type": {
+      "type": ["null", "string"]
+    },
+    "old_pipeline_id": {
+      "type": ["null", "string"]
+    },
+    "opportunity_date_won": {
+      "type": ["null", "string"]
+    },
+    "opportunity_id": {
+      "type": ["null", "string"]
+    },
+    "opportunity_value": {
+      "type": ["null", "number"]
+    },
+    "opportunity_value_formatted": {
+      "type": ["null", "string"]
+    },
+    "opportunity_value_currency": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "updated_by_name": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "user_name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    }
+  }
+}

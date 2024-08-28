@@ -1,0 +1,41 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-freshsales:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: "sales_accounts_filter"
+            bypass_reason:
+              "users are not expected to use this stream, it is used as a
+              parent stream of other streams in this connector"
+          - name: "deals_filter"
+            bypass_reason:
+              "users are not expected to use this stream, it is used as a
+              parent stream of other streams in this connector"
+          - name: "contacts_filters"
+            bypass_reason:
+              "users are not expected to use this stream, it is used as a
+              parent stream of other streams in this connector"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: "Incremental syncs are not supported on this connector."

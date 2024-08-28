@@ -1,0 +1,33 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "test",
+
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["_ab_source_file_last_modified"],
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "_ab_source_file_last_modified": {
+              "type": "string"
+            },
+            "_ab_source_file_url": {
+              "type": "string"
+            },
+            "string_col": {
+              "type": ["null", "string"]
+            },
+            "int_col": {
+              "type": ["null", "integer"]
+            }
+          }
+        }
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["last_modified"],
+      "destination_sync_mode": "append"
+    }
+  ]
+}

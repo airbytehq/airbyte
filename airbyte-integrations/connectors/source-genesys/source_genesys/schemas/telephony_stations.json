@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "descriptions": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "type": ["null", "string"]
+    },
+    "webRtcUserId": {
+      "type": ["null", "string"]
+    },
+    "primaryEdge": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "secondaryEdge": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "lineAppearanceId": {
+      "type": ["null", "string"]
+    },
+    "webRtcMediaDscp": {
+      "type": ["null", "number"]
+    },
+    "webRtcPersistentEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "webRtcForceTurn": {
+      "type": ["null", "boolean"]
+    },
+    "webRtcCallAppearances": {
+      "type": ["null", "number"]
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    }
+  }
+}

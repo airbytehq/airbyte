@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "meeting_id": {
+      "type": ["null", "number"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "anonymous": {
+      "type": ["null", "boolean"]
+    },
+    "poll_type": {
+      "type": ["null", "number"]
+    },
+    "questions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "answer_max_character": {
+            "type": ["null", "number"]
+          },
+          "answer_min_character": {
+            "type": ["null", "number"]
+          },
+          "answer_required": {
+            "type": ["null", "boolean"]
+          },
+          "answers": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "case_sensitive": {
+            "type": ["null", "boolean"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "prompts": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "prompt_question": {
+                  "type": ["null", "string"]
+                },
+                "prompt_right_answers": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "rating_max_label": {
+            "type": ["null", "string"]
+          },
+          "rating_max_value": {
+            "type": ["null", "number"]
+          },
+          "rating_min_label": {
+            "type": ["null", "string"]
+          },
+          "rating_min_value": {
+            "type": ["null", "number"]
+          },
+          "right_answers": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          },
+          "show_as_dropdown": {
+            "type": ["null", "boolean"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "title": {
+      "type": ["null", "string"]
+    }
+  }
+}

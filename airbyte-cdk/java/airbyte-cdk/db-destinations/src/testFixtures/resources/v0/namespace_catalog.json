@@ -1,0 +1,14 @@
+{
+  "streams": [
+    {
+      "name": "data_stream",
+      "json_schema": {
+        "properties": {
+          "field1": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  ]
+}

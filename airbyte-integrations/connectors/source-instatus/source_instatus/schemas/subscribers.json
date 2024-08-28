@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "confirmed": {
+      "type": ["null", "boolean"]
+    },
+    "all": {
+      "type": ["null", "boolean"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "siteId": {
+      "type": ["null", "string"]
+    },
+    "unsubscribeToken": {
+      "type": ["null", "string"]
+    },
+    "webhook": {
+      "type": ["null", "string"]
+    },
+    "webhookEmail": {
+      "type": ["null", "string"],
+      "format": "email"
+    },
+    "discord": {
+      "type": ["null", "string"]
+    },
+    "discordTeam": {
+      "type": ["null", "string"]
+    },
+    "slack": {
+      "type": ["null", "string"]
+    },
+    "slackTeam": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "microsoftTeamsWebhook": {
+      "type": ["null", "string"]
+    },
+    "googleChatWebhook": {
+      "type": ["null", "string"]
+    },
+    "googleChatSpace": {
+      "type": ["null", "string"]
+    },
+    "failedAttempts": {
+      "type": ["null", "integer"]
+    },
+    "approved": {
+      "type": ["null", "boolean"]
+    },
+    "importedFromStatuspage": {
+      "type": ["null", "boolean"]
+    },
+    "hideUnsubLink": {
+      "type": ["null", "boolean"]
+    },
+    "webhookIncidentBody": {
+      "type": ["null", "string"]
+    },
+    "webhookMaintenanceBody": {
+      "type": ["null", "string"]
+    },
+    "webhookComponentBody": {
+      "type": ["null", "string"]
+    },
+    "webhookHttpMethod": {
+      "type": ["null", "string"]
+    },
+    "webhookHeaders": {
+      "type": ["null", "string"]
+    },
+    "webhookQueryParams": {
+      "type": ["null", "string"]
+    },
+    "components": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "subdomain": {
+            "type": ["null", "string"]
+          },
+          "color": {
+            "type": ["null", "boolean"]
+          },
+          "logoUrl": {
+            "type": ["null", "boolean"]
+          },
+          "publicEmail": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    }
+  }
+}

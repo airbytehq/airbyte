@@ -1,39 +1,35 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+from typing import Any
+
+import requests
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 
 
-class HubspotError(HTTPError):
+class HubspotError(AirbyteTracedException):
     """
     Base error class.
     Subclassing HTTPError to avoid breaking existing code that expects only HTTPErrors.
     """
 
+    def __init__(
+        self,
+        internal_message: str = None,
+        message: str = None,
+        failure_type: FailureType = FailureType.system_error,
+        exception: BaseException = None,
+        response: requests.Response = None,
+    ):
+        super().__init__(internal_message, message, failure_type, exception)
+        self.response = response
 
-class HubspotTimeout(HubspotError):
+
+class HubspotTimeout(HTTPError):
     """502/504 HubSpot has processing limits in place to prevent a single client from causing degraded performance,
     and these responses indicate that those limits have been hit. You'll normally only see these timeout responses
     when making a large number of requests over a sustained period. If you get one of these responses,
@@ -49,5 +45,18 @@ class HubspotAccessDenied(HubspotError):
     """403 Forbidden"""
 
 
-class HubspotRateLimited(HubspotError):
+class HubspotRateLimited(HTTPError):
     """429 Rate Limit Reached"""
+
+
+class HubspotBadRequest(HubspotError):
+    """400 Bad Request"""
+
+
+class InvalidStartDateConfigError(Exception):
+    """Raises when the User inputs wrong or invalid `start_date` in inout configuration"""
+
+    def __init__(self, actual_value: Any, message: str):
+        super().__init__(
+            f"The value for `start_date` entered `{actual_value}` is ivalid and could not be processed.\nPlease use the real date/time value.\nFull message: {message}"
+        )

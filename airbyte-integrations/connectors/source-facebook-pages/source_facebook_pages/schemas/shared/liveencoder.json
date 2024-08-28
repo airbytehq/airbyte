@@ -1,0 +1,34 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "brand": {
+      "type": ["string", "null"]
+    },
+    "creation_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "device_id": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "last_heartbeat_time": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "model": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "version": {
+      "type": ["string", "null"]
+    }
+  }
+}

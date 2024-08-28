@@ -1,8 +1,0 @@
-source 'https://rubygems.org'
-
-gem 'mongo'
-gem 'slop'
-gem 'dry-types'
-gem 'dry-struct'
-
-# gem 'byebug'

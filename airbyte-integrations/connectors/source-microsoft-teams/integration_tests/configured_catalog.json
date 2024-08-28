@@ -1,0 +1,124 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "users",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "groups",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group_members",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "group_owners",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "channels",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "channel_members",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "channel_tabs",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "conversations",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "conversation_threads",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "conversation_posts",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "team_drives",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "team_device_usage_report",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

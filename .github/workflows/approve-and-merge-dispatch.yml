@@ -1,0 +1,48 @@
+name: Approve and Merge Command Dispatch
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  approveAndMergeDispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto Approve Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v3
+        id: scd
+        with:
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          permission: admin
+          issue-type: pull-request
+          repository: airbytehq/airbyte-platform-internal
+          dispatch-type: repository
+          commands: |
+            approve-and-merge
+
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > Error!: ${{ steps.scd.outputs.error-message }}
+
+      - name: Checkout Airbyte
+        id: checkout
+        if: failure() || steps.scd.outputs.error-message
+        uses: actions/checkout@v2
+
+      - name: Run get_repo_admins.sh
+        if: failure() || steps.scd.outputs.error-message
+        id: repo_admins
+        run: |
+          echo "REPO_ADMINS=$(./tools/bin/get_repo_admins.sh ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }} airbytehq/airbyte)" >> $GITHUB_ENV
+
+      - name: Edit comment with repo admins
+        if: failure() || steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            >
+            > Important: This command can only be run by one of the repository admins:
+            > ${{ env.REPO_ADMINS }}

@@ -1,0 +1,25 @@
+{
+  "values": [
+    {
+      "self": "https://airbyteio.atlassian.net/rest/api/3/resolution/10000",
+      "id": "10000",
+      "description": "Work has been completed on this issue.",
+      "name": "Done",
+      "isDefault": false
+    },
+    {
+      "self": "https://airbyteio.atlassian.net/rest/api/3/resolution/10001",
+      "id": "10001",
+      "description": "This issue won't be actioned.",
+      "name": "Won't Do",
+      "isDefault": false
+    },
+    {
+      "self": "https://airbyteio.atlassian.net/rest/api/3/resolution/10002",
+      "id": "10002",
+      "description": "The problem is a duplicate of an existing issue.",
+      "name": "Duplicate",
+      "isDefault": false
+    }
+  ]
+}

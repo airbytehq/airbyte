@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "answer": {
+      "type": ["null", "boolean"]
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "forum_id": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "published": {
+      "type": ["null", "boolean"]
+    },
+    "spam": {
+      "type": ["null", "boolean"]
+    },
+    "topic_id": {
+      "type": ["null", "integer"]
+    },
+    "trash": {
+      "type": ["null", "boolean"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{"type": "RECORD", "record": {"stream": "int_test", "emitted_at": 1602637589100, "data": { "data" : 42 }}}
+{"type": "RECORD", "record": {"stream": "int_test", "emitted_at": 1602637589200, "data": { "data" : 0 }}}
+{"type": "RECORD", "record": {"stream": "int_test", "emitted_at": 1602637589300, "data": { "data" : -12345 }}}
+{"type": "RECORD", "record": {"stream": "float_test", "emitted_at": 1602637589100, "data": { "data" : 56.78 }}}
+{"type": "RECORD", "record": {"stream": "float_test", "emitted_at": 1602637589200, "data": { "data" : 0 }}}
+{"type": "RECORD", "record": {"stream": "float_test", "emitted_at": 1602637589300, "data": { "data" : -12345.678 }}}
+{"type": "RECORD", "record": {"stream": "default_number_test", "emitted_at": 1602637589100, "data": { "data" : 10000000000000000000000.1234 }}}
+{"type": "RECORD", "record": {"stream": "default_number_test", "emitted_at": 1602637589200, "data": { "data" : 0 }}}
+{"type": "RECORD", "record": {"stream": "default_number_test", "emitted_at": 1602637589300, "data": { "data" : -12345.678 }}}
+{"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}

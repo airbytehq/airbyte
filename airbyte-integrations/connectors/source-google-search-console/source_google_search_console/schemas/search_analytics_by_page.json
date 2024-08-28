@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "site_url": {
+      "description": "The URL of the site for which the search analytics data is being reported.",
+      "type": ["null", "string"]
+    },
+    "search_type": {
+      "description": "The type of search query that led to the page being displayed in search results.",
+      "type": ["null", "string"]
+    },
+    "date": {
+      "description": "The date for which the search analytics data is reported.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "page": {
+      "description": "The URL of the specific page being analyzed for search analytics data.",
+      "type": ["null", "string"]
+    },
+    "clicks": {
+      "description": "The number of times a user clicked on the search result linking to the page.",
+      "type": ["null", "integer"]
+    },
+    "impressions": {
+      "description": "The number of times a page from the site appeared in the search results viewed by users.",
+      "type": ["null", "integer"]
+    },
+    "ctr": {
+      "description": "Click-through rate (CTR) is the ratio of clicks to impressions, indicating the effectiveness of the page in generating clicks.",
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    },
+    "position": {
+      "description": "The average position at which the page appeared in search results.",
+      "type": ["null", "number"],
+      "multipleOf": 1e-25
+    }
+  }
+}

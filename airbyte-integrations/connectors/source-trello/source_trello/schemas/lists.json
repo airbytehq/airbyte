@@ -1,0 +1,26 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "closed": {
+      "type": ["null", "boolean"]
+    },
+    "pos": {
+      "type": ["null", "number"]
+    },
+    "softLimit": {
+      "type": ["null", "integer"]
+    },
+    "idBoard": {
+      "type": ["null", "string"]
+    },
+    "subscribed": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

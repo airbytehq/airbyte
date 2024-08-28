@@ -1,0 +1,38 @@
+{
+  "title": "Seller Feedback Data Reports",
+  "description": "Seller Feedback Data Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "date": {
+      "description": "Date when the feedback was received.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "rating": {
+      "description": "Numeric rating provided by the buyer (e.g., 1 to 5 stars).",
+      "type": ["null", "number"]
+    },
+    "comments": {
+      "description": "Text comments provided by the buyer when leaving feedback.",
+      "type": ["null", "string"]
+    },
+    "response": {
+      "description": "Optional response from the seller to the buyer's feedback.",
+      "type": ["null", "string"]
+    },
+    "order_id": {
+      "description": "Unique identifier for the order associated with the feedback.",
+      "type": ["null", "string"]
+    },
+    "rater_email": {
+      "description": "Email address of the buyer who provided the feedback.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data collection period.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

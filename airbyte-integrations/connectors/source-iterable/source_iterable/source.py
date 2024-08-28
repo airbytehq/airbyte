@@ -1,37 +1,16 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, List, Mapping
 
-from typing import Any, List, Mapping, Tuple
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
-from .api import (
-    Campaigns,
-    Channels,
+from .streams import (
+    CampaignsMetrics,
+    CustomEvent,
     EmailBounce,
     EmailClick,
     EmailComplaint,
@@ -40,40 +19,93 @@ from .api import (
     EmailSendSkip,
     EmailSubscribe,
     EmailUnsubscribe,
-    Lists,
-    ListUsers,
-    MessageTypes,
-    Metadata,
+    HostedUnsubscribeClick,
+    InAppClick,
+    InAppClose,
+    InAppDelete,
+    InAppDelivery,
+    InAppOpen,
+    InAppSend,
+    InAppSendSkip,
+    InboxMessageImpression,
+    InboxSession,
+    Purchase,
+    PushBounce,
+    PushOpen,
+    PushSend,
+    PushSendSkip,
+    PushUninstall,
+    SmsBounce,
+    SmsClick,
+    SmsReceived,
+    SmsSend,
+    SmsSendSkip,
+    SmsUsageInfo,
     Templates,
-    Users,
+    WebPushClick,
+    WebPushSend,
+    WebPushSendSkip,
 )
 
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
 
-class SourceIterable(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        try:
-            list_gen = Lists(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh)
-            next(list_gen)
-            return True, None
-        except Exception as e:
-            return False, f"Unable to connect to Iterable API with the provided credentials - {e}"
+WARNING: Do not modify this file.
+"""
+
+# Declarative Source
+class SourceIterable(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [
-            Campaigns(api_key=config["api_key"]),
-            Channels(api_key=config["api_key"]),
-            EmailBounce(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailClick(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailComplaint(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailOpen(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailSend(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailSendSkip(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailSubscribe(api_key=config["api_key"], start_date=config["start_date"]),
-            EmailUnsubscribe(api_key=config["api_key"], start_date=config["start_date"]),
-            Lists(api_key=config["api_key"]),
-            ListUsers(api_key=config["api_key"]),
-            MessageTypes(api_key=config["api_key"]),
-            Metadata(api_key=config["api_key"]),
-            Templates(api_key=config["api_key"], start_date=config["start_date"]),
-            Users(api_key=config["api_key"], start_date=config["start_date"]),
-        ]
+        streams = super().streams(config=config)
+
+        authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
+        # end date is provided for integration tests only
+        start_date, end_date = config["start_date"], config.get("end_date")
+        date_range = {"start_date": start_date, "end_date": end_date}
+
+        # TODO: migrate streams below to low code as slicer logic will be migrated to generator based
+        streams.extend(
+            [
+                CampaignsMetrics(authenticator=authenticator, **date_range),
+                Templates(authenticator=authenticator, **date_range),
+                EmailBounce(authenticator=authenticator, **date_range),
+                EmailClick(authenticator=authenticator, **date_range),
+                EmailComplaint(authenticator=authenticator, **date_range),
+                EmailOpen(authenticator=authenticator, **date_range),
+                EmailSend(authenticator=authenticator, **date_range),
+                EmailSendSkip(authenticator=authenticator, **date_range),
+                EmailSubscribe(authenticator=authenticator, **date_range),
+                EmailUnsubscribe(authenticator=authenticator, **date_range),
+                PushSend(authenticator=authenticator, **date_range),
+                PushSendSkip(authenticator=authenticator, **date_range),
+                PushOpen(authenticator=authenticator, **date_range),
+                PushUninstall(authenticator=authenticator, **date_range),
+                PushBounce(authenticator=authenticator, **date_range),
+                WebPushSend(authenticator=authenticator, **date_range),
+                WebPushClick(authenticator=authenticator, **date_range),
+                WebPushSendSkip(authenticator=authenticator, **date_range),
+                InAppSend(authenticator=authenticator, **date_range),
+                InAppOpen(authenticator=authenticator, **date_range),
+                InAppClick(authenticator=authenticator, **date_range),
+                InAppClose(authenticator=authenticator, **date_range),
+                InAppDelete(authenticator=authenticator, **date_range),
+                InAppDelivery(authenticator=authenticator, **date_range),
+                InAppSendSkip(authenticator=authenticator, **date_range),
+                InboxSession(authenticator=authenticator, **date_range),
+                InboxMessageImpression(authenticator=authenticator, **date_range),
+                SmsSend(authenticator=authenticator, **date_range),
+                SmsBounce(authenticator=authenticator, **date_range),
+                SmsClick(authenticator=authenticator, **date_range),
+                SmsReceived(authenticator=authenticator, **date_range),
+                SmsSendSkip(authenticator=authenticator, **date_range),
+                SmsUsageInfo(authenticator=authenticator, **date_range),
+                Purchase(authenticator=authenticator, **date_range),
+                CustomEvent(authenticator=authenticator, **date_range),
+                HostedUnsubscribeClick(authenticator=authenticator, **date_range),
+            ]
+        )
+        return streams

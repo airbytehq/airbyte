@@ -1,30 +1,10 @@
 repos:
-  - repo: https://github.com/johann-petrak/licenseheaders.git
-    rev: v0.8.8
+  - repo: local
     hooks:
-      - id: licenseheaders
-        args: ["--tmpl=LICENSE", "--ext=py", "-f"]
-
-  - repo: https://github.com/ambv/black
-    rev: stable
-    hooks:
-      - id: black
-        args: ["--line-length=140"]
-
-  - repo: https://github.com/timothycrosley/isort
-    rev: 4.3.21
-    hooks:
-      - id: isort
-        args: ["--settings-path=tools/python/.isort.cfg"]
-
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.3.2
-    hooks:
-      - id: prettier
-        types_or: [yaml, json]
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v1.2.3
-    hooks:
-      - id: flake8
-        args: ["--config=tools/python/.flake8"]
+      - id: format-fix-all-on-push
+        always_run: true
+        entry: airbyte-ci --disable-update-check format fix all
+        language: system
+        name: Run airbyte-ci format fix on git push (~30s)
+        pass_filenames: false
+        stages: [push]

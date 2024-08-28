@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -78,21 +79,49 @@
       "type": ["null", "boolean"]
     },
     "phone": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
     },
     "email": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "label": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
     },
     "first_char": {
       "type": ["null", "string"]
     },
     "update_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "visible_to": {
       "type": ["null", "string"]
@@ -110,8 +139,7 @@
           "type": ["null", "boolean"]
         },
         "add_time": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "update_time": {
           "type": ["null", "string"]
@@ -137,11 +165,11 @@
     },
     "next_activity_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "next_activity_time": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "time"
     },
     "next_activity_id": {
       "type": ["null", "integer"]
@@ -150,16 +178,13 @@
       "type": ["null", "integer"]
     },
     "last_activity_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_incoming_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_outgoing_mail_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "label": {
       "type": ["null", "integer"]
@@ -171,6 +196,12 @@
       "type": ["null", "string"]
     },
     "cc_email": {
+      "type": ["null", "string"]
+    },
+    "picture_128_url": {
+      "type": ["null", "string"]
+    },
+    "delete_time": {
       "type": ["null", "string"]
     }
   }

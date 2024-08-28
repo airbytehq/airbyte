@@ -1,71 +1,91 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
-from source_freshdesk.api import TicketsAPI
+import pytest
+from airbyte_cdk.models import SyncMode
+from conftest import find_stream
+
+
+@pytest.fixture(name="responses")
+def responses_fixtures():
+    return [
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2002-02-10T22%3A21%3A44Z",
+            "json": [{"id": 1, "updated_at": "2018-01-02T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2002-02-10T22%3A21%3A44Z",
+            "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2002-02-10T22%3A21%3A44Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2018-02-02T00%3A00%3A00Z",
+            "json": [{"id": 2, "updated_at": "2018-02-02T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-02-02T00%3A00%3A00Z",
+            "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2018-02-02T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2018-03-02T00%3A00%3A00Z",
+            "json": [{"id": 3, "updated_at": "2018-03-02T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2018-03-02T00%3A00%3A00Z",
+            "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/v2/tickets?per_page=1&page=3&updated_since=2018-03-02T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2019-01-03T00%3A00%3A00Z",
+            "json": [{"id": 4, "updated_at": "2019-01-03T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2019-01-03T00%3A00%3A00Z",
+            "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=3&updated_since=2019-01-03T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2019-02-03T00%3A00%3A00Z",
+            "json": [{"id": 5, "updated_at": "2019-02-03T00:00:00Z"}],
+            "headers": {
+                "Link": '<https://test.freshdesk.com/api/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z>; rel="next"'
+            },
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&page=2&updated_since=2019-02-03T00%3A00%3A00Z",
+            "json": [{"id": 6, "updated_at": "2019-03-03T00:00:00Z"}],
+        },
+        {
+            "url": "https://test.freshdesk.com/api/v2/tickets?per_page=1&updated_since=2019-03-03T00%3A00%3A00Z",
+            "json": [],
+        },
+    ]
 
 
 class Test300PageLimit:
-
-    tickets_input = [
-        {"id": 1, "updated_at": "2018-01-02T00:00:00Z"},
-        {"id": 2, "updated_at": "2018-02-02T00:00:00Z"},
-        {"id": 3, "updated_at": "2018-03-02T00:00:00Z"},
-        {"id": 4, "updated_at": "2019-01-03T00:00:00Z"},
-        {"id": 5, "updated_at": "2019-02-03T00:00:00Z"},
-        {"id": 6, "updated_at": "2019-03-03T00:00:00Z"},
-    ]
-
-    expected_output = [
-        {"id": 1, "updated_at": "2018-01-02T00:00:00Z"},
-        {"id": 2, "updated_at": "2018-02-02T00:00:00Z"},
-        {"id": 2, "updated_at": "2018-02-02T00:00:00Z"},  # duplicate
-        {"id": 3, "updated_at": "2018-03-02T00:00:00Z"},
-        {"id": 3, "updated_at": "2018-03-02T00:00:00Z"},  # duplicate
-        {"id": 4, "updated_at": "2019-01-03T00:00:00Z"},
-        {"id": 4, "updated_at": "2019-01-03T00:00:00Z"},  # duplicate
-        {"id": 5, "updated_at": "2019-02-03T00:00:00Z"},
-        {"id": 5, "updated_at": "2019-02-03T00:00:00Z"},  # duplicate
-        {"id": 6, "updated_at": "2019-03-03T00:00:00Z"},
-        {"id": 6, "updated_at": "2019-03-03T00:00:00Z"},  # duplicate
-    ]
-
-    # Mocking the getter: Callable to produce the server output
-    def _getter(self, params, **args):
-
-        tickets_stream = self.tickets_input
-        updated_since = params.get("updated_since", None)
-
-        if updated_since:
-            tickets_stream = filter(lambda ticket: pendulum.parse(ticket["updated_at"]) >= updated_since, self.tickets_input)
-
-        start_from = (params["page"] - 1) * params["per_page"]
-        output = list(tickets_stream)[start_from : start_from + params["per_page"]]
-
-        return output
-
-    def test_not_all_records(self):
+    def test_not_all_records(self, requests_mock, authenticator, config, responses):
         """
         TEST 1 - not all records are retrieved
 
@@ -84,16 +104,41 @@ class Test300PageLimit:
         Main pricipal here is: airbyte is at-least-once delivery, but skipping records is data loss.
         """
 
+        expected_output = [
+            {"id": 1, "updated_at": "2018-01-02T00:00:00Z"},
+            {"id": 2, "updated_at": "2018-02-02T00:00:00Z"},
+            {"id": 2, "updated_at": "2018-02-02T00:00:00Z"},  # duplicate
+            {"id": 3, "updated_at": "2018-03-02T00:00:00Z"},
+            {"id": 3, "updated_at": "2018-03-02T00:00:00Z"},  # duplicate
+            {"id": 4, "updated_at": "2019-01-03T00:00:00Z"},
+            {"id": 4, "updated_at": "2019-01-03T00:00:00Z"},  # duplicate
+            {"id": 5, "updated_at": "2019-02-03T00:00:00Z"},
+            {"id": 5, "updated_at": "2019-02-03T00:00:00Z"},  # duplicate
+            {"id": 6, "updated_at": "2019-03-03T00:00:00Z"},
+        ]
+
+        # Create test_stream instance.
+        test_stream = find_stream("tickets", config)
+
         # INT value of page number where the switch state should be triggered.
         # in this test case values from: 1 - 4, assuming we want to switch state on this page.
-        ticket_paginate_limit = 2
+        test_stream.retriever.paginator.pagination_strategy.PAGE_LIMIT = 2
         # This parameter mocks the "per_page" parameter in the API Call
-        result_return_limit = 1
-        # Calling the TicketsAPI.get_tickets method directly from the module
-        test1 = list(
-            TicketsAPI.get_tickets(
-                result_return_limit=result_return_limit, getter=self._getter, ticket_paginate_limit=ticket_paginate_limit
+        test_stream.retriever.paginator.pagination_strategy._page_size = 1
+
+        # Mocking Request
+        for response in responses:
+            requests_mock.register_uri(
+                "GET",
+                response["url"],
+                json=response["json"],
+                headers=response.get("headers", {}),
             )
-        )
+
+        records = []
+        for slice in test_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            records_generator = test_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
+            records.extend([dict(record) for record in records_generator])
+
         # We're expecting 6 records to return from the tickets_stream
-        assert self.expected_output == test1
+        assert records == expected_output

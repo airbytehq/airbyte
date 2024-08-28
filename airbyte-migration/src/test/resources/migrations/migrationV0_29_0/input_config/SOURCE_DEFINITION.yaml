@@ -1,6 +1,0 @@
----
-- name: "MyGres"
-  sourceDefinitionId: "59813d6a-94f4-4247-b2b1-627748d760c4"
-  dockerRepository: "airbyte/source-mygres"
-  dockerImageTag: "0.1.0"
-  documentationUrl: "https://example.com"

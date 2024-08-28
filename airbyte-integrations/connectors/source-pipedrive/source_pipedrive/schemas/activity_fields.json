@@ -18,12 +18,10 @@
       "type": ["null", "string"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_updated_by_user_id": {
       "type": ["null", "integer"]
@@ -56,6 +54,18 @@
       "type": ["null", "boolean"]
     },
     "sortable_flag": {
+      "type": ["null", "boolean"]
+    },
+    "json_column_flag": {
+      "type": ["null", "boolean"]
+    },
+    "parent_id": {
+      "type": ["null", "integer"]
+    },
+    "id_suffix": {
+      "type": ["null", "string"]
+    },
+    "is_subfield": {
       "type": ["null", "boolean"]
     },
     "options": {

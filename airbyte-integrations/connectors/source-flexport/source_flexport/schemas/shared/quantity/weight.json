@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /quantity/weight for this object.",
+      "pattern": "^/quantity/weight"
+    },
+    "value": {
+      "type": "number",
+      "description": "Specifies the quantity of units as a float."
+    },
+    "unit": {
+      "type": "string",
+      "description": "Specifies the unit of measure for this quantity.",
+      "enum": ["kg", "lbs", "t"]
+    }
+  }
+}

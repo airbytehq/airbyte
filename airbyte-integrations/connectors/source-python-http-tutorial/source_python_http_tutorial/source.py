@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -30,18 +10,19 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 class ExchangeRates(HttpStream):
-    url_base = "https://api.ratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
     cursor_field = "date"
     primary_key = "date"
 
-    def __init__(self, base: str, start_date: datetime, **kwargs):
-        super().__init__(**kwargs)
-        self.base = base
+    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
+        super().__init__()
+        self.base = config["base"]
+        self.access_key = config["access_key"]
         self.start_date = start_date
+        self._cursor_value = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # The API does not offer pagination, so we return None to indicate there are no more pages in the response
@@ -51,6 +32,12 @@ class ExchangeRates(HttpStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return stream_slice["date"]
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        # The api requires that we include apikey as a header so we do that in this method
+        return {"apikey": self.apikey}
 
     def request_params(
         self,
@@ -118,10 +105,10 @@ class SourcePythonHttpTutorial(AbstractSource):
             return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # NoAuth just means there is no authentication required for this API. It's only included for completeness
+        # No authentication is required for this API. It's only included for completeness
         # of the example, but if you don't need authentication, you don't need to pass an authenticator at all.
         # Other authenticators are available for API token-based auth and Oauth2.
-        auth = NoAuth()
+        auth = None
         # Parse the date from a string into a datetime object
         start_date = datetime.strptime(config["start_date"], "%Y-%m-%d")
-        return [ExchangeRates(authenticator=auth, base=config["base"], start_date=start_date)]
+        return [ExchangeRates(authenticator=auth, config=config, start_date=start_date)]

@@ -1,0 +1,132 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "prices": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "price.json"
+      }
+    },
+    "attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string", "boolean", "object", "array"]
+          }
+        }
+      }
+    },
+    "price": {
+      "$ref": "price.json"
+    },
+    "images": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "url": {
+            "type": ["null", "string"]
+          },
+          "dimensions": {
+            "type": ["null", "object"],
+            "items": {
+              "$ref": "dimension.json"
+            }
+          },
+          "label": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "key": {
+            "type": ["null", "string"]
+          },
+          "sources": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "uri": {
+                  "type": ["null", "string"]
+                },
+                "key": {
+                  "type": ["null", "string"]
+                },
+                "dimensions": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "$ref": "dimension.json"
+                  }
+                },
+                "contentType": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "tags": {
+            "type": ["null", "array"]
+          },
+          "custom": {
+            "$ref": "custom.json"
+          }
+        }
+      }
+    },
+    "availability": {
+      "type": ["null", "object"],
+      "properties": {
+        "isOnStock": {
+          "type": ["null", "boolean"]
+        },
+        "restockableInDays": {
+          "type": ["null", "number"]
+        },
+        "availableQuantity": {
+          "type": ["null", "number"]
+        },
+        "channels": {
+          "type": ["null", "object"]
+        }
+      }
+    },
+    "isMatchingVariant": {
+      "type": ["null", "boolean"]
+    },
+    "scopedPrice": {
+      "$ref": "price_scoped.json"
+    },
+    "scopedPriceDiscounted": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

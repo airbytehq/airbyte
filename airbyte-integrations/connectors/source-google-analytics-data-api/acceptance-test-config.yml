@@ -1,0 +1,53 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-google-analytics-data-api:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_google_analytics_data_api/spec.json"
+        backward_compatibility_tests_config:
+          # changed the structure of `custom_reports` -> `cohortSpec`
+          disable_for_version: 2.1.0
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: "cohort_report"
+            bypass_reason: "The test resource does not support cohort report"
+          - name: "demographic_interest_report"
+            bypass_reason: "The test resource does not collect interest"
+          - name: "demographic_age_report"
+            bypass_reason: "The test resource does not collect age"
+          - name: "demographic_gender_report"
+            bypass_reason: "The test resource does not collect gender"
+          - name: "publisher_ads_ad_unit_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+          - name: "publisher_ads_ad_source_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+          - name: "publisher_ads_page_path_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+          - name: "publisher_ads_ad_format_report"
+            bypass_reason: "The test resource does not work with publisher ads"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 10800
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"

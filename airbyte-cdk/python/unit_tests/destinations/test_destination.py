@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import argparse
@@ -31,6 +11,7 @@ from unittest.mock import ANY
 
 import pytest
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.destinations import destination as destination_module
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -156,6 +137,13 @@ class OrderedIterableMatcher(Iterable):
 
 
 class TestRun:
+    def test_run_initializes_exception_handler(self, mocker, destination: Destination):
+        mocker.patch.object(destination_module, "init_uncaught_exception_handler")
+        mocker.patch.object(destination, "parse_args")
+        mocker.patch.object(destination, "run_cmd")
+        destination.run(["dummy"])
+        destination_module.init_uncaught_exception_handler.assert_called_once_with(destination_module.logger)
+
     def test_run_spec(self, mocker, destination: Destination):
         args = {"command": "spec"}
         parsed_args = argparse.Namespace(**args)
@@ -169,7 +157,7 @@ class TestRun:
         destination.spec.assert_called_once()  # type: ignore
 
         # verify the output of spec was returned
-        assert _wrapped(expected_spec) == spec_message
+        assert spec_message == _wrapped(expected_spec)
 
     def test_run_check(self, mocker, destination: Destination, tmp_path):
         file_path = tmp_path / "config.json"
@@ -192,10 +180,41 @@ class TestRun:
         # Affirm to Mypy that this is indeed a method on this mock
         destination.check.assert_called_with(logger=ANY, config=dummy_config)  # type: ignore
         # Check if config validation has been called
-        validate_mock.assert_called_with(dummy_config, spec_msg, destination.logger)
+        validate_mock.assert_called_with(dummy_config, spec_msg)
 
         # verify output was correct
-        assert _wrapped(expected_check_result) == returned_check_result
+        assert returned_check_result == _wrapped(expected_check_result)
+
+    def test_run_check_with_invalid_config(self, mocker, destination: Destination, tmp_path):
+        file_path = tmp_path / "config.json"
+        invalid_config = {"not": "valid"}
+        write_file(file_path, invalid_config)
+        args = {"command": "check", "config": file_path}
+
+        parsed_args = argparse.Namespace(**args)
+        destination.run_cmd(parsed_args)
+
+        spec = {'type': 'integer'}
+        spec_msg = ConnectorSpecification(connectionSpecification=spec)
+
+        mocker.patch.object(destination, "spec", return_value=spec_msg)
+
+        # validation against spec happens first, so this should not be reached
+        mocker.patch.object(destination, "check")
+
+        returned_check_result = next(iter(destination.run_cmd(parsed_args)))
+
+        destination.spec.assert_called_once()  # type: ignore
+
+        # config validation against spec happens first, so this should not be reached
+        destination.check.assert_not_called()  # type: ignore
+
+        # verify output was correct
+        assert isinstance(returned_check_result, AirbyteMessage)
+        assert returned_check_result.type == Type.CONNECTION_STATUS
+        assert returned_check_result.connectionStatus.status == Status.FAILED
+        # the specific phrasing is not relevant, so only check for the keywords
+        assert 'validation error' in returned_check_result.connectionStatus.message
 
     def test_run_write(self, mocker, destination: Destination, tmp_path, monkeypatch):
         config_path, dummy_config = tmp_path / "config.json", {"user": "sherif"}
@@ -204,7 +223,7 @@ class TestRun:
         dummy_catalog = ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=AirbyteStream(name="mystream", json_schema={"type": "object"}),
+                    stream=AirbyteStream(name="mystream", json_schema={"type": "object"}, supported_sync_modes=[SyncMode.full_refresh]),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
@@ -244,10 +263,10 @@ class TestRun:
             input_messages=OrderedIterableMatcher(mocked_input),
         )
         # Check if config validation has been called
-        validate_mock.assert_called_with(dummy_config, spec_msg, destination.logger)
+        validate_mock.assert_called_with(dummy_config, spec_msg)
 
         # verify output was correct
-        assert expected_write_result == returned_write_result
+        assert returned_write_result == expected_write_result
 
     @pytest.mark.parametrize("args", [{}, {"command": "fake"}])
     def test_run_cmd_with_incorrect_args_fails(self, args, destination: Destination):

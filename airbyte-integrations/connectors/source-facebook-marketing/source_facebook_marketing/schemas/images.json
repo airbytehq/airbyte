@@ -1,0 +1,79 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "account_id": {
+      "description": "The unique identifier of the Facebook advertising account associated with the image data.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the image data.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name or label assigned to the image.",
+      "type": ["null", "string"]
+    },
+    "creatives": {
+      "description": "Additional information or metadata related to the image.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "original_height": {
+      "description": "The original height dimension of the image in pixels.",
+      "type": ["null", "integer"]
+    },
+    "original_width": {
+      "description": "The original width dimension of the image in pixels.",
+      "type": ["null", "integer"]
+    },
+    "permalink_url": {
+      "description": "The permanent URL where the image can be accessed or viewed.",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "The current status or state of the image data.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL pointing to the image file.",
+      "type": ["null", "string"]
+    },
+    "created_time": {
+      "description": "The date and time when the image was initially created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "hash": {
+      "description": "A unique hash value generated for the image.",
+      "type": ["null", "string"]
+    },
+    "url_128": {
+      "description": "The URL pointing to a lower resolution (128px) version of the image file.",
+      "type": ["null", "string"]
+    },
+    "is_associated_creatives_in_adgroups": {
+      "description": "Indicates if the image is associated with creatives in ad groups.",
+      "type": ["null", "boolean"]
+    },
+    "filename": {
+      "description": "The name of the file containing the image data.",
+      "type": ["null", "string"]
+    },
+    "updated_time": {
+      "description": "The date and time when the image data was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "height": {
+      "description": "The height dimension of the image in pixels.",
+      "type": ["null", "integer"]
+    },
+    "width": {
+      "description": "The width dimension of the image in pixels.",
+      "type": ["null", "integer"]
+    }
+  }
+}

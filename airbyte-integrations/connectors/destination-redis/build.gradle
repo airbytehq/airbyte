@@ -1,0 +1,41 @@
+plugins {
+    id 'application'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.redis.RedisDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+def redisDriver = '3.7.0'
+def assertVersion = '3.21.0'
+
+dependencies {
+
+    // https://mvnrepository.com/artifact/redis.clients/jedis
+    implementation "redis.clients:jedis:${redisDriver}"
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0'
+
+
+    // https://mvnrepository.com/artifact/org.assertj/assertj-core
+    testImplementation "org.assertj:assertj-core:${assertVersion}"
+    // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+    testImplementation libs.testcontainers
+}

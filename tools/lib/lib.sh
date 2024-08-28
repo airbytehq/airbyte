@@ -22,7 +22,15 @@ _get_docker_label() {
 }
 
 _get_docker_image_version() {
-  _get_docker_label $1 io.airbyte.version
+  local is_pre_release; is_pre_release=$2
+  local version; version=$(_get_docker_label $1 io.airbyte.version)
+
+  # append the -dev.[git sha] if we're trying to publish a pre-release version
+  if [ "$is_pre_release" = "true" ]; then
+    echo "$version-dev.$(git rev-parse --short HEAD)"
+  else
+    echo "$version"
+  fi
 }
 
 _get_docker_image_name() {
@@ -34,6 +42,30 @@ _to_gradle_path() {
   local task=$2
 
   echo ":$(echo "$path" | tr -s / :):${task}"
+}
+
+full_path_to_gradle_path() {
+  # converts any Airbyte repo path to gradle job
+  local path="$1/$2"
+  python -c "print(':airbyte-' + ':'.join(p for p in '${path}'.split('airbyte-')[-1].replace('/', ':').split(':') if p))"
+}
+
+get_connector_path_from_name() {
+  # get the path to a connector from its name
+  # e.g connectors/source-postgres -> airbyte-integrations/connectors/source-postgres
+  local connector_name=$1
+  local connector_dir="airbyte-integrations"
+
+  echo "$connector_dir/$connector_name"
+}
+
+get_connector_version() {
+  # get the version of a connector from its name
+  # e.g source-postgres -> 0.1.1
+  local connector_name=$1
+  local connector_path=$(get_connector_path_from_name "$connector_name")
+  local dockerfile="$connector_path/Dockerfile"
+  _get_docker_image_version "$dockerfile"
 }
 
 VERSION=$(cat .env | grep "^VERSION=" | cut -d = -f 2); export VERSION

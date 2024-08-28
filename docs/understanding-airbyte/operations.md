@@ -1,18 +1,19 @@
-# Sync Operations
+# Operations
 
-Airbyte [connections](connections/README.md) support configuring additional transformations that execute after the sync. Useful applications could be:
+Airbyte [connections](/using-airbyte/core-concepts/sync-modes/) support configuring additional transformations that execute after the sync. Useful applications could be:
 
 - Customized normalization to better fit the requirements of your own business context.
 - Business transformations from a technical data representation into a more logical and business oriented data structure. This can facilitate usage by end-users, non-technical operators, and executives looking to generate Business Intelligence dashboards and reports.
 - Data Quality, performance optimization, alerting and monitoring, etc.
-- Integration with other tools from your data stack (orchestration, data visualization, etc.)
+- Integration with other tools from your data stack \(orchestration, data visualization, etc.\)
 
 ## Supported Operations
 
 ### dbt transformations
 
 #### - git repository url:
-A url to a git repository to (shallow) clone the latest dbt project code from.
+
+A url to a git repository to \(shallow\) clone the latest dbt project code from.
 
 The project versioned in the repository is expected to:
 
@@ -23,17 +24,20 @@ When using the dbt CLI, dbt checks your `profiles.yml` file for a profile with t
 
 Note that if you prefer to use your own `profiles.yml` stored in the git repository or in the Docker image, then you can specify an override with `--profiles-dir=<path-to-my-profiles-yml>` in the dbt CLI arguments.
 
-#### - git repository branch (optional):
+#### - git repository branch \(optional\):
+
 The name of the branch to use when cloning the git repository. If left empty, git will use the default branch of your repository.
 
 #### - docker image:
+
 A Docker image and tag to run dbt commands from. The Docker image should have `/bin/bash` and `dbt` installed for this operation type to work.
 
-A typical value for this field would be for example: `fishtownanalytics/dbt:0.19.1` from [dbt dockerhub](https://hub.docker.com/r/fishtownanalytics/dbt/tags?page=1&ordering=last_updated).
+A typical value for this field would be for example: `fishtownanalytics/dbt:1.0.0` from [dbt dockerhub](https://hub.docker.com/r/fishtownanalytics/dbt/tags?page=1&ordering=last_updated).
 
-This field lets you configure the version of dbt that your custom dbt project requires and the loading of additional software and packages necessary for your transformations (other than your dbt `packages.yml` file).
+This field lets you configure the version of dbt that your custom dbt project requires and the loading of additional software and packages necessary for your transformations \(other than your dbt `packages.yml` file\).
 
 #### - dbt cli arguments
+
 This operation type is aimed at running the dbt cli.
 
 A typical value for this field would be "run" and the actual command invoked would as a result be: `dbt run` in the docker container.
@@ -42,9 +46,9 @@ One thing to consider is that dbt allows for vast configuration of the run comma
 
 ## Future Operations
 
-* Docker/Script operations: Execute a generic script in a custom Docker container.
-* Webhook operations: Trigger API or hooks from other providers.
-* Airflow operations: To use a specialized orchestration tool that lets you schedule and manage more advanced/complex sequences of operations in your sync workflow.
+- Docker/Script operations: Execute a generic script in a custom Docker container.
+- Webhook operations: Trigger API or hooks from other providers.
+- Airflow operations: To use a specialized orchestration tool that lets you schedule and manage more advanced/complex sequences of operations in your sync workflow.
 
 ## Going Further
 

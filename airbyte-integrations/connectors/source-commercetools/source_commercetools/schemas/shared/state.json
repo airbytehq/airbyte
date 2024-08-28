@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "quantity": {
+      "type": ["null", "number"]
+    },
+    "state": {
+      "$ref": "reference.json"
+    }
+  }
+}

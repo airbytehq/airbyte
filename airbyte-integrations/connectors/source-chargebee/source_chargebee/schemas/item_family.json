@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Item Families",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the item family.",
+      "type": ["string", "null"]
+    },
+    "name": {
+      "description": "The name of the item family.",
+      "type": ["string", "null"]
+    },
+    "description": {
+      "description": "A brief description of the item family.",
+      "type": ["string", "null"]
+    },
+    "status": {
+      "description": "The status of the item family.",
+      "type": ["string", "null"]
+    },
+    "resource_version": {
+      "description": "The resource version of the item family data.",
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "description": "The timestamp when the item family was last updated.",
+      "type": ["integer", "null"]
+    },
+    "channel": {
+      "description": "The channel associated with the item family.",
+      "type": ["string", "null"]
+    },
+    "object": {
+      "description": "The type of object, in this case, 'item_family'.",
+      "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "description": "Custom fields specific to the item family.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
+    }
+  }
+}

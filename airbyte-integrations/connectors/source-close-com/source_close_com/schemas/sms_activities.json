@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "attachments": {
+      "type": ["null", "array"]
+    },
+    "date_scheduled": {
+      "type": ["null", "string"]
+    },
+    "error_message": {
+      "type": ["null", "string"]
+    },
+    "local_phone_formatted": {
+      "type": ["null", "string"]
+    },
+    "sequence_id": {
+      "type": ["null", "string"]
+    },
+    "sequence_name": {
+      "type": ["null", "string"]
+    },
+    "sequence_subscription_id": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "template_id": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "date_sent": {
+      "type": ["null", "string"]
+    },
+    "direction": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "cost": {
+      "type": ["null", "string"]
+    },
+    "local_phone": {
+      "type": ["null", "string"]
+    },
+    "local_country_iso": {
+      "type": ["null", "string"]
+    },
+    "remote_phone": {
+      "type": ["null", "string"]
+    },
+    "remote_phone_formatted": {
+      "type": ["null", "string"]
+    },
+    "remote_country_iso": {
+      "type": ["null", "string"]
+    },
+    "text": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "lead_id": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "string"]
+    },
+    "user_name": {
+      "type": ["null", "string"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "created_by_name": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "updated_by_name": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "w": {
+      "type": ["null", "number"]
+    },
+    "h": {
+      "type": ["null", "number"]
+    }
+  }
+}

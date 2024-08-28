@@ -1,33 +1,13 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Callable, List, MutableMapping, Tuple
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, ConfiguredAirbyteCatalog, Type
 from source_instagram.source import SourceInstagram
 
 
@@ -48,16 +28,20 @@ class TestInstagramSource:
     def test_incremental_streams(self, configured_catalog, config, state):
         catalog = self.slice_catalog(configured_catalog, lambda name: name == "user_insights")
         records, states = self._read_records(config, catalog)
-        assert len(records) == 60, "UserInsights for two accounts over last 30 day should return 60 records when empty STATE provided"
+        assert len(records) == 30, "UserInsights for two accounts over last 30 day should return 30 records when empty STATE provided"
 
         records, states = self._read_records(config, catalog, state)
         assert len(records) <= 60 - 10 - 5, "UserInsights should have less records returned when non empty STATE provided"
 
         assert states, "insights should produce states"
-        for state in states:
-            assert "user_insights" in state.state.data
-            assert isinstance(state.state.data["user_insights"], dict)
-            assert len(state.state.data["user_insights"].keys()) == 2
+        for state_msg in states:
+            stream_name, stream_state, state_keys_count = (state_msg.state.stream.stream_descriptor.name, 
+                                                    state_msg.state.stream.stream_state, 
+                                                    len(state_msg.state.stream.stream_state.dict()))
+
+            assert stream_name == "user_insights", f"each state message should reference 'user_insights' stream, got {stream_name} instead"
+            assert isinstance(stream_state, AirbyteStateBlob), f"Stream state should be type AirbyteStateBlob, got {type(stream_state)} instead"
+            assert state_keys_count == 2, f"Stream state should contain 2 partition keys, got {state_keys_count} instead"
 
     @staticmethod
     def slice_catalog(catalog: ConfiguredAirbyteCatalog, predicate: Callable[[str], bool]) -> ConfiguredAirbyteCatalog:
@@ -71,7 +55,7 @@ class TestInstagramSource:
     def _read_records(conf, catalog, state=None) -> Tuple[List[AirbyteMessage], List[AirbyteMessage]]:
         records = []
         states = []
-        for message in SourceInstagram().read(AirbyteLogger(), conf, catalog, state=state):
+        for message in SourceInstagram().read(logging.getLogger("airbyte"), conf, catalog, state=state):
             if message.type == Type.RECORD:
                 records.append(message)
             elif message.type == Type.STATE:

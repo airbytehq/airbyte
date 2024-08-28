@@ -1,0 +1,35 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "contacts"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "satisfaction_ratings"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "tickets"
+      }
+    }
+  }
+]

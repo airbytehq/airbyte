@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Information about the repository where the comment was made",
+      "type": "string"
+    },
+    "url": {
+      "description": "The URL of the API resource for the comment",
+      "type": ["null", "string"]
+    },
+    "pull_request_review_id": {
+      "description": "The ID of the pull request review to which the comment belongs",
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "description": "The unique identifier of the comment",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The unique identifier for the comment node",
+      "type": ["null", "string"]
+    },
+    "diff_hunk": {
+      "description": "A snippet of the diff where the comment was made",
+      "type": ["null", "string"]
+    },
+    "path": {
+      "description": "The file path where the comment was made",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "The position of the comment relative to the diff",
+      "type": ["null", "integer"]
+    },
+    "original_position": {
+      "description": "The original position of the comment relative to the diff",
+      "type": ["null", "integer"]
+    },
+    "commit_id": {
+      "description": "The ID of the commit the comment is associated with",
+      "type": ["null", "string"]
+    },
+    "original_commit_id": {
+      "description": "The original commit ID associated with the comment",
+      "type": ["null", "string"]
+    },
+    "in_reply_to_id": {
+      "description": "The ID of the comment being replied to",
+      "type": ["null", "integer"]
+    },
+    "user": {
+      "description": "Information about the user who made the comment",
+      "$ref": "user.json"
+    },
+    "body": {
+      "description": "The content of the comment",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The timestamp when the comment was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The timestamp when the comment was last updated",
+      "type": "string",
+      "format": "date-time"
+    },
+    "html_url": {
+      "description": "The URL for viewing the comment on GitHub",
+      "type": ["null", "string"]
+    },
+    "pull_request_url": {
+      "description": "The URL of the pull request to which the comment belongs",
+      "type": ["null", "string"]
+    },
+    "author_association": {
+      "description": "The association of the author of the comment with the repository",
+      "type": ["null", "string"]
+    },
+    "_links": {
+      "description": "Contains links to related resources for the review comment",
+      "type": ["null", "object"],
+      "properties": {
+        "self": {
+          "description": "URL for the review comment itself",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "description": "The URL of the comment itself",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "html": {
+          "description": "URL for the HTML representation of the review comment",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "description": "The URL for viewing the comment in a browser",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "pull_request": {
+          "description": "URL for the pull request associated with the review comment",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "description": "The URL for the associated pull request",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "start_line": {
+      "description": "The starting line of the comment reference",
+      "type": ["null", "integer"]
+    },
+    "original_start_line": {
+      "description": "The original starting line of the comment reference",
+      "type": ["null", "integer"]
+    },
+    "start_side": {
+      "description": "The side in the diff where the comment reference started",
+      "type": ["null", "string"]
+    },
+    "line": {
+      "description": "The line in the diff where the comment was made",
+      "type": ["null", "integer"]
+    },
+    "original_line": {
+      "description": "The original line for the comment reference",
+      "type": ["null", "integer"]
+    },
+    "side": {
+      "description": "The side of the diff where the comment was made (e.g., left or right)",
+      "type": ["null", "string"]
+    },
+    "subject_type": {
+      "description": "The type of subject the comment is associated with",
+      "type": ["null", "string"]
+    },
+    "reactions": {
+      "description": "Reactions to the comment (e.g., thumbs up, thumbs down)",
+      "$ref": "reactions.json"
+    }
+  }
+}

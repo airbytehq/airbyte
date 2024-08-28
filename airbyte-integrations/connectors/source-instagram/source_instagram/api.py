@@ -1,25 +1,5 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -37,7 +17,7 @@ from facebook_business.adobjects.page import Page
 from facebook_business.exceptions import FacebookRequestError
 from source_instagram.common import InstagramAPIException, retry_pattern
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=7, factor=5)
+backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5, max_time=600)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -85,7 +65,6 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
 class InstagramAPI:
     def __init__(self, access_token: str):
-        self._api = FacebookAdsApi.init(access_token=access_token)
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
@@ -108,9 +87,23 @@ class InstagramAPI:
                         }
                     )
         except FacebookRequestError as exc:
+            # 200 - 299, 3 and 10 are permission related error codes
+            if 200 <= exc.api_error_code() <= 299 or exc.api_error_code() in [3, 10]:
+                raise InstagramAPIException(
+                    f"Error: {exc.api_error_code()}, {exc.api_error_message()}."
+                    f"Also make sure that your Access Token has the following permissions: "
+                    f"instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, and Instagram Public Content Access"
+                    f"See error handling https://developers.facebook.com/docs/graph-api/guides/error-handling/ "
+                    f"and permissions https://developers.facebook.com/docs/permissions/reference for more information."
+                ) from exc
+
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
         if not instagram_business_accounts:
-            raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
+            raise InstagramAPIException(
+                "Couldn't find an Instagram business account for current Access Token. "
+                "Please ensure you had create a facebook developer application."
+                " See more here https://developers.facebook.com/docs/development/create-an-app/"
+            )
 
         return instagram_business_accounts

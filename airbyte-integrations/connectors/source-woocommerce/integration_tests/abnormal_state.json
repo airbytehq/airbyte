@@ -1,0 +1,46 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "coupons"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "orders"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "product_reviews"
+      }
+    }
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "description": {
+      "type": ["string", "null"]
+    },
+    "description_from_api_doc": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "period": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": ["string", "null"]
+    }
+  }
+}

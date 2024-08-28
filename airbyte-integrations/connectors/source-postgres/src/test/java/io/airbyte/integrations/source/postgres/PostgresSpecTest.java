@@ -1,44 +1,31 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
@@ -50,10 +37,12 @@ public class PostgresSpecTest {
       + "\"password\" : \"pwd\",  "
       + "\"username\" : \"postgres\",  "
       + "\"database\" : \"postgres_db\",  "
+      + "\"schemas\" : [\"public\"],  "
       + "\"port\" : 5432,  "
       + "\"host\" : \"localhost\",  "
+      + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\",  "
       + "\"ssl\" : true, "
-      + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\"  }"
+      + "\"replication_method\" : {    \"method\" : \"CDC\", \"replication_slot\" : \"ab_slot\", \"publication\" : \"ab_publication\", \"lsn_commit_behaviour\" : \"After loading Data in the destination\" }"
       + "}";
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
@@ -69,8 +58,15 @@ public class PostgresSpecTest {
   @Test
   void testDatabaseMissing() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config).remove("database");
+    ((ObjectNode) config).remove(JdbcUtils.DATABASE_KEY);
     assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testSchemaMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("schemas");
+    assertTrue(validator.test(schema, config));
   }
 
   @Test
@@ -121,6 +117,80 @@ public class PostgresSpecTest {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     ((ObjectNode) config.get("replication_method")).set("replication_slot", null);
 
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testWithJdbcAdditionalProperty() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testJdbcAdditionalProperty() throws Exception {
+    final ConnectorSpecification spec = new PostgresSource().spec();
+    assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"While reading Data", "After loading Data in the destination"})
+  void testLsnCommitBehaviourProperty(final String commitBehaviour) {
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("replication_slot", "replication_slot")
+        .put("publication", "PUBLICATION")
+        .put("plugin", "pgoutput")
+        .put("initial_waiting_seconds", 30)
+        .put("lsn_commit_behaviour", commitBehaviour)
+        .build());
+
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, "host")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.DATABASE_KEY, "dbName")
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("MODELS_SCHEMA", "MODELS_SCHEMA" + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, "user")
+        .put(JdbcUtils.PASSWORD_KEY, "password")
+        .put(JdbcUtils.SSL_KEY, false)
+        .put("replication_method", replicationMethod)
+        .build());
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testLsnCommitBehaviourPropertyWithWrongValue() {
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("replication_slot", "replication_slot")
+        .put("publication", "PUBLICATION")
+        .put("plugin", "pgoutput")
+        .put("initial_waiting_seconds", 30)
+        .put("lsn_commit_behaviour", "wrong_value")
+        .build());
+
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, "host")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.DATABASE_KEY, "dbName")
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("MODELS_SCHEMA", "MODELS_SCHEMA" + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, "user")
+        .put(JdbcUtils.PASSWORD_KEY, "password")
+        .put(JdbcUtils.SSL_KEY, false)
+        .put("replication_method", replicationMethod)
+        .build());
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortProperty() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove(JdbcUtils.PORT_KEY);
     assertFalse(validator.test(schema, config));
   }
 

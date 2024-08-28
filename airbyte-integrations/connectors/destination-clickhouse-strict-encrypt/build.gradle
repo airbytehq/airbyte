@@ -1,0 +1,36 @@
+plugins {
+    id 'application'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.22.1'
+    features = ['db-destinations', 's3-destinations', 'typing-deduping']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.clickhouse.ClickhouseDestinationStrictEncrypt'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation project(':airbyte-integrations:connectors:destination-clickhouse')
+
+    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
+
+    // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
+    testImplementation libs.testcontainers.clickhouse
+
+    // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
+    integrationTestJavaImplementation libs.testcontainers.clickhouse
+}

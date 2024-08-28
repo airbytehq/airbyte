@@ -1,0 +1,244 @@
+{
+  "title": "GET_ORDER_REPORT_DATA_SHIPPING",
+  "description": "GET_ORDER_REPORT_DATA_SHIPPING",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "AmazonOrderID": {
+      "description": "Unique identifier for the Amazon order",
+      "type": ["null", "string"]
+    },
+    "AmazonSessionID": {
+      "description": "Unique identifier for the Amazon session",
+      "type": ["null", "string"]
+    },
+    "OrderDate": {
+      "description": "Date when the order was placed",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "OrderPostedDate": {
+      "description": "Date when the order was posted",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "BillingData": {
+      "description": "Data related to billing information",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "BuyerEmailAddress": {
+          "description": "Email address of the buyer",
+          "type": ["null", "string"]
+        },
+        "BuyerName": {
+          "description": "Name of the buyer",
+          "type": ["null", "string"]
+        },
+        "BuyerPhoneNumber": {
+          "description": "Phone number of the buyer",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "FulfillmentData": {
+      "description": "Data related to order fulfillment",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "FulfillmentMethod": {
+          "description": "Method used for order fulfillment",
+          "type": ["null", "string"]
+        },
+        "FulfillmentServiceLevel": {
+          "description": "Service level for fulfillment",
+          "type": ["null", "string"]
+        },
+        "Address": {
+          "description": "Shipping address details",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "Name": {
+              "description": "Name associated with the address",
+              "type": ["null", "string"]
+            },
+            "AddressFieldOne": {
+              "description": "Address line 1",
+              "type": ["null", "string"]
+            },
+            "City": {
+              "description": "City of the shipping address",
+              "type": ["null", "string"]
+            },
+            "StateOrRegion": {
+              "description": "State or region of the shipping address",
+              "type": ["null", "string"]
+            },
+            "PostalCode": {
+              "description": "Postal code of the shipping address",
+              "type": ["null", "string"]
+            },
+            "CountryCode": {
+              "description": "Country code of the shipping address",
+              "type": ["null", "string"]
+            },
+            "PhoneNumber": {
+              "description": "Phone number associated with the address",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "IsBusinessOrder": {
+      "description": "Indicates if the order is a business order",
+      "type": ["null", "string"]
+    },
+    "Item": {
+      "description": "Details of the item ordered",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "AmazonOrderItemCode": {
+          "description": "Unique identifier for the ordered item",
+          "type": ["null", "string"]
+        },
+        "SKU": {
+          "description": "Stock Keeping Unit (SKU) for the item",
+          "type": ["null", "string"]
+        },
+        "Title": {
+          "description": "Title of the item",
+          "type": ["null", "string"]
+        },
+        "Quantity": {
+          "description": "Quantity of the item ordered",
+          "type": ["null", "string"]
+        },
+        "ProductTaxCode": {
+          "description": "Tax code for the product",
+          "type": ["null", "string"]
+        },
+        "ItemPrice": {
+          "description": "Price details for the item",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "Component": {
+              "description": "Price components for the item",
+              "type": ["array"],
+              "items": {
+                "type": ["null", "object"]
+              },
+              "properties": {
+                "Type": {
+                  "description": "Type of price component",
+                  "type": ["null", "string"]
+                },
+                "Amount": {
+                  "description": "Amount of the price component",
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "currency": {
+                      "description": "Currency type for the component",
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "description": "Value of the price component",
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ItemFees": {
+          "description": "Fees associated with the item",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "Fee": {
+              "description": "Specific fee data",
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "Type": {
+                  "description": "Type of fee",
+                  "type": ["null", "string"]
+                },
+                "Amount": {
+                  "description": "Amount of the fee",
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "currency": {
+                      "description": "Currency type",
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "description": "Value of the fee",
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Promotion": {
+          "description": "Promotion details for the item",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "PromotionClaimCode": {
+              "description": "Claim code for the promotion",
+              "type": ["null", "string"]
+            },
+            "MerchantPromotionID": {
+              "description": "ID of the merchant promotion",
+              "type": ["null", "string"]
+            },
+            "Component": {
+              "description": "Promotion amount and type",
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "Type": {
+                  "description": "Type of promotion",
+                  "type": ["null", "string"]
+                },
+                "Amount": {
+                  "description": "Amount of the promotion",
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "currency": {
+                      "description": "Currency type",
+                      "type": ["null", "string"]
+                    },
+                    "value": {
+                      "description": "Value of the promotion",
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "SignatureConfirmationRecommended": {
+          "description": "Indicates if signature confirmation is recommended",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "dataEndTime": {
+      "description": "End time for the data",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

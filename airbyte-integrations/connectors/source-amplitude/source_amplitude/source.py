@@ -1,65 +1,43 @@
 #
-#
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from base64 import b64encode
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_amplitude.streams import Events
 
-from .api import ActiveUsers, Annotations, AverageSessionLength, Cohorts, Events
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
+
+WARNING: Do not modify this file.
+"""
 
 
-class SourceAmplitude(AbstractSource):
+# Declarative Source
+class SourceAmplitude(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
     def _convert_auth_to_token(self, username: str, password: str) -> str:
         username = username.encode("latin1")
         password = password.encode("latin1")
         token = b64encode(b":".join((username, password))).strip().decode("ascii")
         return token
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        try:
-            auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
-            list(Cohorts(authenticator=auth).read_records(SyncMode.full_refresh))
-            return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Amplitude API with the provided credentials - {repr(error)}"
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-
+        streams = super().streams(config=config)
         auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
-        return [
-            Cohorts(authenticator=auth),
-            Annotations(authenticator=auth),
-            Events(authenticator=auth, start_date=config["start_date"]),
-            ActiveUsers(authenticator=auth, start_date=config["start_date"]),
-            AverageSessionLength(authenticator=auth, start_date=config["start_date"]),
-        ]
+        streams.append(
+            Events(
+                authenticator=auth,
+                start_date=config["start_date"],
+                data_region=config.get("data_region", "Standard Server"),
+                event_time_interval={"size_unit": "hours", "size": config.get("request_time_range", 24)},
+            )
+        )
+        return streams

@@ -1,18 +1,24 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
-    "description": {
-      "type": "string"
-    },
     "key": {
-      "type": "string"
+      "description": "Unique key identifier for the permission",
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "description": "Name of the permission",
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "description": "Type of permission",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Description of the permission",
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "additionalProperties": true,
+  "description": "Details about permissions."
 }

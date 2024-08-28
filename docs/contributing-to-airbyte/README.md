@@ -1,122 +1,79 @@
 ---
-description: 'We love contributions to Airbyte, big or small.'
+description: "We love contributions to Airbyte, big or small."
 ---
 
 # Contributing to Airbyte
 
-Thank you for your interest in contributing! We love community contributions. Contribution guidelines are listed below. If you're unsure about how to start contributing or have any questions even after reading them, feel free to ask us on [Slack](https://slack.airbyte.io) in the \#dev or \#general channel.
+Thank you for your interest in contributing! Contributions are very welcome.
+We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions!
 
-However, for those who want a bit more guidance on the best way to contribute to Airbyte, read on. This document will cover what we're looking for. By addressing the points below, the chances that we can quickly merge or address your contributions will increase.
+Everyone interacting in Slack, codebases, mailing lists, events, or any other Airbyte activities is expected to follow the [Code of Conduct](../community/code-of-conduct.md). Please review it before getting started.
 
-## Code of conduct
+## Code Contributions
 
-Please follow our [Code of conduct](code-of-conduct.md) in the context of any contributions made to Airbyte.
+Most of the issues that are open for contributions are tagged with [`good first issue`]( https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3A%22good%20first%20issue%22 ) or [`help-welcome`](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Ahelp-welcome).
+If you see an issue that isn't tagged that you're interested in, post a comment with your approach, and we'd be happy to assign it to you.
 
-## Airbyte specification
 
-Before you can start contributing, you need to understand [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+#### Here are the areas that we love seeing contributions to:
 
-## First-time contributors, welcome!
+- Bug fixes, features, and enhancements to existing API source connectors.
+- New API sources built with the low-code CDK or Connector Builder.
+- Migrating existing sources from Python to the low-code CDK.
+- Bug fixes, features, and enhancements to the following database sources: Postgres, MySQL, MSSQL.
+- Bug fixes to the following destinations: BigQuery, Snowflake, Redshift, S3, and Postgres.
+- Helm Charts features, bug fixes, and other platform bug fixes.
 
-We appreciate first time contributors and we are happy to assist you in getting started. In case of questions, just reach out to us via [email](mailto:hey@airbyte.io) or [Slack](https://slack.airbyte.io)!
+:::warning
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in 2024.
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/using-airbyte/core-concepts/typing-deduping) (Destinations V2).
+We're not actively reviewing/accepting new Java connectors for now.
+:::
 
-Here is a list of easy [good first issues](https://github.com/airbytehq/airbyte/labels/good%20first%20issue) to do.
+#### The usual workflow of code contribution is:
 
-## Areas for contributing
+1. Fork the Airbyte repository.
+2. Clone the repository locally.
+3. Create a branch for your feature/bug fix with the format `{YOUR_USERNAME}/{FEATURE/BUG}` (e.g. `jdoe/source-stock-api-stream-fix`)
+4. Make and commit changes.
+5. Push your local branch to your fork.
+6. Submit a Pull Request so that we can review your changes.
+7. [Link an existing Issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) that does not include the `needs triage` label to your Pull Request. Pull requests without an issue attached take longer to review.
+8. Write a PR title and description that follows the [Pull Request Handbook](./resources/pull-requests-handbook.md).
+9. An Airbyte maintainer will trigger the CI tests for you and review the code.
+10. Review and respond to feedback and questions by Airbyte maintainers.
+11. Merge the contribution.
 
-### **New connectors**
+Guidelines to common code contributions:
 
-It's easy to add your own connector to Airbyte! **Since Airbyte connectors are encapsulated within Docker containers, you can use any language you like.** Here are some links on how to add sources and destinations. We haven't built the documentation for all languages yet, so don't hesitate to reach out to us if you'd like help developing connectors in other languages.
+- [Contribute a code change to an existing connector](change-cdk-connector.md)
+- [Contribute a new connector](submit-new-connector.md)
 
-For sources, simply head over to our [Python CDK](../connector-development/cdk-python/README.md).
+## Documentation
 
-{% hint style="info" %}
-The CDK currently does not support creating destinations, but it will very soon.
-{% endhint %}
+We welcome pull requests that fix typos or enhance the grammar and structure of our documentation! Check the [Updating Documentation](writing-docs.md) guide for details on submitting documentation changes.
 
-* See [Building new connectors](../connector-development/README.md) to get started.
-* Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../connector-development/tutorials/building-a-python-source.md) and [Build Java Destination Connectors](../connector-development/tutorials/building-a-java-destination.md)
-* Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](../connector-development/testing-connectors/source-acceptance-tests-reference.md)
 
-**Please note that, at no point in time, we will ask you to maintain your connector.** The goal is that the Airbyte team and the community helps maintain the connector.
+The following highlights from the [Google developer documentation style guide](https://developers.google.com/style) are helpful for new writers:
 
-### **Documentation**
+- [Be conversational and friendly without being frivolous](https://developers.google.com/style/tone)
+- [Use second person](https://developers.google.com/style/person)
+- [Use active voice](https://developers.google.com/style/voice)
+- [Put conditional clauses before instructions](https://developers.google.com/style/clause-order)
+- [Put UI elements in bold](https://developers.google.com/style/ui-elements)
+- [Write inclusive documentation](https://developers.google.com/style/inclusive-documentation)
+- [Don't pre-announce anything in documentation](https://developers.google.com/style/future)
 
-Our goal is to keep our docs comprehensive and updated. If you would like to help us in doing so, we are grateful for any kind of contribution:
+Guideline for visuals: Use links to videos instead of screenshots (Reason: Users are more forgiving of outdated videos than screenshots).
 
-* Report missing content
-* Fix errors in existing docs
-* Help us in adding to the docs
+For examples of good connector docs, see the [Salesforce source connector doc](https://docs.airbyte.com/integrations/sources/salesforce) and [Snowflake destination connector doc](https://docs.airbyte.com/integrations/destinations/snowflake)
 
-The contributing guide for docs can be found [here](updating-documentation.md).
+## Community Content
 
-### **Community content**
-
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.io/tutorials):
-
-* Fix errors in existing tutorials
-* Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
-* Request tutorials
-
-We have a repo dedicated to community content. Everything is documented [there](https://github.com/airbytehq/community-content/).
+We welcome contributions as new tutorials / showcases / articles, or as enhancements to any of the existing guides on our tutorials page. Head to this repo dedicated to community content: [Write for the Community](https://github.com/airbytehq/write-for-the-community).
 
 Feel free to submit a pull request in this repo, if you have something to add even if it's not related to anything mentioned above.
 
-## Ways you can contribute
+## Engage with the Community
 
-### **Adding to the codebase for a connector or issue**
-
-First, a big thank you! A few things to keep in mind when contributing code:
-
-* Please make sure there is an issue associated with the work that you're doing.
-* If you're working on an issue, please comment that you are doing so to prevent duplicate work by others also.
-* Rebase master with your branch before submitting a pull request.
-
-Here are some details about [our review process](#review-process).
-
-### **Upvoting issues, feature and connector requests**
-
-You are welcome to add your own reactions to the existing issues. We will take them in consideration in our prioritization efforts, especially for connectors.
-
-❤️ means that this task is CRITICAL to you.  
-👍 means it is important to you.
-
-### **Requesting new features**
-
-To request new features, please create an issue on this project.
-
-If you would like to suggest a new feature, we ask that you please use our issue template. It contains a few essential questions that help us understand the problem you are looking to solve and how you think your recommendation will address it. We also tag incoming issues from this template with the "**community\_new**" label. This lets our teams quickly see what has been raised and better address the community recommendations.
-
-To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community_new).
-
-Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
-
-### **Requesting new connectors**
-
-This is very similar to requesting new features. The template will change a bit and all connector requests will be tagged with the “**community\_new**” and “**area/integration**” labels.
-
-To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/area%2Fintegration). Again, watch out for duplicates!
-
-### **Reporting bugs**
-
-**‌**Bug reports help us make Airbyte better for everyone. We provide a preconfigured template for bugs to make it very clear what information we need.
-
-‌Please search within our [already reported bugs](https://github.com/airbytehq/airbyte/issues?q=is%3Aissue+is%3Aopen+label%3Atype%2Fbug) before raising a new one to make sure you're not raising a duplicate.
-
-### **Reporting security issues**
-
-Please do not create a public GitHub issue. If you've found a security issue, please email us directly at [security@airbyte.io](mailto:security@airbyte.io) instead of raising an issue.
-
-## **Review process**
-
-**‌‌**If you are considering adding to the codebase or contributing a new connector: a big thank you! We sincerely appreciate your help.
-
-As soon as you are done with your development, just put up a PR. You're also always welcome to reach out during or before development. When we review we look at:
-
-* ‌Does the PR solve the issue?
-* Is the proposed solution reasonable?
-* Is it tested? \(unit tests or integration tests\)
-* Is it introducing security risks?
-
-‌Once your PR passes, we will merge it.
-
+Another crucial way to contribute is by reporting bugs and helping other users in the community. You're welcome to join the [Community Slack](https://slack.airbyte.io). Refer to our [Issues and Feature Requests](issues-and-requests.md) guide to learn about the best ways to report bugs.

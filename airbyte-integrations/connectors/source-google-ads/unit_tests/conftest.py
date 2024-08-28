@@ -1,33 +1,65 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 
 import pytest
+from source_google_ads.models import CustomerModel
 
 
-@pytest.fixture(scope="session", name="config")
-def config_fixture():
-    with open("secrets/config.json", "r") as config_file:
-        return json.load(config_file)
+@pytest.fixture(name="config")
+def test_config():
+    config = {
+        "credentials": {
+            "developer_token": "test_token",
+            "client_id": "test_client_id",
+            "client_secret": "test_client_secret",
+            "refresh_token": "test_refresh_token",
+        },
+        "customer_id": "123",
+        "start_date": "2021-01-01",
+        "conversion_window_days": 14,
+        "custom_queries_array": [
+            {
+                "query": "SELECT campaign.accessible_bidding_strategy, segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign",
+                "primary_key": None,
+                "cursor_field": "campaign.start_date",
+                "table_name": "happytable",
+            },
+            {
+                "query": "SELECT segments.ad_destination_type, segments.ad_network_type, segments.day_of_week, customer.auto_tagging_enabled, customer.id, metrics.conversions, campaign.start_date FROM campaign",
+                "primary_key": "customer.id",
+                "cursor_field": None,
+                "table_name": "unhappytable",
+            },
+            {
+                "query": "SELECT ad_group.targeting_setting.target_restrictions FROM ad_group",
+                "primary_key": "customer.id",
+                "cursor_field": None,
+                "table_name": "ad_group_custom",
+            },
+        ],
+    }
+    return config
+
+
+@pytest.fixture(autouse=True)
+def mock_oauth_call(requests_mock):
+    yield requests_mock.post(
+        "https://accounts.google.com/o/oauth2/token",
+        json={"access_token": "access_token", "refresh_token": "refresh_token", "expires_in": 0},
+    )
+
+
+@pytest.fixture
+def customers(config):
+    return [CustomerModel(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]
+
+@pytest.fixture
+def additional_customers(config, customers):
+    return customers + [CustomerModel(id="789", time_zone="local", is_manager_account=False)]
+
+
+@pytest.fixture
+def customers_manager(config):
+    return [CustomerModel(id=_id, time_zone="local", is_manager_account=True) for _id in config["customer_id"].split(",")]
