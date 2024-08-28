@@ -80,16 +80,6 @@ class SnowflakeDestinationHandler(
                     """
                     SHOW TABLES LIKE '${stream.finalName}' IN "$databaseName"."${stream.finalNamespace}";
                     """.trimIndent()
-
-//                    String.format(
-//                            """
-//                                SHOW TABLES LIKE '%s' IN "%s"."%s";
-//                            """.trimIndent(),
-//                            stream.finalName,
-//                            databaseName,
-//                            stream.finalNamespace,
-//                            )
-
                 val showColumnsResult = database.queryJsons(
                     showColumnsQuery,
                 )
@@ -130,15 +120,6 @@ class SnowflakeDestinationHandler(
                     """
                         SHOW TABLES LIKE '$rawTableName' IN "$databaseName"."${id.rawNamespace}";
                     """.trimIndent()
-
-//            String.format(
-//                    """
-//                        SHOW TABLES LIKE '%s' IN "%s"."%s";
-//                    """.trimIndent(),
-//                    rawTableName,
-//                    databaseName,
-//                    id.rawNamespace,
-//                    )
             val showTablesResult = database.queryJsons(
                 showTablesQuery,
             )
@@ -605,16 +586,6 @@ class SnowflakeDestinationHandler(
                         """
                         SHOW COLUMNS IN TABLE "$databaseName"."${stream.finalNamespace}"."${stream.finalName}";
                         """.trimIndent()
-
-//                        String.format(
-//                            """
-//                                SHOW COLUMNS IN TABLE "%s"."%s"."%s";
-//                            """.trimIndent(),
-//                            databaseName,
-//                            stream.finalNamespace,
-//                            stream.finalName,
-//                        )
-
                     val showColumnsResult = database.queryJsons(
                         showColumnsQuery,
                     )

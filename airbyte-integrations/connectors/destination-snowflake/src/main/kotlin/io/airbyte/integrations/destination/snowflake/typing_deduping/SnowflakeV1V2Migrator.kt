@@ -42,15 +42,6 @@ class SnowflakeV1V2Migrator(
                 """
                 SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE "$databaseName";
                 """.trimIndent()
-
-//                String.format(
-//                """
-//               SHOW SCHEMAS LIKE '%s' IN DATABASE "%s";
-//                """.trimIndent(),
-//                streamConfig!!.id.rawNamespace,
-//                databaseName,
-//            )
-
             val showSchemaResult = database.queryJsons(
                                     showSchemaQuery,
                                 )
@@ -88,16 +79,6 @@ class SnowflakeV1V2Migrator(
                     """
                        SHOW COLUMNS IN TABLE "$databaseName"."$namespace"."$tableName";
                     """.trimIndent()
-
-//                String.format(
-//                    """
-//                       SHOW COLUMNS IN TABLE "%s"."%s"."%s";
-//                    """.trimIndent(),
-//                    databaseName,
-//                    namespace,
-//                    tableName,
-//                )
-
             val showColumnsResult = database.queryJsons(
                 showColumnsQuery
             )
