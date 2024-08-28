@@ -3,6 +3,7 @@
 
 import os
 import uuid
+import zlib
 from contextlib import closing
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
@@ -19,6 +20,8 @@ from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from numpy import nan
 from requests import Response
+
+EMPTY_STR = ""
 
 
 @dataclass
@@ -52,47 +55,68 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
     def update_jobs_status(self, jobs: Iterable[AsyncJob]) -> None:
         for job in jobs:
-            polling_response: requests.Response = self.polling_requester.send_request(
-                stream_slice=StreamSlice(
-                    partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]}, cursor_slice={}
+            stream_slice = StreamSlice(
+                partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]},
+                cursor_slice={},
+            )
+
+            polling_response: Optional[requests.Response] = self.polling_requester.send_request(stream_slice=stream_slice)
+            if polling_response is None:
+                raise AirbyteTracedException(
+                    internal_message="Polling Requester received an empty Response.",
+                    failure_type=FailureType.system_error,
                 )
-            )
-            api_status = next(  # type: ignore  # the typing is really weird here but it does not extract records but any and we assume the connector developer has configured this properly
-                self.status_extractor.extract_records(polling_response), None
-            )
-            job_status = self.status_mapping.get(api_status, None)
+
+            api_status = next(iter(self.status_extractor.extract_records(polling_response)), None)
+            job_status = self.status_mapping.get(str(api_status), None)
             if job_status is None:
                 raise ValueError(
                     f"API status `{api_status}` is unknown. Contact the connector developer to make sure this status is supported."
                 )
+
             job.update_status(job_status)
 
             if job_status == AsyncJobStatus.COMPLETED:
                 self._polling_job_response_by_id[job.api_job_id()] = polling_response
 
     def fetch_records(self, job: AsyncJob) -> Iterable[Mapping[str, Any]]:
-        url: str
         for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):  # type: ignore  # the typing is really weird here but it does not extract records but any and we assume the connector developer has configured this properly
             # FIXME salesforce will require pagination here
-            file_path, encoding = self._download_to_file(url)
+            file_path, encoding = self._download_to_file(str(url))
             yield from self._read_with_chunks(file_path, encoding)
 
         yield from []
 
         # clean self._create_job_response_by_id and self._polling_job_response_by_id
 
+    ## TODO: everything down bellow should be a part of the `HttpToFileExtractor` component
     def _download_to_file(self, url: str) -> Tuple[str, str]:
-        tmp_file = str(uuid.uuid4())
-        streamed_response = self.download_requester.send_request(stream_slice=StreamSlice(partition={"url": url}, cursor_slice={}))
-        with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = self._get_response_encoding(response.headers or {})
-            for chunk in response.iter_content(chunk_size=self._DOWNLOAD_CHUNK_SIZE):
-                data_file.write(self._filter_null_bytes(chunk))
-        # check the file exists
-        if os.path.isfile(tmp_file):
-            return tmp_file, response_encoding
-        else:
-            raise ValueError(f"The IO/Error occured while verifying binary data. Tmp file {tmp_file} doesn't exist.")
+        # set filepath for binary data from response
+        decompressor = zlib.decompressobj(zlib.MAX_WBITS | 32)
+
+        stream_slice: StreamSlice = StreamSlice(partition={"url": url}, cursor_slice={})
+        streamed_response = self.download_requester.send_request(stream_slice=stream_slice)
+
+        if streamed_response:
+            tmp_file = str(uuid.uuid4())
+            with closing(streamed_response) as response, open(tmp_file, "wb") as data_file:
+                response_encoding = self._get_response_encoding(dict(response.headers or {}))
+                for chunk in response.iter_content(chunk_size=self._DOWNLOAD_CHUNK_SIZE):
+                    try:
+                        data_file.write(decompressor.decompress(chunk))
+                    except zlib.error:
+                        # we bypass having the context of the error here,
+                        # since it's just a flag-type exception to handle a different scenario.
+                        data_file.write(self._filter_null_bytes(chunk))
+
+            # check the file exists
+            if os.path.isfile(tmp_file):
+                return tmp_file, response_encoding
+            else:
+                raise ValueError(f"The IO/Error occured while verifying binary data. Tmp file {tmp_file} doesn't exist.")
+
+        # return default values
+        return EMPTY_STR, EMPTY_STR
 
     def _get_response_encoding(self, headers: Dict[str, Any]) -> str:
         """Returns encodings from given HTTP Header Dict.
@@ -106,7 +130,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         if not content_type:
             return self._DEFAULT_ENCODING
 
-        content_type, params = requests.utils._parse_content_type_header(content_type)
+        content_type, params = requests.utils.parse_header_links(content_type)
 
         if "charset" in params:
             # FIXME this was part of salesforce code but it is unclear why it is needed (see https://airbytehq-team.slack.com/archives/C02U9R3AF37/p1724693926504639)
