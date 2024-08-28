@@ -80,7 +80,7 @@ class EntrypointOutput:
         state_messages = self._get_message_by_types([Type.STATE])
         if not state_messages:
             raise ValueError("Can't provide most recent state as there are no state messages")
-        return state_messages[-1].state.stream
+        return state_messages[-1].state.stream  # type: ignore[union-attr] # state has `stream`
 
     @property
     def logs(self) -> List[AirbyteMessage]:
@@ -107,9 +107,9 @@ class EntrypointOutput:
 
     def get_stream_statuses(self, stream_name: str) -> List[AirbyteStreamStatus]:
         status_messages = map(
-            lambda message: message.trace.stream_status.status,
+            lambda message: message.trace.stream_status.status,  # type: ignore
             filter(
-                lambda message: message.trace.stream_status.stream_descriptor.name == stream_name,
+                lambda message: message.trace.stream_status.stream_descriptor.name == stream_name,  # type: ignore # callable; trace has `stream_status`
                 self._get_trace_message_by_trace_type(TraceType.STREAM_STATUS),
             ),
         )
@@ -119,11 +119,11 @@ class EntrypointOutput:
         return [message for message in self._messages if message.type in message_types]
 
     def _get_trace_message_by_trace_type(self, trace_type: TraceType) -> List[AirbyteMessage]:
-        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]
+        return [message for message in self._get_message_by_types([Type.TRACE]) if message.trace.type == trace_type]  # type: ignore[union-attr] # trace has `type`
 
     def is_in_logs(self, pattern: str) -> bool:
         """Check if any log message case-insensitive matches the pattern."""
-        return any(re.search(pattern, entry.log.message, flags=re.IGNORECASE) for entry in self.logs)
+        return any(re.search(pattern, entry.log.message, flags=re.IGNORECASE) for entry in self.logs)  # type: ignore[union-attr] # log has `message`
 
     def is_not_in_logs(self, pattern: str) -> bool:
         """Check if no log message matches the case-insensitive pattern."""

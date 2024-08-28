@@ -178,13 +178,13 @@ class AirbyteEntrypoint(object):
     def handle_record_counts(message: AirbyteMessage, stream_message_count: DefaultDict[HashableStreamDescriptor, float]) -> AirbyteMessage:
         match message.type:
             case Type.RECORD:
-                stream_message_count[HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)] += 1.0
+                stream_message_count[HashableStreamDescriptor(name=message.record.stream, namespace=message.record.namespace)] += 1.0  # type: ignore[union-attr] # record has `stream` and `namespace`
             case Type.STATE:
                 stream_descriptor = message_utils.get_stream_descriptor(message)
 
                 # Set record count from the counter onto the state message
-                message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()
-                message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0.0)
+                message.state.sourceStats = message.state.sourceStats or AirbyteStateStats()  # type: ignore[union-attr] # state has `sourceStats`
+                message.state.sourceStats.recordCount = stream_message_count.get(stream_descriptor, 0.0)  # type: ignore[union-attr] # state has `sourceStats`
 
                 # Reset the counter
                 stream_message_count[stream_descriptor] = 0.0
@@ -206,7 +206,7 @@ class AirbyteEntrypoint(object):
 
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
-        return orjson.dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode()
+        return orjson.dumps(AirbyteMessageSerializer.dump(airbyte_message)).decode()  # type: ignore[no-any-return] # orjson.dumps(message).decode() always returns string
 
     @classmethod
     def extract_state(cls, args: List[str]) -> Optional[Any]:
