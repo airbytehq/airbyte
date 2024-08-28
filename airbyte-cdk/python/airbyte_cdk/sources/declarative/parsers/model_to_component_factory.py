@@ -491,12 +491,18 @@ class ModelToComponentFactory:
         """Gets the base module of the current script"""
         main_module = sys.modules['__main__']
         main_module_file = getattr(main_module, '__file__', None)
+        print(f"Main module file: {main_module_file}")
+
         if main_module_file:
             main_dir = os.path.dirname(main_module_file)
+            print(f"Main dir: {main_dir}")
             parent_dir = os.path.dirname(main_dir)
+            print(f"Parent dir: {parent_dir}")
 
             for item in os.listdir(parent_dir):
-                if os.path.isdir(os.path.join(parent_dir, item)) and re.match(r'source_*', item):
+                print(f"Checking dir_item: {item}")
+                if os.path.isdir(os.path.join(parent_dir, item)) and re.match(r'source_.*', item):
+                    print(f"Found matching item: {item}")
                     return item
         return None
 
