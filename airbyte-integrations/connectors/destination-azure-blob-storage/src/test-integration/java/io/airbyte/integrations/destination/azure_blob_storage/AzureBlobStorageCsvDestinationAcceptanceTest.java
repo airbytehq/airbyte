@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.azure_blob_storage;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -76,10 +76,20 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
         case "number" -> json.put(key, Double.valueOf(value));
+        case "" -> addNoTypeValue(json, key, value);
         default -> json.put(key, value);
       }
     }
     return json;
+  }
+
+  private static void addNoTypeValue(ObjectNode json, String key, String value) {
+    if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
+      var newNode = Jsons.deserialize(value);
+      json.set(key, newNode);
+    } else {
+      json.put(key, value);
+    }
   }
 
   @Override

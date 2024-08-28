@@ -5,25 +5,42 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "departmentName": {
+      "description": "The name of the department or category associated with the search term.",
       "type": ["null", "string"]
     },
     "searchTerm": {
+      "description": "The specific term or keyword entered by users in search queries.",
       "type": ["null", "string"]
     },
     "searchFrequencyRank": {
+      "description": "The ranking of this search term based on its frequency of occurrence in search queries.",
       "type": ["null", "number"]
     },
     "clickedAsin": {
+      "description": "The ASIN (Amazon Standard Identification Number) that was clicked for this search term.",
       "type": ["null", "string"]
     },
     "clickShareRank": {
+      "description": "The ranking of this search term based on the click share it received.",
       "type": ["null", "number"]
     },
     "clickShare": {
+      "description": "The share of total clicks that this search term received out of all the clicks in the report period.",
       "type": ["null", "number"]
     },
     "conversionShare": {
+      "description": "The share of total conversions attributed to this search term out of all conversions in the report period.",
       "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data collection period for this report.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "description": "The end date of the search term query.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

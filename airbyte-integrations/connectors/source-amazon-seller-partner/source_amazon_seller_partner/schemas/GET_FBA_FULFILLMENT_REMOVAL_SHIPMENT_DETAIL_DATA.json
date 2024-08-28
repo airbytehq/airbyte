@@ -5,31 +5,47 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "removal-date": {
-      "type": ["null", "string"]
+      "description": "The date and time when the removal of the product from fulfillment centers started.",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "order-id": {
+      "description": "The unique identification number for the order associated with the shipment.",
       "type": ["null", "string"]
     },
     "shipment-date": {
-      "type": ["null", "string"]
+      "description": "The date and time when the removal shipment was dispatched.",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "sku": {
+      "description": "Stock Keeping Unit (SKU) for the product being removed.",
       "type": ["null", "string"]
     },
     "fnsku": {
+      "description": "The Fulfilled Network Stock Keeping Unit (FNSKU) associated with the product.",
       "type": ["null", "string"]
     },
     "disposition": {
+      "description": "The status or action taken on the removal shipment.",
       "type": ["null", "string"]
     },
     "quantity shipped": {
+      "description": "The quantity of products shipped in the removal shipment.",
       "type": ["null", "string"]
     },
     "carrier": {
+      "description": "The carrier responsible for shipping the removal shipment.",
       "type": ["null", "string"]
     },
     "tracking-number": {
+      "description": "The unique tracking number assigned to the removal shipment.",
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data collection in the requested format.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

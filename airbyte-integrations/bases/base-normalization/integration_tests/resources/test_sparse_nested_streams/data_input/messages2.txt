@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "sparse_nested_stream", "data": {"id": 2, "updated_at": 101}, "emitted_at": 1672568200}}

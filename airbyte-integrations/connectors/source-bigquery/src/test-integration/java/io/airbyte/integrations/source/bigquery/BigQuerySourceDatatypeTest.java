@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -12,21 +12,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.bigquery.TempBigQueryJoolDatabaseImpl;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.bigquery.TempBigQueryJoolDatabaseImpl;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.AfterEach;
 
-@TestInstance(Lifecycle.PER_CLASS)
 public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
@@ -42,12 +39,12 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
   }
 
   @Override
-  protected JsonNode getConfig() throws Exception {
+  protected JsonNode getConfig() {
     return config;
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+  protected void tearDown(final TestDestinationEnv testEnv) {
 
   }
 
@@ -59,7 +56,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
@@ -87,7 +84,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int64")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("null", "-128", "127", "9223372036854775807", "-9223372036854775808")
             .addExpectedValues(null, "-128", "127", "9223372036854775807", "-9223372036854775808")
@@ -284,7 +281,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("['a', 'b']")
-            .addExpectedValues("[{\"test_column\":\"a\"},{\"test_column\":\"b\"}]")
+            .addExpectedValues("[\"a\",\"b\"]")
             .build());
 
     addDataTypeTestData(
@@ -316,6 +313,15 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addInsertValues("[STRUCT('qqq' as fff, [STRUCT('fff' as ooo, 1 as kkk), STRUCT('hhh' as ooo, 2 as kkk)] as ggg)]")
             .addExpectedValues("[{\"fff\":\"qqq\",\"ggg\":[{\"ooo\":\"fff\",\"kkk\":1},{\"ooo\":\"hhh\",\"kkk\":2}]}]")
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("interval")
+            .airbyteType(JsonSchemaType.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("MAKE_INTERVAL(2021, 10, 10, 10, 10, 10)", "null")
+            .addExpectedValues("2021-10 10 10:10:10", null)
+            .build());
   }
 
   @Override
@@ -335,7 +341,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     return null;
   }
 
-  @AfterAll
+  @AfterEach
   public void cleanTestInstance() {
     database.getRealDatabase().cleanDataSet(getNameSpace());
   }

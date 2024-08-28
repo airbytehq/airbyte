@@ -1,12 +1,14 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.mssql;
 
 import static java.lang.System.getProperty;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import java.util.HashMap;
@@ -31,11 +33,11 @@ public class MSSQLDestinationTest {
   private Map<String, String> baseParameters(final String sslMethod) {
     return ImmutableMap.<String, String>builder()
         .put("ssl_method", sslMethod)
-        .put("host", "localhost")
-        .put("port", "1773")
-        .put("database", "db")
-        .put("username", "username")
-        .put("password", "verysecure")
+        .put(JdbcUtils.HOST_KEY, "localhost")
+        .put(JdbcUtils.PORT_KEY, "1773")
+        .put(JdbcUtils.DATABASE_KEY, "db")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
         .build();
   }
 
@@ -85,7 +87,7 @@ public class MSSQLDestinationTest {
     final String trustStoreLocation = getProperty("java.home") + "/lib/security/cacerts";
     assertEquals(properties.get("trustStore"), trustStoreLocation);
     assertNull(properties.get("trustStorePassword"));
-    assertNull(properties.get("hostNameInCertificate")); //TODO: add test with hostname in certificate
+    assertNull(properties.get("hostNameInCertificate")); // TODO: add test with hostname in certificate
   }
 
   @Test
@@ -94,9 +96,7 @@ public class MSSQLDestinationTest {
     final MSSQLDestination destination = new MSSQLDestination();
     final JsonNode config = createConfig("encrypted_verify_certificate");
 
-    assertThrows(RuntimeException.class, () ->
-        destination.getDefaultConnectionProperties(config)
-    );
+    assertThrows(RuntimeException.class, () -> destination.getDefaultConnectionProperties(config));
   }
 
   @Test
@@ -162,6 +162,54 @@ public class MSSQLDestinationTest {
     } else {
       System.clearProperty(key);
     }
+  }
+
+  @Test
+  void testNoExtraParams() {
+    final JsonNode config = buildConfigNoJdbcParameters();
+    final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
+    assertNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+  }
+
+  @Test
+  void testEmptyExtraParams() {
+    final String extraParam = "";
+    final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+  }
+
+  @Test
+  void testExtraParams() {
+    final String extraParam = "key1=value1&key2=value2&key3=value3";
+    final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+
+  }
+
+  private JsonNode buildConfigNoJdbcParameters() {
+    return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
+        "ssl_method", "ssl_method",
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, "1773",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.USERNAME_KEY, "username",
+        JdbcUtils.PASSWORD_KEY, "verysecure"));
+  }
+
+  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
+
+    return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
+        "ssl_method", "ssl_method",
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, "1773",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.USERNAME_KEY, "username",
+        JdbcUtils.PASSWORD_KEY, "verysecure",
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
 }

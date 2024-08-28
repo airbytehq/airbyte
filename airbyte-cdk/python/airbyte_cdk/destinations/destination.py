@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import argparse
@@ -10,9 +10,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.connector import Connector
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
-from pydantic import ValidationError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from pydantic import ValidationError as V2ValidationError
 
 logger = logging.getLogger("airbyte")
 
@@ -35,7 +37,7 @@ class Destination(Connector, ABC):
         for line in input_stream:
             try:
                 yield AirbyteMessage.parse_raw(line)
-            except ValidationError:
+            except V2ValidationError:
                 logger.info(f"ignoring input which can't be deserialized as Airbyte Message: {line}")
 
     def _run_write(
@@ -83,6 +85,7 @@ class Destination(Connector, ABC):
         return parsed_args
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
+
         cmd = parsed_args.command
         if cmd not in self.VALID_CMDS:
             raise Exception(f"Unrecognized command: {cmd}")
@@ -93,7 +96,14 @@ class Destination(Connector, ABC):
             return
         config = self.read_config(config_path=parsed_args.config)
         if self.check_config_against_spec or cmd == "check":
-            check_config_against_spec_or_exit(config, spec)
+            try:
+                check_config_against_spec_or_exit(config, spec)
+            except AirbyteTracedException as traced_exc:
+                connection_status = traced_exc.as_connection_status_message()
+                if connection_status and cmd == "check":
+                    yield connection_status
+                    return
+                raise traced_exc
 
         if cmd == "check":
             yield self._run_check(config=config)
@@ -102,8 +112,9 @@ class Destination(Connector, ABC):
             wrapped_stdin = io.TextIOWrapper(sys.stdin.buffer, encoding="utf-8")
             yield from self._run_write(config=config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
 
-    def run(self, args: List[str]):
+    def run(self, args: List[str]) -> None:
+        init_uncaught_exception_handler(logger)
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:
-            print(message.json(exclude_unset=True))
+            print(message.model_dump_json(exclude_unset=True))

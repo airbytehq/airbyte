@@ -1,3 +1,7 @@
+---
+products: oss-*
+---
+
 # Scaling Airbyte
 
 As depicted in our [High-Level View](../understanding-airbyte/high-level-view.md), Airbyte is made up of several components under the hood: 1. Scheduler 2. Server 3. Temporal 4. Webapp 5. Database
@@ -31,7 +35,6 @@ You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` an
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
 
-
 ### Disk Space
 
 Airbyte uses backpressure to try to read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.
@@ -57,7 +60,7 @@ Temporal maintains multiple idle connections. By the default value is `20` and y
 that temporal creates multiple pools and the number specified in the `SQL_MAX_IDLE_CONNS` environment variable of the `docker.compose.yaml` file
 might end up allowing 4-5 times more connections than expected.
 
-If you want tho increase the amount of allowed idle connexion, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
+If you want to increase the amount of allowed idle connexion, you will also need to increase `SQL_MAX_CONNS` as well because `SQL_MAX_IDLE_CONNS`
 is capped by `SQL_MAX_CONNS`.
 
 ## Feedback
@@ -65,4 +68,3 @@ is capped by `SQL_MAX_CONNS`.
 The advice here is best-effort and by no means comprehensive. Please reach out on Slack if anything doesn't make sense or if something can be improved.
 
 If you've been running Airbyte in production and have more tips up your sleeve, we welcome contributions!
-

@@ -1,15 +1,17 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.pubsub;
 
 import static com.google.common.base.Strings.nullToEmpty;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_CREDS;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_PROJECT_ID;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_TOPIC_ID;
 import static io.airbyte.integrations.destination.pubsub.PubsubDestination.NAMESPACE;
 import static io.airbyte.integrations.destination.pubsub.PubsubDestination.STREAM;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_BATCHING_ENABLED;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_CREDS;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_ORDERING_ENABLED;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_PROJECT_ID;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_TOPIC_ID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,15 +35,19 @@ import com.google.pubsub.v1.ReceivedMessage;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -88,6 +94,26 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
     final var stream = j.get(STREAM).asText("");
     final var namespace = j.get(NAMESPACE).asText("");
     return new AirbyteStreamNameNamespacePair(stream, namespace);
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   @Override
@@ -160,7 +186,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a gcp service account credentials file. By default {module-root}/"
@@ -168,7 +194,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
@@ -179,11 +205,14 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_TOPIC_ID, topicId)
+        .put(CONFIG_BATCHING_ENABLED, true)
+        .put(CONFIG_ORDERING_ENABLED, true)
         .build());
 
     credentials =
         ServiceAccountCredentials
-            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes()));
+            .fromStream(new ByteArrayInputStream(configJson.get(CONFIG_CREDS).asText().getBytes(
+                StandardCharsets.UTF_8)));
     // create topic
     topicName = TopicName.of(projectId, topicId);
     topicAdminClient = TopicAdminClient

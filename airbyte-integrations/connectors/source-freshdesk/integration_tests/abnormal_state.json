@@ -1,35 +1,35 @@
-{
-  "agents": {
-    "updated_at": "2121-11-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "contacts"
+      }
+    }
   },
-  "companies": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "satisfaction_ratings"
+      }
+    }
   },
-  "contacts": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "conversations": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "groups": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "roles": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "satisfaction_ratings": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "skills": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "surveys": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "tickets": {
-    "updated_at": "2121-11-01T00:00:00Z"
-  },
-  "time_entries": {
-    "updated_at": "2121-11-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-11-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "tickets"
+      }
+    }
   }
-}
+]

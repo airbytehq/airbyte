@@ -2,8 +2,19 @@
   "streams": [
     {
       "stream": {
-        "name": "employee",
-        "json_schema": {},
+        "name": "custom_reports_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "zipcode": {
+              "type": ["null", "string"]
+            },
+            "terminationDate": {
+              "type": ["null", "string"]
+            }
+          }
+        },
         "supported_sync_modes": ["full_refresh"],
         "supported_destination_sync_modes": ["overwrite", "append_dedup"]
       },

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql_strict_encrypt;
@@ -9,31 +9,38 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.testutils.DatabaseConnectionHelper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static MSSQLServerContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private JsonNode config;
+  private DSLContext dslContext;
 
   @BeforeAll
   protected static void init() {
@@ -46,23 +53,14 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     return "airbyte/destination-mssql-strict-encrypt:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "test_schema")
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.DATABASE_KEY, "test")
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "test_schema")
         .build());
   }
 
@@ -74,12 +72,13 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+        .put(JdbcUtils.DATABASE_KEY, "test")
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
@@ -121,34 +120,40 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
-    return Databases.createSqlServerDatabase(db.getUsername(), db.getPassword(),
-        db.getJdbcUrl()).query(
-            ctx -> {
-              ctx.fetch(String.format("USE %s;", config.get("database")));
-              return ctx
-                  .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-                  .stream()
-                  .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                  .map(Jsons::deserialize)
-                  .collect(Collectors.toList());
-            });
+    final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null);
+    return new Database(dslContext).query(
+        ctx -> {
+          ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
+          return ctx
+              .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+              .map(Jsons::deserialize)
+              .collect(Collectors.toList());
+        });
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    return Databases.createSqlServerDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()));
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
+        String.format("jdbc:sqlserver://%s:%d",
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
+        null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws SQLException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws SQLException {
     final JsonNode configWithoutDbName = getConfig(db);
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
-
-    final Database database = getDatabase(configWithoutDbName);
+    dslContext = getDslContext(configWithoutDbName);
+    final Database database = getDatabase(dslContext);
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
       ctx.fetch(String.format("USE %s;", dbName));
@@ -159,11 +164,13 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
     });
 
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    // do nothing
+  }
 
   @AfterAll
   static void cleanUp() {

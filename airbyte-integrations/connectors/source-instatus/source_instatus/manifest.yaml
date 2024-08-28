@@ -1,0 +1,261 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    extractor:
+      field_path: []
+
+  user_field_selector:
+    extractor:
+      field_path: ["user"]
+
+  requester:
+    url_base: "https://api.instatus.com/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+
+  api_error_handler_requester:
+    $ref: "#/definitions/requester"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            # 401 This user is not an owner of the status page
+            - http_codes: [401]
+              action: IGNORE
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [429]
+              action: RETRY
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: "Retry-After"
+
+  public_data_requester:
+    $ref: "#/definitions/api_error_handler_requester"
+
+  retriever:
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  user_field_retriever:
+    record_selector:
+      $ref: "#/definitions/user_field_selector"
+
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_instatus/schemas/{{ parameters['name'] }}.json"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+
+  status_pages_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "status_pages"
+      primary_key: "id"
+      path: "v2/pages"
+
+  user_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user"
+      primary_key: "id"
+      path: "v1/user"
+
+  page_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/status_pages_stream"
+        parent_key: "id"
+        partition_field: "page_id"
+
+  page_components_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "page_components"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/components"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+
+  incidents_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "incidents"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/incidents"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+    transformations:
+      - class_name: "source_instatus.components.ListAddFields"
+        fields:
+          - path: ["updates_ids"]
+            value: "{{ record['updates'] }}"
+            value_type: "string"
+
+  incident_updates_partition_router:
+    class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
+    parent_stream_configs:
+      - stream: "#/definitions/incidents_stream"
+        parent_key: "updates_ids"
+        partition_field: "incident_update_id"
+
+  incident_updates_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "incident_updates"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id }}/incident-updates/{{ stream_slice.incident_update_id }}"
+      partition_router:
+        $ref: "#/definitions/incident_updates_partition_router"
+
+  maintenances_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "maintenances"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/maintenances"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+    transformations:
+      - class_name: "source_instatus.components.ListAddFields"
+        fields:
+          - path: ["updates_ids"]
+            value: "{{ record['updates'] }}"
+            value_type: "string"
+
+  maintenance_updates_partition_router:
+    class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
+    parent_stream_configs:
+      - stream: "#/definitions/maintenances_stream"
+        parent_key: "updates_ids"
+        partition_field: "maintenance_update_id"
+
+  maintenance_updates_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "maintenance_updates"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
+      partition_router:
+        $ref: "#/definitions/maintenance_updates_partition_router"
+
+  templates_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "templates"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/templates"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+
+  team_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "team"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/user_field_retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/team"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+
+  subscribers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "subscribers"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/subscribers"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+
+  metrics_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "metrics"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/api_error_handler_requester"
+        path: "v1/{{ stream_slice.page_id }}/metrics"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
+
+  page_url_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/status_pages_stream"
+        parent_key: "subdomain"
+        partition_field: "url"
+
+  public_data_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "public_data"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/public_data_requester"
+        path: "https://{{ stream_slice.url }}.instatus.com/summary.json"
+      partition_router:
+        $ref: "#/definitions/page_url_partition_router"
+
+streams:
+  - "#/definitions/status_pages_stream"
+  - "#/definitions/page_components_stream"
+  - "#/definitions/incidents_stream"
+  - "#/definitions/incident_updates_stream"
+  - "#/definitions/maintenances_stream"
+  - "#/definitions/maintenance_updates_stream"
+  - "#/definitions/templates_stream"
+  - "#/definitions/team_stream"
+  - "#/definitions/subscribers_stream"
+  - "#/definitions/metrics_stream"
+  - "#/definitions/user_stream"
+  - "#/definitions/public_data_stream"
+
+check:
+  stream_names:
+    - "status_pages"

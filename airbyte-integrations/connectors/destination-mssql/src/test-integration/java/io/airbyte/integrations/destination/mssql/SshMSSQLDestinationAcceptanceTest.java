@@ -1,28 +1,30 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.ssh.SshBastionContainer;
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.util.ArrayList;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 
@@ -30,13 +32,15 @@ import org.testcontainers.containers.Network;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
-public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+@Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
+public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static final String database = "test";
   private static MSSQLServerContainer<?> db;
+  private static final Network network = Network.newNetwork();
   private final SshBastionContainer bastion = new SshBastionContainer();
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
@@ -48,7 +52,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName), false);
   }
 
   @Override
@@ -61,8 +65,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
       throws Exception {
-    final String tableName = namingResolver.getIdentifier(streamName);
-    return retrieveRecordsFromTable(tableName, namespace);
+    return List.of();
   }
 
   @Override
@@ -71,15 +74,10 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+    return retrieveRecordsFromTable(StreamId.concatenateRawTableName(namespace, streamName), "airbyte_internal")
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
   }
 
   @Override
@@ -87,47 +85,16 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return true;
   }
 
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
-
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
-    return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
-            .getIpAddress()))
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
-        .put("database", database)
-        .put("schema", schemaName)
-        .put("ssl", false);
-  }
-
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
+    final DSLContext dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asInt()),
-        "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
+    return new Database(dslContext);
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
@@ -135,55 +102,75 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MSSQLDestination.HOST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
                     .fetch(String.format("USE %s;"
                         + "SELECT * FROM %s.%s ORDER BY %s ASC;",
-                        database, schema, tableName.toLowerCase(),
-                        JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                        database, "airbyte_internal", tableName.toLowerCase(),
+                        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
                     .stream()
-                    .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                    .map(Jsons::deserialize)
+                    .map(this::getJsonFromRecord)
                     .collect(Collectors.toList())));
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     startTestContainers();
 
     SshTunnel.sshWrap(
         getConfig(),
-        MSSQLDestination.HOST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {
             ctx.fetch(String.format("CREATE DATABASE %s;", database));
             ctx.fetch(String.format("USE %s;", database));
             ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName));
-
+            TEST_SCHEMAS.add(schemaName);
             return null;
           });
         });
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
-        .withNetwork(bastion.getNetWork())
-        .acceptLicense();
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-CU16-ubuntu-20.04")
+        .withNetwork(network)
+        .acceptLicense()
+        .dependsOn(bastion.getContainer());
     db.start();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new MSSQLTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
 }

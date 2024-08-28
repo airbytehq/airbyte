@@ -11,14 +11,17 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "user": {
       "$ref": "user.json"
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
+    },
+    "comment_id": {
+      "type": "integer"
     }
   }
 }

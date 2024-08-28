@@ -1,13 +1,16 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import com.clickhouse.client.ClickHouseFormat;
+import com.clickhouse.jdbc.ClickHouseConnection;
+import com.clickhouse.jdbc.ClickHouseStatement;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,9 +18,6 @@ import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.yandex.clickhouse.ClickHouseConnection;
-import ru.yandex.clickhouse.ClickHouseStatement;
-import ru.yandex.clickhouse.domain.ClickHouseFormat;
 
 public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
@@ -36,32 +36,35 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s String,\n"
-            + "%s String,\n"
-            + "%s DateTime64(3, 'GMT') DEFAULT now(),\n"
-            + "PRIMARY KEY(%s)\n"
-            + ")\n"
-            + "ENGINE = MergeTree;\n",
+        """
+          CREATE TABLE IF NOT EXISTS `%s`.`%s` (
+          %s String,
+          %s String,
+          %s DateTime64(3, 'GMT') DEFAULT now(),
+          %s DateTime64(3, 'GMT') NULL,
+          PRIMARY KEY(%s)
+          )
+          ENGINE = MergeTree;
+        """,
         schemaName, tableName,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-        JavaBaseConstants.COLUMN_NAME_AB_ID);
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID);
   }
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
-    final StringBuilder appendedQueries = new StringBuilder();
+    // Note: ClickHouse does not support multi query
     for (final String query : queries) {
-      appendedQueries.append(query);
+      database.execute(query);
     }
-    database.execute(appendedQueries.toString());
   }
 
   @Override
   public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
+                                    final List<PartialAirbyteMessage> records,
                                     final String schemaName,
                                     final String tmpTableName)
       throws SQLException {
@@ -78,11 +81,12 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
-        ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
-        ClickHouseStatement sth = conn.createStatement();
+        final ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
+        final ClickHouseStatement sth = conn.createStatement();
         sth.write() // Write API entrypoint
             .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
-            .data(tmpFile, ClickHouseFormat.CSV) // specify input
+            .format(ClickHouseFormat.CSV) // set a format
+            .data(tmpFile.getAbsolutePath()) // specify input
             .send();
 
       } catch (final Exception e) {
@@ -100,6 +104,15 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         }
       }
     });
+  }
+
+  @Override
+  protected void insertRecordsInternalV2(final JdbcDatabase database,
+                                         final List<PartialAirbyteMessage> records,
+                                         final String schemaName,
+                                         final String tableName)
+      throws Exception {
+    insertRecordsInternal(database, records, schemaName, tableName);
   }
 
 }

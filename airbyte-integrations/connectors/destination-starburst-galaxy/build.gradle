@@ -1,0 +1,48 @@
+plugins {
+    id 'application'
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.2.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyDestination'
+}
+
+dependencies {
+    implementation project(path: ':airbyte-integrations:connectors:destination-s3')
+
+    implementation ('io.trino:trino-iceberg:411') {exclude group: 'commons-cli', module: 'commons-cli'}
+    implementation ('io.trino:trino-main:411') {exclude group: 'commons-cli', module: 'commons-cli'}
+    implementation ('io.trino:trino-jdbc:411') {exclude group: 'commons-cli', module: 'commons-cli'}
+
+    implementation 'org.apache.avro:avro:1.11.1'
+
+    implementation 'org.apache.iceberg:iceberg-core:1.1.0'
+    implementation 'org.apache.iceberg:iceberg-bundled-guava:1.1.0'
+    implementation 'org.apache.iceberg:iceberg-aws:1.1.0'
+    implementation 'org.apache.iceberg:iceberg-parquet:1.1.0'
+
+    implementation 'org.apache.hadoop:hadoop-common:3.3.3'
+    implementation "org.apache.hadoop:hadoop-aws:3.3.2"
+
+    implementation 'software.amazon.awssdk:bundle:2.20.20'
+    implementation 'software.amazon.awssdk:url-connection-client:2.20.20'
+
+    implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+
+    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+}

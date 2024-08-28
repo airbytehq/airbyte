@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import logging
 import os
 import shutil
 import sys
@@ -13,13 +14,13 @@ from pathlib import Path
 
 import jsonref
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit, get_secret_values
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader, check_config_against_spec_or_exit
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 from pytest import raises as pytest_raises
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 MODULE = sys.modules[__name__]
@@ -58,12 +59,15 @@ def spec_object():
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
-    with pytest_raises(Exception) as ex_info:
+
+    with pytest_raises(AirbyteTracedException) as ex_info:
         check_config_against_spec_or_exit(config, spec_object)
-        exc = ex_info.value
-        traceback.print_exception(type(exc), exc, exc.__traceback__)
-        out, err = capsys.readouterr()
-        assert "really_a_secret" not in out + err
+
+    exc = ex_info.value
+    traceback.print_exception(type(exc), exc, exc.__traceback__)
+    out, err = capsys.readouterr()
+    assert "really_a_secret" not in out + err
+    assert exc.failure_type == FailureType.config_error, "failure_type should be config_error"
 
 
 def test_should_not_fail_validation_for_valid_config(spec_object):
@@ -189,66 +193,14 @@ class TestResourceSchemaLoader:
 
 
 @pytest.mark.parametrize(
-    "schema,config,expected",
+    "limit, record_count, expected",
     [
-        (
-            {
-                "type": "object",
-                "properties": {
-                    "credentials": {
-                        "type": "object",
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "option_title": {
-                                        "type": "string",
-                                        "const": "OAuth Credentials",
-                                    }
-                                },
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "option_title": {"type": "string"},
-                                    "personal_access_token": {
-                                        "type": "string",
-                                        "airbyte_secret": True,
-                                    },
-                                },
-                            },
-                        ],
-                    },
-                    "repository": {"type": "string"},
-                    "start_date": {"type": "string"},
-                },
-            },
-            {"credentials": {"personal_access_token": "secret"}},
-            ["secret"],
-        ),
-        (
-            {
-                "type": "object",
-                "properties": {
-                    "access_token": {"type": "string", "airbyte_secret": True},
-                    "whatever": {"type": "string", "airbyte_secret": False},
-                },
-            },
-            {"access_token": "secret"},
-            ["secret"],
-        ),
-        (
-            {
-                "type": "object",
-                "properties": {
-                    "access_token": {"type": "string", "airbyte_secret": False},
-                    "whatever": {"type": "string", "airbyte_secret": False},
-                },
-            },
-            {"access_token": "secret"},
-            [],
-        ),
+        pytest.param(None, sys.maxsize, False, id="test_no_limit"),
+        pytest.param(1, 1, True, id="test_record_count_is_exactly_the_limit"),
+        pytest.param(1, 2, True, id="test_record_count_is_more_than_the_limit"),
+        pytest.param(1, 0, False, id="test_record_count_is_less_than_the_limit"),
     ],
 )
-def test_get_secret_values(schema, config, expected):
-    assert get_secret_values(schema, config) == expected
+def test_internal_config(limit, record_count, expected):
+    config = InternalConfig(_limit=limit)
+    assert config.is_limit_reached(record_count) == expected

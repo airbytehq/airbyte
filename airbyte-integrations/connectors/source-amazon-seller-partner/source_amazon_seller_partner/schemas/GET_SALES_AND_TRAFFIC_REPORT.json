@@ -1,0 +1,115 @@
+{
+  "title": "Seller Sales and Traffic Business Report - By Asin",
+  "description": "Seller retail analytics reports - Sales and Traffic Business Report",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "queryEndDate": {
+      "description": "The date and time when the query for sales and traffic data ends.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "parentAsin": {
+      "description": "The parent ASIN of the product if it is part of a variation.",
+      "type": ["null", "string"]
+    },
+    "childAsin": {
+      "description": "The child ASIN (Amazon Standard Identification Number) of the product.",
+      "type": ["null", "string"]
+    },
+    "sku": {
+      "description": "The Stock Keeping Unit (SKU) of the product.",
+      "type": ["null", "string"]
+    },
+    "salesByAsin": {
+      "description": "Sales data grouped by ASIN",
+      "type": "object",
+      "properties": {
+        "unitsOrdered": {
+          "description": "The total units of the product ordered.",
+          "type": ["null", "number"]
+        },
+        "orderedProductSales": {
+          "description": "Sales information for each product sold",
+          "type": "object",
+          "properties": {
+            "amount": {
+              "description": "The total amount of ordered product sales.",
+              "type": ["null", "number"]
+            },
+            "currencyCode": {
+              "description": "The currency code of the sales amount.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "totalOrderItems": {
+          "description": "The total number of order items placed.",
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "trafficByAsin": {
+      "description": "Traffic data grouped by ASIN",
+      "type": "object",
+      "properties": {
+        "browserSessions": {
+          "description": "The total number of browsing sessions.",
+          "type": ["null", "number"]
+        },
+        "mobileAppSessions": {
+          "description": "The total number of sessions from mobile apps.",
+          "type": ["null", "number"]
+        },
+        "sessions": {
+          "description": "The total number of sessions across all platforms.",
+          "type": ["null", "number"]
+        },
+        "browserSessionPercentage": {
+          "description": "The percentage of browsing sessions in relation to total sessions.",
+          "type": ["null", "number"]
+        },
+        "mobileAppSessionPercentage": {
+          "description": "The percentage of sessions from mobile apps in relation to total sessions.",
+          "type": ["null", "number"]
+        },
+        "sessionPercentage": {
+          "description": "The percentage of sessions in relation to total sessions.",
+          "type": ["null", "number"]
+        },
+        "browserPageViews": {
+          "description": "The total number of page views from browsers.",
+          "type": ["null", "number"]
+        },
+        "mobileAppPageViews": {
+          "description": "The total number of page views from mobile apps.",
+          "type": ["null", "number"]
+        },
+        "pageViews": {
+          "description": "The total number of page views across all platforms.",
+          "type": ["null", "number"]
+        },
+        "browserPageViewsPercentage": {
+          "description": "The percentage of page views from browsers in relation to total views.",
+          "type": ["null", "number"]
+        },
+        "mobileAppPageViewsPercentage": {
+          "description": "The percentage of page views from mobile apps in relation to total views.",
+          "type": ["null", "number"]
+        },
+        "pageViewsPercentage": {
+          "description": "The percentage of page views in relation to total views.",
+          "type": ["null", "number"]
+        },
+        "buyBoxPercentage": {
+          "description": "The percentage of views where the product was in the buy box.",
+          "type": ["null", "number"]
+        },
+        "unitSessionPercentage": {
+          "description": "The percentage of product views that led to sessions.",
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}

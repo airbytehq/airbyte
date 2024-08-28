@@ -1,10 +1,10 @@
-FROM fishtownanalytics/dbt:0.21.1
+FROM fishtownanalytics/dbt:1.0.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install curl & gnupg dependencies
 USER root
 WORKDIR /tmp
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --allow-insecure-repositories && apt-get install -y \
     wget \
     curl \
     unzip \
@@ -49,12 +49,17 @@ COPY dbt-project-template-mssql/* ./dbt-template/
 
 # Install python dependencies
 WORKDIR /airbyte/base_python_structs
+
+# workaround for https://github.com/yaml/pyyaml/issues/601
+# this should be fixed in the airbyte/base-airbyte-protocol-python image
+RUN pip install "Cython<3.0" "pyyaml==5.4" --no-build-isolation
+
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-# Based of https://github.com/dbt-msft/dbt-sqlserver/tree/v0.21.1
-RUN pip install dbt-sqlserver==0.21.1
+# Based of https://github.com/dbt-msft/dbt-sqlserver/tree/v1.0.0
+RUN pip install dbt-sqlserver==1.0.0
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies

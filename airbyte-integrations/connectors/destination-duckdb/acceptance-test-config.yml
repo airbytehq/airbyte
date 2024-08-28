@@ -1,0 +1,10 @@
+connector_image: airbyte/destination-duckdb:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: integration_tests/spec.json
+        config_path: "integration_tests/config.json"
+  connection:
+    tests:
+      - config_path: "integration_tests/config.json"
+        status: "succeed"

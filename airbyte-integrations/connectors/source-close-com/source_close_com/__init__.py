@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 
+from .datetime_incremental_sync import CustomDatetimeIncrementalSync
 from .source import SourceCloseCom
 
-__all__ = ["SourceCloseCom"]
+__all__ = ["SourceCloseCom", "CustomDatetimeIncrementalSync"]

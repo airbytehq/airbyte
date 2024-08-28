@@ -3,34 +3,34 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "survey_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "user_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "agent_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "feedback": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "group_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "ticket_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ratings": {
-      "type": "object"
+      "type": ["null", "object"]
     }
   }
 }

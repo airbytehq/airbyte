@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - customapi.goldcast.io
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-goldcast
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.3@sha256:c313c25af0617f5879361e684c956ac25ac1122beaf311c967e5b7a9b45ded79
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c2c25d04-9bb1-4171-8a7a-bb7cead8add0
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-goldcast
+  githubIssueLabel: source-goldcast
+  icon: goldcast.svg
+  license: MIT
+  name: Goldcast
+  releaseDate: 2024-07-04
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/goldcast
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+metadataSpecVersion: "1.0"

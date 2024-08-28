@@ -1,6 +1,6 @@
 {{ config(
     sort = "_airbyte_emitted_at",
-    schema = "_airbyte_test_normalization",
+    schema = "_airbyte_test_normalization_xjvlg",
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
@@ -17,5 +17,5 @@ from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_partit
 {{ cross_join_unnest('partition', 'data') }}
 where 1 = 1
 and data is not null
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "Address1": {
       "type": "string",

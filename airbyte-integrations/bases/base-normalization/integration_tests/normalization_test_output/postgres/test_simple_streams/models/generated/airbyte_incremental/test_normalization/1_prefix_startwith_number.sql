@@ -19,5 +19,5 @@ from {{ ref('1_prefix_startwith_number_scd') }}
 -- 1_prefix_startwith_number from {{ source('test_normalization', '_airbyte_raw_1_prefix_startwith_number') }}
 where 1 = 1
 and _airbyte_active_row = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/kafka",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/kafka",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -123,7 +123,8 @@
                   "GSSAPI",
                   "OAUTHBEARER",
                   "SCRAM-SHA-256",
-                  "SCRAM-SHA-512"
+                  "SCRAM-SHA-512",
+                  "PLAIN"
                 ]
               },
               "sasl_jaas_config": {

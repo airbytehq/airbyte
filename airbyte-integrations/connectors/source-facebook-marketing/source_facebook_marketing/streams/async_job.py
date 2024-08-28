@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
+import backoff
 import pendulum
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
@@ -15,9 +16,21 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookResponse
+from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from pendulum.duration import Duration
+from source_facebook_marketing.streams.common import retry_pattern
+
+from ..utils import validate_start_date
 
 logger = logging.getLogger("airbyte")
+
+
+# `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
+# It still has http status 200 but the object can not be constructed from what was fetched from API.
+# Also, it does not happen while making a call to the API, but later - when parsing the result,
+# that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -158,7 +171,13 @@ class ParentAsyncJob(AsyncJob):
         new_jobs = []
         for job in self._jobs:
             if job.failed:
-                new_jobs.extend(job.split_job())
+                try:
+                    new_jobs.extend(job.split_job())
+                except ValueError as split_limit_error:
+                    logger.error(split_limit_error)
+                    logger.info(f'can\'t split "{job}" any smaller, attempting to retry the job.')
+                    job.restart()
+                    new_jobs.append(job)
             else:
                 new_jobs.append(job)
         return new_jobs
@@ -171,10 +190,15 @@ class ParentAsyncJob(AsyncJob):
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
-    job_timeout = pendulum.duration(hours=1)
     page_size = 100
 
-    def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
+    def __init__(
+        self,
+        edge_object: Union[AdAccount, Campaign, AdSet, Ad],
+        params: Mapping[str, Any],
+        job_timeout: Duration,
+        **kwargs,
+    ):
         """Initialize
 
         :param api: FB API
@@ -187,6 +211,7 @@ class InsightAsyncJob(AsyncJob):
             "since": self._interval.start.to_date_string(),
             "until": self._interval.end.to_date_string(),
         }
+        self._job_timeout = job_timeout
 
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
@@ -202,7 +227,7 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(AdSet)
         elif isinstance(self._edge_object, AdSet):
             return self._split_by_edge_class(Ad)
-        raise RuntimeError("The job is already splitted to the smallest size.")
+        raise ValueError("The job is already splitted to the smallest size.")
 
     def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
         """Split insight job by creating insight jobs from lower edge object, i.e.
@@ -225,14 +250,24 @@ class InsightAsyncJob(AsyncJob):
         params = dict(copy.deepcopy(self._params))
         # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
-        params.update(fields=[pk_name], level=level)
+        new_start = validate_start_date(new_start)
         params["time_range"].update(since=new_start.to_date_string())
+        params.update(fields=[pk_name], level=level)
         params.pop("time_increment")  # query all days
         result = self._edge_object.get_insights(params=params)
         ids = set(row[pk_name] for row in result)
         logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
-        jobs = [InsightAsyncJob(api=self._api, edge_object=edge_class(pk), params=self._params, interval=self._interval) for pk in ids]
+        jobs = [
+            InsightAsyncJob(
+                api=self._api,
+                edge_object=edge_class(pk),
+                params=self._params,
+                interval=self._interval,
+                job_timeout=self._job_timeout,
+            )
+            for pk in ids
+        ]
         return jobs
 
     def start(self):
@@ -302,7 +337,11 @@ class InsightAsyncJob(AsyncJob):
             return
 
         if batch is not None:
-            self._job.api_get(batch=batch, success=self._batch_success_handler, failure=self._batch_failure_handler)
+            self._job.api_get(
+                batch=batch,
+                success=self._batch_success_handler,
+                failure=self._batch_failure_handler,
+            )
         else:
             self._job = self._job.api_get()
             self._check_status()
@@ -316,8 +355,8 @@ class InsightAsyncJob(AsyncJob):
         percent = self._job["async_percent_completion"]
         logger.info(f"{self}: is {percent} complete ({job_status})")
 
-        if self.elapsed_time > self.job_timeout:
-            logger.info(f"{self}: run more than maximum allowed time {self.job_timeout}.")
+        if self.elapsed_time > self._job_timeout:
+            logger.info(f"{self}: run more than maximum allowed time {self._job_timeout}.")
             self._finish_time = pendulum.now()
             self._failed = True
             return True
@@ -332,6 +371,7 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
+    @backoff_policy
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         if not self._job or self.failed:

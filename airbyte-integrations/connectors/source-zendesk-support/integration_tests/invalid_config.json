@@ -1,5 +1,6 @@
 {
-  "auth_method": {
+  "credentials": {
+    "credentials": "api_token",
     "api_token": "<broken token>",
     "email": "broken.email@invalid.config"
   },

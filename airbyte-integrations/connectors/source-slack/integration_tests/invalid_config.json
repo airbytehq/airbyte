@@ -5,5 +5,6 @@
   },
   "start_date": "2022-07-22T20:00:00Z",
   "lookback_window": 2,
-  "join_channels": true
+  "join_channels": true,
+  "channel_filter": []
 }

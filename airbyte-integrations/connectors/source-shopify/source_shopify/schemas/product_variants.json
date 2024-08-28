@@ -1,0 +1,219 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the variant",
+      "type": ["null", "integer"]
+    },
+    "product_id": {
+      "description": "The unique identifier for the product associated with the variant",
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "description": "The title of the variant",
+      "type": ["null", "string"]
+    },
+    "price": {
+      "description": "The price of the variant",
+      "type": ["null", "number"]
+    },
+    "sku": {
+      "description": "The unique SKU (stock keeping unit) of the variant",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "The position of the variant in the product's list of variants",
+      "type": ["null", "integer"]
+    },
+    "inventory_policy": {
+      "description": "The inventory policy for the variant",
+      "type": ["null", "string"]
+    },
+    "compare_at_price": {
+      "description": "The original price of the variant before any discount",
+      "type": ["null", "string"]
+    },
+    "fulfillment_service": {
+      "description": "The fulfillment service for the variant",
+      "type": ["null", "string"]
+    },
+    "inventory_management": {
+      "description": "The method used to manage inventory for the variant",
+      "type": ["null", "string"]
+    },
+    "option1": {
+      "description": "The value for option 1 of the variant",
+      "type": ["null", "string"]
+    },
+    "option2": {
+      "description": "The value for option 2 of the variant",
+      "type": ["null", "string"]
+    },
+    "option3": {
+      "description": "The value for option 3 of the variant",
+      "type": ["null", "string"]
+    },
+    "options": {
+      "description": "List of product options applied to the variant.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "description": "The product option’s name.",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The product option’s value.",
+            "type": ["null", "string"]
+          },
+          "option_value": {
+            "description": "The product option’s value object.",
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "description": "A globally-unique ID.",
+                "type": ["null", "string"]
+              },
+              "name": {
+                "description": "The name of the product option value.",
+                "type": ["null", "string"]
+              },
+              "has_variants": {
+                "description": "Whether the product option value has any linked variants.",
+                "type": ["null", "boolean"]
+              },
+              "swatch": {
+                "description": "The swatch associated with the product option value.",
+                "type": ["null", "object"],
+                "properties": {
+                  "color": {
+                    "description": "The color representation of the swatch.",
+                    "type": ["null", "string"]
+                  },
+                  "image": {
+                    "description": "An image representation of the swatch.",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "description": "A globally-unique ID of an image representation of the swatch.",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "created_at": {
+      "description": "The date and time when the variant was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the variant was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "taxable": {
+      "description": "Indicates whether taxes are applied to the variant",
+      "type": ["null", "boolean"]
+    },
+    "barcode": {
+      "description": "The barcode associated with the variant",
+      "type": ["null", "string"]
+    },
+    "grams": {
+      "description": "The weight of the variant in grams",
+      "type": ["null", "integer"]
+    },
+    "image_id": {
+      "description": "The unique identifier for the image associated with the variant",
+      "type": ["null", "integer"]
+    },
+    "weight": {
+      "description": "The weight of the variant",
+      "type": ["null", "number"]
+    },
+    "weight_unit": {
+      "description": "The unit of measurement for the weight of the variant",
+      "type": ["null", "string"]
+    },
+    "inventory_item_id": {
+      "description": "The unique identifier for the inventory item associated with the variant",
+      "type": ["null", "integer"]
+    },
+    "inventory_quantity": {
+      "description": "The current inventory quantity for the variant",
+      "type": ["null", "integer"]
+    },
+    "old_inventory_quantity": {
+      "description": "The previous inventory quantity for the variant",
+      "type": ["null", "integer"]
+    },
+    "presentment_prices": {
+      "description": "The prices of the variant for presentation in different currencies",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "price": {
+            "description": "The price of the variant in a different currency",
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "The amount of the price",
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "description": "The currency code of the price",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "compare_at_price": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "The amount of the price",
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "description": "The currency code of the price",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "requires_shipping": {
+      "description": "Indicates whether the variant requires shipping",
+      "type": ["null", "boolean"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier for the variant used by the GraphQL Admin API",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the variant is listed",
+      "type": ["null", "string"]
+    },
+    "available_for_sale": {
+      "description": "Whether the product variant is available for sale.",
+      "type": ["null", "boolean"]
+    },
+    "display_name": {
+      "description": "Display name of the variant, based on product's title + variant's title.",
+      "type": ["null", "string"]
+    },
+    "tax_code": {
+      "description": "The tax code for the product variant.",
+      "type": ["null", "string"]
+    }
+  }
+}

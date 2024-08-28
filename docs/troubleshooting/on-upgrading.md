@@ -1,2 +1,0 @@
-# On Upgrading
-

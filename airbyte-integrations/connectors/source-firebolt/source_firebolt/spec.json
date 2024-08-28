@@ -1,0 +1,45 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/firebolt",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Firebolt Spec",
+    "type": "object",
+    "required": ["client_id", "client_secret", "account", "database", "engine"],
+    "additionalProperties": true,
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "Firebolt service account ID.",
+        "examples": ["bbl9qth066hmxkwyb0hy2iwk8ktez9dz"]
+      },
+      "client_secret": {
+        "type": "string",
+        "title": "Client Secret",
+        "description": "Firebolt secret, corresponding to the service account ID.",
+        "airbyte_secret": true
+      },
+      "account": {
+        "type": "string",
+        "title": "Account",
+        "description": "Firebolt account to login."
+      },
+      "host": {
+        "type": "string",
+        "title": "Host",
+        "description": "The host name of your Firebolt database.",
+        "examples": ["api.app.firebolt.io"]
+      },
+      "database": {
+        "type": "string",
+        "title": "Database",
+        "description": "The database to connect to."
+      },
+      "engine": {
+        "type": "string",
+        "title": "Engine",
+        "description": "Engine name to connect to."
+      }
+    }
+  }
+}

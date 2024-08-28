@@ -1,0 +1,6 @@
+{
+  "instance_api_url": "https://localhost:3000",
+  "username": "wrong-account-id",
+  "password": "2020-05-01T00:00:00Z",
+  "session_token": "invalid"
+}

@@ -1,0 +1,12 @@
+{
+  "credentials": {
+    "auth_type": "oauth2.0",
+    "client_id": "invalid",
+    "client_secret": "invalid",
+    "access_token": "invalid",
+    "token_expiry_date": "2023-03-15T00:11:00Z",
+    "refresh_token": "ttfqulk6gPg2TOPL4wS23m6ZBR7wEsqG"
+  },
+  "business_units": [],
+  "start_date": "2023-10-01T00:00:00Z"
+}

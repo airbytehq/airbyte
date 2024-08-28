@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
-public class MSSQLNameTransformer extends ExtendedNameTransformer {
+public class MSSQLNameTransformer extends StandardNameTransformer {
 
   @Override
-  protected String applyDefaultCase(final String input) {
+  public String applyDefaultCase(final String input) {
     return input.toUpperCase();
   }
 

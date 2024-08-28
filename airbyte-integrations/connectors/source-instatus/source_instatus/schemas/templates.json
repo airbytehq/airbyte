@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "nameTranslationId": {
+      "type": ["null", "string"]
+    },
+    "message": {
+      "type": ["null", "string"]
+    },
+    "messageTranslationId": {
+      "type": ["null", "string"]
+    },
+    "messageHtml": {
+      "type": ["null", "string"]
+    },
+    "messageHtmlTranslationId": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "notify": {
+      "type": ["null", "boolean"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "siteId": {
+      "type": ["null", "string"]
+    },
+    "importedFromStatuspage": {
+      "type": ["null", "boolean"]
+    },
+    "deletedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "components": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "status": { "type": ["null", "string"] },
+          "showUptime": { "type": ["null", "boolean"] },
+          "site": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": { "type": ["null", "string"] },
+              "name": { "type": ["null", "string"] },
+              "subdomain": { "type": ["null", "string"] },
+              "color": { "type": ["null", "string"] },
+              "logoUrl": { "type": ["null", "string"] },
+              "publicEmail": { "type": ["null", "string"] }
+            }
+          }
+        }
+      }
+    },
+    "translations": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": { "type": ["null", "string"] },
+        "message": { "type": ["null", "string"] }
+      }
+    }
+  }
+}

@@ -5,49 +5,71 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "request-date": {
-      "type": ["null", "string"]
+      "description": "The date and time the removal order was requested",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "order-id": {
+      "description": "The unique identifier for the order associated with the removal",
       "type": ["null", "string"]
     },
     "order-type": {
+      "description": "The type of the removal order",
       "type": ["null", "string"]
     },
     "order-status": {
+      "description": "The status of the removal order",
       "type": ["null", "string"]
     },
     "last-updated-date": {
-      "type": ["null", "string"]
+      "description": "The date and time when the data was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "sku": {
+      "description": "The Stock Keeping Unit for the item",
       "type": ["null", "string"]
     },
     "fnsku": {
+      "description": "The Fulfillment Network Stock Keeping Unit for the item",
       "type": ["null", "string"]
     },
     "disposition": {
+      "description": "The method used to dispose of the items",
       "type": ["null", "string"]
     },
     "requested-quantity": {
+      "description": "The quantity of items requested for removal",
       "type": ["null", "string"]
     },
     "cancelled-quantity": {
+      "description": "The quantity of items that were cancelled for removal",
       "type": ["null", "string"]
     },
     "disposed-quantity": {
+      "description": "The quantity of items that were disposed during the removal process",
       "type": ["null", "string"]
     },
     "shipped-quantity": {
+      "description": "The quantity of items that have been shipped for removal",
       "type": ["null", "string"]
     },
     "in-process-quantity": {
+      "description": "The quantity of items currently in the removal process",
       "type": ["null", "string"]
     },
     "removal-fee": {
+      "description": "The fee charged for the removal of items",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency in which the removal fee is charged",
       "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time of the data record",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

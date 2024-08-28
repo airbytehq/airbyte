@@ -1,64 +1,122 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import logging
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
+import traceback
+from http import HTTPStatus
+from itertools import chain
+from typing import Any, Generator, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
-from airbyte_cdk.utils.event_timing import create_timer
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from requests import HTTPError
+from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,
     Companies,
+    CompaniesPropertyHistory,
+    CompaniesWebAnalytics,
     ContactLists,
     Contacts,
+    ContactsFormSubmissions,
     ContactsListMemberships,
+    ContactsMergedAudit,
+    ContactsPropertyHistory,
+    ContactsWebAnalytics,
+    CustomObject,
     DealPipelines,
     Deals,
+    DealsArchived,
+    DealSplits,
+    DealsPropertyHistory,
+    DealsWebAnalytics,
     EmailEvents,
+    EmailSubscriptions,
     Engagements,
     EngagementsCalls,
+    EngagementsCallsWebAnalytics,
     EngagementsEmails,
+    EngagementsEmailsWebAnalytics,
     EngagementsMeetings,
+    EngagementsMeetingsWebAnalytics,
     EngagementsNotes,
+    EngagementsNotesWebAnalytics,
     EngagementsTasks,
-    FeedbackSubmissions,
+    EngagementsTasksWebAnalytics,
     Forms,
     FormSubmissions,
+    Goals,
+    GoalsWebAnalytics,
     LineItems,
+    LineItemsWebAnalytics,
     MarketingEmails,
     Owners,
+    OwnersArchived,
     Products,
-    PropertyHistory,
-    Quotes,
+    ProductsWebAnalytics,
     SubscriptionChanges,
     TicketPipelines,
     Tickets,
+    TicketsWebAnalytics,
+    WebAnalyticsStream,
     Workflows,
 )
 
+"""
+https://github.com/airbytehq/oncall/issues/3800
+we use start date 2006-01-01  as date of creation of Hubspot to retrieve all data if start date was not provided
+
+"""
+DEFAULT_START_DATE = "2006-06-01T00:00:00Z"
+
 
 class SourceHubspot(AbstractSource):
+    logger = logging.getLogger("airbyte")
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
+        common_params = self.get_common_params(config=config)
         alive = True
         error_msg = None
-        common_params = self.get_common_params(config=config)
         try:
             contacts = Contacts(**common_params)
             _ = contacts.properties
         except HTTPError as error:
             alive = False
             error_msg = repr(error)
-
+            if error.response.status_code == HTTPStatus.BAD_REQUEST:
+                response_json = error.response.json()
+                error_msg = f"400 Bad Request: {response_json['message']}, please check if provided credentials are valid."
+        except HubspotInvalidAuth as e:
+            alive = False
+            error_msg = repr(e)
         return alive, error_msg
+
+    def get_granted_scopes(self, authenticator):
+        try:
+            access_token = authenticator.get_access_token()
+            url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
+            error_resolution = ErrorResolution(
+                ResponseAction.RETRY, FailureType.transient_error, "Internal error attempting to get scopes."
+            )
+            error_mapping = {500: error_resolution, 502: error_resolution, 504: error_resolution}
+            http_client = HttpClient(
+                name="get hubspot granted scopes client",
+                logger=self.logger,
+                error_handler=HttpStatusErrorHandler(logger=self.logger, error_mapping=error_mapping),
+            )
+            request, response = http_client.send_request("get", url, request_kwargs={})
+            response.raise_for_status()
+            response_json = response.json()
+            granted_scopes = response_json["scopes"]
+            return granted_scopes
+        except Exception as e:
+            return False, repr(e)
 
     @staticmethod
     def get_api(config: Mapping[str, Any]) -> API:
@@ -66,14 +124,12 @@ class SourceHubspot(AbstractSource):
         return API(credentials=credentials)
 
     def get_common_params(self, config) -> Mapping[str, Any]:
-        start_date = config.get("start_date")
+        start_date = config.get("start_date", DEFAULT_START_DATE)
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        common_params = dict(api=api, start_date=start_date, credentials=credentials)
-
-        if credentials.get("credentials_title") == "OAuth Credentials":
-            common_params["authenticator"] = api.get_authenticator(credentials)
-        return common_params
+        # Additional configuration is necessary for testing certain streams due to their specific restrictions.
+        acceptance_test_config = config.get("acceptance_test_config", {})
+        return dict(api=api, start_date=start_date, credentials=credentials, acceptance_test_config=acceptance_test_config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
@@ -83,96 +139,116 @@ class SourceHubspot(AbstractSource):
             Companies(**common_params),
             ContactLists(**common_params),
             Contacts(**common_params),
+            ContactsFormSubmissions(**common_params),
             ContactsListMemberships(**common_params),
+            ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
+            DealSplits(**common_params),
             Deals(**common_params),
+            DealsArchived(**common_params),
             EmailEvents(**common_params),
+            EmailSubscriptions(**common_params),
             Engagements(**common_params),
             EngagementsCalls(**common_params),
             EngagementsEmails(**common_params),
             EngagementsMeetings(**common_params),
             EngagementsNotes(**common_params),
             EngagementsTasks(**common_params),
-            FeedbackSubmissions(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
+            Goals(**common_params),
             LineItems(**common_params),
             MarketingEmails(**common_params),
             Owners(**common_params),
+            OwnersArchived(**common_params),
             Products(**common_params),
-            PropertyHistory(**common_params),
+            ContactsPropertyHistory(**common_params),
+            CompaniesPropertyHistory(**common_params),
+            DealsPropertyHistory(**common_params),
             SubscriptionChanges(**common_params),
             Tickets(**common_params),
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
 
-        credentials_title = credentials.get("credentials_title")
-        if credentials_title == "API Key Credentials":
-            streams.append(Quotes(**common_params))
+        enable_experimental_streams = "enable_experimental_streams" in config and config["enable_experimental_streams"]
 
-        return streams
+        if enable_experimental_streams:
+            streams.extend(
+                [
+                    ContactsWebAnalytics(**common_params),
+                    CompaniesWebAnalytics(**common_params),
+                    DealsWebAnalytics(**common_params),
+                    TicketsWebAnalytics(**common_params),
+                    EngagementsCallsWebAnalytics(**common_params),
+                    EngagementsEmailsWebAnalytics(**common_params),
+                    EngagementsMeetingsWebAnalytics(**common_params),
+                    EngagementsNotesWebAnalytics(**common_params),
+                    EngagementsTasksWebAnalytics(**common_params),
+                    GoalsWebAnalytics(**common_params),
+                    LineItemsWebAnalytics(**common_params),
+                    ProductsWebAnalytics(**common_params),
+                ]
+            )
 
-    def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Iterator[AirbyteMessage]:
-        """
-        This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.
-        """
-        connector_state = copy.deepcopy(state or {})
-        logger.info(f"Starting syncing {self.name}")
-        config, internal_config = split_config(config)
-        # TODO assert all streams exist in the connector
-        # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self.streams(config)}
-        self._stream_to_instance_map = stream_instances
-        with create_timer(self.name) as timer:
-            for configured_stream in catalog.streams:
-                stream_instance = stream_instances.get(configured_stream.stream.name)
-                if not stream_instance and configured_stream.stream.name == "quotes":
-                    logger.warning("Stream `quotes` does not exist in the source. Skip reading `quotes` stream.")
-                    continue
-                if not stream_instance:
-                    raise KeyError(
-                        f"The requested stream {configured_stream.stream.name} was not found in the source. Available streams: {stream_instances.keys()}"
-                    )
+        api = API(credentials=credentials)
+        if api.is_oauth2():
+            authenticator = api.get_authenticator()
+            granted_scopes = self.get_granted_scopes(authenticator)
+            self.logger.info(f"The following scopes were granted: {granted_scopes}")
 
-                try:
-                    yield from self._read_stream(
-                        logger=logger,
-                        stream_instance=stream_instance,
-                        configured_stream=configured_stream,
-                        connector_state=connector_state,
-                        internal_config=internal_config,
-                    )
-                except Exception as e:
-                    logger.exception(f"Encountered an exception while reading stream {self.name}")
-                    raise e
-                finally:
-                    logger.info(f"Finished syncing {self.name}")
-                    logger.info(timer.report())
+            available_streams = [stream for stream in streams if stream.scope_is_granted(granted_scopes)]
+            unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
+            self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
+            partially_available_streams = [stream for stream in streams if not stream.properties_scope_is_granted()]
+            required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))
+            self.logger.info(
+                f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
+                f"add the following scopes to download all available data: {required_scoped}"
+            )
+        else:
+            self.logger.info("No scopes to grant when authenticating with API key.")
+            available_streams = streams
 
-        logger.info(f"Finished syncing {self.name}")
+        custom_object_streams = list(self.get_custom_object_streams(api=api, common_params=common_params))
+        available_streams.extend(custom_object_streams)
 
-    def _read_incremental(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        """
-        This method is overridden to checkpoint the latest actual state,
-        because stream state is refreshed after reading each batch of records (if need_chunk is True),
-        or reading all records in the stream.
-        """
-        yield from super()._read_incremental(
-            logger=logger,
-            stream_instance=stream_instance,
-            configured_stream=configured_stream,
-            connector_state=connector_state,
-            internal_config=internal_config,
-        )
-        stream_state = stream_instance.get_updated_state(current_stream_state={}, latest_record={})
-        yield self._checkpoint_state(stream_instance, stream_state, connector_state)
+        if enable_experimental_streams:
+            custom_objects_web_analytics_streams = self.get_web_analytics_custom_objects_stream(
+                custom_object_stream_instances=custom_object_streams,
+                common_params=common_params,
+            )
+            available_streams.extend(custom_objects_web_analytics_streams)
+
+        return available_streams
+
+    def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
+        for entity, fully_qualified_name, schema, custom_properties in api.get_custom_objects_metadata():
+            yield CustomObject(
+                entity=entity,
+                schema=schema,
+                fully_qualified_name=fully_qualified_name,
+                custom_properties=custom_properties,
+                **common_params,
+            )
+
+    def get_web_analytics_custom_objects_stream(
+        self, custom_object_stream_instances: List[CustomObject], common_params: Any
+    ) -> Generator[WebAnalyticsStream, None, None]:
+        for custom_object_stream_instance in custom_object_stream_instances:
+
+            def __init__(self, **kwargs: Any):
+                parent = custom_object_stream_instance.__class__(
+                    entity=custom_object_stream_instance.entity,
+                    schema=custom_object_stream_instance.schema,
+                    fully_qualified_name=custom_object_stream_instance.fully_qualified_name,
+                    custom_properties=custom_object_stream_instance.custom_properties,
+                    **common_params,
+                )
+                super(self.__class__, self).__init__(parent=parent, **kwargs)
+
+            custom_web_analytics_stream_class = type(
+                f"{custom_object_stream_instance.name.capitalize()}WebAnalytics", (WebAnalyticsStream,), {"__init__": __init__}
+            )
+
+            yield custom_web_analytics_stream_class(**common_params)

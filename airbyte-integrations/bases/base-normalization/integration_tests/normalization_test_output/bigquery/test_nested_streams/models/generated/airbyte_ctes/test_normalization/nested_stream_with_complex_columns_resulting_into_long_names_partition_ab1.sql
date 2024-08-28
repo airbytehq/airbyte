@@ -17,5 +17,5 @@ from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_scd') 
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 where 1 = 1
 and {{ adapter.quote('partition') }} is not null
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

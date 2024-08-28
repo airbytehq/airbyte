@@ -17,5 +17,5 @@ from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTIT
 {{ cross_join_unnest('PARTITION', 'DATA') }}
 where 1 = 1
 and DATA is not null
-{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
+{{ incremental_clause('_AIRBYTE_EMITTED_AT', this) }}
 

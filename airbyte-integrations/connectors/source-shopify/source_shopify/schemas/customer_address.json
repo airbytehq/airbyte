@@ -1,0 +1,83 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "address1": {
+      "description": "The first line of the customer's street address.",
+      "type": ["null", "string"]
+    },
+    "address2": {
+      "description": "The second line of the customer's street address.",
+      "type": ["null", "string"]
+    },
+    "city": {
+      "description": "The city where the customer resides.",
+      "type": ["null", "string"]
+    },
+    "country": {
+      "description": "The full name of the country associated with the address.",
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "description": "The ISO 3166-1 alpha-2 country code of the address country.",
+      "type": ["null", "string"]
+    },
+    "country_name": {
+      "description": "The name of the country associated with the address.",
+      "type": ["null", "string"]
+    },
+    "company": {
+      "description": "The company name associated with the customer's address.",
+      "type": ["null", "string"]
+    },
+    "customer_id": {
+      "description": "The unique identifier of the customer to whom the address belongs.",
+      "type": ["null", "integer"]
+    },
+    "first_name": {
+      "description": "The first name of the customer.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the address.",
+      "type": ["null", "integer"]
+    },
+    "last_name": {
+      "description": "The last name of the customer.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The full name of the customer associated with the address.",
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "description": "The phone number associated with the address.",
+      "type": ["null", "string"]
+    },
+    "province": {
+      "description": "The region or state where the customer resides.",
+      "type": ["null", "string"]
+    },
+    "province_code": {
+      "description": "The code or abbreviation of the region or state.",
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "description": "The postal code or ZIP code of the address.",
+      "type": ["null", "string"]
+    },
+    "default": {
+      "description": "Indicates whether this is the default address for the customer.",
+      "type": ["null", "boolean"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop associated with the customer's address.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the address was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

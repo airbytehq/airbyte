@@ -26,12 +26,8 @@ where 1 = 1
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 -- depends_on: __dbt__cte__nested_stream_with_c__lting_into_long_names_ab1
 select
-    cast("id" as 
-    varchar
-) as "id",
-    cast("date" as 
-    varchar
-) as "date",
+    cast("id" as text) as "id",
+    cast("date" as text) as "date",
     cast("partition" as 
     jsonb
 ) as "partition",
@@ -45,15 +41,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__nested_stream_with_c__lting_into_long_names_ab2
 select
-    md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast("date" as 
-    varchar
-), '') || '-' || coalesce(cast("partition" as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_nested_stre__nto_long_names_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast("date" as text), '') || '-' || coalesce(cast("partition" as text), '') as text)) as _airbyte_nested_stre__nto_long_names_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_c__lting_into_long_names_ab2 tmp
 -- nested_stream_with_c__lting_into_long_names

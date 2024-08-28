@@ -20,7 +20,8 @@
                 "type": "number"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         }
       ]
     }
@@ -47,7 +48,8 @@
                 "type": "number"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         },
         {
           "name": "my_stream_1",
@@ -61,7 +63,8 @@
                 "type": "number"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         }
       ]
     }
@@ -104,7 +107,8 @@
                 "type": "number"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         },
         {
           "name": "stream2",
@@ -115,7 +119,8 @@
                 "type": "string"
               }
             }
-          }
+          },
+          "supported_sync_modes": ["full_refresh"]
         }
       ]
     }

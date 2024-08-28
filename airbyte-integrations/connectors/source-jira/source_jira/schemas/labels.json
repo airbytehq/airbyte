@@ -1,24 +1,9 @@
 {
   "type": ["object", "null"],
   "properties": {
-    "id": {
-      "type": ["string", "null"]
-    },
-    "key": {
-      "type": ["string", "null"]
-    },
-    "value": {
-      "type": ["string", "null"]
-    },
-    "name": {
-      "type": ["string", "null"]
-    },
-    "desc": {
-      "type": ["string", "null"]
-    },
-    "type": {
+    "label": {
+      "description": "The label associated with the issue in Jira.",
       "type": ["string", "null"]
     }
-  },
-  "additionalProperties": true
+  }
 }

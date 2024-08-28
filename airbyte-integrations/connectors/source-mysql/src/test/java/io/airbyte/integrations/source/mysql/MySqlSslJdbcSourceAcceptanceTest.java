@@ -1,50 +1,31 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import org.junit.jupiter.api.Order;
 
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeEach;
-
+@Order(3)
+@edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "NP_NULL_ON_SOME_PATH")
 class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
 
-  @BeforeEach
-  public void setup() throws Exception {
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
-        .put("ssl", true)
-        .build());
+  @Override
+  protected JsonNode config() {
+    return testdb.testConfigBuilder()
+        .with(JdbcUtils.SSL_KEY, true)
+        .build();
+  }
 
-    database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s?%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            String.join("&", SSL_PARAMETERS)),
-        MySqlSource.DRIVER_CLASS,
-
-        SQLDialect.MYSQL);
-
-    database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
-      ctx.fetch("SHOW STATUS LIKE 'Ssl_cipher'");
-      return null;
-    });
-    database.close();
-
-    super.setup();
+  @Override
+  protected MySQLTestDatabase createTestDatabase() {
+    return new MySQLTestDatabase(new MySQLContainerFactory().shared("mysql:8.0"))
+        .withConnectionProperty("useSSL", "true")
+        .withConnectionProperty("requireSSL", "true")
+        .initialized()
+        .with("SHOW STATUS LIKE 'Ssl_cipher'");
   }
 
 }

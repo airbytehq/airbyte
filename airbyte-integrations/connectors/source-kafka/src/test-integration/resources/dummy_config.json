@@ -1,0 +1,10 @@
+{
+  "bootstrap_servers": "default",
+  "subscription": {
+    "subscription_type": "assign",
+    "topic_partitions": "default"
+  },
+  "protocol": {
+    "security_protocol": "PLAINTEXT"
+  }
+}

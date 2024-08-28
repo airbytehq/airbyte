@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,8 +10,9 @@ import tempfile
 import time
 
 import pytest
-from normalization.transform_catalog.transform import extract_schema
-from normalization.transform_config.transform import DestinationType, TransformConfig
+from normalization.destination_type import DestinationType
+from normalization.transform_catalog.transform import extract_path, extract_schema
+from normalization.transform_config.transform import TransformConfig
 
 
 class TestTransformConfig:
@@ -153,8 +154,8 @@ class TestTransformConfig:
 
         actual_keyfile = actual_output["keyfile_json"]
         expected_keyfile = {"type": "service_account-json"}
-        assert expected_output == actual_output
-        assert expected_keyfile == actual_keyfile
+        assert actual_output == expected_output
+        assert actual_keyfile == expected_keyfile
         assert extract_schema(actual_output) == "my_dataset_id"
 
     def test_transform_bigquery_no_credentials(self):
@@ -171,8 +172,43 @@ class TestTransformConfig:
             "threads": 8,
         }
 
-        assert expected_output == actual_output
+        assert actual_output == expected_output
         assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_with_embedded_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "my_project_id:my_dataset_id"}
+
+        actual_output = TransformConfig().transform_bigquery(input)
+        expected_output = {
+            "type": "bigquery",
+            "method": "oauth",
+            "project": "my_project_id",
+            "dataset": "my_dataset_id",
+            "priority": "interactive",
+            "retries": 3,
+            "threads": 8,
+        }
+
+        assert actual_output == expected_output
+        assert extract_schema(actual_output) == "my_dataset_id"
+
+    def test_transform_bigquery_with_embedded_mismatched_project_id(self):
+        input = {"project_id": "my_project_id", "dataset_id": "bad_project_id:my_dataset_id"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
+
+    def test_transform_bigquery_with_invalid_format(self):
+        input = {"project_id": "my_project_id", "dataset_id": "foo:bar:baz"}
+
+        try:
+            TransformConfig().transform_bigquery(input)
+            assert False, "transform_bigquery should have raised an exception"
+        except ValueError:
+            pass
 
     def test_transform_postgres(self):
         input = {
@@ -196,7 +232,7 @@ class TestTransformConfig:
             "user": "a user",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "public"
 
     def test_transform_postgres_ssh(self):
@@ -229,7 +265,7 @@ class TestTransformConfig:
             "user": "a user",
         }
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual) == "public"
 
     def test_transform_snowflake(self):
@@ -262,7 +298,88 @@ class TestTransformConfig:
             "warehouse": "AIRBYTE_WAREHOUSE",
         }
 
-        assert expected == actual
+        assert actual == expected
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
+    def test_transform_snowflake_oauth(self):
+
+        input = {
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
+            "role": "AIRBYTE_ROLE",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "database": "AIRBYTE_DATABASE",
+            "schema": "AIRBYTE_SCHEMA",
+            "username": "AIRBYTE_USER",
+            "credentials": {
+                "auth_type": "OAuth2.0",
+                "client_id": "AIRBYTE_CLIENT_ID",
+                "access_token": "AIRBYTE_ACCESS_TOKEN",
+                "client_secret": "AIRBYTE_CLIENT_SECRET",
+                "refresh_token": "AIRBYTE_REFRESH_TOKEN",
+            },
+        }
+
+        actual = TransformConfig().transform_snowflake(input)
+        expected = {
+            "account": "123abc.us-east-7.aws",
+            "client_session_keep_alive": False,
+            "database": "AIRBYTE_DATABASE",
+            "query_tag": "normalization",
+            "role": "AIRBYTE_ROLE",
+            "schema": "AIRBYTE_SCHEMA",
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
+            "type": "snowflake",
+            "user": "AIRBYTE_USER",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "authenticator": "oauth",
+            "oauth_client_id": "AIRBYTE_CLIENT_ID",
+            "oauth_client_secret": "AIRBYTE_CLIENT_SECRET",
+            "token": "AIRBYTE_REFRESH_TOKEN",
+        }
+
+        assert actual == expected
+        assert extract_schema(actual) == "AIRBYTE_SCHEMA"
+
+    def test_transform_snowflake_key_pair(self):
+
+        input = {
+            "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",
+            "role": "AIRBYTE_ROLE",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "database": "AIRBYTE_DATABASE",
+            "schema": "AIRBYTE_SCHEMA",
+            "username": "AIRBYTE_USER",
+            "credentials": {
+                "private_key": "AIRBYTE_PRIVATE_KEY",
+                "private_key_password": "AIRBYTE_PRIVATE_KEY_PASSWORD",
+            },
+        }
+
+        actual = TransformConfig().transform_snowflake(input)
+        expected = {
+            "account": "123abc.us-east-7.aws",
+            "client_session_keep_alive": False,
+            "database": "AIRBYTE_DATABASE",
+            "query_tag": "normalization",
+            "role": "AIRBYTE_ROLE",
+            "schema": "AIRBYTE_SCHEMA",
+            "threads": 5,
+            "retry_all": True,
+            "retry_on_database_errors": True,
+            "connect_retries": 3,
+            "connect_timeout": 15,
+            "type": "snowflake",
+            "user": "AIRBYTE_USER",
+            "warehouse": "AIRBYTE_WAREHOUSE",
+            "private_key_path": "private_key_path.txt",
+            "private_key_passphrase": "AIRBYTE_PRIVATE_KEY_PASSWORD",
+        }
+
+        assert actual == expected
         assert extract_schema(actual) == "AIRBYTE_SCHEMA"
 
     def test_transform_mysql(self):
@@ -287,7 +404,7 @@ class TestTransformConfig:
             "password": "password1234",
         }
 
-        assert expected == actual
+        assert actual == expected
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
 
@@ -313,9 +430,28 @@ class TestTransformConfig:
             "password": "password1234",
         }
 
-        assert expected == actual
+        assert actual == expected
         # DBT schema is equivalent to MySQL database
         assert extract_schema(actual) == "my_db"
+
+    def test_transform_clickhouse(self):
+        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+
+        actual = TransformConfig().transform_clickhouse(input)
+        expected = {
+            "type": "clickhouse",
+            "driver": "http",
+            "verify": False,
+            "host": "airbyte.io",
+            "port": 9440,
+            "schema": "default",
+            "user": "ch",
+            "password": "password1234",
+            "secure": True,
+        }
+
+        assert actual == expected
+        assert extract_schema(actual) == "default"
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
@@ -339,10 +475,68 @@ class TestTransformConfig:
             "threads": 8,
             "user": "a user",
         }
-        actual = TransformConfig().transform(DestinationType.postgres, input)
+        actual = TransformConfig().transform(DestinationType.POSTGRES, input)
 
-        assert expected == actual
+        assert actual == expected
         assert extract_schema(actual["normalize"]["outputs"]["prod"]) == "public"
+
+    def test_transform_tidb(self):
+        input = {
+            "type": "tidb",
+            "host": "airbyte.io",
+            "port": 5432,
+            "database": "ti_db",
+            "schema": "public",
+            "username": "a user",
+            "password": "password1234",
+        }
+
+        actual = TransformConfig().transform_tidb(input)
+        expected = {
+            "type": "tidb",
+            "server": "airbyte.io",
+            "port": 5432,
+            "schema": "ti_db",
+            "database": "ti_db",
+            "username": "a user",
+            "password": "password1234",
+        }
+
+        assert actual == expected
+        assert extract_schema(actual) == "ti_db"
+
+    def test_transform_duckdb_schema(self):
+        input = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+            "schema": "quackqauck",
+        }
+
+        actual = TransformConfig().transform_duckdb(input)
+        expected = {
+            "type": "duckdb",
+            "path": "/local/testing.duckdb",
+            "schema": "quackqauck",
+        }
+
+        assert actual == expected
+        assert extract_path(actual) == "/local/testing.duckdb"
+
+    def test_transform_duckdb_no_schema(self):
+        input = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+        }
+
+        actual = TransformConfig().transform_duckdb(input)
+        expected = {
+            "type": "duckdb",
+            "path": "/local/testing.duckdb",
+            "schema": "main",
+        }
+
+        assert actual == expected
+        assert extract_path(actual) == "/local/testing.duckdb"
 
     def get_base_config(self):
         return {
@@ -357,7 +551,7 @@ class TestTransformConfig:
 
     def test_parse(self):
         t = TransformConfig()
-        assert {"integration_type": DestinationType.postgres, "config": "config.json", "output_path": "out.yml"} == t.parse(
+        assert {"integration_type": DestinationType.POSTGRES, "config": "config.json", "output_path": "out.yml"} == t.parse(
             ["--integration-type", "postgres", "--config", "config.json", "--out", "out.yml"]
         )
 

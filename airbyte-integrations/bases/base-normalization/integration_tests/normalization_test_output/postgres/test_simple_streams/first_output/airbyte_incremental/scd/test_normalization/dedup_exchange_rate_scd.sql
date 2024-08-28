@@ -16,15 +16,7 @@ input_data as (
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
-      md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast(currency as 
-    varchar
-), '') || '-' || coalesce(cast(nzd as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_unique_key,
+      md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(currency as text), '') || '-' || coalesce(cast(nzd as text), '') as text)) as _airbyte_unique_key,
       "id",
       currency,
       "date",
@@ -35,18 +27,14 @@ scd_data as (
       usd,
       "date" as _airbyte_start_at,
       lag("date") over (
-        partition by "id", currency, cast(nzd as 
-    varchar
-)
+        partition by "id", currency, cast(nzd as text)
         order by
             "date" is null asc,
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
-        partition by "id", currency, cast(nzd as 
-    varchar
-)
+        partition by "id", currency, cast(nzd as text)
         order by
             "date" is null asc,
             "date" desc,
@@ -68,15 +56,7 @@ dedup_data as (
                 _airbyte_emitted_at
             order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
-        md5(cast(coalesce(cast(_airbyte_unique_key as 
-    varchar
-), '') || '-' || coalesce(cast(_airbyte_start_at as 
-    varchar
-), '') || '-' || coalesce(cast(_airbyte_emitted_at as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_unique_key_scd,
+        md5(cast(coalesce(cast(_airbyte_unique_key as text), '') || '-' || coalesce(cast(_airbyte_start_at as text), '') || '-' || coalesce(cast(_airbyte_emitted_at as text), '') as text)) as _airbyte_unique_key_scd,
         scd_data.*
     from scd_data
 )

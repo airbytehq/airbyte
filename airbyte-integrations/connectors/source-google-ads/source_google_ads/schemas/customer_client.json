@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "customer_client.client_customer": {
+      "description": "The ID of the client's customer account.",
+      "type": ["null", "boolean"]
+    },
+    "customer_client.level": {
+      "description": "The access level of the customer client within the account.",
+      "type": ["null", "string"]
+    },
+    "customer_client.id": {
+      "description": "The unique identifier of the customer client.",
+      "type": ["null", "integer"]
+    },
+    "customer_client.manager": {
+      "description": "The ID of the manager associated with the customer client.",
+      "type": ["null", "boolean"]
+    },
+    "customer_client.time_zone": {
+      "description": "The time zone setting for the customer client.",
+      "type": ["null", "number"]
+    },
+    "customer_client.status": {
+      "description": "The status of the customer client account.",
+      "type": ["null", "string"]
+    }
+  }
+}

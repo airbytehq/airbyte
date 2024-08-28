@@ -30,9 +30,7 @@ select
     cast(nullif("date", '') as 
     date
 ) as "date",
-    cast("text" as 
-    varchar
-) as "text",
+    cast("text" as text) as "text",
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -43,15 +41,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__1_prefix_startwith_number_ab2
 select
-    md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast("date" as 
-    varchar
-), '') || '-' || coalesce(cast("text" as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_1_prefix_startwith_number_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast("date" as text), '') || '-' || coalesce(cast("text" as text), '') as text)) as _airbyte_1_prefix_startwith_number_hashid,
     tmp.*
 from __dbt__cte__1_prefix_startwith_number_ab2 tmp
 -- 1_prefix_startwith_number

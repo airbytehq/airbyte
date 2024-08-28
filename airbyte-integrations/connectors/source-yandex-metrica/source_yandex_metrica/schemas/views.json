@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ym:pv:watchID": {
+      "description": "The ID of the watched item.",
+      "type": "string"
+    },
+    "ym:pv:counterID": {
+      "description": "The ID of the Yandex Metrica counter.",
+      "type": "string"
+    },
+    "ym:pv:date": {
+      "description": "The date of the visit.",
+      "type": "string",
+      "format": "date"
+    },
+    "ym:pv:dateTime": {
+      "description": "The date and time of the visit.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "ym:pv:title": {
+      "description": "The title of the visited page.",
+      "type": "string"
+    },
+    "ym:pv:URL": {
+      "description": "The URL of the page visited.",
+      "type": "string"
+    },
+    "ym:pv:referer": {
+      "description": "The referring page or source of the visit.",
+      "type": "string"
+    },
+    "ym:pv:UTMCampaign": {
+      "description": "The campaign name specified in the UTM parameters.",
+      "type": "string"
+    },
+    "ym:pv:UTMContent": {
+      "description": "The content identifier specified in the UTM parameters.",
+      "type": "string"
+    },
+    "ym:pv:UTMMedium": {
+      "description": "The medium specified in the UTM parameters.",
+      "type": "string"
+    },
+    "ym:pv:UTMSource": {
+      "description": "The source specified in the UTM parameters.",
+      "type": "string"
+    },
+    "ym:pv:UTMTerm": {
+      "description": "The term specified in the UTM parameters.",
+      "type": "string"
+    },
+    "ym:pv:browser": {
+      "description": "The browser used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:browserMajorVersion": {
+      "description": "The major version of the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:browserMinorVersion": {
+      "description": "The minor version of the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:browserCountry": {
+      "description": "The country of the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:browserEngine": {
+      "description": "The engine powering the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion1": {
+      "description": "The first version component of the browser engine.",
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion2": {
+      "description": "The second version component of the browser engine.",
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion3": {
+      "description": "The third version component of the browser engine.",
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion4": {
+      "description": "The fourth version component of the browser engine.",
+      "type": "string"
+    },
+    "ym:pv:browserLanguage": {
+      "description": "The language set in the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:clientTimeZone": {
+      "description": "The time zone of the visitor.",
+      "type": "string"
+    },
+    "ym:pv:cookieEnabled": {
+      "description": "Indicates if cookies are enabled in the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:deviceCategory": {
+      "description": "The category of the visitor's device (desktop, mobile, tablet).",
+      "type": "string"
+    },
+    "ym:pv:from": {
+      "description": "The URL the visitor came from.",
+      "type": "string"
+    },
+    "ym:pv:hasGCLID": {
+      "description": "Indicates if the visit has a Google Click Identifier (GCLID).",
+      "type": "string"
+    },
+    "ym:pv:GCLID": {
+      "description": "The unique identifier used in Google Ads to track ad clicks and conversions.",
+      "type": "string"
+    },
+    "ym:pv:ipAddress": {
+      "description": "The IP address of the visitor.",
+      "type": "string"
+    },
+    "ym:pv:javascriptEnabled": {
+      "description": "Indicates if JavaScript is enabled in the visitor's browser.",
+      "type": "string"
+    },
+    "ym:pv:mobilePhone": {
+      "description": "Indicates if the visitor is using a mobile phone.",
+      "type": "string"
+    },
+    "ym:pv:mobilePhoneModel": {
+      "description": "The model of the mobile phone if used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:openstatAd": {
+      "description": "The advertising campaign identifier from Openstat.",
+      "type": "string"
+    },
+    "ym:pv:openstatCampaign": {
+      "description": "The campaign name from Openstat.",
+      "type": "string"
+    },
+    "ym:pv:openstatService": {
+      "description": "The advertising service used from Openstat.",
+      "type": "string"
+    },
+    "ym:pv:openstatSource": {
+      "description": "The advertising source from Openstat.",
+      "type": "string"
+    },
+    "ym:pv:operatingSystem": {
+      "description": "The operating system used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:operatingSystemRoot": {
+      "description": "The root version of the operating system used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:physicalScreenHeight": {
+      "description": "The physical height of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:physicalScreenWidth": {
+      "description": "The physical width of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:regionCity": {
+      "description": "The city of the visitor's region.",
+      "type": "string"
+    },
+    "ym:pv:regionCountry": {
+      "description": "The country of the visitor's region.",
+      "type": "string"
+    },
+    "ym:pv:regionCityID": {
+      "description": "The city ID of the visitor's region.",
+      "type": "string"
+    },
+    "ym:pv:regionCountryID": {
+      "description": "The country ID of the visitor's region.",
+      "type": "string"
+    },
+    "ym:pv:screenColors": {
+      "description": "The color depth of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:screenFormat": {
+      "description": "The format of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:screenHeight": {
+      "description": "The height of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:screenOrientation": {
+      "description": "The orientation of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:screenWidth": {
+      "description": "The width of the visitor's screen.",
+      "type": "string"
+    },
+    "ym:pv:windowClientHeight": {
+      "description": "The viewport height of the visitor's window.",
+      "type": "string"
+    },
+    "ym:pv:windowClientWidth": {
+      "description": "The viewport width of the visitor's window.",
+      "type": "string"
+    },
+    "ym:pv:lastTrafficSource": {
+      "description": "The last traffic source of the visitor.",
+      "type": "string"
+    },
+    "ym:pv:lastSearchEngine": {
+      "description": "The last search engine used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:lastSearchEngineRoot": {
+      "description": "The root domain of the last search engine used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:lastAdvEngine": {
+      "description": "The last advertising engine used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:artificial": {
+      "description": "Indicates if the visit is artificial or not.",
+      "type": "string"
+    },
+    "ym:pv:pageCharset": {
+      "description": "The character encoding of the visited page.",
+      "type": "string"
+    },
+    "ym:pv:isPageView": {
+      "description": "Indicates if the action is a page view.",
+      "type": "string"
+    },
+    "ym:pv:link": {
+      "description": "The link clicked during the visit.",
+      "type": "string"
+    },
+    "ym:pv:download": {
+      "description": "Indicates if a download action occurred during the visit.",
+      "type": "string"
+    },
+    "ym:pv:notBounce": {
+      "description": "Indicates if the visit is not a bounce.",
+      "type": "string"
+    },
+    "ym:pv:lastSocialNetwork": {
+      "description": "The last social network accessed by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:httpError": {
+      "description": "Indicates if an HTTP error occurred during the visit.",
+      "type": "string"
+    },
+    "ym:pv:clientID": {
+      "description": "The unique ID assigned to the visitor.",
+      "type": "string"
+    },
+    "ym:pv:networkType": {
+      "description": "The type of network connection used by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:lastSocialNetworkProfile": {
+      "description": "The profile on the last social network accessed by the visitor.",
+      "type": "string"
+    },
+    "ym:pv:goalsID": {
+      "description": "The ID of the goal completed during the visit.",
+      "type": "string"
+    },
+    "ym:pv:shareService": {
+      "description": "The service used for sharing content.",
+      "type": "string"
+    },
+    "ym:pv:shareURL": {
+      "description": "The URL of the shared content.",
+      "type": "string"
+    },
+    "ym:pv:shareTitle": {
+      "description": "The title of the shared content.",
+      "type": "string"
+    },
+    "ym:pv:iFrame": {
+      "description": "Indicates if the content is rendered within an iFrame.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey1": {
+      "description": "The value of parsed parameter key 1.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey2": {
+      "description": "The value of parsed parameter key 2.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey3": {
+      "description": "The value of parsed parameter key 3.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey4": {
+      "description": "The value of parsed parameter key 4.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey5": {
+      "description": "The value of parsed parameter key 5.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey6": {
+      "description": "The value of parsed parameter key 6.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey7": {
+      "description": "The value of parsed parameter key 7.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey8": {
+      "description": "The value of parsed parameter key 8.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey9": {
+      "description": "The value of parsed parameter key 9.",
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey10": {
+      "description": "The value of parsed parameter key 10.",
+      "type": "string"
+    }
+  }
+}

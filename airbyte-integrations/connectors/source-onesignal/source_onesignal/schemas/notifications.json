@@ -1,7 +1,7 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "adm_big_picture": {
       "type": ["null", "string"]
@@ -11,7 +11,6 @@
     },
     "adm_group_message": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "en": {
           "type": ["null", "string"]
@@ -29,7 +28,6 @@
     },
     "spoken_text": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {}
     },
     "alexa_ssml": {
@@ -49,7 +47,6 @@
     },
     "android_group_message": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "en": {
           "type": ["null", "string"]
@@ -100,7 +97,6 @@
     },
     "contents": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "en": {
           "type": ["null", "string"]
@@ -112,7 +108,6 @@
     },
     "data": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {}
     },
     "delayed_option": {
@@ -141,7 +136,6 @@
     },
     "headings": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "en": {
           "type": ["null", "string"]
@@ -223,7 +217,6 @@
     },
     "apns_alert": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {}
     },
     "target_content_identifier": {
@@ -297,7 +290,6 @@
     },
     "tags": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {}
     },
     "filters": {
@@ -332,11 +324,9 @@
     },
     "platform_delivery_stats": {
       "type": "object",
-      "additionalProperties": true,
       "properties": {
         "android": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "successful": {
               "type": "integer"
@@ -357,7 +347,6 @@
         },
         "ios": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "successful": {
               "type": "integer"
@@ -380,7 +369,6 @@
     },
     "ios_attachments": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]

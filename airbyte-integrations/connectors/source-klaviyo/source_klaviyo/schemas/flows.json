@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "type": { "type": "string" },
+    "id": { "type": "string" },
+    "updated": { "type": "string", "format": "date-time" },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "archived": { "type": "boolean" },
+        "created": { "type": "string", "format": "date-time" },
+        "updated": { "type": "string", "format": "date-time" },
+        "trigger_type": { "type": "string" }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "self": { "type": "string" }
+      }
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "flow-actions": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": { "type": "string" },
+                  "id": { "type": "string" }
+                }
+              }
+            },
+            "links": {
+              "type": ["null", "object"],
+              "properties": {
+                "self": { "type": "string" },
+                "related": { "type": "string" }
+              }
+            }
+          }
+        },
+        "tags": {
+          "type": ["null", "object"],
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "type": { "type": "string" },
+                  "id": { "type": "string" }
+                }
+              }
+            },
+            "links": {
+              "type": ["null", "object"],
+              "properties": {
+                "self": { "type": "string" },
+                "related": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "adaccounts_stats_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"], ["granularity"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ads_stats_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"], ["granularity"]]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "adsquads_stats_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "campaigns_stats_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "primary_key": [["id"], ["granularity"]],
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

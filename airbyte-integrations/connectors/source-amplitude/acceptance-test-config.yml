@@ -1,22 +1,44 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-amplitude:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_amplitude/spec.json"
+    tests:
+      - spec_path: "source_amplitude/spec.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.3.2 # `start_date` format changed to format: date-time
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.3.5 # `date` format changed to format: date-time in the AverageSessionLength stream
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/streams_with_output_records_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        empty_streams:
+          - name: "cohorts"
+            bypass_reason: "This stream is empty due to free subscription plan for the sandbox."
+          - name: "annotations"
+            bypass_reason: "This stream is empty due to free subscription plan for the sandbox."
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
-      # Unable to use 'state_path' because Amplitude returns an error when specifying a date in the future.
-      # future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
+        skip_comprehensive_incremental_tests: yes
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_without_events.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

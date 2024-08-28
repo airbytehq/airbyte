@@ -1,12 +1,13 @@
 ---
 description: Start triggering Airbyte jobs with Dagster in minutes
+products: oss-*
 ---
 
-# Using the Dagster Integration 
+# Using the Dagster Integration
 
 Airbyte is an official integration in the Dagster project. The Airbyte Integration allows you to trigger synchronization jobs in Airbyte, and this tutorial will walk through configuring your Dagster Ops to do so.
 
-The Airbyte Task documentation on Dagster project can be found [here](https://docs.dagster.io/_apidocs/libraries/dagster-airbyte).
+The Airbyte Task documentation on the Dagster project can be found [here](https://docs.dagster.io/_apidocs/libraries/dagster-airbyte). We also have a tutorial on [dynamically configuring Airbyte using `dagster-airbyte`](https://airbyte.com/tutorials/configure-airbyte-with-python-dagster).
 
 ## 1. Set up the tools
 
@@ -48,16 +49,17 @@ def my_simple_airbyte_job():
 
 The Airbyte Dagster Resource accepts the following parameters:
 
-* `host`: The host URL to your Airbyte instance.
-* `port`: The port value you have selected for your Airbyte instance.
-* `use_https`: If your server use secure HTTP connection.
-* `request_max_retries`: The maximum number of times requests to the Airbyte API should be retried before failing.
-* `request_retry_delay`: Time in seconds to wait between each request retry.
+- `host`: The host URL to your Airbyte instance.
+- `port`: The port value you have selected for your Airbyte instance.
+- `use_https`: If your server use secure HTTP connection.
+- `request_max_retries`: The maximum number of times requests to the Airbyte API should be retried before failing.
+- `request_retry_delay`: Time in seconds to wait between each request retry.
 
 The Airbyte Dagster Op accepts the following parameters:
-* `connection_id`: The Connection UUID you want to trigger
-* `poll_interval`: The time in seconds that will be waited between successive polls.
-* `poll_timeout`: he maximum time that will waited before this operation is timed out.
+
+- `connection_id`: The Connection UUID you want to trigger
+- `poll_interval`: The time in seconds that will be waited between successive polls.
+- `poll_timeout`: he maximum time that will waited before this operation is timed out.
 
 After running the file, `dagster job execute -f airbyte_dagster.py ` this will trigger the job with Dagster.
 
@@ -67,3 +69,8 @@ Don't be fooled by our simple example of only one Dagster Flow. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
+## Related articles and guides
+
+For additional information about using Dagster and Airbyte together, see the following:
+
+- [Build an e-commerce analytics stack with Airbyte, dbt, Dagster and BigQuery](https://github.com/airbytehq/quickstarts/tree/main/ecommerce_analytics_bigquery)

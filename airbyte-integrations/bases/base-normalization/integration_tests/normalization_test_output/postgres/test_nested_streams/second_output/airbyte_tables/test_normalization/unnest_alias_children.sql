@@ -49,15 +49,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__unnest_alias_children_ab2
 select
-    md5(cast(coalesce(cast(_airbyte_unnest_alias_hashid as 
-    varchar
-), '') || '-' || coalesce(cast(ab_id as 
-    varchar
-), '') || '-' || coalesce(cast("owner" as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_children_hashid,
+    md5(cast(coalesce(cast(_airbyte_unnest_alias_hashid as text), '') || '-' || coalesce(cast(ab_id as text), '') || '-' || coalesce(cast("owner" as text), '') as text)) as _airbyte_children_hashid,
     tmp.*
 from __dbt__cte__unnest_alias_children_ab2 tmp
 -- children at unnest_alias/children
