@@ -332,9 +332,11 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
@@ -400,9 +402,11 @@ class ModelToComponentFactory:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             config=config,
             parameters=model.parameters or {},
         )
@@ -485,24 +489,21 @@ class ModelToComponentFactory:
 
         kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
         return custom_component_class(**kwargs)
-    
+
     @staticmethod
     def get_module_base() -> Optional[str]:
         """Gets the base module of the current script"""
-        main_module = sys.modules['__main__']
-        main_module_file = getattr(main_module, '__file__', None)
-        print(f"Main module file: {main_module_file}")
+        main_module = sys.modules["__main__"]
+        main_module_file = getattr(main_module, "__file__", None)
 
         if not main_module_file:
             return None
-        
+
         main_dir = os.path.dirname(main_module_file)
-        print(f"Main dir: {main_dir}")
-        print(f"Main dir items: {os.listdir(main_dir)}")     
+        pattern = re.compile(r"source_.*")
 
         for item in os.scandir(main_dir):
-            if item.is_dir() and re.match(r'source_.*', item.name):
-                print(f"Found matching item: {item.name}")
+            if item.is_dir() and pattern.match(item.name):
                 return item.name
         return None
 
@@ -517,7 +518,7 @@ class ModelToComponentFactory:
             module = f"{main_module}." + ".".join(split[:-1])
         else:
             module = ".".join(split[:-1])
-        
+
         class_name = split[-1]
         print(f"Module: {module}")
         print(f"Class: {class_name}")
@@ -1257,3 +1258,11 @@ class ModelToComponentFactory:
 
     def _evaluate_log_level(self, emit_connector_builder_messages: bool) -> Level:
         return Level.DEBUG if emit_connector_builder_messages else Level.INFO
+
+    def _init_mappings(self):
+        # Assuming there's some implementation here
+        pass
+
+    def _evaluate_log_level(self, emit_connector_builder_messages):
+        # Assuming there's some implementation here
+        pass
