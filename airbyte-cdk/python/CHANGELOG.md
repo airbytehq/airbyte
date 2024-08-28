@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.6.0
+Raise exceptions in file-based check, improve UI errors
+
 ## 4.5.4
 add codeflash to dev environment
 
