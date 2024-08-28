@@ -550,7 +550,7 @@ definitions:
     url_base: https://open-api.tiktokglobalshop.com
     authenticator:
       type: CustomAuthenticator
-      class: source_tiktok_shop.components.SignedAuthenticator
+      class_name: source_tiktok_shop.components.SignedAuthenticator
 
 streams:
   - $ref: "#/definitions/streams/active_shops"
