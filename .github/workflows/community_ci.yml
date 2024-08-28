@@ -230,11 +230,12 @@ jobs:
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_repo_url: ${{ github.event.pull_request.head.repo.clone_url }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ github.event.pull_request.head.sha }}
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --modified test"

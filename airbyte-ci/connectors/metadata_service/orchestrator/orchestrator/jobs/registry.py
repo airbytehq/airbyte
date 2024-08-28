@@ -52,6 +52,35 @@ def remove_stale_metadata_partitions():
     remove_stale_metadata_partitions_op()
 
 
+@op(required_resource_keys={"latest_metadata_file_blobs"})
+def remove_latest_metadata_partitions_op(context):
+    """
+    This op is responsible for removing for latest metadata files. (Generally used to reprocess metadata files).
+    """
+    latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
+    partition_name = registry_entry.metadata_partitions_def.name
+
+    all_latest = [blob.etag for blob in latest_metadata_file_blobs]
+    context.log.info(f"Found {len(all_latest)} latest metadata files found in GCS bucket")
+
+    all_etag_partitions = context.instance.get_dynamic_partitions(partition_name)
+    context.log.info(f"Found {len(all_etag_partitions)} existing metadata partitions")
+
+    for latest_etag in all_latest:
+        if latest_etag in all_etag_partitions:
+            context.log.info(f"Removing latest etag: {latest_etag}")
+            context.instance.delete_dynamic_partition(partition_name, latest_etag)
+            context.log.info(f"Removed latest etag: {latest_etag}")
+
+
+@job(tags={"dagster/priority": HIGH_QUEUE_PRIORITY})
+def remove_latest_metadata_partitions():
+    """
+    This job is responsible for removing latest metadata partitions. (Generally used to reprocess metadata files).
+    """
+    remove_latest_metadata_partitions_op()
+
+
 @op(required_resource_keys={"slack", "all_metadata_file_blobs"})
 def add_new_metadata_partitions_op(context):
     """
