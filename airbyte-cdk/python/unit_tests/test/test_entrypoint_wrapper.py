@@ -22,7 +22,6 @@ from airbyte_cdk.models import (
     AirbyteStreamStatus,
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
-    ConfiguredAirbyteCatalog,
     ConfiguredAirbyteCatalogSerializer,
     Level,
     StreamDescriptor,
@@ -121,7 +120,11 @@ def _validate_tmp_json_file(expected, file_path) -> None:
 
 
 def _validate_tmp_catalog(expected, file_path) -> None:
-    assert ConfiguredAirbyteCatalog.parse_file(file_path) == expected
+    assert ConfiguredAirbyteCatalogSerializer.load(
+        orjson.loads(
+            open(file_path).read()
+        )
+    ) == expected
 
 
 def _create_tmp_file_validation(entrypoint, expected_config, expected_catalog: Optional[Any] = None, expected_state: Optional[Any] = None):

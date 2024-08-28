@@ -107,10 +107,10 @@ class AirbyteTracedException(Exception):
           stream_descriptors are defined, the one from `as_sanitized_airbyte_message` will be discarded.
         """
         error_message = self.as_airbyte_message(stream_descriptor=stream_descriptor)
-        if error_message.trace.error.message:
-            error_message.trace.error.message = filter_secrets(error_message.trace.error.message)
-        if error_message.trace.error.internal_message:
-            error_message.trace.error.internal_message = filter_secrets(error_message.trace.error.internal_message)
-        if error_message.trace.error.stack_trace:
-            error_message.trace.error.stack_trace = filter_secrets(error_message.trace.error.stack_trace)
+        if error_message.trace.error.message:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+            error_message.trace.error.message = filter_secrets(error_message.trace.error.message)  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+        if error_message.trace.error.internal_message:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+            error_message.trace.error.internal_message = filter_secrets(error_message.trace.error.internal_message)  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+        if error_message.trace.error.stack_trace:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+            error_message.trace.error.stack_trace = filter_secrets(error_message.trace.error.stack_trace)  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
         return error_message
