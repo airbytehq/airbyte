@@ -100,6 +100,76 @@ class MetadataUpload(SimpleDockerStep):
         )
 
 
+class MetadataRollbackReleaseCandidate(SimpleDockerStep):
+    def __init__(
+        self,
+        context: ConnectorContext,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials: Secret,
+    ) -> None:
+        docker_repository = context.connector.metadata["dockerRepository"]
+        version = context.connector.metadata["dockerImageTag"]
+        title = f"Rollback release candidate for {docker_repository} v{version}"
+        command_to_run = [
+            "metadata_service",
+            "rollback-release-candidate",
+            docker_repository,
+            version,
+            metadata_bucket_name,
+        ]
+
+        super().__init__(
+            title=title,
+            context=context,
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
+            ],
+            secret_env_variables={
+                "GCS_CREDENTIALS": metadata_service_gcs_credentials,
+            },
+            env_variables={
+                # The cache buster ensures we always run the rollback command (in case of remote bucket change)
+                "CACHEBUSTER": str(uuid.uuid4()),
+            },
+            command=command_to_run,
+        )
+
+
+class MetadataPromoteReleaseCandidate(SimpleDockerStep):
+    def __init__(
+        self,
+        context: ConnectorContext,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials: Secret,
+    ) -> None:
+        docker_repository = context.connector.metadata["dockerRepository"]
+        version = context.connector.metadata["dockerImageTag"]
+        title = f"Promote release candidate for {docker_repository} v{version}"
+        command_to_run = [
+            "metadata_service",
+            "promote-release-candidate",
+            docker_repository,
+            version,
+            metadata_bucket_name,
+        ]
+
+        super().__init__(
+            title=title,
+            context=context,
+            internal_tools=[
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
+            ],
+            secret_env_variables={
+                "GCS_CREDENTIALS": metadata_service_gcs_credentials,
+            },
+            env_variables={
+                # The cache buster ensures we always run the rollback command (in case of remote bucket change)
+                "CACHEBUSTER": str(uuid.uuid4()),
+            },
+            command=command_to_run,
+        )
+
+
 class DeployOrchestrator(Step):
     title = "Deploy Metadata Orchestrator to Dagster Cloud"
     deploy_dagster_command = [

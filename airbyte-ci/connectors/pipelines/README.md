@@ -460,6 +460,8 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | `--python-registry-token`            | False    |                                 | `PYTHON_REGISTRY_TOKEN`            | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified                                                                                       |
 | `--python-registry-url`              | False    | https://upload.pypi.org/legacy/ | `PYTHON_REGISTRY_URL`              | The python registry to publish to. Defaults to main pypi                                                                                                                                  |
 | `--python-registry-check-url`        | False    | https://pypi.org/pypi           | `PYTHON_REGISTRY_CHECK_URL`        | The python registry url to check whether a package is published already                                                                                                                   |
+| `--promote-release-candidate`        | False    | False                           |                                    | Promote the release candidate version of selected connectors as main version.                                                                                                             |
+| `--rollback-release-candidate`       | False    | False                           |                                    | Rollback the release candidate version of the selector connectors.                                                                                                                        |
 
 I've added an empty "Default" column, and you can fill in the default values as needed.
 
@@ -842,7 +844,8 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.35.0  | [#44877](https://github.com/airbytehq/airbyte/pull/44877)  | Implement `--promote/rollback-release-candidate` in `connectors publish`.                                                    |
 | 4.34.2  | [#44786](https://github.com/airbytehq/airbyte/pull/44786)  | Pre-emptively skip archived connectors when searching for modified files                                                     |
 | 4.34.1  | [#44557](https://github.com/airbytehq/airbyte/pull/44557)  | Conditionally propagate parameters in manifest-only migration                                                                |
 | 4.34.0  | [#44551](https://github.com/airbytehq/airbyte/pull/44551)  | `connectors publish` do not push the `latest` tag when the current version is a release candidate.                           |
