@@ -10,7 +10,6 @@ spec:
     type: object
     required:
       - token
-      - dataset_id
     properties:
       token:
         type: string
@@ -39,6 +38,25 @@ spec:
           for more information.
         examples:
           - rHuMdwm6xCFt6WiGU
+      username:
+        type: string
+        title: Username
+        description: >-
+          Username of the owner of the dataset collection. In Apify Console, you can find your username in the
+          <a href="https://console.apify.com/settings/account">Settings section under the Account tab</a>
+          after you login.
+        examples:
+          - satoshi_nakamoto
+      dataset_name:
+        type: string
+        title: Dataset Name
+        description: >-
+          Unique name of the dataset you would like to load to Airbyte. In Apify Console, you can view your datasets
+          in the <a href="https://console.apify.com/storage/datasets">Storage section under the Datasets tab</a>
+          after you login. See the <a href="https://docs.apify.com/platform/storage/dataset">Apify Docs</a> for more
+          information. If both `dataset_id` and `dataset_name` are provided, `dataset_name` will take precedence.
+        examples:
+          - my-unique-dataset-name
     additionalProperties: true
 
 definitions:
