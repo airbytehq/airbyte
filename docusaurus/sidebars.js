@@ -69,6 +69,7 @@ function getSourceConnectors() {
     "readme",
     "postgres",
     "mongodb-v2",
+    "mssql",
     "mysql",
   ]);
 }
@@ -172,15 +173,15 @@ const destinationS3 = {
   },
   items: [
     {
-       type: "doc",
-       label: "Migration Guide",
-       id: "integrations/destinations/s3-migrations",
+      type: "doc",
+      label: "Migration Guide",
+      id: "integrations/destinations/s3-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    }
+    },
   ],
 };
 
@@ -590,9 +591,7 @@ module.exports = {
         type: "doc",
         id: "operator-guides/upgrading-airbyte",
       },
-      items: [
-        "managing-airbyte/connector-updates"
-      ],
+      items: ["managing-airbyte/connector-updates"],
     },
     {
       type: "category",
