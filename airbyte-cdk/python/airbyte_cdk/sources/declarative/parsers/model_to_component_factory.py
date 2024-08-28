@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import logging
 import importlib
 import inspect
 import re
@@ -149,6 +150,8 @@ from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
+
+logger = logging.getLogger(__name__)
 
 
 class ModelToComponentFactory:
@@ -484,8 +487,11 @@ class ModelToComponentFactory:
     @staticmethod
     def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
         split = full_qualified_class_name.split(".")
+        print(f"Split: {split}")
         module = ".".join(split[:-1])
+        print(f"Module: {module}")
         class_name = split[-1]
+        print(f"Class: {class_name}")
         try:
             return getattr(importlib.import_module(module), class_name)
         except AttributeError:
