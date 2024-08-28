@@ -127,6 +127,8 @@ workflows:
           path: airbyte-integrations/connectors/source-facebook-marketing/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -147,6 +149,8 @@ workflows:
           path: airbyte-integrations/connectors/source-applovin/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -164,6 +168,8 @@ workflows:
           path: airbyte-integrations/connectors/source-tiktok-marketing/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -181,6 +187,8 @@ workflows:
           path: airbyte-integrations/connectors/source-google-ads/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -198,6 +206,8 @@ workflows:
           path: airbyte-integrations/connectors/source-ironsource/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -215,6 +225,8 @@ workflows:
           path: airbyte-integrations/connectors/source-mintegral/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -233,6 +245,8 @@ workflows:
           path: airbyte-integrations/connectors/source-snapchat-marketing/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -251,6 +265,8 @@ workflows:
           path: airbyte-integrations/connectors/source-unity/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
@@ -268,6 +284,8 @@ workflows:
           path: airbyte-integrations/connectors/destination-postgres/
           executor:
             name: aws-ecr/default
+            use-docker-layer-caching: true
+            image: ubuntu-2204:2024.05.1
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
