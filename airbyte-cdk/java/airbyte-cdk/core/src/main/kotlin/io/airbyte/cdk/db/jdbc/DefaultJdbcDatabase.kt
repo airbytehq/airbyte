@@ -119,7 +119,6 @@ constructor(
         //TODO: Temporary version of code for testing the .use for connection
 
         dataSource.connection.use { connection ->
-
             return JdbcDatabase.Companion.toUnsafeStream<T>(
                 statementCreator.apply(connection).executeQuery(),
                 recordTransform
