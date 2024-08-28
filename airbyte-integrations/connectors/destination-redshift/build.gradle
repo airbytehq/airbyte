@@ -32,7 +32,7 @@ application {
 
 dependencies {
 
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.746'
     // TODO: Verify no aws sdk code is pulled by this dependency causing classpath conflicts
     // https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-jdbc10-driver-differences.html
     implementation 'com.amazon.redshift:redshift-jdbc42:2.1.0.26'

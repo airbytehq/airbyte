@@ -27,7 +27,7 @@ application {
 dependencies {
 
     // csv
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.746'
     implementation 'org.apache.commons:commons-csv:1.4'
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 

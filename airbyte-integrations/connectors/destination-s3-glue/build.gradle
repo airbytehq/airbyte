@@ -25,7 +25,7 @@ application {
 dependencies {
 
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-glue
-    implementation 'com.amazonaws:aws-java-sdk-glue:1.12.334'
+    implementation 'com.amazonaws:aws-java-sdk-glue:1.12.746'
 
     implementation libs.aws.java.sdk.s3
     implementation libs.s3
