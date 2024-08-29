@@ -69,6 +69,7 @@ function getSourceConnectors() {
     "readme",
     "postgres",
     "mongodb-v2",
+    "mssql",
     "mysql",
   ]);
 }
@@ -147,6 +148,22 @@ const sourceMysql = {
   ],
 };
 
+const sourceMssql = {
+  type: "category",
+  label: "MS SQL Server (MSSQL)",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mssql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mssql/mssql-troubleshooting",
+    },
+  ],
+};
+
 const destinationS3 = {
   type: "category",
   label: "S3",
@@ -156,15 +173,15 @@ const destinationS3 = {
   },
   items: [
     {
-       type: "doc",
-       label: "Migration Guide",
-       id: "integrations/destinations/s3-migrations",
+      type: "doc",
+      label: "Migration Guide",
+      id: "integrations/destinations/s3-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    }
+    },
   ],
 };
 
@@ -350,6 +367,7 @@ const connectorCatalog = {
         sourcePostgres,
         sourceMongoDB,
         sourceMysql,
+        sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -573,9 +591,7 @@ module.exports = {
         type: "doc",
         id: "operator-guides/upgrading-airbyte",
       },
-      items: [
-        "managing-airbyte/connector-updates"
-      ],
+      items: ["managing-airbyte/connector-updates"],
     },
     {
       type: "category",
