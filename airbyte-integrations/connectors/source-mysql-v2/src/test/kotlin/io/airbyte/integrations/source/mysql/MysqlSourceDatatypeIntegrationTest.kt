@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteType
-import io.airbyte.cdk.data.ArrayAirbyteType
 import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -31,9 +30,7 @@ import org.testcontainers.containers.MySQLContainer
 
 private val log = KotlinLogging.logger {}
 
-/**
- * Reference: https://docs.mysql.com/en/database/mysql/mysql-database/23/sqlrf/Data-Types.html
- */
+/** Reference: https://docs.mysql.com/en/database/mysql/mysql-database/23/sqlrf/Data-Types.html */
 class MysqlSourceDatatypeIntegrationTest {
     @TestFactory
     @Timeout(300)
@@ -113,8 +110,8 @@ class MysqlSourceDatatypeIntegrationTest {
 
     private fun discover(streamName: String) {
         val actualStream: AirbyteStream? = LazyValues.actualStreams[streamName]
-        log.info {"discover result: ${LazyValues.actualStreams}"}
-        log.info {"streamName: $streamName" }
+        log.info { "discover result: ${LazyValues.actualStreams}" }
+        log.info { "streamName: $streamName" }
         Assertions.assertNotNull(actualStream)
         log.info {
             "test case $streamName: discovered stream ${
@@ -159,8 +156,7 @@ class MysqlSourceDatatypeIntegrationTest {
     companion object {
         lateinit var dbContainer: MySQLContainer<*>
 
-        fun config(): MysqlSourceConfigurationJsonObject =
-            MysqlContainerFactory.config(dbContainer)
+        fun config(): MysqlSourceConfigurationJsonObject = MysqlContainerFactory.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))
@@ -190,14 +186,17 @@ class MysqlSourceDatatypeIntegrationTest {
                     "mysql:8.0",
                     MysqlContainerFactory.WithNetwork,
                 )
-            connectionFactory.get().also {  it.isReadOnly = false }.use { connection: Connection ->
-                for (case in testCases) {
-                    for (sql in case.sqlStatements) {
-                        log.info { "test case ${case.id}: executing $sql" }
-                        connection.createStatement().use { stmt -> stmt.execute(sql) }
+            connectionFactory
+                .get()
+                .also { it.isReadOnly = false }
+                .use { connection: Connection ->
+                    for (case in testCases) {
+                        for (sql in case.sqlStatements) {
+                            log.info { "test case ${case.id}: executing $sql" }
+                            connection.createStatement().use { stmt -> stmt.execute(sql) }
+                        }
                     }
                 }
-            }
         }
     }
 
@@ -248,10 +247,8 @@ class MysqlSourceDatatypeIntegrationTest {
         val streamNamesToRecordData: Map<String, List<JsonNode>>
             get() {
                 val recordData: List<JsonNode> =
-                    sqlToAirbyte.values.map {
-                        Jsons.readTree("""{"${columnName}":$it}""")
-                    }
-                    return mapOf(tableName to recordData)
+                    sqlToAirbyte.values.map { Jsons.readTree("""{"${columnName}":$it}""") }
+                return mapOf(tableName to recordData)
             }
     }
 }

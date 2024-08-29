@@ -17,7 +17,6 @@ class MysqlSourceConfigurationJsonObjectTest {
     @Inject
     lateinit var supplier: ConfigurationJsonObjectSupplier<MysqlSourceConfigurationJsonObject>
 
-
     @Test
     fun testSchemaViolation() {
         Assertions.assertThrows(ConfigErrorException::class.java, supplier::get)

@@ -3,8 +3,8 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.testcontainers.containers.Network
 import org.testcontainers.containers.MySQLContainer
+import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
 object MysqlContainerFactory {

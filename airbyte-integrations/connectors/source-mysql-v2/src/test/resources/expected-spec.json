@@ -1,6 +1,6 @@
 {
-  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/mysql",
-  "connectionSpecification" : {
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
+  "connectionSpecification": {
     "type": "object",
     "title": "Mysql Source Spec",
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -34,14 +34,10 @@
           {
             "type": "object",
             "title": "Scan Changes with User Defined Cursor",
-            "required": [
-              "cursor_method"
-            ],
+            "required": ["cursor_method"],
             "properties": {
               "cursor_method": {
-                "enum": [
-                  "user_defined"
-                ],
+                "enum": ["user_defined"],
                 "type": "string",
                 "default": "user_defined"
               }
@@ -86,14 +82,10 @@
           {
             "type": "object",
             "title": "Unencrypted",
-            "required": [
-              "encryption_method"
-            ],
+            "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
-                "enum": [
-                  "unencrypted"
-                ],
+                "enum": ["unencrypted"],
                 "type": "string",
                 "default": "unencrypted"
               }
@@ -104,24 +96,15 @@
           {
             "type": "object",
             "title": "Native Network Encryption (NNE)",
-            "required": [
-              "encryption_method",
-              "encryption_algorithm"
-            ],
+            "required": ["encryption_method", "encryption_algorithm"],
             "properties": {
               "encryption_method": {
-                "enum": [
-                  "client_nne"
-                ],
+                "enum": ["client_nne"],
                 "type": "string",
                 "default": "client_nne"
               },
               "encryption_algorithm": {
-                "enum": [
-                  "AES256",
-                  "RC4_56",
-                  "3DES168"
-                ],
+                "enum": ["AES256", "RC4_56", "3DES168"],
                 "type": "string",
                 "title": "Encryption Algorithm",
                 "default": "AES256",
@@ -134,10 +117,7 @@
           {
             "type": "object",
             "title": "TLS Encrypted (verify certificate)",
-            "required": [
-              "encryption_method",
-              "ssl_certificate"
-            ],
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_certificate": {
                 "type": "string",
@@ -147,9 +127,7 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": [
-                  "encrypted_verify_certificate"
-                ],
+                "enum": ["encrypted_verify_certificate"],
                 "type": "string",
                 "default": "encrypted_verify_certificate"
               }
@@ -175,14 +153,10 @@
           {
             "type": "object",
             "title": "No Tunnel",
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
-                "enum": [
-                  "NO_TUNNEL"
-                ],
+                "enum": ["NO_TUNNEL"],
                 "type": "string",
                 "default": "NO_TUNNEL"
               }
@@ -231,9 +205,7 @@
                 "description": "OS-level username for logging into the jump server host"
               },
               "tunnel_method": {
-                "enum": [
-                  "SSH_KEY_AUTH"
-                ],
+                "enum": ["SSH_KEY_AUTH"],
                 "type": "string",
                 "default": "SSH_KEY_AUTH"
               }
@@ -274,9 +246,7 @@
                 "description": "OS-level username for logging into the jump server host"
               },
               "tunnel_method": {
-                "enum": [
-                  "SSH_PASSWORD_AUTH"
-                ],
+                "enum": ["SSH_PASSWORD_AUTH"],
                 "type": "string",
                 "default": "SSH_PASSWORD_AUTH"
               },
