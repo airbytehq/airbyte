@@ -1,7 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.output
 
-import io.airbyte.cdk.ConfigErrorException
+import com.fasterxml.jackson.databind.SequenceWriter
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteAnalyticsTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteCatalog
@@ -21,7 +21,6 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 import java.util.function.Consumer
-import org.apache.commons.lang3.exception.ExceptionUtils
 
 /** Emits the [AirbyteMessage] instances produced by the connector. */
 @DefaultImplementation(StdoutOutputConsumer::class)
@@ -89,17 +88,6 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
                 .withAnalytics(analytics),
         )
     }
-
-    fun acceptTraceOnConfigError(e: Throwable) {
-        val configErrorException: ConfigErrorException = ConfigErrorException.unwind(e) ?: return
-        accept(
-            AirbyteErrorTraceMessage()
-                .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
-                .withMessage(configErrorException.message)
-                .withInternalMessage(e.toString())
-                .withStackTrace(ExceptionUtils.getStackTrace(e)),
-        )
-    }
 }
 
 // Used for integration tests.
@@ -112,6 +100,7 @@ private class StdoutOutputConsumer : OutputConsumer {
     override val emittedAt: Instant = Instant.now()
 
     private val buffer = ByteArrayOutputStream()
+    private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(buffer)
 
     override fun accept(airbyteMessage: AirbyteMessage) {
         // This method effectively println's its JSON-serialized argument.
@@ -121,12 +110,12 @@ private class StdoutOutputConsumer : OutputConsumer {
         // Other Airbyte message types are not buffered, instead they trigger an immediate flush.
         // Such messages should not linger indefinitely in a buffer.
         val isRecord: Boolean = airbyteMessage.type == AirbyteMessage.Type.RECORD
-        val json: ByteArray = Jsons.writeValueAsBytes(airbyteMessage)
         synchronized(this) {
             if (buffer.size() > 0) {
                 buffer.write('\n'.code)
             }
-            buffer.writeBytes(json)
+            sequenceWriter.write(airbyteMessage)
+            sequenceWriter.flush()
             if (!isRecord || buffer.size() >= BUFFER_MAX_SIZE) {
                 withLockFlush()
             }

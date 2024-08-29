@@ -122,6 +122,7 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.4.5 | 2024-08-24 | [44627](https://github.com/airbytehq/airbyte/pull/44627) | Update dependencies |
 | 0.4.4 | 2024-08-19 | [44388](https://github.com/airbytehq/airbyte/pull/44388) | Update the CDK version to support RFR for Low-Code substreams |
 | 0.4.3 | 2024-08-17 | [44228](https://github.com/airbytehq/airbyte/pull/44228) | Update dependencies |
 | 0.4.2 | 2024-08-12 | [43786](https://github.com/airbytehq/airbyte/pull/43786) | Update dependencies |
