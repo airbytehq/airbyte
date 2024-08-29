@@ -140,7 +140,7 @@ private class StdoutOutputConsumer(
 ) : OutputConsumer {
     override val emittedAt: Instant = Instant.now(clock)
 
-    private val buffer = ByteArrayOutputStream()
+    private val buffer = ByteArrayOutputStream() // TODO: replace this with a StringWriter?
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
 
@@ -274,8 +274,8 @@ private class RecordTemplate(
             // Serialize to JSON.
             val json: String = Jsons.writeValueAsString(airbyteMessage)
             // Split the string in 2 around the '"data":{}' substring.
-            val parts: List<String> = json.split(splitRegex, limit = 2)
-            require(parts.size == 2) { "expected to find $splitRegex in $json" }
+            val parts: List<String> = json.split(DATA_SPLIT_DELIMITER, limit = 2)
+            require(parts.size == 2) { "expected to find $DATA_SPLIT_DELIMITER in $json" }
             // Re-attach the '"data":' substring to the first part
             // and return both parts in a RecordTemplate instance for this stream.
             return RecordTemplate(
@@ -285,7 +285,7 @@ private class RecordTemplate(
         }
 
         private const val DATA_PREFIX = """"data":"""
-        private val splitRegex: Regex = Regex.fromLiteral("$DATA_PREFIX{}")
+        private const val DATA_SPLIT_DELIMITER = "$DATA_PREFIX{}"
     }
 }
 
