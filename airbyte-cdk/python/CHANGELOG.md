@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.6.2
+use orjson instead of json to speed up JSON parsing
+
 ## 4.6.1
 Update json error message parser to identify additional error message fields in response bodies
 
