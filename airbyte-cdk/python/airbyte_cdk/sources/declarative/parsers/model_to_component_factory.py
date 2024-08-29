@@ -486,14 +486,15 @@ class ModelToComponentFactory:
     def _get_class_from_fully_qualified_class_name(self, full_qualified_class_name: str) -> Any:
         """
         Loads a custom component class from a fully qualified class name.
-        For CDK versions <4.6.0, the class name listed in the manifest is expected to be in the format:
+        For CDK versions <x.x.x, the class name listed in the manifest is expected to be in the format:
         source_<name>.components.CustomComponentClass
-        As of CDK 4.6.0, the class name can also be simplified to:
+        As of CDK x.x.x, the class name can also be simplified to:
         components.CustomComponentClass
+        TODO: Update this docstring with the correct version numbers at time of release
         """
         connector_module = self._get_connector_module()
         split = full_qualified_class_name.split(".")
-        if split[0] != connector_module:
+        if connector_module and split[0] != connector_module:
             # Prepend the main module if the class_name does not already start with it
             module = f"{connector_module}." + ".".join(split[:-1])
         else:
@@ -518,7 +519,7 @@ class ModelToComponentFactory:
         for item in os.scandir(main_dir):
             if item.is_dir() and re.match(r"source_.*", item.name):
                 return item.name
-        # This should never happen as the module for low-code connectors is always source_<name>
+        # This should only trigger in integration tests, as low-code connector modules are always named source_<name>
         return None
 
     @staticmethod
