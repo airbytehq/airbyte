@@ -6,7 +6,9 @@ from __future__ import annotations
 
 import importlib
 import inspect
+import os
 import re
+import sys
 from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
@@ -481,15 +483,43 @@ class ModelToComponentFactory:
         kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
         return custom_component_class(**kwargs)
 
-    @staticmethod
-    def _get_class_from_fully_qualified_class_name(full_qualified_class_name: str) -> Any:
+    def _get_class_from_fully_qualified_class_name(self, full_qualified_class_name: str) -> Any:
+        """
+        Loads a custom component class from a fully qualified class name.
+        For CDK versions <4.6.0, the class name listed in the manifest is expected to be in the format:
+        source_<name>.components.CustomComponentClass
+        As of CDK 4.6.0, the class name can also be simplified to:
+        components.CustomComponentClass
+        """
+        connector_module = self._get_connector_module()
         split = full_qualified_class_name.split(".")
-        module = ".".join(split[:-1])
+        if split[0] != connector_module:
+            # Prepend the main module if the class_name does not already start with it
+            module = f"{connector_module}." + ".".join(split[:-1])
+        else:
+            module = ".".join(split[:-1])
         class_name = split[-1]
+
         try:
             return getattr(importlib.import_module(module), class_name)
         except AttributeError:
             raise ValueError(f"Could not load class {full_qualified_class_name}.")
+
+    @staticmethod
+    def _get_connector_module() -> Any:
+        """
+        Fetches the connector module name (ie source_<name>).
+        For low-code connectors, the module name is always source_<name>.
+        """
+        connector_module = sys.modules["__main__"]
+        main_file = getattr(connector_module, "__file__")
+        main_dir = os.path.dirname(main_file)
+
+        for item in os.scandir(main_dir):
+            if item.is_dir() and re.match(r"source_.*", item.name):
+                return item.name
+        # This should never happen as the module for low-code connectors is always source_<name>
+        return None
 
     @staticmethod
     def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
