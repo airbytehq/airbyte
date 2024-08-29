@@ -2,22 +2,22 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-* [Developing with the Java CDK](#developing-with-the-java-cdk)
-  * [Intro to the Java CDK](#intro-to-the-java-cdk)
-    * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    * [How is the CDK published?](#how-is-the-cdk-published)
-  * [Using the Java CDK](#using-the-java-cdk)
-    * [Building the CDK](#building-the-cdk)
-    * [Bumping the CDK version](#bumping-the-cdk-version)
-    * [Publishing the CDK](#publishing-the-cdk)
-  * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    * [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
-    * [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
-    * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  * [Changelog](#changelog)
-    * [Java CDK](#java-cdk)
+- [Developing with the Java CDK](#developing-with-the-java-cdk)
+  - [Intro to the Java CDK](#intro-to-the-java-cdk)
+    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+    - [How is the CDK published?](#how-is-the-cdk-published)
+  - [Using the Java CDK](#using-the-java-cdk)
+    - [Building the CDK](#building-the-cdk)
+    - [Bumping the CDK version](#bumping-the-cdk-version)
+    - [Publishing the CDK](#publishing-the-cdk)
+  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+    - [Publishing the CDK and switching to a pinned CDK reference](#publishing-the-cdk-and-switching-to-a-pinned-cdk-reference)
+    - [Troubleshooting CDK Dependency Caches](#troubleshooting-cdk-dependency-caches)
+    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+  - [Changelog](#changelog)
+    - [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -172,8 +172,9 @@ corresponds to that version.
 
 ### Java CDK
 
-| Version    | Date       | Pull Request                                                 | Subject                                                                                                                                                        |
-|:-----------|:-----------|:-------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
+| :--------- | :--------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.44.19    | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476)  | Increase Jackson message length limit to 100mb                                                                                                                 |
 | 0.44.18    | 2024-08-22 | [\#44505](https://github.com/airbytehq/airbyte/pull/44505)   | Improve handling of incoming debezium change events                                                                                                            |
 | 0.44.17    | 2024-08-27 | [\#44832](https://github.com/airbytehq/airbyte/pull/44832) | Fix issues where some error messages with upper cases do not get matched by the error translation framework.                                                   |
 | 0.44.16    | 2024-08-22 | [\#44505](https://github.com/airbytehq/airbyte/pull/44505)   | Destinations: add sqlgenerator testing for mixed-case stream name                                                                                              |
