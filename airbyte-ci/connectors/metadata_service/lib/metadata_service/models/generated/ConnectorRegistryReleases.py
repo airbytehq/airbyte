@@ -11,6 +11,14 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
 from typing_extensions import Literal
 
 
+class StreamBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
+
+
 class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -133,12 +141,8 @@ class NormalizationDestinationDefinitionConfig(BaseModel):
     )
 
 
-class StreamBreakingChangeScope(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    scopeType: Any = Field("stream", const=True)
-    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
+class BreakingChangeScope(BaseModel):
+    __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -154,20 +158,6 @@ class GeneratedFields(BaseModel):
     source_file_info: Optional[SourceFileInfo] = None
     metrics: Optional[ConnectorMetrics] = None
     sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")
-
-
-class BreakingChangeScope(BaseModel):
-    __root__: StreamBreakingChangeScope = Field(..., description="A scope that can be used to limit the impact of a breaking change.")
-
-
-class ActorDefinitionResourceRequirements(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    default: Optional[ResourceRequirements] = Field(
-        None, description="if set, these are the requirements that should be set for ALL jobs run for this actor definition."
-    )
-    jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
 class VersionBreakingChange(BaseModel):
@@ -187,16 +177,28 @@ class VersionBreakingChange(BaseModel):
     )
 
 
+class ActorDefinitionResourceRequirements(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    default: Optional[ResourceRequirements] = Field(
+        None, description="if set, these are the requirements that should be set for ALL jobs run for this actor definition."
+    )
+    jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
 class ConnectorBreakingChanges(BaseModel):
     class Config:
         extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
-        ..., description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade."
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        title="ConnectorBreakingChanges",
     )
 
 
-class ConnectorReleases(BaseModel):
+class ConnectorRegistryReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -254,7 +256,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
         None, description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach"
     )
     erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
-    releases: Optional[ConnectorReleases] = None
+    releases: Optional[ConnectorRegistryReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
@@ -292,7 +294,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         description="an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.",
     )
     allowedHosts: Optional[AllowedHosts] = None
-    releases: Optional[ConnectorReleases] = None
+    releases: Optional[ConnectorRegistryReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
@@ -300,6 +302,6 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     language: Optional[str] = Field(None, description="The language the connector is written in")
 
 
-ConnectorReleases.update_forward_refs()
+ConnectorRegistryReleases.update_forward_refs()
 ConnectorReleaseCandidates.update_forward_refs()
 VersionReleaseCandidate.update_forward_refs()

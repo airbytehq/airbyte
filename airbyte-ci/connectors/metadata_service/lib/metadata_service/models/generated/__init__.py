@@ -2,6 +2,7 @@
 from .ActorDefinitionResourceRequirements import *
 from .AirbyteInternal import *
 from .AllowedHosts import *
+from .ConnectorBreakingChanges import *
 from .ConnectorBuildOptions import *
 from .ConnectorMetadataDefinitionV0 import *
 from .ConnectorMetrics import *
