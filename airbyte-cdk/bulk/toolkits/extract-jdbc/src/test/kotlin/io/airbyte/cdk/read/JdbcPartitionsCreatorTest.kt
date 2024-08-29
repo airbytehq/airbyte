@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.read.TestFixtures.assertFailures
 import io.airbyte.cdk.read.TestFixtures.factory
 import io.airbyte.cdk.read.TestFixtures.id
@@ -28,7 +29,7 @@ class JdbcPartitionsCreatorTest {
         val sharedState =
             sharedState(
                 constants =
-                    DefaultJdbcSharedState.Constants(
+                    DefaultJdbcConstants(
                         withSampling = true,
                         maxSampleSize = 4,
                         // absurdly low value to create many partitions
@@ -112,7 +113,7 @@ class JdbcPartitionsCreatorTest {
         val sharedState =
             sharedState(
                 constants =
-                    DefaultJdbcSharedState.Constants(
+                    DefaultJdbcConstants(
                         withSampling = true,
                         maxSampleSize = 4,
                         // absurdly low value to create many partitions
@@ -224,7 +225,7 @@ class JdbcPartitionsCreatorTest {
         val sharedState =
             sharedState(
                 constants =
-                    DefaultJdbcSharedState.Constants(
+                    DefaultJdbcConstants(
                         withSampling = true,
                         maxSampleSize = 4,
                     ),
@@ -327,7 +328,7 @@ class JdbcPartitionsCreatorTest {
         val stream = stream()
         val sharedState =
             sharedState(
-                constants = DefaultJdbcSharedState.Constants(withSampling = true),
+                constants = DefaultJdbcConstants(withSampling = true),
                 // The JdbcSequentialPartitionsCreator is not expected to query anything.
                 mockedQueries = arrayOf()
             )

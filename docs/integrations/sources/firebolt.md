@@ -54,6 +54,7 @@ You can now use the Airbyte Firebolt source.
 
 | Version | Date       | Pull Request                                             | Subject                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------- |
+| 2.0.15 | 2024-08-24 | [44715](https://github.com/airbytehq/airbyte/pull/44715) | Update dependencies |
 | 2.0.14 | 2024-08-17 | [44212](https://github.com/airbytehq/airbyte/pull/44212) | Update dependencies |
 | 2.0.13 | 2024-08-12 | [43774](https://github.com/airbytehq/airbyte/pull/43774) | Update dependencies |
 | 2.0.12 | 2024-08-10 | [43535](https://github.com/airbytehq/airbyte/pull/43535) | Update dependencies |

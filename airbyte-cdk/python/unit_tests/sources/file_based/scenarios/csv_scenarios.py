@@ -3240,6 +3240,7 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
+    .set_expected_check_error(AirbyteTracedException, None)
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3343,4 +3344,5 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
+    .set_expected_check_error(AirbyteTracedException, None)
 ).build()
