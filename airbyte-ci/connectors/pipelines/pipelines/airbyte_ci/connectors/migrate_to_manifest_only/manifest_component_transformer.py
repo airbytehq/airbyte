@@ -161,6 +161,8 @@ class ManifestComponentTransformer:
             # have no low-code connectors that use class_name except for custom components.
             if "class_name" in propagated_component:
                 found_type = CUSTOM_COMPONENTS_MAPPING.get(parent_field_identifier)
+                fully_qualified_class_name = propagated_component["class_name"]
+                propagated_component["class_name"] = self._simplify_class_name(fully_qualified_class_name)
             else:
                 found_type = DEFAULT_MODEL_TYPES.get(parent_field_identifier)
             if found_type:
@@ -216,4 +218,12 @@ class ManifestComponentTransformer:
 
     @staticmethod
     def _is_json_schema_object(propagated_component: Mapping[str, Any]) -> bool:
+        component_type = propagated_component.get("type")
+        if isinstance(component_type, list):
+            return "object" in component_type
         return propagated_component.get("type") == "object"
+    
+    @staticmethod
+    def _simplify_class_name(class_name: str) -> str:
+        class_name_parts = class_name.split(".")        
+        return ".".join(class_name_parts[1:])
