@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.6.2
+use orjson instead of json to speed up JSON parsing
+
+## 4.6.1
+Update json error message parser to identify additional error message fields in response bodies
+
+## 4.6.0
+Raise exceptions in file-based check, improve UI errors
+
+## 4.5.4
+add codeflash to dev environment
+
+## 4.5.3
+Cache the result of interpolated strings when the evaluated value is equal to its raw representation
+
 ## 4.5.2
 CDK: refactor error handling in abstract source
 

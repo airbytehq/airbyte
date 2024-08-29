@@ -24,7 +24,7 @@ class CheckTest {
     @Property(name = "airbyte.connector.config.database", value = "testdb")
     @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
     fun testConfigBadPort() {
-        assertFailed(" must have a minimum value of 0".toRegex())
+        assertFailed("port: Minimum is '0', found '-1'. \\(code: 1015\\)".toRegex())
     }
 
     @Test

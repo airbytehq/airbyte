@@ -27,7 +27,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
-import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -424,7 +423,12 @@ class SnowflakeDestinationHandler(
                         )
                     val finalTableGenerationId =
                         if (isFinalTablePresent && !isFinalTableEmpty) {
-                            getFinalTableGenerationId(streamConfig.id)
+                            // for now, just use 0. this means we will always use a temp final
+                            // table.
+                            // platform has a workaround for this, so it's OK.
+                            // TODO only fetch this on truncate syncs
+                            // TODO once we have destination state, use that instead of a query
+                            0L
                         } else {
                             null
                         }
@@ -448,44 +452,6 @@ class SnowflakeDestinationHandler(
                 }
             }
             .collect(Collectors.toList())
-    }
-
-    /**
-     * Query the final table to find the generation ID of any record. Assumes that the table exists
-     * and is nonempty.
-     */
-    private fun getFinalTableGenerationId(streamId: StreamId): Long? {
-        val tableExistsWithGenerationId =
-            jdbcDatabase.executeMetadataQuery {
-                // Find a column named _airbyte_generation_id
-                // in the relevant table.
-                val resultSet =
-                    it.getColumns(
-                        databaseName,
-                        streamId.finalNamespace,
-                        streamId.finalName,
-                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()
-                    )
-                // Check if there were any such columns.
-                resultSet.next()
-            }
-        // The table doesn't exist, or exists but doesn't have generation id
-        if (!tableExistsWithGenerationId) {
-            return null
-        }
-
-        return jdbcDatabase
-            .queryJsons(
-                """
-                SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()}
-                FROM ${streamId.finalNamespace(QUOTE)}.${streamId.finalName(QUOTE)}
-                LIMIT 1
-                """.trimIndent(),
-            )
-            .first()
-            .get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
-            ?.asLong()
-            ?: 0
     }
 
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
