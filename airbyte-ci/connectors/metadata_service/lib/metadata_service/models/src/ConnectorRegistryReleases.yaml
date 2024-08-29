@@ -38,4 +38,3 @@ definitions:
         oneOf:
           - $ref: ConnectorRegistrySourceDefinition.yaml
           - $ref: ConnectorRegistryDestinationDefinition.yaml
-  

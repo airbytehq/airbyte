@@ -11,30 +11,30 @@ patternProperties:
     $ref: "#/definitions/VersionBreakingChange"
 definitions:
   VersionBreakingChange:
-      description: Contains information about a breaking change, including the deadline to upgrade and a message detailing the change.
-      type: object
-      additionalProperties: false
-      required:
-        - upgradeDeadline
-        - message
-      properties:
-        upgradeDeadline:
-          description: The deadline by which to upgrade before the breaking change takes effect.
-          type: string
-          format: date
-        message:
-          description: Descriptive message detailing the breaking change.
-          type: string
-        migrationDocumentationUrl:
-          description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
-          type: string
-          format: uri
-        scopedImpact:
-          description: List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.
-          type: array
-          minItems: 1
-          items:
-            $ref: "#/definitions/BreakingChangeScope"
+    description: Contains information about a breaking change, including the deadline to upgrade and a message detailing the change.
+    type: object
+    additionalProperties: false
+    required:
+      - upgradeDeadline
+      - message
+    properties:
+      upgradeDeadline:
+        description: The deadline by which to upgrade before the breaking change takes effect.
+        type: string
+        format: date
+      message:
+        description: Descriptive message detailing the breaking change.
+        type: string
+      migrationDocumentationUrl:
+        description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
+        type: string
+        format: uri
+      scopedImpact:
+        description: List of scopes that are impacted by the breaking change. If not specified, the breaking change cannot be scoped to reduce impact via the supported scope types.
+        type: array
+        minItems: 1
+        items:
+          $ref: "#/definitions/BreakingChangeScope"
   BreakingChangeScope:
     description: A scope that can be used to limit the impact of a breaking change.
     type: object
