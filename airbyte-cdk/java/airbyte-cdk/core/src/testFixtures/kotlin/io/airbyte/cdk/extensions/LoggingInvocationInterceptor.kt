@@ -3,7 +3,6 @@
  */
 package io.airbyte.cdk.extensions
 
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.reflect.*
 import java.time.Duration
 import java.time.Instant
@@ -21,8 +20,9 @@ import org.junit.jupiter.api.extension.DynamicTestInvocationContext
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.InvocationInterceptor
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * By default, junit only output logs to the console, and nothing makes it into log4j logs. This
  * class fixes that by using the interceptor facility to print progress and timing information. This
@@ -64,7 +64,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             val logLineSuffix: String
             val methodMatcher = methodPattern.matcher(methodName)
             if (methodName == "interceptDynamicTest") {
-                logLineSuffix = "execution of DynamicTest ${extensionContext!!.displayName}"
+                logLineSuffix =
+                    "execution of DynamicTest %s".formatted(extensionContext!!.displayName)
             } else if (methodName == "interceptTestClassConstructor") {
                 logLineSuffix =
                     "instance creation for %s".formatted(reflectiveInvocationContext!!.targetClass)
@@ -85,7 +86,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
                     )
                 TestContext.CURRENT_TEST_NAME.set("$targetClassName.$methodName")
             } else {
-                logLineSuffix = "execution of unknown intercepted call $methodName"
+                logLineSuffix = "execution of unknown intercepted call %s".formatted(methodName)
             }
             val currentThread = Thread.currentThread()
             val timeoutTask = TimeoutInteruptor(currentThread)
@@ -114,22 +115,22 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
             } catch (throwable: Throwable) {
                 timeoutTask.cancel()
                 val elapsedMs = Duration.between(start, Instant.now()).toMillis()
-                val t1: Throwable
+                var t1: Throwable
                 if (timeoutTask.wasTriggered) {
-                    val timeoutAsString =
-                        DurationFormatUtils.formatDurationWords(elapsedMs, true, true)
                     t1 =
                         TimeoutException(
-                            "Execution was cancelled after $timeoutAsString. If you think your test should be given more time to complete, " +
-                                "you can use the @Timeout annotation. If all the test of a connector are slow, " +
-                                " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties."
+                            ("Execution was cancelled after %s. If you think your test should be given more time to complete, you can use the @Timeout annotation. If all the test of a connector are slow, " +
+                                    " you can override the property 'JunitMethodExecutionTimeout' in your gradle.properties.")
+                                .formatted(
+                                    DurationFormatUtils.formatDurationWords(elapsedMs, true, true)
+                                )
                         )
                     t1.initCause(throwable)
                 } else {
                     t1 = throwable
                 }
                 var belowCurrentCall = false
-                val stackToDisplay: MutableList<String> = LinkedList()
+                val stackToDisplay: MutableList<String?> = LinkedList()
                 for (stackString in ExceptionUtils.getStackFrames(throwable)) {
                     if (stackString!!.startsWith("\tat ")) {
                         if (
@@ -254,8 +255,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptAfterAllMethod(
-        invocation: InvocationInterceptor.Invocation<Void>?,
-        invocationContext: ReflectiveInvocationContext<Method>?,
+        invocation: InvocationInterceptor.Invocation<Void?>?,
+        invocationContext: ReflectiveInvocationContext<Method?>?,
         extensionContext: ExtensionContext?
     ) {
         proxy!!.interceptAfterAllMethod(invocation, invocationContext, extensionContext)
@@ -263,8 +264,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptAfterEachMethod(
-        invocation: InvocationInterceptor.Invocation<Void>?,
-        invocationContext: ReflectiveInvocationContext<Method>?,
+        invocation: InvocationInterceptor.Invocation<Void?>?,
+        invocationContext: ReflectiveInvocationContext<Method?>?,
         extensionContext: ExtensionContext?
     ) {
         proxy!!.interceptAfterEachMethod(invocation, invocationContext, extensionContext)
@@ -272,8 +273,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptBeforeAllMethod(
-        invocation: InvocationInterceptor.Invocation<Void>?,
-        invocationContext: ReflectiveInvocationContext<Method>?,
+        invocation: InvocationInterceptor.Invocation<Void?>?,
+        invocationContext: ReflectiveInvocationContext<Method?>?,
         extensionContext: ExtensionContext?
     ) {
         proxy!!.interceptBeforeAllMethod(invocation, invocationContext, extensionContext)
@@ -281,8 +282,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptBeforeEachMethod(
-        invocation: InvocationInterceptor.Invocation<Void>?,
-        invocationContext: ReflectiveInvocationContext<Method>?,
+        invocation: InvocationInterceptor.Invocation<Void?>?,
+        invocationContext: ReflectiveInvocationContext<Method?>?,
         extensionContext: ExtensionContext?
     ) {
         proxy!!.interceptBeforeEachMethod(invocation, invocationContext, extensionContext)
@@ -290,7 +291,7 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptDynamicTest(
-        invocation: InvocationInterceptor.Invocation<Void>?,
+        invocation: InvocationInterceptor.Invocation<Void?>?,
         invocationContext: DynamicTestInvocationContext?,
         extensionContext: ExtensionContext?
     ) {
@@ -315,8 +316,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun interceptTestTemplateMethod(
-        invocation: InvocationInterceptor.Invocation<Void>?,
-        invocationContext: ReflectiveInvocationContext<Method>?,
+        invocation: InvocationInterceptor.Invocation<Void?>?,
+        invocationContext: ReflectiveInvocationContext<Method?>?,
         extensionContext: ExtensionContext?
     ) {
         proxy!!.interceptTestTemplateMethod(invocation, invocationContext, extensionContext)
@@ -324,8 +325,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun <T> interceptTestFactoryMethod(
-        invocation: InvocationInterceptor.Invocation<T>?,
-        invocationContext: ReflectiveInvocationContext<Method>?,
+        invocation: InvocationInterceptor.Invocation<T?>?,
+        invocationContext: ReflectiveInvocationContext<Method?>?,
         extensionContext: ExtensionContext?
     ): T? {
         return proxy!!.interceptTestFactoryMethod(invocation, invocationContext, extensionContext)
@@ -333,8 +334,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
 
     @Throws(Throwable::class)
     override fun <T> interceptTestClassConstructor(
-        invocation: InvocationInterceptor.Invocation<T>?,
-        invocationContext: ReflectiveInvocationContext<Constructor<T>?>?,
+        invocation: InvocationInterceptor.Invocation<T?>?,
+        invocationContext: ReflectiveInvocationContext<Constructor<T?>?>?,
         extensionContext: ExtensionContext?
     ): T? {
         return proxy!!.interceptTestClassConstructor(
@@ -345,6 +346,8 @@ class LoggingInvocationInterceptor : InvocationInterceptor {
     }
 
     companion object {
+        private val LOGGER: Logger =
+            LoggerFactory.getLogger(LoggingInvocationInterceptor::class.java)
         private val JUNIT_METHOD_EXECUTION_TIMEOUT_PROPERTY_NAME: String =
             "JunitMethodExecutionTimeout"
     }

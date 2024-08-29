@@ -6,9 +6,8 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
-import io.github.oshai.kotlinlogging.KotlinLogging
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 interface AirbyteType {
     val typeName: String
@@ -50,7 +49,7 @@ interface AirbyteType {
                 }
                 return AirbyteProtocolType.Companion.fromJson(schema)
             } catch (e: Exception) {
-                LOGGER.error { "Exception parsing JSON schema $schema: $e; returning UNKNOWN." }
+                LOGGER.error("Exception parsing JSON schema {}: {}; returning UNKNOWN.", schema, e)
                 return AirbyteProtocolType.UNKNOWN
             }
         }
@@ -108,10 +107,12 @@ interface AirbyteType {
 
             // Recurse into a schema that forces a specific one of each option
             val options =
-                typeOptions.map { typeOption: String ->
-                    fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
-                }
-
+                typeOptions
+                    .stream()
+                    .map { typeOption: String ->
+                        fromJsonSchema(getTrimmedJsonSchema(schema, typeOption))
+                    }
+                    .toList()
             return Union(options)
         }
 
@@ -122,5 +123,7 @@ interface AirbyteType {
             (schemaClone as ObjectNode).put("type", type)
             return schemaClone
         }
+
+        val LOGGER: Logger = LoggerFactory.getLogger(AirbyteType::class.java)
     }
 }

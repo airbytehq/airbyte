@@ -15,6 +15,7 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.stream.Collectors
 import kotlin.math.min
 
 private val logger = KotlinLogging.logger {}
@@ -193,10 +194,12 @@ internal constructor(
             )
         val workersWithBatchesSize =
             runningWorkerBatchesSizes
+                .stream()
                 .filter { obj: Optional<Long> -> obj.isPresent }
-                .sumOf { obj: Optional<Long> -> obj.get() }
+                .mapToLong { obj: Optional<Long> -> obj.get() }
+                .sum()
         val workersWithoutBatchesCount =
-            runningWorkerBatchesSizes.count { obj: Optional<Long> -> obj.isEmpty }
+            runningWorkerBatchesSizes.stream().filter { obj: Optional<Long> -> obj.isEmpty }.count()
         val workersWithoutBatchesSizeEstimate =
             (min(
                     flusher.optimalBatchSizeBytes.toDouble(),
@@ -229,30 +232,48 @@ internal constructor(
     fun orderStreamsByPriority(streams: Set<StreamDescriptor>): List<StreamDescriptor> {
         // eagerly pull attributes so that values are consistent throughout comparison
         val sdToQueueSize =
-            streams.associateWith { streamDescriptor: StreamDescriptor ->
-                bufferDequeue.getQueueSizeBytes(
-                    streamDescriptor,
+            streams
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        { s: StreamDescriptor -> s },
+                        { streamDescriptor: StreamDescriptor ->
+                            bufferDequeue.getQueueSizeBytes(
+                                streamDescriptor,
+                            )
+                        },
+                    ),
                 )
-            }
 
         val sdToTimeOfLastRecord =
-            streams.associateWith { streamDescriptor: StreamDescriptor ->
-                bufferDequeue.getTimeOfLastRecord(
-                    streamDescriptor,
+            streams
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        { s: StreamDescriptor -> s },
+                        { streamDescriptor: StreamDescriptor ->
+                            bufferDequeue.getTimeOfLastRecord(
+                                streamDescriptor,
+                            )
+                        },
+                    ),
                 )
-            }
-        return streams.sortedWith(
-            Comparator.comparing(
-                    { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
-                    Comparator.reverseOrder(),
-                ) // if no time is present, it suggests the queue has no records. set MAX time
-                // as a sentinel value to
-                // represent no records.
-                .thenComparing { s: StreamDescriptor ->
-                    sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
-                }
-                .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
-        )
+
+        return streams
+            .stream()
+            .sorted(
+                Comparator.comparing(
+                        { s: StreamDescriptor -> sdToQueueSize[s]!!.orElseThrow() },
+                        Comparator.reverseOrder(),
+                    ) // if no time is present, it suggests the queue has no records. set MAX time
+                    // as a sentinel value to
+                    // represent no records.
+                    .thenComparing { s: StreamDescriptor ->
+                        sdToTimeOfLastRecord[s]!!.orElse(Instant.MAX)
+                    }
+                    .thenComparing { s: StreamDescriptor -> s.namespace + s.name },
+            )
+            .collect(Collectors.toList())
     }
 
     companion object {

@@ -4,6 +4,7 @@
 package io.airbyte.cdk.db.factory
 
 import io.airbyte.cdk.integrations.JdbcConnector
+import java.util.Map
 import org.jooq.SQLDialect
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -14,10 +15,10 @@ internal class DSLContextFactoryTest : CommonFactoryTest() {
     fun testCreatingADslContext() {
         val dataSource =
             DataSourceFactory.create(
-                container.username,
-                container.password,
-                container.driverClassName,
-                container.getJdbcUrl()
+                CommonFactoryTest.Companion.container!!.getUsername(),
+                CommonFactoryTest.Companion.container!!.getPassword(),
+                CommonFactoryTest.Companion.container!!.getDriverClassName(),
+                CommonFactoryTest.Companion.container!!.getJdbcUrl()
             )
         val dialect = SQLDialect.POSTGRES
         val dslContext = DSLContextFactory.create(dataSource, dialect)
@@ -30,10 +31,10 @@ internal class DSLContextFactoryTest : CommonFactoryTest() {
         val dialect = SQLDialect.POSTGRES
         val dslContext =
             DSLContextFactory.create(
-                container.username,
-                container.password,
-                container.driverClassName,
-                container.getJdbcUrl(),
+                CommonFactoryTest.Companion.container!!.getUsername(),
+                CommonFactoryTest.Companion.container!!.getPassword(),
+                CommonFactoryTest.Companion.container!!.getDriverClassName(),
+                CommonFactoryTest.Companion.container!!.getJdbcUrl(),
                 dialect
             )
         Assertions.assertNotNull(dslContext)
@@ -42,14 +43,14 @@ internal class DSLContextFactoryTest : CommonFactoryTest() {
 
     @Test
     fun testCreatingADslContextWithIndividualConfigurationAndConnectionProperties() {
-        val connectionProperties = mapOf("foo" to "bar")
+        val connectionProperties = Map.of("foo", "bar")
         val dialect = SQLDialect.POSTGRES
         val dslContext =
             DSLContextFactory.create(
-                container.username,
-                container.password,
-                container.driverClassName,
-                container.getJdbcUrl(),
+                CommonFactoryTest.Companion.container!!.getUsername(),
+                CommonFactoryTest.Companion.container!!.getPassword(),
+                CommonFactoryTest.Companion.container!!.getDriverClassName(),
+                CommonFactoryTest.Companion.container!!.getJdbcUrl(),
                 dialect,
                 connectionProperties,
                 JdbcConnector.CONNECT_TIMEOUT_DEFAULT

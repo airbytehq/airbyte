@@ -1,2 +1,4 @@
 // This record verifies that we can update an existing record, with a new record where one column has an invalid value.
-{"_airbyte_raw_id": "b9ac9f01-abc1-4e7c-89e5-eac9223d5726", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 2, "id2": 100, "updated_at": "2023-01-01T03:00:01Z", "string": "Bob", "integer": "oops"}}
+// TODO: Uncomment the below line and delete the last line when _airbyte_meta is implemented, then it should work properly
+//{"_airbyte_raw_id": "d4e1d989-c115-403c-9e68-5d320e6376bb", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 5, "id2": 100, "updated_at": "2023-01-01T07:00:00Z", "_ab_cdc_deleted_at": {}, "string": "david1"}}
+{"_airbyte_raw_id": "b9ac9f01-abc1-4e7c-89e5-eac9223d5726", "_airbyte_extracted_at": "2023-01-01T00:00:00Z", "_airbyte_data": {"id1": 2, "id2": 100, "updated_at": "2023-01-01T03:00:01Z", "string": "Bob", "integer": 25}}

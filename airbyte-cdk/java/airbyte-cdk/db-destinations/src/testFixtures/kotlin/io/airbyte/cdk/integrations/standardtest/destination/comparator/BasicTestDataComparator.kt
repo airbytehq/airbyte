@@ -4,11 +4,10 @@
 package io.airbyte.cdk.integrations.standardtest.destination.comparator
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Function
 import org.junit.jupiter.api.Assertions
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class BasicTestDataComparator(private val nameResolver: Function<String?, List<String?>>) :
     TestDataComparator {
@@ -42,5 +41,7 @@ class BasicTestDataComparator(private val nameResolver: Function<String?, List<S
         Assertions.assertEquals(expectedValue, actualValue)
     }
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(BasicTestDataComparator::class.java)
+    }
 }

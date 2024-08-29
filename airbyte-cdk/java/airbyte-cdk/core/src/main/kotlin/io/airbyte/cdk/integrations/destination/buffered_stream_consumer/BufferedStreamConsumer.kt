@@ -18,12 +18,12 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.util.function.Consumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * This class consumes AirbyteMessages from the worker.
  *
@@ -135,7 +135,7 @@ internal constructor(
         hasStarted = true
         nextFlushDeadline = Instant.now().plus(bufferFlushFrequency)
         streamToIgnoredRecordCount.clear()
-        LOGGER.info { "${BufferedStreamConsumer::class.java} started." }
+        LOGGER.info("{} started.", BufferedStreamConsumer::class.java)
         onStart.call()
     }
 
@@ -188,7 +188,7 @@ internal constructor(
         } else if (msg.type == AirbyteMessage.Type.STATE) {
             stateManager.addState(msg)
         } else {
-            LOGGER.warn { "Unexpected message: ${msg.type}" }
+            LOGGER.warn("Unexpected message: " + msg.type)
         }
         periodicBufferFlush()
     }
@@ -222,12 +222,12 @@ internal constructor(
         // When the last time the buffered has been flushed exceed the frequency, flush the current
         // buffer before receiving incoming AirbyteMessage
         if (Instant.now().isAfter(nextFlushDeadline)) {
-            LOGGER.info { "Periodic buffer flush started" }
+            LOGGER.info("Periodic buffer flush started")
             try {
                 bufferingStrategy.flushAllBuffers()
                 markStatesAsFlushedToDestination()
             } catch (e: Exception) {
-                LOGGER.error(e) { "Periodic buffer flush failed" }
+                LOGGER.error("Periodic buffer flush failed", e)
                 throw e
             }
         }
@@ -250,14 +250,16 @@ internal constructor(
 
         streamToIgnoredRecordCount.forEach { (pair: AirbyteStreamNameNamespacePair?, count: Long?)
             ->
-            LOGGER.warn {
-                "A total of $count record(s) of data from stream $pair were invalid and were ignored."
-            }
+            LOGGER.warn(
+                "A total of {} record(s) of data from stream {} were invalid and were ignored.",
+                count,
+                pair
+            )
         }
         if (hasFailed) {
-            LOGGER.error { "executing on failed close procedure." }
+            LOGGER.error("executing on failed close procedure.")
         } else {
-            LOGGER.info { "executing on success close procedure." }
+            LOGGER.info("executing on success close procedure.")
             // When flushing the buffer, this will call the respective #flushBufferFunction which
             // bundles
             // the flush and commit operation, so if successful then mark state as committed
@@ -286,18 +288,18 @@ internal constructor(
                  * hasFailed=false, then it could be full success. if hasFailed=true, then going for partial
                  * success.
                  */
-                // TODO what to do here?
-                onClose.accept(false, HashMap())
+                onClose.accept(false, null)
             }
 
             stateManager.listCommitted()!!.forEach(outputRecordCollector)
         } catch (e: Exception) {
-            LOGGER.error(e) { "Close failed." }
+            LOGGER.error("Close failed.", e)
             throw e
         }
     }
 
     companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(BufferedStreamConsumer::class.java)
 
         private fun throwUnrecognizedStream(
             catalog: ConfiguredAirbyteCatalog?,

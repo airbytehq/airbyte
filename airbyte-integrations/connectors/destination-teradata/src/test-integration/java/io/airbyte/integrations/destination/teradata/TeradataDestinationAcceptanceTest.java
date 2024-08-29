@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination.teradata.envclient.exception.BaseExce
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,11 @@ import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+  TODO: Make sure that testIncrementalDedupeSync() works once Destination V2 is implemented.
+    The feature & test is activated by adding "append_dedup" in the "supported_destination_sync_modes" array
+     of the connector specification file destination-teradata/src/main/resources/spec.json
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
@@ -70,6 +76,11 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
   @BeforeAll
   void initEnvironment() throws Exception {
     this.configJson = Jsons.clone(getStaticConfig());
+  }
+
+  //@BeforeAll // Mysterious remote teradata environment setup not needed with local teradata development VM
+  void initEnvironment_disabled() throws Exception {
+    this.configJson = Jsons.clone(getStaticConfig());
     TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
     String name = configJson.get("env_name").asText();
     String token = configJson.get("env_token").asText();
@@ -96,7 +107,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
     }
   }
 
-  @AfterAll
+  //@AfterAll // Mysterious remote teradata  environment teardown not needed with local teradata development VM
   void cleanupEnvironment() throws ExecutionException, InterruptedException {
     try {
       TeradataHttpClient teradataHttpClient = new TeradataHttpClient(configJson.get("env_url").asText());
@@ -124,20 +135,19 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
+    return retrieveRecordsFromTable(streamName, namespace);
 
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    return database.bufferedResultSetQuery(
-        connection -> {
-          var statement = connection.createStatement();
-          return statement.executeQuery(
-              String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
-        },
-        rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
+    return database.queryJsons(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
+            .stream().peek(node -> {
+              ((ObjectNode) node).remove("_airbyte_raw_id");
+              ((ObjectNode) node).remove("_airbyte_extracted_at");
+              ((ObjectNode) node).remove("_airbyte_meta");
+            }).toList();
   }
 
   @Override
@@ -149,7 +159,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
       database = getDatabase(dataSource);
       database.execute(createSchemaQuery);
     } catch (Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " creation got failed.");
+      AirbyteTraceMessageUtility.emitTransientErrorTrace(e, "Database " + SCHEMA_NAME + " creation got failed.");
     }
   }
 
@@ -161,7 +171,7 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
       database.execute(deleteQuery);
       database.execute(dropQuery);
     } catch (Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + SCHEMA_NAME + " delete got failed.");
+      AirbyteTraceMessageUtility.emitTransientErrorTrace(e, "Database " + SCHEMA_NAME + " delete got failed.");
     } finally {
       DataSourceFactory.close(dataSource);
     }
@@ -175,22 +185,19 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @Override
   @Test
-  public void testSecondSync() {
-    // overrides test in coming releases
-  }
-
-  @Override
-  @Test
   public void testCustomDbtTransformations() throws Exception {
     // overrides test in coming releases
   }
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);
-    return DataSourceFactory.create(jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        TeradataDestination.DRIVER_CLASS, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(config));
+    return DataSourceFactory.create(
+            jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            TeradataDestination.DRIVER_CLASS,
+            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+            getConnectionProperties(config),
+            Duration.ofSeconds(15));
   }
 
   protected JdbcDatabase getDatabase(final DataSource dataSource) {

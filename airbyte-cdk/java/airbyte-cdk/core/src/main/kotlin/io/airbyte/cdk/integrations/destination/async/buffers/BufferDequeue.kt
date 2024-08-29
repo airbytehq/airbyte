@@ -58,13 +58,14 @@ class BufferDequeue(
             val output: MutableList<StreamAwareQueue.MessageWithMeta> = LinkedList()
             while (queue!!.size() > 0) {
                 val memoryItem:
-                    MemoryBoundedLinkedBlockingQueue.MemoryItem<StreamAwareQueue.MessageWithMeta> =
+                    MemoryBoundedLinkedBlockingQueue.MemoryItem<
+                        StreamAwareQueue.MessageWithMeta?>? =
                     queue.peek().orElseThrow()
 
                 // otherwise pull records until we hit the memory limit.
-                val newSize: Long = (memoryItem.size) + bytesRead.get()
+                val newSize: Long = (memoryItem?.size ?: 0) + bytesRead.get()
                 if (newSize <= optimalBytesToRead) {
-                    memoryItem.size.let { bytesRead.addAndGet(it) }
+                    memoryItem?.size?.let { bytesRead.addAndGet(it) }
                     queue.poll()?.item?.let { output.add(it) }
                 } else {
                     break
@@ -108,7 +109,12 @@ class BufferDequeue(
         get() = memoryManager.maxMemoryBytes
 
     val totalGlobalQueueSizeBytes: Long
-        get() = buffers.values.sumOf { obj: StreamAwareQueue -> obj.currentMemoryUsage }
+        get() =
+            buffers.values
+                .stream()
+                .map { obj: StreamAwareQueue -> obj.currentMemoryUsage }
+                .mapToLong { obj: Long -> obj }
+                .sum()
 
     fun getQueueSizeInRecords(streamDescriptor: StreamDescriptor): Optional<Long> {
         return getBuffer(streamDescriptor).map { buf: StreamAwareQueue -> buf.size().toLong() }

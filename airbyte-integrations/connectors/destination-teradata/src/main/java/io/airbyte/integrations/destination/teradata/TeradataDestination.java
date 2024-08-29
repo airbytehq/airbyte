@@ -6,28 +6,51 @@ package io.airbyte.integrations.destination.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.Migration;
+import io.airbyte.integrations.base.destination.typing_deduping.migrators.MinimumDestinationState;
+import io.airbyte.integrations.destination.teradata.typing_deduping.TeradataDataTransformer;
+import io.airbyte.integrations.destination.teradata.typing_deduping.TeradataDestinationHandler;
+import io.airbyte.integrations.destination.teradata.typing_deduping.TeradataRawTableAirbyteMetaMigration;
+import io.airbyte.integrations.destination.teradata.typing_deduping.TeradataSqlGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class TeradataDestination extends AbstractJdbcDestination implements Destination {
+/**
+  Main class for hte destination-teradata connector
+ */
+public class TeradataDestination extends AbstractJdbcDestination<MinimumDestinationState> implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestination.class);
+
+  private static final NamingConventionTransformer NAMING_CONVENTION_TRANSFORMER = new StandardNameTransformer();
+
   /**
    * Teradata JDBC driver
    */
-  public static final String DRIVER_CLASS = "com.teradata.jdbc.TeraDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.TERADATA.getDriverClassName();
   /**
    * Default schema name
    */
@@ -52,6 +75,8 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
   protected static final String ENCRYPTDATA = "ENCRYPTDATA";
 
   protected static final String ENCRYPTDATA_ON = "ON";
+  private static final String DROP_CASCADE_OPTION = "drop_cascade";
+
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new TeradataDestination()).run(args);
@@ -127,4 +152,34 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  @Override
+  public boolean isV2Destination() {
+    return true;
+  }
+
+
+  @Override
+  protected JdbcSqlGenerator getSqlGenerator(final JsonNode config) {
+    final JsonNode dropCascadeNode = config.get(DROP_CASCADE_OPTION);
+    final boolean dropCascade = dropCascadeNode != null && dropCascadeNode.asBoolean();
+    return new TeradataSqlGenerator(new TeradataNameTransformer(), dropCascade);
+  }
+
+  @Override
+  protected JdbcDestinationHandler<MinimumDestinationState> getDestinationHandler(String databaseName, JdbcDatabase database, String rawTableSchema) {
+    return new TeradataDestinationHandler(databaseName, database, rawTableSchema);
+  }
+
+  @Override
+  protected List<Migration<MinimumDestinationState>> getMigrations(JdbcDatabase database,
+                                                         String databaseName,
+                                                         SqlGenerator sqlGenerator,
+                                                         DestinationHandler<MinimumDestinationState> destinationHandler) {
+    return List.of(new TeradataRawTableAirbyteMetaMigration(database, databaseName));
+  }
+
+  @Override
+  protected StreamAwareDataTransformer getDataTransformer(ParsedCatalog parsedCatalog, String defaultNamespace) {
+    return new TeradataDataTransformer();
+  }
 }

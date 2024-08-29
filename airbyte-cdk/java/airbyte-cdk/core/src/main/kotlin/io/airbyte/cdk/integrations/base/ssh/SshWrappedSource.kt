@@ -9,10 +9,9 @@ import io.airbyte.cdk.integrations.base.Source
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.commons.util.AutoCloseableIterators
 import io.airbyte.protocol.models.v0.*
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class SshWrappedSource : Source {
     private val delegate: Source
@@ -69,9 +68,10 @@ class SshWrappedSource : Source {
         try {
             delegateRead = delegate.read(tunnel.configInTunnel, catalog, state)
         } catch (e: Exception) {
-            LOGGER.error(e) {
-                "Exception occurred while getting the delegate read iterator, closing SSH tunnel"
-            }
+            LOGGER.error(
+                "Exception occurred while getting the delegate read iterator, closing SSH tunnel",
+                e
+            )
             tunnel.close()
             throw e
         }
@@ -88,13 +88,16 @@ class SshWrappedSource : Source {
         try {
             return delegate.readStreams(tunnel.configInTunnel, catalog, state)
         } catch (e: Exception) {
-            LOGGER.error(e) {
-                "Exception occurred while getting the delegate read stream iterators, closing SSH tunnel"
-            }
+            LOGGER.error(
+                "Exception occurred while getting the delegate read stream iterators, closing SSH tunnel",
+                e
+            )
             tunnel.close()
             throw e
         }
     }
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(SshWrappedSource::class.java)
+    }
 }

@@ -45,7 +45,9 @@ object CollectionUtils {
             // searchTerms is empty
             "Search Terms collection may not be empty"
         }
-        return searchTerms.all { term: String -> containsIgnoreCase(searchCollection, term) }
+        return searchTerms.stream().allMatch { term: String ->
+            containsIgnoreCase(searchCollection, term)
+        }
     }
 
     /**
@@ -60,6 +62,9 @@ object CollectionUtils {
         if (collection.contains(search)) {
             return Optional.of(search)
         }
-        return Optional.ofNullable(collection.firstOrNull { it.equals(search, ignoreCase = true) })
+        return collection
+            .stream()
+            .filter { s: String -> s.equals(search, ignoreCase = true) }
+            .findFirst()
     }
 }

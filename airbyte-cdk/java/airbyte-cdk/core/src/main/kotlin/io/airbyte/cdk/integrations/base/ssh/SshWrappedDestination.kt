@@ -16,11 +16,11 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConnectorSpecification
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * Decorates a Destination with an SSH Tunnel using the standard configuration that Airbyte uses for
  * configuring SSH.
@@ -87,9 +87,10 @@ class SshWrappedDestination : Destination {
             delegateConsumer =
                 delegate.getConsumer(tunnel.configInTunnel, catalog, outputRecordCollector)
         } catch (e: Exception) {
-            LOGGER.error(e) {
-                "Exception occurred while getting the delegate consumer, closing SSH tunnel"
-            }
+            LOGGER.error(
+                "Exception occurred while getting the delegate consumer, closing SSH tunnel",
+                e
+            )
             tunnel.close()
             throw e
         }
@@ -109,7 +110,7 @@ class SshWrappedDestination : Destination {
         val connectionOptionsConfig: Optional<JsonNode> =
             Jsons.getOptional(clone, SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
         if (connectionOptionsConfig.isEmpty) {
-            LOGGER.info { "No SSH connection options found, using defaults" }
+            LOGGER.info("No SSH connection options found, using defaults")
             if (clone is ObjectNode) { // Defensive check, it will always be object node
                 val connectionOptions = clone.putObject(SshTunnel.Companion.CONNECTION_OPTIONS_KEY)
                 connectionOptions.put(
@@ -132,9 +133,10 @@ class SshWrappedDestination : Destination {
                     outputRecordCollector
                 )
         } catch (e: Exception) {
-            LOGGER.error(e) {
-                "Exception occurred while getting the delegate consumer, closing SSH tunnel"
-            }
+            LOGGER.error(
+                "Exception occurred while getting the delegate consumer, closing SSH tunnel",
+                e
+            )
             tunnel.close()
             throw e
         }
@@ -153,5 +155,7 @@ class SshWrappedDestination : Destination {
     override val isV2Destination: Boolean
         get() = delegate.isV2Destination
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(SshWrappedDestination::class.java)
+    }
 }

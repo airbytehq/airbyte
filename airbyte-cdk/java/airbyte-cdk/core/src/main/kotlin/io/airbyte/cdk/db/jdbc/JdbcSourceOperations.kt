@@ -7,13 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.db.SourceOperations
 import io.airbyte.protocol.models.JsonSchemaType
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.*
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.format.DateTimeParseException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-private val LOGGER = KotlinLogging.logger {}
 /** Implementation of source operations with standard JDBC types. */
 open class JdbcSourceOperations :
     AbstractJdbcCompatibleSourceOperations<JDBCType>(), SourceOperations<ResultSet, JDBCType> {
@@ -29,7 +29,13 @@ open class JdbcSourceOperations :
     override fun copyToJsonField(resultSet: ResultSet, colIndex: Int, json: ObjectNode) {
         val columnTypeInt = resultSet.metaData.getColumnType(colIndex)
         val columnName = resultSet.metaData.getColumnName(colIndex)
-        val columnType = safeGetJdbcType(columnTypeInt)
+        var columnType = safeGetJdbcType(columnTypeInt)
+
+        if(resultSet.metaData.getColumnTypeName(colIndex).equals("TIMESTAMP WITH TIME ZONE")) {
+            columnType = JDBCType.TIMESTAMP_WITH_TIMEZONE;
+        } else if (resultSet.metaData.getColumnTypeName(colIndex).equals("TIME WITH TIME ZONE")) {
+            columnType = JDBCType.TIME_WITH_TIMEZONE
+        }
 
         when (columnType) {
             JDBCType.BIT,
@@ -56,6 +62,7 @@ open class JdbcSourceOperations :
             JDBCType.VARBINARY,
             JDBCType.LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex)
             JDBCType.ARRAY -> putArray(json, columnName, resultSet, colIndex)
+            JDBCType.TIME_WITH_TIMEZONE -> putTimeWithTimezone(json, columnName, resultSet, colIndex)
             else -> putDefault(json, columnName, resultSet, colIndex)
         }
     }
@@ -130,11 +137,15 @@ open class JdbcSourceOperations :
         try {
             return JDBCType.valueOf(field[JdbcConstants.INTERNAL_COLUMN_TYPE].asInt())
         } catch (ex: IllegalArgumentException) {
-            LOGGER.warn {
-                "Could not convert column: ${field[JdbcConstants.INTERNAL_COLUMN_NAME]} from table: " +
-                    "${field[JdbcConstants.INTERNAL_SCHEMA_NAME]}.${field[JdbcConstants.INTERNAL_TABLE_NAME]} " +
-                    "with type: ${field[JdbcConstants.INTERNAL_COLUMN_TYPE]}. Casting to VARCHAR."
-            }
+            LOGGER.warn(
+                String.format(
+                    "Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+                    field[JdbcConstants.INTERNAL_COLUMN_NAME],
+                    field[JdbcConstants.INTERNAL_SCHEMA_NAME],
+                    field[JdbcConstants.INTERNAL_TABLE_NAME],
+                    field[JdbcConstants.INTERNAL_COLUMN_TYPE]
+                )
+            )
             return JDBCType.VARCHAR
         }
     }
@@ -173,5 +184,7 @@ open class JdbcSourceOperations :
         }
     }
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(JdbcSourceOperations::class.java)
+    }
 }

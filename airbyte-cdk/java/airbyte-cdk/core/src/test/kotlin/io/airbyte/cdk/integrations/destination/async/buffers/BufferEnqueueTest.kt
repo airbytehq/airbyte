@@ -10,6 +10,7 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.cdk.integrations.destination.async.state.GlobalAsyncStateManager
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -30,7 +31,6 @@ class BufferEnqueueTest {
                 Mockito.mock(
                     GlobalAsyncStateManager::class.java,
                 ),
-                DEFAULT_NAMESPACE,
             )
 
         val streamName = "stream"
@@ -42,7 +42,7 @@ class BufferEnqueueTest {
                     PartialAirbyteRecordMessage().withStream(streamName),
                 )
 
-        enqueue.addRecord(record, RECORD_SIZE_20_BYTES)
+        enqueue.addRecord(record, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
         Assertions.assertEquals(1, streamToBuffer[stream]!!.size())
         Assertions.assertEquals(20L, streamToBuffer[stream]!!.currentMemoryUsage)
     }
@@ -58,7 +58,6 @@ class BufferEnqueueTest {
                 Mockito.mock(
                     GlobalAsyncStateManager::class.java,
                 ),
-                DEFAULT_NAMESPACE,
             )
 
         val streamName = "stream"
@@ -70,8 +69,8 @@ class BufferEnqueueTest {
                     PartialAirbyteRecordMessage().withStream(streamName),
                 )
 
-        enqueue.addRecord(record, RECORD_SIZE_20_BYTES)
-        enqueue.addRecord(record, RECORD_SIZE_20_BYTES)
+        enqueue.addRecord(record, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
+        enqueue.addRecord(record, RECORD_SIZE_20_BYTES, Optional.of(DEFAULT_NAMESPACE))
         Assertions.assertEquals(2, streamToBuffer[stream]!!.size())
         Assertions.assertEquals(40, streamToBuffer[stream]!!.currentMemoryUsage)
     }

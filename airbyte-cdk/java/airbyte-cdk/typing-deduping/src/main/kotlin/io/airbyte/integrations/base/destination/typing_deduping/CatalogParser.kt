@@ -6,48 +6,21 @@ package io.airbyte.integrations.base.destination.typing_deduping
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler.Companion.addStringForDeinterpolation
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
-import io.airbyte.commons.exceptions.ConfigErrorException
-import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.Optional
 import java.util.function.Consumer
 import org.apache.commons.codec.digest.DigestUtils
-
-private val LOGGER = KotlinLogging.logger {}
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class CatalogParser
 @JvmOverloads
 constructor(
     private val sqlGenerator: SqlGenerator,
-    private val defaultNamespace: String,
-    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE,
+    private val rawNamespace: String = JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 ) {
-    fun parseCatalog(originalCatalog: ConfiguredAirbyteCatalog): ParsedCatalog {
-        if (originalCatalog.streams.isEmpty()) {
-            throw ConfigErrorException(
-                "The catalog contained no streams. This likely indicates a platform/configuration error."
-            )
-        }
-
-        // Don't mutate the original catalog, just operate on a copy of it
-        // This is... probably the easiest way we have to deep clone a protocol model object?
-        val catalog = Jsons.clone(originalCatalog)
-        catalog.streams.onEach {
-            // Overwrite null namespaces
-            if (it.stream.namespace.isNullOrEmpty()) {
-                it.stream.namespace = defaultNamespace
-            }
-            // The refreshes project is the beginning of the end for OVERWRITE syncs.
-            // The sync mode still exists, but we are fully dependent on min_generation to trigger
-            // overwrite logic.
-            if (it.destinationSyncMode == DestinationSyncMode.OVERWRITE) {
-                it.destinationSyncMode = DestinationSyncMode.APPEND
-            }
-        }
-
+    fun parseCatalog(catalog: ConfiguredAirbyteCatalog): ParsedCatalog {
         // this code is bad and I feel bad
         // it's mostly a port of the old normalization logic to prevent tablename collisions.
         // tbh I have no idea if it works correctly.
@@ -57,17 +30,21 @@ constructor(
             val actualStreamConfig: StreamConfig
             // Use empty string quote because we don't really care
             if (
-                streamConfigs.any { s: StreamConfig ->
+                streamConfigs.stream().anyMatch { s: StreamConfig ->
                     s.id.finalTableId("") == originalStreamConfig.id.finalTableId("")
                 } ||
-                    streamConfigs.any { s: StreamConfig ->
+                    streamConfigs.stream().anyMatch { s: StreamConfig ->
                         s.id.rawTableId("") == originalStreamConfig.id.rawTableId("")
                     }
             ) {
                 val originalNamespace = stream.stream.namespace
                 val originalName = stream.stream.name
 
-                LOGGER.info { "Detected table name collision for $originalNamespace.$originalName" }
+                LOGGER.info(
+                    "Detected table name collision for {}.{}",
+                    originalNamespace,
+                    originalName
+                )
 
                 // ... this logic is ported from legacy normalization, and maybe should change?
                 // We're taking a hash of the quoted namespace and the unquoted stream name
@@ -78,13 +55,13 @@ constructor(
                         .substring(0, 3)
                 val newName = "${originalName}_$hash"
                 actualStreamConfig =
-                    originalStreamConfig.copy(
-                        id =
-                            sqlGenerator.buildStreamId(
-                                originalNamespace,
-                                newName,
-                                rawNamespace,
-                            ),
+                    StreamConfig(
+                        sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
+                        originalStreamConfig.syncMode,
+                        originalStreamConfig.destinationSyncMode,
+                        originalStreamConfig.primaryKey,
+                        originalStreamConfig.cursor,
+                        originalStreamConfig.columns,
                     )
             } else {
                 actualStreamConfig = originalStreamConfig
@@ -109,8 +86,8 @@ constructor(
             addStringForDeinterpolation(actualStreamConfig.id.originalNamespace)
             addStringForDeinterpolation(actualStreamConfig.id.originalName)
             actualStreamConfig.columns.keys.forEach(
-                Consumer { columnId: ColumnId ->
-                    addStringForDeinterpolation(columnId.name)
+                Consumer { columnId: ColumnId? ->
+                    addStringForDeinterpolation(columnId!!.name)
                     addStringForDeinterpolation(columnId.originalName)
                 }
             )
@@ -129,24 +106,12 @@ constructor(
                 }
             )
         }
-        LOGGER.info { "Running sync with stream configs: $streamConfigs" }
+        LOGGER.info("Running sync with stream configs: $streamConfigs")
         return ParsedCatalog(streamConfigs)
     }
 
     @VisibleForTesting
     fun toStreamConfig(stream: ConfiguredAirbyteStream): StreamConfig {
-        if (stream.generationId == null || stream.minimumGenerationId == null) {
-            throw ConfigErrorException(
-                "You must upgrade your platform version to use this connector version. Either downgrade your connector or upgrade platform to 0.63.7"
-            )
-        }
-        if (
-            stream.minimumGenerationId != 0.toLong() &&
-                stream.minimumGenerationId != stream.generationId
-        ) {
-            throw UnsupportedOperationException("Hybrid refreshes are not yet supported.")
-        }
-
         val airbyteColumns =
             when (
                 val schema: AirbyteType =
@@ -157,11 +122,14 @@ constructor(
                 else -> throw IllegalArgumentException("Top-level schema must be an object")
             }
 
-        require(!stream.primaryKey.any { key: List<String> -> key.size > 1 }) {
+        require(!stream.primaryKey.stream().anyMatch { key: List<String?> -> key.size > 1 }) {
             "Only top-level primary keys are supported"
         }
         val primaryKey =
-            stream.primaryKey.map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
+            stream.primaryKey
+                .stream()
+                .map { key: List<String> -> sqlGenerator.buildColumnId(key[0]) }
+                .toList()
 
         require(stream.cursorField.size <= 1) { "Only top-level cursors are supported" }
         val cursor: Optional<ColumnId> =
@@ -175,17 +143,11 @@ constructor(
 
         return StreamConfig(
             sqlGenerator.buildStreamId(stream.stream.namespace, stream.stream.name, rawNamespace),
-            when (stream.destinationSyncMode!!) {
-                DestinationSyncMode.APPEND,
-                DestinationSyncMode.OVERWRITE -> ImportType.APPEND
-                DestinationSyncMode.APPEND_DEDUP -> ImportType.DEDUPE
-            },
+            stream.syncMode,
+            stream.destinationSyncMode,
             primaryKey,
             cursor,
-            columns,
-            stream.generationId,
-            stream.minimumGenerationId,
-            stream.syncId,
+            columns
         )
     }
 
@@ -203,7 +165,7 @@ constructor(
             val originalColumnId = sqlGenerator.buildColumnId(key)
             var columnId: ColumnId
             if (
-                columns.keys.none { c: ColumnId ->
+                columns.keys.stream().noneMatch { c: ColumnId ->
                     c.canonicalName == originalColumnId.canonicalName
                 }
             ) {
@@ -211,9 +173,12 @@ constructor(
                 // as-is.
                 columnId = originalColumnId
             } else {
-                LOGGER.info {
-                    "Detected column name collision for ${stream.stream.namespace}.${stream.stream.name}.$key"
-                }
+                LOGGER.info(
+                    "Detected column name collision for {}.{}.{}",
+                    stream.stream.namespace,
+                    stream.stream.name,
+                    key,
+                )
                 // One of the existing columns has the same name. We need to handle this collision.
                 // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
                 var i = 1
@@ -237,7 +202,11 @@ constructor(
                     }
 
                     val canonicalName = columnId.canonicalName
-                    if (columns.keys.none { c: ColumnId -> c.canonicalName == canonicalName }) {
+                    if (
+                        columns.keys.stream().noneMatch { c: ColumnId ->
+                            c.canonicalName == canonicalName
+                        }
+                    ) {
                         break
                     } else {
                         i++
@@ -295,7 +264,11 @@ constructor(
         newColumnId = sqlGenerator.buildColumnId("$prefix$length$suffix")
         // if there's _still_ a collision after this, just give up.
         // we could try to be more clever, but this is already a pretty rare case.
-        if (columns.keys.any { c: ColumnId -> c.canonicalName == newColumnId.canonicalName }) {
+        if (
+            columns.keys.stream().anyMatch { c: ColumnId ->
+                c.canonicalName == newColumnId.canonicalName
+            }
+        ) {
             throw IllegalArgumentException(
                 "Cannot solve column name collision: ${newColumnId.originalName}. We recommend removing this column to continue syncing."
             )
@@ -303,5 +276,7 @@ constructor(
         return newColumnId
     }
 
-    companion object {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(CatalogParser::class.java)
+    }
 }

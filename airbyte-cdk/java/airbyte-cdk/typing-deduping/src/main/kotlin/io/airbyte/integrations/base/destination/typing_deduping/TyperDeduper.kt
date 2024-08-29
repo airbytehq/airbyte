@@ -70,13 +70,14 @@ interface TyperDeduper {
      *
      * @param streamSyncSummaries Information about what happened during the sync. Implementations
      * SHOULD use this information to skip T+D when possible (this is not a requirement for
-     * correctness, but does allow us to save time/money). This parameter MUST NOT be null.
+     * correctness, but does allow us to save time/money). This parameter MUST NOT be null. Streams
+     * MAY be omitted, which will be treated as though they were mapped to
+     * [StreamSyncSummary.DEFAULT].
      */
     @Throws(Exception::class)
     fun typeAndDedupe(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
 
-    @Throws(Exception::class)
-    fun commitFinalTables(streamSyncSummaries: Map<StreamDescriptor, StreamSyncSummary>)
+    @Throws(Exception::class) fun commitFinalTables()
 
     fun cleanup()
 }

@@ -3,12 +3,11 @@
  */
 package io.airbyte.cdk.integrations.destination.record_buffer
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations.Companion.LOGGER
 import java.io.*
 import java.nio.file.Files
 import java.util.*
 
-private val LOGGER = KotlinLogging.logger {}
 /**
  * Instead of storing buffered data on disk like the [FileBuffer], this [BufferStorage] accumulates
  * message data in-memory instead. Thus, a bigger heap size would be required.
@@ -64,7 +63,7 @@ class InMemoryBuffer(private val fileExtension: String) : BufferStorage {
     override fun deleteFile() {
         var pathToDelete = tempFile?.toPath()
         if (pathToDelete != null) {
-            LOGGER.info { "Deleting tempFile data $filename" }
+            LOGGER.info("Deleting tempFile data {}", filename)
             Files.deleteIfExists(pathToDelete)
         }
     }

@@ -34,11 +34,4 @@ object StreamDescriptorUtils {
 
         return pairs
     }
-
-    fun withDefaultNamespace(sd: StreamDescriptor, defaultNamespace: String) =
-        if (sd.namespace.isNullOrEmpty()) {
-            StreamDescriptor().withName(sd.name).withNamespace(defaultNamespace)
-        } else {
-            sd
-        }
 }

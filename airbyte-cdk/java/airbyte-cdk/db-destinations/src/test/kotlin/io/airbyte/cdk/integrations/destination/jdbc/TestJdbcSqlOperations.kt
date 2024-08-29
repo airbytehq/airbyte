@@ -12,18 +12,22 @@ import org.mockito.Mockito
 
 class TestJdbcSqlOperations : JdbcSqlOperations() {
     @Throws(Exception::class)
-    override fun insertRecordsInternalV2(
+    public override fun insertRecordsInternal(
         database: JdbcDatabase,
         records: List<PartialAirbyteMessage>,
         schemaName: String?,
-        tableName: String?,
-        syncId: Long,
-        generationId: Long,
+        tableName: String?
     ) {
         // Not required for the testing
     }
 
-    override fun overwriteRawTable(database: JdbcDatabase, rawNamespace: String, rawName: String) {
+    @Throws(Exception::class)
+    override fun insertRecordsInternalV2(
+        database: JdbcDatabase,
+        records: List<PartialAirbyteMessage>,
+        schemaName: String?,
+        tableName: String?
+    ) {
         // Not required for the testing
     }
 
