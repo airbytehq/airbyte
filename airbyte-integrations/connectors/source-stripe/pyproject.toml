@@ -26,6 +26,6 @@ source-stripe = "source_stripe.run:run"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"
-pytest = "^6.1"
 freezegun = "==1.2.2"
 pytest-mock = "^3.6.1"
+pytest = "^7"
