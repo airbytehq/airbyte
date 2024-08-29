@@ -483,6 +483,12 @@ class SourceStripe(ConcurrentSourceAdapter):
                 sub_items_attr="refunds",
                 **args,
             ),
+            StripeSubStream(
+                name="customer_payment_methods",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
+                parent=self.customers(**args),
+                **args,
+            ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/bank_accounts",
