@@ -202,6 +202,26 @@ def apply_package_info_fields(metadata_data: dict, metadata_entry: LatestMetadat
 
 
 @deep_copy_params
+def apply_language_field(metadata_data: dict) -> dict:
+    """Transform the language tag into a top-level field, if it is not already present.
+
+    Args:
+        metadata_data (dict): The metadata data field.
+
+    Returns:
+        dict: The metadata data field with the language field applied.
+    """
+    if metadata_data.get("language"):
+        return metadata_data
+
+    tags = metadata_data.get("tags", [])
+    languages = [tag.replace("language:", "") for tag in tags if tag.startswith("language:")]
+    metadata_data["language"] = languages[0] if languages else None
+
+    return metadata_data
+
+
+@deep_copy_params
 @sentry_sdk.trace
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
@@ -245,6 +265,9 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
     # Add Dependency information
     overridden_metadata_data["packageInfo"] = apply_package_info_fields(overridden_metadata_data, metadata_entry)
+
+    # Add language field
+    overridden_metadata_data = apply_language_field(overridden_metadata_data)
 
     # if there is no supportLevel, set it to "community"
     if not overridden_metadata_data.get("supportLevel"):
