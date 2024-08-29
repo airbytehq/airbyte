@@ -175,6 +175,13 @@ When a record is deleted, the connector outputs a record with the `ID` of that r
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
+
+## Marketing Attribution data
+Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
+- `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
+- `Orders` (referring_site, source_name)
+- `Abandoned Checkouts` (referring_site, source_name)
+
 ## Features
 
 | Feature                   | Supported?\(Yes/No\) |
