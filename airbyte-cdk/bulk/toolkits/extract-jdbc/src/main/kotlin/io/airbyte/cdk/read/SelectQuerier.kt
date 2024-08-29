@@ -21,6 +21,9 @@ interface SelectQuerier {
     ): Result
 
     data class Parameters(
+        /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
+        val reuseResultObject: Boolean = false,
+        /** JDBC fetchSize value. */
         val fetchSize: Int? = null,
     )
 
@@ -46,6 +49,7 @@ class JdbcSelectQuerier(
         var conn: Connection? = null
         var stmt: PreparedStatement? = null
         var rs: ResultSet? = null
+        val reusable: ObjectNode? = Jsons.objectNode().takeIf { parameters.reuseResultObject }
 
         init {
             log.info { "Querying ${q.sql}" }
@@ -94,7 +98,7 @@ class JdbcSelectQuerier(
             // necessary.
             if (!hasNext()) throw NoSuchElementException()
             // Read the current row in the ResultSet
-            val record: ObjectNode = Jsons.objectNode()
+            val record: ObjectNode = reusable ?: Jsons.objectNode()
             var colIdx = 1
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }

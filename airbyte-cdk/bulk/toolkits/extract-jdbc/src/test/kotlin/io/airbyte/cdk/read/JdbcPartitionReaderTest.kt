@@ -47,7 +47,7 @@ class JdbcPartitionReaderTest {
                                     )
                                 ),
                             ),
-                            SelectQuerier.Parameters(fetchSize = 2),
+                            SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
                             """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
                             """{"id":2,"ts":"2024-08-02","msg":"how"}""",
                             """{"id":3,"ts":"2024-08-03","msg":"are"}""",
@@ -126,7 +126,7 @@ class JdbcPartitionReaderTest {
                                 OrderBy(ts),
                                 Limit(4),
                             ),
-                            SelectQuerier.Parameters(fetchSize = 2),
+                            SelectQuerier.Parameters(reuseResultObject = true, fetchSize = 2),
                             """{"id":1,"ts":"2024-08-01","msg":"hello"}""",
                             """{"id":2,"ts":"2024-08-02","msg":"how"}""",
                             """{"id":3,"ts":"2024-08-03","msg":"are"}""",
