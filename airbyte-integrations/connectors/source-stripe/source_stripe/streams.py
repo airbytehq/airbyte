@@ -212,6 +212,15 @@ class StripeStream(HttpStream, ABC):
         return 0 if IS_TESTING else super(StripeStream, self).retry_factor
 
     def get_cursor(self) -> Optional[Cursor]:
+        """
+        RFR is breaking the pagination in Stripe today. The stream is instantiated using the stream facade here. During the read, this goes
+        through the concurrent code here so that we can read full refresh streams concurrently.
+
+        However, as there are no cursors and the read records is the one from the HttpStream, we end up assigning the
+        ResumableFullRefresCursor and hence only read a single page.
+
+        In order to avoid that, we will assume there are no cursor if the cursor if RFR.
+        """
         parent_cursor = super().get_cursor()
         if isinstance(parent_cursor, (ResumableFullRefreshCursor, SubstreamResumableFullRefreshCursor)):
             return None
