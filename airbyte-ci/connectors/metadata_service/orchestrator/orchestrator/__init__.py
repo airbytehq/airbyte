@@ -181,7 +181,7 @@ SENSORS = [
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="release_candidate_oss_registry_entries_file_blobs",
         interval=60,
-        unique_run_key=True,
+        allow_duplicate_runs=True,
     ),
     new_gcs_blobs_sensor(
         job=generate_cloud_registry,
@@ -194,7 +194,7 @@ SENSORS = [
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="release_candidate_cloud_registry_entries_file_blobs",
         interval=60,
-        unique_run_key=True,
+        allow_duplicate_runs=True,
     ),
     new_gcs_blobs_sensor(
         job=generate_nightly_reports,

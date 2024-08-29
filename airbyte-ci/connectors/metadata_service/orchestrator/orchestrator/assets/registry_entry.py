@@ -600,44 +600,6 @@ def metadata_entry(context: OpExecutionContext) -> Output[Optional[LatestMetadat
     return Output(value=metadata_entry, metadata=dagster_metadata)
 
 
-def find_release_candidates_for_metadata_entry(
-    metadata_entry: LatestMetadataEntry, release_candidate_metadata_entries: Optional[List[LatestMetadataEntry]]
-) -> Optional[List[LatestMetadataEntry]]:
-    """Find the release candidates metadata definition for the given metadata entry.
-
-    Args:
-        metadata_entry (LatestMetadataEntry): The metadata entry.
-        release_candidate_metadata_entries (List[LatestMetadataEntry]): The release candidate metadata definitions.
-
-    Returns:
-        Optional[List[LatestMetadataEntry]]: The release candidates metadata definition.
-    """
-    if not release_candidate_metadata_entries:
-        return None
-
-    current_semver_version = semver.Version.parse(metadata_entry.metadata_definition.data.dockerImageTag)
-
-    # find the release candidate metadata definition that matches the given metadata entry
-    matching_release_candidates = [
-        release_candidate_metadata
-        for release_candidate_metadata in release_candidate_metadata_entries
-        if release_candidate_metadata.metadata_definition.data.dockerRepository == metadata_entry.metadata_definition.data.dockerRepository
-        # Only consider release candidates with a higher version than the metadata entry
-        and semver.Version.parse(release_candidate_metadata.metadata_definition.data.dockerImageTag) > current_semver_version
-    ]
-
-    if not matching_release_candidates:
-        return None
-
-    # We currently want to enforce upstream that there's always only one release candidate per connector
-    # But in case this is not the case, we'll take the one with the closest version to the current one
-    sorted_release_candidates = sorted(
-        matching_release_candidates, key=lambda x: semver.Version.parse(x.metadata_definition.data.dockerImageTag)
-    )
-    # We keep it a single item list until we have a use case for multiple release candidates
-    return [sorted_release_candidates[0]]
-
-
 @asset(
     required_resource_keys={"slack", "root_metadata_directory_manager"},
     group_name=GROUP_NAME,

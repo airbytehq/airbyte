@@ -122,6 +122,11 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, l
 
     Stale means that the file in the github repo is not in the latest metadata file blobs.
     """
+
+    # TODO:
+    # The logic here is not bulletproof. It can't find release candidate metadata which did not made their way to GCS.
+    # We should improve this logic to be able to detect those cases as well.
+
     latest_versions_on_gcs = {
         metadata_entry.metadata_definition.data.dockerRepository: metadata_entry.metadata_definition.data.dockerImageTag
         for metadata_entry in latest_metadata_entries
