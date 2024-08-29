@@ -201,7 +201,9 @@ constructor(
             getRetentionPeriodDays(
                 config[RETENTION_PERIOD_DAYS],
             )
-        val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays)
+        val useMergeForUpsert =
+            config.has(USE_MERGE_FOR_UPSERT) && config[USE_MERGE_FOR_UPSERT].asBoolean(false)
+        val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays, useMergeForUpsert)
         val database = getDatabase(getDataSource(config))
         val databaseName = config[JdbcUtils.DATABASE_KEY].asText()
         val rawTableSchemaName: String =
@@ -285,6 +287,7 @@ constructor(
         const val RAW_SCHEMA_OVERRIDE: String = "raw_data_schema"
         const val RETENTION_PERIOD_DAYS: String = "retention_period_days"
         const val DISABLE_TYPE_DEDUPE: String = "disable_type_dedupe"
+        const val USE_MERGE_FOR_UPSERT: String = "use_merge_for_upsert"
         @JvmField
         val SCHEDULED_EXECUTOR_SERVICE: ScheduledExecutorService =
             Executors.newScheduledThreadPool(1)

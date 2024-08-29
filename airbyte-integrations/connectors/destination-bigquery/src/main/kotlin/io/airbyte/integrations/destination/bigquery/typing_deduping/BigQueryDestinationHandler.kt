@@ -11,6 +11,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation
+import io.airbyte.integrations.base.destination.operation.AbstractStreamOperation.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsIgnoreCase
@@ -60,7 +61,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
             SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
             FROM ${'$'}{raw_table}
             WHERE _airbyte_loaded_at IS NULL
-            
+
             """.trimIndent()
                                 )
                         )
@@ -95,7 +96,7 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                                     """
             SELECT MAX(_airbyte_extracted_at)
             FROM ${'$'}{raw_table}
-            
+
             """.trimIndent()
                                 )
                         )
@@ -234,7 +235,14 @@ class BigQueryDestinationHandler(private val bq: BigQuery, private val datasetLo
                         isFinalTableEmpty(
                             id
                         ), // Return a default state blob since we don't actually track state.
-                    BigQueryDestinationState(false)
+                    BigQueryDestinationState(false),
+                    // for now, just use 0. this means we will always use a temp final table.
+                    // platform has a workaround for this, so it's OK.
+                    // TODO only fetch this on truncate syncs
+                    // TODO once we have destination state, use that instead of a query
+                    finalTableGenerationId = 0,
+                    // temp table is always empty until we commit, so always return null
+                    finalTempTableGenerationId = null,
                 )
             )
         }

@@ -31,6 +31,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 0.1.13 | 2024-08-24 | [44689](https://github.com/airbytehq/airbyte/pull/44689) | Update dependencies |
 | 0.1.12 | 2024-08-17 | [44335](https://github.com/airbytehq/airbyte/pull/44335) | Update dependencies |
 | 0.1.11 | 2024-08-10 | [43651](https://github.com/airbytehq/airbyte/pull/43651) | Update dependencies |
 | 0.1.10 | 2024-08-03 | [43187](https://github.com/airbytehq/airbyte/pull/43187) | Update dependencies |

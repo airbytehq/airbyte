@@ -65,20 +65,27 @@ class BigQueryGcsStorageOperation(
         suffix: String,
         data: SerializableBuffer
     ) {
-        val stagedFileName: String = uploadRecordsToStage(streamConfig.id, suffix, data)
+        val stagedFileName: String =
+            uploadRecordsToStage(streamConfig.id, suffix, data, streamConfig.generationId)
         copyIntoTableFromStage(streamConfig.id, suffix, stagedFileName)
     }
 
     private fun uploadRecordsToStage(
         streamId: StreamId,
         suffix: String,
-        buffer: SerializableBuffer
+        buffer: SerializableBuffer,
+        generationId: Long,
     ): String {
         val objectPath: String = stagingFullPath(streamId)
         log.info {
             "Uploading records to for ${streamId.rawNamespace}.${streamId.rawName}$suffix to path $objectPath"
         }
-        return gcsStorageOperations.uploadRecordsToBucket(buffer, streamId.rawNamespace, objectPath)
+        return gcsStorageOperations.uploadRecordsToBucket(
+            buffer,
+            streamId.rawNamespace,
+            objectPath,
+            generationId
+        )
     }
 
     private fun copyIntoTableFromStage(streamId: StreamId, suffix: String, stagedFileName: String) {
