@@ -499,27 +499,27 @@ class ModelToComponentFactory:
         else:
             module = ".".join(split[:-1])
         class_name = split[-1]
-        
+
         try:
             return getattr(importlib.import_module(module), class_name)
         except AttributeError:
             raise ValueError(f"Could not load class {full_qualified_class_name}.")
-        
+
     @staticmethod
-    def _get_connector_module() -> Optional[str]:
+    def _get_connector_module() -> Any:
         """
         Fetches the connector module name (ie source_<name>).
         For low-code connectors, the module name is always source_<name>.
         """
-        connector_module = sys.modules['__main__']
-        main_file = getattr(connector_module, '__file__')
+        connector_module = sys.modules["__main__"]
+        main_file = getattr(connector_module, "__file__")
         main_dir = os.path.dirname(main_file)
 
         for item in os.scandir(main_dir):
-            if item.is_dir() and re.match(r'source_.*', item.name):
+            if item.is_dir() and re.match(r"source_.*", item.name):
                 return item.name
-        # This should never happen as the main module for low-code connectors is always source_<name>
-        return None       
+        # This should never happen as the module for low-code connectors is always source_<name>
+        return None
 
     @staticmethod
     def _derive_component_type_from_type_hints(field_type: Any) -> Optional[str]:
