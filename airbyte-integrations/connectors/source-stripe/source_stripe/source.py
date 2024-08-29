@@ -483,10 +483,16 @@ class SourceStripe(ConcurrentSourceAdapter):
                 sub_items_attr="refunds",
                 **args,
             ),
-            StripeSubStream(
+            ParentIncrementalStipeSubStream(
                 name="customer_payment_methods",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
                 parent=self.customers(**args),
+                cursor_field="customer_updated",
+                slice_data_retriever=lambda record, stream_slice: {
+                    "customer_created": stream_slice["parent"]["created"],
+                    "customer_updated": stream_slice["parent"]["updated"],
+                    **record,
+                },
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(

@@ -3,6 +3,12 @@
   "additionalProperties": true,
   "type": ["object", "null"],
   "properties": {
+    "customer_created": {
+      "type": ["null", "integer"]
+    },
+    "customer_updated": {
+      "type": ["null", "integer"]
+    },
     "afterpay_clearpay": {
       "additionalProperties": true,
       "type": ["null", "object"]
@@ -148,7 +154,7 @@
       "type": ["null", "integer"]
     },
     "customer": {
-          "type": ["null", "string"]
+      "type": ["null", "string"]
     },
     "eps": {
       "additionalProperties": true,
