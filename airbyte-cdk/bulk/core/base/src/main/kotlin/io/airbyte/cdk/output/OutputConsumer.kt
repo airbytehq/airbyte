@@ -17,11 +17,18 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConnectorSpecification
-import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.DefaultImplementation
+import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
+import io.micronaut.context.annotation.Value
+import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
+import java.io.PrintStream
+import java.nio.file.Path
+import java.time.Clock
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
@@ -94,17 +101,18 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
     }
 }
 
-// Used for integration tests.
-const val CONNECTOR_OUTPUT_FILE = "airbyte.connector.output.file"
-
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
-const val CONNECTOR_OUTPUT_STDOUT_PREFIX = "airbyte.connector.output.stdout"
+const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
+
+// Used for integration tests.
+const val CONNECTOR_OUTPUT_FILE = "$CONNECTOR_OUTPUT_PREFIX.file"
 
 /** Default implementation of [OutputConsumer]. */
 @Singleton
 @Secondary
-@ConfigurationProperties(CONNECTOR_OUTPUT_STDOUT_PREFIX)
 private class StdoutOutputConsumer(
+    val stdout: PrintStream,
+    clock: Clock,
     /**
      * [bufferByteSizeThresholdForFlush] triggers flushing the record buffer to stdout once the
      * buffer's size (in bytes) grows past this value.
@@ -127,9 +135,11 @@ private class StdoutOutputConsumer(
      * the output as TCP packets. While socat is buffered, its buffer size is only 8 kB. In any
      * case, TCP packet sized (capped by the MTU) are also in the low kilobytes.
      */
-    val bufferByteSizeThresholdForFlush: Int = 4 * 1024
+    @Value("\${$CONNECTOR_OUTPUT_PREFIX.buffer-byte-size-threshold-for-flush:4096}")
+    val bufferByteSizeThresholdForFlush: Int,
 ) : OutputConsumer {
-    override val emittedAt: Instant = Instant.now()
+    override val emittedAt: Instant = Instant.now(clock)
+
     private val buffer = ByteArrayOutputStream()
     private val jsonGenerator: JsonGenerator = Jsons.createGenerator(buffer)
     private val sequenceWriter: SequenceWriter = Jsons.writer().writeValues(jsonGenerator)
@@ -173,7 +183,8 @@ private class StdoutOutputConsumer(
 
     private fun withLockFlush() {
         if (buffer.size() > 0) {
-            println(buffer.toString(Charsets.UTF_8))
+            stdout.println(buffer.toString(Charsets.UTF_8))
+            stdout.flush()
             buffer.reset()
         }
     }
@@ -276,4 +287,16 @@ private class RecordTemplate(
         private const val DATA_PREFIX = """"data":"""
         private val splitRegex: Regex = Regex.fromLiteral("$DATA_PREFIX{}")
     }
+}
+
+@Factory
+private class PrintStreamFactory {
+
+    @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
+
+    @Singleton
+    @Requires(env = [Environment.TEST])
+    @Requires(property = CONNECTOR_OUTPUT_FILE)
+    fun file(@Value("\${$CONNECTOR_OUTPUT_FILE}") filePath: Path): PrintStream =
+        PrintStream(FileOutputStream(filePath.toFile()), false, Charsets.UTF_8)
 }
