@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.6.1
+Update json error message parser to identify additional error message fields in response bodies
+
 ## 4.6.0
 Raise exceptions in file-based check, improve UI errors
 
