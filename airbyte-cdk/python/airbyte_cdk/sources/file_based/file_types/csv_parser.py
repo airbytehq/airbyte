@@ -275,7 +275,7 @@ class CsvParser(FileTypeParser):
 
     @staticmethod
     def _cast_types(
-        row: Dict[str, str], deduped_property_types: Dict[str, str], config_format: CsvFormat, logger: logging.Logger
+        row: Dict[str, str], deduped_property_types: Mapping[str, str], config_format: CsvFormat, logger: logging.Logger
     ) -> Dict[str, Any]:
         """
         Casts the values in the input 'row' dictionary according to the types defined in the JSON schema.
