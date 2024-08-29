@@ -1,6 +1,9 @@
 ---
 airbyte:
   connector:
+    output:
+      buffer-byte-size-threshold-for-flush: 4096
+
     extract:
       jdbc:
         mode: concurrent
