@@ -1,9 +1,10 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from unittest.mock import Mock
 
 import pytest
-
-from source_gcs import Config, SourceGCSStreamReader
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
+from source_gcs import Config, SourceGCSStreamReader
 
 
 def test_get_matching_files_with_no_prefix(logger):
