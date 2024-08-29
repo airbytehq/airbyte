@@ -65,6 +65,22 @@ class GoogleSearchConsole(HttpStream, ABC):
             for record in records:
                 yield record
 
+    def should_retry(self, response: requests.Response) -> bool:
+        response_json = response.json()
+        if "error" in response_json:
+            error = response_json.get("error", {})
+            # handle the `HTTP-403` - insufficient permissions
+            if error.get("code", 0) == 403:
+                self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
+                setattr(self, "raise_on_http_errors", False)
+                return False
+            # handle the `HTTP-400` - Bad query params with `aggregationType`
+            if error.get("code", 0) == 400:
+                self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
+                self.aggregation_type = QueryAggregationType.auto
+                setattr(self, "raise_on_http_errors", False)
+        return super().should_retry(response)
+
 
 class Sites(GoogleSearchConsole):
     """
@@ -368,7 +384,7 @@ class SearchByKeyword(SearchAnalytics):
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
 
-        stream = SearchAppearance(self._http_client._session.auth, self._site_urls, self._start_date, self._end_date)
+        stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
         keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
         keywords = {record["searchAppearance"] for record in keywords_records}
         filters = []
