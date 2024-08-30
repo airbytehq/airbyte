@@ -1,4 +1,0 @@
-{"type": "RECORD", "record": { "emitted_at": 1724959009000, "stream": "users", "namespace": "johnny", "data": {"id": 1, "name": "picard"}}}
-{"type": "RECORD", "record": { "emitted_at": 1724959009001, "stream": "users", "namespace": "johnny", "data": {"id": 2, "name": "crusher"}}}
-{"type": "RECORD", "record": { "emitted_at": 1724959009002, "stream": "users", "namespace": "johnny", "data": {"id": 3, "name": "vash"}}}
-{"type": "TRACE", "trace":  { "emitted_at": 1724959009003, "type": "STREAM_STATUS", "stream_status":  { "stream_descriptor": { "name": "users", "namespace": "johnny" }, "status": "COMPLETE"}}}
