@@ -8,6 +8,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
+from airbyte_protocol_dataclasses.models import *
 
 
 @dataclass(frozen=True)
@@ -95,35 +96,34 @@ class ConnectorStateManager:
         :param state: The incoming state input
         :return: A tuple of shared state and per stream state assembled from the incoming state list
         """
-        if state is None:
+        if not state:
             return None, {}
 
-        is_global = cls._is_global_state(state)
-
-        if is_global:
-            global_state = state[0].global_  # type: ignore # We verified state is a list in _is_global_state
-            shared_state = copy.deepcopy(global_state.shared_state, {})  # type: ignore[union-attr] # global_state has shared_state
+        if cls._is_global_state(state):
+            global_state = state[0].global_
+            shared_state = global_state.shared_state  # type: ignore[union-attr]
             streams = {
                 HashableStreamDescriptor(
                     name=per_stream_state.stream_descriptor.name, namespace=per_stream_state.stream_descriptor.namespace
                 ): per_stream_state.stream_state
-                for per_stream_state in global_state.stream_states  # type: ignore[union-attr] # global_state has shared_state
+                for per_stream_state in global_state.stream_states  # type: ignore[union-attr]
             }
             return shared_state, streams
-        else:
-            streams = {
-                HashableStreamDescriptor(
-                    name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace  # type: ignore[union-attr] # stream has stream_descriptor
-                ): per_stream_state.stream.stream_state  # type: ignore[union-attr] # stream has stream_state
-                for per_stream_state in state
-                if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore # state is always a list of AirbyteStateMessage if is_per_stream is True
-            }
-            return None, streams
+
+        streams = {
+            HashableStreamDescriptor(
+                name=per_stream_state.stream.stream_descriptor.name,
+                namespace=per_stream_state.stream.stream_descriptor.namespace,  # type: ignore[union-attr]
+            ): per_stream_state.stream.stream_state  # type: ignore[union-attr]
+            for per_stream_state in state
+            if per_stream_state.type == AirbyteStateType.STREAM
+        }
+        return None, streams
 
     @staticmethod
     def _is_global_state(state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]]) -> bool:
         return (
-            isinstance(state, List)
+            isinstance(state, list)
             and len(state) == 1
             and isinstance(state[0], AirbyteStateMessage)
             and state[0].type == AirbyteStateType.GLOBAL
