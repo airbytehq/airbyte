@@ -3,6 +3,8 @@
 #
 
 METADATA_FILE_NAME = "metadata.yaml"
+MANIFEST_FILE_NAME = "manifest.yaml"
+COMPONENTS_PY_FILE_NAME = "components.py"
 ICON_FILE_NAME = "icon.svg"
 METADATA_FOLDER = "metadata"
 DOCS_FOLDER_PATH = "docs/integrations"

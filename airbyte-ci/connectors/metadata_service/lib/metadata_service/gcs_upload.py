@@ -2,14 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import base64
-import hashlib
 import json
 import logging
 import os
 import re
 import tempfile
-import zipfile
 import git
 import requests
 import yaml
@@ -17,7 +14,7 @@ import yaml
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Literal, Optional, Tuple, NamedTuple
-from metadata_service.helpers.files import compute_gcs_md5, compute_sha256
+from metadata_service.helpers.files import compute_gcs_md5, compute_sha256, create_zip_and_get_sha256
 from pydash import set_
 from pydash.objects import get
 from google.cloud import storage
@@ -31,12 +28,15 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     METADATA_FOLDER,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
+    COMPONENTS_PY_FILE_NAME,
+    MANIFEST_FILE_NAME,
 )
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 
+# 🧩 TYPES
 
 @dataclass(frozen=True)
 class UploadedFile:
@@ -57,6 +57,14 @@ class MaybeUpload(NamedTuple):
     uploaded: bool
     blob_id: str
 
+@dataclass
+class ManifestOnlyFilePaths:
+    zip_file_path: Path
+    sha256_file_path: Path
+    sha256: str | None
+    manifest_file_path: Path
+
+# 🛣️ PATHS
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the metadata file for a specific version of a connector.
@@ -102,7 +110,56 @@ def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: 
         return (docs_path / match.group(1)).with_suffix(extension)
     return None
 
+# 🛠️ HELPERS
 
+def _commit_to_git_info(commit: git.Commit) -> GitInfo:
+    return GitInfo(
+        commit_sha=commit.hexsha,
+        commit_timestamp=commit.authored_datetime,
+        commit_author=commit.author.name,
+        commit_author_email=commit.author.email,
+    )
+
+
+def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInfo]:
+    """
+    Add additional information to the metadata file before uploading it to GCS.
+
+    e.g. The git commit hash, the date of the commit, the author of the commit, etc.
+
+    """
+    try:
+        repo = git.Repo(search_parent_directories=True)
+
+        # get the commit hash for the last commit that modified the metadata file
+        commit_sha = repo.git.log("-1", "--format=%H", str(original_metadata_file_path))
+
+        commit = repo.commit(commit_sha)
+        return _commit_to_git_info(commit)
+    except git.exc.InvalidGitRepositoryError:
+        logging.warning(f"Metadata file {original_metadata_file_path} is not in a git repository, skipping author info attachment.")
+        return None
+    except git.exc.GitCommandError as e:
+        if "unknown revision or path not in the working tree" in str(e):
+            logging.warning(f"Metadata file {original_metadata_file_path} is not tracked by git, skipping author info attachment.")
+            return None
+        else:
+            raise e
+
+
+
+
+
+def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
+    try:
+        metadata = yaml.safe_load(metadata_file_path.read_text())
+        if metadata is None or not isinstance(metadata, dict):
+            raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml.")
+        return metadata
+    except Exception as e:
+        raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml: {e}")
+
+# 🚀 UPLOAD
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
     """Uploads a file to the bucket."""
@@ -176,7 +233,6 @@ def _doc_upload(
 
     return MaybeUpload(doc_uploaded, doc_blob_id)
 
-
 def _file_upload(
     local_path: Path,
     gcp_connector_dir: str,
@@ -232,6 +288,7 @@ def _file_upload(
 
     return MaybeUpload(versioned_file_uploaded, versioned_blob_id), MaybeUpload(latest_file_uploaded, latest_blob_id)
 
+# 🔧 METADATA MODIFICATIONS
 
 def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOptions) -> dict:
     """Apply any prerelease overrides to the metadata file before uploading it to GCS."""
@@ -247,41 +304,6 @@ def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOp
             registry["dockerImageTag"] = validator_opts.prerelease_tag
 
     return metadata_dict
-
-
-def _commit_to_git_info(commit: git.Commit) -> GitInfo:
-    return GitInfo(
-        commit_sha=commit.hexsha,
-        commit_timestamp=commit.authored_datetime,
-        commit_author=commit.author.name,
-        commit_author_email=commit.author.email,
-    )
-
-
-def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInfo]:
-    """
-    Add additional information to the metadata file before uploading it to GCS.
-
-    e.g. The git commit hash, the date of the commit, the author of the commit, etc.
-
-    """
-    try:
-        repo = git.Repo(search_parent_directories=True)
-
-        # get the commit hash for the last commit that modified the metadata file
-        commit_sha = repo.git.log("-1", "--format=%H", str(original_metadata_file_path))
-
-        commit = repo.commit(commit_sha)
-        return _commit_to_git_info(commit)
-    except git.exc.InvalidGitRepositoryError:
-        logging.warning(f"Metadata file {original_metadata_file_path} is not in a git repository, skipping author info attachment.")
-        return None
-    except git.exc.GitCommandError as e:
-        if "unknown revision or path not in the working tree" in str(e):
-            logging.warning(f"Metadata file {original_metadata_file_path} is not tracked by git, skipping author info attachment.")
-            return None
-        else:
-            raise e
 
 
 def _apply_author_info_to_metadata_file(metadata_dict: dict, original_metadata_file_path: Path) -> dict:
@@ -327,23 +349,6 @@ def _apply_sbom_url_to_metadata_file(metadata_dict: dict) -> dict:
     return metadata_dict
 
 
-def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
-    """Write the metadata to a temporary file."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
-        yaml.dump(metadata_dict, tmp_file)
-        return Path(tmp_file.name)
-
-
-def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
-    try:
-        metadata = yaml.safe_load(metadata_file_path.read_text())
-        if metadata is None or not isinstance(metadata, dict):
-            raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml.")
-        return metadata
-    except Exception as e:
-        raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml: {e}")
-
-
 def _apply_modifications_to_metadata_file(
     original_metadata_file_path: Path,
     validator_opts: ValidatorOptions,
@@ -367,6 +372,36 @@ def _apply_modifications_to_metadata_file(
     metadata = _apply_sbom_url_to_metadata_file(metadata)
     return _write_metadata_to_tmp_file(metadata)
 
+def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
+    """Write the metadata to a temporary file."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
+        yaml.dump(metadata_dict, tmp_file)
+        return Path(tmp_file.name)
+
+
+def maybe_create_components_zip(working_directory: Path) -> ManifestOnlyFilePaths:
+    """Create a zip file for components if they exist and return its SHA256 hash."""
+    yaml_manifest_file_path = working_directory / MANIFEST_FILE_NAME
+    components_py_file_path = working_directory / COMPONENTS_PY_FILE_NAME
+
+    with tempfile.NamedTemporaryFile(mode="wb", suffix=".zip", delete=False) as zip_tmp_file, \
+         tempfile.NamedTemporaryFile(mode="w", suffix=".sha256", delete=False) as sha256_tmp_file:
+
+        python_components_zip_file_path = Path(zip_tmp_file.name)
+        python_components_zip_sha256_file_path = Path(sha256_tmp_file.name)
+
+        components_zip_sha256 = None
+        if components_py_file_path.exists():
+            files_to_zip: List[Path] = [components_py_file_path, yaml_manifest_file_path]
+            components_zip_sha256 = create_zip_and_get_sha256(files_to_zip, python_components_zip_file_path)
+            sha256_tmp_file.write(components_zip_sha256)
+
+        return ManifestOnlyFilePaths(
+            zip_file_path=python_components_zip_file_path,
+            sha256_file_path=python_components_zip_sha256_file_path,
+            sha256=components_zip_sha256,
+            manifest_file_path=yaml_manifest_file_path
+        )
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
@@ -382,33 +417,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
-    # Get our working directory and temp directories
+    # Get our working directory
     working_directory = metadata_file_path.parent
-    temp_directory = working_directory / "temp"
-    temp_directory.mkdir(exist_ok=True)
-
-    # Declare paths to the files that may be uploaded to GCS
-    yaml_manifest_file_path = working_directory / "manifest.yaml"
-    components_py_file_path = working_directory / "components.py"
-    python_components_zip_file_path = temp_directory / "python_components.zip"
-    python_components_zip_sha256_file_path = temp_directory / "python_components.zip.sha256"
-
-    components_zip_sha256: str | None = None
-    if components_py_file_path.exists():
-        # Create a zip containing the python components file and manifest file together.
-        # Also create a sha256 file for the zip file.
-        with zipfile.ZipFile(python_components_zip_file_path, "w") as zipf:
-            zipf.write(filename=components_py_file_path, arcname=components_py_file_path.name)
-            zipf.write(filename=yaml_manifest_file_path, arcname=yaml_manifest_file_path.name)
-
-        # Compute the sha256 of the zip file and write it to a file.
-        components_zip_sha256 = compute_sha256(python_components_zip_file_path)
-        python_components_zip_sha256_file_path.write_text(components_zip_sha256)
+    manifest_only_file_info = maybe_create_components_zip(working_directory)
 
     metadata_file_path = _apply_modifications_to_metadata_file(
         original_metadata_file_path=metadata_file_path,
         validator_opts=validator_opts,
-        components_zip_sha256=components_zip_sha256,
+        components_zip_sha256=manifest_only_file_info.sha256,
     )
 
     metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS, validator_opts)
@@ -442,7 +458,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
 
     (manifest_yml_uploaded, manifest_yml_blob_id), (manifest_yml_latest_uploaded, manifest_yml_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path,
+        local_path=manifest_only_file_info.manifest_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
@@ -452,14 +468,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         components_zip_sha256_latest_uploaded,
         components_zip_sha256_latest_blob_id,
     ) = _file_upload(
-        local_path=python_components_zip_sha256_file_path,
+        local_path=manifest_only_file_info.sha256_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
     )
     (components_zip_uploaded, components_zip_blob_id), (components_zip_latest_uploaded, components_zip_latest_blob_id) = _file_upload(
-        local_path=python_components_zip_file_path,
+        local_path=manifest_only_file_info.zip_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
