@@ -1,7 +1,7 @@
 const { getFromPaths, toAttributes } = require("../helpers/objects");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 const {
-  isPypiConnector,
+  isPyAirbyteConnector,
   getLatestPythonCDKVersion,
   parseCDKVersion,
 } = require("../connector_registry");
@@ -56,7 +56,7 @@ const plugin = () => {
         const attrDict = {
           isOss: registryEntry.is_oss,
           isCloud: registryEntry.is_cloud,
-          isPypiPublished: isPypiConnector(registryEntry),
+          isPyAirbyteConnector: isPyAirbyteConnector(registryEntry),
           supportLevel: registryEntry.supportLevel_oss,
           dockerImageTag: registryEntry.dockerImageTag_oss,
           iconUrl: registryEntry.iconUrl_oss,

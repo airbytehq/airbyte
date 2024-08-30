@@ -225,7 +225,7 @@ const EnabledIcon = ({ isEnabled }) => {
 const ConnectorMetadataCallout = ({
   isCloud,
   isOss,
-  isPypiPublished,
+  isPyAirbyteConnector,
   isEnterprise,
   supportLevel,
   github_url,
@@ -257,10 +257,10 @@ const ConnectorMetadataCallout = ({
               </Chip>
               <Chip
                 className={
-                  isPypiPublished ? styles.available : styles.unavailable
+                  isPyAirbyteConnector ? styles.available : styles.unavailable
                 }
               >
-                <EnabledIcon isEnabled={isPypiPublished} /> PyAirbyte
+                <EnabledIcon isEnabled={isPyAirbyteConnector} /> PyAirbyte
               </Chip>
             </>
           )}
@@ -325,7 +325,7 @@ const ConnectorTitle = ({ iconUrl, originalTitle, originalId, isArchived }) => (
 export const HeaderDecoration = ({
   isOss: isOssString,
   isCloud: isCloudString,
-  isPypiPublished: isPypiPublishedString,
+  isPyAirbyteConnector: isPyAirbyteConnectorString,
   isEnterprise: isEnterpriseString,
   dockerImageTag,
   supportLevel,
@@ -342,7 +342,7 @@ export const HeaderDecoration = ({
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
-  const isPypiPublished = boolStringToBool(isPypiPublishedString);
+  const isPyAirbyteConnector = boolStringToBool(isPyAirbyteConnectorString);
   const isEnterprise = boolStringToBool(isEnterpriseString);
   const isLatestCDK = boolStringToBool(isLatestCDKString);
   const isArchived = supportLevel?.toUpperCase() === "ARCHIVED";
@@ -358,7 +358,7 @@ export const HeaderDecoration = ({
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}
-        isPypiPublished={isPypiPublished}
+        isPyAirbyteConnector={isPyAirbyteConnector}
         isEnterprise={isEnterprise}
         supportLevel={supportLevel}
         github_url={github_url}
