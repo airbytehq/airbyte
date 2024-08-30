@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog, isPypiConnector } = require("../connector_registry");
+const { catalog, isPyAirbyteConnector } = require("../connector_registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
@@ -36,7 +36,7 @@ async function injectDefaultPyAirbyteSection(vfile, ast) {
   if (
     !docsPageInfo.isTrueDocsPage ||
     !registryEntry ||
-    !isPypiConnector(registryEntry) ||
+    !isPyAirbyteConnector(registryEntry) ||
     vfile.value.includes("## Usage with PyAirbyte")
   ) {
     return;

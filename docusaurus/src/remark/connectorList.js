@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog, isPypiConnector } = require("../connector_registry");
+const { catalog, isPyAirbyteConnector } = require("../connector_registry");
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {
@@ -9,7 +9,7 @@ const plugin = () => {
     visit(ast, "mdxJsxFlowElement", (node) => {
       if (node.name !== "PyAirbyteConnectors") return;
 
-        const connectors = registry.filter(isPypiConnector);
+        const connectors = registry.filter(isPyAirbyteConnector);
 
       node.attributes.push({
         type: "mdxJsxAttribute",
