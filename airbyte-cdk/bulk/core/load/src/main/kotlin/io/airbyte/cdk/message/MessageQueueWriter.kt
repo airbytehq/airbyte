@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.message
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.StateManager
@@ -11,7 +12,7 @@ import io.airbyte.cdk.state.StreamsManager
 import jakarta.inject.Singleton
 
 /** A publishing interface for writing messages to a message queue. */
-interface MessageQueueWriter<T> {
+interface MessageQueueWriter<T : Any> {
     suspend fun publish(message: T, sizeBytes: Long)
 }
 
@@ -22,6 +23,10 @@ interface MessageQueueWriter<T> {
  * TODO: Handle other message types.
  */
 @Singleton
+@SuppressFBWarnings(
+    "NP_NONNULL_PARAM_VIOLATION",
+    justification = "message is guaranteed to be non-null by Kotlin's type system"
+)
 class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
     private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>,

@@ -22,7 +22,7 @@ interface InputConsumer<T> {
 }
 
 /** Input consumer that deserializes and publishes to a queue. */
-interface DeserializingInputStreamConsumer<T> : InputConsumer<T> {
+interface DeserializingInputStreamConsumer<T : Any> : InputConsumer<T> {
     val log: KLogger
     val inputStream: InputStream
     val deserializer: Deserializer<T>

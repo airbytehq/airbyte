@@ -8,7 +8,7 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import jakarta.inject.Singleton
 
-interface Deserializer<T> {
+interface Deserializer<T : Any> {
     fun deserialize(serialized: String): T
 }
 
@@ -19,6 +19,7 @@ interface Deserializer<T> {
 @Singleton
 class DefaultDestinationMessageDeserializer(private val messageFactory: DestinationMessageFactory) :
     Deserializer<DestinationMessage> {
+
     override fun deserialize(serialized: String): DestinationMessage {
         try {
             val node = Jsons.readTree(serialized)
