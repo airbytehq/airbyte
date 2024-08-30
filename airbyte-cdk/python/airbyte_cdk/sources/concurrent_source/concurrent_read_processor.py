@@ -61,7 +61,7 @@ class ConcurrentReadProcessor:
         self._streams_done: Set[str] = set()
         self._exceptions_per_stream_name: dict[str, List[Exception]] = {}
 
-    def on_partition_generation_completed(self, sentinel: PartitionGenerationCompletedSentinel) -> Iterable[AirbyteMessage | None]:
+    def on_partition_generation_completed(self, sentinel: PartitionGenerationCompletedSentinel) -> Iterable[AirbyteMessage]:
         """
         This method is called when a partition generation is completed.
         1. Remove the stream from the list of streams currently generating partitions
@@ -75,7 +75,7 @@ class ConcurrentReadProcessor:
         if self._is_stream_done(stream_name) or len(self._streams_to_running_partitions[stream_name]) == 0:
             yield from self._on_stream_is_done(stream_name)
         if self._stream_instances_to_start_partition_generation:
-            yield self.start_next_partition_generator()
+            yield self.start_next_partition_generator()  # type:ignore # None may be yielded
 
     def on_partition(self, partition: Partition) -> None:
         """
