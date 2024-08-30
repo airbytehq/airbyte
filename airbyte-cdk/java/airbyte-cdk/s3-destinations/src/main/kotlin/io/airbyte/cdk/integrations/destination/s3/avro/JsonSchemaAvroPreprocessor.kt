@@ -50,4 +50,8 @@ class JsonSchemaAvroPreprocessor : JsonSchemaIdentityMapper() {
 
         return super.mapArrayWithItem(schema)
     }
+
+    override fun mapJson(schema: ObjectNode): ObjectNode {
+        return STRING_TYPE
+    }
 }
