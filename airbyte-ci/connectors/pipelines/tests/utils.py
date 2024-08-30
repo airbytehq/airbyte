@@ -18,9 +18,10 @@ class MockContainerClass:
 
     async def with_exec(self, *args, **kwargs):
         return self
-    
+
     def with_file(self, *args, **kwargs):
         return self
+
 
 def pick_a_random_connector(
     language: ConnectorLanguage = None,

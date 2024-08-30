@@ -35,19 +35,26 @@ class TestBuildConnectorImage:
         }
         return test_context
 
+    @pytest.fixture
+    def mock_connector_directory(self, mocker):
+        mock_components_file = mocker.Mock()
+        mock_connector_dir = mocker.Mock()
+        mock_connector_dir.file.return_value = mock_components_file
+        return mock_connector_dir, mock_components_file
+
     async def test__run_using_base_image_with_mocks(self, mocker, test_context_with_connector_with_base_image, all_platforms):
         container_built_from_base = mock_container()
         container_built_from_base.with_label.return_value = container_built_from_base
-        container_built_from_base.with_file.return_value = container_built_from_base
+        # container_built_from_base.with_file.return_value = container_built_from_base
 
-        mocker.patch("pathlib.Path.exists", return_value=True)
+        # mocker.patch("pathlib.Path.exists", return_value=True)
 
-        mock_connector_dir = mocker.Mock()
-        mock_file = mocker.Mock()
+        # mock_connector_dir = mocker.Mock()
+        # mock_file = mocker.Mock()
 
-        mock_connector_dir.file.return_value = mock_file
-        test_context_with_connector_with_base_image.get_connector_dir = mocker.AsyncMock(return_value=mock_connector_dir)
-
+        # mock_connector_dir.file.return_value = mock_file
+        # test_context_with_connector_with_base_image.get_connector_dir = mocker.AsyncMock(return_value=mock_connector_dir)
+        mocker.patch.object(Path, "exists", return_value=True)  # Mock Path.exists() to always return True
         mocker.patch.object(
             manifest_only_connectors.BuildConnectorImages,
             "_build_from_base_image",
@@ -65,11 +72,41 @@ class TestBuildConnectorImage:
             "io.airbyte.name", test_context_with_connector_with_base_image.connector.metadata["dockerRepository"]
         )
 
-        container_built_from_base.with_file.assert_any_call(
-            f"source_declarative_manifest/{manifest_only_connectors.COMPONENTS_FILE_PATH}", 
-            mock_file
-        )
+        # container_built_from_base.with_file.assert_any_call(
+        #     f"source_declarative_manifest/{manifest_only_connectors.COMPONENTS_FILE_PATH}",
+        #     mock_file
+        # )
 
         assert step_result.status is StepStatus.SUCCESS
         for platform in all_platforms:
             assert step_result.output[platform] == container_built_from_base
+
+    async def test__run_using_base_image_with_components_file(
+        self, mocker, all_platforms, test_context_with_connector_with_base_image, mock_connector_directory
+    ):
+        mock_connector_dir, mock_components_file = mock_connector_directory
+        container_built_from_base = mock_container()
+
+        container_built_from_base.with_label.return_value = container_built_from_base
+        container_built_from_base.with_file.return_value = container_built_from_base
+
+        test_context_with_connector_with_base_image.get_connector_dir = mocker.AsyncMock(return_value=mock_connector_dir)
+        test_context_with_connector_with_base_image.connector.custom_components_path.exists = mocker.Mock(return_value=True)
+        mocker.patch.object(
+            manifest_only_connectors.BuildConnectorImages,
+            "_get_base_container",
+            return_value=container_built_from_base,
+        )
+
+        mocker.patch.object(
+            build_customization,
+            "apply_airbyte_entrypoint",
+            return_value=container_built_from_base,
+        )
+
+        step = manifest_only_connectors.BuildConnectorImages(test_context_with_connector_with_base_image)
+
+        await step._build_connector(all_platforms[0], container_built_from_base)
+        container_built_from_base.with_file.assert_any_call("source_declarative_manifest/components.py", mock_components_file)
+
+        mock_connector_dir.file.assert_any_call("components.py")
