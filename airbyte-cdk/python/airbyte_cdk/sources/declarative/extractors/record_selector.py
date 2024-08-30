@@ -61,6 +61,20 @@ class RecordSelector(HttpSelector):
         :return: List of Records selected from the response
         """
         all_data: Iterable[Mapping[str, Any]] = self.extractor.extract_records(response)
+        yield from self.filter_and_transform(all_data, stream_state, records_schema, stream_slice, next_page_token)
+
+    def filter_and_transform(
+        self,
+        all_data: Iterable[Mapping[str, Any]],
+        stream_state: StreamState,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Record]:
+        """
+        Until we decide to move this logic away from the selector, we made this method public so that users like AsyncJobRetriever could
+        share the logic of doing transformations on a set of records
+        """
         filtered_data = self._filter(all_data, stream_state, stream_slice, next_page_token)
         transformed_data = self._transform(filtered_data, stream_state, stream_slice)
         normalized_data = self._normalize_by_schema(transformed_data, schema=records_schema)

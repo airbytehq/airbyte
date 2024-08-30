@@ -4,7 +4,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
-from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import Retriever
@@ -14,13 +14,16 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 
+_NO_NEXT_PAGE_TOKEN = None
+_NO_STREAM_STATE = {}
+
 
 @dataclass
 class AsyncRetriever(Retriever):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     job_orchestrator_factory: Callable[[Iterable[StreamSlice]], AsyncJobOrchestrator]
-    record_selector: HttpSelector
+    record_selector: RecordSelector
     name: str
     _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
@@ -85,7 +88,10 @@ class AsyncRetriever(Retriever):
         self.__job_orchestrator = self._job_orchestrator_factory(slices)
 
         for completed_partition in self._job_orchestrator.create_and_get_completed_partitions():
-            yield StreamSlice(partition={"partition": completed_partition}, cursor_slice={})
+            yield StreamSlice(
+                partition=dict(completed_partition.stream_slice.partition) | {"partition": completed_partition},
+                cursor_slice=completed_partition.stream_slice.cursor_slice,
+            )
 
     def read_records(
         self,
@@ -97,5 +103,11 @@ class AsyncRetriever(Retriever):
                 message="Invalid arguments to AsyncJobRetriever.read_records: stream_slice is no optional. Please contact Airbyte Support",
                 failure_type=FailureType.system_error,
             )
-        for record in self._job_orchestrator.fetch_records(stream_slice["partition"]):
-            yield Record(record, stream_slice)
+
+        yield from self.record_selector.filter_and_transform(
+            self._job_orchestrator.fetch_records(stream_slice["partition"]),
+            _NO_STREAM_STATE,
+            records_schema,
+            stream_slice,
+            _NO_NEXT_PAGE_TOKEN,
+        )
