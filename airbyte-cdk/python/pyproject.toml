@@ -67,9 +67,7 @@ pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 pytz = "2024.1"
 orjson = "^3.10.7"
-
 serpyco-rs = "^1.10.2"
-orjson = "^3.10.7"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
