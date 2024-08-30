@@ -21,6 +21,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import TYPE_PYTHON_MAPPING, SchemaType
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 
 DIALECT_NAME = "_config_dialect"
 
@@ -313,8 +314,8 @@ class CsvParser(FileTypeParser):
                 elif python_type == dict:
                     try:
                         # we don't re-use _value_to_object here because we type the column as object as long as there is only one object
-                        cast_value = json.loads(value)
-                    except json.JSONDecodeError:
+                        cast_value = orjson.loads(value)
+                    except orjson.JSONDecodeError:
                         warnings.append(_format_warning(key, value, prop_type))
 
                 elif python_type == list:
