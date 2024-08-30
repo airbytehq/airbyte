@@ -8,7 +8,6 @@ from airbyte_cdk.test.mock_http.request import ANY_QUERY_PARAMS
 
 
 class StripeRequestBuilder:
-
     @classmethod
     def accounts_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("accounts", account_id, client_secret)
@@ -54,7 +53,12 @@ class StripeRequestBuilder:
         return cls("payment_methods", account_id, client_secret)
 
     @classmethod
-    def persons_endpoint(cls, parent_account_id: str, account_id: str, client_secret: str, ) -> "StripeRequestBuilder":
+    def persons_endpoint(
+        cls,
+        parent_account_id: str,
+        account_id: str,
+        client_secret: str,
+    ) -> "StripeRequestBuilder":
         return cls(f"accounts/{parent_account_id}/persons", account_id, client_secret)
 
     @classmethod
@@ -133,7 +137,9 @@ class StripeRequestBuilder:
 
         if self._any_query_params:
             if query_params:
-                raise ValueError(f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both.")
+                raise ValueError(
+                    f"Both `any_query_params` and {list(query_params.keys())} were configured. Provide only one of none but not both."
+                )
             query_params = ANY_QUERY_PARAMS
 
         return HttpRequest(

@@ -208,9 +208,9 @@ refunds_api_objects = [
                         "reference": "7901352802291512",
                         "reference_status": "available",
                         "reference_type": "acquirer_reference_number",
-                        "type": "refund"
+                        "type": "refund",
                     },
-                    "type": "card"
+                    "type": "card",
                 },
                 "metadata": {},
                 "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
@@ -218,25 +218,15 @@ refunds_api_objects = [
                 "receipt_number": None,
                 "source_transfer_reversal": None,
                 "status": "succeeded",
-                "transfer_reversal": None
+                "transfer_reversal": None,
             },
-            "previous_attributes": {
-                "destination_details": {
-                    "card": {
-                        "reference": None,
-                        "reference_status": "pending"
-                    }
-                }
-            }
+            "previous_attributes": {"destination_details": {"card": {"reference": None, "reference_status": "pending"}}},
         },
         "livemode": False,
         "pending_webhooks": 0,
-        "request": {
-            "id": None,
-            "idempotency_key": None
-        },
-        "type": "charge.refund.updated"
-    }
+        "request": {"id": None, "idempotency_key": None},
+        "type": "charge.refund.updated",
+    },
 ]
 
 
@@ -350,8 +340,7 @@ refunds_api_objects = [
         ),
         (
             {
-                "/v1/events":
-                [
+                "/v1/events": [
                     {
                         "json": {
                             "data": [refunds_api_objects[2]],
@@ -374,9 +363,9 @@ refunds_api_objects = [
                             "reference": "7901352802291512",
                             "reference_status": "available",
                             "reference_type": "acquirer_reference_number",
-                            "type": "refund"
+                            "type": "refund",
                         },
-                        "type": "card"
+                        "type": "card",
                     },
                     "metadata": {},
                     "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
@@ -385,7 +374,7 @@ refunds_api_objects = [
                     "source_transfer_reversal": None,
                     "status": "succeeded",
                     "transfer_reversal": None,
-                    "updated": 1666518588
+                    "updated": 1666518588,
                 }
             ],
             [{}],
