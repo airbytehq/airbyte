@@ -1,0 +1,28 @@
+data:
+  connectorSubtype: unknown
+  connectorType: destination
+  definitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
+  dockerImageTag: 0.3.6
+  dockerRepository: airbyte/destination-e2e-test
+  githubIssueLabel: destination-e2e-test
+  icon: airbyte.svg
+  license: MIT
+  name: E2E Testing
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/e2e-test
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  supportsRefreshes: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+metadataSpecVersion: "1.0"
