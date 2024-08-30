@@ -72,8 +72,12 @@ class RecordSelector(HttpSelector):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Record]:
         """
+        There is an issue with the selector as of 2024-08-30: it does technology-agnostic processing like filtering, transformation and
+        normalization with an API that is technology-specific (as requests.Response is only for HTTP communication using the requests
+        library).
+
         Until we decide to move this logic away from the selector, we made this method public so that users like AsyncJobRetriever could
-        share the logic of doing transformations on a set of records
+        share the logic of doing transformations on a set of records.
         """
         filtered_data = self._filter(all_data, stream_state, stream_slice, next_page_token)
         transformed_data = self._transform(filtered_data, stream_state, stream_slice)
