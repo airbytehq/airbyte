@@ -16,7 +16,7 @@ packages = [{ include = "destination_timeplus" }, { include = "main.py" }]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
-timeplus = "==1.4.1"
+timeplus = "==2.0.0b3"
 airbyte-cdk = "^0"
 
 [tool.poetry.scripts]
