@@ -95,7 +95,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
-| 2.10.2  | 2024-09-03 | [44930](https://github.com/airbytehq/airbyte/pull/44930) | Fix typing in profiles stream for field `attributes.location.region`                                                          |
+| 2.10.2  | 2024-08-30 | [44930](https://github.com/airbytehq/airbyte/pull/44930) | Fix typing in profiles stream for field `attributes.location.region`                                                          |
 | 2.10.1  | 2024-08-24 | [44628](https://github.com/airbytehq/airbyte/pull/44628) | Update dependencies                                                                                                           |
 | 2.10.0  | 2024-08-18 | [44366](https://github.com/airbytehq/airbyte/pull/44366) | Add field[metrics] to events stream                                                                                           |
 | 2.9.4   | 2024-08-17 | [44317](https://github.com/airbytehq/airbyte/pull/44317) | Update dependencies                                                                                                           |
