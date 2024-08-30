@@ -38,6 +38,15 @@ class TestBuildConnectorImage:
     async def test__run_using_base_image_with_mocks(self, mocker, test_context_with_connector_with_base_image, all_platforms):
         container_built_from_base = mock_container()
         container_built_from_base.with_label.return_value = container_built_from_base
+        container_built_from_base.with_file.return_value = container_built_from_base
+
+        mocker.patch("pathlib.Path.exists", return_value=True)
+
+        mock_connector_dir = mocker.Mock()
+        mock_file = mocker.Mock()
+
+        mock_connector_dir.file.return_value = mock_file
+        test_context_with_connector_with_base_image.get_connector_dir = mocker.AsyncMock(return_value=mock_connector_dir)
 
         mocker.patch.object(
             manifest_only_connectors.BuildConnectorImages,
@@ -54,6 +63,11 @@ class TestBuildConnectorImage:
         )
         container_built_from_base.with_label.assert_any_call(
             "io.airbyte.name", test_context_with_connector_with_base_image.connector.metadata["dockerRepository"]
+        )
+
+        container_built_from_base.with_file.assert_any_call(
+            f"source_declarative_manifest/{manifest_only_connectors.COMPONENTS_FILE_PATH}", 
+            mock_file
         )
 
         assert step_result.status is StepStatus.SUCCESS
