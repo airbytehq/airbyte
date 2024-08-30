@@ -51,7 +51,7 @@ to generate a client ID and secret.
 ### Other Options
 
 - `Default Schema` - The schema that will contain your data. You can later override this on a per-connection basis.
-- `Purge Staging Files and Tables` - Whether Airbyte should delete files after loading them into tables. Note if deselected, Databricks will still delete your files after your retention period has passed (default - 7 days).
+- `Purge Staging Files and Tables` - Whether Airbyte should delete files after loading them into tables. Note: if deselected, Databricks will still delete your files after your retention period has passed (default - 7 days).
 
 ## Sync Mode
 
