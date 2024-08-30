@@ -27,7 +27,7 @@ You can follow the [Quickstart with Timeplus Ingestion API](https://docs.timeplu
 You should now have all the requirements needed to configure Timeplus as a destination in the UI.
 You'll need the following information to configure the Timeplus destination:
 
-- **Endpoint** example https://us.timeplus.cloud/randomId123
+- **Endpoint** example https://us-west-2.timeplus.cloud/randomId123
 - **API key**
 
 ## Compatibility
@@ -39,7 +39,7 @@ You'll need the following information to configure the Timeplus destination:
 
 | Version | Date       | Pull Request                                              | Subject              |
 |:--------| :--------- | :-------------------------------------------------------- | :------------------- |
-| 0.1.18 | 2024-08-24 | [44707](https://github.com/airbytehq/airbyte/pull/44707) | Update dependencies |
+| 0.1.18 | 2024-08-24 | [44707](https://github.com/airbytehq/airbyte/pull/44758) | Support new Timeplus Cloud using latest timeplus Python SDK |
 | 0.1.17 | 2024-08-24 | [44707](https://github.com/airbytehq/airbyte/pull/44707) | Update dependencies |
 | 0.1.16 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.1.15 | 2024-08-17 | [44363](https://github.com/airbytehq/airbyte/pull/44363) | Update dependencies |
