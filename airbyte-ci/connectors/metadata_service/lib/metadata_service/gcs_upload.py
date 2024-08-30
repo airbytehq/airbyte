@@ -10,19 +10,22 @@ import os
 import re
 import tempfile
 import zipfile
-from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Literal, Optional, Tuple
-
 import git
 import requests
 import yaml
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Literal, Optional, Tuple, NamedTuple
+from metadata_service.helpers.files import compute_gcs_md5, compute_sha256
+from pydash import set_
+from pydash.objects import get
 from google.cloud import storage
 from google.oauth2 import service_account
+
 from metadata_service.constants import (
     DOC_FILE_NAME,
     DOC_INAPP_FILE_NAME,
-    DOCS_FOLDER_PATH,
     ICON_FILE_NAME,
     LATEST_GCS_FOLDER_NAME,
     METADATA_FILE_NAME,
@@ -33,8 +36,6 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
-from pydash import set_
-from pydash.objects import get
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,11 @@ class MetadataUploadInfo:
     metadata_uploaded: bool
     metadata_file_path: str
     uploaded_files: List[UploadedFile]
+
+
+class MaybeUpload(NamedTuple):
+    uploaded: bool
+    blob_id: str
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -97,23 +103,6 @@ def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: 
     return None
 
 
-def compute_gcs_md5(file_name: str) -> str:
-    hash_md5 = hashlib.md5()
-    with open(file_name, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-
-    return base64.b64encode(hash_md5.digest()).decode("utf8")
-
-
-def compute_sha256(file_name: str) -> str:
-    hash_sha256 = hashlib.sha256()
-    with Path.open(file_name, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_sha256.update(chunk)
-
-    return base64.b64encode(hash_sha256.digest()).decode("utf8")
-
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
     """Uploads a file to the bucket."""
@@ -132,7 +121,7 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
 
 def upload_file_if_changed(
     local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False
-) -> Tuple[bool, str]:
+) -> MaybeUpload:
     local_file_md5_hash = compute_gcs_md5(local_file_path)
     remote_blob = bucket.blob(blob_path)
 
@@ -147,31 +136,31 @@ def upload_file_if_changed(
 
     if local_file_md5_hash != remote_blob_md5_hash:
         uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
-        return uploaded, remote_blob.id
+        return MaybeUpload(uploaded, remote_blob.id)
 
-    return False, remote_blob.id
+    return MaybeUpload(False, remote_blob.id)
 
 
 def _metadata_upload(
     metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path, version: str
-) -> Tuple[bool, str]:
+) -> MaybeUpload:
     latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, version)
     return upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
 
-def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, icon_file_path: Path) -> Tuple[bool, str]:
+def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, icon_file_path: Path) -> MaybeUpload:
     latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, LATEST_GCS_FOLDER_NAME)
     if not icon_file_path.exists():
-        return False, f"No Icon found at {icon_file_path}"
+        return MaybeUpload(False, f"No Icon found at {icon_file_path}")
     return upload_file_if_changed(icon_file_path, bucket, latest_icon_path)
 
 
 def _doc_upload(
     metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, docs_path: Path, latest: bool, inapp: bool
-) -> Tuple[bool, str]:
+) -> MaybeUpload:
     local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp)
     if not local_doc_path:
-        return False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload."
+        return MaybeUpload(False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload.")
 
     remote_doc_path = get_doc_remote_file_path(
         metadata.data.dockerRepository, LATEST_GCS_FOLDER_NAME if latest else metadata.data.dockerImageTag, inapp
@@ -185,7 +174,7 @@ def _doc_upload(
         else:
             raise FileNotFoundError(f"Expected to find connector doc file at {local_doc_path}, but none was found.")
 
-    return doc_uploaded, doc_blob_id
+    return MaybeUpload(doc_uploaded, doc_blob_id)
 
 
 def _file_upload(
@@ -196,7 +185,7 @@ def _file_upload(
     upload_as_version: str | Literal[False],
     upload_as_latest: bool,
     skip_if_not_exists: bool = True,
-) -> tuple[tuple[bool, str], tuple[bool, str]]:
+) -> tuple[MaybeUpload, MaybeUpload]:
     """Upload a file to GCS.
 
     Optionally upload it as a versioned file and/or as the latest version.
@@ -212,13 +201,13 @@ def _file_upload(
         skip_if_not_exists: Whether to skip the upload if the file does not exist. Otherwise,
             an exception will be raised if the file does not exist.
 
-    Returns: Tuple of two tuples, each containing a boolean indicating whether the file was
+    Returns: Tuple of two MaybeUpload objects, each containing a boolean indicating whether the file was
         uploaded and the blob id. The first tuple is for the versioned file, the second for the
         latest file.
     """
     if not local_path.exists():
         if skip_if_not_exists:
-            return (False, None), (False, None)
+            return MaybeUpload(False, None), MaybeUpload(False, None)
 
         msg = f"Expected to find file at {local_path}, but none was found."
         raise FileNotFoundError(msg)
@@ -241,7 +230,7 @@ def _file_upload(
             blob_path=remote_upload_path / local_path.name,
         )
 
-    return (versioned_file_uploaded, versioned_blob_id), (latest_file_uploaded, latest_blob_id)
+    return MaybeUpload(versioned_file_uploaded, versioned_blob_id), MaybeUpload(latest_file_uploaded, latest_blob_id)
 
 
 def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOptions) -> dict:
