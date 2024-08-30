@@ -32,7 +32,7 @@ abstract class JsonRecordMapper<R> {
             AirbyteJsonSchemaType.OBJECT_WITH_PROPERTIES -> mapObjectWithProperties(record, schema)
             AirbyteJsonSchemaType.UNION -> mapUnion(record, schema)
             AirbyteJsonSchemaType.COMBINED -> mapCombined(record, schema)
-            AirbyteJsonSchemaType.JSON -> mapJson(record, schema)
+            AirbyteJsonSchemaType.UNKNOWN -> mapUnknown(record, schema)
         }
     }
 
@@ -54,5 +54,5 @@ abstract class JsonRecordMapper<R> {
     abstract fun mapObjectWithProperties(record: JsonNode?, schema: ObjectNode): R
     abstract fun mapUnion(record: JsonNode?, schema: ObjectNode): R
     abstract fun mapCombined(record: JsonNode?, schema: ObjectNode): R
-    abstract fun mapJson(record: JsonNode?, schema: ObjectNode): R
+    abstract fun mapUnknown(record: JsonNode?, schema: ObjectNode): R
 }

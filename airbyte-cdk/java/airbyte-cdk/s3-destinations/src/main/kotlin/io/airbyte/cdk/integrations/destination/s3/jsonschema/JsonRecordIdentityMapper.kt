@@ -145,7 +145,7 @@ open class JsonRecordIdentityMapper : JsonRecordMapper<JsonNode?>() {
         return mapRecordWithSchema(record, match)
     }
 
-    override fun mapJson(record: JsonNode?, schema: ObjectNode): JsonNode? {
+    override fun mapUnknown(record: JsonNode?, schema: ObjectNode): JsonNode? {
         return record?.deepCopy()
     }
 }

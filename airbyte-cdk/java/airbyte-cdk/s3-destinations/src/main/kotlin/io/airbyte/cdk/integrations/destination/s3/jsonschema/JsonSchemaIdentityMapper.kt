@@ -148,7 +148,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
         return newUnionSchema
     }
 
-    override fun mapJson(schema: ObjectNode): ObjectNode {
+    override fun mapUnknown(schema: ObjectNode): ObjectNode {
         return Jsons.emptyObject() as ObjectNode
     }
 }

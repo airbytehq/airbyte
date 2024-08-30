@@ -28,7 +28,7 @@ enum class AirbyteJsonSchemaType {
     OBJECT_WITH_PROPERTIES,
     UNION,
     COMBINED,
-    JSON;
+    UNKNOWN;
 
     fun matchesValue(tree: JsonNode): Boolean {
         return when (this) {
@@ -55,7 +55,7 @@ enum class AirbyteJsonSchemaType {
             OBJECT_WITH_PROPERTIES -> tree.isObject
             UNION,
             COMBINED -> throw IllegalArgumentException("Union type cannot be matched")
-            JSON -> true
+            UNKNOWN -> true
         }
     }
 
@@ -177,7 +177,7 @@ enum class AirbyteJsonSchemaType {
                 // Usually the root node
                 return OBJECT_WITH_PROPERTIES
             } else {
-                return JSON
+                return UNKNOWN
             }
         }
 

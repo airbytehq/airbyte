@@ -30,7 +30,7 @@ class JsonRecordAvroPreprocessor : JsonRecordIdentityMapper() {
         return serializeToJsonNode(record)
     }
 
-    override fun mapJson(record: JsonNode?, schema: ObjectNode): JsonNode? {
+    override fun mapUnknown(record: JsonNode?, schema: ObjectNode): JsonNode? {
         return serializeToJsonNode(record)
     }
 }

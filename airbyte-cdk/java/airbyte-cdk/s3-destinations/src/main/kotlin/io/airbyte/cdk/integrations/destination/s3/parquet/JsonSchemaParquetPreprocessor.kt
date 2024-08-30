@@ -37,7 +37,7 @@ class JsonSchemaParquetPreprocessor : JsonSchemaIdentityMapper() {
                 AirbyteJsonSchemaType.COMBINED ->
                     throw IllegalStateException("Nested unions are not supported")
                 // TODO is this true?
-                AirbyteJsonSchemaType.JSON ->
+                AirbyteJsonSchemaType.UNKNOWN ->
                     throw IllegalStateException(
                         "JSON fields should be converted to string upstream of this processor"
                     )
