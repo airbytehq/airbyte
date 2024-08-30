@@ -155,19 +155,19 @@ definitions:
               partition_field: account_id
               stream:
                 $ref: "#/definitions/streams/accounts"
-#      incremental_sync:
-#        type: DatetimeBasedCursor
-#        cursor_field: lastModified
-#        is_client_side_incremental: true
-#        cursor_datetime_formats:
-#          - "%ms"
-#          - "%Y-%m-%dT%H:%M:%S%z"
-#        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-#        lookback_window: P{{ config.get('lookback_window', 0) }}D
-#        start_datetime:
-#          type: MinMaxDatetime
-#          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
-#          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: lastModified
+        is_client_side_incremental: true
+        cursor_datetime_formats:
+          - "%ms"
+          - "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: P{{ config.get('lookback_window', 0) }}D
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -419,8 +419,8 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
-                    value: "{{parameters['pivot_by']}}"
+                      - pivot
+                    value: "CAMPAIGN"
                     value_type: string
           extractor:
             type: CustomRecordExtractor
@@ -494,7 +494,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "CREATIVE"
                     value_type: string
           extractor:
@@ -569,7 +569,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "IMPRESSION_DEVICE_TYPE"
                     value_type: string
           extractor:
@@ -644,7 +644,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_COMPANY_SIZE"
                     value_type: string
           extractor:
@@ -719,7 +719,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_COUNTRY_V2"
                     value_type: string
           extractor:
@@ -794,7 +794,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_JOB_FUNCTION"
                     value_type: string
           extractor:
@@ -869,7 +869,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_JOB_TITLE"
                     value_type: string
           extractor:
@@ -944,7 +944,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_INDUSTRY"
                     value_type: string
           extractor:
@@ -1019,7 +1019,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_SENIORITY"
                     value_type: string
           extractor:
@@ -1094,7 +1094,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_REGION_V2"
                     value_type: string
           extractor:
@@ -1169,7 +1169,7 @@ definitions:
               - type: AddFields
                 fields:
                   - path:
-                      - _pivot
+                      - pivot
                     value: "MEMBER_COMPANY"
                     value_type: string
           extractor:
@@ -7758,7 +7758,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
