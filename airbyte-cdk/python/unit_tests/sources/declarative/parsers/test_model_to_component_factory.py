@@ -4,12 +4,12 @@
 
 # mypy: ignore-errors
 import datetime
+import unittest
 from typing import Any, Mapping
+from unittest.mock import MagicMock, patch
 
 import freezegun
 import pytest
-import unittest
-from unittest.mock import patch, MagicMock
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
