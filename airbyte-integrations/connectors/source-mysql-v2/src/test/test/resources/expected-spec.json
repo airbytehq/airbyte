@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/firetruck",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql-v2",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Mysql Source Spec",

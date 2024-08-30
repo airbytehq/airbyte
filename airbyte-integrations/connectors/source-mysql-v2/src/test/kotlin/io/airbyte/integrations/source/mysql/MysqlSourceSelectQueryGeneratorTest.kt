@@ -66,7 +66,7 @@ class MysqlSourceSelectQueryGeneratorTest {
                 orderBy = OrderBy(listOf(Field("k", IntFieldType))),
             )
             .assertSqlEquals(
-                """SELECT `k`, `v`""" + """ FROM `SC`.`TBL` ORDER BY `k`""",
+                """SELECT `k`, `v`""" + """ FROM `SC`.`TBL` LIMIT 1000 ORDER BY `k`""",
             )
     }
 

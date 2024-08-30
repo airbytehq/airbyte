@@ -54,7 +54,7 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(expectedSsh, conf.sshTunnel)
         val expectedSshOpts = SshConnectionOptions(1_000.milliseconds, 2_000.milliseconds, ZERO)
         Assertions.assertEquals(expectedSshOpts, conf.sshConnectionOptions)
-        val expectedUrl = "jdbc:mysql://%s:%d"
+        val expectedUrl = "jdbc:mysql://%s:%d?useCursorFetch=true"
 
         Assertions.assertEquals(expectedUrl, conf.jdbcUrlFmt)
         val expectedProperties =
@@ -66,7 +66,7 @@ class MysqlSourceConfigurationTest {
             )
         Assertions.assertEquals(expectedProperties, conf.jdbcProperties)
         Assertions.assertEquals("FOO", conf.defaultSchema)
-        Assertions.assertEquals(setOf("FOO"), conf.schemas)
+        Assertions.assertEquals(setOf("FOO"), conf.namespaces)
     }
 
     @Test
@@ -87,7 +87,7 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals("localhost", conf.realHost)
         Assertions.assertEquals(12345, conf.realPort)
         Assertions.assertEquals(SshNoTunnelMethod, conf.sshTunnel)
-        val expectedUrl = "jdbc:mysql://%s:%d"
+        val expectedUrl = "jdbc:mysql://%s:%d?useCursorFetch=true"
         Assertions.assertEquals(expectedUrl, conf.jdbcUrlFmt)
         Assertions.assertNotNull(conf.jdbcProperties["javax.net.ssl.trustStore"])
         Assertions.assertNotNull(conf.jdbcProperties["javax.net.ssl.trustStorePassword"])

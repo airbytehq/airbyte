@@ -98,7 +98,7 @@ class MysqlSourceConfigurationFactory :
         }
         // Build JDBC URL
         val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:mysql://${address}"
+        val jdbcUrlFmt = "jdbc:mysql://${address}?useCursorFetch=true"
         val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =
