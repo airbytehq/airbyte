@@ -6,7 +6,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
@@ -78,7 +78,7 @@ object TestFixtures {
     ) =
         DefaultJdbcSharedState(
             StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency),
-            BufferingOutputConsumer(TestClockFactory().fixed()),
+            BufferingOutputConsumer(ClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting)
         )

@@ -199,7 +199,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------| :------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------|
-| 1.5.8   | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK. |
+| 1.5.9   | 2024-08-28 | [42927](https://github.com/airbytehq/airbyte/pull/42927)   | Support binary subtype.                                                                                   |
+| 1.5.8   | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841)   | Adopt latest CDK.                                                                                         |
 | 1.5.7   | 2024-08-27 | [44846](https://github.com/airbytehq/airbyte/pull/44846) | DBZ filters in related streams only.                                                                      |
 | 1.5.6   | 2024-08-27 | [44839](https://github.com/airbytehq/airbyte/pull/44839) | DBZ filters in related streams only.                                                                      |
 | 1.5.5   | 2024-08-26 | [44779](https://github.com/airbytehq/airbyte/pull/44779) | Revert permission check on oplog.rs.                                                                      |
