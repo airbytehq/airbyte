@@ -466,7 +466,10 @@ definitions:
                   - type: number
                   - type: string
               region:
-                type: ["null", string]
+                oneOf:
+                  - type: "null"
+                  - type: number
+                  - type: string
               zip:
                 type: ["null", string]
               timezone:
