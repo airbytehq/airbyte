@@ -8,8 +8,9 @@ import logging.config
 from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer, Level, Type
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
-from orjson import orjson
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets as base_filter_secrets, filter_secrets
+from orjson import dumps as orjson_dumps, orjson
+from logging import LogRecord
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -56,22 +57,24 @@ class AirbyteLogFormatter(logging.Formatter):
         if airbyte_level == "DEBUG":
             extras = self.extract_extra_args_from_record(record)
             debug_dict = {"type": "DEBUG", "message": record.getMessage(), "data": extras}
-            return filter_secrets(json.dumps(debug_dict))
+            return base_filter_secrets(json.dumps(debug_dict))
         else:
             message = super().format(record)
-            message = filter_secrets(message)
+            message = base_filter_secrets(message)
             log_message = AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=airbyte_level, message=message))
-            return orjson.dumps(AirbyteMessageSerializer.dump(log_message)).decode()  # type: ignore[no-any-return] # orjson.dumps(message).decode() always returns string
+            return orjson_dumps(AirbyteMessageSerializer.dump(log_message)).decode()  # type: ignore[no-any-return]
 
-    @staticmethod
     def extract_extra_args_from_record(record: logging.LogRecord) -> Mapping[str, Any]:
         """
         The python logger conflates default args with extra args. We use an empty log record and set operations
         to isolate fields passed to the log record via extra by the developer.
         """
-        default_attrs = logging.LogRecord("", 0, "", 0, None, None, None).__dict__.keys()
-        extra_keys = set(record.__dict__.keys()) - default_attrs
+        extra_keys = set(record.__dict__.keys()) - self.default_attrs
         return {k: str(getattr(record, k)) for k in extra_keys if hasattr(record, k)}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.default_attrs = set(LogRecord("", 0, "", 0, None, None, None).__dict__.keys())
 
 
 def log_by_prefix(msg: str, default_level: str) -> Tuple[int, str]:
