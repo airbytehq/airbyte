@@ -159,7 +159,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
       // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
       // https://github.com/airbytehq/airbyte/issues/24796
-      PREPARE_THRESHOLD, "0",  TCP_KEEP_ALIVE, "true");
+      PREPARE_THRESHOLD, "0", TCP_KEEP_ALIVE, "true");
 
   private List<String> schemas;
 
