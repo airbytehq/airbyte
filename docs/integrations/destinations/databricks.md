@@ -30,6 +30,8 @@ When setting up a Databricks destination, you need these pieces of information:
 
    ![](../../.gitbook/assets/destination/databricks/databricks_sql_warehouse_connection_details.png)
 
+4. Finally, you'll need to provide the `Databricks Unity Catalog Path`, which is the path to the database you wish to use within the Unity Catalog. This is often the same as the workspace name.
+
 ### Authentication
 
 #### OAuth (Recommended for AWS deployments of Databricks)
