@@ -54,7 +54,7 @@ function getSupportLevelDisplay(rawSupportLevel) {
 module.exports = {
   REGISTRY_URL,
   catalog: fetchCatalog(),
-  isPypiConnector: (connector) => {
+  isPyAirbyteConnector: (connector) => {
     return Boolean(connector.language_oss == "manifest-only" || connector.remoteRegistries_oss?.pypi?.enabled);
   },
   getLatestPythonCDKVersion,
