@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.retrievers.async_retriever import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
@@ -43,6 +44,16 @@ class MockSource(AbstractSource):
         return ConnectorSpecification(connectionSpecification={})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        # mock config
+        config = MagicMock()
+        # mock the selector
+        record_selector = RecordSelector(
+            extractor=MagicMock(),
+            config=config,
+            parameters={},
+            schema_normalization=MagicMock(),
+        )
+        # mock the orchestrator        
         job_orchestrator_factory_fn = lambda stream_slices: AsyncJobOrchestrator(
             MockAsyncJobRepository(), stream_slices,
         )
@@ -52,8 +63,8 @@ class MockSource(AbstractSource):
                 retriever=AsyncRetriever(
                     name="test_async_retriever",
                     primary_key="id",
-                    config=MagicMock(),
-                    record_selector=MagicMock(),
+                    config=config,
+                    record_selector=record_selector,
                     stream_slicer=SinglePartitionRouter({}),
                     parameters={},
                     job_orchestrator_factory=job_orchestrator_factory_fn,
@@ -61,7 +72,7 @@ class MockSource(AbstractSource):
                 config={},
                 parameters={},
                 name=_A_STREAM_NAME,
-                primary_key=[],
+                primary_key=["id"],
                 schema_loader=InlineSchemaLoader({}, {}),
                 # the interface mentions that this is Optional,
                 # but I get `'NoneType' object has no attribute 'eval'` by passing None

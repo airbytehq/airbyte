@@ -1,21 +1,19 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator, AsyncPartition
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import FailureType
-
-_NO_NEXT_PAGE_TOKEN = None
-_NO_STREAM_STATE = {}
 
 
 @dataclass
@@ -24,9 +22,9 @@ class AsyncRetriever(Retriever):
     parameters: InitVar[Mapping[str, Any]]
     job_orchestrator_factory: Callable[[Iterable[StreamSlice]], AsyncJobOrchestrator]
     record_selector: RecordSelector
-    name: str
+    name: str  # type: ignore
     _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
-    primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    primary_key: Optional[Union[str, List[str], List[List[str]]]]  # type: ignore
     _primary_key: str = field(init=False, repr=False, default="")
     stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
 
@@ -36,7 +34,7 @@ class AsyncRetriever(Retriever):
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
 
-    @property  # type: ignore
+    @property
     def name(self) -> str:
         """
         :return: Stream name
@@ -48,7 +46,7 @@ class AsyncRetriever(Retriever):
         if not isinstance(value, property):
             self._name = value
 
-    @property  # type: ignore
+    @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """The stream's primary key"""
         return self._primary_key
@@ -74,14 +72,45 @@ class AsyncRetriever(Retriever):
 
     @property
     def _job_orchestrator(self) -> AsyncJobOrchestrator:
-        if self.__job_orchestrator:
-            return self.__job_orchestrator
+        if not self.__job_orchestrator:
+            raise AirbyteTracedException(
+                message="Invalid state within AsyncJobRetriever. Please contact Airbyte Support",
+                internal_message="AsyncPartitionRepository is expected to be accessed only after `stream_slices`",
+                failure_type=FailureType.system_error,
+            )
 
-        raise AirbyteTracedException(
-            message="Invalid state within AsyncJobRetriever. Please contact Airbyte Support",
-            internal_message="AsyncPartitionRepository is expected to be accessed only after `stream_slices`",
-            failure_type=FailureType.system_error,
-        )
+        return self.__job_orchestrator
+
+    def _get_stream_state(self) -> StreamState:
+        """
+        Gets the current state of the stream.
+
+        Returns:
+            StreamState: Mapping[str, Any]
+        """
+
+        return self.state
+
+    def _validate_and_get_stream_slice_partition(self, stream_slice: Optional[StreamSlice] = None) -> AsyncPartition:
+        """
+        Validates the stream_slice argument and returns the partition from it.
+
+        Args:
+            stream_slice (Optional[StreamSlice]): The stream slice to validate and extract the partition from.
+
+        Returns:
+            AsyncPartition: The partition extracted from the stream_slice.
+
+        Raises:
+            AirbyteTracedException: If the stream_slice is not an instance of StreamSlice or if the partition is not present in the stream_slice.
+
+        """
+        if not isinstance(stream_slice, StreamSlice) or "partition" not in stream_slice.partition:
+            raise AirbyteTracedException(
+                message="Invalid arguments to AsyncJobRetriever.read_records: stream_slice is no optional. Please contact Airbyte Support",
+                failure_type=FailureType.system_error,
+            )
+        return stream_slice["partition"]
 
     def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
         slices = self.stream_slicer.stream_slices()
@@ -98,16 +127,14 @@ class AsyncRetriever(Retriever):
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
-        if not isinstance(stream_slice, StreamSlice) or "partition" not in stream_slice.partition:
-            raise AirbyteTracedException(
-                message="Invalid arguments to AsyncJobRetriever.read_records: stream_slice is no optional. Please contact Airbyte Support",
-                failure_type=FailureType.system_error,
-            )
+
+        stream_state: StreamState = self._get_stream_state()
+        partition: AsyncPartition = self._validate_and_get_stream_slice_partition(stream_slice)
+        records: Iterable[Mapping[str, Any]] = self._job_orchestrator.fetch_records(partition)
 
         yield from self.record_selector.filter_and_transform(
-            self._job_orchestrator.fetch_records(stream_slice["partition"]),
-            _NO_STREAM_STATE,
-            records_schema,
-            stream_slice,
-            _NO_NEXT_PAGE_TOKEN,
+            all_data=records,
+            stream_state=stream_state,
+            records_schema=records_schema,
+            stream_slice=stream_slice,
         )

@@ -1631,16 +1631,16 @@ class AsyncRetriever(BaseModel):
         None,
         description='Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.',
     )
-    creation_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
-        None,
+    creation_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
         description='Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.',
     )
-    polling_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
-        None,
+    polling_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
         description='Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.',
     )
-    download_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
-        None,
+    download_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
         description='Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.',
     )
     partition_router: Optional[

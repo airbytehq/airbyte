@@ -6,5 +6,6 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.extractors.http_url_to_file_extractor import HttpUrlToFileExtractor
 
-__all__ = ["HttpSelector", "DpathExtractor", "RecordFilter", "RecordSelector"]
+__all__ = ["HttpSelector", "DpathExtractor", "RecordFilter", "RecordSelector", "HttpUrlToFileExtractor"]

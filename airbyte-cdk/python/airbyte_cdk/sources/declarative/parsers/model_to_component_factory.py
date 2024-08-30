@@ -154,7 +154,7 @@ ComponentDefinition = Mapping[str, Any]
 
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
-from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus, AsyncJobStatusMap
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatusMap
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 
 

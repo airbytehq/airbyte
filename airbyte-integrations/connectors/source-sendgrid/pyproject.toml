@@ -19,6 +19,7 @@ include = "source_sendgrid"
 python = "^3.10,<3.12"
 airbyte_cdk = { path = "../../../airbyte-cdk/python", develop = true }
 pandas = "^2.1.1"
+orjson = "^3.10.7"
 
 [tool.poetry.scripts]
 source-sendgrid = "source_sendgrid.run:run"
