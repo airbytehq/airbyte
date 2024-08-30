@@ -15,6 +15,7 @@ sealed class JdbcPartitionsCreatorFactory<
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
 >(
+    // TODO : Inject state required by CdcPartitionsCreator
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : PartitionsCreatorFactory {
 
@@ -24,7 +25,7 @@ sealed class JdbcPartitionsCreatorFactory<
     ): PartitionsCreator {
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return when (feed) {
-            is Global -> CreateNoPartitions
+            is Global -> CreateNoPartitions // TODO : Return the CdcPartitionCreator
             is Stream -> {
                 val partition: P? = partitionFactory.create(feed, opaqueStateValue)
                 if (partition == null) {
