@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d7df7b64-6266-45b5-ad83-e1515578f371
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-clazar
   githubIssueLabel: source-clazar
   icon: clazar.svg

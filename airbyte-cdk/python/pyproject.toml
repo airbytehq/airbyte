@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "4.5.4"
+version = "4.6.2"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -66,6 +66,7 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 pytz = "2024.1"
+orjson = "^3.10.7"
 
 serpyco-rs = "^1.10.2"
 orjson = "^3.10.7"
