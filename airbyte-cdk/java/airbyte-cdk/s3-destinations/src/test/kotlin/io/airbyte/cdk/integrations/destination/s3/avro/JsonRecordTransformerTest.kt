@@ -166,8 +166,9 @@ class JsonRecordTransformerTest {
 
     @Test
     fun testStringifyJsonValues() {
-        val inputSchema = Jsons.deserialize(
-            """
+        val inputSchema =
+            Jsons.deserialize(
+                """
             {
               "type": "object",
               "properties": {
@@ -179,15 +180,16 @@ class JsonRecordTransformerTest {
               }
             }
             """.trimIndent()
-        ) as ObjectNode
-        val inputRecord = Jsons.deserialize(
-            """
+            ) as ObjectNode
+        val inputRecord =
+            Jsons.deserialize(
+                """
             {
               "foo": {"a": 42},
               "bar": [1, null, {}]
             }
             """.trimIndent()
-        )
+            )
 
         val avroMappedRecord =
             JsonRecordAvroPreprocessor().mapRecordWithSchema(inputRecord, inputSchema)

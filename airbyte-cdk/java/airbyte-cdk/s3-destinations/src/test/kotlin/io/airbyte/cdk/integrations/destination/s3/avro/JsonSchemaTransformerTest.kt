@@ -144,8 +144,9 @@ class JsonSchemaTransformerTest {
 
     @Test
     fun testJsonType() {
-        val inputSchema = Jsons.deserialize(
-            """
+        val inputSchema =
+            Jsons.deserialize(
+                """
             {
               "type": "object",
               "properties": {
@@ -157,7 +158,7 @@ class JsonSchemaTransformerTest {
               }
             }
             """.trimIndent()
-        ) as ObjectNode
+            ) as ObjectNode
         val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
 
         assertEquals(
