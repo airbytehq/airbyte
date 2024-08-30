@@ -8,6 +8,8 @@ from typing import Any, Mapping
 
 import freezegun
 import pytest
+import unittest
+from unittest.mock import patch, MagicMock
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
@@ -2316,3 +2318,24 @@ def test_create_jwt_authenticator(config, manifest, expected):
         "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"]
     })
     assert authenticator._get_jwt_payload() == jwt_payload
+
+class TestClassLoading(unittest.TestCase):
+    def test_get_class_from_fully_qualified_class_name(self):
+        with patch("importlib.import_module") as mock_import_module:
+            # Create a mock class to be returned by the import_module
+            mock_class = MagicMock()
+            mock_class.__module__ = "source_pokeapi.components"
+            mock_class.__name__ = "CustomPokeComponent"
+            mock_import_module.return_value = MagicMock(CustomPokeComponent=mock_class)
+
+            # Patch _get_connector_module to mock a source_pokeapi connector
+            with patch.object(factory, "_get_connector_module", return_value="source_pokeapi"):
+                # Test with abbreviated class name
+                result = factory._get_class_from_fully_qualified_class_name("components.CustomPokeComponent")
+                self.assertEqual(result.__module__, "source_pokeapi.components")
+                self.assertEqual(result.__name__, "CustomPokeComponent")
+
+                # Test with fully qualified class name
+                result = factory._get_class_from_fully_qualified_class_name("source_pokeapi.components.CustomPokeComponent")
+                self.assertEqual(result.__module__, "source_pokeapi.components")
+                self.assertEqual(result.__name__, "CustomPokeComponent")
