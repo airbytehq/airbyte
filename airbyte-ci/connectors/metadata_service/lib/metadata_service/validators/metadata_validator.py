@@ -178,6 +178,8 @@ def validate_pypi_only_for_python(
 def validate_docker_image_tag_is_not_decremented(
     metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
     docker_image_name = get(metadata_definition, "data.dockerRepository")
     if not docker_image_name:
         return False, "The dockerRepository field is not set"
@@ -193,7 +195,10 @@ def validate_docker_image_tag_is_not_decremented(
     current_semver_version = semver.Version.parse(docker_image_tag)
     latest_released_semver_version = semver.Version.parse(latest_released_version)
     if current_semver_version < latest_released_semver_version:
-        return False, f"The dockerImageTag value can't be decremented: it should be equal to or above {latest_released_version}."
+        return (
+            False,
+            f"The dockerImageTag value ({current_semver_version}) can't be decremented: it should be equal to or above {latest_released_version}.",
+        )
     return True, None
 
 
