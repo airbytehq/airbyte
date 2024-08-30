@@ -47,7 +47,11 @@ To use the RabbitMQ destination, you'll need:
   <summary>Expand to review</summary>
 
 | Version | Date             | Pull Request                                              | Subject                                         |
-| :------ | :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+|:--------| :--------------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.18 | 2024-08-24 | [44726](https://github.com/airbytehq/airbyte/pull/44726) | Update dependencies |
+| 0.1.17 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.1.16 | 2024-08-17 | [44336](https://github.com/airbytehq/airbyte/pull/44336) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43622](https://github.com/airbytehq/airbyte/pull/43622) | Update dependencies |
 | 0.1.14 | 2024-08-03 | [43078](https://github.com/airbytehq/airbyte/pull/43078) | Update dependencies |
 | 0.1.13 | 2024-07-27 | [42759](https://github.com/airbytehq/airbyte/pull/42759) | Update dependencies |
 | 0.1.12 | 2024-07-20 | [42222](https://github.com/airbytehq/airbyte/pull/42222) | Update dependencies |

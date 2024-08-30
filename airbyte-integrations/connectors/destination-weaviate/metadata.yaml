@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 300
-    sl: 200
+    sl: 300
   allowedHosts:
     hosts:
       - ${indexing.host}
@@ -13,14 +13,14 @@ data:
   connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
-  dockerImageTag: 0.2.29
+  dockerImageTag: 0.2.34
   dockerRepository: airbyte/destination-weaviate
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   githubIssueLabel: destination-weaviate
   icon: weaviate.svg
   license: MIT
   name: Weaviate
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

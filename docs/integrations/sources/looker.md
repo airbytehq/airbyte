@@ -85,6 +85,10 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 1.0.5 | 2024-08-24 | [44730](https://github.com/airbytehq/airbyte/pull/44730) | Update dependencies |
+| 1.0.4 | 2024-08-17 | [44252](https://github.com/airbytehq/airbyte/pull/44252) | Update dependencies |
+| 1.0.3 | 2024-08-12 | [43873](https://github.com/airbytehq/airbyte/pull/43873) | Update dependencies |
+| 1.0.2 | 2024-08-10 | [43504](https://github.com/airbytehq/airbyte/pull/43504) | Update dependencies |
 | 1.0.1 | 2024-08-03 | [40148](https://github.com/airbytehq/airbyte/pull/40148) | Update dependencies |
 | 1.0.0 | 2024-07-23 | [37464](https://github.com/airbytehq/airbyte/pull/37464) | Migrate to LowCode |
 | 0.2.12 | 2024-06-06 | [39191](https://github.com/airbytehq/airbyte/pull/39191) | [autopull] Upgrade base image to v1.2.2 |

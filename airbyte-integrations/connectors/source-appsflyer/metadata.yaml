@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 16447954-e6a8-4593-b140-43dea13bc457
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.13
   dockerRepository: airbyte/source-appsflyer
   githubIssueLabel: source-appsflyer
   icon: appsflyer.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-appsflyer
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

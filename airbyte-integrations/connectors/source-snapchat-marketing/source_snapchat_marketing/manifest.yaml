@@ -1,4 +1,4 @@
-version: 1.4.0
+version: 4.3.2
 
 type: DeclarativeSource
 
@@ -776,6 +776,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -989,6 +991,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -1180,6 +1184,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -1405,6 +1411,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -1618,6 +1626,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -1809,6 +1819,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -2034,6 +2046,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -2247,6 +2261,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]
@@ -2438,6 +2454,8 @@ definitions:
               value: "{{ record.get('stats', {}).get('quartile_3') }}"
             - path: ["screen_time_millis"]
               value: "{{ record.get('stats', {}).get('screen_time_millis') }}"
+            - path: ["spend"]
+              value: "{{ record.get('stats', {}).get('spend') }}"
             - path: ["swipe_up_percent"]
               value: "{{ record.get('stats', {}).get('swipe_up_percent') }}"
             - path: ["swipes"]

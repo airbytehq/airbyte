@@ -1,0 +1,950 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - jobs
+    - candidates
+    - stages
+    - recruiters
+definitions:
+  streams:
+    jobs:
+      type: DeclarativeStream
+      name: jobs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['account_subdomain'] }}.workable.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+            name: jobs
+            primary_key: id
+            path: /spi/v3/jobs
+            field_path:
+              - jobs
+          path: /spi/v3/jobs
+          http_method: GET
+          request_parameters:
+            created_after: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - jobs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+            name: jobs
+            primary_key: id
+            path: /spi/v3/jobs
+            field_path:
+              - jobs
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            name: jobs
+            primary_key: id
+            path: /spi/v3/jobs
+            field_path:
+              - jobs
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            application_url:
+              type:
+                - "null"
+                - string
+            code:
+              type:
+                - "null"
+                - string
+            created_at:
+              type:
+                - "null"
+                - string
+            department:
+              type:
+                - "null"
+                - string
+            department_hierarchy:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+              minItems: 0
+            full_title:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            location:
+              type: object
+              properties:
+                city:
+                  type:
+                    - "null"
+                    - string
+                country:
+                  type:
+                    - "null"
+                    - string
+                country_code:
+                  type:
+                    - "null"
+                    - string
+                location_str:
+                  type:
+                    - "null"
+                    - string
+                region:
+                  type:
+                    - "null"
+                    - string
+                region_code:
+                  type:
+                    - "null"
+                    - string
+                telecommuting:
+                  type: boolean
+                zip_code:
+                  type:
+                    - "null"
+                    - string
+            shortcode:
+              type:
+                - "null"
+                - string
+            shortlink:
+              type:
+                - "null"
+                - string
+            state:
+              type:
+                - "null"
+                - string
+            title:
+              type:
+                - "null"
+                - string
+            url:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    candidates:
+      type: DeclarativeStream
+      name: candidates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['account_subdomain'] }}.workable.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+            name: jobs
+            primary_key: id
+            path: /spi/v3/jobs
+            field_path:
+              - jobs
+          path: /spi/v3/candidates
+          http_method: GET
+          request_parameters:
+            created_after: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - candidates
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+            name: candidates
+            primary_key: id
+            path: /spi/v3/candidates
+            field_path:
+              - candidates
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            name: candidates
+            primary_key: id
+            path: /spi/v3/candidates
+            field_path:
+              - candidates
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            email:
+              type:
+                - "null"
+                - string
+            headline:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            role:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    stages:
+      type: DeclarativeStream
+      name: stages
+      primary_key:
+        - slug
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['account_subdomain'] }}.workable.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+            name: jobs
+            primary_key: id
+            path: /spi/v3/jobs
+            field_path:
+              - jobs
+          path: /spi/v3/stages
+          http_method: GET
+          request_parameters:
+            created_after: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - stages
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+            name: stages
+            primary_key: slug
+            path: /spi/v3/stages
+            field_path:
+              - stages
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            name: stages
+            primary_key: slug
+            path: /spi/v3/stages
+            field_path:
+              - stages
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            kind:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            position:
+              type:
+                - "null"
+                - number
+            slug:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+    recruiters:
+      type: DeclarativeStream
+      name: recruiters
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://{{ config['account_subdomain'] }}.workable.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+            name: jobs
+            primary_key: id
+            path: /spi/v3/jobs
+            field_path:
+              - jobs
+          path: /spi/v3/recruiters
+          http_method: GET
+          request_parameters:
+            created_after: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - recruiters
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+            name: recruiters
+            primary_key: id
+            path: /spi/v3/recruiters
+            field_path:
+              - recruiters
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            name: recruiters
+            primary_key: id
+            path: /spi/v3/recruiters
+            field_path:
+              - recruiters
+            cursor_value: "{{ response.paging.next }}"
+            stop_condition: "{{ 'next' not in response['paging'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            email:
+              type:
+                - "null"
+                - string
+            id:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['account_subdomain'] }}.workable.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+      name: jobs
+      primary_key: id
+      path: /spi/v3/jobs
+      field_path:
+        - jobs
+streams:
+  - type: DeclarativeStream
+    name: jobs
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['account_subdomain'] }}.workable.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          name: jobs
+          primary_key: id
+          path: /spi/v3/jobs
+          field_path:
+            - jobs
+        path: /spi/v3/jobs
+        http_method: GET
+        request_parameters:
+          created_after: "{{ config['start_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - jobs
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+          name: jobs
+          primary_key: id
+          path: /spi/v3/jobs
+          field_path:
+            - jobs
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: jobs
+          primary_key: id
+          path: /spi/v3/jobs
+          field_path:
+            - jobs
+          cursor_value: "{{ response.paging.next }}"
+          stop_condition: "{{ 'next' not in response['paging'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          application_url:
+            type:
+              - "null"
+              - string
+          code:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+          department:
+            type:
+              - "null"
+              - string
+          department_hierarchy:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+            minItems: 0
+          full_title:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          location:
+            type: object
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              country_code:
+                type:
+                  - "null"
+                  - string
+              location_str:
+                type:
+                  - "null"
+                  - string
+              region:
+                type:
+                  - "null"
+                  - string
+              region_code:
+                type:
+                  - "null"
+                  - string
+              telecommuting:
+                type: boolean
+              zip_code:
+                type:
+                  - "null"
+                  - string
+          shortcode:
+            type:
+              - "null"
+              - string
+          shortlink:
+            type:
+              - "null"
+              - string
+          state:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          url:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: candidates
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['account_subdomain'] }}.workable.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          name: jobs
+          primary_key: id
+          path: /spi/v3/jobs
+          field_path:
+            - jobs
+        path: /spi/v3/candidates
+        http_method: GET
+        request_parameters:
+          created_after: "{{ config['start_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - candidates
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+          name: candidates
+          primary_key: id
+          path: /spi/v3/candidates
+          field_path:
+            - candidates
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: candidates
+          primary_key: id
+          path: /spi/v3/candidates
+          field_path:
+            - candidates
+          cursor_value: "{{ response.paging.next }}"
+          stop_condition: "{{ 'next' not in response['paging'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          headline:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          role:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: stages
+    primary_key:
+      - slug
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['account_subdomain'] }}.workable.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          name: jobs
+          primary_key: id
+          path: /spi/v3/jobs
+          field_path:
+            - jobs
+        path: /spi/v3/stages
+        http_method: GET
+        request_parameters:
+          created_after: "{{ config['start_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - stages
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+          name: stages
+          primary_key: slug
+          path: /spi/v3/stages
+          field_path:
+            - stages
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: stages
+          primary_key: slug
+          path: /spi/v3/stages
+          field_path:
+            - stages
+          cursor_value: "{{ response.paging.next }}"
+          stop_condition: "{{ 'next' not in response['paging'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          position:
+            type:
+              - "null"
+              - number
+          slug:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: recruiters
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['account_subdomain'] }}.workable.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          name: jobs
+          primary_key: id
+          path: /spi/v3/jobs
+          field_path:
+            - jobs
+        path: /spi/v3/recruiters
+        http_method: GET
+        request_parameters:
+          created_after: "{{ config['start_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - recruiters
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: limit
+          name: recruiters
+          primary_key: id
+          path: /spi/v3/recruiters
+          field_path:
+            - recruiters
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          name: recruiters
+          primary_key: id
+          path: /spi/v3/recruiters
+          field_path:
+            - recruiters
+          cursor_value: "{{ response.paging.next }}"
+          stop_condition: "{{ 'next' not in response['paging'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          email:
+            type:
+              - "null"
+              - string
+          id:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - account_subdomain
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: >-
+          Your Workable API Key. See <a
+          href="https://workable.readme.io/reference/generate-an-access-token">here</a>.
+        order: 0
+      account_subdomain:
+        type: string
+        title: Account Subdomain
+        description: >-
+          Your Workable account subdomain, e.g.
+          https://your_account_subdomain.workable.com.
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: "Get data that was created since this date (format: YYYYMMDDTHHMMSSZ)."
+        pattern: ^[0-9]{8}T[0-9]{6}Z$
+        examples:
+          - 20150708T115616Z
+          - 20221115T225616Z
+        order: 2
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    jobs: false
+    candidates: false
+    stages: false
+    recruiters: false
+schemas:
+  jobs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      application_url:
+        type:
+          - "null"
+          - string
+      code:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+      department:
+        type:
+          - "null"
+          - string
+      department_hierarchy:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        minItems: 0
+      full_title:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      location:
+        type: object
+        properties:
+          city:
+            type:
+              - "null"
+              - string
+          country:
+            type:
+              - "null"
+              - string
+          country_code:
+            type:
+              - "null"
+              - string
+          location_str:
+            type:
+              - "null"
+              - string
+          region:
+            type:
+              - "null"
+              - string
+          region_code:
+            type:
+              - "null"
+              - string
+          telecommuting:
+            type: boolean
+          zip_code:
+            type:
+              - "null"
+              - string
+      shortcode:
+        type:
+          - "null"
+          - string
+      shortlink:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  candidates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      email:
+        type:
+          - "null"
+          - string
+      headline:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      role:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  stages:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      kind:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      position:
+        type:
+          - "null"
+          - number
+      slug:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
+  recruiters:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      email:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+    additionalProperties: true

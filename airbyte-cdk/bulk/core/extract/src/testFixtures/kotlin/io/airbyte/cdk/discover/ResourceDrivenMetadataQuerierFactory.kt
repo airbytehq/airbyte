@@ -3,9 +3,6 @@ package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.ValidatedJsonUtils
-import io.airbyte.cdk.source.Field
-import io.airbyte.cdk.source.FieldType
-import io.airbyte.cdk.source.MetadataQuerier
 import io.airbyte.cdk.util.ResourceUtils
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
@@ -74,6 +71,8 @@ class ResourceDrivenMetadataQuerierFactory(
                 return metadata[streamNamespace]?.get(streamName)?.primaryKeys
                     ?: throw SQLException("query failed", "tbl")
             }
+
+            override fun extraChecks() {}
 
             override fun close() {
                 isClosed = true

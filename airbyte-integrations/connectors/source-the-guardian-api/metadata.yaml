@@ -19,14 +19,14 @@ data:
             type: GSM
   connectorType: source
   definitionId: d42bd69f-6bf0-4d0b-9209-16231af07a92
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.8
   dockerRepository: airbyte/source-the-guardian-api
   documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
   githubIssueLabel: source-the-guardian-api
   icon: theguardian.svg
   license: MIT
   name: The Guardian API
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

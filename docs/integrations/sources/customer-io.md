@@ -2,12 +2,7 @@
 
 ## Overview
 
-The Customer.io source is maintained by [Faros
-AI](https://github.com/faros-ai/airbyte-connectors/tree/main/sources/customer-io-source).
-Please file any support requests on that repo to minimize response time from the
-maintainers. The source supports both Full Refresh and Incremental syncs. You
-can choose if this source will copy only the new or updated data, or all rows
-in the tables and columns you set up for replication, every time a sync is run.
+This source provides access to the Customer.io API data.
 
 ### Output schema
 
@@ -52,6 +47,10 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                    |
 | :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
+| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.0 | 2024-08-15 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format |
+| 0.2.15 | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies |
+| 0.2.14 | 2024-08-10 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies |
 | 0.2.13 | 2024-08-03 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies |
 | 0.2.12 | 2024-07-27 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies |
 | 0.2.11 | 2024-07-20 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies |

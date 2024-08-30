@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.4.12"
+version = "1.0.1"
 name = "source-datadog"
 description = "Source implementation for Datadog."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,13 +16,13 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_datadog"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = "^1"
+python = "^3.10,<3.12"
+airbyte-cdk = "^4"
 
 [tool.poetry.scripts]
 source-datadog = "source_datadog.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest = "^6.2"
-pytest-mock = "^3.6.1"
+requests-mock = "*"
+pytest = "*"
+pytest-mock = "*"

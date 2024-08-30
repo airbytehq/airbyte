@@ -154,7 +154,11 @@ EXAMPLE:
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
-| ------- | ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+|---------| ---------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| 0.2.20 | 2024-08-24 | [44736](https://github.com/airbytehq/airbyte/pull/44736) | Update dependencies |
+| 0.2.19 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.2.18 | 2024-08-17 | [44259](https://github.com/airbytehq/airbyte/pull/44259) | Update dependencies |
+| 0.2.17 | 2024-08-10 | [43603](https://github.com/airbytehq/airbyte/pull/43603) | Update dependencies |
 | 0.2.16 | 2024-08-03 | [43066](https://github.com/airbytehq/airbyte/pull/43066) | Update dependencies |
 | 0.2.15 | 2024-07-27 | [42819](https://github.com/airbytehq/airbyte/pull/42819) | Update dependencies |
 | 0.2.14 | 2024-07-20 | [42368](https://github.com/airbytehq/airbyte/pull/42368) | Update dependencies |

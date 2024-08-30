@@ -10,15 +10,20 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-datadog
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Spec and schema are inline now, and default start and end date is setup for incremental sync."
+        upgradeDeadline: "2024-09-18"
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
-  dockerImageTag: 0.4.12
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-datadog
   githubIssueLabel: source-datadog
   icon: datadog.svg

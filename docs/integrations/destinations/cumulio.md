@@ -160,7 +160,11 @@ data less frequently** rather than _smaller amounts of data more frequently_!
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                             |
-| :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+|:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.16 | 2024-08-24 | [44656](https://github.com/airbytehq/airbyte/pull/44656) | Update dependencies |
+| 0.1.15 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.1.14 | 2024-08-17 | [44283](https://github.com/airbytehq/airbyte/pull/44283) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43695](https://github.com/airbytehq/airbyte/pull/43695) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [43178](https://github.com/airbytehq/airbyte/pull/43178) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42780](https://github.com/airbytehq/airbyte/pull/42780) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42281](https://github.com/airbytehq/airbyte/pull/42281) | Update dependencies |

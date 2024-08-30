@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import List, Literal, Optional, Tuple
 
 import git
+import requests
 import yaml
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -23,8 +24,10 @@ from metadata_service.constants import (
     DOC_INAPP_FILE_NAME,
     DOCS_FOLDER_PATH,
     ICON_FILE_NAME,
+    LATEST_GCS_FOLDER_NAME,
     METADATA_FILE_NAME,
     METADATA_FOLDER,
+    RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
@@ -32,8 +35,6 @@ from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 from pydash import set_
 from pydash.objects import get
-
-LATEST = "latest"
 
 
 @dataclass(frozen=True)
@@ -151,18 +152,15 @@ def upload_file_if_changed(
     return False, remote_blob.id
 
 
-def _latest_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
-    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, LATEST)
+def _metadata_upload(
+    metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path, version: str
+) -> Tuple[bool, str]:
+    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, version)
     return upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
 
 
-def _version_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path) -> Tuple[bool, str]:
-    version_path = get_metadata_remote_file_path(metadata.data.dockerRepository, metadata.data.dockerImageTag)
-    return upload_file_if_changed(metadata_file_path, bucket, version_path, disable_cache=True)
-
-
 def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, icon_file_path: Path) -> Tuple[bool, str]:
-    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, LATEST)
+    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, LATEST_GCS_FOLDER_NAME)
     if not icon_file_path.exists():
         return False, f"No Icon found at {icon_file_path}"
     return upload_file_if_changed(icon_file_path, bucket, latest_icon_path)
@@ -175,7 +173,9 @@ def _doc_upload(
     if not local_doc_path:
         return False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload."
 
-    remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, LATEST if latest else metadata.data.dockerImageTag, inapp)
+    remote_doc_path = get_doc_remote_file_path(
+        metadata.data.dockerRepository, LATEST_GCS_FOLDER_NAME if latest else metadata.data.dockerImageTag, inapp
+    )
 
     if local_doc_path.exists():
         doc_uploaded, doc_blob_id = upload_file_if_changed(local_doc_path, bucket, remote_doc_path)
@@ -234,7 +234,7 @@ def _file_upload(
         )
 
     if upload_as_latest:
-        remote_upload_path = gcp_connector_dir / LATEST
+        remote_upload_path = gcp_connector_dir / LATEST_GCS_FOLDER_NAME
         versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
             local_file_path=local_path,
             bucket=bucket,
@@ -250,10 +250,10 @@ def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOp
         return metadata_dict
 
     # replace any dockerImageTag references with the actual tag
-    # this includes metadata.data.dockerImageTag, metadata.data.registries[].dockerImageTag
+    # this includes metadata.data.dockerImageTag, metadata.data.registryOverrides[].dockerImageTag
     # where registries is a dictionary of registry name to registry object
     metadata_dict["data"]["dockerImageTag"] = validator_opts.prerelease_tag
-    for registry in get(metadata_dict, "data.registries", {}).values():
+    for registry in get(metadata_dict, "data.registryOverrides", {}).values():
         if "dockerImageTag" in registry:
             registry["dockerImageTag"] = validator_opts.prerelease_tag
 
@@ -326,6 +326,18 @@ def _apply_python_components_sha_to_metadata_file(
     return metadata_dict
 
 
+def _apply_sbom_url_to_metadata_file(metadata_dict: dict) -> dict:
+    """Apply sbom url to the metadata file before uploading it to GCS."""
+    try:
+        sbom_url = f"https://connectors.airbyte.com/files/sbom/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}.spdx.json"
+    except KeyError:
+        return metadata_dict
+    response = requests.head(sbom_url)
+    if response.ok:
+        metadata_dict = set_(metadata_dict, "data.generated.sbomUrl", sbom_url)
+    return metadata_dict
+
+
 def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
     """Write the metadata to a temporary file."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
@@ -363,6 +375,7 @@ def _apply_modifications_to_metadata_file(
     metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
     metadata = _apply_python_components_sha_to_metadata_file(metadata, components_zip_sha256)
 
+    metadata = _apply_sbom_url_to_metadata_file(metadata)
     return _write_metadata_to_tmp_file(metadata)
 
 
@@ -413,6 +426,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     if metadata is None:
         raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
+    is_pre_release = validator_opts.prerelease_tag is not None
+    is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
+    should_upload_release_candidate = is_release_candidate and not is_pre_release
+    should_upload_latest = not is_release_candidate and not is_pre_release
     gcs_creds = os.environ.get("GCS_CREDENTIALS")
     if not gcs_creds:
         raise ValueError("Please set the GCS_CREDENTIALS env var.")
@@ -424,12 +441,14 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     docs_path = Path(validator_opts.docs_path)
     gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
     upload_as_version = metadata.data.dockerImageTag
-    upload_as_latest = not validator_opts.prerelease_tag
 
     icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path.parent / ICON_FILE_NAME)
 
-    version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
-
+    # Upload version metadata and doc
+    # If the connector is a pre-release, we use the pre-release tag as the version
+    # Otherwise, we use the dockerImageTag from the metadata
+    version = metadata.data.dockerImageTag if not is_pre_release else validator_opts.prerelease_tag
+    version_uploaded, version_blob_id = _metadata_upload(metadata, bucket, metadata_file_path, version)
     doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
     doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
 
@@ -438,7 +457,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
-        upload_as_latest=upload_as_latest,
+        upload_as_latest=should_upload_latest,
     )
     (components_zip_sha256_uploaded, components_zip_sha256_blob_id), (
         components_zip_sha256_latest_uploaded,
@@ -448,26 +467,41 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
-        upload_as_latest=upload_as_latest,
+        upload_as_latest=should_upload_latest,
     )
     (components_zip_uploaded, components_zip_blob_id), (components_zip_latest_uploaded, components_zip_latest_blob_id) = _file_upload(
         local_path=python_components_zip_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
-        upload_as_latest=upload_as_latest,
+        upload_as_latest=should_upload_latest,
     )
 
-    if upload_as_latest:
-        latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
+    latest_uploaded, latest_blob_id = False, None
+    doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
+
+    release_candidate_uploaded, release_candidate_blob_id = False, None
+
+    # Latest upload
+    # We upload
+    # - the current metadata to the "latest" path
+    # - the current doc to the "latest" path
+    # - the current inapp doc to the "latest" path
+    if should_upload_latest:
+        latest_uploaded, latest_blob_id = _metadata_upload(metadata, bucket, metadata_file_path, LATEST_GCS_FOLDER_NAME)
         doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, False)
         doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, True)
-    else:
-        latest_uploaded, latest_blob_id = False, None
-        doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
+
+    # Release candidate upload
+    # We just upload the current metadata to the "release_candidate" path
+    # The doc and inapp doc are not uploaded, which means that the release candidate will still point to the latest doc
+    if should_upload_release_candidate:
+        release_candidate_uploaded, release_candidate_blob_id = _metadata_upload(
+            metadata, bucket, metadata_file_path, RELEASE_CANDIDATE_GCS_FOLDER_NAME
+        )
 
     return MetadataUploadInfo(
-        metadata_uploaded=version_uploaded or latest_uploaded,
+        metadata_uploaded=version_uploaded or latest_uploaded or release_candidate_uploaded,
         metadata_file_path=str(metadata_file_path),
         uploaded_files=[
             UploadedFile(
@@ -481,6 +515,12 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
                 uploaded=latest_uploaded,
                 description="latest metadata",
                 blob_id=latest_blob_id,
+            ),
+            UploadedFile(
+                id="release_candidate_metadata",
+                uploaded=release_candidate_uploaded,
+                description="release candidate metadata",
+                blob_id=release_candidate_blob_id,
             ),
             UploadedFile(
                 id="icon",

@@ -76,7 +76,12 @@ You should now have all the requirements needed to configure Chroma as a destina
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                      |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------------------------- |
+|:--------|:-----------| :-------------------------------------------------------- |:-------------------------------------------------------------|
+| 0.0.27 | 2024-08-24 | [44717](https://github.com/airbytehq/airbyte/pull/44717) | Update dependencies |
+| 0.0.26 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.0.25 | 2024-08-17 | [44292](https://github.com/airbytehq/airbyte/pull/44292) | Update dependencies |
+| 0.0.24 | 2024-08-12 | [43734](https://github.com/airbytehq/airbyte/pull/43734) | Update dependencies |
+| 0.0.23 | 2024-08-10 | [43702](https://github.com/airbytehq/airbyte/pull/43702) | Update dependencies |
 | 0.0.22 | 2024-08-03 | [43133](https://github.com/airbytehq/airbyte/pull/43133) | Update dependencies |
 | 0.0.21 | 2024-07-27 | [42628](https://github.com/airbytehq/airbyte/pull/42628) | Update dependencies |
 | 0.0.20 | 2024-07-20 | [42160](https://github.com/airbytehq/airbyte/pull/42160) | Update dependencies |

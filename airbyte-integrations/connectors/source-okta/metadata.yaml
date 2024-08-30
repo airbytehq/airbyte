@@ -2,7 +2,7 @@ data:
   ab_internal:
     ql: 200
     sl: 100
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
-  dockerImageTag: 0.2.9
+  dockerImageTag: 0.3.2
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg

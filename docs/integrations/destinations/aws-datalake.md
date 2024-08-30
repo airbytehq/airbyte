@@ -93,7 +93,12 @@ which will be translated for compatibility with the Glue Data Catalog:
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                              |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+|:--------| :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.26 | 2024-08-24 | [44677](https://github.com/airbytehq/airbyte/pull/44677) | Update dependencies |
+| 0.1.25 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.1.24 | 2024-08-17 | [44341](https://github.com/airbytehq/airbyte/pull/44341) | Update dependencies |
+| 0.1.23 | 2024-08-12 | [43822](https://github.com/airbytehq/airbyte/pull/43822) | Update dependencies |
+| 0.1.22 | 2024-08-10 | [43497](https://github.com/airbytehq/airbyte/pull/43497) | Update dependencies |
 | 0.1.21 | 2024-08-03 | [43139](https://github.com/airbytehq/airbyte/pull/43139) | Update dependencies |
 | 0.1.20 | 2024-07-27 | [42821](https://github.com/airbytehq/airbyte/pull/42821) | Update dependencies |
 | 0.1.19 | 2024-07-20 | [42174](https://github.com/airbytehq/airbyte/pull/42174) | Update dependencies |

@@ -76,6 +76,11 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 1.0.1 | 2024-08-24 | [44706](https://github.com/airbytehq/airbyte/pull/44706) | Update dependencies |
+| 1.0.0 | 2024-08-19 | [44371](https://github.com/airbytehq/airbyte/pull/44371) | Update CDK version and dependencies, remove parameters and migrate to inline schemas |
+| 0.4.15 | 2024-08-17 | [44313](https://github.com/airbytehq/airbyte/pull/44313) | Update dependencies |
+| 0.4.14 | 2024-08-12 | [43741](https://github.com/airbytehq/airbyte/pull/43741) | Update dependencies |
+| 0.4.13 | 2024-08-10 | [43555](https://github.com/airbytehq/airbyte/pull/43555) | Update dependencies |
 | 0.4.12 | 2024-08-03 | [43141](https://github.com/airbytehq/airbyte/pull/43141) | Update dependencies |
 | 0.4.11 | 2024-07-27 | [42776](https://github.com/airbytehq/airbyte/pull/42776) | Update dependencies |
 | 0.4.10 | 2024-07-20 | [42341](https://github.com/airbytehq/airbyte/pull/42341) | Update dependencies |

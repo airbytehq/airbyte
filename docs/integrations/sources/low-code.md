@@ -9,8 +9,19 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
-| 4.3.3 | 2024-08-05 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.3.2 |
-| 4.3.2 | 2024-08-03 | [43277](https://github.com/airbytehq/airbyte/pull/43277) | Update dependencies |
+| 4.6.2 | 2024-08-29 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.6.2 |
+| 4.6.1 | 2024-08-28 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.6.1 |
+| 4.6.0 | 2024-08-28 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.6.0 |
+| 4.5.4 | 2024-08-22 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.5.4 |
+| 4.5.3 | 2024-08-22 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.5.3 |
+| 4.5.2 | 2024-08-19 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.5.2 |
+| 4.5.1 | 2024-08-19 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.5.1 |
+| 4.5.0 | 2024-08-17 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.5.0 |
+| 4.4.2 | 2024-08-16 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.4.2 |
+| 4.4.1 | 2024-08-14 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.4.1 |
+| 4.4.0 | 2024-08-14 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.4.0 |
+| 4.3.3 | 2024-08-13 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.3.3 |
+| 4.3.2 | 2024-08-05 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.3.2 |
 | 4.3.1 | 2024-08-03 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.3.1 |
 | 4.3.0 | 2024-08-02 | [42969](https://github.com/airbytehq/airbyte/pull/42969) | Manually Bump own version version to 4.3.0 |
 | 3.13.0 | 2024-08-02 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.3.0 |

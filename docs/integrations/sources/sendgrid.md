@@ -89,6 +89,10 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.16 | 2024-08-24 | [44753](https://github.com/airbytehq/airbyte/pull/44753) | Update dependencies |
+| 1.0.15 | 2024-08-17 | [44233](https://github.com/airbytehq/airbyte/pull/44233) | Update dependencies |
+| 1.0.14 | 2024-08-12 | [43751](https://github.com/airbytehq/airbyte/pull/43751) | Update dependencies |
+| 1.0.13 | 2024-08-10 | [43635](https://github.com/airbytehq/airbyte/pull/43635) | Update dependencies |
 | 1.0.12 | 2024-08-03 | [43269](https://github.com/airbytehq/airbyte/pull/43269) | Update dependencies |
 | 1.0.11 | 2024-07-27 | [42729](https://github.com/airbytehq/airbyte/pull/42729) | Update dependencies |
 | 1.0.10 | 2024-07-20 | [42310](https://github.com/airbytehq/airbyte/pull/42310) | Update dependencies |

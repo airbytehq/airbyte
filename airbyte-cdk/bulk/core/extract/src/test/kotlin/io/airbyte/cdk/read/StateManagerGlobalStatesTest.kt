@@ -4,8 +4,8 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.consumers.BufferingCatalogValidationFailureHandler
-import io.airbyte.cdk.consumers.CatalogValidationFailure
+import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
+import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.host", value = "localhost")
 @Property(name = "airbyte.connector.config.database", value = "testdb")
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "cdc")
-@Property(name = "metadata.resource", value = "read/metadata.json")
+@Property(name = "metadata.resource", value = "discover/metadata-valid.json")
 class StateManagerGlobalStatesTest {
     @Inject lateinit var config: SourceConfiguration
 
@@ -37,7 +37,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -55,7 +55,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(name = "airbyte.connector.state.json", value = "[]")
     fun testColdStart() {
         val streams: Streams = prelude()
@@ -98,7 +98,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -147,7 +147,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =

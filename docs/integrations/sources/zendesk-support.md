@@ -9,8 +9,11 @@ This page contains the setup guide and reference information for the [Zendesk Su
 ## Prerequisites
 
 - A Zendesk account with an Administrator role.
+- The unique Zendesk subdomain associated with the account.
 
 ## Setup guide
+
+## Set up Zendesk Support
 
 The Zendesk Support source connector supports two authentication methods:
 
@@ -50,12 +53,24 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 6. Click **Save**.
 <!-- /env:oss -->
 
-### Set up the Zendesk Support source connector
+### Set up the Zendesk Support connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Zendesk Support** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+<!-- env:cloud -->
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+4. Enter a name for the Zendesk Support connector.
+<!-- /env:cloud -->
+<!-- env:oss -->
+#### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Zendesk Support from the Source type dropdown.
+4. Enter a name for the Zendesk Support connector.
+<!-- /env:oss -->
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
 <!-- env:cloud -->
 
@@ -74,7 +89,7 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 
 ## Supported sync modes
 
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh | Overwrite
 - Full Refresh | Append
@@ -88,7 +103,7 @@ There are two types of incremental sync:
 2. Client-Side Incremental (API returns all available data and connector filters out only new records).
    :::
 
-## Supported streams
+## Supported Streams
 
 The Zendesk Support source connector supports the following streams:
 
@@ -167,8 +182,14 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1 | 2024-08-24 | [44692](https://github.com/airbytehq/airbyte/pull/44692) | Update dependencies |
+| 4.0.0 | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination |
+| 3.0.1 | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies |
+| 3.0.0 | 2024-08-13 | [43446](https://github.com/airbytehq/airbyte/pull/43446) | `TicketMetrics` stream: updates cursor field to `generated_timestamp` |
+| 2.7.3 | 2024-08-12 | [43900](https://github.com/airbytehq/airbyte/pull/43900) | Update dependencies |
+| 2.7.2 | 2024-08-10 | [43614](https://github.com/airbytehq/airbyte/pull/43614) | Update dependencies |
 | 2.7.1 | 2024-08-03 | [41799](https://github.com/airbytehq/airbyte/pull/41799) | Update dependencies |
-| 2.7.0 | 2024-08-02 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Migrate to CDK v4.3.0 |
+| 2.7.0 | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0 |
 | 2.6.13 | 2024-07-31 | [42892](https://github.com/airbytehq/airbyte/pull/42892) | Update BackoffStrategy interface to be up-to-date with latest parent interface. |
 | 2.6.12 | 2024-07-25 | [42519](https://github.com/airbytehq/airbyte/pull/42519) | Update error message for permission issue. |
 | 2.6.11 | 2024-07-18 | [42100](https://github.com/airbytehq/airbyte/pull/42100) | Raise config error on 403/404 status code. |

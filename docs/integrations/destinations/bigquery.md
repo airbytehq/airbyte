@@ -81,7 +81,12 @@ You cannot change the location later.
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
-10. For **Transformation Query Run Type (Optional)**, select **interactive** to have
+
+:::note
+Be sure to copy all contents in the Account Key JSON file including the brackets.
+:::
+
+11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
     [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries)
     or **batch** to have
     [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
@@ -205,7 +210,10 @@ tutorials:
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.8.9   | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase message parsing limit to 100mb                                                                                                                                          |
+| 2.8.8   | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526)   | Revert protocol compliance fix                                                                                                                                                   |
+| 2.8.7   | 2024-08-15 | [42504](https://github.com/airbytehq/airbyte/pull/42504)   | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance)                                                                                      |
 | 2.8.6   | 2024-07-30 | [42511](https://github.com/airbytehq/airbyte/pull/42511)   | Added a copy operation to validate copy permissions in the check function                                                                                                        |
 | 2.8.5   | 2024-07-22 | [42407](https://github.com/airbytehq/airbyte/pull/42407)   | Batched Standard Inserts is default loading mode                                                                                                                                 |
 | 2.8.4   | 2024-07-15 | [41968](https://github.com/airbytehq/airbyte/pull/41968)   | Don't hang forever on empty stream list; shorten error message on INCOMPLETE stream status                                                                                       |

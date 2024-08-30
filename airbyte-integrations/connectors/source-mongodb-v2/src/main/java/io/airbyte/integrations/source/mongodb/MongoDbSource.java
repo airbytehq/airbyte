@@ -60,7 +60,6 @@ public class MongoDbSource extends BaseConnector implements Source {
       final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
       try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
         final String databaseName = sourceConfig.getDatabaseName();
-
         if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
           /*
            * Perform the authorized collections check before the cluster type check. The MongoDB Java driver

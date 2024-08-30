@@ -1,12 +1,19 @@
 # Intercom
 
-This page contains the setup guide and reference information for the Intercom source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Intercom](https://developers.intercom.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - Access to an Intercom account with the data you want to replicate
+- Start date - a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
 
 ## Setup guide
+
+### Set up Intercom
 
 <!-- env:oss -->
 
@@ -24,13 +31,24 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ### Set up the Intercom connector in Airbyte
 
-1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Intercom** from the list of available sources.
-4. Enter a **Source name** to help you identify this source.
+#### For Airbyte Cloud: 
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Intercom from the Source type dropdown.
+4. Enter a name for the Intercom connector.
 5. To authenticate:
 
 <!-- env:cloud -->
+
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Intercom from the Source type dropdown.
+4. Enter a name for the Intercom connector.
+<!-- /env:oss -->
 
 - For **Airbyte Cloud**, click **Authenticate your Intercom account**. When the pop-up appears, select the appropriate workspace from the dropdown and click **Authorize access**.
   <!-- /env:cloud -->
@@ -43,12 +61,12 @@ To authenticate the connector in **Airbyte Open Source**, you will need to obtai
 
 ## Supported sync modes
 
-The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Intercom source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 The Intercom source connector supports the following streams:
 
@@ -78,6 +96,10 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.21 | 2024-08-24 | [44672](https://github.com/airbytehq/airbyte/pull/44672) | Update dependencies |
+| 0.6.20 | 2024-08-17 | [44296](https://github.com/airbytehq/airbyte/pull/44296) | Update dependencies |
+| 0.6.19 | 2024-08-12 | [43878](https://github.com/airbytehq/airbyte/pull/43878) | Update dependencies |
+| 0.6.18 | 2024-08-10 | [43500](https://github.com/airbytehq/airbyte/pull/43500) | Update dependencies |
 | 0.6.17 | 2024-08-03 | [43276](https://github.com/airbytehq/airbyte/pull/43276) | Update dependencies |
 | 0.6.16 | 2024-07-29 | [42094](https://github.com/airbytehq/airbyte/pull/42094) | Use latest CDK, raise config error on `Active subscription needed` error and transient errors for `Companies` stream. |
 | 0.6.15 | 2024-07-27 | [42654](https://github.com/airbytehq/airbyte/pull/42654) | Update dependencies |

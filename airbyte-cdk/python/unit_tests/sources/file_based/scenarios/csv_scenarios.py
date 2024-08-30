@@ -411,6 +411,14 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                                             "required": ["filetype"],
                                         },
+                                        {
+                                            "title": "Excel Format",
+                                            "type": "object",
+                                            "properties": {
+                                                "filetype": {"title": "Filetype", "default": "excel", "const": "excel", "type": "string"}
+                                            },
+                                            "required": ["filetype"]
+                                        }
                                     ],
                                 },
                                 "schemaless": {
@@ -3232,6 +3240,7 @@ earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
+    .set_expected_check_error(AirbyteTracedException, None)
 ).build()
 
 csv_no_records_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3335,4 +3344,5 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
         }
     )
     .set_expected_records(None)
+    .set_expected_check_error(AirbyteTracedException, None)
 ).build()

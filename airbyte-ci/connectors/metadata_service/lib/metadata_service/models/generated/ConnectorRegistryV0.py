@@ -7,7 +7,7 @@ from datetime import date, datetime
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field, constr
+from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
 from typing_extensions import Literal
 
 
@@ -60,6 +60,21 @@ class AllowedHosts(BaseModel):
     hosts: Optional[List[str]] = Field(
         None,
         description="An array of hosts that this connector can connect to.  AllowedHosts not being present for the source or destination means that access to all hosts is allowed.  An empty list here means that no network access is granted.",
+    )
+
+
+class RolloutConfiguration(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    initialPercentage: Optional[conint(ge=0, le=100)] = Field(
+        0, description="The percentage of users that should receive the new version initially."
+    )
+    maxPercentage: Optional[conint(ge=0, le=100)] = Field(
+        50, description="The percentage of users who should receive the release candidate during the test phase before full rollout."
+    )
+    advanceDelayMinutes: Optional[conint(ge=10)] = Field(
+        10, description="The number of minutes to wait before advancing the rollout percentage."
     )
 
 
@@ -142,6 +157,7 @@ class GeneratedFields(BaseModel):
     git: Optional[GitInfo] = None
     source_file_info: Optional[SourceFileInfo] = None
     metrics: Optional[ConnectorMetrics] = None
+    sbomUrl: Optional[str] = Field(None, description="URL to the SBOM file")
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -184,6 +200,8 @@ class ConnectorReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    isReleaseCandidate: Optional[bool] = Field(False, description="Whether the release is eligible to be a release candidate.")
+    rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: ConnectorBreakingChanges
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
@@ -219,10 +237,14 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     maxSecondsBetweenMessages: Optional[int] = Field(
         None, description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach"
     )
+    erdUrl: Optional[str] = Field(None, description="The URL where you can visualize the ERD")
     releases: Optional[ConnectorReleases] = None
     ab_internal: Optional[AirbyteInternal] = None
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
+    language: Optional[str] = Field(
+        None, description="The language the connector is written in"
+    )
 
 
 class ConnectorRegistryDestinationDefinition(BaseModel):
@@ -261,6 +283,9 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     supportsRefreshes: Optional[bool] = False
     generated: Optional[GeneratedFields] = None
     packageInfo: Optional[ConnectorPackageInfo] = None
+    language: Optional[str] = Field(
+        None, description="The language the connector is written in"
+    )
 
 
 class ConnectorRegistryV0(BaseModel):

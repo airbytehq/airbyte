@@ -2,31 +2,35 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.EmptyInputState
 import io.airbyte.cdk.command.GlobalInputState
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.StreamInputState
-import io.airbyte.cdk.consumers.CatalogValidationFailureHandler
-import io.airbyte.cdk.consumers.FieldNotFound
-import io.airbyte.cdk.consumers.FieldTypeMismatch
-import io.airbyte.cdk.consumers.InvalidIncrementalSyncMode
-import io.airbyte.cdk.consumers.InvalidPrimaryKey
-import io.airbyte.cdk.consumers.MultipleStreamsFound
-import io.airbyte.cdk.consumers.StreamHasNoFields
-import io.airbyte.cdk.consumers.StreamNotFound
 import io.airbyte.cdk.data.AirbyteType
 import io.airbyte.cdk.data.ArrayAirbyteType
 import io.airbyte.cdk.data.LeafAirbyteType
-import io.airbyte.cdk.exceptions.ConfigErrorException
-import io.airbyte.cdk.source.CommonMetaField
-import io.airbyte.cdk.source.Field
-import io.airbyte.cdk.source.FieldOrMetaField
-import io.airbyte.cdk.source.MetaField
-import io.airbyte.cdk.source.MetadataQuerier
+import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.discover.MetadataQuerier
+import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.FieldNotFound
+import io.airbyte.cdk.output.FieldTypeMismatch
+import io.airbyte.cdk.output.InvalidIncrementalSyncMode
+import io.airbyte.cdk.output.InvalidPrimaryKey
+import io.airbyte.cdk.output.MultipleStreamsFound
+import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.output.StreamHasNoFields
+import io.airbyte.cdk.output.StreamNotFound
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import jakarta.inject.Singleton
 
@@ -37,6 +41,7 @@ import jakarta.inject.Singleton
 @Singleton
 class StateManagerFactory(
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
+    val outputConsumer: OutputConsumer,
     val handler: CatalogValidationFailureHandler,
 ) {
     /** Generates a [StateManager] instance based on the provided inputs. */
@@ -101,14 +106,28 @@ class StateManagerFactory(
         val jsonSchemaProperties: JsonNode = stream.jsonSchema["properties"]
         val name: String = stream.name!!
         val namespace: String? = stream.namespace
+        val streamDescriptor = StreamDescriptor().withName(name).withNamespace(namespace)
+        val streamLabel: String = AirbyteStreamNameNamespacePair(name, namespace).toString()
         when (metadataQuerier.streamNames(namespace).filter { it == name }.size) {
             0 -> {
                 handler.accept(StreamNotFound(name, namespace))
+                outputConsumer.accept(
+                    AirbyteErrorTraceMessage()
+                        .withStreamDescriptor(streamDescriptor)
+                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+                        .withMessage("Stream '$streamLabel' not found or not accessible in source.")
+                )
                 return null
             }
             1 -> Unit
             else -> {
                 handler.accept(MultipleStreamsFound(name, namespace))
+                outputConsumer.accept(
+                    AirbyteErrorTraceMessage()
+                        .withStreamDescriptor(streamDescriptor)
+                        .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+                        .withMessage("Multiple streams '$streamLabel' found in source.")
+                )
                 return null
             }
         }
@@ -153,6 +172,12 @@ class StateManagerFactory(
             }
         if (streamFields.isEmpty()) {
             handler.accept(StreamHasNoFields(name, namespace))
+            outputConsumer.accept(
+                AirbyteErrorTraceMessage()
+                    .withStreamDescriptor(streamDescriptor)
+                    .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
+                    .withMessage("Stream '$streamLabel' has no accessible fields.")
+            )
             return null
         }
 

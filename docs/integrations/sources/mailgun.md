@@ -68,6 +68,10 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.0 | 2024-08-15 | [44130](https://github.com/airbytehq/airbyte/pull/44130) | Refactor connector to manifest-only format |
+| 0.2.18 | 2024-08-12 | [43923](https://github.com/airbytehq/airbyte/pull/43923) | Update dependencies |
+| 0.2.17 | 2024-08-10 | [43501](https://github.com/airbytehq/airbyte/pull/43501) | Update dependencies |
 | 0.2.16 | 2024-08-03 | [43098](https://github.com/airbytehq/airbyte/pull/43098) | Update dependencies |
 | 0.2.15 | 2024-07-27 | [42716](https://github.com/airbytehq/airbyte/pull/42716) | Update dependencies |
 | 0.2.14 | 2024-07-20 | [42241](https://github.com/airbytehq/airbyte/pull/42241) | Update dependencies |
