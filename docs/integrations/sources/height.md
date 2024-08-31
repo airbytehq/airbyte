@@ -1,15 +1,20 @@
 # Height
-New source: Height
-API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de9232e5971cb4afda
+
+This page contains the setup guide and reference information for the Height source connector.
+
+## Prerequisites
+
+To set up the Height source connector, you'll need the Height API key that you could see once you login and navigate to https://height.app/xxxxx/settings/api, and copy your secret key
 Website: https://height.app
-Access key docs: https://height.notion.site/OAuth-Apps-on-Height-a8ebeab3f3f047e3857bd8ce60c2f640
+
+API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de9232e5971cb4afda
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `start_date` | `string` | Start date.  |  |
+| `api_key` | `string` | API secret which is copied from the settings page of height.app  |  |
+| `start_date` | `string` | Start date for   |  |
 | `search_query` | `string` | search_query. Search query to be used with search stream | task |
 
 ## Streams
@@ -29,8 +34,8 @@ Access key docs: https://height.notion.site/OAuth-Apps-on-Height-a8ebeab3f3f047e
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-08-31 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|----|----------------|
+| 0.0.1 | 2024-08-31 | [45065](https://github.com/airbytehq/airbyte/pull/45065) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

@@ -2,17 +2,6 @@ version: 4.6.2
 
 type: DeclarativeSource
 
-description: >-
-  New source: Height
-
-  API Documentation:
-  https://height.notion.site/API-documentation-643aea5bf01742de9232e5971cb4afda
-
-  Website: https://height.app
-
-  Access key docs:
-  https://height.notion.site/OAuth-Apps-on-Height-a8ebeab3f3f047e3857bd8ce60c2f640
-
 check:
   type: CheckStream
   stream_names:
