@@ -2,29 +2,43 @@ data:
   allowedHosts:
     hosts:
       - ${domain_name}/api/v2
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-freshservice
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: false
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
-  dockerImageTag: 1.3.1
+  dockerImageTag: 1.4.1
   dockerRepository: airbyte/source-freshservice
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   githubIssueLabel: source-freshservice
   icon: freshservice.svg
   license: MIT
   name: Freshservice
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseDate: "2021-10-29"
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-freshservice
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: freshservice_config_dev_null
+          id: e47f94ef-d605-4a50-92d9-f6c873f2b2d2
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FRESHSERVICE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

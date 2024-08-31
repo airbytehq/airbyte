@@ -62,10 +62,29 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 | :------ | :--------- | :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------|
+| 1.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.3.0 | 2024-08-15 | [44165](https://github.com/airbytehq/airbyte/pull/44165) | Refactor connector to manifest-only format |
+| 1.2.13 | 2024-08-12 | [43890](https://github.com/airbytehq/airbyte/pull/43890) | Update dependencies |
+| 1.2.12 | 2024-08-10 | [43516](https://github.com/airbytehq/airbyte/pull/43516) | Update dependencies |
+| 1.2.11 | 2024-08-03 | [43100](https://github.com/airbytehq/airbyte/pull/43100) | Update dependencies |
+| 1.2.10 | 2024-07-27 | [42741](https://github.com/airbytehq/airbyte/pull/42741) | Update dependencies |
+| 1.2.9 | 2024-07-20 | [42351](https://github.com/airbytehq/airbyte/pull/42351) | Update dependencies |
+| 1.2.8 | 2024-07-13 | [41892](https://github.com/airbytehq/airbyte/pull/41892) | Update dependencies |
+| 1.2.7 | 2024-07-10 | [41329](https://github.com/airbytehq/airbyte/pull/41329) | Update dependencies |
+| 1.2.6 | 2024-07-06 | [40810](https://github.com/airbytehq/airbyte/pull/40810) | Update dependencies |
+| 1.2.5 | 2024-06-25 | [40413](https://github.com/airbytehq/airbyte/pull/40413) | Update dependencies |
+| 1.2.4 | 2024-06-22 | [40091](https://github.com/airbytehq/airbyte/pull/40091) | Update dependencies |
+| 1.2.3 | 2024-06-06 | [39241](https://github.com/airbytehq/airbyte/pull/39241) | [autopull] Upgrade base image to v1.2.2 |
+| 1.2.2 | 2024-05-28 | [38578](https://github.com/airbytehq/airbyte/pull/38578) | Make connector Builder compatible |
 | 1.2.1 | 2024-04-02 | [36775](https://github.com/airbytehq/airbyte/pull/36775) | Migrate to base image, manage dependencies with Poetry, and stop using last_records interpolation variable. |
-| 1.2.0 | 2023-08-13 | [29288](https://github.com/airbytehq/airbyte/pull/29288) | Migrate python cdk to low-code                                                                              |
-| 1.1.0 | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream                                                                                           |
-| 1.0.0 | 2023-07-10 | [28093](https://github.com/airbytehq/airbyte/pull/28093) | Update `docs` and `pages` schemas                                                                           |
-| 0.1.0 | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk]                                                                            |
+| 1.2.0 | 2023-08-13 | [29288](https://github.com/airbytehq/airbyte/pull/29288) | Migrate python cdk to low-code |
+| 1.1.0 | 2023-07-10 | [27797](https://github.com/airbytehq/airbyte/pull/27797) | Add `rows` stream |
+| 1.0.0 | 2023-07-10 | [28093](https://github.com/airbytehq/airbyte/pull/28093) | Update `docs` and `pages` schemas |
+| 0.1.0 | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk] |
+
+</details>

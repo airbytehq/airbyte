@@ -179,5 +179,5 @@ def test_get_all_connectors_in_repo():
     for connector in all_connectors:
         assert isinstance(connector, utils.Connector)
         assert connector.metadata is not None
-        if connector.has_airbyte_docs:
+        if connector.has_airbyte_docs and connector.is_enabled_in_any_registry:
             assert connector.documentation_file_path.exists()

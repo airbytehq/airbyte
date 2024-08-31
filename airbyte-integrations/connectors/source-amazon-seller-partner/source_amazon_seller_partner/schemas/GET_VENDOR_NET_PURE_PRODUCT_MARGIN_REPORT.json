@@ -5,24 +5,30 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "startDate": {
+      "description": "The date representing the start date of the report period",
       "type": ["null", "string"],
       "format": "date"
     },
     "endDate": {
+      "description": "The date representing the end date of the report period",
       "type": ["null", "string"],
       "format": "date"
     },
     "asin": {
+      "description": "The unique identifier for the Amazon Standard Identification Number (ASIN) of the product",
       "type": ["null", "string"]
     },
     "netPureProductMargin": {
+      "description": "The net profit margin of the product after deducting all costs associated with production",
       "type": ["null", "number"]
     },
     "dataEndTime": {
+      "description": "The timestamp indicating the end time of the data collection period",
       "type": ["null", "string"],
       "format": "date"
     },
     "queryEndDate": {
+      "description": "The date of the query end date used for fetching the report data",
       "type": ["null", "string"],
       "format": "date"
     }

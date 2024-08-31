@@ -2,39 +2,50 @@
   "type": ["null", "object"],
   "properties": {
     "metadata": {
+      "description": "Additional metadata associated with the charge.",
       "type": ["null", "object"],
       "properties": {}
     },
     "fraud_details": {
+      "description": "Details of fraud reports.",
       "type": ["null", "object"],
       "properties": {
         "stripe_report": {
+          "description": "The ID of the fraud report from Stripe.",
           "type": ["null", "string"]
         }
       }
     },
     "transfer_group": {
+      "description": "The transfer group of the charge.",
       "type": ["null", "string"]
     },
     "on_behalf_of": {
+      "description": "The ID of the account on behalf of which the charge is made.",
       "type": ["null", "string"]
     },
     "review": {
+      "description": "A boolean indicating if the charge is under review.",
       "type": ["null", "string"]
     },
     "failure_message": {
+      "description": "The failure error message for the charge.",
       "type": ["null", "string"]
     },
     "receipt_email": {
+      "description": "The email address to send receipt of the charge.",
       "type": ["null", "string"]
     },
     "statement_descriptor": {
+      "description": "The statement descriptor for the charge.",
       "type": ["null", "string"]
     },
     "source": {
+      "description": "Details of the payment source for the charge.",
       "type": ["null", "object"],
       "properties": {
         "metadata": {
+          "description": "Metadata related to the payment source.",
           "type": ["null", "object"],
           "properties": {}
         },
@@ -48,6 +59,7 @@
           "type": ["null", "boolean"]
         },
         "card": {
+          "description": "Details of the credit/debit card source.",
           "type": ["null", "object"],
           "properties": {
             "fingerprint": {
@@ -146,6 +158,7 @@
           "type": ["null", "string"]
         },
         "owner": {
+          "description": "Details of the owner of the payment source.",
           "type": ["null", "object"],
           "properties": {
             "verified_address": {
@@ -193,6 +206,7 @@
           "type": ["null", "string"]
         },
         "receiver": {
+          "description": "Details of the receiver of the payment source.",
           "type": ["null", "object"],
           "properties": {
             "refund_attributes_method": {
@@ -222,6 +236,7 @@
           "type": ["null", "string"]
         },
         "ach_credit_transfer": {
+          "description": "Details of the ACH credit transfer source.",
           "type": ["null", "object"],
           "properties": {
             "bank_name": {
@@ -269,26 +284,32 @@
           "type": ["null", "string"]
         },
         "alipay": {
+          "description": "Details of the Alipay source.",
           "type": ["null", "object"],
           "properties": {}
         },
         "bancontact": {
+          "description": "Details of the Bancontact source.",
           "type": ["null", "object"],
           "properties": {}
         },
         "eps": {
+          "description": "Details of the EPS source.",
           "type": ["null", "object"],
           "properties": {}
         },
         "ideal": {
+          "description": "Details of the iDeal source.",
           "type": ["null", "object"],
           "properties": {}
         },
         "multibanco": {
+          "description": "Details of the Multibanco source.",
           "type": ["null", "object"],
           "properties": {}
         },
         "redirect": {
+          "description": "Details of the redirect setup for the payment source.",
           "type": ["null", "object"],
           "properties": {
             "failure_reason": {
@@ -308,15 +329,19 @@
       }
     },
     "destination": {
+      "description": "The ID of the destination on account to which funds are to be transferred.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique ID of the charge instance.",
       "type": ["string"]
     },
     "object": {
+      "description": "Object type, always set to 'charge'.",
       "type": ["null", "string"]
     },
     "outcome": {
+      "description": "Details of the outcome of the charge.",
       "type": ["null", "object"],
       "properties": {
         "type": {
@@ -340,61 +365,80 @@
       }
     },
     "status": {
+      "description": "The status of the charge.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency in which the charge was made.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the charge was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp when the charge was last updated.",
       "type": ["null", "integer"]
     },
     "order": {
+      "description": "The ID of the order associated with the charge.",
       "type": ["null", "string"]
     },
     "application": {
+      "description": "The ID of the application associated with the charge.",
       "type": ["null", "string"]
     },
     "refunded": {
+      "description": "A boolean indicating if the charge has been refunded.",
       "type": ["null", "boolean"]
     },
     "receipt_number": {
+      "description": "The receipt number associated with the charge.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "A boolean indicating if the charge is in live mode.",
       "type": ["null", "boolean"]
     },
     "captured": {
+      "description": "A boolean indicating if the charge has been captured.",
       "type": ["null", "boolean"]
     },
     "paid": {
+      "description": "A boolean indicating if the charge has been paid.",
       "type": ["null", "boolean"]
     },
     "shipping": {
+      "description": "Details of shipping information for the charge.",
       "type": ["null", "object"],
       "properties": {}
     },
     "invoice": {
+      "description": "The ID of the invoice associated with the charge.",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The total amount in cents that was charged.",
       "type": ["null", "integer"]
     },
     "customer": {
+      "description": "The ID of the customer associated with the charge.",
       "type": ["null", "string"]
     },
     "payment_intent": {
+      "description": "The ID of the payment intent associated with the charge.",
       "type": ["null", "string"]
     },
     "source_transfer": {
+      "description": "The ID of the source transfer associated with the charge.",
       "type": ["null", "string"]
     },
     "statement_description": {
+      "description": "The statement description for the charge.",
       "type": ["null", "string"]
     },
     "refunds": {
+      "description": "Details of refunds against the charge.",
       "type": ["null", "object"],
       "properties": {
         "object": {
@@ -415,12 +459,15 @@
       }
     },
     "application_fee": {
+      "description": "The ID of the application fee if the charge is an application fee.",
       "type": ["null", "string"]
     },
     "card": {
+      "description": "Details of the credit/debit card used for the charge.",
       "type": ["null", "object"],
       "properties": {
         "metadata": {
+          "description": "Metadata related to the card.",
           "type": ["null", "object"],
           "properties": {}
         },
@@ -496,9 +543,11 @@
       }
     },
     "payment_method_details": {
+      "description": "Details of the payment method used for the charge.",
       "type": ["null", "object"],
       "properties": {
         "ach_credit_transfer": {
+          "description": "Details of the ACH credit transfer payment method.",
           "type": ["null", "object"],
           "properties": {
             "account_number": {
@@ -516,6 +565,7 @@
           }
         },
         "ach_debit": {
+          "description": "Details of the ACH debit payment method.",
           "type": ["null", "object"],
           "properties": {
             "account_holder_type": {
@@ -542,6 +592,7 @@
           "type": ["null", "object"]
         },
         "bancontact": {
+          "description": "Details of the Bancontact payment method.",
           "type": ["null", "object"],
           "properties": {
             "bank_code": {
@@ -565,12 +616,14 @@
           }
         },
         "card": {
+          "description": "Details of the credit/debit card payment method.",
           "type": ["null", "object"],
           "properties": {
             "brand": {
               "type": ["null", "string"]
             },
             "checks": {
+              "description": "Check details for the card payment.",
               "type": ["null", "object"],
               "properties": {
                 "address_line1_check": {
@@ -600,9 +653,11 @@
               "type": ["null", "string"]
             },
             "installments": {
+              "description": "Details of the installments plan for payment.",
               "type": ["null", "object"],
               "properties": {
                 "plan": {
+                  "description": "Details of the installment plan.",
                   "type": ["null", "object"],
                   "properties": {
                     "count": {
@@ -625,6 +680,7 @@
               "type": ["null", "string"]
             },
             "three_d_secure": {
+              "description": "Details of the 3D Secure authentication for payment.",
               "type": ["null", "object"],
               "properties": {
                 "authenticated": {
@@ -639,13 +695,16 @@
               }
             },
             "wallet": {
+              "description": "Details of wallet payment methods.",
               "type": ["null", "object"],
               "properties": {
                 "amex_express_checkout": {
+                  "description": "Details of the Amex Express Checkout wallet.",
                   "type": ["null", "object"],
                   "properties": {}
                 },
                 "apple_pay": {
+                  "description": "Details of the Apple Pay wallet.",
                   "type": ["null", "object"],
                   "properties": {}
                 },
@@ -653,10 +712,12 @@
                   "type": ["null", "string"]
                 },
                 "google_pay": {
+                  "description": "Details of the Google Pay wallet.",
                   "type": ["null", "object"],
                   "properties": {}
                 },
                 "masterpass": {
+                  "description": "Details of the Masterpass wallet.",
                   "type": ["null", "object"],
                   "properties": {
                     "billing_address": {
@@ -674,6 +735,7 @@
                   }
                 },
                 "samsung_pay": {
+                  "description": "Details of the Samsung Pay wallet.",
                   "type": ["null", "object"],
                   "properties": {}
                 },
@@ -681,6 +743,7 @@
                   "type": ["null", "string"]
                 },
                 "visa_checkout": {
+                  "description": "Details of the Visa Checkout wallet.",
                   "type": ["null", "object"],
                   "properties": {
                     "billing_address": {
@@ -700,6 +763,7 @@
               }
             },
             "card_present": {
+              "description": "Details of the card present during payment.",
               "type": ["null", "object"],
               "properties": {
                 "brand": {
@@ -736,6 +800,7 @@
                   "type": ["null", "string"]
                 },
                 "receipt": {
+                  "description": "Receipt information related to the card payment.",
                   "type": ["null", "object"],
                   "properties": {
                     "application_cryptogram": {
@@ -767,6 +832,7 @@
               }
             },
             "eps": {
+              "description": "Details of the EPS payment method.",
               "type": ["null", "object"],
               "properties": {
                 "verified_name": {
@@ -775,6 +841,7 @@
               }
             },
             "giropay": {
+              "description": "Details of the Giropay payment method.",
               "type": ["null", "object"],
               "properties": {
                 "bank_code": {
@@ -792,6 +859,7 @@
               }
             },
             "ideal": {
+              "description": "Details of the iDeal payment method.",
               "type": ["null", "object"],
               "properties": {
                 "bank": {
@@ -809,10 +877,12 @@
               }
             },
             "klarna": {
+              "description": "Details of the Klarna payment method.",
               "type": ["null", "object"],
               "properties": {}
             },
             "multibanco": {
+              "description": "Details of the Multibanco payment method.",
               "type": ["null", "object"],
               "properties": {
                 "entity": {
@@ -824,6 +894,7 @@
               }
             },
             "p24": {
+              "description": "Details of the Przelewy24 payment method.",
               "type": ["null", "object"],
               "properties": {
                 "reference": {
@@ -835,6 +906,7 @@
               }
             },
             "sepa_debit": {
+              "description": "Details of the SEPA Direct Debit payment method.",
               "type": ["null", "object"],
               "properties": {
                 "bank_code": {
@@ -858,6 +930,7 @@
               }
             },
             "sofort": {
+              "description": "Details of the SOFORT payment method.",
               "type": ["null", "object"],
               "properties": {
                 "bank_code": {
@@ -881,6 +954,7 @@
               }
             },
             "stripe_account": {
+              "description": "Details of the Stripe account used for payment.",
               "type": ["null", "object"],
               "properties": {}
             },
@@ -888,10 +962,12 @@
               "type": ["null", "string"]
             },
             "wechat": {
+              "description": "Details of the WeChat Pay payment method.",
               "type": ["null", "object"],
               "properties": {}
             },
             "metadata": {
+              "description": "Metadata related to the card payment method.",
               "type": ["null", "object"],
               "properties": {}
             },
@@ -948,30 +1024,39 @@
       }
     },
     "balance_transaction": {
+      "description": "The ID of the balance transaction related to the charge.",
       "type": ["null", "string"]
     },
     "amount_refunded": {
+      "description": "The total amount in cents that has been refunded back.",
       "type": ["null", "integer"]
     },
     "failure_code": {
+      "description": "The failure error code for the charge.",
       "type": ["null", "string"]
     },
     "dispute": {
+      "description": "The ID of the dispute associated with the charge.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "A description of the charge.",
       "type": ["null", "string"]
     },
     "statement_descriptor_suffix": {
+      "description": "The statement descriptor suffix for the charge.",
       "type": ["null", "string"]
     },
     "calculated_statement_descriptor": {
+      "description": "The calculated statement descriptor for the charge.",
       "type": ["null", "string"]
     },
     "receipt_url": {
+      "description": "The URL of the receipt for the charge.",
       "type": ["null", "string"]
     },
     "transfer_data": {
+      "description": "Details of the transfer associated with the charge.",
       "type": ["null", "object"],
       "properties": {
         "amount": {
@@ -983,9 +1068,11 @@
       }
     },
     "billing_details": {
+      "description": "Details of the billing address and contact information of the customer.",
       "type": ["null", "object"],
       "properties": {
         "address": {
+          "description": "The address details of the customer.",
           "type": ["null", "object"],
           "properties": {
             "city": {
@@ -1009,35 +1096,44 @@
           }
         },
         "email": {
+          "description": "The email address of the customer.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the customer.",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "The phone number of the customer.",
           "type": ["null", "string"]
         }
       }
     },
     "failure_balance_transaction": {
+      "description": "The ID of the balance transaction related to the failed charge.",
       "type": ["null", "string"]
     },
     "amount_captured": {
+      "description": "The total amount in cents that has been successfully captured.",
       "type": ["null", "integer"]
     },
     "application_fee_amount": {
+      "description": "The amount in cents of the application fee.",
       "type": ["null", "integer"]
     },
     "amount_updates": {
+      "description": "Additional items related to changes in the amount.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "payment_method": {
+      "description": "The ID of the payment method used for the charge.",
       "type": ["null", "string"]
     },
     "disputed": {
+      "description": "A boolean indicating if the charge has been disputed.",
       "type": ["null", "boolean"]
     }
   }

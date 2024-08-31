@@ -40,18 +40,20 @@ public class MssqlCdcHelper {
 
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
-    // new replication method config since version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
-      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
-    }
-    // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
-      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
-    }
-    if (config.hasNonNull(REPLICATION_FIELD)) {
-      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
-      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+    if (config != null) {
+      // new replication method config since version 0.4.0
+      if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+        final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
+        return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
+      }
+      // legacy replication method config before version 0.4.0
+      if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
+        return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
+      }
+      if (config.hasNonNull(REPLICATION_FIELD)) {
+        final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+        return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+      }
     }
 
     return false;
@@ -81,7 +83,7 @@ public class MssqlCdcHelper {
     } else {
       // If not in snapshot mode, initial will make sure that a snapshot is taken if the transaction log
       // is rotated out. This will also end up read streaming changes from the transaction_log.
-      props.setProperty("snapshot.mode", "initial");
+      props.setProperty("snapshot.mode", "when_needed");
     }
 
     props.setProperty("snapshot.isolation.mode", "read_committed");

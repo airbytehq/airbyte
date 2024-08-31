@@ -146,12 +146,36 @@ rootProject.name = 'airbyte'
 
 // Include all java CDK modules.
 def cdkPath = rootDir.toPath().resolve('airbyte-cdk/java/airbyte-cdk')
-cdkPath.eachDir { dir ->
-    def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-    if (buildFiles.length == 1) {
-        def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
-        include path
-        project(path).name = "airbyte-cdk-${dir.getFileName()}"
+if (cdkPath.toFile().exists()) {
+    cdkPath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        if (buildFiles.length == 1) {
+            def path = ":airbyte-cdk:java:airbyte-cdk:${dir.getFileName()}"
+            include path
+            project(path).name = "airbyte-cdk-${dir.getFileName()}"
+        }
+    }
+}
+def bulkCdkCorePath = rootDir.toPath().resolve('airbyte-cdk/bulk/core')
+if (bulkCdkCorePath.toFile().exists()) {
+    bulkCdkCorePath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        if (buildFiles.length == 1) {
+            def path = ":airbyte-cdk:bulk:core:${dir.getFileName()}"
+            include path
+            project(path).name = "bulk-cdk-core-${dir.getFileName()}"
+        }
+    }
+}
+def bulkCdkToolkitPath = rootDir.toPath().resolve('airbyte-cdk/bulk/toolkits')
+if (bulkCdkToolkitPath.toFile().exists()) {
+    bulkCdkToolkitPath.eachDir { dir ->
+        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
+        if (buildFiles.length == 1) {
+            def path = ":airbyte-cdk:bulk:toolkits:${dir.getFileName()}"
+            include path
+            project(path).name = "bulk-cdk-toolkit-${dir.getFileName()}"
+        }
     }
 }
 

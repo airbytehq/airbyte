@@ -12,6 +12,7 @@ import requests
 import vcr
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import CheckpointMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 
 cache_file = tempfile.NamedTemporaryFile()
@@ -107,19 +108,43 @@ class SurveymonkeyStream(HttpStream, ABC):
             yield response_json
 
 
-class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
+class IncrementalSurveymonkeyStream(SurveymonkeyStream, CheckpointMixin, ABC):
     state_checkpoint_interval = 1000
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = None
 
     @property
     @abstractmethod
     def cursor_field(self) -> str:
         pass
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
+        current_stream_state = current_stream_state or {}
         state_value = max(current_stream_state.get(self.cursor_field, ""), latest_record.get(self.cursor_field, ""))
         return {self.cursor_field: state_value}
 
@@ -150,7 +175,7 @@ class SurveyIDSliceMixin:
         if self._survey_ids:
             yield from [{"survey_id": id} for id in self._survey_ids]
         else:
-            survey_stream = SurveyIds(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self.authenticator)
+            survey_stream = SurveyIds(start_date=self._start_date, survey_ids=self._survey_ids, authenticator=self._session.auth)
             for survey in survey_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
                 yield {"survey_id": survey["id"]}
 

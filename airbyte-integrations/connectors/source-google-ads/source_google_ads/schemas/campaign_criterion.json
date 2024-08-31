@@ -3,33 +3,43 @@
   "type": "object",
   "properties": {
     "deleted_at": {
+      "description": "Timestamp indicating when the criterion was deleted.",
       "type": ["null", "string"]
     },
     "change_status.last_change_date_time": {
+      "description": "The date and time of the last change made to the criterion.",
       "type": ["null", "string"]
     },
     "campaign.id": {
+      "description": "The unique identifier for the campaign associated with the criterion.",
       "type": ["null", "integer"]
     },
     "campaign_criterion.resource_name": {
+      "description": "The resource name of the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.campaign": {
+      "description": "The specific campaign this criterion is targeting.",
       "type": ["null", "string"]
     },
     "campaign_criterion.age_range.type": {
+      "description": "The age range targeting type for the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.mobile_application.name": {
+      "description": "The name of the mobile application targeted by the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.negative": {
+      "description": "Indicates whether the criterion is a negative targeting criterion.",
       "type": ["null", "boolean"]
     },
     "campaign_criterion.youtube_channel.channel_id": {
+      "description": "The YouTube channel ID targeted by the criterion.",
       "type": ["null", "string"]
     },
     "campaign_criterion.youtube_video.video_id": {
+      "description": "The YouTube video ID targeted by the criterion.",
       "type": ["null", "string"]
     }
   }

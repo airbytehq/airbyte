@@ -1,0 +1,160 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - catalogs
+definitions:
+  streams:
+    catalogs:
+      type: DeclarativeStream
+      name: catalogs
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['base_url']}}/api/v3"
+          authenticator:
+            type: ApiKeyAuthenticator
+            api_token: "_dremio{{ config['api_key'] }}"
+            inject_into:
+              type: RequestOption
+              field_name: Authorization
+              inject_into: header
+          path: /catalog
+          http_method: GET
+          request_body_json:
+            Content-Type: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          properties:
+            data:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  containerType:
+                    type: string
+                  createdAt:
+                    type: string
+                  id:
+                    type: string
+                  path:
+                    type: array
+                  tag:
+                    type: string
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['base_url']}}/api/v3"
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "_dremio{{ config['api_key'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Authorization
+        inject_into: header
+streams:
+  - type: DeclarativeStream
+    name: catalogs
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url']}}/api/v3"
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "_dremio{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        path: /catalog
+        http_method: GET
+        request_body_json:
+          Content-Type: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                containerType:
+                  type: string
+                createdAt:
+                  type: string
+                id:
+                  type: string
+                path:
+                  type: array
+                tag:
+                  type: string
+        additionalProperties: true
+spec:
+  documentation_url: "https://docs.airbyte.com/integrations/sources/dremio"
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Dremio Spec
+    type: object
+    additionalProperties: true
+    required:
+      - api_key
+      - base_url
+    properties:
+      api_key:
+        type: string
+        description: "API Key that is generated when you authenticate to Dremio API"
+        airbyte_secret: true
+      base_url:
+        type: string
+        description: "URL of your Dremio instance"
+        default: "https://app.dremio.cloud"
+  type: Spec
+metadata:
+  autoImportSchema:
+    catalogs: false
+schemas:
+  catalogs:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      data:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              type: string
+            containerType:
+              type: string
+            createdAt:
+              type: string
+            id:
+              type: string
+            path:
+              type: array
+            tag:
+              type: string
+    additionalProperties: true

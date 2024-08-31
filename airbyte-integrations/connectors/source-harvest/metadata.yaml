@@ -6,11 +6,11 @@ data:
     hosts:
       - api.harvestapp.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.14
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-harvest
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -30,7 +30,13 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: "Several changes have been made to the Harvest connector. This update requires a reset for the following streams to due an update in the format of state: `expenses_clients`, `expenses_categories`, `expenses_projects`, `expenses_team`, `time_clients`, `time_projects`, `time_tasks`, `time_team`, `uninvoiced`, `estimate_messages`, `invoice_payments`, `invoice_messages`, `project_assignments`."
+        message:
+          "Several changes have been made to the Harvest connector. This update
+          requires a reset for the following streams to due an update in the format
+          of state: `expenses_clients`, `expenses_categories`, `expenses_projects`,
+          `expenses_team`, `time_clients`, `time_projects`, `time_tasks`, `time_team`,
+          `uninvoiced`, `estimate_messages`, `invoice_payments`, `invoice_messages`,
+          `project_assignments`."
         upgradeDeadline: "2024-04-29"
         scopedImpact:
           - scopeType: stream
@@ -55,4 +61,28 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: harvest_old_config_dev_null
+          id: 00bcab35-5c37-4b5d-b026-3cb23d71946a
+        - name: harvest_config_with_date_range_dev_null
+          id: 2a1834a4-b9b7-4613-9409-dc348b5fd735
+        - name: harvest_config_oauth_dev_null
+          id: 33b1f04d-ccc0-4b47-9b50-a889b136c0a8
+        - name: harvest_config_dev_null
+          id: 833888cc-1bc4-4126-970a-47edff5e0f00
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_HARVEST_CREDS_OAUTH
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_HARVEST_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

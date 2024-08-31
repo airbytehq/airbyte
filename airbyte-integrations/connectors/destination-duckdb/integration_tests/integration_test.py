@@ -1,6 +1,4 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from __future__ import annotations
 
@@ -112,7 +110,7 @@ def table_schema() -> str:
 
 @pytest.fixture
 def configured_catalogue(
-    test_table_name: str, test_large_table_name: str, table_schema: str, 
+    test_table_name: str, test_large_table_name: str, table_schema: str,
 ) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
@@ -261,17 +259,17 @@ def _airbyte_messages_with_inconsistent_json_fields(n: int, batch_size: int, tab
                 record=AirbyteRecordMessage(
                     stream=table_name,
                     # Throw in empty nested objects and see how pyarrow deals with them.
-                    data={"key1": fake.first_name() , 
-                          "key2": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999), 
-                          "nested1": {} if random.random()< 0.1 else { 
-                              "key3": fake.first_name() , 
-                              "key4": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999), 
-                              "dictionary1":{} if random.random()< 0.1 else { 
-                                  "key3": fake.first_name() , 
+                    data={"key1": fake.first_name(),
+                          "key2": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999),
+                          "nested1": {} if random.random()< 0.1 else {
+                              "key3": fake.first_name(),
+                              "key4": fake.ssn() if random.random()< 0.5 else random.randrange(1000,9999999999999),
+                              "dictionary1":{} if random.random()< 0.1 else {
+                                  "key3": fake.first_name(),
                                   "key4": "True" if random.random() < 0.5 else True
                                   }
                               }
-                          } 
+                          }
                           if random.random() < 0.9 else {},
 
                     emitted_at=int(datetime.now().timestamp()) * 1000,
@@ -284,8 +282,8 @@ TOTAL_RECORDS = 5_000
 BATCH_WRITE_SIZE = 1000
 
 @pytest.mark.slow
-@pytest.mark.parametrize("airbyte_message_generator,explanation", 
-                         [(_airbyte_messages, "Test writing a large number of simple json objects."), 
+@pytest.mark.parametrize("airbyte_message_generator,explanation",
+                         [(_airbyte_messages, "Test writing a large number of simple json objects."),
                           (_airbyte_messages_with_inconsistent_json_fields, "Test writing a large number of json messages with inconsistent schema.")] )
 def test_large_number_of_writes(
     config: Dict[str, str],

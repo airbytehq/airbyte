@@ -7,9 +7,10 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
-from typing import Any, Callable, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from functools import partial
+from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
@@ -25,10 +26,18 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
-from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    ChildPartitionResumableFullRefreshCursor,
+    CursorFactory,
+    DatetimeBasedCursor,
+    DeclarativeCursor,
+    PerPartitionCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
@@ -65,8 +74,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import IterableDecoder as IterableDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonlDecoder as JsonlDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
@@ -97,7 +108,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
-from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers import (
+    CartesianProductStreamSlicer,
+    ListPartitionRouter,
+    SinglePartitionRouter,
+    SubstreamPartitionRouter,
+)
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
@@ -107,7 +123,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
@@ -123,19 +138,17 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
+from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
-
-
-DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 
 class ModelToComponentFactory:
@@ -191,6 +204,8 @@ class ModelToComponentFactory:
             HttpResponseFilterModel: self.create_http_response_filter,
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
+            JsonlDecoderModel: self.create_jsonl_decoder,
+            IterableDecoderModel: self.create_iterable_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
@@ -327,12 +342,11 @@ class ModelToComponentFactory:
         declarative_stream: DeclarativeStreamModel,
     ) -> LegacyToPerPartitionStateMigration:
         retriever = declarative_stream.retriever
-        partition_router = retriever.partition_router
-
         if not isinstance(retriever, SimpleRetrieverModel):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a DeclarativeStream with a SimpleRetriever. Got {type(retriever)}"
             )
+        partition_router = retriever.partition_router
         if not isinstance(partition_router, (SubstreamPartitionRouterModel, CustomPartitionRouterModel)):
             raise ValueError(
                 f"LegacyToPerPartitionStateMigrations can only be applied on a SimpleRetriever with a Substream partition router. Got {type(partition_router)}"
@@ -343,9 +357,11 @@ class ModelToComponentFactory:
         return LegacyToPerPartitionStateMigration(declarative_stream.retriever.partition_router, declarative_stream.incremental_sync, config, declarative_stream.parameters)  # type: ignore # The retriever type was already checked
 
     def create_session_token_authenticator(
-        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
+        self, model: SessionTokenAuthenticatorModel, config: Config, name: str, decoder: Decoder, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
-        login_requester = self._create_component_from_model(model=model.login_requester, config=config, name=f"{name}_login_requester")
+        login_requester = self._create_component_from_model(
+            model=model.login_requester, config=config, name=f"{name}_login_requester", decoder=decoder
+        )
         token_provider = SessionTokenProvider(
             login_requester=login_requester,
             session_token_path=model.session_token_path,
@@ -404,12 +420,11 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-    def create_cursor_pagination(self, model: CursorPaginationModel, config: Config, **kwargs: Any) -> CursorPaginationStrategy:
-        if model.decoder:
-            decoder = self._create_component_from_model(model=model.decoder, config=config)
-        else:
-            decoder = JsonDecoder(parameters=model.parameters or {})
-
+    def create_cursor_pagination(
+        self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
+    ) -> CursorPaginationStrategy:
+        if not isinstance(decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
@@ -552,6 +567,8 @@ class ModelToComponentFactory:
         end_datetime: Union[str, MinMaxDatetime, None] = None
         if model.is_data_feed and model.end_datetime:
             raise ValueError("Data feed does not support end_datetime")
+        if model.is_data_feed and model.is_client_side_incremental:
+            raise ValueError("`Client side incremental` cannot be applied with `data feed`. Choose only 1 from them.")
         if model.end_datetime:
             end_datetime = (
                 model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
@@ -590,6 +607,7 @@ class ModelToComponentFactory:
             partition_field_end=model.partition_field_end,
             partition_field_start=model.partition_field_start,
             message_repository=self._message_repository,
+            is_compare_strictly=model.is_compare_strictly,
             config=config,
             parameters=model.parameters or {},
         )
@@ -605,6 +623,18 @@ class ModelToComponentFactory:
         stop_condition_on_cursor = (
             model.incremental_sync and hasattr(model.incremental_sync, "is_data_feed") and model.incremental_sync.is_data_feed
         )
+        client_side_incremental_sync = None
+        if (
+            model.incremental_sync
+            and hasattr(model.incremental_sync, "is_client_side_incremental")
+            and model.incremental_sync.is_client_side_incremental
+        ):
+            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, PerPartitionCursor)):
+                raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
+            client_side_incremental_sync = {
+                "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
+                "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
+            }
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -616,6 +646,7 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             stream_slicer=combined_slicers,
             stop_condition_on_cursor=stop_condition_on_cursor,
+            client_side_incremental_sync=client_side_incremental_sync,
             transformations=transformations,
         )
         cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
@@ -649,7 +680,11 @@ class ModelToComponentFactory:
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
         stream_slicer = None
-        if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
+        if (
+            hasattr(model.retriever, "partition_router")
+            and isinstance(model.retriever, SimpleRetrieverModel)
+            and model.retriever.partition_router
+        ):
             stream_slicer_model = model.retriever.partition_router
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
@@ -669,7 +704,14 @@ class ModelToComponentFactory:
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
-            return stream_slicer
+            # For the Full-Refresh sub-streams, we use the nested `ChildPartitionResumableFullRefreshCursor`
+            return PerPartitionCursor(
+                cursor_factory=CursorFactory(create_function=partial(ChildPartitionResumableFullRefreshCursor, {})),
+                partition_router=stream_slicer,
+            )
+        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
+            # For the regular Full-Refresh streams, we use the high level `ResumableFullRefreshCursor`
+            return ResumableFullRefreshCursor(parameters={})
         else:
             return None
 
@@ -678,23 +720,12 @@ class ModelToComponentFactory:
         if model.backoff_strategies:
             for backoff_strategy_model in model.backoff_strategies:
                 backoff_strategies.append(self._create_component_from_model(model=backoff_strategy_model, config=config))
-        else:
-            backoff_strategies.append(DEFAULT_BACKOFF_STRATEGY(config=config, parameters=model.parameters or {}))
 
         response_filters = []
         if model.response_filters:
             for response_filter_model in model.response_filters:
                 response_filters.append(self._create_component_from_model(model=response_filter_model, config=config))
-        else:
-            response_filters.append(
-                HttpResponseFilter(
-                    ResponseAction.RETRY,
-                    http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS,
-                    config=config,
-                    parameters=model.parameters or {},
-                )
-            )
-            response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, parameters=model.parameters or {}))
+        response_filters.append(HttpResponseFilter(config=config, parameters=model.parameters or {}))
 
         return DefaultErrorHandler(
             backoff_strategies=backoff_strategies,
@@ -705,23 +736,36 @@ class ModelToComponentFactory:
         )
 
     def create_default_paginator(
-        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
+        self,
+        model: DefaultPaginatorModel,
+        config: Config,
+        *,
+        url_base: str,
+        decoder: Optional[Decoder] = None,
+        cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        if decoder:
+            decoder_to_use = decoder
+        elif model.decoder:
+            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
+        if not isinstance(decoder_to_use, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
+
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
         page_token_option = (
             self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
         )
-        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config)
+        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
         if cursor_used_for_stop_condition:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
                 pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
             )
-
         paginator = DefaultPaginator(
-            decoder=decoder,
+            decoder=decoder_to_use,
             page_size_option=page_size_option,
             page_token_option=page_token_option,
             pagination_strategy=pagination_strategy,
@@ -733,18 +777,25 @@ class ModelToComponentFactory:
             return PaginatorTestReadDecorator(paginator, self._limit_pages_fetched_per_slice)
         return paginator
 
-    def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs: Any) -> DpathExtractor:
-        decoder = self._create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+    def create_dpath_extractor(
+        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
+    ) -> DpathExtractor:
+        if decoder:
+            decoder_to_use = decoder
+        elif model.decoder:
+            decoder_to_use = self._create_component_from_model(model=model.decoder, config=config)
+        else:
+            decoder_to_use = JsonDecoder(parameters={})
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
+        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor or 5, parameters=model.parameters or {}, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, decoder: Decoder, config: Config, *, name: str) -> HttpRequester:
         authenticator = (
-            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name)
+            self._create_component_from_model(model=model.authenticator, config=config, url_base=model.url_base, name=name, decoder=decoder)
             if model.authenticator
             else None
         )
@@ -766,8 +817,6 @@ class ModelToComponentFactory:
         assert model.use_cache is not None  # for mypy
         assert model.http_method is not None  # for mypy
 
-        assert model.use_cache is not None  # for mypy
-
         return HttpRequester(
             name=name,
             url_base=model.url_base,
@@ -781,17 +830,26 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
             message_repository=self._message_repository,
             use_cache=model.use_cache,
+            decoder=decoder,
+            stream_response=decoder.is_stream_response() if decoder else False,
         )
 
     @staticmethod
     def create_http_response_filter(model: HttpResponseFilterModel, config: Config, **kwargs: Any) -> HttpResponseFilter:
-        action = ResponseAction(model.action.value)
+        if model.action:
+            action = ResponseAction(model.action.value)
+        else:
+            action = None
+
+        failure_type = FailureType(model.failure_type.value) if model.failure_type else None
+
         http_codes = (
             set(model.http_codes) if model.http_codes else set()
         )  # JSON schema notation has no set data type. The schema enforces an array of unique elements
 
         return HttpResponseFilter(
             action=action,
+            failure_type=failure_type,
             error_message=model.error_message or "",
             error_message_contains=model.error_message_contains or "",
             http_codes=http_codes,
@@ -807,6 +865,14 @@ class ModelToComponentFactory:
     @staticmethod
     def create_json_decoder(model: JsonDecoderModel, config: Config, **kwargs: Any) -> JsonDecoder:
         return JsonDecoder(parameters={})
+
+    @staticmethod
+    def create_jsonl_decoder(model: JsonlDecoderModel, config: Config, **kwargs: Any) -> JsonlDecoder:
+        return JsonlDecoder(parameters={})
+
+    @staticmethod
+    def create_iterable_decoder(model: IterableDecoderModel, config: Config, **kwargs: Any) -> IterableDecoder:
+        return IterableDecoder(parameters={})
 
     @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
@@ -918,10 +984,13 @@ class ModelToComponentFactory:
         )
 
     @staticmethod
-    def create_offset_increment(model: OffsetIncrementModel, config: Config, **kwargs: Any) -> OffsetIncrement:
+    def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
+        if not isinstance(decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,
+            decoder=decoder,
             inject_on_first_request=model.inject_on_first_request or False,
             parameters=model.parameters or {},
         )
@@ -945,6 +1014,7 @@ class ModelToComponentFactory:
             stream=declarative_stream,
             partition_field=model.partition_field,
             config=config,
+            incremental_dependency=model.incremental_dependency or False,
             parameters=model.parameters or {},
         )
 
@@ -965,13 +1035,22 @@ class ModelToComponentFactory:
         self,
         model: RecordSelectorModel,
         config: Config,
+        decoder: Optional[Decoder] = None,
         *,
         transformations: List[RecordTransformation],
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> RecordSelector:
         assert model.schema_normalization is not None  # for mypy
-        extractor = self._create_component_from_model(model=model.extractor, config=config)
+        extractor = self._create_component_from_model(model=model.extractor, decoder=decoder, config=config)
         record_filter = self._create_component_from_model(model.record_filter, config=config) if model.record_filter else None
+        if client_side_incremental_sync:
+            record_filter = ClientSideIncrementalRecordFilterDecorator(
+                config=config,
+                parameters=model.parameters,
+                condition=model.record_filter.condition if (model.record_filter and hasattr(model.record_filter, "condition")) else None,
+                **client_side_incremental_sync,
+            )
         schema_normalization = TypeTransformer(SCHEMA_TRANSFORMER_TYPE_MAPPING[model.schema_normalization])
 
         return RecordSelector(
@@ -1023,13 +1102,23 @@ class ModelToComponentFactory:
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
         stop_condition_on_cursor: bool = False,
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
     ) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
-        record_selector = self._create_component_from_model(model=model.record_selector, config=config, transformations=transformations)
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        requester = self._create_component_from_model(model=model.requester, decoder=decoder, config=config, name=name)
+        record_selector = self._create_component_from_model(
+            model=model.record_selector,
+            config=config,
+            decoder=decoder,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
-        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
+
+        # Define cursor only if per partition or common incremental support is needed
+        cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
@@ -1037,6 +1126,7 @@ class ModelToComponentFactory:
                 model=model.paginator,
                 config=config,
                 url_base=url_base,
+                decoder=decoder,
                 cursor_used_for_stop_condition=cursor_used_for_stop_condition,
             )
             if model.paginator
@@ -1111,7 +1201,13 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs: Any) -> WaitTimeFromHeaderBackoffStrategy:
-        return WaitTimeFromHeaderBackoffStrategy(header=model.header, parameters=model.parameters or {}, config=config, regex=model.regex)
+        return WaitTimeFromHeaderBackoffStrategy(
+            header=model.header,
+            parameters=model.parameters or {},
+            config=config,
+            regex=model.regex,
+            max_waiting_time_in_seconds=model.max_waiting_time_in_seconds if model.max_waiting_time_in_seconds is not None else None,
+        )
 
     @staticmethod
     def create_wait_until_time_from_header(

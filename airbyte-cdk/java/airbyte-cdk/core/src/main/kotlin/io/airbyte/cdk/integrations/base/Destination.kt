@@ -10,10 +10,10 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.function.Consumer
-import lombok.extern.slf4j.Slf4j
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 interface Destination : Integration {
     /**
@@ -64,7 +64,6 @@ interface Destination : Integration {
      * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes
      * argument away from the .accept call.
      */
-    @Slf4j
     class ShimToSerializedAirbyteMessageConsumer(private val consumer: AirbyteMessageConsumer?) :
         SerializedAirbyteMessageConsumer {
         @Throws(Exception::class)
@@ -106,8 +105,6 @@ interface Destination : Integration {
         }
 
         companion object {
-            private val LOGGER: Logger =
-                LoggerFactory.getLogger(ShimToSerializedAirbyteMessageConsumer::class.java)
             /**
              * Consumes an [AirbyteMessage] for processing.
              *
@@ -128,7 +125,7 @@ interface Destination : Integration {
                     consumer!!.accept(messageOptional.get())
                 } else {
                     check(!isStateMessage(inputString)) { "Invalid state message: $inputString" }
-                    LOGGER.error("Received invalid message: $inputString")
+                    LOGGER.error { "Received invalid message: $inputString" }
                 }
             }
 

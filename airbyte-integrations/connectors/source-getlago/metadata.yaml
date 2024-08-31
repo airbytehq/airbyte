@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-getlago
   githubIssueLabel: source-getlago
   icon: getlago.svg
@@ -10,9 +10,9 @@ data:
   name: Lago
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-getlago
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -20,10 +20,24 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/getlago
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: getlago_config_dev_null
+          id: 65a3d708-199d-4f8c-adb1-8e6fee5134a4
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GETLAGO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
 metadataSpecVersion: "1.0"
