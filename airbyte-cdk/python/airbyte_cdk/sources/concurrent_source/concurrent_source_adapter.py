@@ -5,7 +5,9 @@
 import logging
 from abc import ABC
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
-
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, ConcurrentCursor, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -64,7 +66,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
             config: Mapping[str, Any],
             stream: Stream,
             state_manager: ConnectorStateManager,
-            cursor: Optional[ConcurrentCursor] = None
+            cursor: Optional[Cursor] = None
     ) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
@@ -85,6 +87,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         :return: A Stream instance configured for concurrent processing.
         :rtype: Stream
         """
+        logger = logging.getLogger("airbyte")
 
         if cursor:
             state = cursor.state
@@ -99,7 +102,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
             cursor = FinalStateCursor(
                 stream_name=stream.name,
                 stream_namespace=stream.namespace,
-                message_repository=self.message_repository
+                message_repository=self.message_repository  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
             )
 
         return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
