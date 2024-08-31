@@ -5,15 +5,16 @@
 import logging
 from abc import ABC
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, ConcurrentCursor, FinalStateCursor
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, FinalStateCursor
 
 
 class ConcurrentSourceAdapter(AbstractSource, ABC):
@@ -43,7 +44,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         if abstract_streams:
             yield from self._concurrent_source.read(abstract_streams)
         if configured_catalog_for_regular_streams.streams:
-            yield from super().read(logger, config, configured_catalog_for_regular_streams, state)
+            yield from super().read(logger, config, configured_catalog_for_regular_streams, state)  # type: ignore[arg-type]
 
     def _select_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:
         """
@@ -62,11 +63,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         return abstract_streams
 
     def _convert_to_concurrent_stream(
-            self,
-            config: Mapping[str, Any],
-            stream: Stream,
-            state_manager: ConnectorStateManager,
-            cursor: Optional[Cursor] = None
+        self, config: Mapping[str, Any], stream: Stream, state_manager: ConnectorStateManager, cursor: Optional[Cursor] = None
     ) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
@@ -102,7 +99,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
             cursor = FinalStateCursor(
                 stream_name=stream.name,
                 stream_namespace=stream.namespace,
-                message_repository=self.message_repository  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
+                message_repository=self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
             )
 
         return StreamFacade.create_from_stream(stream, self, logger, state, cursor)

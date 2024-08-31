@@ -534,14 +534,16 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
 
-        return [self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager)) for stream in streams]
-
+        return [
+            self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager))
+            for stream in streams
+        ]
 
     def _initialize_cursor(
-            self,
-            config: Mapping[str, Any],
-            stream: Stream,
-            state_manager: ConnectorStateManager,
+        self,
+        config: Mapping[str, Any],
+        stream: Stream,
+        state_manager: ConnectorStateManager,
     ) -> Optional[ConcurrentCursor]:
         if stream.cursor_field:
             stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
@@ -566,7 +568,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 lookback_window,
                 slice_range,
             )
-
 
     @staticmethod
     def _start_date_to_timestamp(config: Mapping[str, Any]) -> int:

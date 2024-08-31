@@ -193,15 +193,24 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 )
                 continue
 
-            streams.append(self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager))
-        streams.append(self._convert_to_concurrent_stream(config, Describe(sf_api=sf_object, catalog=self.catalog), state_manager, self._initialize_cursor(config, stream, state_manager))
+            streams.append(
+                self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager))
+            )
+        streams.append(
+            self._convert_to_concurrent_stream(
+                config,
+                Describe(sf_api=sf_object, catalog=self.catalog),
+                state_manager,
+                self._initialize_cursor(config, stream, state_manager),
+            )
+        )
         return streams
 
     def _initialize_cursor(
-            self,
-            config: Mapping[str, Any],
-            stream: Stream,
-            state_manager: ConnectorStateManager,
+        self,
+        config: Mapping[str, Any],
+        stream: Stream,
+        state_manager: ConnectorStateManager,
     ) -> Optional[ConcurrentCursor]:
         if stream.cursor_field:
             cursor_field_key = stream.cursor_field or ""
@@ -230,7 +239,6 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 lookback_window,
                 slice_range,
             )
-
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
