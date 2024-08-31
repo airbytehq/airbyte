@@ -58,3 +58,48 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
             if isinstance(stream_instance, AbstractStreamFacade):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
+
+    def _convert_to_concurrent_stream(
+            self,
+            config: Mapping[str, Any],
+            stream: Stream,
+            state_manager: ConnectorStateManager,
+            cursor: Optional[ConcurrentCursor] = None
+    ) -> Stream:
+        """
+        Prepares a stream for concurrent processing by initializing or assigning a cursor,
+        managing the stream's state, and returning an updated Stream instance.
+
+        :param config: Configuration parameters necessary for setting up the stream for concurrent processing.
+        :type config: Mapping[str, Any]
+
+        :param stream: The stream object that needs to be prepared for concurrent processing.
+        :type stream: Stream
+
+        :param state_manager: Responsible for managing the storage and retrieval of the stream's state.
+        :type state_manager: ConnectorStateManager
+
+        :param cursor: An optional cursor to manage stream state and processing boundaries.
+        :type cursor: Optional[ConcurrentCursor]
+
+        :return: A Stream instance configured for concurrent processing.
+        :rtype: Stream
+        """
+
+        if cursor:
+            state = cursor.state
+
+            if hasattr(stream, "set_cursor") and stream.cursor_field:
+                stream.set_cursor(cursor)
+
+            if cursor and hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
+                stream.parent.set_cursor(cursor)
+        else:
+            state = {}
+            cursor = FinalStateCursor(
+                stream_name=stream.name,
+                stream_namespace=stream.namespace,
+                message_repository=self.message_repository
+            )
+
+        return StreamFacade.create_from_stream(stream, self, logger, state, cursor)

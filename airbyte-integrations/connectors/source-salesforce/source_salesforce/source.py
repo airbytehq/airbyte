@@ -193,29 +193,44 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 )
                 continue
 
-            streams.append(self._wrap_for_concurrency(config, stream, state_manager))
-        streams.append(self._wrap_for_concurrency(config, Describe(sf_api=sf_object, catalog=self.catalog), state_manager))
+            streams.append(self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager))
+        streams.append(self._convert_to_concurrent_stream(config, Describe(sf_api=sf_object, catalog=self.catalog), state_manager, self._initialize_cursor(config, stream, state_manager))
         return streams
 
-    def _wrap_for_concurrency(self, config, stream, state_manager):
-        stream_slicer_cursor = None
+    def _initialize_cursor(
+            self,
+            config: Mapping[str, Any],
+            stream: Stream,
+            state_manager: ConnectorStateManager,
+    ) -> Optional[ConcurrentCursor]:
         if stream.cursor_field:
-            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
-            if hasattr(stream, "set_cursor"):
-                stream.set_cursor(stream_slicer_cursor)
-        if hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
-            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
-            stream.parent.set_cursor(stream_slicer_cursor)
+            cursor_field_key = stream.cursor_field or ""
+            if not isinstance(cursor_field_key, str):
+                raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
 
-        if not stream_slicer_cursor or self._get_sync_mode_from_catalog(stream) == SyncMode.full_refresh:
-            cursor = FinalStateCursor(
-                stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
+            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+            cursor_field = CursorField(cursor_field_key)
+            converter = stream.state_converter
+            slice_boundary_fields = self._get_slice_boundary_fields(stream, state_manager)
+            start = datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc)
+            lookback_window = timedelta(seconds=LOOKBACK_SECONDS)
+            slice_range = isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30)
+
+            return ConcurrentCursor(
+                stream.name,
+                stream.namespace,
+                stream_state,
+                self.message_repository,
+                state_manager,
+                converter,
+                cursor_field,
+                slice_boundary_fields,
+                start,
+                converter.get_end_provider(),
+                lookback_window,
+                slice_range,
             )
-            state = None
-        else:
-            cursor = stream_slicer_cursor
-            state = cursor.state
-        return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
+
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
@@ -224,32 +239,6 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
         return streams
-
-    def _create_stream_slicer_cursor(
-        self, config: Mapping[str, Any], state_manager: ConnectorStateManager, stream: Stream
-    ) -> ConcurrentCursor:
-        """
-        We have moved the generation of stream slices to the concurrent CDK cursor
-        """
-        cursor_field_key = stream.cursor_field or ""
-        if not isinstance(cursor_field_key, str):
-            raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
-        cursor_field = CursorField(cursor_field_key)
-        stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-        return ConcurrentCursor(
-            stream.name,
-            stream.namespace,
-            stream_state,
-            self.message_repository,
-            state_manager,
-            stream.state_converter,
-            cursor_field,
-            self._get_slice_boundary_fields(stream, state_manager),
-            datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
-            stream.state_converter.get_end_provider(),
-            timedelta(seconds=LOOKBACK_SECONDS),
-            isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30),
-        )
 
     def _get_slice_boundary_fields(self, stream: Stream, state_manager: ConnectorStateManager) -> Optional[Tuple[str, str]]:
         return ("start_date", "end_date")
