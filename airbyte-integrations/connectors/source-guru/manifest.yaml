@@ -2,11 +2,6 @@ version: 4.6.2
 
 type: DeclarativeSource
 
-description: |-
-  New source: Guru
-  API Documentation: https://developer.getguru.com/reference/authentication
-  Website: https://app.getguru.com/
-
 check:
   type: CheckStream
   stream_names:

@@ -1,7 +1,6 @@
 # Guru
 This directory contains the manifest-only connector for `source-guru`.
 
-New source: Guru
 API Documentation: https://developer.getguru.com/reference/authentication
 Website: https://app.getguru.com/
 
