@@ -2,16 +2,17 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: f39208dc-7e1c-48b8-919b-5006360cc27f
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.15
   dockerRepository: airbyte/source-commcare
   githubIssueLabel: source-commcare
+  icon: commcare.svg
   license: MIT
   name: Commcare
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-commcare
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -25,4 +26,8 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

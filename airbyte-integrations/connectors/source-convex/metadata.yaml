@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c332628c-f55c-4017-8222-378cfafda9b2
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.15
   dockerRepository: airbyte/source-convex
   githubIssueLabel: source-convex
   icon: convex.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-convex
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -26,4 +26,19 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: convex_config_dev_null
+          id: 929eccf3-8e4c-4f73-af8b-48aa0b04b00c
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CONVEX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

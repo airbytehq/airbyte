@@ -3,22 +3,28 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the contact.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the contact was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the contact was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates if the contact is archived or not.",
       "type": ["null", "boolean"]
     },
     "companies": {
+      "description": "List of companies associated with the contact.",
       "type": ["null", "array"],
       "items": {
+        "description": "Details of a company associated with the contact.",
         "type": ["null", "string"]
       }
     }

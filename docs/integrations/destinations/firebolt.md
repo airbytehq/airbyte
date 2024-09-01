@@ -8,12 +8,12 @@ This Firebolt destination connector has two replication strategies:
 
 1. SQL: Replicates data via SQL INSERT queries. This leverages
    [Firebolt SDK](https://pypi.org/project/firebolt-sdk/) to execute queries directly on Firebolt
-   [Engines](https://docs.firebolt.io/working-with-engines/understanding-engine-fundamentals.html).
+   [Engines](https://docs.firebolt.io/godocs/Overview/understanding-engine-fundamentals.html).
    **Not recommended for production workloads as this does not scale well**.
 
 2. S3: Replicates data by first uploading data to an S3 bucket, creating an External Table and
    writing into a final Fact Table. This is the recommended loading
-   [approach](https://docs.firebolt.io/loading-data/loading-data.html). Requires an S3 bucket and
+   [approach](https://docs.firebolt.io/godocs/Guides/loading-data/loading-data.html). Requires an S3 bucket and
    credentials in addition to Firebolt credentials.
 
 For SQL strategy:
@@ -22,7 +22,8 @@ For SQL strategy:
 - **Username**
 - **Password**
 - **Database**
-- **Engine (optional)**
+- **Account**
+- **Engine**
 
 Airbyte automatically picks an approach depending on the given configuration - if S3 configuration
 is present, Airbyte will use the S3 strategy.
@@ -32,6 +33,7 @@ For S3 strategy:
 - **Username**
 - **Password**
 - **Database**
+- **Account**
 - **S3 Bucket Name**
   - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to
     create an S3 bucket.
@@ -53,12 +55,12 @@ For S3 strategy:
 
 ## Setup guide
 
-1. Create a Firebolt account following the
-   [guide](https://docs.firebolt.io/managing-your-account/creating-an-account.html)
-1. Follow the getting started [tutorial](https://docs.firebolt.io/getting-started.html) to setup a
-   database.
-1. Create a General Purpose (read-write) engine as described in
-   [here](https://docs.firebolt.io/working-with-engines/working-with-engines-using-the-firebolt-manager.html)
+1. Sign up to Firebolt following the
+   [guide](https://docs.firebolt.io/godocs/Guides/managing-your-organization/creating-an-organization.html)
+1. Follow the getting started [tutorial](https://docs.firebolt.io/godocs/Guides/getting-started.html) to setup a database.
+1. Create a [service account](https://docs.firebolt.io/godocs/Guides/managing-your-organization/service-accounts.html).
+1. Create an engine as described in
+   [here](https://docs.firebolt.io/godocs/Guides/working-with-engines/working-with-engines-using-the-firebolt-manager.html)
 1. (Optional)
    [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a
    staging S3 bucket \(for the S3 strategy\).
@@ -91,7 +93,29 @@ Firebolt. Each table will contain 3 columns:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                   |
-| :------ | :--------- | :-------------------------------------------------------- | :------------------------ |
-| 0.1.1   | 2024-03-05 | [#35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector      |
-| 0.1.0   | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118)  | New Destination: Firebolt |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                |
+|:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.2.16 | 2024-08-31 | [44991](https://github.com/airbytehq/airbyte/pull/44991) | Update dependencies |
+| 0.2.15 | 2024-08-24 | [44698](https://github.com/airbytehq/airbyte/pull/44698) | Update dependencies |
+| 0.2.14 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.2.13 | 2024-08-17 | [44239](https://github.com/airbytehq/airbyte/pull/44239) | Update dependencies |
+| 0.2.12 | 2024-08-10 | [43682](https://github.com/airbytehq/airbyte/pull/43682) | Update dependencies |
+| 0.2.11 | 2024-08-03 | [43143](https://github.com/airbytehq/airbyte/pull/43143) | Update dependencies |
+| 0.2.10 | 2024-07-27 | [42703](https://github.com/airbytehq/airbyte/pull/42703) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42211](https://github.com/airbytehq/airbyte/pull/42211) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41789](https://github.com/airbytehq/airbyte/pull/41789) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41602](https://github.com/airbytehq/airbyte/pull/41602) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41118](https://github.com/airbytehq/airbyte/pull/41118) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40854](https://github.com/airbytehq/airbyte/pull/40854) | Update dependencies |
+| 0.2.4 | 2024-06-27 | [40578](https://github.com/airbytehq/airbyte/pull/40578) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.2.3 | 2024-06-25 | [40494](https://github.com/airbytehq/airbyte/pull/40494) | Update dependencies |
+| 0.2.2 | 2024-06-22 | [40078](https://github.com/airbytehq/airbyte/pull/40078) | Update dependencies |
+| 0.2.1 | 2024-06-06 | [39157](https://github.com/airbytehq/airbyte/pull/39157) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.0 | 2024-05-08 | [36443](https://github.com/airbytehq/airbyte/pull/36443) | Service account authentication support |
+| 0.1.1 | 2024-03-05 | [35838](https://github.com/airbytehq/airbyte/pull/35838) | Un-archive connector |
+| 0.1.0 | 2022-05-18 | [13118](https://github.com/airbytehq/airbyte/pull/13118) | New Destination: Firebolt |
+
+</details>

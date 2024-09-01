@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.2.0"
+version = "0.2.17"
 name = "source-microsoft-onedrive"
 description = "Source implementation for Microsoft OneDrive."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -28,7 +28,7 @@ source-microsoft-onedrive = "source_microsoft_onedrive.run:run"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = [ "file-based",]
-version = "^0"
+version = "^1"
 
 [tool.poetry.group.dev.dependencies]
 requests-mock = "^1.11.0"

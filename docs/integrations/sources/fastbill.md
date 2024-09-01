@@ -1,4 +1,4 @@
-# Fastbill 
+# Fastbill
 
 This page contains the setup guide and reference information for the [Fastbill](https://www.fastbill.com/) source connector.
 
@@ -24,7 +24,7 @@ You can find your Project ID and find or create an API key within [Fastbill](htt
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. Enter your `project_id` - Fastbill Project ID.
 4. Enter your `api_key` - Fastbill API key with read permissions.
 5. Click **Set up source**.
@@ -34,7 +34,7 @@ You can find your Project ID and find or create an API key within [Fastbill](htt
 The Fastbill source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported? |
-| :---------------- |:-----------|
+| :---------------- | :--------- |
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 | SSL connection    | No         |
@@ -42,11 +42,11 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 ## Supported Streams
 
-* [Customers](https://apidocs.fastbill.com/fastbill/de/customer.html#customer.get)
-* [Invoices](https://apidocs.fastbill.com/fastbill/de/invoice.html#invoice.get)
-* [Products](https://apidocs.fastbill.com/fastbill/de/recurring.html#recurring.get)
-* [Recurring_invoices](https://apidocs.fastbill.com/fastbill/de/recurring.html#recurring.get)
-* [Revenues](https://apidocs.fastbill.com/fastbill/de/revenue.html#revenue.get)
+- [Customers](https://apidocs.fastbill.com/fastbill/de/customer.html#customer.get)
+- [Invoices](https://apidocs.fastbill.com/fastbill/de/invoice.html#invoice.get)
+- [Products](https://apidocs.fastbill.com/fastbill/de/recurring.html#recurring.get)
+- [Recurring_invoices](https://apidocs.fastbill.com/fastbill/de/recurring.html#recurring.get)
+- [Revenues](https://apidocs.fastbill.com/fastbill/de/revenue.html#revenue.get)
 
 ## Data type map
 
@@ -59,7 +59,30 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 ## Changelog
 
-| Version | Date        | Pull Request                                             | Subject                                           |
-|:--------|:------------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.2.0   | 2023-08-13 | [29390](https://github.com/airbytehq/airbyte/pull/29390)   | Migrated to Low Code CDK                                    |
-| 0.1.0   | 2022-11-08 | [18522](https://github.com/airbytehq/airbyte/pull/18593)   | New Source: Fastbill                                |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.18 | 2024-08-31 | [44999](https://github.com/airbytehq/airbyte/pull/44999) | Update dependencies |
+| 0.2.17 | 2024-08-24 | [44647](https://github.com/airbytehq/airbyte/pull/44647) | Update dependencies |
+| 0.2.16 | 2024-08-17 | [44329](https://github.com/airbytehq/airbyte/pull/44329) | Update dependencies |
+| 0.2.15 | 2024-08-10 | [43515](https://github.com/airbytehq/airbyte/pull/43515) | Update dependencies |
+| 0.2.14 | 2024-08-03 | [43112](https://github.com/airbytehq/airbyte/pull/43112) | Update dependencies |
+| 0.2.13 | 2024-07-27 | [42722](https://github.com/airbytehq/airbyte/pull/42722) | Update dependencies |
+| 0.2.12 | 2024-07-20 | [42179](https://github.com/airbytehq/airbyte/pull/42179) | Update dependencies |
+| 0.2.11 | 2024-07-13 | [41755](https://github.com/airbytehq/airbyte/pull/41755) | Update dependencies |
+| 0.2.10 | 2024-07-10 | [41441](https://github.com/airbytehq/airbyte/pull/41441) | Update dependencies |
+| 0.2.9 | 2024-07-09 | [41176](https://github.com/airbytehq/airbyte/pull/41176) | Update dependencies |
+| 0.2.8 | 2024-07-06 | [41003](https://github.com/airbytehq/airbyte/pull/41003) | Update dependencies |
+| 0.2.7 | 2024-06-25 | [40399](https://github.com/airbytehq/airbyte/pull/40399) | Update dependencies |
+| 0.2.6 | 2024-06-22 | [40197](https://github.com/airbytehq/airbyte/pull/40197) | Update dependencies |
+| 0.2.5 | 2024-06-04 | [39066](https://github.com/airbytehq/airbyte/pull/39066) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.4 | 2024-04-19 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | Updating to 0.80.0 CDK |
+| 0.2.3 | 2024-04-18 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | Manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37159](https://github.com/airbytehq/airbyte/pull/37159) | schema descriptions |
+| 0.2.0 | 2023-08-13 | [29390](https://github.com/airbytehq/airbyte/pull/29390) | Migrated to Low Code CDK |
+| 0.1.0   | 2022-11-08 | [18522](https://github.com/airbytehq/airbyte/pull/18593) | New Source: Fastbill                                                            |
+
+</details>

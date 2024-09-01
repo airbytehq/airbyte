@@ -6,7 +6,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-qualaroo
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: eb655362-28a8-4311-8806-4fcc612734a7
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.17
   dockerRepository: airbyte/source-qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg
@@ -27,4 +27,22 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: qualaroo_config_dev_null
+          id: 8178b8f4-9511-442c-9ddf-4cd31713266c
+    # Disable acceptance tests for now
+    # They are not passing
+    # No Airbyte Cloud usage
+    #   - suite: unitTests
+    #   - suite: acceptanceTests
+    #     testSecrets:
+    #       - name: SECRET_SOURCE-QUALAROO_CREDS
+    #         fileName: config.json
+    #         secretStore:
+    #           type: GSM
+    #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

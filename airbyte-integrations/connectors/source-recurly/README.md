@@ -1,14 +1,14 @@
 # Recurly source connector
 
-This is the repository for the Recurly source connector, written in Python.
+This is the repository for the Recurly configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/recurly).
 
 ## Local development
 
 ### Prerequisites
 
-* Python (~=3.9)
-* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
+- Python (~=3.9)
+- Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 ### Installing the connector
 
@@ -34,7 +34,7 @@ and place them into `secrets/config.json`.
 poetry run source-recurly spec
 poetry run source-recurly check --config secrets/config.json
 poetry run source-recurly discover --config secrets/config.json
-poetry run source-recurly read --config secrets/config.json --catalog sample_files/configured_catalog.json
+poetry run source-recurly read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Running unit tests

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.db.util.SSLCertificateUtils.keyStoreFromCertificate
 import io.airbyte.cdk.db.util.SSLCertificateUtils.keyStoreFromClientCertificate
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
@@ -20,8 +21,8 @@ import java.util.*
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.Pair
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 class JdbcSSLConnectionUtils {
     var caCertKeyStorePair: Pair<URI, String>? = null
@@ -57,8 +58,7 @@ class JdbcSSLConnectionUtils {
         const val TRUST_KEY_STORE_TYPE: String = "trustCertificateKeyStoreType"
         const val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
         const val PARAM_MODE: String = "mode"
-        private val LOGGER: Logger =
-            LoggerFactory.getLogger(JdbcSSLConnectionUtils::class.java.javaClass)
+
         const val PARAM_CA_CERTIFICATE: String = "ca_certificate"
         const val PARAM_CLIENT_CERTIFICATE: String = "client_certificate"
         const val PARAM_CLIENT_KEY: String = "client_key"
@@ -71,11 +71,12 @@ class JdbcSSLConnectionUtils {
          * @return map containing relevant parsed values including location of keystore or an empty
          * map
          */
+        @JvmStatic
         fun parseSSLConfig(config: JsonNode): Map<String, String> {
-            LOGGER.debug("source config: {}", config)
+            LOGGER.debug { "source config: $config" }
 
-            var caCertKeyStorePair: Pair<URI, String>? = null
-            var clientCertKeyStorePair: Pair<URI, String>? = null
+            var caCertKeyStorePair: Pair<URI, String>?
+            var clientCertKeyStorePair: Pair<URI, String>?
             val additionalParameters: MutableMap<String, String> = HashMap()
             // assume ssl if not explicitly mentioned.
             if (!config.has(JdbcUtils.SSL_KEY) || config[JdbcUtils.SSL_KEY].asBoolean()) {
@@ -85,15 +86,10 @@ class JdbcSSLConnectionUtils {
                         SslMode.bySpec(specMode)
                             .orElseThrow { IllegalArgumentException("unexpected ssl mode") }
                             .name
-                    if (Objects.isNull(caCertKeyStorePair)) {
-                        caCertKeyStorePair = prepareCACertificateKeyStore(config)
-                    }
+                    caCertKeyStorePair = prepareCACertificateKeyStore(config)
 
-                    if (Objects.nonNull(caCertKeyStorePair)) {
-                        LOGGER.debug(
-                            "uri for ca cert keystore: {}",
-                            caCertKeyStorePair!!.left.toString()
-                        )
+                    if (null != caCertKeyStorePair) {
+                        LOGGER.debug { "uri for ca cert keystore: ${caCertKeyStorePair.left}" }
                         try {
                             additionalParameters.putAll(
                                 java.util.Map.of(
@@ -110,16 +106,12 @@ class JdbcSSLConnectionUtils {
                         }
                     }
 
-                    if (Objects.isNull(clientCertKeyStorePair)) {
-                        clientCertKeyStorePair = prepareClientCertificateKeyStore(config)
-                    }
+                    clientCertKeyStorePair = prepareClientCertificateKeyStore(config)
 
-                    if (Objects.nonNull(clientCertKeyStorePair)) {
-                        LOGGER.debug(
-                            "uri for client cert keystore: {} / {}",
-                            clientCertKeyStorePair!!.left.toString(),
-                            clientCertKeyStorePair.right
-                        )
+                    if (null != clientCertKeyStorePair) {
+                        LOGGER.debug {
+                            "uri for client cert keystore: ${clientCertKeyStorePair.left} / ${clientCertKeyStorePair.right}"
+                        }
                         try {
                             additionalParameters.putAll(
                                 java.util.Map.of(
@@ -139,10 +131,11 @@ class JdbcSSLConnectionUtils {
                     additionalParameters[SSL_MODE] = SslMode.DISABLED.name
                 }
             }
-            LOGGER.debug("additional params: {}", additionalParameters)
+            LOGGER.debug { "additional params: $additionalParameters" }
             return additionalParameters
         }
 
+        @JvmStatic
         fun prepareCACertificateKeyStore(config: JsonNode): Pair<URI, String>? {
             // if config available
             // if has CA cert - make keystore
@@ -266,6 +259,7 @@ class JdbcSSLConnectionUtils {
             return clientCertKeyStorePair
         }
 
+        @JvmStatic
         fun fileFromCertPem(certPem: String?): Path {
             try {
                 val path = Files.createTempFile(null, ".crt")

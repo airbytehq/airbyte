@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.16
   dockerRepository: airbyte/source-n8n
   githubIssueLabel: source-n8n
   icon: n8n.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-n8n
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -26,4 +26,16 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  # Disabling acceptance tests
+  # No/Low Airbyte cloud usage
+  # connectorTestSuitesOptions:
+  #   - suite: acceptanceTests
+  #     testSecrets:
+  #       - name: SECRET_SOURCE-N8N__CREDS
+  #         fileName: config.json
+  #         secretStore:
+  #           type: GSM
+  #           alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

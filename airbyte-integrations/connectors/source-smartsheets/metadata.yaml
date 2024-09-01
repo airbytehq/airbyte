@@ -9,7 +9,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
-  dockerImageTag: 1.1.2
+  dockerImageTag: 1.1.17
   dockerRepository: airbyte/source-smartsheets
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   githubIssueLabel: source-smartsheets
@@ -20,7 +20,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-smartsheets
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -30,4 +30,26 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: smartsheets_config_dev_null
+          id: 5f50a932-3717-48de-99bd-613259aaa378
+        - name: smartsheets_config_oauth_dev_null
+          id: 848c3e7d-802a-4b61-bd28-132ba3f55d25
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SMARTSHEETS_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SMARTSHEETS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.19"
+name = "destination-rabbitmq"
+description = "Destination implementation for Rabbitmq."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/rabbitmq"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_rabbitmq"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+pika = "==1.3.2"
+airbyte-cdk = "==0.78.4"
+
+[tool.poetry.scripts]
+destination-rabbitmq = "destination_rabbitmq.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"

@@ -1,29 +1,40 @@
 data:
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-outbrain-amplify
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-OUTBRAIN-AMPLIFY__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: 4fe962d0-a70e-4516-aa99-c551abf46352
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.12
   dockerRepository: airbyte/source-outbrain-amplify
+  documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
   githubIssueLabel: source-outbrain-amplify
   icon: icon.svg
   license: MIT
   name: Outbrain Amplify
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-outbrain-amplify
+  supportLevel: community
   tags:
     - language:python
     - cdk:python
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
 metadataSpecVersion: "1.0"

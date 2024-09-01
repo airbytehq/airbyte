@@ -6,28 +6,50 @@ data:
     hosts:
       - connect.squareupsandbox.com
       - connect.squareup.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
-  dockerImageTag: 1.6.1
+  dockerImageTag: 1.6.18
   dockerRepository: airbyte/source-square
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   githubIssueLabel: source-square
   icon: square.svg
   license: MIT
   name: Square
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-square
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: beta
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-square
   supportLevel: community
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: square_config_oauth_dev_null
+          id: 83af0127-0962-4e07-ac73-c19f37326810
+        - name: square_config_dev_null
+          id: ac295afb-3984-45cc-9a67-73d35297671d
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SQUARE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_SQUARE_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

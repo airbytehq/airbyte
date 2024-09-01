@@ -153,7 +153,7 @@ connectionSpecification:
       description: >-
         This parameter allows you to filter the articles that have a publication date smaller than or equal to the 
         specified value. The date must respect the following format: YYYY-MM-DD hh:mm:ss (in UTC)
-      order: 6
+      order: 7
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$
       examples:
         - "2022-08-21 16:27:09"
@@ -165,13 +165,13 @@ connectionSpecification:
         are possible:
           - publishedAt = sort by publication date, the articles with the most recent publication date are returned first
           - relevance = sort by best match to keywords, the articles with the best match are returned first
-      order: 7
+      order: 8
       enum:
         - publishedAt
         - relevance
     top_headlines_query:
       type: string
-      order: 8
+      order: 9
       title: Top Headlines Query
       description: >-
         This parameter allows you to specify your search keywords to find the news articles you are looking for.
@@ -201,7 +201,7 @@ connectionSpecification:
       type: string
       title: Top Headlines Topic
       description: This parameter allows you to change the category for the request.
-      order: 9
+      order: 10
       enum:
         - breaking-news
         - world

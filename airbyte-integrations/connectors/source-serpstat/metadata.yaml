@@ -4,15 +4,20 @@ data:
       - api.serpstat.com
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-serpstat
-  registries:
+  registryOverrides:
     oss:
       enabled: true
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: 3b2e8fb2-9137-41ff-a1e1-83ecb39e26c8
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-serpstat
   githubIssueLabel: source-serpstat
   icon: serpstat.svg
@@ -22,6 +27,14 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/serpstat
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SERPSTAT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

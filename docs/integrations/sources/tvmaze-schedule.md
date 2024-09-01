@@ -5,19 +5,18 @@
 This source retrieves historical and future TV scheduling data using the
 [TVMaze](https://www.tvmaze.com/) schedule API.
 
-
 ### Output schema
 
 This source is capable of syncing the following streams:
 
-* `domestic`
-* `web`
-* `future`
+- `domestic`
+- `web`
+- `future`
 
 ### Features
 
 | Feature           | Supported? \(Yes/No\) | Notes |
-|:------------------|:----------------------|:------|
+| :---------------- | :-------------------- | :---- |
 | Full Refresh Sync | Yes                   |       |
 | Incremental Sync  | No                    |       |
 
@@ -47,6 +46,26 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2022-10-22 | [18333](https://github.com/airbytehq/airbyte/pull/18333) | New source |
+| :------ | :--------- | :------------------------------------------------------- | :--------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0 | 2024-08-14 | [44055](https://github.com/airbytehq/airbyte/pull/44055) | Refactor connector to manifest-only format |
+| 0.1.13 | 2024-08-12 | [43740](https://github.com/airbytehq/airbyte/pull/43740) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43530](https://github.com/airbytehq/airbyte/pull/43530) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43094](https://github.com/airbytehq/airbyte/pull/43094) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42640](https://github.com/airbytehq/airbyte/pull/42640) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42386](https://github.com/airbytehq/airbyte/pull/42386) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41917](https://github.com/airbytehq/airbyte/pull/41917) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41358](https://github.com/airbytehq/airbyte/pull/41358) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [40928](https://github.com/airbytehq/airbyte/pull/40928) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40349](https://github.com/airbytehq/airbyte/pull/40349) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40048](https://github.com/airbytehq/airbyte/pull/40048) | Update dependencies |
+| 0.1.3 | 2024-06-05 | [38837](https://github.com/airbytehq/airbyte/pull/38837) | Make connector compatible with builder |
+| 0.1.2 | 2024-06-04 | [39053](https://github.com/airbytehq/airbyte/pull/39053) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1 | 2024-05-20 | [38453](https://github.com/airbytehq/airbyte/pull/38453) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-10-22 | [18333](https://github.com/airbytehq/airbyte/pull/18333) | New source |
+
+</details>

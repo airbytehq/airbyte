@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.17
   dockerRepository: airbyte/source-rki-covid
   githubIssueLabel: source-rki-covid
   icon: rki.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-rki-covid
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -26,4 +26,19 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: rki-covid_config_dev_null
+          id: 4f1784b1-f6b3-4bb2-9009-cb8ba2328bab
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-RKI-COVID__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

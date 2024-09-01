@@ -49,6 +49,11 @@ and handle any amount of data from the connector.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                              | Subject                   |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------ |
 | 0.1.3   | 2022-08-10 | [153999](https://github.com/airbytehq/airbyte/pull/15399) | handling per-stream state |
+
+</details>

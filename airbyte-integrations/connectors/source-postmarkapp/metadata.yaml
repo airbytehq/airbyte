@@ -1,29 +1,43 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.17
   dockerRepository: airbyte/source-postmarkapp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
   githubIssueLabel: source-postmarkapp
   icon: postmark.svg
   license: MIT
   name: Postmark App
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-postmarkapp
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/postmarkapp
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-postmarkapp
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: postmarkapp_config_dev_null
+          id: 2c3b45cb-13d7-4883-a982-17188cf3dcae
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POSTMARKAPP__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

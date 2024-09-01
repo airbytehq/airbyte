@@ -55,7 +55,27 @@ However, at this moment and as indicated in the stream names, the connector only
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
-| 0.1.1   | 2023-07-11 | [28153](https://github.com/airbytehq/airbyte/pull/28153) | Fix manifest duplicate key (no change in behavior for the syncs)                     |
-| 0.1.0   | 2022-11-17 | [19557](https://github.com/airbytehq/airbyte/pull/19557) | Initial release with campaigns, adgroups & keywords streams (base and daily reports) |
+| 0.1.16 | 2024-08-31 | [45013](https://github.com/airbytehq/airbyte/pull/45013) | Update dependencies |
+| 0.1.15 | 2024-08-24 | [44654](https://github.com/airbytehq/airbyte/pull/44654) | Update dependencies |
+| 0.1.14 | 2024-08-17 | [44322](https://github.com/airbytehq/airbyte/pull/44322) | Update dependencies |
+| 0.1.13 | 2024-08-12 | [43912](https://github.com/airbytehq/airbyte/pull/43912) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43514](https://github.com/airbytehq/airbyte/pull/43514) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43195](https://github.com/airbytehq/airbyte/pull/43195) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42660](https://github.com/airbytehq/airbyte/pull/42660) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42225](https://github.com/airbytehq/airbyte/pull/42225) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41722](https://github.com/airbytehq/airbyte/pull/41722) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41546](https://github.com/airbytehq/airbyte/pull/41546) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [40832](https://github.com/airbytehq/airbyte/pull/40832) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40364](https://github.com/airbytehq/airbyte/pull/40364) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40186](https://github.com/airbytehq/airbyte/pull/40186) | Update dependencies |
+| 0.1.3 | 2024-06-04 | [38967](https://github.com/airbytehq/airbyte/pull/38967) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.2 | 2024-05-21 | [38502](https://github.com/airbytehq/airbyte/pull/38502) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2023-07-11 | [28153](https://github.com/airbytehq/airbyte/pull/28153) | Fix manifest duplicate key (no change in behavior for the syncs) |
+| 0.1.0 | 2022-11-17 | [19557](https://github.com/airbytehq/airbyte/pull/19557) | Initial release with campaigns, adgroups & keywords streams (base and daily reports) |
+
+</details>

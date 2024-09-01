@@ -1,32 +1,60 @@
 data:
-  ab_internal:
-    ql: 300
-    sl: 100
   allowedHosts:
     hosts:
       - app.asana.com
-  connectorSubtype: api
-  connectorType: source
-  definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
-  dockerImageTag: 0.6.1
-  dockerRepository: airbyte/source-asana
-  documentationUrl: https://docs.airbyte.com/integrations/sources/asana
-  githubIssueLabel: source-asana
-  icon: asana.svg
-  license: MIT
-  name: Asana
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This release introduces an updated data type of the `name` field in the `events` stream. Users will need to reset this stream after upgrading. Please see migration guide for more details."
+        upgradeDeadline: "2024-06-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - events
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-asana
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
+  dockerImageTag: 1.2.6
+  dockerRepository: airbyte/source-asana
+  githubIssueLabel: source-asana
+  icon: asana.svg
+  license: MIT
+  name: Asana
+  releaseDate: 2021-05-25
   releaseStage: beta
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/asana
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
+  ab_internal:
+    ql: 300
+    sl: 100
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: asana_config_dev_null
+          id: 43b16e30-c7a1-4b78-9f43-438e325b0435
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ASANA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

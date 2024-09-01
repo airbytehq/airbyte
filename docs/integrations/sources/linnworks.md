@@ -32,25 +32,25 @@ The value of your API Token can be viewed at any time from the main dashboard of
 
 The Linnworks source connector supports the following streams and [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-mode):
 
-| Stream Name                                                                                    | Full Refresh | Incremental  |
-| :--------------------------------------------------------------------------------------------- | :----------- | :----------- |
-| [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders) | ✓           | ✓            |
-| [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)            | ✓           | ✓            |
-| [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)                   | ✓           | X             |
-| [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)            | ✓           | X             |
-| [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)            | ✓           | X             |
+| Stream Name                                                                                    | Full Refresh | Incremental |
+| :--------------------------------------------------------------------------------------------- | :----------- | :---------- |
+| [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders) | ✓            | ✓           |
+| [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)            | ✓            | ✓           |
+| [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)                   | ✓            | X           |
+| [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)            | ✓            | X           |
+| [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)            | ✓            | X           |
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Example                    |
-| :--------------- | :----------- | :------------------------- |
-| `number`         | `number`     | 50.23                      |
-| `integer`        | `integer`    | 50                         |
-| `date`           | `string`     | 2020-12-31                 |
-| `datetime`       | `string`     | 2020-12-31T07:30:00        |
-| `array`          | `array`      | ["Item 1", "Item 2"]       |
-| `boolean`        | `boolean`    | True/False                 |
-| `string`         | `string`     | Item 3                     |
+| Integration Type | Airbyte Type | Example              |
+| :--------------- | :----------- | :------------------- |
+| `number`         | `number`     | 50.23                |
+| `integer`        | `integer`    | 50                   |
+| `date`           | `string`     | 2020-12-31           |
+| `datetime`       | `string`     | 2020-12-31T07:30:00  |
+| `array`          | `array`      | ["Item 1", "Item 2"] |
+| `boolean`        | `boolean`    | True/False           |
+| `string`         | `string`     | Item 3               |
 
 ## Limitations & Troubleshooting
 
@@ -69,12 +69,34 @@ Rate limits for the Linnworks API vary across endpoints. Use the [links in the *
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------- |
-| 0.1.7   | 2024-02-22 | [35557](https://github.com/airbytehq/airbyte/pull/35557) | Manage dependencies with Poetry                                             |
-| 0.1.6   | 2024-01-31 | [34717](https://github.com/airbytehq/airbyte/pull/34717) | Update CDK and migrate to base image                                        |
-| 0.1.5   | 2022-11-20 | [19865](https://github.com/airbytehq/airbyte/pull/19865) | Bump Version                                                                |
-| 0.1.4   | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226)   | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |
-| 0.1.3   | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169)   | Source Linnworks: refactor stream StockLocations                            |
-| 0.1.2   | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177)   | Source Linnworks: add stream ProcessedOrderDetails                          |
-| 0.1.0   | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588)   | New Source: Linnworks                                                       |
+| 0.1.24 | 2024-08-31 | [44968](https://github.com/airbytehq/airbyte/pull/44968) | Update dependencies |
+| 0.1.23 | 2024-08-24 | [44740](https://github.com/airbytehq/airbyte/pull/44740) | Update dependencies |
+| 0.1.22 | 2024-08-17 | [44304](https://github.com/airbytehq/airbyte/pull/44304) | Update dependencies |
+| 0.1.21 | 2024-08-10 | [43604](https://github.com/airbytehq/airbyte/pull/43604) | Update dependencies |
+| 0.1.20 | 2024-08-03 | [43183](https://github.com/airbytehq/airbyte/pull/43183) | Update dependencies |
+| 0.1.19 | 2024-07-27 | [42608](https://github.com/airbytehq/airbyte/pull/42608) | Update dependencies |
+| 0.1.18 | 2024-07-20 | [42235](https://github.com/airbytehq/airbyte/pull/42235) | Update dependencies |
+| 0.1.17 | 2024-07-13 | [41778](https://github.com/airbytehq/airbyte/pull/41778) | Update dependencies |
+| 0.1.16 | 2024-07-10 | [41432](https://github.com/airbytehq/airbyte/pull/41432) | Update dependencies |
+| 0.1.15 | 2024-07-09 | [41219](https://github.com/airbytehq/airbyte/pull/41219) | Update dependencies |
+| 0.1.14 | 2024-07-06 | [40870](https://github.com/airbytehq/airbyte/pull/40870) | Update dependencies |
+| 0.1.13 | 2024-06-26 | [40549](https://github.com/airbytehq/airbyte/pull/40549) | Migrate off deprecated auth package |
+| 0.1.12 | 2024-06-25 | [40275](https://github.com/airbytehq/airbyte/pull/40275) | Update dependencies |
+| 0.1.11 | 2024-06-22 | [40146](https://github.com/airbytehq/airbyte/pull/40146) | Update dependencies |
+| 0.1.10 | 2024-06-06 | [39196](https://github.com/airbytehq/airbyte/pull/39196) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.9 | 2024-04-19 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | Updating to 0.80.0 CDK |
+| 0.1.8 | 2024-04-12 | [37188](https://github.com/airbytehq/airbyte/pull/37188) | schema descriptions |
+| 0.1.7 | 2024-02-22 | [35557](https://github.com/airbytehq/airbyte/pull/35557) | Manage dependencies with Poetry |
+| 0.1.6 | 2024-01-31 | [34717](https://github.com/airbytehq/airbyte/pull/34717) | Update CDK and migrate to base image |
+| 0.1.5 | 2022-11-20 | [19865](https://github.com/airbytehq/airbyte/pull/19865) | Bump Version |
+| 0.1.4 | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226) | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |
+| 0.1.3 | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169) | Source Linnworks: refactor stream StockLocations |
+| 0.1.2 | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177) | Source Linnworks: add stream ProcessedOrderDetails |
+| 0.1.0 | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588) | New Source: Linnworks |
+
+</details>

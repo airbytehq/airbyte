@@ -100,17 +100,38 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
-| 1.2.0   | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... )    |
-| 1.1.1   | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates                                  |
-| 1.1.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
-| 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |
-| 0.1.6   | 2023-03-07 | [22893](https://github.com/airbytehq/airbyte/pull/22893) | Specified date formatting in specification                        |
-| 0.1.5   | 2023-03-07 | [23828](https://github.com/airbytehq/airbyte/pull/23828) | Use `start_date` to filter data                                   |
-| 0.1.4   | 2023-02-28 | [23564](https://github.com/airbytehq/airbyte/pull/23564) | Allow additional properties in spec and stream schemas            |
-| 0.1.3   | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
-| 0.1.3   | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
-| 0.1.2   | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream                                           |
-| 0.1.1   | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617)   | Update connector fields title/description                         |
-| 0.1.0   | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962)   | Salesloft Connector                                               |
+| 1.2.17 | 2024-08-31 | [44967](https://github.com/airbytehq/airbyte/pull/44967) | Update dependencies |
+| 1.2.16 | 2024-08-24 | [44642](https://github.com/airbytehq/airbyte/pull/44642) | Update dependencies |
+| 1.2.15 | 2024-08-17 | [44301](https://github.com/airbytehq/airbyte/pull/44301) | Update dependencies |
+| 1.2.14 | 2024-08-12 | [43910](https://github.com/airbytehq/airbyte/pull/43910) | Update dependencies |
+| 1.2.13 | 2024-08-10 | [43524](https://github.com/airbytehq/airbyte/pull/43524) | Update dependencies |
+| 1.2.12 | 2024-08-03 | [43051](https://github.com/airbytehq/airbyte/pull/43051) | Update dependencies |
+| 1.2.11 | 2024-07-27 | [42800](https://github.com/airbytehq/airbyte/pull/42800) | Update dependencies |
+| 1.2.10 | 2024-07-20 | [42258](https://github.com/airbytehq/airbyte/pull/42258) | Update dependencies |
+| 1.2.9 | 2024-07-13 | [41699](https://github.com/airbytehq/airbyte/pull/41699) | Update dependencies |
+| 1.2.8 | 2024-07-10 | [41532](https://github.com/airbytehq/airbyte/pull/41532) | Update dependencies |
+| 1.2.7 | 2024-07-10 | [41327](https://github.com/airbytehq/airbyte/pull/41327) | Update dependencies |
+| 1.2.6 | 2024-07-06 | [40896](https://github.com/airbytehq/airbyte/pull/40896) | Update dependencies |
+| 1.2.5 | 2024-06-25 | [40437](https://github.com/airbytehq/airbyte/pull/40437) | Update dependencies |
+| 1.2.4 | 2024-06-22 | [39974](https://github.com/airbytehq/airbyte/pull/39974) | Update dependencies |
+| 1.2.3 | 2024-06-07 | [38362](https://github.com/airbytehq/airbyte/pull/38362) | Migrate to Low Code |
+| 1.2.2 | 2024-06-04 | [39042](https://github.com/airbytehq/airbyte/pull/39042) | [autopull] Upgrade base image to v1.2.1 |
+| 1.2.1 | 2024-05-20 | [38383](https://github.com/airbytehq/airbyte/pull/38383) | [autopull] base image + poetry + up_to_date |
+| 1.2.0 | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... ) |
+| 1.1.1 | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates |
+| 1.1.0 | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
+| 1.0.0 | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta |
+| 0.1.6 | 2023-03-07 | [22893](https://github.com/airbytehq/airbyte/pull/22893) | Specified date formatting in specification |
+| 0.1.5 | 2023-03-07 | [23828](https://github.com/airbytehq/airbyte/pull/23828) | Use `start_date` to filter data |
+| 0.1.4 | 2023-02-28 | [23564](https://github.com/airbytehq/airbyte/pull/23564) | Allow additional properties in spec and stream schemas |
+| 0.1.3 | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
+| 0.1.2 | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream |
+| 0.1.1 | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
+| 0.1.0 | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962) | Salesloft Connector | |
+
+</details>

@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.5.17
   dockerRepository: airbyte/source-close-com
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   githubIssueLabel: source-close-com
@@ -19,7 +19,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-close-com
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -29,4 +29,15 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CLOSE-COM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

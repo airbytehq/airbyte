@@ -5,28 +5,24 @@
 from dataclasses import InitVar, dataclass, field
 from functools import wraps
 from time import sleep
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
-    InterpolatedNestedRequestInputProvider,
-)
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution
 
 RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class IncrementalSingleSliceCursor(Cursor):
+class IncrementalSingleSliceCursor(DeclarativeCursor):
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
@@ -82,6 +78,9 @@ class IncrementalSingleSliceCursor(Cursor):
     def get_stream_state(self) -> StreamState:
         return self._state
 
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
+
     def set_initial_state(self, stream_state: StreamState):
         cursor_field = self.cursor_field.eval(self.config)
         cursor_value = stream_state.get(cursor_field)
@@ -105,7 +104,7 @@ class IncrementalSingleSliceCursor(Cursor):
         if self.is_greater_than_or_equal(record, self._state):
             self._cursor = record_cursor_value
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         cursor_field = self.cursor_field.eval(self.config)
         self._state[cursor_field] = self._cursor
 
@@ -178,8 +177,8 @@ class IncrementalSubstreamSlicerCursor(IncrementalSingleSliceCursor):
         # observe the substream
         super().observe(stream_slice, record)
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
-        super().close_slice(stream_slice=stream_slice)
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
+        super().close_slice(stream_slice, *args)
 
     def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         parent_state = (self._state or {}).get(self.parent_stream_name, {})
@@ -360,69 +359,17 @@ class IntercomRateLimiter:
         return decorator
 
 
-@dataclass(eq=False)
-class HttpRequesterWithRateLimiter(HttpRequester):
+class ErrorHandlerWithRateLimiter(DefaultErrorHandler):
     """
-    The difference between the built-in `HttpRequester` and this one is the custom decorator,
-    applied on top of `interpret_response_status` to preserve the api calls for a defined amount of time,
+    The difference between the built-in `DefaultErrorHandler` and this one is the custom decorator,
+    applied on top of `interpret_response` to preserve the api calls for a defined amount of time,
     calculated using the rate limit headers and not use the custom backoff strategy,
     since we deal with Response.status_code == 200,
     the default requester's logic doesn't allow to handle the status of 200 with `should_retry()`.
     """
 
-    request_body_json: Optional[RequestInput] = None
-    request_headers: Optional[RequestInput] = None
-    request_parameters: Optional[RequestInput] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-
-        self.request_parameters = self.request_parameters if self.request_parameters else {}
-        self.request_headers = self.request_headers if self.request_headers else {}
-        self.request_body_json = self.request_body_json if self.request_body_json else {}
-
-        self._parameter_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_parameters, parameters=parameters
-        )
-        self._headers_interpolator = InterpolatedRequestInputProvider(
-            config=self.config, request_inputs=self.request_headers, parameters=parameters
-        )
-        self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
-            config=self.config, request_inputs=self.request_body_json, parameters=parameters
-        )
-
     # The RateLimiter is applied to balance the api requests.
     @IntercomRateLimiter.balance_rate_limit()
-    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         # Check for response.headers to define the backoff time before the next api call
-        return super().interpret_response_status(response)
-
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        interpolated_value = self._parameter_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-        if isinstance(interpolated_value, dict):
-            return interpolated_value
-        return {}
-
-    def get_request_headers(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        return self._headers_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
-
-    def get_request_body_json(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping]:
-        return self._body_json_interpolator.eval_request_inputs(stream_state, stream_slice, next_page_token)
+        return super().interpret_response(response_or_exception)

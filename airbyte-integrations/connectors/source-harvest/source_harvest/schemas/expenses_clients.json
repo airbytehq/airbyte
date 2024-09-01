@@ -3,24 +3,31 @@
   "type": "object",
   "properties": {
     "client_id": {
+      "description": "The unique identifier of the client.",
       "type": ["null", "integer"]
     },
     "client_name": {
+      "description": "The name of the client associated with the expenses.",
       "type": ["null", "string"]
     },
     "total_amount": {
+      "description": "The total amount of expenses including billable and non-billable expenses.",
       "type": ["null", "number"]
     },
     "billable_amount": {
+      "description": "The amount billed to the client for the expenses.",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "The currency in which the expenses are recorded.",
       "type": ["null", "string"]
     },
     "from": {
+      "description": "The start date of the expense period.",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "The end date of the expense period.",
       "type": ["null", "string"]
     }
   }

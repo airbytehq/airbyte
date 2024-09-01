@@ -3,14 +3,13 @@
  */
 package io.airbyte.commons.lang
 
-import java.lang.invoke.MethodHandles
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.Callable
 import java.util.function.Function
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val log = KotlinLogging.logger {}
 
 object Exceptions {
-    private val log: Logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass())
 
     /**
      * Catch a checked exception and rethrow as a [RuntimeException]
@@ -37,8 +36,9 @@ object Exceptions {
      * @param voidCallable
      * - function that throws a checked exception.
      */
+    @JvmStatic
     fun toRuntime(voidCallable: Procedure) {
-        castCheckedToRuntime(voidCallable) { cause: Exception? -> RuntimeException(cause) }
+        castCheckedToRuntime(voidCallable) { cause: Exception -> RuntimeException(cause) }
     }
 
     private fun castCheckedToRuntime(
@@ -58,7 +58,7 @@ object Exceptions {
         try {
             procedure.call()
         } catch (e: Exception) {
-            log.error("Swallowed error.", e)
+            log.error(e) { "Swallowed error." }
         }
     }
 

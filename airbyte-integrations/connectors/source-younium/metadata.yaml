@@ -3,7 +3,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-younium
-  registries:
+  registryOverrides:
     oss:
       enabled: true
     cloud:
@@ -12,11 +12,11 @@ data:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.17
   dockerRepository: airbyte/source-younium
   githubIssueLabel: source-younium
   icon: younium.svg
@@ -29,4 +29,16 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: younium_config_dev_null
+          id: bcc0a350-b9df-478f-8c08-1cd996b05026
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-YOUNIUM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

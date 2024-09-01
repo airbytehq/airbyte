@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.16
   dockerRepository: airbyte/source-gridly
   githubIssueLabel: source-gridly
   icon: gridly.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-gridly
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -26,4 +26,19 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gridly_config_dev_null
+          id: 67071749-873b-4e4f-b946-7c14f15199d3
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GRIDLY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

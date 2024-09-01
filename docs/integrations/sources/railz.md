@@ -90,6 +90,21 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| 0.1.1   | 2023-02-16 | [20960](https://github.com/airbytehq/airbyte/pull/20960) | New Source: Railz                                                                         |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject           |
+| :------ | :--------- | :------------------------------------------------------- | :---------------- |
+| 0.1.11 | 2024-08-31 | [45036](https://github.com/airbytehq/airbyte/pull/45036) | Update dependencies |
+| 0.1.10 | 2024-08-24 | [44649](https://github.com/airbytehq/airbyte/pull/44649) | Update dependencies |
+| 0.1.9 | 2024-08-17 | [44206](https://github.com/airbytehq/airbyte/pull/44206) | Update dependencies |
+| 0.1.8 | 2024-08-12 | [43801](https://github.com/airbytehq/airbyte/pull/43801) | Update dependencies |
+| 0.1.7 | 2024-08-10 | [43541](https://github.com/airbytehq/airbyte/pull/43541) | Update dependencies |
+| 0.1.6 | 2024-08-03 | [43288](https://github.com/airbytehq/airbyte/pull/43288) | Update dependencies |
+| 0.1.5 | 2024-07-27 | [42674](https://github.com/airbytehq/airbyte/pull/42674) | Update dependencies |
+| 0.1.4 | 2024-07-20 | [40029](https://github.com/airbytehq/airbyte/pull/40029) | Update dependencies |
+| 0.1.3 | 2024-07-19 | [42125](https://github.com/airbytehq/airbyte/pull/42125) | Fix Python MRO bug |
+| 0.1.2 | 2024-05-21 | [38545](https://github.com/airbytehq/airbyte/pull/38545) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2023-02-16 | [20960](https://github.com/airbytehq/airbyte/pull/20960) | New Source: Railz |
+
+</details>

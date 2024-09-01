@@ -1,0 +1,86 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "airbyte-destination-snowflake-cortex"
+version = "0.2.20"
+description = "Airbyte destination implementation for Snowflake cortex."
+authors = ["Airbyte <contact@airbyte.io>"]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/snowflake-cortex"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+
+[[tool.poetry.packages]]
+include = "destination_snowflake_cortex"
+
+[tool.poetry.dependencies.airbyte-cdk]
+# Version cnstrained by PyAirbyte (`airbyte`) version
+version = ">=1.0"
+extras = ["vector-db-based"]
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+
+airbyte = "^0.12.0"
+sqlalchemy = "<2.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+ruff = "^0.3.2"
+mypy = "^1.9.0"
+coverage = "^7.5.3"
+
+[tool.poetry.scripts]
+destination-snowflake-cortex = "destination_snowflake_cortex.run:run"
+
+[tool.ruff]
+target-version = "py310"
+preview = true
+line-length = 100
+
+[[tool.mypy.overrides]]
+module = [
+    "airbyte_protocol",
+    "airbyte_protocol.*",
+    "sqlalchemy",
+    "sqlalchemy.*",
+    "snowflake.sqlalchemy",
+    "dpath",
+    "dpath.util",
+]
+ignore_missing_imports = true    # No stubs yet (😢)
+
+[tool.coverage.run]
+# branch = true
+# parallel = true
+omit = [
+    "unit_tests/*",
+    "integration_tests/*",
+    "destination_snowflake_cortex/common/*",
+]
+
+[tool.coverage.report]
+precision = 1
+fail_under = 90.0
+exclude_also = [
+    # # TYPE_CHECKING block is only executed while running mypy
+    "if TYPE_CHECKING:",
+    "\\.\\.\\."
+]
+
+[tool.poe.tasks]
+test = { shell = "pytest" }
+
+coverage = { shell = "coverage run -m pytest && coverage report" }
+coverage-report = { shell = "coverage report" }
+coverage-html = { shell = "coverage html -d htmlcov || open htmlcov/index.html" }
+coverage-reset = { shell = "coverage erase" }
+
+check = { shell = "ruff check . && mypy ." }
+
+fix = { shell = "ruff format . && ruff check --fix -s || ruff format ." }
+fix-unsafe = { shell = "ruff format . && ruff check --fix --unsafe-fixes . && ruff format ." }
+fix-and-check = { shell = "poe fix && poe check" }

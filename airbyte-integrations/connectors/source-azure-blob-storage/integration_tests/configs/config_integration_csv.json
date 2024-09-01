@@ -1,0 +1,131 @@
+{
+  "azure_blob_storage_endpoint": "http://localhost:10000/account1",
+  "azure_blob_storage_account_name": "account1",
+  "credentials": {
+    "auth_type": "storage_account_key",
+    "azure_blob_storage_account_key": "key1"
+  },
+  "azure_blob_storage_container_name": "testcontainer",
+  "streams": [
+    {
+      "name": "users",
+      "file_type": "csv",
+      "globs": ["**/test_csv_users*.csv"],
+      "legacy_prefix": "",
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv",
+        "delimiter": ",",
+        "quote_char": "\"",
+        "double_quote": true,
+        "null_values": [
+          "",
+          "#N/A",
+          "#N/A N/A",
+          "#NA",
+          "-1.#IND",
+          "-1.#QNAN",
+          "-NaN",
+          "-nan",
+          "1.#IND",
+          "1.#QNAN",
+          "N/A",
+          "NA",
+          "NULL",
+          "NaN",
+          "n/a",
+          "nan",
+          "null"
+        ],
+        "true_values": ["1", "True", "TRUE", "true"],
+        "false_values": ["0", "False", "FALSE", "false"],
+        "inference_type": "Primitive Types Only",
+        "strings_can_be_null": false,
+        "encoding": "utf8",
+        "header_definition": {
+          "header_definition_type": "From CSV"
+        }
+      }
+    },
+    {
+      "name": "purchases",
+      "file_type": "csv",
+      "globs": ["**/test_csv_purchases*.csv"],
+      "legacy_prefix": "",
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv",
+        "delimiter": ",",
+        "quote_char": "\"",
+        "double_quote": true,
+        "null_values": [
+          "",
+          "#N/A",
+          "#N/A N/A",
+          "#NA",
+          "-1.#IND",
+          "-1.#QNAN",
+          "-NaN",
+          "-nan",
+          "1.#IND",
+          "1.#QNAN",
+          "N/A",
+          "NA",
+          "NULL",
+          "NaN",
+          "n/a",
+          "nan",
+          "null"
+        ],
+        "true_values": ["1", "True", "TRUE", "true"],
+        "false_values": ["0", "False", "FALSE", "false"],
+        "inference_type": "Primitive Types Only",
+        "strings_can_be_null": false,
+        "encoding": "utf8",
+        "header_definition": {
+          "header_definition_type": "From CSV"
+        }
+      }
+    },
+    {
+      "name": "products",
+      "file_type": "csv",
+      "globs": ["**/test_csv_products*.csv"],
+      "legacy_prefix": "",
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv",
+        "delimiter": ",",
+        "quote_char": "\"",
+        "double_quote": true,
+        "null_values": [
+          "",
+          "#N/A",
+          "#N/A N/A",
+          "#NA",
+          "-1.#IND",
+          "-1.#QNAN",
+          "-NaN",
+          "-nan",
+          "1.#IND",
+          "1.#QNAN",
+          "N/A",
+          "NA",
+          "NULL",
+          "NaN",
+          "n/a",
+          "nan",
+          "null"
+        ],
+        "true_values": ["1", "True", "TRUE", "true"],
+        "false_values": ["0", "False", "FALSE", "false"],
+        "inference_type": "Primitive Types Only",
+        "strings_can_be_null": false,
+        "encoding": "utf8",
+        "header_definition": {
+          "header_definition_type": "From CSV"
+        }
+      }
+    }
+  ]
+}
