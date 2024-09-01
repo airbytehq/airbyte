@@ -43,12 +43,12 @@ definitions:
           fields:
             - path:
                 - scheduler_name
-              value: "{{ record[\"scheduler\"][\"display_name\"] }}"
+              value: '{{ record["scheduler"]["display_name"] }}'
         - type: AddFields
           fields:
             - path:
                 - scheduler_email
-              value: "{{ record[\"scheduler\"][\"email\"] }}"
+              value: '{{ record["scheduler"]["email"] }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -109,7 +109,7 @@ definitions:
     url_base: https://api.savvycal.com
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
 
 streams:
   - $ref: "#/definitions/streams/events"
