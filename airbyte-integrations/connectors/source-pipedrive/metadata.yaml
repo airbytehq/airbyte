@@ -9,7 +9,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-pipedrive
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.2.2
+  dockerImageTag: 2.2.17
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -28,11 +28,40 @@ data:
     breakingChanges:
       2.0.0:
         upgradeDeadline: 2023-10-04
-        message: "This version removes the `pipeline_ids` field from the `deal_fields` stream. Config has changed to only use API key. Please update your config."
+        message:
+          "This version removes the `pipeline_ids` field from the `deal_fields`
+          stream. Config has changed to only use API key. Please update your config."
   releaseDate: 2021-07-19
   releaseStage: alpha
   supportLevel: community
   tags:
     - cdk:low-code
     - language:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: pipedrive_old_config_dev_null
+          id: 7bd5c95e-ead8-42a7-8c5a-6cfd50b1f0e0
+        - name: pipedrive_config_dev_null
+          id: 8278c55c-e9e9-4403-a001-b47aaac3535f
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-PIPEDRIVE_OAUTH__CREDS
+          fileName: oauth_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PIPEDRIVE_OLD__CREDS
+          fileName: old_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-PIPEDRIVE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

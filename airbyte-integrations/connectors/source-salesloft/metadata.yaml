@@ -5,28 +5,54 @@ data:
   allowedHosts:
     hosts:
       - api.salesloft.com
-  connectorSubtype: api
-  connectorType: source
-  definitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
-  dockerImageTag: 1.2.0
-  dockerRepository: airbyte/source-salesloft
-  documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
-  githubIssueLabel: source-salesloft
-  icon: salesloft.svg
-  license: MIT
-  name: SalesLoft
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-salesloft
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
+  dockerImageTag: 1.2.17
+  dockerRepository: airbyte/source-salesloft
+  githubIssueLabel: source-salesloft
+  icon: icon.svg
+  license: MIT
+  name: Salesloft
+  releaseDate: 2021-10-22
   releaseStage: beta
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: salesloft_config_oauth_dev_null
+          id: 1b6c8a60-5505-49b6-9d33-e9163b0c12b2
+        - name: salesloft_config_dev_null
+          id: 3c4e1c30-251d-4ff5-9534-3be0f7c8fa17
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SALESLOFT_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SALESLOFT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

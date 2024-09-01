@@ -2,29 +2,40 @@ data:
   allowedHosts:
     hosts:
       - "*"
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-fastbill
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: eb3e9c1c-0467-4eb7-a172-5265e04ccd0a
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.18
   dockerRepository: airbyte/source-fastbill
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
   githubIssueLabel: source-fastbill
   icon: fastbill.svg
   license: MIT
   name: Fastbill
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseDate: "2022-11-08"
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-fastbill
   supportLevel: community
-  documentationUrl: https://docs.airbyte.com/integrations/sources/fastbill
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FASTBILL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

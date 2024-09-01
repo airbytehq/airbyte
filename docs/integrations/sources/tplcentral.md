@@ -44,7 +44,29 @@ Please read [How to get your APIs credentials](https://help.3plcentral.com/hc/en
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
-| 0.1.1   | 2022-11-01 | [18763](https://github.com/airbytehq/airbyte/pull/18763) | Check if `url_base` parameter is set to HTTPS URL. |
-| 0.1.0   | 2021-08-18 | [7322](https://github.com/airbytehq/airbyte/pull/7322)   | New Source: 3PL Central                            |
+| 0.1.18 | 2024-08-31 | [44951](https://github.com/airbytehq/airbyte/pull/44951) | Update dependencies |
+| 0.1.17 | 2024-08-24 | [44691](https://github.com/airbytehq/airbyte/pull/44691) | Update dependencies |
+| 0.1.16 | 2024-08-17 | [44229](https://github.com/airbytehq/airbyte/pull/44229) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43476](https://github.com/airbytehq/airbyte/pull/43476) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43095](https://github.com/airbytehq/airbyte/pull/43095) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42725](https://github.com/airbytehq/airbyte/pull/42725) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42138](https://github.com/airbytehq/airbyte/pull/42138) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41894](https://github.com/airbytehq/airbyte/pull/41894) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41418](https://github.com/airbytehq/airbyte/pull/41418) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41087](https://github.com/airbytehq/airbyte/pull/41087) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40909](https://github.com/airbytehq/airbyte/pull/40909) | Update dependencies |
+| 0.1.7 | 2024-06-25 | [40322](https://github.com/airbytehq/airbyte/pull/40322) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [40069](https://github.com/airbytehq/airbyte/pull/40069) | Update dependencies |
+| 0.1.5 | 2024-06-06 | [39150](https://github.com/airbytehq/airbyte/pull/39150) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.4 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |
+| 0.1.3 | 2024-06-03 | [38919](https://github.com/airbytehq/airbyte/pull/38919) | Replace AirbyteLogger with logging.Logger |
+| 0.1.2 | 2024-05-20 | [38403](https://github.com/airbytehq/airbyte/pull/38403) | [autopull] base image + poetry + up_to_date |
+| 0.1.1 | 2022-11-01 | [18763](https://github.com/airbytehq/airbyte/pull/18763) | Check if `url_base` parameter is set to HTTPS URL. |
+| 0.1.0 | 2021-08-18 | [7322](https://github.com/airbytehq/airbyte/pull/7322) | New Source: 3PL Central |
+
+</details>

@@ -2,9 +2,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 1.0.0
+  dockerImageTag: 2.0.16
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   icon: firebolt.svg
   license: MIT
   name: Firebolt
@@ -12,7 +14,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-firebolt
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -31,4 +33,27 @@ data:
       1.0.0:
         message: "Add new data type columns."
         upgradeDeadline: "2023-08-23"
+      2.0.0:
+        message: "Use new firebolt-sdk version."
+        upgradeDeadline: "2024-06-01"
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: firebolt_config_dev_null
+          id: 63d919ce-b4ff-48d9-9cae-6665b5f56644
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-FIREBOLT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-FIREBOLT_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

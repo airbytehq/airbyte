@@ -4,11 +4,11 @@ This page contains the setup guide and reference information for the Microsoft O
 
 ### Requirements
 
-* Application \(client\) ID 
-* Directory \(tenant\) ID
-* Drive name
-* Folder Path
-* Client secrets 
+- Application \(client\) ID
+- Directory \(tenant\) ID
+- Drive name
+- Folder Path
+- Client secrets
 
 ## Setup guide
 
@@ -23,14 +23,14 @@ This page contains the setup guide and reference information for the Microsoft O
 5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
 6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account. 
-9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft OneDrive account**. Log in and authorize your Microsoft account.
+9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 10. Add a stream:
     1. Write the **File Type**
-    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below. 
+    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 11. Click **Set up source**
 <!-- /env:cloud -->
 
@@ -44,8 +44,8 @@ The Microsoft Graph API uses OAuth for authentication. Microsoft Graph exposes g
 
 Microsoft Graph has two types of permissions:
 
-* **Delegated permissions** are used by apps that have a signed-in user present. For these apps, either the user or an administrator consents to the permissions that the app requests, and the app can act as the signed-in user when making calls to Microsoft Graph. Some delegated permissions can be consented by non-administrative users, but some higher-privileged permissions require administrator consent.
-* **Application permissions** are used by apps that run without a signed-in user present; for example, apps that run as background services or daemons. Application permissions can only be consented by an administrator.
+- **Delegated permissions** are used by apps that have a signed-in user present. For these apps, either the user or an administrator consents to the permissions that the app requests, and the app can act as the signed-in user when making calls to Microsoft Graph. Some delegated permissions can be consented by non-administrative users, but some higher-privileged permissions require administrator consent.
+- **Application permissions** are used by apps that run without a signed-in user present; for example, apps that run as background services or daemons. Application permissions can only be consented by an administrator.
 
 This source requires **Application permissions**. Follow these [instructions](https://docs.microsoft.com/en-us/graph/auth-v2-service?context=graph%2Fapi%2F1.0&view=graph-rest-1.0) for creating an app in the Azure portal. This process will produce the `client_id`, `client_secret`, and `tenant_id` needed for the tap configuration file.
 
@@ -54,23 +54,23 @@ This source requires **Application permissions**. Follow these [instructions](ht
 3. Select **App Registrations**
 4. Click **New registration**
 5. Register an application
-   1. Name: 
+   1. Name:
    2. Supported account types: Accounts in this organizational directory only
    3. Register \(button\)
-6. Record the client\_id and tenant\_id which will be used by the tap for authentication and API integration.
+6. Record the client_id and tenant_id which will be used by the tap for authentication and API integration.
 7. Select **Certificates & secrets**
 8. Provide **Description and Expires**
    1. Description: tap-microsoft-onedrive client secret
    2. Expires: 1-year
    3. Add
-9. Copy the client secret value, this will be the client\_secret
+9. Copy the client secret value, this will be the client_secret
 10. Select **API permissions**
     1. Click **Add a permission**
 11. Select **Microsoft Graph**
 12. Select **Application permissions**
 13. Select the following permissions:
-    1. Files 
-       * Files.Read.All
+    1. Files
+       - Files.Read.All
 14. Click **Add permissions**
 15. Click **Grant admin consent**
 
@@ -84,15 +84,15 @@ This source requires **Application permissions**. Follow these [instructions](ht
 6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' to search in the selected OneDrive drive, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
 7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
 8. Switch to **Service Key Authentication**
-9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user. 
-10. Enter **Tenant ID**, **Client ID** and **Client secret**. 
-11. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
+10. Enter **Tenant ID**, **Client ID** and **Client secret**.
+11. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 12. Add a stream:
     1. Write the **File Type**
-    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
+    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
-    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below. 
+    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
 13. Click **Set up source**
 
 <!-- /env:oss -->
@@ -101,8 +101,8 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | 
-|:-----------------|:-------------|
+| Integration Type | Airbyte Type |
+| :--------------- | :----------- |
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -110,10 +110,10 @@ This source requires **Application permissions**. Follow these [instructions](ht
 
 ### Features
 
-| Feature                       | Supported?\(Yes/No\) |
-|:------------------------------|:---------------------|
-| Full Refresh Sync             | Yes                  |
-| Incremental Sync              | Yes                  |
+| Feature           | Supported?\(Yes/No\) |
+| :---------------- | :------------------- |
+| Full Refresh Sync | Yes                  |
+| Incremental Sync  | Yes                  |
 
 ### Performance considerations
 
@@ -121,16 +121,38 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 0.2.0   | 2024-03-12 | [35849](https://github.com/airbytehq/airbyte/pull/35849) | Add fetching shared items                                                                       |
-| 0.1.9   | 2024-03-11 | [35956](https://github.com/airbytehq/airbyte/pull/35956) | Pin `transformers` transitive dependency                                                        |
-| 0.1.8   | 2024-03-06 | [35858](https://github.com/airbytehq/airbyte/pull/35858) | Bump poetry.lock to upgrade transitive dependency                                               |
-| 0.1.7   | 2024-03-04 | [35584](https://github.com/airbytehq/airbyte/pull/35584) | Enable in Cloud                                                                                 |
-| 0.1.6   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                               |
-| 0.1.5   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                    |
-| 0.1.4   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                         |
-| 0.1.3   | 2024-01-24 | [34478](https://github.com/airbytehq/airbyte/pull/34478) | Fix OAuth                                                                                       |
-| 0.1.2   | 2021-12-22 | [33745](https://github.com/airbytehq/airbyte/pull/33745) | Add ql and sl to metadata                                                                       |
-| 0.1.1   | 2021-12-15 | [33758](https://github.com/airbytehq/airbyte/pull/33758) | Fix for docs name                                                                               |
-| 0.1.0   | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source                                                                                      |
+| 0.2.17 | 2024-08-31 | [45048](https://github.com/airbytehq/airbyte/pull/45048) | Update dependencies |
+| 0.2.16 | 2024-08-24 | [44699](https://github.com/airbytehq/airbyte/pull/44699) | Update dependencies |
+| 0.2.15 | 2024-08-12 | [43799](https://github.com/airbytehq/airbyte/pull/43799) | Update dependencies |
+| 0.2.14 | 2024-08-10 | [43538](https://github.com/airbytehq/airbyte/pull/43538) | Update dependencies |
+| 0.2.13 | 2024-08-03 | [43168](https://github.com/airbytehq/airbyte/pull/43168) | Update dependencies |
+| 0.2.12 | 2024-07-27 | [42630](https://github.com/airbytehq/airbyte/pull/42630) | Update dependencies |
+| 0.2.11 | 2024-07-20 | [42175](https://github.com/airbytehq/airbyte/pull/42175) | Update dependencies |
+| 0.2.10 | 2024-07-13 | [41764](https://github.com/airbytehq/airbyte/pull/41764) | Update dependencies |
+| 0.2.9 | 2024-07-10 | [41366](https://github.com/airbytehq/airbyte/pull/41366) | Update dependencies |
+| 0.2.8 | 2024-07-09 | [41213](https://github.com/airbytehq/airbyte/pull/41213) | Update dependencies |
+| 0.2.7 | 2024-06-29 | [40623](https://github.com/airbytehq/airbyte/pull/40623) | Update dependencies |
+| 0.2.6 | 2024-06-26 | [40534](https://github.com/airbytehq/airbyte/pull/40534) | Update dependencies |
+| 0.2.5 | 2024-06-25 | [40506](https://github.com/airbytehq/airbyte/pull/40506) | Update dependencies |
+| 0.2.4 | 2024-06-23 | [40226](https://github.com/airbytehq/airbyte/pull/40226) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [40160](https://github.com/airbytehq/airbyte/pull/40160) | Update dependencies |
+| 0.2.2 | 2024-06-06 | [39227](https://github.com/airbytehq/airbyte/pull/39227) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.1 | 2024-05-29 | [38676](https://github.com/airbytehq/airbyte/pull/38676) | Avoid error on empty stream when running discover |
+| 0.2.0 | 2024-03-12 | [35849](https://github.com/airbytehq/airbyte/pull/35849) | Add fetching shared items |
+| 0.1.9 | 2024-03-11 | [35956](https://github.com/airbytehq/airbyte/pull/35956) | Pin `transformers` transitive dependency |
+| 0.1.8 | 2024-03-06 | [35858](https://github.com/airbytehq/airbyte/pull/35858) | Bump poetry.lock to upgrade transitive dependency |
+| 0.1.7 | 2024-03-04 | [35584](https://github.com/airbytehq/airbyte/pull/35584) | Enable in Cloud |
+| 0.1.6 | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors |
+| 0.1.5 | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK |
+| 0.1.4 | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
+| 0.1.3 | 2024-01-24 | [34478](https://github.com/airbytehq/airbyte/pull/34478) | Fix OAuth |
+| 0.1.2 | 2021-12-22 | [33745](https://github.com/airbytehq/airbyte/pull/33745) | Add ql and sl to metadata |
+| 0.1.1 | 2021-12-15 | [33758](https://github.com/airbytehq/airbyte/pull/33758) | Fix for docs name |
+| 0.1.0 | 2021-12-06 | [32655](https://github.com/airbytehq/airbyte/pull/32655) | New source |
+
+</details>

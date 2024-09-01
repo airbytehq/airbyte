@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.17"
+name = "destination-cumulio"
+description = "Airbyte destination connector implementation for Cumul.io."
+authors = [ "Cumul.io <support@cumul.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/cumulio"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_cumulio"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "==0.68.1"
+cumulio = "==0.2.5"
+
+[tool.poetry.scripts]
+destination-cumulio = "destination_cumulio.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"

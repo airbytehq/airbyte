@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.7"
+version = "0.1.24"
 name = "source-linnworks"
 description = "Source implementation for Linnworks."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -17,7 +17,7 @@ include = "source_linnworks"
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0.67.0"
+airbyte-cdk = "0.80.0"
 vcrpy = "^6.0.0"
 
 [tool.poetry.scripts]

@@ -3,18 +3,18 @@ data:
     ql: 200
     sl: 100
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.1.14
   dockerRepository: airbyte/source-zoom
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
   githubIssueLabel: source-zoom
   icon: zoom.svg
   license: MIT
   name: Zoom
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -23,10 +23,7 @@ data:
   releases:
     breakingChanges:
       1.1.0:
-        message:
-          Zoom has deprecated JWT authentication in favor of OAuth. To successfully
-          migrate, users will need to create a new server-to-server OAuth app and
-          update their credentials in the Airbyte UI.
+        message: Zoom has deprecated JWT authentication in favor of OAuth. To successfully migrate, users will need to create a new server-to-server OAuth app and update their credentials in the Airbyte UI.
         upgradeDeadline: 2023-09-08
         scopedImpact:
           - scopeType: stream
@@ -39,4 +36,17 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zoom_config_dev_null
+          id: 284c062a-8164-46cb-a8ba-71ecbecaf395
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZOOM__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

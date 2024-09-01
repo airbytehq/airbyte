@@ -1,0 +1,27 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.18"
+name = "destination-timeplus"
+description = "Destination implementation for Timeplus."
+authors = [ "Airbyte <jove@timeplus.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/destinations/timeplus"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "destination_timeplus"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+timeplus = "==1.2.2"
+airbyte-cdk = "==0.68.1"
+
+[tool.poetry.scripts]
+destination-timeplus = "destination_timeplus.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"

@@ -1,0 +1,28 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "1.0.6"
+name = "source-looker"
+description = "Source implementation for looker."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/looker"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_looker" }, { include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+airbyte-cdk = "^4.0.1"
+pytz = "^2024.1"
+
+[tool.poetry.scripts]
+source-looker = "source_looker.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"

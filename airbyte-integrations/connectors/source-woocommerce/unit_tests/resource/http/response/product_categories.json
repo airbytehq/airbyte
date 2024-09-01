@@ -1,0 +1,192 @@
+[
+  {
+    "id": 15,
+    "name": "Albums",
+    "slug": "albums",
+    "parent": 11,
+    "description": "",
+    "display": "default",
+    "image": [],
+    "menu_order": 0,
+    "count": 4,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/15"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/11"
+        }
+      ]
+    }
+  },
+  {
+    "id": 9,
+    "name": "Clothing",
+    "slug": "clothing",
+    "parent": 0,
+    "description": "",
+    "display": "default",
+    "image": {
+      "id": 730,
+      "date_created": "2017-03-23T00:01:07",
+      "date_created_gmt": "2017-03-23T03:01:07",
+      "date_modified": "2017-03-23T00:01:07",
+      "date_modified_gmt": "2017-03-23T03:01:07",
+      "src": "https://example.com/wp-content/uploads/2017/03/T_2_front.jpg",
+      "name": "",
+      "alt": ""
+    },
+    "menu_order": 0,
+    "count": 36,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example/wp-json/wc/v3/products/categories/9"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example/wp-json/wc/v3/products/categories"
+        }
+      ]
+    }
+  },
+  {
+    "id": 10,
+    "name": "Hoodies",
+    "slug": "hoodies",
+    "parent": 9,
+    "description": "",
+    "display": "default",
+    "image": [],
+    "menu_order": 0,
+    "count": 6,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/10"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/9"
+        }
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "name": "Music",
+    "slug": "music",
+    "parent": 0,
+    "description": "",
+    "display": "default",
+    "image": [],
+    "menu_order": 0,
+    "count": 7,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/11"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories"
+        }
+      ]
+    }
+  },
+  {
+    "id": 12,
+    "name": "Posters",
+    "slug": "posters",
+    "parent": 0,
+    "description": "",
+    "display": "default",
+    "image": [],
+    "menu_order": 0,
+    "count": 5,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/12"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories"
+        }
+      ]
+    }
+  },
+  {
+    "id": 13,
+    "name": "Singles",
+    "slug": "singles",
+    "parent": 11,
+    "description": "",
+    "display": "default",
+    "image": [],
+    "menu_order": 0,
+    "count": 3,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/13"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/11"
+        }
+      ]
+    }
+  },
+  {
+    "id": 14,
+    "name": "T-shirts",
+    "slug": "t-shirts",
+    "parent": 9,
+    "description": "",
+    "display": "default",
+    "image": [],
+    "menu_order": 0,
+    "count": 6,
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/14"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories"
+        }
+      ],
+      "up": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/products/categories/9"
+        }
+      ]
+    }
+  }
+]

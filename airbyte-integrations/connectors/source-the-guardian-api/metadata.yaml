@@ -1,29 +1,43 @@
 data:
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: the-guardian-api_config_dev_null
+          id: 28833186-4803-4694-926e-1b0c5d534df8
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-THE-GUARDIAN-API__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: d42bd69f-6bf0-4d0b-9209-16231af07a92
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/source-the-guardian-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
   githubIssueLabel: source-the-guardian-api
   icon: theguardian.svg
   license: MIT
   name: The Guardian API
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-the-guardian-api
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-the-guardian-api
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
 metadataSpecVersion: "1.0"

@@ -3,203 +3,264 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier of the deployment",
       "type": ["null", "integer"]
     },
     "iid": {
+      "description": "Identification number of the deployment",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "Status of the deployment",
       "type": ["null", "string"]
     },
     "ref": {
+      "description": "Reference of the deployment",
       "type": ["null", "string"]
     },
     "sha": {
+      "description": "SHA of the deployment",
       "type": ["null", "string"]
     },
     "environment_name": {
+      "description": "Name of the environment",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the deployment was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "Timestamp when the deployment was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "user": {
+      "description": "User associated with the deployment",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "user_full_name": {
+      "description": "Full name of the user associated with the deployment",
       "type": ["null", "string"]
     },
     "user_username": {
+      "description": "Username of the user associated with the deployment",
       "type": ["null", "string"]
     },
     "user_id": {
+      "description": "Unique identifier of the user associated with the deployment",
       "type": ["null", "integer"]
     },
     "environment": {
+      "description": "Environment information of the deployment",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "environment_id": {
+      "description": "Unique identifier of the environment",
       "type": ["null", "integer"]
     },
     "project_id": {
+      "description": "Unique identifier of the project",
       "type": ["null", "integer"]
     },
     "deployable": {
+      "description": "Details of the deployment job",
       "type": ["null", "object"],
       "properties": {
         "commit": {
+          "description": "Information about the commit associated with the deployment",
           "type": ["null", "object"],
           "properties": {
             "author_email": {
+              "description": "Email of the author of the commit",
               "type": ["null", "string"]
             },
             "author_name": {
+              "description": "Name of the author of the commit",
               "type": ["null", "string"]
             },
             "created_at": {
+              "description": "Timestamp when the commit was created",
               "type": ["null", "string"],
               "format": "date-time"
             },
             "id": {
+              "description": "Unique identifier of the commit",
               "type": ["null", "string"]
             },
             "message": {
+              "description": "Message associated with the commit",
               "type": ["null", "string"]
             },
             "short_id": {
+              "description": "Short identifier of the commit",
               "type": ["null", "string"]
             },
             "title": {
+              "description": "Title of the commit",
               "type": ["null", "string"]
             }
           }
         },
         "coverage": {
+          "description": "Coverage information of the deployment",
           "type": ["null", "string"]
         },
         "created_at": {
+          "description": "Timestamp when the deployment was created",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "finished_at": {
+          "description": "Timestamp when the deployment was finished",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "id": {
+          "description": "Unique identifier of the deployment",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "Name of the deployment",
           "type": ["null", "string"]
         },
         "ref": {
+          "description": "Reference of the deployment",
           "type": ["null", "string"]
         },
         "runner": {
+          "description": "Runner information for the deployment",
           "type": ["null", "string"]
         },
         "stage": {
+          "description": "Stage of the deployment",
           "type": ["null", "string"]
         },
         "started_at": {
+          "description": "Timestamp when the deployment was started",
           "type": ["null", "string"],
           "format": "date-time"
         },
         "status": {
+          "description": "Status of the deployment",
           "type": ["null", "string"]
         },
         "tag": {
+          "description": "Tag information for the deployment",
           "type": ["null", "boolean"]
         },
         "project": {
+          "description": "Details of the project where the deployment occurred",
           "type": ["null", "object"],
           "properties": {
             "ci_job_token_scope_enabled": {
+              "description": "Flag indicating if the CI job token scope is enabled for the project",
               "type": ["null", "boolean"]
             }
           }
         },
         "user": {
+          "description": "User associated with the deployment",
           "type": ["null", "object"],
           "properties": {
             "id": {
+              "description": "Unique identifier of the user",
               "type": ["null", "integer"]
             },
             "name": {
+              "description": "Name of the user",
               "type": ["null", "string"]
             },
             "username": {
+              "description": "Username of the user",
               "type": ["null", "string"]
             },
             "state": {
+              "description": "State information of the user",
               "type": ["null", "string"]
             },
             "avatar_url": {
+              "description": "URL of the user's avatar",
               "type": ["null", "string"]
             },
             "web_url": {
+              "description": "URL for accessing the user's information",
               "type": ["null", "string"]
             },
             "created_at": {
+              "description": "Timestamp when the user was created",
               "type": ["null", "string"],
               "format": "date-time"
             },
             "bio": {
+              "description": "Bio information of the user",
               "type": ["null", "string"]
             },
             "location": {
+              "description": "Location information of the user",
               "type": ["null", "string"]
             },
             "public_email": {
+              "description": "Public email of the user",
               "type": ["null", "string"]
             },
             "skype": {
+              "description": "Skype ID of the user",
               "type": ["null", "string"]
             },
             "linkedin": {
+              "description": "Linkedin profile of the user",
               "type": ["null", "string"]
             },
             "twitter": {
+              "description": "Twitter handle of the user",
               "type": ["null", "string"]
             },
             "website_url": {
+              "description": "URL for the user's website",
               "type": ["null", "string"]
             },
             "organization": {
+              "description": "Organization information of the user",
               "type": ["null", "string"]
             }
           }
         },
         "pipeline": {
+          "description": "Details of the pipeline used for the deployment",
           "type": ["null", "object"],
           "properties": {
             "created_at": {
+              "description": "Timestamp when the pipeline associated with the deployment was created",
               "type": ["null", "string"],
               "format": "date-time"
             },
             "id": {
+              "description": "Unique identifier of the pipeline",
               "type": ["null", "integer"]
             },
             "ref": {
+              "description": "Reference of the pipeline",
               "type": ["null", "string"]
             },
             "sha": {
+              "description": "SHA of the pipeline",
               "type": ["null", "string"]
             },
             "status": {
+              "description": "Status of the pipeline",
               "type": ["null", "string"]
             },
             "updated_at": {
+              "description": "Timestamp when the pipeline associated with the deployment was last updated",
               "type": ["null", "string"],
               "format": "date-time"
             },
             "web_url": {
+              "description": "URL for accessing the pipeline in a web browser",
               "type": ["null", "string"]
             }
           }

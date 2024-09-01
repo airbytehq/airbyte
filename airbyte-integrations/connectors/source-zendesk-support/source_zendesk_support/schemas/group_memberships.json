@@ -1,26 +1,33 @@
 {
   "properties": {
     "default": {
+      "description": "Flag indicating if this group membership is the default one.",
       "type": ["null", "boolean"]
     },
     "url": {
+      "description": "URL pointing to the group membership resource.",
       "type": ["null", "string"]
     },
     "user_id": {
+      "description": "The unique identifier of the user associated with this group membership.",
       "type": ["null", "integer"]
     },
     "updated_at": {
+      "description": "Timestamp indicating when the group membership was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "group_id": {
+      "description": "The unique identifier of the group this membership belongs to.",
       "type": ["null", "integer"]
     },
     "created_at": {
+      "description": "Timestamp indicating when the group membership was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "id": {
+      "description": "The unique identifier of the group membership.",
       "type": ["null", "integer"]
     }
   },

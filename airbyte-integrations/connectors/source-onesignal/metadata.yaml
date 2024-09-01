@@ -2,29 +2,43 @@ data:
   allowedHosts:
     hosts:
       - onesignal.com
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-onesignal
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: onesignal_config_dev_null
+          id: c3a65bec-d1b9-45b9-b31e-893a3ce8e231
+    - suite: acceptanceTests
+      testSecrets:
+        - fileName: config.json
+          name: SECRET_SOURCE-ONESIGNAL__CREDS
+          secretStore:
+            alias: airbyte-connector-testing-secret-store
+            type: GSM
   connectorType: source
   definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
-  dockerImageTag: 1.1.0
+  dockerImageTag: 1.1.10
   dockerRepository: airbyte/source-onesignal
   documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
   githubIssueLabel: source-onesignal
   icon: onesignal.svg
   license: MIT
   name: OneSignal
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2023-08-31
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-onesignal
+  supportLevel: community
   tags:
     - language:python
     - cdk:low-code
-  supportLevel: community
 metadataSpecVersion: "1.0"

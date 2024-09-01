@@ -24,20 +24,6 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
-      "stream_descriptor": { "name": "invoice_messages" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
-      "stream_descriptor": { "name": "invoice_payments" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
       "stream_descriptor": { "name": "invoice_item_categories" }
     }
   },
@@ -46,13 +32,6 @@
     "stream": {
       "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
       "stream_descriptor": { "name": "estimates" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
-      "stream_descriptor": { "name": "estimate_messages" }
     }
   },
   {
@@ -128,13 +107,6 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
-      "stream_descriptor": { "name": "project_assignments" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
       "stream_state": { "to": "22170626" },
       "stream_descriptor": { "name": "expenses_clients" }
     }
@@ -193,6 +165,82 @@
     "stream": {
       "stream_state": { "to": "22170626" },
       "stream_descriptor": { "name": "time_team" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "id": 2695071, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-27T18:12:42Z" }
+          }
+        ]
+      },
+      "stream_descriptor": { "name": "estimate_messages" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "id": 3758384, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-05T08:19:35Z" }
+          },
+          {
+            "partition": { "id": 3758383, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-05T08:19:35Z" }
+          },
+          {
+            "partition": { "id": 3758382, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-05T08:19:35Z" }
+          },
+          {
+            "partition": { "id": 3758381, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-05T08:19:35Z" }
+          },
+          {
+            "partition": { "id": 3758380, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-05T12:52:20Z" }
+          }
+        ]
+      },
+      "stream_descriptor": { "name": "project_assignments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "id": 28174531, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-25T16:46:28Z" }
+          }
+        ]
+      },
+      "stream_descriptor": { "name": "invoice_messages" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "states": [
+          {
+            "partition": { "id": 28174545, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-26T09:07:06Z" }
+          },
+          {
+            "partition": { "id": 28174531, "parent_slice": {} },
+            "cursor": { "updated_at": "2199-05-26T09:06:37Z" }
+          }
+        ]
+      },
+      "stream_descriptor": { "name": "invoice_payments" }
     }
   }
 ]

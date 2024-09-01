@@ -8,32 +8,32 @@ This source can sync data for the [Robert Koch-Institut Covid API](https://api.c
 
 This Source is capable of syncing the following core Streams (only for Germany cases):
 
-* Germany
-* Germany by age and groups
-* Germany cases by days
-* Germany incidences by days
-* Germany deaths by days
-* Germany recovered by days
-* Germany frozen-incidence by days
-* Germany hospitalization by days
+- Germany
+- Germany by age and groups
+- Germany cases by days
+- Germany incidences by days
+- Germany deaths by days
+- Germany recovered by days
+- Germany frozen-incidence by days
+- Germany hospitalization by days
 
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `integer` | `integer` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| :--------------- | :----------- | :---- |
+| `string`         | `string`     |       |
+| `integer`        | `integer`    |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Namespaces | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | Yes                  |       |
+| Namespaces        | No                   |       |
 
 ### Performance considerations
 
@@ -43,7 +43,7 @@ The RKI Covid connector should not run into RKI Covid API limitations under norm
 
 ### Requirements
 
-* Start Date 
+- Start Date
 
 ### Setup guide
 
@@ -51,8 +51,28 @@ Select start date
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                            |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.1.17 | 2024-08-31 | [44993](https://github.com/airbytehq/airbyte/pull/44993) | Update dependencies |
+| 0.1.16 | 2024-08-24 | [44639](https://github.com/airbytehq/airbyte/pull/44639) | Update dependencies |
+| 0.1.15 | 2024-08-17 | [44290](https://github.com/airbytehq/airbyte/pull/44290) | Update dependencies |
+| 0.1.14 | 2024-08-10 | [43557](https://github.com/airbytehq/airbyte/pull/43557) | Update dependencies |
+| 0.1.13 | 2024-08-03 | [43070](https://github.com/airbytehq/airbyte/pull/43070) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42707](https://github.com/airbytehq/airbyte/pull/42707) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42377](https://github.com/airbytehq/airbyte/pull/42377) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41824](https://github.com/airbytehq/airbyte/pull/41824) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41472](https://github.com/airbytehq/airbyte/pull/41472) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41134](https://github.com/airbytehq/airbyte/pull/41134) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40927](https://github.com/airbytehq/airbyte/pull/40927) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40449](https://github.com/airbytehq/airbyte/pull/40449) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [39980](https://github.com/airbytehq/airbyte/pull/39980) | Update dependencies |
+| 0.1.4 | 2024-06-06 | [39294](https://github.com/airbytehq/airbyte/pull/39294) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.3 | 2024-05-20 | [38434](https://github.com/airbytehq/airbyte/pull/38434) | [autopull] base image + poetry + up_to_date |
 | 0.1.2 | 2022-08-25 | [15667](https://github.com/airbytehq/airbyte/pull/15667) | Add message when no data available |
 | 0.1.1 | 2022-05-30 | [11732](https://github.com/airbytehq/airbyte/pull/11732) | Fix docs |
 | 0.1.0 | 2022-05-30 | [11732](https://github.com/airbytehq/airbyte/pull/11732) | Initial Release |
+
+</details>

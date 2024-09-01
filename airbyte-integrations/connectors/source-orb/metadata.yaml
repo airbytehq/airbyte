@@ -1,10 +1,10 @@
 data:
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
-  dockerImageTag: 1.2.0
+  dockerImageTag: 2.0.9
   dockerRepository: airbyte/source-orb
   githubIssueLabel: source-orb
   icon: orb.svg
@@ -14,18 +14,43 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-orb
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: This version changes the datatype of the `credit_block_per_unit_cost_basis` field in the `credits_ledger_entries` from `string` to `number`.
+        upgradeDeadline: "2024-12-30"
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/orb
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: orb_config_dev_null
+          id: 0ce36c2c-7f18-4301-90a9-a24dce6389c4
+        - name: orb_config_credits_ledger_entries_dev_null
+          id: 4f888cde-0456-4c20-ae9c-9b1f73df51d9
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ORB_CREDITS_CREDS
+          fileName: config_credits_ledger_entries.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-ORB_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -7,9 +7,11 @@ This page contains the setup guide and reference information for the [Kyriba](ht
 </HideInUI>
 
 ## Overview
+
 The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their [JSON REST APIs](https://developer.kyriba.com/apiCatalog/).
 
 ## Prerequisites
+
 - Kyriba domain
 - Username
 - Password
@@ -17,6 +19,7 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 ## Setup Guide
 
 ### Set up the Kyriba source connector in Airbyte
+
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
 2. Navigate to **Sources** in the left sidebar and click **+ New source**. in the top-right corner.
 3. Choose **Kyriba** from the list of available sources.
@@ -36,6 +39,7 @@ The Kyriba source connector supports the following [sync modes](https://docs.air
 - Incremental
 
 ## Supported Streams
+
 - [Accounts](https://developer.kyriba.com/site/global/apis/accounts/index.gsp)
 - [Bank Balances](https://developer.kyriba.com/site/global/apis/bank-statement-balances/index.gsp) - End of Day and Intraday
 - [Cash Balances](https://developer.kyriba.com/site/global/apis/cash-balances/index.gsp) - End of Day and Intraday
@@ -56,15 +60,36 @@ The Kyriba connector should not run into API limitations under normal usage. [Cr
 
 ### Troubleshooting
 
-* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+- Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                      |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------- |
-| 0.1.1   | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image                  |
-| 0.1.0   | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                                      |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| 0.1.17 | 2024-08-31 | [45049](https://github.com/airbytehq/airbyte/pull/45049) | Update dependencies |
+| 0.1.16 | 2024-08-24 | [44688](https://github.com/airbytehq/airbyte/pull/44688) | Update dependencies |
+| 0.1.15 | 2024-08-17 | [44352](https://github.com/airbytehq/airbyte/pull/44352) | Update dependencies |
+| 0.1.14 | 2024-08-10 | [43546](https://github.com/airbytehq/airbyte/pull/43546) | Update dependencies |
+| 0.1.13 | 2024-08-03 | [43256](https://github.com/airbytehq/airbyte/pull/43256) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42825](https://github.com/airbytehq/airbyte/pull/42825) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42289](https://github.com/airbytehq/airbyte/pull/42289) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41885](https://github.com/airbytehq/airbyte/pull/41885) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41452](https://github.com/airbytehq/airbyte/pull/41452) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41147](https://github.com/airbytehq/airbyte/pull/41147) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40874](https://github.com/airbytehq/airbyte/pull/40874) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40367](https://github.com/airbytehq/airbyte/pull/40367) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40111](https://github.com/airbytehq/airbyte/pull/40111) | Update dependencies |
+| 0.1.4 | 2024-06-06 | [39232](https://github.com/airbytehq/airbyte/pull/39232) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.3 | 2024-04-19 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.1.2 | 2024-04-12 | [37184](https://github.com/airbytehq/airbyte/pull/37184) | schema descriptions |
+| 0.1.1 | 2024-01-30 | [34545](https://github.com/airbytehq/airbyte/pull/34545) | Updates CDK, Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.0 | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created |
+
+</details>
 
 </HideInUI>

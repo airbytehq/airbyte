@@ -2,28 +2,46 @@ data:
   ab_internal:
     ql: 200
     sl: 100
-  connectorSubtype: api
-  connectorType: source
-  definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
-  dockerImageTag: 0.1.16
-  dockerRepository: airbyte/source-okta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/okta
-  githubIssueLabel: source-okta
-  icon: okta.svg
-  license: MIT
-  name: Okta
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   remoteRegistries:
     pypi:
       enabled: true
       packageName: airbyte-source-okta
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
+  dockerImageTag: 0.3.3
+  dockerRepository: airbyte/source-okta
+  githubIssueLabel: source-okta
+  icon: icon.svg
+  license: MIT
+  name: Okta
   releaseStage: alpha
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/okta
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: okta_config_dev_null
+          id: 64578038-37df-4bc4-9181-b202a3cc20b9
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-OKTA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

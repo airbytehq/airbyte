@@ -1,0 +1,54 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 300
+  allowedHosts:
+    hosts:
+      - "*.snowflakecomputing.com"
+      - api.openai.com
+      - api.cohere.ai
+      - ${embedding.api_base}
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+  connectorSubtype: vectorstore
+  connectorType: destination
+  definitionId: d9e5418d-f0f4-4d19-a8b1-5630543638e2
+  dockerImageTag: 0.2.20
+  dockerRepository: airbyte/destination-snowflake-cortex
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake-cortex
+  githubIssueLabel: destination-snowflake-cortex
+  icon: snowflake-cortex.svg
+  license: MIT
+  name: Snowflake Cortex
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-destination-snowflake-cortex
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseDate: 2024-05-14
+  releaseStage: beta
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  supportLevel: certified
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    # Temporarily disabled due to test coverage not passing
+    # - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-SNOWFLAKE-CORTEX__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"

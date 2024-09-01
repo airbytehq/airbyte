@@ -98,25 +98,47 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.6.1   | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream|
-| 1.6.0   | 2023-10-18 | [31115](https://github.com/airbytehq/airbyte/pull/31115) | Add `customer_id` field to `Payments` and `Orders` streams                |
-| 1.5.0   | 2023-10-16 | [31045](https://github.com/airbytehq/airbyte/pull/31045) | Added New Stream bank_accounts                                            |
-| 1.4.0   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |
-| 1.3.0   | 2023-10-12 | [31107](https://github.com/airbytehq/airbyte/pull/31107) | Add new stream Inventory                                                  |
-| 1.2.0   | 2023-10-10 | [31065](https://github.com/airbytehq/airbyte/pull/31065) | Add new stream Cash drawers shifts                                        |
-| 1.1.3   | 2023-10-10 | [30960](https://github.com/airbytehq/airbyte/pull/30960) | Update `airbyte-cdk` version to `>=0.51.31`                               |
-| 1.1.2   | 2023-07-10 | [28019](https://github.com/airbytehq/airbyte/pull/28019) | fix display order of spec fields                                          |
-| 1.1.1   | 2023-06-28 | [27762](https://github.com/airbytehq/airbyte/pull/27762) | Update following state breaking changes                                   |
-| 1.1.0   | 2023-05-24 | [26485](https://github.com/airbytehq/airbyte/pull/26485) | Remove deprecated authSpecification in favour of advancedAuth             |
-| 1.0.1   | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator                                                         |
-| 1.0.0   | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator                                                         |
-| 0.2.2   | 2023-03-22 | [22867](https://github.com/airbytehq/airbyte/pull/22867) | Specified date formatting in specification                                |
-| 0.2.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                   |
-| 0.2.0   | 2022-11-14 | [19369](https://github.com/airbytehq/airbyte/pull/19369) | Migrate to low code (YAML); update API to version 2022-10-19; update docs |
-| 0.1.4   | 2021-12-02 | [6842](https://github.com/airbytehq/airbyte/pull/6842)   | Added oauth support                                                       |
-| 0.1.3   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                  |
-| 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                           |
-| 0.1.1   | 2021-07-09 | [4645](https://github.com/airbytehq/airbyte/pull/4645)   | Update \_send_request method due to Airbyte CDK changes                   |
-| 0.1.0   | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439)   | Initial release supporting the Square API                                 |
+| 1.6.18 | 2024-08-24 | [44745](https://github.com/airbytehq/airbyte/pull/44745) | Update dependencies |
+| 1.6.17 | 2024-08-17 | [44325](https://github.com/airbytehq/airbyte/pull/44325) | Update dependencies |
+| 1.6.16 | 2024-08-12 | [43915](https://github.com/airbytehq/airbyte/pull/43915) | Update dependencies |
+| 1.6.15 | 2024-08-10 | [43498](https://github.com/airbytehq/airbyte/pull/43498) | Update dependencies |
+| 1.6.14 | 2024-08-03 | [43110](https://github.com/airbytehq/airbyte/pull/43110) | Update dependencies |
+| 1.6.13 | 2024-07-27 | [42638](https://github.com/airbytehq/airbyte/pull/42638) | Update dependencies |
+| 1.6.12 | 2024-07-20 | [42226](https://github.com/airbytehq/airbyte/pull/42226) | Update dependencies |
+| 1.6.11 | 2024-07-13 | [41913](https://github.com/airbytehq/airbyte/pull/41913) | Update dependencies |
+| 1.6.10 | 2024-07-10 | [41502](https://github.com/airbytehq/airbyte/pull/41502) | Update dependencies |
+| 1.6.9 | 2024-07-09 | [41124](https://github.com/airbytehq/airbyte/pull/41124) | Update dependencies |
+| 1.6.8 | 2024-07-06 | [40989](https://github.com/airbytehq/airbyte/pull/40989) | Update dependencies |
+| 1.6.7 | 2024-06-25 | [40313](https://github.com/airbytehq/airbyte/pull/40313) | Update dependencies |
+| 1.6.6 | 2024-06-22 | [40027](https://github.com/airbytehq/airbyte/pull/40027) | Update dependencies |
+| 1.6.5 | 2024-06-06 | [39206](https://github.com/airbytehq/airbyte/pull/39206) | [autopull] Upgrade base image to v1.2.2 |
+| 1.6.4 | 2024-06-12 | [30315](https://github.com/airbytehq/airbyte/pull/30315) | Fix `customer` stream pagination limit |
+| 1.6.3 | 2024-06-14 | [39377](https://github.com/airbytehq/airbyte/pull/39377) | Add error handlers, migrate to inline schemas, move spec to manifest |
+| 1.6.2 | 2024-05-03 | [37800](https://github.com/airbytehq/airbyte/pull/37800) | Migrate to Poetry. Replace custom components with default classes |
+| 1.6.1 | 2023-11-07 | [31481](https://github.com/airbytehq/airbyte/pull/31481) | Fix duplicate records for `Payments` and `Refunds` stream |
+| 1.6.0 | 2023-10-18 | [31115](https://github.com/airbytehq/airbyte/pull/31115) | Add `customer_id` field to `Payments` and `Orders` streams |
+| 1.5.0 | 2023-10-16 | [31045](https://github.com/airbytehq/airbyte/pull/31045) | Added New Stream bank_accounts |
+| 1.4.0 | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty |
+| 1.3.0 | 2023-10-12 | [31107](https://github.com/airbytehq/airbyte/pull/31107) | Add new stream Inventory |
+| 1.2.0 | 2023-10-10 | [31065](https://github.com/airbytehq/airbyte/pull/31065) | Add new stream Cash drawers shifts |
+| 1.1.3 | 2023-10-10 | [30960](https://github.com/airbytehq/airbyte/pull/30960) | Update `airbyte-cdk` version to `>=0.51.31` |
+| 1.1.2 | 2023-07-10 | [28019](https://github.com/airbytehq/airbyte/pull/28019) | fix display order of spec fields |
+| 1.1.1 | 2023-06-28 | [27762](https://github.com/airbytehq/airbyte/pull/27762) | Update following state breaking changes |
+| 1.1.0 | 2023-05-24 | [26485](https://github.com/airbytehq/airbyte/pull/26485) | Remove deprecated authSpecification in favour of advancedAuth |
+| 1.0.1 | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator |
+| 1.0.0 | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator |
+| 0.2.2 | 2023-03-22 | [22867](https://github.com/airbytehq/airbyte/pull/22867) | Specified date formatting in specification |
+| 0.2.1 | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version |
+| 0.2.0 | 2022-11-14 | [19369](https://github.com/airbytehq/airbyte/pull/19369) | Migrate to low code (YAML); update API to version 2022-10-19; update docs |
+| 0.1.4 | 2021-12-02 | [6842](https://github.com/airbytehq/airbyte/pull/6842) | Added oauth support |
+| 0.1.3 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |
+| 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
+| 0.1.1 | 2021-07-09 | [4645](https://github.com/airbytehq/airbyte/pull/4645) | Update \_send_request method due to Airbyte CDK changes |
+| 0.1.0 | 2021-06-30 | [4439](https://github.com/airbytehq/airbyte/pull/4439) | Initial release supporting the Square API |
+
+</details>

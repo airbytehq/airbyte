@@ -6,22 +6,27 @@ For information about how to use this connector within Airbyte, see [the documen
 ## Local development
 
 ### Prerequisites
+
 **To iterate on this connector, make sure to complete this prerequisites section.**
 
 #### Minimum Python version required `= 3.7.0`
 
 #### Build & Activate Virtual Environment and install dependencies
+
 From this connector directory, create a virtual environment:
+
 ```
 python -m venv .venv
 ```
 
 This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
 development environment of choice. To activate it from the terminal, run:
+
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
 Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
@@ -30,14 +35,17 @@ If this is mumbo jumbo to you, don't worry about it, just put your deps in `setu
 should work as you expect.
 
 #### Building via Gradle
+
 You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
 
 To build using Gradle, from the Airbyte repository root, run:
+
 ```
 ./gradlew :airbyte-integrations:connectors:source-python-http-tutorial:build
 ```
 
 #### Create credentials
+
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/python-http-tutorial)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_python_http_tutorial/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
@@ -46,8 +54,8 @@ See `sample_files/sample_config.json` for a sample config file.
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source python-http-tutorial test creds`
 and place them into `secrets/config.json`.
 
-
 ### Locally running the connector
+
 ```
 python main.py spec
 python main.py check --config sample_files/config.json
@@ -56,7 +64,9 @@ python main.py read --config sample_files/config.json --catalog sample_files/con
 ```
 
 ### Unit Tests
+
 To run unit tests locally, from the connector directory run:
+
 ```
 python -m pytest unit_tests
 ```
@@ -64,7 +74,9 @@ python -m pytest unit_tests
 ### Locally running the connector docker image
 
 #### Build
+
 **Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+
 ```bash
 airbyte-ci connectors --name=source-python-http-tutorial build
 ```
@@ -72,13 +84,15 @@ airbyte-ci connectors --name=source-python-http-tutorial build
 An image will be built with the tag `airbyte/source-python-http-tutorial:dev`.
 
 **Via `docker build`:**
+
 ```bash
 docker build -t airbyte/source-python-http-tutorial:dev .
 ```
 
-
 #### Run
+
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/source-python-http-tutorial:dev spec
 docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-python-http-tutorial:dev check --config /sample_files/config.json
@@ -87,19 +101,24 @@ docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sam
 ```
 
 ## Testing
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-python-http-tutorial test
 ```
 
 ### Customizing acceptance Tests
+
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 ## Dependency Management
+
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
 
 ### Publishing a new version of the connector
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-python-http-tutorial test`
 2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
 3. Make sure the `metadata.yaml` content is up to date.
@@ -107,4 +126,3 @@ All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The re
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-

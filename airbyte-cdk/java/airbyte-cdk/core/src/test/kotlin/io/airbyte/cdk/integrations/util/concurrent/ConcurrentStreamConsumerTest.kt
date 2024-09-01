@@ -107,7 +107,7 @@ internal class ConcurrentStreamConsumerTest {
 
         val concurrentStreamConsumer = ConcurrentStreamConsumer(streamConsumer, streams.size)
         val partitionSize = concurrentStreamConsumer.parallelism
-        val partitions = Lists.partition(streams.stream().toList(), partitionSize)
+        val partitions = Lists.partition(streams, partitionSize)
 
         for (partition in partitions) {
             Assertions.assertDoesNotThrow { concurrentStreamConsumer.accept(partition) }

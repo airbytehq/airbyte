@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.internal.Constants
 import com.google.common.collect.Lists
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig.Companion.getS3DestinationConfig
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider
-import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig.Companion.parseCodecConfig
+import io.airbyte.cdk.integrations.destination.s3.avro.UploadAvroFormatConfig.Companion.parseCodecConfig
 import io.airbyte.cdk.integrations.destination.s3.util.ConfigTestUtils
 import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory
 import io.airbyte.commons.json.Jsons.deserialize

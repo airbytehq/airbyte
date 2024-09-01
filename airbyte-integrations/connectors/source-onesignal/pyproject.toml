@@ -1,0 +1,29 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "1.1.10"
+name = "source-onesignal"
+description = "Source implementation for One Signal."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/source-onesignal"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_onesignal"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^1"
+
+[tool.poetry.scripts]
+source-onesignal = "source_onesignal.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "^1.11.0"
+pytest = "^8.0.0"
+freezegun = "^1.4.0"
+pytest-mock = "^3.6.1"

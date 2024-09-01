@@ -1,0 +1,68 @@
+{
+  "automations": [
+    {
+      "id": "string",
+      "create_time": "2019-08-24T14:15:22Z",
+      "start_time": "2019-08-24T14:15:22Z",
+      "status": "save",
+      "emails_sent": 0,
+      "recipients": {
+        "list_id": "string",
+        "list_is_active": true,
+        "list_name": "string",
+        "segment_opts": {
+          "saved_segment_id": 0,
+          "match": "any",
+          "conditions": [null]
+        },
+        "store_id": "1a2df69xxx"
+      },
+      "settings": {
+        "title": "string",
+        "from_name": "string",
+        "reply_to": "string",
+        "use_conversation": true,
+        "to_name": "string",
+        "authenticate": true,
+        "auto_footer": true,
+        "inline_css": true
+      },
+      "tracking": {
+        "opens": true,
+        "html_clicks": true,
+        "text_clicks": true,
+        "goal_tracking": true,
+        "ecomm360": true,
+        "google_analytics": "string",
+        "clicktale": "string",
+        "salesforce": {
+          "campaign": true,
+          "notes": true
+        },
+        "capsule": {
+          "notes": true
+        }
+      },
+      "trigger_settings": {
+        "workflow_type": "abandonedBrowse",
+        "workflow_title": "string",
+        "runtime": {
+          "days": ["sunday"],
+          "hours": {
+            "type": "send_asap"
+          }
+        },
+        "workflow_emails_count": 0
+      },
+      "report_summary": {
+        "opens": 0,
+        "unique_opens": 0,
+        "open_rate": 0,
+        "clicks": 0,
+        "subscriber_clicks": 0,
+        "click_rate": 0
+      }
+    }
+  ],
+  "total_items": 2
+}

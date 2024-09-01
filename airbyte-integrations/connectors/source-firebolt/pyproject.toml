@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "2.0.16"
+name = "source-firebolt"
+description = "Source implementation for Firebolt."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/firebolt"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_firebolt"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+airbyte-cdk = "^0"
+firebolt-sdk = "^1.1.0"
+
+[tool.poetry.scripts]
+source-firebolt = "source_firebolt.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^6.2"
+pytest-mock = "^3.6"
+requests-mock = "^1.11.0"
+pytest-asyncio = "^0.18.0"

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1901024c-0249-45d0-bcac-31a954652927
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.16
   dockerRepository: airbyte/source-instatus
   githubIssueLabel: source-instatus
   icon: instatus.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-instatus
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -26,4 +26,21 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: instatus_config_dev_null
+          id: 6c2e5836-6ed5-400d-987e-4d6d37fad4b4
+    - suite: unitTests
+    # Disabling acceptance tests for now
+    # No / Low airbyte cloud usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE-INSTATUS_CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

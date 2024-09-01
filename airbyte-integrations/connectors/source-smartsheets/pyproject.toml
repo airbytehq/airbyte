@@ -1,0 +1,30 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "1.1.17"
+name = "source-smartsheets"
+description = "Source implementation for Smartsheets."
+authors = [ "Nate Nowack <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/smartsheets"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+[[tool.poetry.packages]]
+include = "source_smartsheets"
+
+[tool.poetry.dependencies]
+python = "^3.9,<3.12"
+smartsheet-python-sdk = "==2.177.1"
+urllib3 = "==1.26.18"
+airbyte-cdk = "0.80.0"
+
+[tool.poetry.scripts]
+source-smartsheets = "source_smartsheets.run:run"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.1"
+requests-mock = "^1.9.3"
+pytest-mock = "^3.6.1"

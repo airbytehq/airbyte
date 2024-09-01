@@ -1,29 +1,48 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.bamboohr.com
   ab_internal:
     ql: 200
     sl: 100
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 90916976-a132-4ce9-8bce-82a03dd58788
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.4.7
   dockerRepository: airbyte/source-bamboo-hr
   documentationUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
   githubIssueLabel: source-bamboo-hr
   icon: bamboohr.svg
   license: MIT
+  releaseDate: 2021-08-27
   name: BambooHR
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-bamboo-hr
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-bamboo-hr
   supportLevel: community
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: bamboo-hr_config_dev_null
+          id: 8e16832e-a1c2-449e-80d8-6ac54b62db9d
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-BAMBOO-HR__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

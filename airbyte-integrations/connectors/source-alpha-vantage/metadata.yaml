@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: db385323-9333-4fec-bec3-9e0ca9326c90
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.16
   dockerRepository: airbyte/source-alpha-vantage
   githubIssueLabel: source-alpha-vantage
   icon: alpha-vantage.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-alpha-vantage
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -26,4 +26,18 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    # Disabling acceptance tests for now
+    # They are not passing
+    # No Airbyte Cloud usage
+    # - suite: acceptanceTests
+    #   testSecrets:
+    #     - name: SECRET_SOURCE-ALPHA-VANTAGE__CREDS
+    #       fileName: config.json
+    #       secretStore:
+    #         type: GSM
+    #         alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

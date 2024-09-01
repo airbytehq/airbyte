@@ -5,120 +5,156 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the person",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Object type for the person data",
       "type": ["null", "string"]
     },
     "phone": {
+      "description": "Phone number",
       "type": ["null", "string"]
     },
     "email": {
+      "description": "Email address",
       "type": ["null", "string"]
     },
     "address_kana": {
+      "description": "Japanese Kana writing for address",
       "type": ["null", "string"]
     },
     "address_kanji": {
+      "description": "Japanese Kanji writing for address",
       "type": ["null", "string"]
     },
     "first_name_kana": {
+      "description": "Japanese Kana writing for first name",
       "type": ["null", "string"]
     },
     "gender": {
+      "description": "Gender of the person",
       "type": ["null", "string"]
     },
     "full_name_aliases": {
+      "description": "Alternate full name entries",
       "type": ["null", "string"]
     },
     "id_number_secondary_provided": {
+      "description": "Flag indicating if secondary ID number is provided",
       "type": ["null", "string"]
     },
     "first_name_kanji": {
+      "description": "Japanese Kanji writing for first name",
       "type": ["null", "string"]
     },
     "nationality": {
+      "description": "Nationality of the person",
       "type": ["null", "string"]
     },
     "political_exposure": {
+      "description": "Information on political exposure",
       "type": ["null", "string"]
     },
     "registered_address": {
+      "description": "Registered address details",
       "type": ["null", "string"]
     },
     "account": {
+      "description": "Information related to the person's account",
       "type": ["null", "string"]
     },
     "address": {
+      "description": "Physical address details",
       "type": ["null", "object"],
       "properties": {
         "city": {
+          "description": "City name",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "Country name",
           "type": ["null", "string"]
         },
         "line1": {
+          "description": "First line of the address",
           "type": ["null", "string"]
         },
         "line2": {
+          "description": "Second line of the address",
           "type": ["null", "string"]
         },
         "postal_code": {
+          "description": "Postal code",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "State or region",
           "type": ["null", "string"]
         }
       }
     },
     "created": {
+      "description": "Timestamp for when the person data was created",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp for when the person data was last updated",
       "type": ["null", "integer"]
     },
     "dob": {
+      "description": "Date of birth details",
       "type": ["null", "object"],
       "properties": {
         "day": {
+          "description": "Day of birth",
           "type": ["null", "integer"]
         },
         "month": {
+          "description": "Month of birth",
           "type": ["null", "integer"]
         },
         "year": {
+          "description": "Year of birth",
           "type": ["null", "integer"]
         }
       }
     },
     "first_name": {
+      "description": "First name of the person",
       "type": ["null", "string"]
     },
     "future_requirements": {
+      "description": "Future requirements for the person",
       "type": ["null", "object"],
       "properties": {
         "alternatives": {
+          "description": "Alternative fields that may be required",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount required",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount required",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specified limit",
                 "type": ["null", "integer"]
               },
               "alternative_fields_due": {
+                "description": "Fields due for alternative verification",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               "original_fields_due": {
+                "description": "Original fields due for verification",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
@@ -128,85 +164,105 @@
           }
         },
         "currently_due": {
+          "description": "Fields currently due for verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount required",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount required",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specified limit",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "errors": {
+          "description": "Errors related to verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount causing error",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount causing error",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Specific limit causing error",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "eventually_due": {
+          "description": "Fields to be due eventually for verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount to be due",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount to be due",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specified limit",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "past_due": {
+          "description": "Fields that are past due for verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Past due flat amount",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Past due unit amount",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Specific limit past due",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "pending_verification": {
+          "description": "Fields pending verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount pending verification",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount pending verification",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specific limit pending verification",
                 "type": ["null", "integer"]
               }
             }
@@ -215,66 +271,84 @@
       }
     },
     "id_number_provided": {
+      "description": "Flag indicating if ID number is provided",
       "type": ["null", "boolean"]
     },
     "last_name": {
+      "description": "Last name of the person",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional metadata related to the person",
       "type": ["null", "object"],
       "properties": {
         "id_number_provided": {
+          "description": "Flag indicating if ID number is provided in metadata",
           "type": ["null", "boolean"]
         }
       }
     },
     "relationship": {
+      "description": "Relationship details of the person",
       "type": ["null", "object"],
       "properties": {
         "director": {
+          "description": "Director relationship status",
           "type": ["null", "boolean"]
         },
         "executive": {
+          "description": "Executive relationship status",
           "type": ["null", "boolean"]
         },
         "owner": {
+          "description": "Owner relationship status",
           "type": ["null", "boolean"]
         },
         "percent_ownership": {
+          "description": "Percentage of ownership",
           "type": ["null", "string"]
         },
         "representative": {
+          "description": "Representative relationship status",
           "type": ["null", "boolean"]
         },
         "title": {
+          "description": "Title of the relationship",
           "type": ["null", "string"]
         }
       }
     },
     "requirements": {
+      "description": "Verification requirements for the person",
       "type": ["null", "object"],
       "properties": {
         "alternatives": {
+          "description": "Alternative verification fields required",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount required",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount required",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specified limit",
                 "type": ["null", "integer"]
               },
               "alternative_fields_due": {
+                "description": "Fields due for alternative verification",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               "original_fields_due": {
+                "description": "Original fields due for verification",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
@@ -284,85 +358,105 @@
           }
         },
         "currently_due": {
+          "description": "Fields currently due for verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount required",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount required",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specified limit",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "errors": {
+          "description": "Errors related to verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount causing error",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount causing error",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Specific limit causing error",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "eventually_due": {
+          "description": "Fields to be due eventually for verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount to be due",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount to be due",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specified limit",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "past_due": {
+          "description": "Fields that are past due for verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Past due flat amount",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Past due unit amount",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Specific limit past due",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "pending_verification": {
+          "description": "Fields pending verification",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string", "object"],
             "properties": {
               "flat_amount": {
+                "description": "Flat amount pending verification",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "Unit amount pending verification",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "Up to the specific limit pending verification",
                 "type": ["null", "integer"]
               }
             }
@@ -371,57 +465,73 @@
       }
     },
     "ssn_last_4_provided": {
+      "description": "Flag indicating if last 4 SSN digits are provided",
       "type": ["null", "boolean"]
     },
     "verification": {
+      "description": "Details related to verification status",
       "type": ["null", "object"],
       "properties": {
         "additional_document": {
+          "description": "Additional document verification details",
           "type": ["null", "object"],
           "properties": {
             "back": {
+              "description": "Back side of the document",
               "type": ["null", "string"]
             },
             "details": {
+              "description": "Additional verification details",
               "type": ["null", "string"]
             },
             "details_code": {
+              "description": "Verification details code",
               "type": ["null", "string"]
             },
             "front": {
+              "description": "Front side of the document",
               "type": ["null", "string"]
             }
           }
         },
         "details": {
+          "description": "General verification details",
           "type": ["null", "string"]
         },
         "details_code": {
+          "description": "General verification details code",
           "type": ["null", "string"]
         },
         "document": {
+          "description": "Document verification details",
           "type": ["null", "object"],
           "properties": {
             "back": {
+              "description": "Back side of the document",
               "type": ["null", "string"]
             },
             "details": {
+              "description": "Verification details",
               "type": ["null", "string"]
             },
             "details_code": {
+              "description": "Verification details code",
               "type": ["null", "string"]
             },
             "front": {
+              "description": "Front side of the document",
               "type": ["null", "string"]
             }
           }
         },
         "status": {
+          "description": "Verification status",
           "type": ["null", "string"]
         }
       }
     },
     "is_deleted": {
+      "description": "Flag indicating if the person data is deleted",
       "type": ["null", "boolean"]
     }
   }
