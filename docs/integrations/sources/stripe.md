@@ -130,7 +130,7 @@ The Stripe source connector supports the following streams:
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ### Data type map
 

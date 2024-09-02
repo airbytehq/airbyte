@@ -168,7 +168,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Capturing deleted records
 

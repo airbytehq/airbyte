@@ -149,7 +149,7 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 <HideInUI>
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 </HideInUI>
 
 ## Report options

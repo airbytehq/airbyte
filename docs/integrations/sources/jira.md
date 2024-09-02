@@ -127,7 +127,7 @@ This connector outputs the following incremental streams:
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Experimental Tables
 

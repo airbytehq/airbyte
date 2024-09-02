@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import erdBG from "../../static/img/erd-bg-cta.jpg";
-import styles from "./ErdDiagram.module.css";
+import styles from "./EntityRelationshipDiagram.module.css";
 const { getRegistryEntry } = require("../remark/utils");
 const { getFromPaths } = require("../helpers/objects");
 
-export const ErdDiagram = ({}) => {
+export const EntityRelationshipDiagram = ({}) => {
   const [erdUrl, setErdUrl] = useState(null);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export const ErdDiagram = ({}) => {
   if (!erdUrl) return null;
 
   return (
-    <div className={styles.erdDiagram}>
+    <div className={styles.entityRelatonshipdDiagram}>
       <a href={erdUrl} target="_blank">
         <img src={erdBG} />
       </a>

@@ -149,7 +149,7 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - Analytics report by custom dimensions
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Connector-specific configurations
 

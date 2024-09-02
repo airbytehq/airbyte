@@ -101,7 +101,7 @@ related to Instagram Ads, use the Facebook Marketing source.
 :::
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Data type map
 

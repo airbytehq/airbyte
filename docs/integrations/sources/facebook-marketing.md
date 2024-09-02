@@ -196,7 +196,7 @@ Please be aware that some fields, such as `conversions` and `conversion_values`,
 ::: -->
 
 ### Entity-Relationship Diagram (ERD)
-<ErdDiagram></ErdDiagram>
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Facebook Marketing Attribution Reporting
 
