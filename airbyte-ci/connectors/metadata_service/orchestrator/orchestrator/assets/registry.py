@@ -101,6 +101,35 @@ def apply_release_candidates(
     return updated_registry_entry
 
 
+def apply_release_candidate_entries(
+    registry_entry_dict: dict, docker_repository_to_rc_metadata_entry: dict, docker_repository_to_rc_registry_entry: dict
+) -> dict:
+    """Apply the optionally existing release candidate entries to the registry entry.
+    We need both the release candidate metadata entry and the release candidate registry entry because the metadata entry contains the rollout configuration, and the registry entry contains the actual RC registry entry.
+
+    Args:
+        registry_entry_dict (dict): The registry entry.
+        docker_repository_to_rc_metadata_entry (dict): Mapping of docker repository to release candidate metadata entry.
+        docker_repository_to_rc_registry_entry (dict): Mapping of docker repository to release candidate registry entry.
+
+    Returns:
+        dict: The registry entry with release candidates applied.
+    """
+    registry_entry_dict = copy.deepcopy(registry_entry_dict)
+    if (
+        registry_entry_dict["dockerRepository"] in docker_repository_to_rc_metadata_entry
+        and registry_entry_dict["dockerRepository"] in docker_repository_to_rc_registry_entry
+    ):
+        release_candidate_metadata_definition = docker_repository_to_rc_metadata_entry[
+            registry_entry_dict["dockerRepository"]
+        ].metadata_definition
+        release_candidate_registry_entry = docker_repository_to_rc_registry_entry[registry_entry_dict["dockerRepository"]]
+        registry_entry_dict = apply_release_candidates(
+            registry_entry_dict, release_candidate_metadata_definition, release_candidate_registry_entry
+        )
+    return registry_entry_dict
+
+
 def get_connector_type_from_registry_entry(registry_entry: PolymorphicRegistryEntry) -> ConnectorTypes:
     if hasattr(registry_entry, "sourceDefinitionId"):
         return ConnectorTypes.SOURCE
@@ -155,17 +184,9 @@ def generate_and_persist_registry(
         # that can be parsed by pydantic.
         registry_entry_dict = to_json_sanitized_dict(latest_registry_entry)
         enriched_registry_entry_dict = apply_metrics_to_registry_entry(registry_entry_dict, connector_type, latest_connector_metrics)
-        if (
-            latest_registry_entry.dockerRepository in docker_repository_to_rc_metadata_entry
-            and latest_registry_entry.dockerRepository in docker_repository_to_rc_registry_entry
-        ):
-            release_candidate_metadata_definition = docker_repository_to_rc_metadata_entry[
-                latest_registry_entry.dockerRepository
-            ].metadata_definition
-            release_candidate_registry_entry = docker_repository_to_rc_registry_entry[latest_registry_entry.dockerRepository]
-            enriched_registry_entry_dict = apply_release_candidates(
-                enriched_registry_entry_dict, release_candidate_metadata_definition, release_candidate_registry_entry
-            )
+        enriched_registry_entry_dict = apply_release_candidate_entries(
+            enriched_registry_entry_dict, docker_repository_to_rc_metadata_entry, docker_repository_to_rc_registry_entry
+        )
 
         registry_dict[plural_connector_type].append(enriched_registry_entry_dict)
 

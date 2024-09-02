@@ -102,15 +102,30 @@ def github_metadata_definitions(context):
     return Output(metadata_definitions, metadata={"preview": [md.json() for md in metadata_definitions]})
 
 
+def entry_is_younger_than_grace_period(entry: LatestMetadataEntry) -> bool:
+    grace_period_marker = datetime.datetime.now(datetime.timezone.utc) - PUBLISH_GRACE_PERIOD
+    entry_last_modified = datetime.datetime.strptime(entry.last_modified, "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=datetime.timezone.utc)
+    return entry_last_modified > grace_period_marker
+
+
 def entry_should_be_on_gcs(metadata_entry: LatestMetadataEntry) -> bool:
+    """For stale metadata detection, we only want to scan latest metadata files from our master branch that are expected to be on GCS.
+    A metadata file should be on GCS, in the latest directory, if:
+    - it is not archived
+    - not a release candidate
+    - has been published for more than the grace period (just to reduce false positives when publish pipeline and stale detection run concurrently).
+
+    Args:
+        metadata_entry (LatestMetadataEntry): The metadata entry to check
+
+    Returns:
+        bool: True if the metadata entry should be on GCS, False otherwise
+    """
     if metadata_entry.metadata_definition.data.supportLevel == "archived":
         return False
     if getattr(metadata_entry.metadata_definition.releases, "isReleaseCandidate", False):
         return False
-    if (
-        datetime.datetime.strptime(metadata_entry.last_modified, "%a, %d %b %Y %H:%M:%S %Z").replace(tzinfo=datetime.timezone.utc)
-        > datetime.datetime.now(datetime.timezone.utc) - PUBLISH_GRACE_PERIOD
-    ):
+    if entry_is_younger_than_grace_period(metadata_entry):
         return False
     return True
 
