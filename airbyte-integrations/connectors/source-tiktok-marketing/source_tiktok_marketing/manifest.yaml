@@ -1625,7 +1625,7 @@ definitions:
     retriever:
       type: SimpleRetriever
       requester:
-        $ref: "#/definitions/base_requester"
+        $ref: "#/definitions/requester"
         path: tt_video/list/
         http_method: GET
       record_selector:
