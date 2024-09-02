@@ -7,18 +7,16 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ### Prerequisites
 
-* Python (`^3.10`)
-* Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
-
-
+- Python (`^3.10`)
+- Poetry (`^1.7`) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 ### Installing the connector
 
 From this connector directory, run:
+
 ```bash
 poetry install --with dev
 ```
-
 
 #### Create credentials
 
@@ -31,6 +29,7 @@ See `sample_files/sample_config.json` for a sample config file.
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
+
 ```
 poetry run destination-glassflow spec
 poetry run destination-glassflow check --config secrets/config.json
@@ -49,6 +48,7 @@ poetry run pytest tests
 
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
+
 ```bash
 airbyte-ci connectors --name=destination-glassflow build
 ```
@@ -58,6 +58,7 @@ An image will be available on your host with the tag `airbyte/destination-glassf
 ### Running as a docker container
 
 Then run any of the connector commands as follows:
+
 ```
 docker run --rm airbyte/destination-glassflow:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-glassflow:dev check --config /secrets/config.json
@@ -91,10 +92,11 @@ Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 ## Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-glassflow test`
 2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
-    - bump the `dockerImageTag` value in in `metadata.yaml`
-    - bump the `version` value in `pyproject.toml`
+   - bump the `dockerImageTag` value in in `metadata.yaml`
+   - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/destinations/glassflow.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
