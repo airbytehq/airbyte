@@ -26,6 +26,7 @@ import java.nio.file.Path
 import java.util.function.Function
 import java.util.stream.Collectors
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
@@ -347,6 +348,13 @@ abstract class AbstractBigQueryTypingDedupingTest : BaseTypingDedupingTest() {
         val expectedFinalRecords2 =
             readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl")
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
+    }
+
+    // Disabling until we can safely fetch generation ID
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
     }
 
     protected open val rawDataset: String

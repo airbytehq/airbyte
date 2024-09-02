@@ -2,8 +2,8 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
-    registries:
+      - "3.basecampapi.com"
+  registryOverrides:
     oss:
       enabled: true
     cloud:
