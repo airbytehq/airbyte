@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "api-ssl.bitly.com"
   registryOverrides:
     oss:
       enabled: true
