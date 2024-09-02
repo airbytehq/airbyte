@@ -19,8 +19,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from google.cloud import secretmanager_v1 as secretmanager
-
 import airbyte as ab
 from airbyte.secrets import GoogleGSMSecretManager, SecretHandle
 
@@ -36,14 +34,9 @@ def main() -> None:
 
     secret: SecretHandle
     for secret in secret_mgr.fetch_connector_secrets("source-s3"):
-        response = secret_mgr.secret_client.get_secret(
-            secretmanager.GetSecretRequest(name=secret.secret_name),
-        )
-        labels: dict[str, str] = response.labels
-        if "filename" in labels:
-            secret_file_path = Path(f'secrets/{labels["filename"]}.json')
-            print(f"Writing '{secret.secret_name.split('/')[-1]}' secret to '{secret_file_path}'")
-            secret_file_path.write_text(secret.get_value())
+        if "filename" in secret.labels:
+            secret_file_path = Path(f'secrets/{secret.labels["filename"]}.json')
+            secret.write_to_file(secret_file_path)
 
 
 if __name__ == "__main__":
