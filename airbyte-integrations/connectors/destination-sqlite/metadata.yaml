@@ -2,13 +2,13 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: b76be0a6-27dc-4560-95f6-2623da0bd7b6
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   dockerRepository: airbyte/destination-sqlite
   githubIssueLabel: destination-sqlite
   icon: sqlite.svg
   license: MIT
   name: Local SQLite
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

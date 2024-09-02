@@ -14,13 +14,17 @@ from airbyte_protocol.models import SyncMode
 
 
 @pytest.mark.parametrize(
-    "response_body, expected_json",
-    [("", [{}]), ('{"healthcheck": {"status": "ok"}}', [{"healthcheck": {"status": "ok"}}])],
+    "response_body, first_element",
+    [
+        ("", {}),
+        ("[]", {}),
+        ('{"healthcheck": {"status": "ok"}}', {"healthcheck": {"status": "ok"}})
+    ],
 )
-def test_json_decoder(requests_mock, response_body, expected_json):
+def test_json_decoder(requests_mock, response_body, first_element):
     requests_mock.register_uri("GET", "https://airbyte.io/", text=response_body)
     response = requests.get("https://airbyte.io/")
-    assert list(JsonDecoder(parameters={}).decode(response)) == expected_json
+    assert next(JsonDecoder(parameters={}).decode(response)) == first_element
 
 
 @pytest.mark.parametrize(

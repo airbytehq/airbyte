@@ -15,6 +15,7 @@ from pathlib import Path
 from textwrap import dedent
 from typing import Any, ClassVar, Dict, List, Optional, Set
 
+import dagger
 import requests  # type: ignore
 import semver
 import yaml  # type: ignore
@@ -113,6 +114,7 @@ class VersionIncrementCheck(VersionCheck):
         "src/test-integration",
         "src/test-performance",
         "build.gradle",
+        "erd",
     ]
 
     @property
@@ -510,7 +512,7 @@ class LiveTests(Step):
         if self.run_id:
             command_options += ["--run-id", self.run_id]
         if self.should_read_with_state:
-            command_options += ["--should-read-with-state", self.should_read_with_state]
+            command_options += ["--should-read-with-state=1"]
         if self.test_evaluation_mode:
             command_options += ["--test-evaluation-mode", self.test_evaluation_mode]
         if self.selected_streams:
@@ -564,7 +566,7 @@ class LiveTests(Step):
         self.test_dir = self.test_suite_to_dir[LiveTestSuite(self.test_suite)]
         self.control_version = self.context.run_step_options.get_item_or_default(options, "control-version", None)
         self.target_version = self.context.run_step_options.get_item_or_default(options, "target-version", "dev")
-        self.should_read_with_state = self.context.run_step_options.get_item_or_default(options, "should-read-with-state", "1")
+        self.should_read_with_state = "should-read-with-state" in options
         self.selected_streams = self.context.run_step_options.get_item_or_default(options, "selected-streams", None)
         self.test_evaluation_mode = "strict" if self.context.connector.metadata.get("supportLevel") == "certified" else "diagnostic"
         self.connection_subset = self.context.run_step_options.get_item_or_default(options, "connection-subset", "sandboxes")
@@ -643,21 +645,33 @@ class LiveTests(Step):
             )
 
         container = await self._build_test_container(await connector_under_test_container.id())
-        container = container.with_(hacks.never_fail_exec(self._run_command_with_proxy(" ".join(self._test_command()))))
+        command = self._run_command_with_proxy(" ".join(self._test_command()))
+        main_logger.info(f"Running command {command}")
+        container = container.with_(hacks.never_fail_exec(command))
         tests_artifacts_dir = str(self.local_tests_artifacts_dir)
         path_to_report = f"{tests_artifacts_dir}/session_{self.run_id}/report.html"
 
         exit_code, stdout, stderr = await get_exec_result(container)
 
-        if "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries():
-            main_logger.exception(
-                "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
-            )
+        try:
+            if (
+                f"session_{self.run_id}" not in await container.directory(f"{tests_artifacts_dir}").entries()
+                or "report.html" not in await container.directory(f"{tests_artifacts_dir}/session_{self.run_id}").entries()
+            ):
+                main_logger.exception(
+                    "The report file was not generated, an unhandled error likely happened during regression test execution, please check the step stderr and stdout for more details"
+                )
+                regression_test_report = None
+            else:
+                await container.file(path_to_report).export(path_to_report)
+                with open(path_to_report, "r") as fp:
+                    regression_test_report = fp.read()
+        except dagger.QueryError as exc:
             regression_test_report = None
-        else:
-            await container.file(path_to_report).export(path_to_report)
-            with open(path_to_report, "r") as fp:
-                regression_test_report = fp.read()
+            main_logger.exception(
+                "The test artifacts directory was not generated, an unhandled error likely happened during setup, please check the step stderr and stdout for more details",
+                exc_info=exc,
+            )
 
         return StepResult(
             step=self,
@@ -686,6 +700,10 @@ class LiveTests(Step):
             # Enable dagger-in-dagger
             .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            .with_file(
+                "/tmp/record_obfuscator.py",
+                self.context.get_repo_dir("tools/bin", include=["record_obfuscator.py"]).file("record_obfuscator.py"),
+            )
             # The connector being tested is already built and is stored in a location accessible to an inner dagger kicked off by
             # regression tests. The connector can be found if you know the container ID, so we write the container ID to a file and put
             # it in the regression test container. This way regression tests will use the already-built connector instead of trying to

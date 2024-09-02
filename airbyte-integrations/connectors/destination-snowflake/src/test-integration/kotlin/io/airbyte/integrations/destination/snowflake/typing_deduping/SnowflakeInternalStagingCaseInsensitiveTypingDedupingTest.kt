@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons.emptyObject
 import java.util.*
 
 class SnowflakeInternalStagingCaseInsensitiveTypingDedupingTest :
-    AbstractSnowflakeTypingDedupingTest() {
+    AbstractSnowflakeTypingDedupingTest(forceUppercaseIdentifiers = true) {
     override val configPath: String
         get() = "secrets/1s1t_case_insensitive.json"
 

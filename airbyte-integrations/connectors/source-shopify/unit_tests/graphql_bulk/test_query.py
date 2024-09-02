@@ -4,7 +4,7 @@
 
 
 import pytest
-from graphql_query import Argument, Field, Operation, Query
+from graphql_query import Argument, Field, InlineFragment, Operation, Query
 from source_shopify.shopify_graphql.bulk.query import (
     InventoryLevel,
     MetafieldCustomer,
@@ -153,15 +153,74 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                 type="",
                 queries=[
                     Query(
-                        name='products', 
+                        name="products",
                         arguments=[
                             Argument(name="query", value=f"\"updated_at:>='2023-01-01' AND updated_at:<='2023-01-02'\""),
-                            Argument(name="sortKey", value="UPDATED_AT"),    
-                        ], 
-                        fields=[Field(name='edges', fields=[Field(name='node', fields=['__typename','id',Field(name="images", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", Field(name="metafields", fields=[Field(name="edges", fields=[Field(name="node", fields=["__typename", "id", "namespace", "value", "key", "description", "createdAt", "updatedAt", "type"])])])])])])])])]
+                            Argument(name="sortKey", value="UPDATED_AT"),
+                        ],
+                        fields=[
+                            Field(
+                                name="edges",
+                                fields=[
+                                    Field(
+                                        name="node",
+                                        fields=[
+                                            "__typename",
+                                            "id",
+                                            Field(
+                                                name="media",
+                                                fields=[
+                                                    Field(
+                                                        name="edges",
+                                                        fields=[
+                                                            Field(
+                                                                name="node",
+                                                                fields=[
+                                                                    "__typename",
+                                                                    "id",
+                                                                    InlineFragment(
+                                                                        type="MediaImage",
+                                                                        fields=[
+                                                                            Field(
+                                                                                name="metafields",
+                                                                                fields=[
+                                                                                    Field(
+                                                                                        name="edges",
+                                                                                        fields=[
+                                                                                            Field(
+                                                                                                name="node",
+                                                                                                fields=[
+                                                                                                    "__typename",
+                                                                                                    "id",
+                                                                                                    "namespace",
+                                                                                                    "value",
+                                                                                                    "key",
+                                                                                                    "description",
+                                                                                                    "createdAt",
+                                                                                                    "updatedAt",
+                                                                                                    "type",
+                                                                                                ]
+                                                                                            )
+                                                                                        ]
+                                                                                    )
+                                                                                ]
+                                                                            )
+                                                                        ]
+                                                                    )
+                                                                ]
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
                     )
                 ]
-            ),
+            )
         ),
         (
             InventoryLevel,

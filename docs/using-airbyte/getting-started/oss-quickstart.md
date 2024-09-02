@@ -21,6 +21,8 @@ If you've already set up an Airbyte instance using Docker Compose and want to mo
 **When you're ready to put an Airbyte instance into production, you'll want to review our guides on deployment.**
 
 For the best experience, we recommend [Deploying Airbyte on Kubernetes via Helm](../../deploying-airbyte/deploying-airbyte.md). 
+
+On a local deployment, Airbyte's default behavior is to store connector secrets in your configured database. These secrets are stored in plain text and are not encrypted. Refer to the [Secret Management documentation](../../deploying-airbyte/integrations/secrets.md) to set up an external secrets manager.
 :::
 
 If setting up an Airbyte server does not fit your use case needs (i.e. you're using Jupyter Notebooks or iterating on an early prototype for your project) you may find the [PyAirbyte](../pyairbyte/getting-started.mdx) documentation useful.
@@ -154,6 +156,12 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 
 Ensure that Docker Desktop is up and running. Then, with abctl installed, the following command gets Airbyte running:
 
+:::tip
+By default, `abctl` only configures an ingress rule for the host `localhost`. If you plan to access Airbyte outside of `localhost`, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
+
+By specifying the `--host` flag, Airbyte will be accessible to both `localhost` and the FDQN passed to the `--host` flag.
+:::
+
 ```
 abctl local install
 ```
@@ -171,20 +179,46 @@ abctl local credentials
 Which should output something similar to:
 
 ```shell
-{
-  "password": "password",
-  "client-id": "client_id",
-  "client-secret": "client_secret"
-}
+Credentials:
+  Email: user@company.example
+  Password: random_password
+  Client-Id: 03ef466c-5558-4ca5-856b-4960ba7c161b
+  Client-Secret: m2UjnDO4iyBQ3IsRiy5GG3LaZWP6xs9I
 ```
 
-Use the value in the password field to authenticate to your new Airbyte instance. If you wish to configure 
-authentication follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
+Use the value in the password field to authenticate to your new Airbyte instance.
+
+You can set your email and password with the `credentials` command using `abctl`. To set your email you can run:
+
+```shell
+abctl local credentials --email user@company.example
+```
+
+To set your password you can run:
+
+```shell
+abctl local credentials --password new_password
+```
+
+If you wish to configure authentication when install abctl, follow the documentation on the [Authentication Integration](../../deploying-airbyte/integrations/authentication) 
 page.
 
 As long as your Docker Desktop daemon is running in the background, you can use Airbyte by returning to [http://localhost:8000](http://localhost:8000). 
 
 If you quit Docker Desktop and want to return to your local Airbyte workspace, just start Docker Desktop again. Once Docker finishes restarting, you'll be able to access Airbyte's local installation as normal. 
+
+
+### Suggested Resources
+
+For the best performance, we suggest you run on a machine with 4 or more CPU's and at least 8 GB of memory. Currently
+`abctl` does support running on 2 cpus and 8 gb of ram with the `--low-resource-mode` flag. You can pass the low
+resource mode flag when install Airbyte with `abctl`:
+
+```shell
+abctl local install --low-resource-mode
+```
+
+Follow this [Github discussion](https://github.com/airbytehq/airbyte/discussions/44391) to upvote and track progress towards supporting lower resource environments.
 
 ## 3: Move Data
 
@@ -240,11 +274,6 @@ If you're using a version of Airbyte that you've installed with `abctl`, you can
 
 This guide will assume that you are using the Amazon Linux distribution. However. any distribution that supports a docker engine should work with `abctl`. The launching and connecting to your EC2 Instance is outside the scope of this guide. You can find more information on how to launch and connect to EC2 Instances in the [Get started with Amazon EC2](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html) documentation from Amazon.
 
-:::tip
-`abctl` runs by default on port 8000. You can change the port by passing the `--port` flag to the `local install` command. Make sure that the security group that you have configured for the EC2 Instance allows traffic in on the port that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
-:::
-
-
 1. Install the docker engine:
 
 ```shell
@@ -278,22 +307,28 @@ curl -LsfS https://get.airbyte.com | bash -
 ```
 
 6. Run the `abctl` command and install Airbyte:
+:::tip
+By default, `abctl` only configures an ingress rule for the host `localhost`. In order to ensure that Airbyte can be accessed outside of the EC2 instance, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
+:::
+:::tip
+By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
+
+Ensure the security group configured for the EC2 Instance allows traffic in on the port (8000 by default, or whatever port was passed to `--port`) that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
+:::
 
 ```shell
-abctl local install
+abctl local install --host [HOSTNAME]
 ```
 
-### Editing the Ingress
+### Running over HTTP
 
-By default `abctl` will install and Nginx Ingress and set the host name to `localhost`. You will need to edit this to
-match the host name that you have deployed Airbyte to. To do this you will need to have the `kubectl` command installed
-on your EC2 Instance and available on your path.
+Airbyte suggest that you secure your instance of Airbyte using TLS. Running over plain HTTP allows attackers to see your
+password over clear text. If you understand the risk and would still like to run Airbyte over HTTP, you must set 
+Secure Cookies to false. You can do this with `abctl` by passing the `--insecure-cookies` flag to `abctl`:
 
-If you do not already have the CLI tool kubectl installed, please [follow these instructions to install](https://kubernetes.io/docs/tasks/tools/).
-
-Then you can run `kubectl edit ingress -n airbyte-abctl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig` and edit the `host`
-key under the spec.rules section of the Ingress definition. The host should match the FQDN name that you are trying to
-host Airbyte at, for example: `airbyte.company.example`.
+```shell
+abctl local install --host [HOSTNAME] --insecure-cookies
+```
 
 ## Uninstalling
 
@@ -319,6 +354,32 @@ rm -rf ~/.airbyte/abctl
 ```
 
 ## Troubleshooting
+
+### Using standard tools to interact with an Airbyte instance that was installed with `abctl`
+
+`abctl` install Airbyte into a kind cluster on your local machine. If you'd like to interact directly with any of the underlying infrastructure, you can use standard tooling. You will need to make sure these tools are installed (or install them yourself). Any of these out of the box tools will work with an Airbyte instance installed with `abctl`.
+
+If you want to interact with the pods or resources inside the cluster you can use [kubectl](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) and [helm](https://helm.sh/). Just make sure you are pointing at the correct K8s configuration e.g. `kubectl --kubeconfig ~/.airbyte/abctl/abctl.kubeconfig --namespace airbyte-abctl get pods`
+
+[kind](https://kind.sigs.k8s.io/) is a tool for creating a K8s cluster using docker instead of having to install a local K8s cluster. You only need to think about kind if you want to make an adjustment to the cluster itself.
+
+For more advanced interactions (e.g. loading custom docker containers), read more in [developing locally](../../contributing-to-airbyte/developing-locally#using-abctl-for-airbyte-development).
+
+### Unable To Locate User Email
+:::note
+In `abctl` [v0.11.0](https://github.com/airbytehq/abctl/releases/tag/v0.11.0), support for basic-auth was removed (as basic-auth support was removed from the `Airbyte Platform` in [v0.63.11](https://github.com/airbytehq/airbyte-platform/releases/tag/v0.63.11), and replaced with a more secure randomly generated password.  When logging into Airbyte, the email (provided during registration) should be automatically populated. Both the email and the randomly generated password can be fetched by running `abctl local credentials`.
+
+Airbyte is aware of situations where the email is not be automatically populated and we are working on addressing this within the `abctl` tool.  In the interim, some manually steps are required to retrieve the authentication email address when it is unknown.
+:::
+
+If the email address for authenticating is not automatically populated, you can set an email with the following command:
+```
+abctl local credentials --email <USER@COMPANY.EXAMPLE>
+```
+
+The password for this user can be retrieved by running `abctl local credentials`.
+
+### Additional Resources
 
 There are several channels for community support of local setup and deployment. 
 

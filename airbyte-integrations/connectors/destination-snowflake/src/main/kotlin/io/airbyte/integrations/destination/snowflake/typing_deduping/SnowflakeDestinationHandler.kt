@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcGenerationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.commons.json.Jsons.emptyObject
@@ -42,13 +43,23 @@ import org.slf4j.LoggerFactory
 class SnowflakeDestinationHandler(
     databaseName: String,
     private val database: JdbcDatabase,
-    rawTableSchema: String
+    rawTableSchema: String,
 ) :
     JdbcDestinationHandler<SnowflakeState>(
         databaseName,
         database,
         rawTableSchema,
-        SQLDialect.POSTGRES
+        SQLDialect.POSTGRES,
+        generationHandler =
+            object : JdbcGenerationHandler {
+                override fun getGenerationIdInTable(
+                    database: JdbcDatabase,
+                    namespace: String,
+                    name: String
+                ): Long? {
+                    throw NotImplementedError()
+                }
+            }
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
@@ -374,7 +385,7 @@ class SnowflakeDestinationHandler(
     override fun gatherInitialState(
         streamConfigs: List<StreamConfig>
     ): List<DestinationInitialStatus<SnowflakeState>> {
-        val destinationStates = super.getAllDestinationStates()
+        val destinationStates = getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
         val existingTables = findExistingTables(database, databaseName, streamIds)
@@ -410,6 +421,17 @@ class SnowflakeDestinationHandler(
                             streamConfig.id.asPair(),
                             toDestinationState(emptyObject())
                         )
+                    val finalTableGenerationId =
+                        if (isFinalTablePresent && !isFinalTableEmpty) {
+                            // for now, just use 0. this means we will always use a temp final
+                            // table.
+                            // platform has a workaround for this, so it's OK.
+                            // TODO only fetch this on truncate syncs
+                            // TODO once we have destination state, use that instead of a query
+                            0L
+                        } else {
+                            null
+                        }
                     return@map DestinationInitialStatus<SnowflakeState>(
                         streamConfig,
                         isFinalTablePresent,
@@ -417,7 +439,13 @@ class SnowflakeDestinationHandler(
                         tempRawTableState,
                         isSchemaMismatch,
                         isFinalTableEmpty,
-                        destinationState
+                        destinationState,
+                        finalTableGenerationId = finalTableGenerationId,
+                        // I think the temp final table gen is always null?
+                        // since the only time we T+D into the temp table
+                        // is when we're committing the sync anyway
+                        // (i.e. we'll immediately rename it to the real table)
+                        finalTempTableGenerationId = null,
                     )
                 } catch (e: Exception) {
                     throw RuntimeException(e)
@@ -485,6 +513,16 @@ class SnowflakeDestinationHandler(
 
     fun query(sql: String): List<JsonNode> {
         return database.queryJsons(sql)
+    }
+
+    override fun getDeleteStatesSql(destinationStates: Map<StreamId, SnowflakeState>): String {
+        if (Math.random() < 0.01) {
+            LOGGER.info("actually deleting states")
+            return super.getDeleteStatesSql(destinationStates)
+        } else {
+            LOGGER.info("skipping state deletion")
+            return "SELECT 1" // We still need to send a valid SQL query.
+        }
     }
 
     companion object {

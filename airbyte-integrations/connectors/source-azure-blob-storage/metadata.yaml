@@ -24,7 +24,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-azure-blob-storage
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:

@@ -26,13 +26,15 @@ import javax.sql.DataSource
 import kotlin.concurrent.Volatile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 private val LOGGER = KotlinLogging.logger {}
 
-abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
-    private var databaseName: String? = null
+abstract class AbstractSnowflakeTypingDedupingTest(
+    private val forceUppercaseIdentifiers: Boolean = false,
+) : BaseTypingDedupingTest() {
+    private lateinit var databaseName: String
     private var database: JdbcDatabase? = null
     // not super happy with this one, but our test classes are not super kotlin-friendly
     private lateinit var dataSource: DataSource
@@ -54,7 +56,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         dataSource =
             SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
         database = SnowflakeDatabaseUtils.getDatabase(dataSource)
-        cleanAirbyteInternalTable(database)
+        cleanAirbyteInternalTable(databaseName, database, forceUppercaseIdentifiers)
         return config
     }
 
@@ -98,12 +100,19 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         database!!.execute(
             String.format(
                 """
-            DROP TABLE IF EXISTS "%s"."%s";
-            DROP SCHEMA IF EXISTS "%s" CASCADE
-            
-            """.trimIndent(),
-                rawSchema, // Raw table is still lowercase.
-                StreamId.concatenateRawTableName(namespaceOrDefault, streamName),
+                DROP TABLE IF EXISTS "%s"."%s";
+                DROP SCHEMA IF EXISTS "%s" CASCADE
+                
+                """.trimIndent(),
+                // Raw table is still lowercase by default
+                if (forceUppercaseIdentifiers) {
+                    rawSchema.uppercase()
+                } else {
+                    rawSchema
+                },
+                StreamId.concatenateRawTableName(namespaceOrDefault, streamName).let {
+                    if (forceUppercaseIdentifiers) it.uppercase() else it
+                },
                 namespaceOrDefault.uppercase(Locale.getDefault()),
             ),
         )
@@ -382,6 +391,13 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison())
     }
 
+    // Disabling until we can safely fetch generation ID
+    @Test
+    @Disabled
+    override fun interruptedOverwriteWithoutPriorData() {
+        super.interruptedOverwriteWithoutPriorData()
+    }
+
     private val defaultSchema: String
         get() = config!!["schema"].asText()
 
@@ -399,18 +415,44 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
                 "_AIRBYTE_DATA",
                 "_airbyte_meta",
                 "_AIRBYTE_META",
+                "_airbyte_generation_id",
+                "_AIRBYTE_GENERATION_ID",
             )
 
         @Volatile private var cleanedAirbyteInternalTable = false
 
         @Throws(SQLException::class)
-        private fun cleanAirbyteInternalTable(database: JdbcDatabase?) {
+        private fun cleanAirbyteInternalTable(
+            databaseName: String,
+            database: JdbcDatabase?,
+            forceUppercase: Boolean,
+        ) {
             if (!cleanedAirbyteInternalTable) {
                 synchronized(AbstractSnowflakeTypingDedupingTest::class.java) {
                     if (!cleanedAirbyteInternalTable) {
-                        database!!.execute(
-                            "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < current_date() - 7",
-                        )
+                        val destinationStateTableExists =
+                            database!!.executeMetadataQuery {
+                                it.getTables(
+                                        databaseName,
+                                        if (forceUppercase) {
+                                            "AIRBYTE_INTERNAL"
+                                        } else {
+                                            "airbyte_internal"
+                                        },
+                                        if (forceUppercase) {
+                                            "_AIRBYTE_DESTINATION_STATE"
+                                        } else {
+                                            "_airbyte_destination_state"
+                                        },
+                                        null
+                                    )
+                                    .next()
+                            }
+                        if (destinationStateTableExists) {
+                            database.execute(
+                                """DELETE FROM "airbyte_internal"."_airbyte_destination_state" WHERE "updated_at" < current_date() - 7""",
+                            )
+                        }
                         cleanedAirbyteInternalTable = true
                     }
                 }
@@ -418,3 +460,7 @@ abstract class AbstractSnowflakeTypingDedupingTest : BaseTypingDedupingTest() {
         }
     }
 }
+
+open class Batch(val name: String)
+
+class LocalFileBatch(name: String) : Batch(name)

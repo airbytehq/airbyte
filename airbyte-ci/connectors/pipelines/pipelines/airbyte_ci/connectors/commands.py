@@ -145,9 +145,11 @@ def validate_environment(is_local: bool) -> None:
         "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
         "bump-version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
         "migrate-to-base-image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
+        "migrate-to-manifest-only": "pipelines.airbyte_ci.connectors.migrate_to_manifest_only.commands.migrate_to_manifest_only",
         "migrate-to-poetry": "pipelines.airbyte_ci.connectors.migrate_to_poetry.commands.migrate_to_poetry",
         "migrate-to-inline_schemas": "pipelines.airbyte_ci.connectors.migrate_to_inline_schemas.commands.migrate_to_inline_schemas",
         "migrate-to-logging-logger": "pipelines.airbyte_ci.connectors.migrate_to_logging_logger.commands.migrate_to_logging_logger",
+        "generate-erd": "pipelines.airbyte_ci.connectors.generate_erd.commands.generate_erd",
         "upgrade-cdk": "pipelines.airbyte_ci.connectors.upgrade_cdk.commands.upgrade_cdk",
         "up-to-date": "pipelines.airbyte_ci.connectors.up_to_date.commands.up_to_date",
         "pull-request": "pipelines.airbyte_ci.connectors.pull_request.commands.pull_request",
@@ -168,7 +170,12 @@ def validate_environment(is_local: bool) -> None:
     help="Filter connectors to test by support_level.",
     type=click.Choice(SupportLevelEnum),
 )
-@click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
+@click.option(
+    "--modified/--not-modified",
+    help="Only test modified connectors in the current branch. Archived connectors are ignored",
+    default=False,
+    type=bool,
+)
 @click.option(
     "--metadata-changes-only/--not-metadata-changes-only",
     help="Only test connectors with modified metadata files in the current branch.",

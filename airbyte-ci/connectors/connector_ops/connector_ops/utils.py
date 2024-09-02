@@ -3,6 +3,7 @@
 #
 
 import functools
+import json
 import logging
 import os
 import re
@@ -370,6 +371,26 @@ class Connector:
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
 
     @property
+    def connector_spec_file_content(self) -> Optional[dict]:
+        """
+        The spec source of truth is the actual output of the spec command, as connector can mutate their spec.
+        But this is the best effort approach at statically fetching a spec without running the command on the connector.
+        Which is "good enough" in some cases.
+        """
+        yaml_spec = Path(self.python_source_dir_path / "spec.yaml")
+        json_spec = Path(self.python_source_dir_path / "spec.json")
+
+        if yaml_spec.exists():
+            return yaml.safe_load(yaml_spec.read_text())
+        elif json_spec.exists():
+            with open(json_spec) as f:
+                return json.load(f)
+        elif self.manifest_path.exists():
+            return yaml.safe_load(self.manifest_path.read_text())["spec"]
+
+        return None
+
+    @property
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / "manifest.yaml").is_file():
             return ConnectorLanguage.MANIFEST_ONLY
@@ -577,7 +598,7 @@ class Connector:
         Returns:
             bool: True if the connector is enabled, False otherwise.
         """
-        registries = self.metadata.get("registries")
+        registries = self.metadata.get("registryOverrides")
         if not registries:
             return False
 
@@ -625,6 +646,23 @@ class Connector:
         return get(connector_entry, "generated.metrics.cloud.usage")
 
     @property
+    def sbom_url(self) -> Optional[str]:
+        """
+        Fetches SBOM URL from the connector definition in the OSS registry, if it exists, None otherwise.
+        """
+        metadata = self.metadata
+        definition_id = metadata.get("definitionId")
+        # We use the OSS registry as the source of truth for released connectors as the cloud registry can be a subset of the OSS registry.
+        oss_registry = download_catalog(OSS_CATALOG_URL)
+
+        all_connectors_of_type = oss_registry[f"{self.connector_type}s"]
+        connector_entry = find(all_connectors_of_type, {self.registry_primary_key_field: definition_id})
+        if not connector_entry:
+            return None
+
+        return get(connector_entry, "generated.sbomUrl")
+
+    @property
     def image_address(self) -> str:
         return f'{self.metadata["dockerRepository"]}:{self.metadata["dockerImageTag"]}'
 
@@ -659,7 +697,7 @@ class Connector:
     def get_local_dependency_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = []
         if self.language == ConnectorLanguage.JAVA:
-            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk")]
+            dependencies_paths += [Path("./airbyte-cdk/java/airbyte-cdk"), Path("./airbyte-cdk/bulk")]
             dependencies_paths += get_all_gradle_dependencies(
                 self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
             )

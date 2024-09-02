@@ -358,6 +358,35 @@ def bulk_job_failed_response():
         },
     }
 
+ 
+@pytest.fixture
+def bulk_job_failed_with_partial_url_response():
+    return {
+        "data": {
+            "node": {
+                "id": "gid://shopify/BulkOperation/123",
+                "status": "FAILED",
+                "errorCode": "INTERNAL_SERVER_ERROR",
+                "objectCount": "432",
+                "fileSize": None,
+                "url": None,
+                "partialDataUrl": 'https://some_url?response-content-disposition=attachment;+filename="bulk-123456789.jsonl";+filename*=UTF-8'
+                "bulk-123456789.jsonl&response-content-type=application/jsonl"
+            }
+        },
+        "extensions": {
+            "cost": {
+                "requestedQueryCost": 1,
+                "actualQueryCost": 1,
+                "throttleStatus": {
+                    "maximumAvailable": 20000.0,
+                    "currentlyAvailable": 19999,
+                    "restoreRate": 1000.0
+                }
+            }
+        }
+    }
+
 
 @pytest.fixture
 def bulk_job_timeout_response():

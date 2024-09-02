@@ -38,6 +38,7 @@ The connector has a rate limit of 5 requests per second per account.
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.2.0   | 2024-08-02 | [42987](https://github.com/airbytehq/airbyte/pull/42987) | Refactor connector to manifest-only format |
 | 0.1.11  | 2024-07-27 | [42677](https://github.com/airbytehq/airbyte/pull/42677) | Update dependencies |
 | 0.1.10  | 2024-07-20 | [42337](https://github.com/airbytehq/airbyte/pull/42337) | Update dependencies |
