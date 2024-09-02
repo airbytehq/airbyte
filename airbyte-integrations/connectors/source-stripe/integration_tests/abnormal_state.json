@@ -58,13 +58,6 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "customer_updated": 10000000000 },
-      "stream_descriptor": { "name": "customer_payment_methods" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
       "stream_state": { "updated": 10000000000 },
       "stream_descriptor": { "name": "plans" }
     }
