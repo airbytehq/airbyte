@@ -17,9 +17,11 @@ from airbyte_cdk.sources.types import StreamSlice
         (
             "test_single_stream_slicer",
             [ListPartitionRouter(values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={})],
-            [StreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
-             StreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
-             StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={})],
+            [
+                StreamSlice(partition={"owner_resource": "customer"}, cursor_slice={}),
+                StreamSlice(partition={"owner_resource": "store"}, cursor_slice={}),
+                StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={}),
+            ],
         ),
         (
             "test_two_stream_slicers",
@@ -37,24 +39,24 @@ from airbyte_cdk.sources.types import StreamSlice
             ],
         ),
         (
-                "test_singledatetime",
-                [
-                    DatetimeBasedCursor(
-                        start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
-                        end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
-                        step="P1D",
-                        cursor_field=InterpolatedString.create("", parameters={}),
-                        datetime_format="%Y-%m-%d",
-                        cursor_granularity="P1D",
-                        config={},
-                        parameters={},
-                    ),
-                ],
-                [
-                    StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2021-01-01"}),
-                    StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-02", "end_time": "2021-01-02"}),
-                    StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-03", "end_time": "2021-01-03"}),
-                ],
+            "test_singledatetime",
+            [
+                DatetimeBasedCursor(
+                    start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+                    end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
+                    step="P1D",
+                    cursor_field=InterpolatedString.create("", parameters={}),
+                    datetime_format="%Y-%m-%d",
+                    cursor_granularity="P1D",
+                    config={},
+                    parameters={},
+                ),
+            ],
+            [
+                StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-01", "end_time": "2021-01-01"}),
+                StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-02", "end_time": "2021-01-02"}),
+                StreamSlice(partition={}, cursor_slice={"start_time": "2021-01-03", "end_time": "2021-01-03"}),
+            ],
         ),
         (
             "test_list_and_datetime",
@@ -78,9 +80,15 @@ from airbyte_cdk.sources.types import StreamSlice
                 StreamSlice(partition={"owner_resource": "store"}, cursor_slice={"start_time": "2021-01-01", "end_time": "2021-01-01"}),
                 StreamSlice(partition={"owner_resource": "store"}, cursor_slice={"start_time": "2021-01-02", "end_time": "2021-01-02"}),
                 StreamSlice(partition={"owner_resource": "store"}, cursor_slice={"start_time": "2021-01-03", "end_time": "2021-01-03"}),
-                StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={"start_time": "2021-01-01", "end_time": "2021-01-01"}),
-                StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={"start_time": "2021-01-02", "end_time": "2021-01-02"}),
-                StreamSlice(partition={"owner_resource": "subscription"}, cursor_slice={"start_time": "2021-01-03", "end_time": "2021-01-03"}),
+                StreamSlice(
+                    partition={"owner_resource": "subscription"}, cursor_slice={"start_time": "2021-01-01", "end_time": "2021-01-01"}
+                ),
+                StreamSlice(
+                    partition={"owner_resource": "subscription"}, cursor_slice={"start_time": "2021-01-02", "end_time": "2021-01-02"}
+                ),
+                StreamSlice(
+                    partition={"owner_resource": "subscription"}, cursor_slice={"start_time": "2021-01-03", "end_time": "2021-01-03"}
+                ),
             ],
         ),
     ],
