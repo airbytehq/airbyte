@@ -59,14 +59,14 @@ def _record() -> AirbyteMessage:
     )
 
 
-# def test_check_fails():
-#     f = open(
-#         "integration_tests/invalid_config.json",
-#     )
-#     config = json.load(f)
-#     destination = DestinationGlassflow()
-#     status = destination.check(logger=Mock(), config=config)
-#     assert status.status == Status.FAILED
+def test_check_fails():
+    f = open(
+        "integration_tests/invalid_config.json",
+    )
+    config = json.load(f)
+    destination = DestinationGlassflow()
+    status = destination.check(logger=Mock(), config=config)
+    assert status.status == Status.FAILED
 
 
 def test_check_succeeds():

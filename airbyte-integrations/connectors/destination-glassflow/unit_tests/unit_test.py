@@ -32,12 +32,22 @@ def _init_mocks(client):
     return pipeline
 
 
-def test_check_succeeds():
+@mock.patch("glassflow.client.PipelineClient")
+def test_check_succeeds(client):
+    pipeline = _init_mocks(client)
+    pipeline.consume.return_value = {}
     destination = DestinationGlassflow()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.SUCCEEDED
 
-# TODO: Add test_check_fails
+
+@mock.patch("glassflow.client.PipelineClient")
+def test_check_fails(client):
+    pipeline = _init_mocks(client)
+    pipeline.consume.side_effect = Exception("Failed to connect to Glassflow Pipeline")
+    destination = DestinationGlassflow()
+    status = destination.check(logger=Mock(), config=config)
+    assert status.status == Status.FAILED
 
 
 def _state() -> AirbyteMessage:

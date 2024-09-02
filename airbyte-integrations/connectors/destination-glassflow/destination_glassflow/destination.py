@@ -79,8 +79,8 @@ class DestinationGlassflow(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO: Check if pipeline in config exists and access token is valid
-            create_connection(config)
+            connection = create_connection(config)
+            connection.consume()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             logger.error(f"Failed to create connection. Error: {e}")
