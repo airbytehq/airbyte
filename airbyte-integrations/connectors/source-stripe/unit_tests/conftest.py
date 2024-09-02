@@ -12,6 +12,9 @@ from airbyte_cdk.test.state_builder import StateBuilder
 os.environ["CACHE_DISABLED"] = "true"
 os.environ["DEPLOYMENT_MODE"] = "testing"
 
+def pytest_collection_modifyitems(items):
+    for item in items:
+        item.add_marker(pytest.mark.timeout(20))
 
 @pytest.fixture(name="config")
 def config_fixture():
