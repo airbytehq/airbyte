@@ -200,7 +200,7 @@ The HubSpot source connector supports the following streams:
 - [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 
-### ERD Diagram
+### Entity-Relationship Diagram (ERD)
 <ErdDiagram></ErdDiagram>
 
 ### Notes on the `property_history` streams

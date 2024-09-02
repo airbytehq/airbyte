@@ -214,7 +214,7 @@ See more info about user-defined pk [here](https://docs.airbyte.com/understandin
 
 :::
 
-### ERD Diagram
+### Entity-Relationship Diagram (ERD)
 <ErdDiagram></ErdDiagram>
 
 ### Custom Reports

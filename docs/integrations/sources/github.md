@@ -138,7 +138,7 @@ This connector outputs the following incremental streams:
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
-### ERD Diagram
+### Entity-Relationship Diagram (ERD)
 <ErdDiagram></ErdDiagram>
 
 ### Notes

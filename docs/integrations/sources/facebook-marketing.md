@@ -195,7 +195,7 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 Please be aware that some fields, such as `conversions` and `conversion_values`, may not be directly accessible when querying Ad Insights. For comprehensive access to all available fields, we recommend using a Custom Insight and specifying the necessary **breakdowns**.
 ::: -->
 
-### ERD Diagram
+### Entity-Relationship Diagram (ERD)
 <ErdDiagram></ErdDiagram>
 
 ## Facebook Marketing Attribution Reporting

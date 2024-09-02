@@ -146,8 +146,11 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
 <!-- /env:oss -->
 
-### ERD Diagram
+<HideInUI>
+
+### Entity-Relationship Diagram (ERD)
 <ErdDiagram></ErdDiagram>
+</HideInUI>
 
 ## Report options
 
