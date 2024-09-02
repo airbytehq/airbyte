@@ -1,6 +1,10 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from typing import Any, Dict
+from unittest import mock
+from unittest.mock import Mock
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -9,16 +13,11 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    SyncMode,
     Status,
+    SyncMode,
     Type,
 )
-
 from destination_glassflow import DestinationGlassflow
-from unittest.mock import Mock
-from unittest import mock
-from typing import Any, Dict
-
 
 config = {
     "pipeline_id": "12345",

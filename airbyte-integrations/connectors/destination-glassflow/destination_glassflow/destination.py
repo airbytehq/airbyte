@@ -2,8 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from logging import getLogger, Logger
-
+from logging import Logger, getLogger
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.destinations import Destination
@@ -19,9 +18,7 @@ def create_connection(config: Mapping[str, Any]) -> PipelineClient:
     pipeline_access_token = config.get("pipeline_access_token")
 
     client = GlassFlowClient()
-    return client.pipeline_client(
-        pipeline_id=pipeline_id,
-        pipeline_access_token=pipeline_access_token)
+    return client.pipeline_client(pipeline_id=pipeline_id, pipeline_access_token=pipeline_access_token)
 
 
 class DestinationGlassflow(Destination):
@@ -56,12 +53,14 @@ class DestinationGlassflow(Destination):
                     # Message contains record from a stream that is not in the catalog. Skip it!
                     logger.debug(f"Stream {record.stream} was not present in configured streams, skipping")
                     continue
-                connection.publish({
-                    "stream":  record.stream,
-                    "namespace": record.namespace,
-                    "emitted_at": record.emitted_at,
-                    "data": record.data,
-                })
+                connection.publish(
+                    {
+                        "stream": record.stream,
+                        "namespace": record.namespace,
+                        "emitted_at": record.emitted_at,
+                        "data": record.data,
+                    }
+                )
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
                 continue
