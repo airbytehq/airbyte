@@ -113,6 +113,7 @@ The key that you are assigned is rate-limited and as such any applications that 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.9 | 2024-08-31 | [44997](https://github.com/airbytehq/airbyte/pull/44997) | Update dependencies |
 | 0.1.8 | 2024-08-24 | [44746](https://github.com/airbytehq/airbyte/pull/44746) | Update dependencies |
 | 0.1.7 | 2024-08-17 | [44208](https://github.com/airbytehq/airbyte/pull/44208) | Update dependencies |
 | 0.1.6 | 2024-08-10 | [43540](https://github.com/airbytehq/airbyte/pull/43540) | Update dependencies |

@@ -108,8 +108,7 @@ The Stripe source connector supports the following streams:
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
-- [Payment Methods](https://stripe.com/docs/api/payment_methods/list) (for Treasury flows)
-- [Customer Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
+- [Payment Methods](https://docs.stripe.com/api/payment_methods/customer_list?lang=curl) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
@@ -237,7 +236,8 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.0   | 2024-08-29 | [44891](https://github.com/airbytehq/airbyte/pull/44891)  | Update dependencies                                                                                                                                                                                                           |
+| 5.6.0   | 2024-09-02 | [44891](https://github.com/airbytehq/airbyte/pull/44891)  | Update dependencies                                                                                                                                                                                                           |
+| 5.5.2   | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862)  | Fix RFR pagination issue                                                                                                                                                                                                      |
 | 5.5.1   | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105)  | Update dependencies                                                                                                                                                                                                           |
 | 5.5.0   | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302)  | Fix problem with state not updating and upgrade cdk 4                                                                                                                                                                         |
 | 5.4.12  | 2024-07-31 | [41985](https://github.com/airbytehq/airbyte/pull/41985)  | Expand Invoice discounts and tax rates                                                                                                                                                                                        |

@@ -172,11 +172,12 @@ corresponds to that version.
 
 ### Java CDK
 
-| Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
-| :--------- | :--------- | :---------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.44.19    | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476)  | Increase Jackson message length limit to 100mb                                                                                                                 |
+| Version    | Date       | Pull Request                                                 | Subject                                                                                                                                                        |
+| :--------- | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.44.20    | 2024-08-30 | [\#44933](https://github.com/airbytehq/airbyte/pull/44933)   | Avro/Parquet destinations: handle `{}` schemas inside objects/arrays                                                                                           |
+| 0.44.19    | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase Jackson message length limit to 100mb                                                                                                                 |
 | 0.44.18    | 2024-08-22 | [\#44505](https://github.com/airbytehq/airbyte/pull/44505)   | Improve handling of incoming debezium change events                                                                                                            |
-| 0.44.17    | 2024-08-27 | [\#44832](https://github.com/airbytehq/airbyte/pull/44832) | Fix issues where some error messages with upper cases do not get matched by the error translation framework.                                                   |
+| 0.44.17    | 2024-08-27 | [\#44832](https://github.com/airbytehq/airbyte/pull/44832)   | Fix issues where some error messages with upper cases do not get matched by the error translation framework.                                                   |
 | 0.44.16    | 2024-08-22 | [\#44505](https://github.com/airbytehq/airbyte/pull/44505)   | Destinations: add sqlgenerator testing for mixed-case stream name                                                                                              |
 | 0.44.15    | ?????????? | [\#?????](https://github.com/airbytehq/airbyte/pull/?????)   | ?????                                                                                                                                                          |
 | 0.44.14    | 2024-08-19 | [\#42503](https://github.com/airbytehq/airbyte/pull/42503)   | Destinations (refreshes) - correctly detect existing raw/final table of the correct generation during truncate sync                                            |
