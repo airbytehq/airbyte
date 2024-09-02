@@ -1621,7 +1621,7 @@ definitions:
     type: DeclarativeStream
     name: spark_ads
     primary_key:
-      - item_id
+      - spark_ads_post_id
     retriever:
       type: SimpleRetriever
       requester:
