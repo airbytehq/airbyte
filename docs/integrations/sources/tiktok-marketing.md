@@ -117,7 +117,6 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | CampaignsAudienceReportsByPlatformDaily   | Prod,Sandbox | campaign_id, stat_time_day, platform       | Yes         |
 | SparkAds                                  | Prod         | spark_ads_post_id                          | No          |
 
-
 :::info
 
 TikTok Reporting API has some [Data Latency](https://ads.tiktok.com/marketing_api/docs?id=1738864894606337), usually of about 11 hours.
