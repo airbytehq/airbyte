@@ -115,6 +115,8 @@ The TikTok Marketing source connector supports the following [sync modes](https:
 | CampaignsAudienceReportsDaily             | Prod,Sandbox | campaign_id, stat_time_day, gender, age    | Yes         |
 | CampaignsAudienceReportsByCountryDaily    | Prod,Sandbox | campaign_id, stat_time_day, country_code   | Yes         |
 | CampaignsAudienceReportsByPlatformDaily   | Prod,Sandbox | campaign_id, stat_time_day, platform       | Yes         |
+| SparkAds                                  | Prod         | spark_ads_post_id                          | No          |
+
 
 :::info
 
@@ -138,6 +140,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 4.3.0 | 2024-09-02 | [x](https://github.com/airbytehq/airbyte/pull/x) | Add SparkAds stream |
 | 4.2.5 | 2024-08-31 | [44954](https://github.com/airbytehq/airbyte/pull/44954) | Update dependencies |
 | 4.2.4 | 2024-08-24 | [43783](https://github.com/airbytehq/airbyte/pull/43783) | Update dependencies |
 | 4.2.3 | 2024-08-19 | [44048](https://github.com/airbytehq/airbyte/pull/44048) | Fix include_deleted toggle |
