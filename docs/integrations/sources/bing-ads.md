@@ -214,6 +214,9 @@ See more info about user-defined pk [here](https://docs.airbyte.com/understandin
 
 :::
 
+### ERD Diagram
+<ErdDiagram></ErdDiagram>
+
 ### Custom Reports
 
 You can build your own report by providing:

@@ -100,6 +100,9 @@ the [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/). 
 related to Instagram Ads, use the Facebook Marketing source.
 :::
 
+### ERD Diagram
+<ErdDiagram></ErdDiagram>
+
 ## Data type map
 
 AirbyteRecords are required to conform to

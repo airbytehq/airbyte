@@ -126,6 +126,9 @@ This connector outputs the following incremental streams:
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
+### ERD Diagram
+<ErdDiagram></ErdDiagram>
+
 ## Experimental Tables
 
 The following tables depend on undocumented internal Jira API endpoints and are
