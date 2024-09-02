@@ -49,8 +49,8 @@ class StripeRequestBuilder:
         return cls("issuing/transactions", account_id, client_secret)
 
     @classmethod
-    def payment_methods_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
-        return cls("payment_methods", account_id, client_secret)
+    def payment_methods_endpoint(cls, customer_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls(f"customers/{customer_id}/payment_methods", account_id, client_secret)
 
     @classmethod
     def persons_endpoint(

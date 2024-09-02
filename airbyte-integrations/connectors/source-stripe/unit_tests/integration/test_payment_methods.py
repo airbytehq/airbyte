@@ -6,6 +6,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
+from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -21,20 +22,15 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from integration.config import ConfigBuilder
 from integration.helpers import assert_stream_did_not_run
 from integration.pagination import StripePaginationStrategy
 from integration.request_builder import StripeRequestBuilder
 from integration.response_builder import a_response_with_status
+from integration.test_bank_accounts import _a_customer, _customers_response
 from source_stripe import SourceStripe
 
-_EVENT_TYPES = [
-    "payment_method.attached",
-    "payment_method.automatically_updated",
-    "payment_method.detached",
-    "payment_method.updated",
-]
+_EVENT_TYPES = ["payment_method.*"]
 
 _DATA_FIELD = NestedPath(["data", "object"])
 _STREAM_NAME = "payment_methods"
@@ -47,8 +43,8 @@ _NO_STATE = {}
 _AVOIDING_INCLUSIVE_BOUNDARIES = timedelta(seconds=1)
 
 
-def _payment_methods_request() -> StripeRequestBuilder:
-    return StripeRequestBuilder.payment_methods_endpoint(_ACCOUNT_ID, _CLIENT_SECRET)
+def _payment_methods_request(customer_id: str) -> StripeRequestBuilder:
+    return StripeRequestBuilder.payment_methods_endpoint(customer_id, _ACCOUNT_ID, _CLIENT_SECRET)
 
 
 def _events_request() -> StripeRequestBuilder:
@@ -108,7 +104,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_limit(100).build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_limit(100).build(),
             _payment_methods_response().with_record(_a_payment_method()).with_record(_a_payment_method()).build(),
         )
 
@@ -119,14 +124,23 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_many_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_limit(100).build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_limit(100).build(),
             _payment_methods_response()
             .with_pagination()
             .with_record(_a_payment_method().with_id("last_record_id_from_first_page"))
             .build(),
         )
         http_mocker.get(
-            _payment_methods_request().with_starting_after("last_record_id_from_first_page").with_limit(100).build(),
+            _payment_methods_request("parent_id").with_starting_after("last_record_id_from_first_page").with_limit(100).build(),
             _payment_methods_response().with_record(_a_payment_method()).with_record(_a_payment_method()).build(),
         )
 
@@ -137,7 +151,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_limit(100).build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_limit(100).build(),
             _payment_methods_response().with_record(_a_payment_method()).build(),
         )
 
@@ -148,7 +171,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_http_status_400_when_read_then_stream_did_not_run(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_any_query_params().build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_any_query_params().build(),
             a_response_with_status(400),
         )
         output = self._read(_config())
@@ -157,7 +189,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_http_status_401_when_read_then_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_any_query_params().build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_any_query_params().build(),
             a_response_with_status(401),
         )
         output = self._read(_config(), expecting_exception=True)
@@ -166,7 +207,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_rate_limited_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_any_query_params().build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_any_query_params().build(),
             [
                 a_response_with_status(429),
                 _payment_methods_response().with_record(_a_payment_method()).build(),
@@ -178,7 +228,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_http_status_500_once_before_200_when_read_then_retry_and_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_any_query_params().build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_any_query_params().build(),
             [a_response_with_status(500), _payment_methods_response().with_record(_a_payment_method()).build()],
         )
         output = self._read(_config())
@@ -187,7 +246,16 @@ class FullRefreshTest(TestCase):
     @HttpMocker()
     def test_given_http_status_500_when_read_then_raise_config_error(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            _payment_methods_request().with_any_query_params().build(),
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
+        http_mocker.get(
+            _payment_methods_request("parent_id").with_any_query_params().build(),
             a_response_with_status(500),
         )
         with patch.object(HttpStatusErrorHandler, "max_retries", new=0):
@@ -202,9 +270,18 @@ class FullRefreshTest(TestCase):
 class IncrementalTest(TestCase):
     @HttpMocker()
     def test_given_no_state_when_read_then_use_payment_methods_endpoint(self, http_mocker: HttpMocker) -> None:
+        http_mocker.get(
+            StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
+            _customers_response()
+            .with_record(
+                _a_customer()
+                .with_id("parent_id")
+            )
+            .build(),
+        )
         cursor_value = int(_A_START_DATE.timestamp()) + 1
         http_mocker.get(
-            _payment_methods_request().with_limit(100).build(),
+            _payment_methods_request("parent_id").with_limit(100).build(),
             _payment_methods_response().with_record(_a_payment_method().with_cursor(cursor_value)).build(),
         )
         output = self._read(_config().with_start_date(_A_START_DATE), _NO_STATE)
