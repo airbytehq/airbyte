@@ -37,6 +37,7 @@ from source_stripe.streams import (
     StripeSubStream,
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
+    UpdatedCursorIncrementalStripeSubStream,
 )
 
 logger = logging.getLogger("airbyte")
@@ -307,17 +308,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
-                name="payment_methods",
-                path="payment_methods",
-                event_types=[
-                    "payment_method.attached",
-                    "payment_method.automatically_updated",
-                    "payment_method.detached",
-                    "payment_method.updated",
-                ],
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeStream(
                 name="credit_notes",
                 path="credit_notes",
                 event_types=["credit_note.created", "credit_note.updated", "credit_note.voided"],
@@ -483,16 +473,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 sub_items_attr="refunds",
                 **args,
             ),
-            ParentIncrementalStipeSubStream(
-                name="customer_payment_methods",
+            UpdatedCursorIncrementalStripeSubStream(
+                name="payment_methods",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
                 parent=self.customers(**args),
-                cursor_field="customer_updated",
-                slice_data_retriever=lambda record, stream_slice: {
-                    "customer_created": stream_slice["parent"]["created"],
-                    "customer_updated": stream_slice["parent"]["updated"],
-                    **record,
-                },
+                event_types=["payment_method.*"],
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(

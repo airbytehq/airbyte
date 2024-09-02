@@ -129,7 +129,10 @@ class StripeRequestBuilder:
         if self._starting_after_id:
             query_params["starting_after"] = self._starting_after_id
         if self._types:
-            query_params["types[]"] = self._types
+            if len(self._types) > 1:
+                query_params["types[]"] = self._types
+            else:
+                query_params["type"] = self._types
         if self._object:
             query_params["object"] = self._object
         if self._expands:
