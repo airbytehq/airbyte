@@ -121,41 +121,41 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
     // Get user, group and role SELECT privileges from the information schema
     return connection -> connection.prepareStatement(
         """
-          SELECT DISTINCT 
-          OBJECTNAME, 
-          OBJECTSCHEMA 
-          FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' 
-          		AND PRIVILEGE = 'SELECT' 
+          SELECT DISTINCT
+          OBJECTNAME,
+          OBJECTSCHEMA
+          FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE'
+          		AND PRIVILEGE = 'SELECT'
           		AND AUTHID = SESSION_USER
           		AND AUTHIDTYPE = 'U'
           UNION
-          SELECT DISTINCT 
-          OBJECTNAME, 
-          OBJECTSCHEMA 
+          SELECT DISTINCT
+          OBJECTNAME,
+          OBJECTSCHEMA
           FROM SYSIBMADM.PRIVILEGES WHERE OBJECTTYPE = 'TABLE' AND PRIVILEGE = 'SELECT'
           		AND AUTHID IN (
-                  SELECT GROUP 
+                  SELECT GROUP
                   FROM TABLE (SYSPROC.AUTH_LIST_GROUPS_FOR_AUTHID(SESSION_USER))
                   )
                   AND AUTHIDTYPE = 'G'
-          UNION		
+          UNION
           SELECT DISTINCT
           TABNAME AS OBJECTNAME,
           TABSCHEMA AS OBJECTSCHEMA
-          FROM 
+          FROM
               SYSCAT.TABAUTH
-          WHERE 
-              GRANTEETYPE = 'R'  
+          WHERE
+              GRANTEETYPE = 'R'
               AND SELECTAUTH = 'Y'
               AND TABSCHEMA NOT IN ('SYSCAT', 'SYSFUN', 'SYSIBM', 'SYSIBMADM', 'SYSIBMINTERNAL', 'SYSIBMTS', 'SYSPROC', 'SYSPUBLIC', 'SYSSTAT', 'SYSTOOLS')
               AND GRANTEE IN (
-                  SELECT ROLENAME FROM SYSCAT.ROLEAUTH WHERE 
+                  SELECT ROLENAME FROM SYSCAT.ROLEAUTH WHERE
                   (GRANTEE IN (
-                  SELECT GROUP 
+                  SELECT GROUP
                   FROM TABLE (SYSPROC.AUTH_LIST_GROUPS_FOR_AUTHID(SESSION_USER)))
                   AND GRANTEETYPE = 'G')
                   OR
-                  (GRANTEE = SESSION_USER AND GRANTEETYPE= 'U')            
+                  (GRANTEE = SESSION_USER AND GRANTEETYPE= 'U')
               )
         """);
   }
