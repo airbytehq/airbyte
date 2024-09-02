@@ -46,6 +46,7 @@ class StreamStubIncremental(Stream, CheckpointMixin):
     """
     Stub full incremental class to assist with testing.
     """
+
     _state = {}
 
     def read_records(
@@ -74,6 +75,7 @@ class StreamStubResumableFullRefresh(Stream, CheckpointMixin):
     """
     Stub full incremental class to assist with testing.
     """
+
     _state = {}
 
     def read_records(
@@ -100,6 +102,7 @@ class StreamStubLegacyStateInterface(Stream):
     """
     Stub full incremental class to assist with testing.
     """
+
     _state = {}
 
     def read_records(
@@ -154,17 +157,22 @@ class HttpSubStreamStubFullRefreshLegacySlices(HttpSubStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return "/stub"
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
@@ -203,17 +211,22 @@ class MultipleSlicesStreamStub(HttpStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return "/stub"
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
@@ -234,17 +247,22 @@ class ParentHttpStreamStub(HttpStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return "/parent"
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
@@ -374,11 +392,25 @@ def test_get_json_schema_is_cached(mocked_method):
     [
         pytest.param(StreamStubIncremental(), {}, IncrementalCheckpointReader, id="test_incremental_checkpoint_reader"),
         pytest.param(StreamStubFullRefresh(), {}, FullRefreshCheckpointReader, id="test_full_refresh_checkpoint_reader"),
-        pytest.param(StreamStubResumableFullRefresh(), {}, ResumableFullRefreshCheckpointReader, id="test_resumable_full_refresh_checkpoint_reader"),
-        pytest.param(StreamStubLegacyStateInterface(), {}, IncrementalCheckpointReader, id="test_incremental_checkpoint_reader_with_legacy_state"),
-        pytest.param(CursorBasedStreamStubFullRefresh(), {"next_page_token": 10}, CursorBasedCheckpointReader, id="test_checkpoint_reader_using_rfr_cursor"),
-        pytest.param(LegacyCursorBasedStreamStubFullRefresh(), {}, LegacyCursorBasedCheckpointReader, id="test_full_refresh_checkpoint_reader_for_legacy_slice_format"),
-    ]
+        pytest.param(
+            StreamStubResumableFullRefresh(), {}, ResumableFullRefreshCheckpointReader, id="test_resumable_full_refresh_checkpoint_reader"
+        ),
+        pytest.param(
+            StreamStubLegacyStateInterface(), {}, IncrementalCheckpointReader, id="test_incremental_checkpoint_reader_with_legacy_state"
+        ),
+        pytest.param(
+            CursorBasedStreamStubFullRefresh(),
+            {"next_page_token": 10},
+            CursorBasedCheckpointReader,
+            id="test_checkpoint_reader_using_rfr_cursor",
+        ),
+        pytest.param(
+            LegacyCursorBasedStreamStubFullRefresh(),
+            {},
+            LegacyCursorBasedCheckpointReader,
+            id="test_full_refresh_checkpoint_reader_for_legacy_slice_format",
+        ),
+    ],
 )
 def test_get_checkpoint_reader(stream: Stream, stream_state, expected_checkpoint_reader_type):
     checkpoint_reader = stream._get_checkpoint_reader(

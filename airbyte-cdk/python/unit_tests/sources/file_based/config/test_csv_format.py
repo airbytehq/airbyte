@@ -30,5 +30,5 @@ class CsvHeaderDefinitionTest(unittest.TestCase):
 
 class CsvDelimiterTest(unittest.TestCase):
     def test_tab_delimter(self):
-        assert CsvFormat(delimiter=r"\t").delimiter == '\t'
+        assert CsvFormat(delimiter=r"\t").delimiter == "\t"
         assert len(CsvFormat(delimiter=r"\t").delimiter) == 1
