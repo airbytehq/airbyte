@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonRecordIdentityMapper
 import io.airbyte.cdk.integrations.destination.s3.parquet.JsonRecordParquetPreprocessor
 import io.airbyte.commons.jackson.MoreMappers
+import io.airbyte.commons.json.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -161,5 +162,51 @@ class JsonRecordTransformerTest {
                 )
             Assertions.assertEquals(jsonExpectedOut[index], transformedRecord)
         }
+    }
+
+    @Test
+    fun testStringifyJsonValues() {
+        val inputSchema =
+            Jsons.deserialize(
+                """
+            {
+              "type": "object",
+              "properties": {
+                "foo": {},
+                "bar": {
+                  "type": "array",
+                  "items": {}
+                }
+              }
+            }
+            """.trimIndent()
+            ) as ObjectNode
+        val inputRecord =
+            Jsons.deserialize(
+                """
+            {
+              "foo": {"a": 42},
+              "bar": [1, null, {}]
+            }
+            """.trimIndent()
+            )
+
+        val avroMappedRecord =
+            JsonRecordAvroPreprocessor().mapRecordWithSchema(inputRecord, inputSchema)
+
+        Assertions.assertEquals(
+            Jsons.deserialize(
+                // The "foo" field is completely serialized
+                // and the "bar" field has each entry serialized,
+                // except for the null entry, which is unchanged.
+                """
+                {
+                  "foo": "{\"a\":42}",
+                  "bar": ["1", null, "{}"]
+                }
+                """.trimIndent()
+            ),
+            avroMappedRecord
+        )
     }
 }
