@@ -816,10 +816,10 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
-        use_cache = model.use_cache and not self._disable_cache
-
         assert model.use_cache is not None  # for mypy
         assert model.http_method is not None  # for mypy
+
+        use_cache = model.use_cache and not self._disable_cache
 
         return HttpRequester(
             name=name,
@@ -833,7 +833,7 @@ class ModelToComponentFactory:
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
-            use_cache=use_cache or False,
+            use_cache=use_cache,
             decoder=decoder,
             stream_response=decoder.is_stream_response() if decoder else False,
         )
