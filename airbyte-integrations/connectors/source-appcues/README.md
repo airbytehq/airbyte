@@ -1,10 +1,13 @@
 # Appcues
 This directory contains the manifest-only connector for `source-appcues`.
 
-New Source: AppCues
-Account ID link: https://studio.appcues.com/settings/account
-Docs link: https://api.appcues.com/v2/docs
-API keys link: https://studio.appcues.com/settings/keys
+## Documentation reference:
+Visit `https://api.appcues.com/v2/docs` for API documentation
+
+## Authentication setup
+
+Appcues uses basic http auth that uses username and password
+Visit settings page for generating secrets and copy account id `https://studio.appcues.com/settings/`
 
 ## Usage
 There are multiple ways to use this connector:

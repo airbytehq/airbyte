@@ -2,12 +2,6 @@ version: 4.6.2
 
 type: DeclarativeSource
 
-description: |-
-  New Source: AppCues
-  Account ID link: https://studio.appcues.com/settings/account
-  Docs link: https://api.appcues.com/v2/docs
-  API keys link: https://studio.appcues.com/settings/keys
-
 check:
   type: CheckStream
   stream_names:
