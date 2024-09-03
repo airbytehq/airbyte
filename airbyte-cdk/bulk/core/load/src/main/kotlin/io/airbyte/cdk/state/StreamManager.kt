@@ -100,7 +100,15 @@ class DefaultStreamManager(
             rangesState[batch.batch.state]
                 ?: throw IllegalArgumentException("Invalid batch state: ${batch.batch.state}")
 
-        stateRanges.addAll(batch.ranges)
+        // Force the ranges to overlap at their endpoints, in order to work around
+        // the behavior of `.encloses`, which otherwise would not consider adjacent ranges as
+        // contiguous.
+        // This ensures that a state message received at eg, index 10 (after messages 0..9 have
+        // been received), will pass `{'[0..5]','[6..9]'}.encloses('[0..10)')`.
+        val expanded =
+            batch.ranges.asRanges().map { it.span(Range.singleton(it.upperEndpoint() + 1)) }
+
+        stateRanges.addAll(expanded)
         log.info { "Updated ranges for $stream[${batch.batch.state}]: $stateRanges" }
     }
 
@@ -108,7 +116,7 @@ class DefaultStreamManager(
     private fun isProcessingCompleteForState(index: Long, state: Batch.State): Boolean {
 
         val completeRanges = rangesState[state]!!
-        return completeRanges.encloses(Range.closed(0L, index - 1))
+        return completeRanges.encloses(Range.closedOpen(0L, index))
     }
 
     /** True if all records have associated [Batch.State.COMPLETE] batches. */
