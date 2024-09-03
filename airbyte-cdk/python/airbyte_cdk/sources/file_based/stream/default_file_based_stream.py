@@ -9,7 +9,7 @@ from copy import deepcopy
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
@@ -32,7 +32,6 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
-
     """
     The default file-based stream.
     """
@@ -165,62 +164,48 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @cache
     def get_json_schema(self) -> JsonSchema:
-        extra_fields = {
-            self.ab_last_mod_col: {"type": "string"},
-            self.ab_file_name_col: {"type": "string"},
-        }
         try:
             schema = self._get_raw_json_schema()
-        except InvalidSchemaError as config_exception:
-            raise config_exception
-        except AirbyteTracedException as ate:
-            raise ate
+        except InvalidSchemaError as exc:
+            raise exc
         except Exception as exc:
             raise SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR, stream=self.name) from exc
-        else:
-            return {"type": "object", "properties": {**extra_fields, **schema["properties"]}}
+
+        extra_fields = {self.ab_last_mod_col: {"type": "string"}, self.ab_file_name_col: {"type": "string"}}
+        return {"type": "object", "properties": {**extra_fields, **(schema["properties"] if "properties" in schema else {})}}
 
     def _get_raw_json_schema(self) -> JsonSchema:
+        schema = schemaless_schema
         if self.config.input_schema:
-            return self.config.get_input_schema()  # type: ignore
-        elif self.config.schemaless:
-            return schemaless_schema
-        else:
+            return self.config.get_input_schema()
+        elif not self.config.schemaless:
             files = self.list_files()
-            first_n_files = len(files)
 
             if self.config.recent_n_files_to_read_for_schema_discovery:
                 self.logger.info(
-                    msg=(
-                        f"Only first {self.config.recent_n_files_to_read_for_schema_discovery} files will be used to infer schema "
-                        f"for stream {self.name} due to limitation in config."
-                    )
+                    f"Only first {self.config.recent_n_files_to_read_for_schema_discovery} files will be used to infer schema for stream {self.name}."
                 )
-                first_n_files = self.config.recent_n_files_to_read_for_schema_discovery
+                files = files[: self.config.recent_n_files_to_read_for_schema_discovery]
 
-        if first_n_files == 0:
-            self.logger.warning(msg=f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
-            return schemaless_schema
+            if files:
+                max_n_files = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
+                if len(files) > max_n_files:
+                    self.logger.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files} files.")
+                    files = files[:max_n_files]
 
-        max_n_files_for_schema_inference = self._discovery_policy.get_max_n_files_for_schema_inference(self.get_parser())
+                files = sorted(files, key=lambda x: x.last_modified, reverse=True)
+                inferred_schema = self.infer_schema(files)
 
-        if first_n_files > max_n_files_for_schema_inference:
-            # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-            self.logger.warning(msg=f"Refusing to infer schema for {first_n_files} files; using {max_n_files_for_schema_inference} files.")
-            first_n_files = max_n_files_for_schema_inference
+                if not inferred_schema:
+                    raise InvalidSchemaError(
+                        FileBasedSourceError.INVALID_SCHEMA_ERROR,
+                        details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
+                        stream=self.name,
+                    )
 
-        files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:first_n_files]
-
-        inferred_schema = self.infer_schema(files)
-
-        if not inferred_schema:
-            raise InvalidSchemaError(
-                FileBasedSourceError.INVALID_SCHEMA_ERROR,
-                details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
-                stream=self.name,
-            )
-
-        schema = {"type": "object", "properties": inferred_schema}
+                schema = {"type": "object", "properties": inferred_schema}
+        else:
+            self.logger.warning(f"No files were identified in the stream {self.name}. Setting default schema for the stream.")
 
         return schema
 

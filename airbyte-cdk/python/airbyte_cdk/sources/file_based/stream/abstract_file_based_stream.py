@@ -63,8 +63,7 @@ class AbstractFileBasedStream(Stream):
 
     @property
     @abstractmethod
-    def primary_key(self) -> PrimaryKeyType:
-        ...
+    def primary_key(self) -> PrimaryKeyType: ...
 
     @cache
     def list_files(self) -> List[RemoteFile]:
