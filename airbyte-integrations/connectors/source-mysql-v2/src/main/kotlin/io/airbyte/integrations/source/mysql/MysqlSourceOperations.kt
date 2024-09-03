@@ -89,8 +89,7 @@ class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGe
         typeName: String?,
         notInteger: Boolean,
     ): JdbcFieldType<*> =
-        // This mapping includes literals returned by the JDBC driver as well as
-        // *_TYPE_NAME column values from queries to ALL_* system tables.
+        // TODO: https://github.com/airbytehq/airbyte-internal-issues/issues/9670
         when (typeName) {
             "BINARY_FLOAT" -> FloatFieldType
             "BINARY_DOUBLE" -> DoubleFieldType
