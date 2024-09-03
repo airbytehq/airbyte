@@ -20,7 +20,7 @@ interface MessageQueueReader<K, T> {
 
 @Singleton
 class DestinationMessageQueueReader(
-    private val messageQueue: DestinationMessageQueue,
+    private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>
 ) : MessageQueueReader<DestinationStream, DestinationRecordWrapped> {
     private val log = KotlinLogging.logger {}
 

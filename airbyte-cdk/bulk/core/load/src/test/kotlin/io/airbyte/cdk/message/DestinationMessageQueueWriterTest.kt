@@ -39,47 +39,6 @@ class DestinationMessageQueueWriterTest {
         }
     }
 
-    class MockQueueChannel : QueueChannel<DestinationRecordWrapped> {
-        val messages = mutableListOf<DestinationRecordWrapped>()
-        var closed = false
-
-        override suspend fun close() {
-            closed = true
-        }
-
-        override suspend fun isClosed(): Boolean {
-            return closed
-        }
-
-        override suspend fun send(message: DestinationRecordWrapped) {
-            messages.add(message)
-        }
-
-        override suspend fun receive(): DestinationRecordWrapped {
-            return messages.removeAt(0)
-        }
-    }
-
-    @Prototype
-    class MockMessageQueue : MessageQueue<DestinationStream, DestinationRecordWrapped> {
-        private val channels =
-            mutableMapOf<DestinationStream, QueueChannel<DestinationRecordWrapped>>()
-
-        override suspend fun getChannel(
-            key: DestinationStream
-        ): QueueChannel<DestinationRecordWrapped> {
-            return channels.getOrPut(key) { MockQueueChannel() }
-        }
-
-        override suspend fun acquireQueueBytesBlocking(bytes: Long) {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun releaseQueueBytes(bytes: Long) {
-            TODO("Not yet implemented")
-        }
-    }
-
     @Prototype
     class MockStateManager : StateManager<DestinationStream, DestinationStateMessage> {
         val streamStates =
@@ -145,30 +104,33 @@ class DestinationMessageQueueWriterTest {
         val manager2 = queueWriterFactory.streamsManager.getManager(stream2) as MockStreamManager
 
         (0 until 10).forEach { writer.publish(makeRecord(stream1, "test${it}"), it * 2L) }
-        Assertions.assertEquals(10, channel1.messages.size)
+        val messages1 = channel1.getMessages()
+        Assertions.assertEquals(10, messages1.size)
         val expectedRecords =
             (0 until 10).map {
                 StreamRecordWrapped(it.toLong(), it * 2L, makeRecord(stream1, "test${it}"))
             }
 
-        Assertions.assertEquals(expectedRecords, channel1.messages)
+        Assertions.assertEquals(expectedRecords, messages1)
         Assertions.assertEquals(10, manager1.countedRecords)
 
-        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), channel2.messages)
+        val messages2 = channel2.getMessages()
+        Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), messages2)
         Assertions.assertEquals(0, manager2.countedRecords)
 
         writer.publish(makeRecord(stream2, "test"), 1L)
         writer.publish(makeStreamComplete(stream1), 0L)
         Assertions.assertEquals(
             listOf(StreamRecordWrapped(0, 1L, makeRecord(stream2, "test"))),
-            channel2.messages
+            channel2.getMessages()
         )
         Assertions.assertEquals(1, manager2.countedRecords)
 
+        val nextMessages1 = channel1.getMessages()
         Assertions.assertFalse(manager2.countedEndOfStream)
         Assertions.assertTrue(manager1.countedEndOfStream)
-        Assertions.assertEquals(11, channel1.messages.size)
-        Assertions.assertEquals(channel1.messages[10], StreamCompleteWrapped(10))
+        Assertions.assertEquals(1, nextMessages1.size)
+        Assertions.assertEquals(nextMessages1.first(), StreamCompleteWrapped(10))
     }
 
     @Test
