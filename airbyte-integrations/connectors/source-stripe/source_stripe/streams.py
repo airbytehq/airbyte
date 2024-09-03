@@ -634,7 +634,6 @@ class StripeSubStream(StripeStream, HttpSubStream):
 
 
 class StripeLazySubStream(StripeStream, HttpSubStream):
-    is_resumable = True
     """
     Research shows that records related to SubStream can be extracted from Parent streams which already
     contain 1st page of needed items. Thus, it significantly decreases a number of requests needed to get
