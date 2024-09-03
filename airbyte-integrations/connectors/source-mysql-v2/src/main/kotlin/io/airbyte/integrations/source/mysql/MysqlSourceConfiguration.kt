@@ -32,7 +32,6 @@ data class MysqlSourceConfiguration(
     override val sshConnectionOptions: SshConnectionOptions,
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
-    val defaultSchema: String,
     override val namespaces: Set<String>,
     val cursorConfiguration: CursorConfiguration,
     override val maxConcurrency: Int,
@@ -91,14 +90,10 @@ class MysqlSourceConfigurationFactory :
             jdbcProperties["javax.net.ssl.trustStore"] = keyStoreFile.toString()
             jdbcProperties["javax.net.ssl.trustStoreType"] = "JKS"
             jdbcProperties["javax.net.ssl.trustStorePassword"] = keyStorePass
-        } else if (encryption is EncryptionAlgorithm) {
-            val algorithm: String = encryption.encryptionAlgorithm
-            jdbcProperties["mysql.net.encryption_client"] = "REQUIRED"
-            jdbcProperties["mysql.net.encryption_types_client"] = "( $algorithm )"
         }
         // Build JDBC URL
         val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:mysql://${address}?useCursorFetch=true"
+        val jdbcUrlFmt = "jdbc:mysql://${address}?useCursorFetch=true&sessionVariables=autocommit=0"
         val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =
@@ -117,7 +112,6 @@ class MysqlSourceConfigurationFactory :
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
-            defaultSchema = defaultSchema,
             namespaces = pojo.schemas?.toSet() ?: setOf(defaultSchema),
             cursorConfiguration = pojo.getCursorConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,

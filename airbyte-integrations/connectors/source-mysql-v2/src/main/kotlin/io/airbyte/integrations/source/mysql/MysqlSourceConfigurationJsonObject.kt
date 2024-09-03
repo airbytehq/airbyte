@@ -40,7 +40,6 @@ import jakarta.inject.Singleton
         [
             "host",
             "port",
-            "connection_data",
             "username",
             "password",
             "schemas",
@@ -65,11 +64,7 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonSchemaInject(json = """{"order":2,"minimum": 0,"maximum": 65536}""")
     @JsonSchemaDefault("3306")
     @JsonPropertyDescription(
-        "Port of the database.\n" +
-            "Mysql Corporations recommends the following port numbers:\n" +
-            "1521 - Default listening port for client connections to the listener. \n" +
-            "2484 - Recommended and officially registered listening port for client " +
-            "connections to the listener using TCP/IP with SSL.",
+        "Port of the database.",
     )
     var port: Int = 3306
 

@@ -168,9 +168,7 @@ class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGe
         when (this) {
             NoFrom -> TODO("no such thing in mysql")
             is From -> if (this.namespace == null) "FROM `$name`" else "FROM `$namespace`.`$name`"
-            is FromSample ->
-                if (this.namespace == null) "FROM `$name` limit ${this.sampleSize}"
-                else "FROM `$namespace`.`$name` limit ${this.sampleSize}"
+            is FromSample -> TODO("not implemented in mysql")
         }
 
     fun WhereNode.sql(): String =

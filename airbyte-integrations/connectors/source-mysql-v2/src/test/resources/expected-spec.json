@@ -26,7 +26,7 @@
         "default": 3306,
         "maximum": 65536,
         "minimum": 0,
-        "description": "Port of the database.\nMysql Corporations recommends the following port numbers:\n1521 - Default listening port for client connections to the listener. \n2484 - Recommended and officially registered listening port for client connections to the listener using TCP/IP with SSL."
+        "description": "Port of the database."
       },
       "cursor": {
         "type": "object",

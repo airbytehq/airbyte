@@ -13,11 +13,6 @@ object MysqlContainerFactory {
 
     init {
         TestContainerFactory.register(COMPATIBLE_NAME, ::MySQLContainer)
-        val osArch: String? = System.getProperty("os.arch")
-        val osName: String? = System.getProperty("os.name")
-        if (osArch == "aarch64" && osName?.contains("Mac") == true) {
-            log.warn { "USE COLIMA WHEN RUNNING ON APPLE SILICON, or Mysql container will die." }
-        }
     }
 
     sealed interface MysqlContainerModifier :

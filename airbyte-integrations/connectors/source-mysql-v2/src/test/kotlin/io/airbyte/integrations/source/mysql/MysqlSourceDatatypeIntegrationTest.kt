@@ -219,14 +219,8 @@ class MysqlSourceDatatypeIntegrationTest {
         val tableName: String
             get() = "tbl_$id"
 
-        val varrayTableName: String
-            get() = "tbl_varray_$id"
-
         val columnName: String
             get() = "col_$id"
-
-        val varrayColumnName: String
-            get() = "col_varray_$id"
 
         val sqlStatements: List<String>
             get() {

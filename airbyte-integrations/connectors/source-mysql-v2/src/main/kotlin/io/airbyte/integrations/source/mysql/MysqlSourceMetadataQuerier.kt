@@ -6,9 +6,7 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.UserDefinedType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
@@ -31,22 +29,9 @@ class MysqlSourceMetadataQuerier(
     ): List<Field> {
         val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
         if (table !in base.memoizedColumnMetadata) return listOf()
-        return base.memoizedColumnMetadata[table]!!
-            .map { c: JdbcMetadataQuerier.ColumnMetadata ->
-                val udt: UserDefinedType? =
-                    when (c.type) {
-                        is SystemType -> allUDTsByFQName[c.type.typeName]
-                        else -> null
-                    }
-                c.copy(type = udt ?: c.type)
-            }
-            .map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
-    }
-
-    val allUDTsByFQName: Map<String, UserDefinedType> by lazy {
-        val otherUDTs: List<UserDefinedType> = base.memoizedUserDefinedTypes
-        val allUDTs: List<UserDefinedType> = otherUDTs
-        allUDTs.reversed().associateBy { "${it.schema}.${it.typeName}" }
+        return base.memoizedColumnMetadata[table]!!.map {
+            Field(it.label, base.fieldTypeMapper.toFieldType(it))
+        }
     }
 
     override fun streamNamespaces(): List<String> = base.config.namespaces.toList()

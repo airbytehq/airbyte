@@ -12,7 +12,6 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
-import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
@@ -51,23 +50,6 @@ class MysqlSourceSelectQueryGeneratorTest {
                 From("TBL", "SC"),
             )
             .assertSqlEquals("""SELECT MAX(`ts`) FROM `SC`.`TBL`""")
-    }
-
-    @Test
-    fun testSelectSample() {
-        SelectQuerySpec(
-                SelectColumns(
-                    listOf(
-                        Field("k", IntFieldType),
-                        Field("v", StringFieldType),
-                    ),
-                ),
-                FromSample("TBL", "SC", 3, 1000),
-                orderBy = OrderBy(listOf(Field("k", IntFieldType))),
-            )
-            .assertSqlEquals(
-                """SELECT `k`, `v`""" + """ FROM `SC`.`TBL` limit 1000 ORDER BY `k`""",
-            )
     }
 
     @Test
