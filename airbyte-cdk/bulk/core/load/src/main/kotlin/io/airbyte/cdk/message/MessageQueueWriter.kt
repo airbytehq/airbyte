@@ -31,7 +31,7 @@ class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
     private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>,
     private val streamsManager: StreamsManager,
-    private val stateManager: StateManager
+    private val stateManager: StateManager<DestinationStream, DestinationStateMessage>
 ) : MessageQueueWriter<DestinationMessage> {
     /**
      * Deserialize and route the message to the appropriate channel.
