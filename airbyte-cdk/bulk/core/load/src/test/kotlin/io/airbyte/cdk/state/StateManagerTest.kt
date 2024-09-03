@@ -8,17 +8,17 @@ import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.command.DestinationCatalog
-import io.airbyte.cdk.command.DestinationCatalogFactory
 import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
+import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.MessageConverter
-import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Prototype
-import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.function.Consumer
 import java.util.stream.Stream
@@ -29,24 +29,9 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-@MicronautTest
+@MicronautTest(environments = ["StateManagerTest"])
 class StateManagerTest {
     @Inject lateinit var stateManager: TestStateManager
-
-    companion object {
-        val stream1 = DestinationStream(DestinationStream.Descriptor("test", "stream1"))
-        val stream2 = DestinationStream(DestinationStream.Descriptor("test", "stream2"))
-    }
-
-    @Factory
-    @Replaces(factory = DestinationCatalogFactory::class)
-    class MockCatalogFactory {
-        @Singleton
-        @Requires(env = ["test"])
-        fun make(): DestinationCatalog {
-            return DestinationCatalog(streams = listOf(stream1, stream2))
-        }
-    }
 
     /**
      * Test state messages.
@@ -95,7 +80,11 @@ class StateManagerTest {
     class MockStreamManager : StreamManager {
         var persistedRanges: RangeSet<Long> = TreeRangeSet.create()
 
-        override fun countRecordIn(sizeBytes: Long): Long {
+        override fun countRecordIn(): Long {
+            throw NotImplementedError()
+        }
+
+        override fun countEndOfStream(): Long {
             throw NotImplementedError()
         }
 
@@ -129,7 +118,8 @@ class StateManagerTest {
     }
 
     @Prototype
-    class MockStreamsManager(catalog: DestinationCatalog) : StreamsManager {
+    @Requires(env = ["StateManagerTest"])
+    class MockStreamsManager(@Named("mockCatalog") catalog: DestinationCatalog) : StreamsManager {
         private val mockManagers = catalog.streams.associateWith { MockStreamManager() }
 
         fun addPersistedRanges(stream: DestinationStream, ranges: List<Range<Long>>) {
@@ -141,14 +131,14 @@ class StateManagerTest {
                 ?: throw IllegalArgumentException("Stream not found: $stream")
         }
 
-        override suspend fun awaitAllStreamsComplete() {
+        override suspend fun awaitAllStreamsClosed() {
             throw NotImplementedError()
         }
     }
 
     @Prototype
     class TestStateManager(
-        override val catalog: DestinationCatalog,
+        @Named("mockCatalog") override val catalog: DestinationCatalog,
         override val streamsManager: MockStreamsManager,
         override val outputFactory: MessageConverter<MockStateIn, MockStateOut>,
         override val outputConsumer: MockOutputConsumer

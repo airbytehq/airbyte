@@ -43,13 +43,12 @@ class DestinationMessageQueueWriter(
             /* If the input message represents a record. */
             is DestinationRecordMessage -> {
                 val manager = streamsManager.getManager(message.stream)
-                val index = manager.countRecordIn(sizeBytes)
                 when (message) {
                     /* If a data record */
                     is DestinationRecord -> {
                         val wrapped =
                             StreamRecordWrapped(
-                                index = index,
+                                index = manager.countRecordIn(),
                                 sizeBytes = sizeBytes,
                                 record = message
                             )
@@ -58,7 +57,7 @@ class DestinationMessageQueueWriter(
 
                     /* If an end-of-stream marker. */
                     is DestinationStreamComplete -> {
-                        val wrapped = StreamCompleteWrapped(index)
+                        val wrapped = StreamCompleteWrapped(index = manager.countEndOfStream())
                         messageQueue.getChannel(message.stream).send(wrapped)
                     }
                 }
