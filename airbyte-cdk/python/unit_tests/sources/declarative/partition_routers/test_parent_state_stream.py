@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from orjson import orjson
 
 SUBSTREAM_MANIFEST: MutableMapping[str, Any] = {
     "version": "0.51.42",
@@ -349,7 +350,7 @@ def _run_read(
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj(
+                        stream_state=AirbyteStateBlob(
                             {
                                 "parent_state": {
                                     "post_comments": {
@@ -424,7 +425,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
         output_data = [message.record.data for message in output if message.record]
 
         assert output_data == expected_records
-        final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
+        final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state
 
 
@@ -467,56 +468,56 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
                 ),
                 # Fetch the first page of votes for comment 10 of post 1
                 (
-                        "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
-                        {
-                            "votes": [{"id": 100, "comment_id": 10, "created_at": "2024-01-15T00:00:00Z"}],
-                            "next_page": "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&page=2&start_time=2024-01-01T00:00:01Z",
-                        },
+                    "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&start_time=2024-01-02T00:00:00Z",
+                    {
+                        "votes": [{"id": 100, "comment_id": 10, "created_at": "2024-01-15T00:00:00Z"}],
+                        "next_page": "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&page=2&start_time=2024-01-01T00:00:01Z",
+                    },
                 ),
                 # Fetch the second page of votes for comment 10 of post 1
                 (
-                        "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&page=2&start_time=2024-01-01T00:00:01Z",
-                        {"votes": [{"id": 101, "comment_id": 10, "created_at": "2024-01-14T00:00:00Z"}]},
+                    "https://api.example.com/community/posts/1/comments/10/votes?per_page=100&page=2&start_time=2024-01-01T00:00:01Z",
+                    {"votes": [{"id": 101, "comment_id": 10, "created_at": "2024-01-14T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 11 of post 1
                 (
-                        "https://api.example.com/community/posts/1/comments/11/votes?per_page=100&start_time=2024-01-03T00:00:00Z",
-                        {"votes": [{"id": 102, "comment_id": 11, "created_at": "2024-01-13T00:00:00Z"}]},
+                    "https://api.example.com/community/posts/1/comments/11/votes?per_page=100&start_time=2024-01-03T00:00:00Z",
+                    {"votes": [{"id": 102, "comment_id": 11, "created_at": "2024-01-13T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 12 of post 1
                 ("https://api.example.com/community/posts/1/comments/12/votes?per_page=100&start_time=2024-01-01T00:00:01Z", {"votes": []}),
                 # Fetch the first page of comments for post 2
                 (
-                        "https://api.example.com/community/posts/2/comments?per_page=100",
-                        {
-                            "comments": [{"id": 20, "post_id": 2, "updated_at": "2024-01-22T00:00:00Z"}],
-                            "next_page": "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
-                        },
+                    "https://api.example.com/community/posts/2/comments?per_page=100",
+                    {
+                        "comments": [{"id": 20, "post_id": 2, "updated_at": "2024-01-22T00:00:00Z"}],
+                        "next_page": "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
+                    },
                 ),
                 # Fetch the second page of comments for post 2
                 (
-                        "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
-                        {"comments": [{"id": 21, "post_id": 2, "updated_at": "2024-01-21T00:00:00Z"}]},
+                    "https://api.example.com/community/posts/2/comments?per_page=100&page=2",
+                    {"comments": [{"id": 21, "post_id": 2, "updated_at": "2024-01-21T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 20 of post 2
                 (
-                        "https://api.example.com/community/posts/2/comments/20/votes?per_page=100&start_time=2024-01-01T00:00:01Z",
-                        {"votes": [{"id": 200, "comment_id": 20, "created_at": "2024-01-12T00:00:00Z"}]},
+                    "https://api.example.com/community/posts/2/comments/20/votes?per_page=100&start_time=2024-01-01T00:00:01Z",
+                    {"votes": [{"id": 200, "comment_id": 20, "created_at": "2024-01-12T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 21 of post 2
                 (
-                        "https://api.example.com/community/posts/2/comments/21/votes?per_page=100&start_time=2024-01-01T00:00:01Z",
-                        {"votes": [{"id": 201, "comment_id": 21, "created_at": "2024-01-12T00:00:15Z"}]},
+                    "https://api.example.com/community/posts/2/comments/21/votes?per_page=100&start_time=2024-01-01T00:00:01Z",
+                    {"votes": [{"id": 201, "comment_id": 21, "created_at": "2024-01-12T00:00:15Z"}]},
                 ),
                 # Fetch the first page of comments for post 3
                 (
-                        "https://api.example.com/community/posts/3/comments?per_page=100",
-                        {"comments": [{"id": 30, "post_id": 3, "updated_at": "2024-01-09T00:00:00Z"}]},
+                    "https://api.example.com/community/posts/3/comments?per_page=100",
+                    {"comments": [{"id": 30, "post_id": 3, "updated_at": "2024-01-09T00:00:00Z"}]},
                 ),
                 # Fetch the first page of votes for comment 30 of post 3
                 (
-                        "https://api.example.com/community/posts/3/comments/30/votes?per_page=100",
-                        {"votes": [{"id": 300, "comment_id": 30, "created_at": "2024-01-10T00:00:00Z"}]},
+                    "https://api.example.com/community/posts/3/comments/30/votes?per_page=100",
+                    {"votes": [{"id": 300, "comment_id": 30, "created_at": "2024-01-10T00:00:00Z"}]},
                 ),
             ],
             # Expected records
@@ -534,7 +535,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj(
+                        stream_state=AirbyteStateBlob(
                             {
                                 # This should not happen since parent state is disabled, but I've added this to validate that and
                                 # incoming parent_state is ignored when the parent stream's incremental_dependency is disabled
@@ -590,12 +591,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
     ],
 )
 def test_incremental_parent_state_no_incremental_dependency(
-    test_name,
-    manifest,
-    mock_requests,
-    expected_records,
-    initial_state,
-    expected_state
+    test_name, manifest, mock_requests, expected_records, initial_state, expected_state
 ):
     """
     This is a pretty complicated test that syncs a low-code connector stream with three levels of substreams
@@ -614,8 +610,12 @@ def test_incremental_parent_state_no_incremental_dependency(
     config = {"start_date": "2024-01-01T00:00:01Z", "credentials": {"email": "email", "api_token": "api_token"}}
 
     # Disable incremental_dependency
-    manifest["definitions"]["post_comments_stream"]["retriever"]["partition_router"]["parent_stream_configs"][0]["incremental_dependency"] = False
-    manifest["definitions"]["post_comment_votes_stream"]["retriever"]["partition_router"]["parent_stream_configs"][0]["incremental_dependency"] = False
+    manifest["definitions"]["post_comments_stream"]["retriever"]["partition_router"]["parent_stream_configs"][0][
+        "incremental_dependency"
+    ] = False
+    manifest["definitions"]["post_comment_votes_stream"]["retriever"]["partition_router"]["parent_stream_configs"][0][
+        "incremental_dependency"
+    ] = False
 
     with requests_mock.Mocker() as m:
         for url, response in mock_requests:
@@ -625,5 +625,5 @@ def test_incremental_parent_state_no_incremental_dependency(
         output_data = [message.record.data for message in output if message.record]
 
         assert output_data == expected_records
-        final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
+        final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
         assert final_state[-1] == expected_state
