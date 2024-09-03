@@ -8,7 +8,7 @@ data:
       - ${tunnel_method.tunnel_host}
   connectorSubtype: database
   connectorType: source
-  definitionId: 196a42fc-39f2-473f-88ff-d68b2ea702e9
+  definitionId: 561393ed-7e3a-4d0d-8b8b-90ded371754c
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-mysql-v2
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
