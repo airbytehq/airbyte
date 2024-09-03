@@ -395,6 +395,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
     @Throws(Exception::class)
     fun testRawTableLoadWithSuperVarcharLimitation() {
 
+
         val record1 =
             """
                            {"type": "RECORD",
@@ -458,9 +459,8 @@ abstract class AbstractSnowflakeTypingDedupingTest(
 //                           """.trimIndent()
 
 
-        //Keep 2048 bytes of space for the other fields in the record
         val largeString1 =
-            generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE - 2048)
+            generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE - 300)
         val largeString2 =
             generateRandomString(
                 SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE + 2

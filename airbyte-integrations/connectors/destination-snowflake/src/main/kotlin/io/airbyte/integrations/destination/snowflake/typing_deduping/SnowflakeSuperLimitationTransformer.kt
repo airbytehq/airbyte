@@ -46,9 +46,9 @@ class SnowflakeSuperLimitationTransformer(
      *
      * 1. Collect the original bytes using UTF-8 charset. This is to avoid double walking the tree if
      * the total size > 16MB This is to optimize for best case (see worst case as 4 below) that most of
-     * the data will be < 16MB and only few offending varchars > 64KB.
+     * the data will be < 16MB and only few offending varchars > 16MB.
      *
-     * 2. Replace all TextNodes with Null nodes if they are greater than 64K.
+     * 2. Replace all TextNodes with Null nodes if they are greater than 16MB.
      *
      * 3. Verify if replacing the varchars with NULLs brought the record size down to < 16MB. This
      * includes verifying the original bytes and transformed bytes are below the record size limit.
@@ -63,7 +63,10 @@ class SnowflakeSuperLimitationTransformer(
         meta: AirbyteRecordMessageMeta?
     ): Pair<JsonNode?, AirbyteRecordMessageMeta?> {
         val startTime = System.currentTimeMillis()
-       log.debug{"Traversing the record to NULL fields for snowflake size limitations"}
+
+        log.debug{"Traversing the record to NULL fields for snowflake size limitations"}
+        println("Traversing the record to NULL fields for snowflake size limitations")
+
         val namespace =
             if ((streamDescriptor!!.namespace != null && !streamDescriptor.namespace.isEmpty()))
                 streamDescriptor.namespace
@@ -79,7 +82,18 @@ class SnowflakeSuperLimitationTransformer(
         val originalBytes = transformationInfo.originalBytes
         val transformedBytes = transformationInfo.originalBytes - transformationInfo.removedBytes
         // We check if the transformedBytes has solved the record limit.
-       log.debug{"Traversal complete in {" + (System.currentTimeMillis() - startTime) + "} ms"}
+
+        //TODO: Remove code added for testing
+        println("Traversal complete in {" + (System.currentTimeMillis() - startTime) + "} ms")
+        println("originalBytes=" + originalBytes)
+        println("transformedBytes=" + transformedBytes)
+
+        if(transformationInfo.node != null && transformationInfo.node.size() < 500) {
+            println("transformed record transformationInfo.node=" + transformationInfo.node)
+        }
+
+        log.debug{"Traversal complete in {" + (System.currentTimeMillis() - startTime) + "} ms"}
+
         if (
             DEFAULT_PREDICATE_RECORD_SIZE_GT_THAN_16M.test(originalBytes) &&
                 DEFAULT_PREDICATE_RECORD_SIZE_GT_THAN_16M.test(transformedBytes)
@@ -89,7 +103,14 @@ class SnowflakeSuperLimitationTransformer(
            log.warn {
                "Record size before transformation {" + originalBytes + "}, after transformation {" + transformedBytes + "} bytes exceeds 16MB limit"
            }
+
+            //TODO: Remove code added for testing
+            println("Record size before transformation {" + originalBytes + "}, after transformation {" + transformedBytes + "} bytes exceeds 16MB limit")
+
             val minimalNode = constructMinimalJsonWithPks(data, primaryKeys, cursorField)
+
+            println("minimalNode.size()=" + minimalNode.size())
+
             if (minimalNode.isEmpty && syncMode == ImportType.DEDUPE) {
                 // Fail the sync if PKs are missing in DEDUPE, no point sending an empty record to
                 // destination.
@@ -119,6 +140,13 @@ class SnowflakeSuperLimitationTransformer(
         // We intentionally don't deep copy for transformation to avoid memory bloat.
         // The caller already has the reference of original jsonNode but returning again in
         // case we choose to deepCopy in future for thread-safety.
+
+
+        //TODO: Remove code added for testing
+//        if(data != null && data.size() < 1000) {
+//            println("Returning from transform function with data=" + data)
+//        }
+
         return Pair(data, transformationInfo.meta)
     }
 
@@ -307,6 +335,11 @@ class SnowflakeSuperLimitationTransformer(
     }
 
     companion object {
+
+//        //TODO: Remove changes added for testing
+//        const val SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE: Int = 5000
+//        const val SNOWFLAKE_SUPER_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
+
         const val SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
         const val SNOWFLAKE_SUPER_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
 
