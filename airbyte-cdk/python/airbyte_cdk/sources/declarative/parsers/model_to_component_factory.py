@@ -833,7 +833,7 @@ class ModelToComponentFactory:
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
-            use_cache=use_cache,
+            use_cache=use_cache or False,
             decoder=decoder,
             stream_response=decoder.is_stream_response() if decoder else False,
         )
