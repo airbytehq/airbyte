@@ -68,7 +68,7 @@ class AbstractSource(Source, ABC):
     _stream_to_instance_map: Dict[str, Stream] = {}
     _slice_logger: SliceLogger = DebugSliceLogger()
 
-    def discover_error_handler() -> AbstractDiscoverErrorHandler:
+    def discover_error_handler(self) -> AbstractDiscoverErrorHandler:
         return DefaultDiscoverErrorHandler()
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
