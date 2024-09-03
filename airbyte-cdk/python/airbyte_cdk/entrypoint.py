@@ -157,7 +157,17 @@ class AirbyteEntrypoint(object):
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
-        catalog = self.source.discover(self.logger, config)
+        try:
+            catalog = self.source.discover(self.logger, config)
+        except AirbyteTracedException as traced_exc:
+            raise traced_exc
+        except Exception as exc:
+            raise AirbyteTracedException(
+                internal_message="An error occurred while discovering the source schema",
+                failure_type=FailureType.config_error,
+                message=f"An error occurred while discovering the source schema: {exc}",
+                exception=exc,
+            )
 
         yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
