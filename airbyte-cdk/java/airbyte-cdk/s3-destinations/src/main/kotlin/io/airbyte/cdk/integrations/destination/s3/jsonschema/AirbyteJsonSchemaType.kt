@@ -27,7 +27,8 @@ enum class AirbyteJsonSchemaType {
     OBJECT_WITHOUT_PROPERTIES,
     OBJECT_WITH_PROPERTIES,
     UNION,
-    COMBINED;
+    COMBINED,
+    UNKNOWN;
 
     fun matchesValue(tree: JsonNode): Boolean {
         return when (this) {
@@ -54,6 +55,7 @@ enum class AirbyteJsonSchemaType {
             OBJECT_WITH_PROPERTIES -> tree.isObject
             UNION,
             COMBINED -> throw IllegalArgumentException("Union type cannot be matched")
+            UNKNOWN -> true
         }
     }
 
@@ -84,15 +86,22 @@ enum class AirbyteJsonSchemaType {
 
             val type = schema["type"]
             if (type != null) {
-                if (type.isArray && type.size() > 1) {
+                val typeArray =
+                    if (type.isArray) {
+                        type.elements().asSequence().filter { it.asText() != "null" }.toList()
+                    } else {
+                        listOf(type)
+                    }
+
+                if (typeArray.size > 1) {
                     return COMBINED
                 }
 
                 val typeStr =
-                    if (type.isArray) {
-                        type[0].asText()
+                    if (typeArray.isEmpty()) {
+                        "null"
                     } else {
-                        type.asText()
+                        typeArray[0].asText()
                     }
 
                 val format = schema["format"]?.asText()
@@ -168,7 +177,7 @@ enum class AirbyteJsonSchemaType {
                 // Usually the root node
                 return OBJECT_WITH_PROPERTIES
             } else {
-                throw IllegalArgumentException("Unspecified schema type")
+                return UNKNOWN
             }
         }
 
@@ -233,7 +242,9 @@ enum class AirbyteJsonSchemaType {
                     }
                     .toList()
             if (matching.isEmpty()) {
-                throw IllegalArgumentException("Union type does not match any options")
+                throw IllegalArgumentException(
+                    "Union type ${value::class}(value redacted) does not match any options: $optionsAsList"
+                )
             }
             return matching.first()
         }

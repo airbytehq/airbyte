@@ -39,6 +39,7 @@ The free plan allows 250 calls per month, you won't get beyond these limits with
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 1.1.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 1.1.0 | 2024-08-14 | [44046](https://github.com/airbytehq/airbyte/pull/44046) | Refactor connector to manifest-only format |
 | 1.0.2 | 2024-08-12 | [43892](https://github.com/airbytehq/airbyte/pull/43892) | Update dependencies |
 | 1.0.1 | 2024-08-10 | [43615](https://github.com/airbytehq/airbyte/pull/43615) | Update dependencies |

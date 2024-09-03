@@ -35,6 +35,7 @@ Vantage APIs are under rate limits for the number of API calls allowed per API k
 
 | Version | Date       | Pull Request                                              | Subject                                   |
 | :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 0.2.0 | 2024-08-14 | [44053](https://github.com/airbytehq/airbyte/pull/44053) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-12 | [43784](https://github.com/airbytehq/airbyte/pull/43784) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43694](https://github.com/airbytehq/airbyte/pull/43694) | Update dependencies |

@@ -114,6 +114,7 @@ class VersionIncrementCheck(VersionCheck):
         "src/test-integration",
         "src/test-performance",
         "build.gradle",
+        "erd",
     ]
 
     @property

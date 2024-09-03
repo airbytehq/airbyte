@@ -5,7 +5,7 @@ import io.airbyte.cdk.AirbyteConnectorRunnable
 import io.airbyte.cdk.AirbyteConnectorRunner
 import io.airbyte.cdk.AirbyteDestinationRunner
 import io.airbyte.cdk.AirbyteSourceRunner
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -56,7 +56,7 @@ data object CliRunner {
         state: List<AirbyteStateMessage>?,
         connectorRunnerConstructor: (Array<String>) -> AirbyteConnectorRunner,
     ): BufferingOutputConsumer {
-        val result = BufferingOutputConsumer(TestClockFactory().fixed())
+        val result = BufferingOutputConsumer(ClockFactory().fixed())
         val configFile: Path? = inputFile(config)
         val catalogFile: Path? = inputFile(catalog)
         val stateFile: Path? = inputFile(state)

@@ -14,6 +14,9 @@ import requests
 from airbyte_cdk import BackoffStrategy
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
+from airbyte_cdk.sources.streams.checkpoint import Cursor
+from airbyte_cdk.sources.streams.checkpoint.resumable_full_refresh_cursor import ResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
@@ -207,6 +210,21 @@ class StripeStream(HttpStream, ABC):
         Override for testing purposes
         """
         return 0 if IS_TESTING else super(StripeStream, self).retry_factor
+
+    def get_cursor(self) -> Optional[Cursor]:
+        """
+        RFR is breaking the pagination in Stripe today. The stream is instantiated using the stream facade here. During the read, this goes
+        through the concurrent code here so that we can read full refresh streams concurrently.
+
+        However, as there are no cursors and the read records is the one from the HttpStream, we end up assigning the
+        ResumableFullRefresCursor and hence only read a single page.
+
+        In order to avoid that, we will assume there are no cursor if the cursor if RFR.
+        """
+        parent_cursor = super().get_cursor()
+        if isinstance(parent_cursor, (ResumableFullRefreshCursor, SubstreamResumableFullRefreshCursor)):
+            return None
+        return parent_cursor
 
 
 class IStreamSelector(ABC):
