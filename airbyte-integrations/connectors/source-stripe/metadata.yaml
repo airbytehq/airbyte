@@ -25,6 +25,7 @@ data:
       packageName: airbyte-source-stripe
   registryOverrides:
     cloud:
+      dockerImageTag: 5.5.1
       enabled: true
     oss:
       enabled: true
