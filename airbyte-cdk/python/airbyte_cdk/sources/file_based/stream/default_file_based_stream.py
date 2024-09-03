@@ -172,12 +172,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         try:
             schema = self._get_raw_json_schema()
         except InvalidSchemaError as config_exception:
-            raise AirbyteTracedException(
-                internal_message="Please check the logged errors for more information.",
-                message=FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value,
-                exception=AirbyteTracedException(exception=config_exception),
-                failure_type=FailureType.config_error,
-            )
+            raise config_exception
         except AirbyteTracedException as ate:
             raise ate
         except Exception as exc:

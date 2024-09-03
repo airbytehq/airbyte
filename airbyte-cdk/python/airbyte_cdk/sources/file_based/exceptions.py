@@ -34,7 +34,7 @@ class FileBasedSourceError(Enum):
     )
     NULL_VALUE_IN_SCHEMA = "Error during schema inference: no type was detected for key."
     UNRECOGNIZED_TYPE = "Error during schema inference: unrecognized type."
-    SCHEMA_INFERENCE_ERROR = "Error inferring schema from files. Are the files valid?"
+    SCHEMA_INFERENCE_ERROR = "Error inferring schema from files. Please confirm files are valid."
     INVALID_SCHEMA_ERROR = "No fields were identified for this schema. This may happen if the stream is empty. Please check your configuration to verify that there are files that match the stream's glob patterns."
     CONFIG_VALIDATION_ERROR = "Error creating stream config object."
     MISSING_SCHEMA = "Expected `json_schema` in the configured catalog but it is missing."
