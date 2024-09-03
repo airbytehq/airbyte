@@ -70,6 +70,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs or [])
             globs = globs or [None]
 
+            if not prefixes:
+                prefixes = [""]
+
             for prefix, glob in itertools.product(prefixes, globs):
                 bucket = self.gcs_client.get_bucket(self.config.bucket)
                 blobs = bucket.list_blobs(prefix=prefix, match_glob=glob)
@@ -77,7 +80,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
                     if not start_date or last_modified >= start_date:
-                        uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
+                        uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
 

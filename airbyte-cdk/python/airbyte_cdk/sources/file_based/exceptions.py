@@ -14,6 +14,7 @@ class FileBasedSourceError(Enum):
     GLOB_PARSE_ERROR = (
         "Error parsing glob pattern. Please refer to the glob pattern rules at https://facelessuser.github.io/wcmatch/glob/#split."
     )
+    ENCODING_ERROR = "File encoding error. The configured encoding must match file encoding."
     ERROR_CASTING_VALUE = "Could not cast the value to the expected type."
     ERROR_CASTING_VALUE_UNRECOGNIZED_TYPE = "Could not cast the value to the expected type because the type is not recognized. Valid types are null, array, boolean, integer, number, object, and string."
     ERROR_DECODING_VALUE = "Expected a JSON-decodeable value but could not decode record."

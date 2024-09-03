@@ -92,9 +92,7 @@ def test_check_stream_with_no_stream_slices_aborts():
             "test_stream_unavailable_handled_error",
             403,
             False,
-            [
-                "Forbidden. You don't have permission to access this resource."
-            ],
+            ["Forbidden. You don't have permission to access this resource."],
         ),
         ("test_stream_available", 200, True, []),
     ],

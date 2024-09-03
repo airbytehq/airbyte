@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.output
 
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteCatalog
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteLogMessage
@@ -35,7 +36,10 @@ class BufferingOutputConsumer(
     private val traces = mutableListOf<AirbyteTraceMessage>()
     private val messages = mutableListOf<AirbyteMessage>()
 
-    override fun accept(m: AirbyteMessage) {
+    override fun accept(input: AirbyteMessage) {
+        // Deep copy the input, which may be reused and mutated later on.
+        val m: AirbyteMessage =
+            Jsons.readValue(Jsons.writeValueAsBytes(input), AirbyteMessage::class.java)
         synchronized(this) {
             messages.add(m)
             when (m.type) {
