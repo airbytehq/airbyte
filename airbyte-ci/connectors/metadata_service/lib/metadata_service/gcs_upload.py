@@ -7,42 +7,41 @@ import logging
 import os
 import re
 import tempfile
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Literal, NamedTuple, Optional, Tuple
+
 import git
 import requests
 import yaml
-
-from dataclasses import dataclass
-from pathlib import Path
-from typing import List, Literal, Optional, Tuple, NamedTuple
-from metadata_service.helpers.files import compute_gcs_md5, compute_sha256, create_zip_and_get_sha256
-from pydash import set_
-from pydash.objects import get
 from google.cloud import storage
 from google.oauth2 import service_account
-
 from metadata_service.constants import (
+    COMPONENTS_PY_FILE_NAME,
     DOC_FILE_NAME,
     DOC_INAPP_FILE_NAME,
     ICON_FILE_NAME,
     LATEST_GCS_FOLDER_NAME,
+    MANIFEST_FILE_NAME,
     METADATA_FILE_NAME,
     METADATA_FOLDER,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
-    COMPONENTS_PY_FILE_NAME,
-    MANIFEST_FILE_NAME,
 )
+from metadata_service.helpers.files import compute_gcs_md5, compute_sha256, create_zip_and_get_sha256
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
+from pydash import set_
+from pydash.objects import get
 
 # 🧩 TYPES
+
 
 @dataclass(frozen=True)
 class UploadedFile:
     id: str
     uploaded: bool
-    description: str
     blob_id: Optional[str]
 
 
@@ -57,6 +56,7 @@ class MaybeUpload(NamedTuple):
     uploaded: bool
     blob_id: str
 
+
 @dataclass
 class ManifestOnlyFilePaths:
     zip_file_path: Path
@@ -64,42 +64,8 @@ class ManifestOnlyFilePaths:
     sha256: str | None
     manifest_file_path: Path
 
-# 🛣️ PATHS
 
-def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
-    """Get the path to the metadata file for a specific version of a connector.
-
-    Args:
-        dockerRepository (str): Name of the connector docker image.
-        version (str): Version of the connector.
-    Returns:
-        str: Path to the metadata file.
-    """
-    return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{METADATA_FILE_NAME}"
-
-
-def get_icon_remote_file_path(dockerRepository: str, version: str) -> str:
-    """Get the path to the icon file for a specific version of a connector.
-
-    Args:
-        dockerRepository (str): Name of the connector docker image.
-        version (str): Version of the connector.
-    Returns:
-        str: Path to the icon file.
-    """
-    return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{ICON_FILE_NAME}"
-
-
-def get_doc_remote_file_path(dockerRepository: str, version: str, inapp: bool) -> str:
-    """Get the path to the icon file for a specific version of a connector.
-
-    Args:
-        dockerRepository (str): Name of the connector docker image.
-        version (str): Version of the connector.
-    Returns:
-        str: Path to the icon file.
-    """
-    return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{DOC_INAPP_FILE_NAME if inapp else DOC_FILE_NAME}"
+# 🛣️ FILES AND PATHS
 
 
 def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Path:
@@ -110,7 +76,60 @@ def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: 
         return (docs_path / match.group(1)).with_suffix(extension)
     return None
 
+
+def maybe_create_components_zip(working_directory: Path) -> ManifestOnlyFilePaths:
+    """Create a zip file for components if they exist and return its SHA256 hash."""
+    yaml_manifest_file_path = working_directory / MANIFEST_FILE_NAME
+    components_py_file_path = working_directory / COMPONENTS_PY_FILE_NAME
+
+    with (
+        tempfile.NamedTemporaryFile(mode="wb", suffix=".zip", delete=False) as zip_tmp_file,
+        tempfile.NamedTemporaryFile(mode="w", suffix=".sha256", delete=False) as sha256_tmp_file,
+    ):
+
+        python_components_zip_file_path = Path(zip_tmp_file.name)
+        python_components_zip_sha256_file_path = Path(sha256_tmp_file.name)
+
+        components_zip_sha256 = None
+        if components_py_file_path.exists():
+            files_to_zip: List[Path] = [components_py_file_path, yaml_manifest_file_path]
+            components_zip_sha256 = create_zip_and_get_sha256(files_to_zip, python_components_zip_file_path)
+            sha256_tmp_file.write(components_zip_sha256)
+
+        return ManifestOnlyFilePaths(
+            zip_file_path=python_components_zip_file_path,
+            sha256_file_path=python_components_zip_sha256_file_path,
+            sha256=components_zip_sha256,
+            manifest_file_path=yaml_manifest_file_path,
+        )
+
+
+def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
+    """Write the metadata to a temporary file."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
+        yaml.dump(metadata_dict, tmp_file)
+        return Path(tmp_file.name)
+
+
 # 🛠️ HELPERS
+
+
+def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
+    try:
+        metadata = yaml.safe_load(metadata_file_path.read_text())
+        if metadata is None or not isinstance(metadata, dict):
+            raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml.")
+        return metadata
+    except Exception as e:
+        raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml: {e}")
+
+
+def _any_uploaded(uploaded_files: List[UploadedFile], keys: List[str]) -> bool:
+    for uploaded_file in uploaded_files:
+        if uploaded_file.id in keys:
+            return True
+    return False
+
 
 def _commit_to_git_info(commit: git.Commit) -> GitInfo:
     return GitInfo(
@@ -147,19 +166,8 @@ def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInf
             raise e
 
 
-
-
-
-def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
-    try:
-        metadata = yaml.safe_load(metadata_file_path.read_text())
-        if metadata is None or not isinstance(metadata, dict):
-            raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml.")
-        return metadata
-    except Exception as e:
-        raise ValueError(f"Validation error: Metadata file {metadata_file_path} is invalid yaml: {e}")
-
 # 🚀 UPLOAD
+
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
     """Uploads a file to the bucket."""
@@ -198,50 +206,17 @@ def upload_file_if_changed(
     return MaybeUpload(False, remote_blob.id)
 
 
-def _metadata_upload(
-    metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, metadata_file_path: Path, version: str
-) -> MaybeUpload:
-    latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, version)
-    return upload_file_if_changed(metadata_file_path, bucket, latest_path, disable_cache=True)
-
-
-def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, icon_file_path: Path) -> MaybeUpload:
-    latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, LATEST_GCS_FOLDER_NAME)
-    if not icon_file_path.exists():
-        return MaybeUpload(False, f"No Icon found at {icon_file_path}")
-    return upload_file_if_changed(icon_file_path, bucket, latest_icon_path)
-
-
-def _doc_upload(
-    metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, docs_path: Path, latest: bool, inapp: bool
-) -> MaybeUpload:
-    local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp)
-    if not local_doc_path:
-        return MaybeUpload(False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload.")
-
-    remote_doc_path = get_doc_remote_file_path(
-        metadata.data.dockerRepository, LATEST_GCS_FOLDER_NAME if latest else metadata.data.dockerImageTag, inapp
-    )
-
-    if local_doc_path.exists():
-        doc_uploaded, doc_blob_id = upload_file_if_changed(local_doc_path, bucket, remote_doc_path)
-    else:
-        if inapp:
-            doc_uploaded, doc_blob_id = False, f"No inapp doc found at {local_doc_path}, skipping inapp doc upload."
-        else:
-            raise FileNotFoundError(f"Expected to find connector doc file at {local_doc_path}, but none was found.")
-
-    return MaybeUpload(doc_uploaded, doc_blob_id)
-
 def _file_upload(
     local_path: Path,
     gcp_connector_dir: str,
     bucket: storage.bucket.Bucket,
+    file_key: str,
     *,
     upload_as_version: str | Literal[False],
     upload_as_latest: bool,
     skip_if_not_exists: bool = True,
-) -> tuple[MaybeUpload, MaybeUpload]:
+    disable_cache: bool = False,
+) -> tuple[UploadedFile, UploadedFile]:
     """Upload a file to GCS.
 
     Optionally upload it as a versioned file and/or as the latest version.
@@ -257,38 +232,49 @@ def _file_upload(
         skip_if_not_exists: Whether to skip the upload if the file does not exist. Otherwise,
             an exception will be raised if the file does not exist.
 
-    Returns: Tuple of two MaybeUpload objects, each containing a boolean indicating whether the file was
-        uploaded and the blob id. The first tuple is for the versioned file, the second for the
+    Returns: Tuple of two UploadInfo objects, each containing a boolean indicating whether the file was
+        uploaded, the blob id, and the description. The first tuple is for the versioned file, the second for the
         latest file.
     """
-    if not local_path.exists():
-        if skip_if_not_exists:
-            return MaybeUpload(False, None), MaybeUpload(False, None)
+    latest_file_key = f"latest_{file_key}"
+    versioned_file_key = f"versioned_{file_key}"
 
+    versioned_file_info = UploadedFile(id=versioned_file_key, uploaded=False, blob_id=None)
+    latest_file_info = UploadedFile(id=latest_file_key, uploaded=False, blob_id=None)
+
+    if not local_path.exists():
         msg = f"Expected to find file at {local_path}, but none was found."
+        if skip_if_not_exists:
+            logging.warning(msg)
+            return versioned_file_info, latest_file_info
+
         raise FileNotFoundError(msg)
 
-    versioned_file_uploaded, latest_file_uploaded = False, False
-    versioned_blob_id, latest_blob_id = None, None
     if upload_as_version:
-        remote_upload_path = gcp_connector_dir / upload_as_version
-        versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
+        remote_upload_path = f"{gcp_connector_dir}/{upload_as_version}"
+        versioned_uploaded, versioned_blob_id = upload_file_if_changed(
             local_file_path=local_path,
             bucket=bucket,
-            blob_path=remote_upload_path / local_path.name,
+            blob_path=f"{remote_upload_path}/{local_path.name}",
+            disable_cache=disable_cache,
         )
+        versioned_file_info = UploadedFile(id=versioned_file_key, uploaded=versioned_uploaded, blob_id=versioned_blob_id)
 
     if upload_as_latest:
-        remote_upload_path = gcp_connector_dir / LATEST_GCS_FOLDER_NAME
-        versioned_file_uploaded, versioned_blob_id = upload_file_if_changed(
+        remote_upload_path = f"{gcp_connector_dir}/{LATEST_GCS_FOLDER_NAME}"
+        latest_uploaded, latest_blob_id = upload_file_if_changed(
             local_file_path=local_path,
             bucket=bucket,
-            blob_path=remote_upload_path / local_path.name,
+            blob_path=f"{remote_upload_path}/{local_path.name}",
+            disable_cache=disable_cache,
         )
+        latest_file_info = UploadedFile(id=latest_file_key, uploaded=latest_uploaded, blob_id=latest_blob_id)
 
-    return MaybeUpload(versioned_file_uploaded, versioned_blob_id), MaybeUpload(latest_file_uploaded, latest_blob_id)
+    return versioned_file_info, latest_file_info
+
 
 # 🔧 METADATA MODIFICATIONS
+
 
 def _apply_prerelease_overrides(metadata_dict: dict, validator_opts: ValidatorOptions) -> dict:
     """Apply any prerelease overrides to the metadata file before uploading it to GCS."""
@@ -372,36 +358,9 @@ def _apply_modifications_to_metadata_file(
     metadata = _apply_sbom_url_to_metadata_file(metadata)
     return _write_metadata_to_tmp_file(metadata)
 
-def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
-    """Write the metadata to a temporary file."""
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as tmp_file:
-        yaml.dump(metadata_dict, tmp_file)
-        return Path(tmp_file.name)
 
+# 💎 Main Logic
 
-def maybe_create_components_zip(working_directory: Path) -> ManifestOnlyFilePaths:
-    """Create a zip file for components if they exist and return its SHA256 hash."""
-    yaml_manifest_file_path = working_directory / MANIFEST_FILE_NAME
-    components_py_file_path = working_directory / COMPONENTS_PY_FILE_NAME
-
-    with tempfile.NamedTemporaryFile(mode="wb", suffix=".zip", delete=False) as zip_tmp_file, \
-         tempfile.NamedTemporaryFile(mode="w", suffix=".sha256", delete=False) as sha256_tmp_file:
-
-        python_components_zip_file_path = Path(zip_tmp_file.name)
-        python_components_zip_sha256_file_path = Path(sha256_tmp_file.name)
-
-        components_zip_sha256 = None
-        if components_py_file_path.exists():
-            files_to_zip: List[Path] = [components_py_file_path, yaml_manifest_file_path]
-            components_zip_sha256 = create_zip_and_get_sha256(files_to_zip, python_components_zip_file_path)
-            sha256_tmp_file.write(components_zip_sha256)
-
-        return ManifestOnlyFilePaths(
-            zip_file_path=python_components_zip_file_path,
-            sha256_file_path=python_components_zip_sha256_file_path,
-            sha256=components_zip_sha256,
-            manifest_file_path=yaml_manifest_file_path
-        )
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
@@ -445,153 +404,119 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     bucket = storage_client.bucket(bucket_name)
     docs_path = Path(validator_opts.docs_path)
     gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
-    upload_as_version = metadata.data.dockerImageTag
-
-    icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path.parent / ICON_FILE_NAME)
 
     # Upload version metadata and doc
     # If the connector is a pre-release, we use the pre-release tag as the version
     # Otherwise, we use the dockerImageTag from the metadata
-    version = metadata.data.dockerImageTag if not is_pre_release else validator_opts.prerelease_tag
-    version_uploaded, version_blob_id = _metadata_upload(metadata, bucket, metadata_file_path, version)
-    doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
-    doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
+    upload_as_version = metadata.data.dockerImageTag if not is_pre_release else validator_opts.prerelease_tag
 
-    (manifest_yml_uploaded, manifest_yml_blob_id), (manifest_yml_latest_uploaded, manifest_yml_latest_blob_id) = _file_upload(
+    # Start uploading files
+    uploaded_files = []
+
+    # Metadata upload
+    metadata_files_uploaded = _file_upload(
+        file_key="metadata",
+        local_path=metadata_file_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=upload_as_version,
+        upload_as_latest=should_upload_latest,
+        disable_cache=True,
+    )
+    uploaded_files.extend(metadata_files_uploaded)
+
+    # Release candidate upload
+    # We just upload the current metadata to the "release_candidate" path
+    # The doc and inapp doc are not uploaded, which means that the release candidate will still point to the latest doc
+    if should_upload_release_candidate:
+        release_candidate_files_uploaded = _file_upload(
+            file_key="release_candidate",
+            local_path=metadata_file_path,
+            gcp_connector_dir=gcp_connector_dir,
+            bucket=bucket,
+            upload_as_version=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
+            upload_as_latest=False,
+            disable_cache=True,
+        )
+        uploaded_files.extend(release_candidate_files_uploaded)
+
+    # Icon upload
+
+    icon_files_uploaded = _file_upload(
+        file_key="icon",
+        local_path=metadata_file_path.parent / ICON_FILE_NAME,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=False,
+        upload_as_latest=should_upload_latest,
+    )
+    uploaded_files.extend(icon_files_uploaded)
+
+    # Doc upload
+
+    local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=False)
+    doc_files_uploaded = _file_upload(
+        file_key="doc",
+        local_path=local_doc_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=upload_as_version,
+        upload_as_latest=should_upload_latest,
+    )
+    uploaded_files.extend(doc_files_uploaded)
+
+    local_inapp_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=True)
+    inapp_doc_files_uploaded = _file_upload(
+        file_key="inapp_doc",
+        local_path=local_inapp_doc_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        upload_as_version=upload_as_version,
+        upload_as_latest=should_upload_latest,
+    )
+    uploaded_files.extend(inapp_doc_files_uploaded)
+
+    # Manifest and components upload
+
+    manifest_files_uploaded = _file_upload(
+        file_key="manifest",
         local_path=manifest_only_file_info.manifest_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
     )
-    (components_zip_sha256_uploaded, components_zip_sha256_blob_id), (
-        components_zip_sha256_latest_uploaded,
-        components_zip_sha256_latest_blob_id,
-    ) = _file_upload(
+    uploaded_files.extend(manifest_files_uploaded)
+
+    components_zip_sha256_files_uploaded = _file_upload(
+        file_key="components_zip_sha256",
         local_path=manifest_only_file_info.sha256_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
     )
-    (components_zip_uploaded, components_zip_blob_id), (components_zip_latest_uploaded, components_zip_latest_blob_id) = _file_upload(
+    uploaded_files.extend(components_zip_sha256_files_uploaded)
+
+    components_zip_files_uploaded = _file_upload(
+        file_key="components_zip",
         local_path=manifest_only_file_info.zip_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
     )
-
-    latest_uploaded, latest_blob_id = False, None
-    doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
-
-    release_candidate_uploaded, release_candidate_blob_id = False, None
-
-    # Latest upload
-    # We upload
-    # - the current metadata to the "latest" path
-    # - the current doc to the "latest" path
-    # - the current inapp doc to the "latest" path
-    if should_upload_latest:
-        latest_uploaded, latest_blob_id = _metadata_upload(metadata, bucket, metadata_file_path, LATEST_GCS_FOLDER_NAME)
-        doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, False)
-        doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, True)
-
-    # Release candidate upload
-    # We just upload the current metadata to the "release_candidate" path
-    # The doc and inapp doc are not uploaded, which means that the release candidate will still point to the latest doc
-    if should_upload_release_candidate:
-        release_candidate_uploaded, release_candidate_blob_id = _metadata_upload(
-            metadata, bucket, metadata_file_path, RELEASE_CANDIDATE_GCS_FOLDER_NAME
-        )
+    uploaded_files.extend(components_zip_files_uploaded)
 
     return MetadataUploadInfo(
-        metadata_uploaded=version_uploaded or latest_uploaded or release_candidate_uploaded,
+        uploaded_files=uploaded_files,
         metadata_file_path=str(metadata_file_path),
-        uploaded_files=[
-            UploadedFile(
-                id="version_metadata",
-                uploaded=version_uploaded,
-                description="versioned metadata",
-                blob_id=version_blob_id,
-            ),
-            UploadedFile(
-                id="latest_metadata",
-                uploaded=latest_uploaded,
-                description="latest metadata",
-                blob_id=latest_blob_id,
-            ),
-            UploadedFile(
-                id="release_candidate_metadata",
-                uploaded=release_candidate_uploaded,
-                description="release candidate metadata",
-                blob_id=release_candidate_blob_id,
-            ),
-            UploadedFile(
-                id="icon",
-                uploaded=icon_uploaded,
-                description="icon",
-                blob_id=icon_blob_id,
-            ),
-            UploadedFile(
-                id="doc_version",
-                uploaded=doc_version_uploaded,
-                description="versioned doc",
-                blob_id=doc_version_blob_id,
-            ),
-            UploadedFile(
-                id="doc_latest",
-                uploaded=doc_latest_uploaded,
-                description="latest doc",
-                blob_id=doc_latest_blob_id,
-            ),
-            UploadedFile(
-                id="manifest_yml",
-                description="versioned manifest.yml file",
-                uploaded=manifest_yml_uploaded,
-                blob_id=manifest_yml_blob_id,
-            ),
-            UploadedFile(
-                id="components_zip",
-                description="python_components.zip file",
-                uploaded=components_zip_uploaded,
-                blob_id=components_zip_blob_id,
-            ),
-            UploadedFile(
-                id="components_zip_sha256",
-                description="python_components.zip.sha256 file",
-                uploaded=components_zip_sha256_uploaded,
-                blob_id=components_zip_sha256_blob_id,
-            ),
-            UploadedFile(
-                id="manifest_yml_latest",
-                description="latest manifest.yml file",
-                uploaded=manifest_yml_latest_uploaded,
-                blob_id=manifest_yml_latest_blob_id,
-            ),
-            UploadedFile(
-                id="components_zip_latest",
-                description="latest python_components.zip file",
-                uploaded=components_zip_latest_uploaded,
-                blob_id=components_zip_latest_blob_id,
-            ),
-            UploadedFile(
-                id="components_zip_sha256_latest",
-                description="latest python_components.zip.sha256 file",
-                uploaded=components_zip_sha256_latest_uploaded,
-                blob_id=components_zip_sha256_latest_blob_id,
-            ),
-            UploadedFile(
-                id="doc_inapp_version",
-                uploaded=doc_inapp_version_uploaded,
-                description="versioned inapp doc",
-                blob_id=doc_inapp_version_blob_id,
-            ),
-            UploadedFile(
-                id="doc_inapp_latest",
-                uploaded=doc_inapp_latest_uploaded,
-                description="latest inapp doc",
-                blob_id=doc_inapp_latest_blob_id,
-            ),
-        ],
+        metadata_uploaded=_any_uploaded(
+            uploaded_files,
+            [
+                "latest_metadata",
+                "version_metadata",
+                "version_release_candidate",
+            ],
+        ),
     )

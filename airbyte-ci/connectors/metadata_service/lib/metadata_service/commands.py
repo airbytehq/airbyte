@@ -14,12 +14,10 @@ from pydantic import ValidationError
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
     for file in metadata_upload_info.uploaded_files:
         if file.uploaded:
-            click.secho(
-                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.", fg="green"
-            )
+            click.secho(f"File:{file.file_key} for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.", fg="green")
         else:
             click.secho(
-                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was not uploaded. Reason: {file.blob_id}",
+                f"File:{file.file_key} for {metadata_upload_info.metadata_file_path} was not uploaded. Reason: {file.blob_id}",
                 fg="yellow",
             )
 
