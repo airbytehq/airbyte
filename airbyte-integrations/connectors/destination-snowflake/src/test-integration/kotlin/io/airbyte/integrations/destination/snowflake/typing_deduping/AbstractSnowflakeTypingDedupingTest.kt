@@ -414,7 +414,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
             """
                            {"type": "RECORD",
                              "record":{
-                               "emitted_at": 1000,
+                               "emitted_at": 1001,
                                "data": {
                                  "ID1": 2,
                                  "ID2": 201,
@@ -458,8 +458,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
 //                           """.trimIndent()
 
 
+        //Keep 2048 bytes of space for the other fields in the record
         val largeString1 =
-            generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE)
+            generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE - 2048)
         val largeString2 =
             generateRandomString(
                 SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE + 2
