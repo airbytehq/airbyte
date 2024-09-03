@@ -14,7 +14,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql-v2
   icon: mysql.svg
-  license: Airbyte Enterprise
+  license: ELv2
   name: Mysqlv2 Source
   registryOverrides:
     cloud:
