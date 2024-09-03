@@ -26,7 +26,7 @@ import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-/** [ConfigurationJsonObjectBase] implementation for [FakeSource]. */
+/** [ConfigurationJsonObjectBase] implementation for a fake source. */
 @JsonSchemaTitle("Test Source Spec")
 @JsonPropertyOrder(
     value =

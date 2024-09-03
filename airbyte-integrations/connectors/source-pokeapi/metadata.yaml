@@ -9,17 +9,17 @@ data:
       enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-pokeapi
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.4@sha256:b07a521add11f987c63c0db68c1b57e90bec0c985f1cb6f3c5a1940cde628a70
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
-  dockerImageTag: 0.2.14
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
@@ -30,8 +30,8 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
     - suite: liveTests
       testConnections:

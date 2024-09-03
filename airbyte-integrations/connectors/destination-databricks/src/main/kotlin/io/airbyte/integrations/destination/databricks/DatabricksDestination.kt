@@ -18,6 +18,7 @@ import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.integrations.base.destination.operation.DefaultFlush
 import io.airbyte.integrations.base.destination.operation.DefaultSyncOperation
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser
+import io.airbyte.integrations.base.destination.typing_deduping.ImportType
 import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId
@@ -31,7 +32,6 @@ import io.airbyte.integrations.destination.databricks.staging.DatabricksFileBuff
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.function.Consumer
@@ -89,12 +89,12 @@ class DatabricksDestination : BaseConnector(), Destination {
         val streamConfig =
             StreamConfig(
                 id = streamId,
-                destinationSyncMode = DestinationSyncMode.OVERWRITE,
+                postImportAction = ImportType.APPEND,
                 primaryKey = listOf(),
                 cursor = Optional.empty(),
                 columns = linkedMapOf(),
-                generationId = 0,
-                minimumGenerationId = 0,
+                generationId = 1,
+                minimumGenerationId = 1,
                 syncId = 0
             )
 
