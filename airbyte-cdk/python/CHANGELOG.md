@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.0.1
+Fix source-declarative-manifest
+
 ## 5.0.0
 Replace pydantic BaseModel with dataclass
 
