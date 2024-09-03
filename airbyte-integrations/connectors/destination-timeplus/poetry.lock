@@ -722,13 +722,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.107"
+version = "0.1.108"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.107-py3-none-any.whl", hash = "sha256:ddd0c846980474e271a553e9c220122e32d1f2ce877cc87d39ecd86726b9e78c"},
-    {file = "langsmith-0.1.107.tar.gz", hash = "sha256:f44de0a5f199381d0b518ecbe295d541c44ff33d13f18098ecc54a4547eccb3f"},
+    {file = "langsmith-0.1.108-py3-none-any.whl", hash = "sha256:407f318b0989e33f2cd30bc2fbd443e4ddfa7c2a93de7f795fb6b119b015583c"},
+    {file = "langsmith-0.1.108.tar.gz", hash = "sha256:42f603e2d5770ba36093951bdb29eaab22451cb12ab8c062340c722cf60d4cec"},
 ]
 
 [package.dependencies]
@@ -1316,13 +1316,13 @@ fixture = ["fixtures"]
 
 [[package]]
 name = "setuptools"
-version = "74.0.0"
+version = "74.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "setuptools-74.0.0-py3-none-any.whl", hash = "sha256:0274581a0037b638b9fc1c6883cc71c0210865aaa76073f7882376b641b84e8f"},
-    {file = "setuptools-74.0.0.tar.gz", hash = "sha256:a85e96b8be2b906f3e3e789adec6a9323abf79758ecfa3065bd740d81158b11e"},
+    {file = "setuptools-74.1.0-py3-none-any.whl", hash = "sha256:cee604bd76cc092355a4e43ec17aee5369095974f41f088676724dc6bc2c9ef8"},
+    {file = "setuptools-74.1.0.tar.gz", hash = "sha256:bea195a800f510ba3a2bc65645c88b7e016fe36709fefc58a880c4ae8a0138d7"},
 ]
 
 [package.extras]
@@ -1471,13 +1471,13 @@ test = ["pytest", "tornado (>=4.5)", "typeguard"]
 
 [[package]]
 name = "timeplus"
-version = "2.0.0b3"
+version = "2.0.0b4"
 description = "Timeplus python SDK"
 optional = false
 python-versions = ">=3"
 files = [
-    {file = "timeplus-2.0.0b3-py3-none-any.whl", hash = "sha256:dd5e9bca688025ad7d0e59984e21b10af65a22aa1b2794c3b5bba54c2fdf40ea"},
-    {file = "timeplus-2.0.0b3.tar.gz", hash = "sha256:0ceb5a79d4d19e13e8d2e6c096a14c96630796223305b9fe7911d078c0aac721"},
+    {file = "timeplus-2.0.0b4-py3-none-any.whl", hash = "sha256:59647c37294a1de51a09b47af31207a303ba735a14a9bbd3539450a696aab82a"},
+    {file = "timeplus-2.0.0b4.tar.gz", hash = "sha256:e08d0cfe9cdb8ce55e23c9ec8e9d6cb615fd41e04a78eb25a65cd6768898d780"},
 ]
 
 [package.dependencies]
@@ -1652,4 +1652,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "0a6b91b6ce2e5dd24d5c0034dbecdd944365e8ea826ae22ae2e991f64f240860"
+content-hash = "e56c313eb1d5f38c13d9bd60b26056da133ec02bb618067cca15b297b79668b8"
