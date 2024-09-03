@@ -65,7 +65,7 @@ class SnowflakeSuperLimitationTransformer(
         val startTime = System.currentTimeMillis()
 
         log.debug{"Traversing the record to NULL fields for snowflake size limitations"}
-        println("Traversing the record to NULL fields for snowflake size limitations")
+        //println("Traversing the record to NULL fields for snowflake size limitations")
 
         val namespace =
             if ((streamDescriptor!!.namespace != null && !streamDescriptor.namespace.isEmpty()))
@@ -83,14 +83,14 @@ class SnowflakeSuperLimitationTransformer(
         val transformedBytes = transformationInfo.originalBytes - transformationInfo.removedBytes
         // We check if the transformedBytes has solved the record limit.
 
-        //TODO: Remove code added for testing
-        println("Traversal complete in {" + (System.currentTimeMillis() - startTime) + "} ms")
-        println("originalBytes=" + originalBytes)
-        println("transformedBytes=" + transformedBytes)
+//        //TODO: Remove code added for testing
+//        println("Traversal complete in {" + (System.currentTimeMillis() - startTime) + "} ms")
+//        println("originalBytes=" + originalBytes)
+//        println("transformedBytes=" + transformedBytes)
 
-        if(transformationInfo.node != null && transformationInfo.node.size() < 500) {
-            println("transformed record transformationInfo.node=" + transformationInfo.node)
-        }
+//        if(transformationInfo.node != null && transformationInfo.node.size() < 500) {
+//            //println("transformed record transformationInfo.node=" + transformationInfo.node)
+//        }
 
         log.debug{"Traversal complete in {" + (System.currentTimeMillis() - startTime) + "} ms"}
 
@@ -105,11 +105,11 @@ class SnowflakeSuperLimitationTransformer(
            }
 
             //TODO: Remove code added for testing
-            println("Record size before transformation {" + originalBytes + "}, after transformation {" + transformedBytes + "} bytes exceeds 16MB limit")
+            //println("Record size before transformation {" + originalBytes + "}, after transformation {" + transformedBytes + "} bytes exceeds 16MB limit")
 
             val minimalNode = constructMinimalJsonWithPks(data, primaryKeys, cursorField)
 
-            println("minimalNode.size()=" + minimalNode.size())
+            //println("minimalNode.size()=" + minimalNode.size())
 
             if (minimalNode.isEmpty && syncMode == ImportType.DEDUPE) {
                 // Fail the sync if PKs are missing in DEDUPE, no point sending an empty record to

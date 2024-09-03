@@ -87,8 +87,9 @@ class SnowflakeSuperLimitationTransformerTest {
             jacksonDeserializeSizeAfterTransform,
             transformationInfo.originalBytes - transformationInfo.removedBytes
         )
-        println(transformationInfo.meta)
-        println(serialize(jsonNode))
+
+        //println(transformationInfo.meta)
+        //println(serialize(jsonNode))
     }
 
     @Test

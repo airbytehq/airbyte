@@ -395,19 +395,18 @@ abstract class AbstractSnowflakeTypingDedupingTest(
     @Throws(Exception::class)
     fun testRawTableLoadWithSuperVarcharLimitation() {
 
-
         val record1 =
             """
                            {"type": "RECORD",
                              "record":{
                                "emitted_at": 1000,
                                "data": {
-                                 "ID1": 1,
-                                 "ID2": 200,
-                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
-                                 "_AB_CDC_DELETED_AT": null,
-                                 "NAME": "PLACE_HOLDER",
-                                 "ADDRESS": {"CITY": "San Francisco", "STATE": "CA"}}
+                                 "id1": 1,
+                                 "id2": 200,
+                                 "updated_at": "2000-01-01T00:00:00Z",
+                                 "_ab_cdc_deleted_at": null,
+                                 "name": "PLACE_HOLDER",
+                                 "address": {"city": "San Francisco", "state": "CA"}}
                              }
                            }
                            """.trimIndent()
@@ -417,15 +416,49 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                              "record":{
                                "emitted_at": 1001,
                                "data": {
-                                 "ID1": 2,
-                                 "ID2": 201,
-                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
-                                 "_AB_CDC_DELETED_AT": null,
-                                 "NAME": "PLACE_HOLDER",
-                                 "ADDRESS": {"CITY": "New York", "STATE": "NY"}}
+                                 "id1": 2,
+                                 "id2": 201,
+                                 "updated_at": "2000-01-01T00:00:00Z",
+                                 "_ab_cdc_deleted_at": null,
+                                 "name": "PLACE_HOLDER",
+                                 "address": {"city": "New York", "state": "NY"}}
                              }
                            }
                            """.trimIndent()
+
+        //When ID1, ID2 and other columns are uppercase,
+        // then the queries run during sync get NULL values since those queries use lowercase column names
+//
+//        val record1 =
+//            """
+//                           {"type": "RECORD",
+//                             "record":{
+//                               "emitted_at": 1000,
+//                               "data": {
+//                                 "ID1": 1,
+//                                 "ID2": 200,
+//                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
+//                                 "_AB_CDC_DELETED_AT": null,
+//                                 "NAME": "PLACE_HOLDER",
+//                                 "ADDRESS": {"CITY": "San Francisco", "STATE": "CA"}}
+//                             }
+//                           }
+//                           """.trimIndent()
+//        val record2 =
+//            """
+//                           {"type": "RECORD",
+//                             "record":{
+//                               "emitted_at": 1001,
+//                               "data": {
+//                                 "ID1": 2,
+//                                 "ID2": 201,
+//                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
+//                                 "_AB_CDC_DELETED_AT": null,
+//                                 "NAME": "PLACE_HOLDER",
+//                                 "ADDRESS": {"CITY": "New York", "STATE": "NY"}}
+//                             }
+//                           }
+//                           """.trimIndent()
 
 //        val record1 =
 //            """
@@ -486,11 +519,11 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         val message1 = deserialize(record1, AirbyteMessage::class.java)
         message1.record.namespace = streamNamespace
         message1.record.stream = streamName
-        (message1.record.data as ObjectNode).put("NAME", largeString1)
+        (message1.record.data as ObjectNode).put("name", largeString1)
         val message2 = deserialize(record2, AirbyteMessage::class.java)
         message2.record.namespace = streamNamespace
         message2.record.stream = streamName
-        (message2.record.data as ObjectNode).put("NAME", largeString2)
+        (message2.record.data as ObjectNode).put("name", largeString2)
 
         // message1 should be preserved which is just on limit, message2 should be nulled.
         runSync(catalog, java.util.List.of(message1, message2))
