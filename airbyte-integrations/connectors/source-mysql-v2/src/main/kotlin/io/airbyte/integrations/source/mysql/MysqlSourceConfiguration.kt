@@ -9,18 +9,9 @@ import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.io.File
-import java.io.FileOutputStream
-import java.io.StringReader
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.nio.file.Files
-import java.security.KeyStore
-import java.security.cert.Certificate
-import java.security.cert.CertificateFactory
 import java.time.Duration
-import java.util.UUID
-import org.bouncycastle.util.io.pem.PemReader
 
 private val log = KotlinLogging.logger {}
 
@@ -72,28 +63,14 @@ class MysqlSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        if (encryption is SslCertificate) {
-            val pemFileContents: String = encryption.sslCertificate
-            val pemReader = PemReader(StringReader(pemFileContents))
-            val certDer = pemReader.readPemObject().content
-            val cf: CertificateFactory = CertificateFactory.getInstance("X.509")
-            val cert: Certificate = cf.generateCertificate(certDer.inputStream())
-            val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
-            keyStore.load(null, null) // Initialize the KeyStore
-            keyStore.setCertificateEntry("rds-root", cert)
-            val keyStorePass: String = UUID.randomUUID().toString()
-            val keyStoreFile: File = Files.createTempFile("clientkeystore_", ".jks").toFile()
-            keyStoreFile.deleteOnExit()
-            val fos = FileOutputStream(keyStoreFile)
-            keyStore.store(fos, keyStorePass.toCharArray())
-            fos.close()
-            jdbcProperties["javax.net.ssl.trustStore"] = keyStoreFile.toString()
-            jdbcProperties["javax.net.ssl.trustStoreType"] = "JKS"
-            jdbcProperties["javax.net.ssl.trustStorePassword"] = keyStorePass
+        if (encryption is SslVerifyCertificate) {
+            // TODO: reuse JdbcSSLCOnnectionUtils; parse the input into properties
         }
         // Build JDBC URL
         val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:mysql://${address}?useCursorFetch=true&sessionVariables=autocommit=0"
+        val jdbcUrlFmt = "jdbc:mysql://${address}"
+        jdbcProperties["useCursorFetch"] = "true"
+        jdbcProperties["sessionVariables"] = "autocommit=0"
         val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =

@@ -166,7 +166,7 @@ class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGe
 
     fun FromNode.sql(): String =
         when (this) {
-            NoFrom -> TODO("no such thing in mysql")
+            NoFrom -> ""
             is From -> if (this.namespace == null) "FROM `$name`" else "FROM `$namespace`.`$name`"
             is FromSample -> TODO("not implemented in mysql")
         }

@@ -197,61 +197,79 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "encryption_method")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = Unencrypted::class, name = "unencrypted"),
-    JsonSubTypes.Type(value = EncryptionAlgorithm::class, name = "client_nne"),
-    JsonSubTypes.Type(value = SslCertificate::class, name = "encrypted_verify_certificate"),
+    JsonSubTypes.Type(value = EncryptionPreferred::class, name = "preferred"),
+    JsonSubTypes.Type(value = EncryptionRequired::class, name = "required"),
+    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "Verify CA"),
+    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "Verify Identity"),
 )
 @JsonSchemaTitle("Encryption")
 @JsonSchemaDescription("The encryption method which is used when communicating with the database.")
 sealed interface Encryption
 
-@JsonSchemaTitle("Unencrypted")
-@JsonSchemaDescription("Data transfer will not be encrypted.")
-data object Unencrypted : Encryption
-
-@JsonSchemaTitle("Native Network Encryption (NNE)")
+@JsonSchemaTitle("preferred")
 @JsonSchemaDescription(
-    "The native network encryption gives you the ability to encrypt database " +
-        "connections, without the configuration overhead of TCP/IP and SSL/TLS " +
-        "and without the need to open and listen on different ports.",
+    "To allow unencrypted communication only when the source doesn't support encryption.",
 )
-class EncryptionAlgorithm : Encryption {
-    @JsonProperty("encryption_algorithm", required = true)
-    @JsonSchemaTitle("Encryption Algorithm")
-    @JsonPropertyDescription("This parameter defines what encryption algorithm is used.")
-    @JsonSchemaDefault("AES256")
-    @JsonSchemaInject(json = """{"enum":["AES256","RC4_56","3DES168"]}""")
-    var encryptionAlgorithm: String = "AES256"
-}
+data object EncryptionPreferred : Encryption
 
-@JsonSchemaTitle("TLS Encrypted (verify certificate)")
-@JsonSchemaDescription("Verify and use the certificate provided by the server.")
+@JsonSchemaTitle("required")
+@JsonSchemaDescription(
+    "To always require encryption. Note: The connection will fail if the source doesn't support encryption.",
+)
+data object EncryptionRequired : Encryption
+
+@JsonSchemaTitle("Verify CA")
+@JsonSchemaDescription(
+    "To always require encryption and verify that the source has a valid SSL certificate."
+)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class SslCertificate : Encryption {
+class SslVerifyCertificate : Encryption {
     @JsonProperty("ssl_certificate", required = true)
-    @JsonSchemaTitle("SSL PEM File")
+    @JsonSchemaTitle("CA certificate")
     @JsonPropertyDescription(
-        "Privacy Enhanced Mail (PEM) files are concatenated certificate " +
-            "containers frequently used in certificate installations.",
+        "CA certificate",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     lateinit var sslCertificate: String
+
+    @JsonProperty("ssl_client_certificate")
+    @JsonSchemaTitle("Client certificate File")
+    @JsonPropertyDescription(
+        "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslClientCertificate: String
+
+    @JsonProperty("ssl_client_key")
+    @JsonSchemaTitle("Client Key")
+    @JsonPropertyDescription(
+        "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslClientKey: String
+
+    @JsonProperty("ssl_client_key_password")
+    @JsonSchemaTitle("Client key password")
+    @JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslClientPassword: String
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.encryption")
 class MicronautPropertiesFriendlyEncryption {
-    var encryptionMethod: String = "unencrypted"
-    var encryptionAlgorithm: String? = null
+    var encryptionMethod: String = "preferred"
     var sslCertificate: String? = null
 
     @JsonValue
     fun asEncryption(): Encryption =
         when (encryptionMethod) {
-            "unencrypted" -> Unencrypted
-            "client_nne" ->
-                EncryptionAlgorithm().also { it.encryptionAlgorithm = encryptionAlgorithm!! }
-            "encrypted_verify_certificate" ->
-                SslCertificate().also { it.sslCertificate = sslCertificate!! }
+            "preferred" -> EncryptionPreferred
+            "required" -> EncryptionRequired
+            "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
+            "verify_identity" ->
+                SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
             else -> throw ConfigErrorException("invalid value $encryptionMethod")
         }
 }

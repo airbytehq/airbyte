@@ -81,58 +81,126 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "Unencrypted",
+            "title": "preferred",
             "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
-                "enum": ["unencrypted"],
+                "enum": ["preferred"],
                 "type": "string",
-                "default": "unencrypted"
+                "default": "preferred"
               }
             },
-            "description": "Data transfer will not be encrypted.",
+            "description": "To allow unencrypted communication only when the source doesn't support encryption.",
             "additionalProperties": true
           },
           {
             "type": "object",
-            "title": "Native Network Encryption (NNE)",
-            "required": ["encryption_method", "encryption_algorithm"],
+            "title": "required",
+            "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
-                "enum": ["client_nne"],
+                "enum": ["required"],
                 "type": "string",
-                "default": "client_nne"
-              },
-              "encryption_algorithm": {
-                "enum": ["AES256", "RC4_56", "3DES168"],
-                "type": "string",
-                "title": "Encryption Algorithm",
-                "default": "AES256",
-                "description": "This parameter defines what encryption algorithm is used."
+                "default": "required"
               }
             },
-            "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
+            "description": "To always require encryption. Note: The connection will fail if the source doesn't support encryption.",
             "additionalProperties": true
           },
           {
             "type": "object",
-            "title": "TLS Encrypted (verify certificate)",
-            "required": ["encryption_method", "ssl_certificate"],
+            "title": "Verify CA",
+            "required": [
+              "encryption_method",
+              "ssl_certificate",
+              "ssl_client_certificate",
+              "ssl_client_key",
+              "ssl_client_key_password"
+            ],
             "properties": {
+              "ssl_client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "multiline": true,
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+                "airbyte_secret": true
+              },
               "ssl_certificate": {
                 "type": "string",
-                "title": "SSL PEM File",
+                "title": "CA certificate",
                 "multiline": true,
-                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
+                "description": "CA certificate",
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["encrypted_verify_certificate"],
+                "enum": ["Verify CA"],
                 "type": "string",
-                "default": "encrypted_verify_certificate"
+                "default": "Verify CA"
+              },
+              "ssl_client_certificate": {
+                "type": "string",
+                "title": "Client certificate File",
+                "multiline": true,
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+                "airbyte_secret": true
+              },
+              "ssl_client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "multiline": true,
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true
               }
             },
-            "description": "Verify and use the certificate provided by the server.",
+            "description": "To always require encryption and verify that the source has a valid SSL certificate.",
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Verify CA",
+            "required": [
+              "encryption_method",
+              "ssl_certificate",
+              "ssl_client_certificate",
+              "ssl_client_key",
+              "ssl_client_key_password"
+            ],
+            "properties": {
+              "ssl_client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "multiline": true,
+                "description": "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+                "airbyte_secret": true
+              },
+              "ssl_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "multiline": true,
+                "description": "CA certificate",
+                "airbyte_secret": true
+              },
+              "encryption_method": {
+                "enum": ["Verify CA"],
+                "type": "string",
+                "default": "Verify CA"
+              },
+              "ssl_client_certificate": {
+                "type": "string",
+                "title": "Client certificate File",
+                "multiline": true,
+                "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+                "airbyte_secret": true
+              },
+              "ssl_client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "multiline": true,
+                "description": "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true
+              }
+            },
+            "description": "To always require encryption and verify that the source has a valid SSL certificate.",
             "additionalProperties": true
           }
         ],

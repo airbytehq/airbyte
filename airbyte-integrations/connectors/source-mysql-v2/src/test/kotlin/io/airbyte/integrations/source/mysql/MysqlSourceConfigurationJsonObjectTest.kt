@@ -32,11 +32,7 @@ class MysqlSourceConfigurationJsonObjectTest {
         Assertions.assertEquals("BAR", pojo.password)
         Assertions.assertEquals(listOf("FOO", "SYSTEM"), pojo.schemas)
         val encryption: Encryption = pojo.getEncryptionValue()
-        Assertions.assertTrue(encryption is EncryptionAlgorithm, encryption::class.toString())
-        Assertions.assertEquals(
-            "3DES168",
-            (encryption as? EncryptionAlgorithm)?.encryptionAlgorithm,
-        )
+        Assertions.assertTrue(encryption is EncryptionPreferred, encryption::class.toString())
         val tunnelMethod: SshTunnelMethodConfiguration = pojo.getTunnelMethodValue()
         Assertions.assertTrue(
             tunnelMethod is SshPasswordAuthTunnelMethod,
@@ -52,10 +48,6 @@ const val CONFIG_JSON =
 {
   "host": "localhost",
   "port": 12345,
-  "connection_data": {
-    "connection_type": "service_name",
-    "service_name": "FREEPDB1"
-  },
   "username": "FOO",
   "password": "BAR",
   "schemas": [
@@ -63,8 +55,7 @@ const val CONFIG_JSON =
     "SYSTEM"
   ],
   "encryption": {
-    "encryption_method": "client_nne",
-    "encryption_algorithm": "3DES168"
+    "encryption_method": "preferred"
   },
   "tunnel_method": {
     "tunnel_method": "SSH_PASSWORD_AUTH",
