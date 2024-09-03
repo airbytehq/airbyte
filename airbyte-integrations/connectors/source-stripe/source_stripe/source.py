@@ -528,7 +528,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        state_manager = ConnectorStateManager(state=self._state)
         return [
             self._to_concurrent(
                 stream,

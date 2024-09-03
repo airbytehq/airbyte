@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 import source_stripe
 import stripe
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog,ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -17,7 +17,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe import SourceStripe
 
 logger = logging.getLogger("airbyte")
-_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CATALOG = ConfiguredAirbyteCatalogSerializer.load({"streams": []})
 _ANY_CONFIG = {}
 _NO_STATE = StateBuilder().build()
 
@@ -43,7 +43,7 @@ class CatalogBuilder:
         return self
 
     def build(self) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj({"streams": self._streams})
+        return ConfiguredAirbyteCatalogSerializer.load({"streams": self._streams})
 
 
 def _a_valid_config():
