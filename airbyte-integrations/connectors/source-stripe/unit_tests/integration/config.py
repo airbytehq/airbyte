@@ -7,9 +7,12 @@ from typing import Any, Dict
 class ConfigBuilder:
     def __init__(self) -> None:
         self._config: Dict[str, Any] = {
-            "client_secret": "ConfigBuilder default client secret",
             "account_id": "ConfigBuilder default account id",
             "start_date": "2020-05-01T00:00:00Z",
+            "credentials": {
+                "credentials_title": "Secret Key Credential",
+                "client_secret": "ConfigBuilder default client secret",
+            }
         }
 
     def with_account_id(self, account_id: str) -> "ConfigBuilder":
@@ -17,7 +20,7 @@ class ConfigBuilder:
         return self
 
     def with_client_secret(self, client_secret: str) -> "ConfigBuilder":
-        self._config["client_secret"] = client_secret
+        self._config["credentials"]["client_secret"] = client_secret
         return self
 
     def with_start_date(self, start_datetime: datetime) -> "ConfigBuilder":
