@@ -6,12 +6,12 @@ from collections import OrderedDict
 from unittest.mock import Mock
 
 import pytest
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionKeySerializer, StreamSlice
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 PARTITION = {
     "partition_key string": "partition value",
