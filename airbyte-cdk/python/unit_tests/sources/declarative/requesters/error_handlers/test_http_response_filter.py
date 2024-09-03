@@ -22,7 +22,9 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "custom error message",
             {"status_code": 503},
-            ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.transient_error, error_message="custom error message"),
+            ErrorResolution(
+                response_action=ResponseAction.FAIL, failure_type=FailureType.transient_error, error_message="custom error message"
+            ),
             id="test_http_code_matches",
         ),
         pytest.param(
@@ -33,7 +35,11 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "",
             {"status_code": 403},
-            ErrorResolution(response_action=ResponseAction.IGNORE, failure_type=FailureType.config_error, error_message="Forbidden. You don't have permission to access this resource."),
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="Forbidden. You don't have permission to access this resource.",
+            ),
             id="test_http_code_matches_ignore_action",
         ),
         pytest.param(
@@ -44,7 +50,9 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "",
             {"status_code": 429},
-            ErrorResolution(response_action=ResponseAction.RETRY, failure_type=FailureType.transient_error, error_message="Too many requests."),
+            ErrorResolution(
+                response_action=ResponseAction.RETRY, failure_type=FailureType.transient_error, error_message="Too many requests."
+            ),
             id="test_http_code_matches_retry_action",
         ),
         pytest.param(
@@ -55,7 +63,9 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "error message was: {{ response.failure }}",
             {"status_code": 404, "json": {"the_body": "do_i_match", "failure": "i failed you"}},
-            ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.system_error, error_message="error message was: i failed you"),
+            ErrorResolution(
+                response_action=ResponseAction.FAIL, failure_type=FailureType.system_error, error_message="error message was: i failed you"
+            ),
             id="test_predicate_matches_json",
         ),
         pytest.param(
@@ -66,7 +76,9 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "error from header: {{ headers.warning }}",
             {"status_code": 404, "headers": {"the_key": "header_match", "warning": "this failed"}},
-            ErrorResolution(response_action=ResponseAction.FAIL, failure_type=FailureType.system_error, error_message="error from header: this failed"),
+            ErrorResolution(
+                response_action=ResponseAction.FAIL, failure_type=FailureType.system_error, error_message="error from header: this failed"
+            ),
             id="test_predicate_matches_headers",
         ),
         pytest.param(
@@ -80,7 +92,7 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             ErrorResolution(
                 response_action=ResponseAction.FAIL,
                 failure_type=FailureType.config_error,
-                error_message="Forbidden. You don't have permission to access this resource."
+                error_message="Forbidden. You don't have permission to access this resource.",
             ),
             id="test_predicate_matches_headers",
         ),
@@ -147,12 +159,16 @@ from airbyte_cdk.sources.streams.http.error_handlers.response_models import Erro
             "",
             "rate limits",
             {"status_code": 500},
-            ErrorResolution(response_action=ResponseAction.RATE_LIMITED, failure_type=FailureType.transient_error, error_message="rate limits"),
+            ErrorResolution(
+                response_action=ResponseAction.RATE_LIMITED, failure_type=FailureType.transient_error, error_message="rate limits"
+            ),
             id="test_http_code_matches_response_action_rate_limited",
         ),
     ],
 )
-def test_matches(requests_mock, action, failure_type, http_codes, predicate, error_contains, error_message, response, expected_error_resolution):
+def test_matches(
+    requests_mock, action, failure_type, http_codes, predicate, error_contains, error_message, response, expected_error_resolution
+):
     requests_mock.register_uri(
         "GET",
         "https://airbyte.io/",

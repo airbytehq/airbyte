@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 import freezegun
 import pytest
 from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
@@ -84,7 +84,6 @@ from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFiel
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
-from airbyte_protocol.models import FailureType
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
@@ -1045,10 +1044,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
     selector = factory.create_component(
-        model_type=RecordSelectorModel, component_definition=selector_manifest,
-        decoder=None,
-        transformations=[],
-        config=input_config
+        model_type=RecordSelectorModel, component_definition=selector_manifest, decoder=None, transformations=[], config=input_config
     )
 
     assert isinstance(selector, RecordSelector)
@@ -1129,7 +1125,8 @@ requester:
 
     selector = factory.create_component(
         model_type=HttpRequesterModel,
-        component_definition=requester_manifest, config=input_config,
+        component_definition=requester_manifest,
+        config=input_config,
         name=name,
         decoder=None,
     )
@@ -1181,8 +1178,7 @@ requester:
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
     selector = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name,
-        decoder=None
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name, decoder=None
     )
 
     assert isinstance(selector, HttpRequester)
@@ -1267,11 +1263,13 @@ requester:
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
     http_requester = factory.create_component(
-        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name="any name", decoder=JsonDecoder(parameters={})
+        model_type=HttpRequesterModel,
+        component_definition=requester_manifest,
+        config=input_config,
+        name="any name",
+        decoder=JsonDecoder(parameters={}),
     )
-    requests_mock.get(
-        "https://api.sendgrid.com/v3/marketing/lists", status_code=401
-    )
+    requests_mock.get("https://api.sendgrid.com/v3/marketing/lists", status_code=401)
 
     with pytest.raises(AirbyteTracedException) as exception:
         http_requester.send_request()
@@ -1455,8 +1453,11 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io",
-        decoder=JsonDecoder(parameters={})
+        model_type=DefaultPaginatorModel,
+        component_definition=paginator_manifest,
+        config=input_config,
+        url_base="https://airbyte.io",
+        decoder=JsonDecoder(parameters={}),
     )
 
     assert isinstance(paginator, DefaultPaginator)
@@ -1483,7 +1484,12 @@ def test_create_default_paginator():
                 "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_path": [], "decoder": {"type": "JsonDecoder"}},
             },
             "subcomponent_field_with_hint",
-            DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, decoder=JsonDecoder(parameters={}), parameters={}),
+            DpathExtractor(
+                field_path=[],
+                config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]},
+                decoder=JsonDecoder(parameters={}),
+                parameters={},
+            ),
             None,
             id="test_create_custom_component_with_subcomponent_that_must_be_parsed",
         ),
@@ -2120,10 +2126,7 @@ def test_create_page_increment_with_interpolated_page_size():
         start_from_page=1,
         inject_on_first_request=True,
     )
-    config = {
-        **input_config,
-        "page_size": 5
-    }
+    config = {**input_config, "page_size": 5}
     expected_strategy = PageIncrement(page_size=5, start_from_page=1, inject_on_first_request=True, parameters={}, config=config)
 
     strategy = factory.create_page_increment(model, config)
@@ -2158,7 +2161,7 @@ def test_create_custom_schema_loader():
 
     definition = {
         "type": "CustomSchemaLoader",
-        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader"
+        "class_name": "unit_tests.sources.declarative.parsers.test_model_to_component_factory.MyCustomSchemaLoader",
     }
     component = factory.create_component(CustomSchemaLoaderModel, definition, {})
     assert isinstance(component, MyCustomSchemaLoader)
@@ -2183,12 +2186,9 @@ def test_create_custom_schema_loader():
                 "algorithm": "HS256",
                 "base64_encode_secret_key": False,
                 "token_duration": 1200,
-                "jwt_headers": {
-                    "typ": "JWT",
-                    "alg": "HS256"
-                },
-                "jwt_payload": {}
-            }
+                "jwt_headers": {"typ": "JWT", "alg": "HS256"},
+                "jwt_payload": {},
+            },
         ),
         (
             {
@@ -2230,7 +2230,6 @@ def test_create_custom_schema_loader():
                     "alg": "RS256",
                     "cty": "JWT",
                     "test": "test custom header",
-
                 },
                 "jwt_payload": {
                     "iss": "test iss",
@@ -2238,7 +2237,7 @@ def test_create_custom_schema_loader():
                     "aud": "test aud",
                     "test": "test custom payload",
                 },
-            }
+            },
         ),
         (
             {
@@ -2263,12 +2262,11 @@ def test_create_custom_schema_loader():
                     "typ": "JWT",
                     "alg": "HS256",
                     "custom_header": "custom header value",
-
                 },
                 "jwt_payload": {
                     "custom_payload": "custom payload value",
                 },
-            }
+            },
         ),
         (
             {
@@ -2282,7 +2280,7 @@ def test_create_custom_schema_loader():
             """,
             {
                 "expect_error": True,
-            }
+            },
         ),
     ],
 )
@@ -2299,9 +2297,7 @@ def test_create_jwt_authenticator(config, manifest, expected):
             )
         return
 
-    authenticator = factory.create_component(
-        model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config
-    )
+    authenticator = factory.create_component(model_type=JwtAuthenticatorModel, component_definition=authenticator_manifest, config=config)
 
     assert isinstance(authenticator, JwtAuthenticator)
     assert authenticator._secret_key.eval(config) == expected["secret_key"]
@@ -2312,11 +2308,13 @@ def test_create_jwt_authenticator(config, manifest, expected):
         assert authenticator._header_prefix.eval(config) == expected["header_prefix"]
     assert authenticator._get_jwt_headers() == expected["jwt_headers"]
     jwt_payload = expected["jwt_payload"]
-    jwt_payload.update({
-        "iat": int(datetime.datetime.now().timestamp()),
-        "nbf": int(datetime.datetime.now().timestamp()),
-        "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"]
-    })
+    jwt_payload.update(
+        {
+            "iat": int(datetime.datetime.now().timestamp()),
+            "nbf": int(datetime.datetime.now().timestamp()),
+            "exp": int(datetime.datetime.now().timestamp()) + expected["token_duration"],
+        }
+    )
     assert authenticator._get_jwt_payload() == jwt_payload
 
 class TestClassLoading(unittest.TestCase):
