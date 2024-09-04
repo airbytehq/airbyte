@@ -17,9 +17,9 @@ interface ExceptionClassifier : Ordered {
     override fun getOrder(): Int = orderValue
 
     companion object {
-        fun unwind(e: Throwable, test: (Throwable) -> Boolean): Throwable? {
+        fun unwind(e: Throwable, stopUnwind: (Throwable) -> Boolean): Throwable? {
             var unwound = e
-            while (!test(unwound)) {
+            while (!stopUnwind(unwound)) {
                 unwound = unwound.cause ?: return null
             }
             return unwound
