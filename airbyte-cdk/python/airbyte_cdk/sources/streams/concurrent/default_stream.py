@@ -59,20 +59,18 @@ class DefaultStream(AbstractStream):
         return self._json_schema
 
     def as_airbyte_stream(self) -> AirbyteStream:
-        stream = AirbyteStream(name=self._name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])
+        stream = AirbyteStream(name=self._name, json_schema=self._json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
         if self._namespace:
             stream.namespace = self._namespace
 
-        cursor_field = self._cursor_field
-        if cursor_field:
+        if self._cursor_field:
             stream.source_defined_cursor = True
             stream.supported_sync_modes.append(SyncMode.incremental)
-            stream.default_cursor_field = [cursor_field]
+            stream.default_cursor_field = [self._cursor_field]
 
-        keys = self._primary_key
-        if keys:
-            stream.source_defined_primary_key = [keys]
+        if self._primary_key:
+            stream.source_defined_primary_key = [self._primary_key]
 
         return stream
 
