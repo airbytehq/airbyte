@@ -377,40 +377,40 @@ class _JsonTypeInferrer(_TypeInferrer):
         self._values.add(value)
 
     def infer(self) -> str:
-        types: set[str] = set()
+        types: Set[str] = set()
         for value in self._values:
             inferred_types = self._infer_type(value)
-            if self._NULL_TYPE not in inferred_types:
-                if not types:
-                    types = inferred_types
-                else:
-                    types &= inferred_types
+            if not inferred_types or self._NULL_TYPE in inferred_types:
+                continue
+
+            if not types:
+                types = inferred_types
+            else:
+                types &= inferred_types
 
         if not types:
-            # this is highly unusual but we will consider the column as a string
             return self._STRING_TYPE
 
         if self._BOOLEAN_TYPE in types:
             return self._BOOLEAN_TYPE
-        elif self._INTEGER_TYPE in types:
+        if self._INTEGER_TYPE in types:
             return self._INTEGER_TYPE
-        elif self._NUMBER_TYPE in types:
+        if self._NUMBER_TYPE in types:
             return self._NUMBER_TYPE
+
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
-        inferred_types = {self._STRING_TYPE}
-
         if value in self._null_values:
-            inferred_types.add(self._NULL_TYPE)
+            return {self._NULL_TYPE}
         if self._is_boolean(value):
-            inferred_types.add(self._BOOLEAN_TYPE)
+            return {self._BOOLEAN_TYPE, self._STRING_TYPE}
         if self._is_integer(value):
-            inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
-        elif self._is_number(value):
-            inferred_types.add(self._NUMBER_TYPE)
+            return {self._INTEGER_TYPE, self._NUMBER_TYPE, self._STRING_TYPE}
+        if self._is_number(value):
+            return {self._NUMBER_TYPE, self._STRING_TYPE}
 
-        return inferred_types
+        return {self._STRING_TYPE}
 
     def _is_boolean(self, value: str) -> bool:
         return value in self._boolean_trues or value in self._boolean_falses
