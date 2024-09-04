@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
+from source_stripe.streams import CustomerBalanceTransactions, SetupAttempts, UpdatedCursorIncrementalStripeSubStream, StripeStream
 
 
 def read_from_stream(stream, sync_mode, state):
@@ -602,7 +602,13 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
 
 def test_persons_wo_state(requests_mock, stream_args):
     requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
-    stream = Persons(**stream_args)
+    stream = UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **stream_args,
+            )
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
     requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
@@ -631,7 +637,13 @@ def test_persons_w_state(requests_mock, stream_args):
             "has_more": False,
         },
     )
-    stream = Persons(**stream_args)
+    stream = UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **stream_args,
+            )
     slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
     assert slices == [{}]
     records = [

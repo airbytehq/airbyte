@@ -290,7 +290,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             UpdatedCursorIncrementalStripeSubStream(
                 name="persons",
                 path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
-                parent=StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **args),
+                parent=StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
                 event_types=["person.created", "person.updated", "person.deleted"],
                 **args,
             ),
