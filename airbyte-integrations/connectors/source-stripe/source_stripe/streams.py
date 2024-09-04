@@ -611,27 +611,6 @@ class SetupAttempts(CreatedCursorIncrementalStripeStream, HttpSubStream):
         return params
 
 
-class Persons(UpdatedCursorIncrementalStripeStream, HttpSubStream):
-    """
-    API docs: https://stripe.com/docs/api/persons/list
-    """
-
-    event_types = ["person.created", "person.updated", "person.deleted"]
-
-    def __init__(self, *args, **kwargs):
-        parent = StripeStream(*args, name="accounts", path="accounts", use_cache=USE_CACHE, **kwargs)
-        super().__init__(*args, parent=parent, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"accounts/{stream_slice['parent']['id']}/persons"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent = HttpSubStream if not stream_state else UpdatedCursorIncrementalStripeStream
-        yield from parent.stream_slices(self, sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-
-
 class StripeSubStream(StripeStream, HttpSubStream):
     pass
 
