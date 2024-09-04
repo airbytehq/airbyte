@@ -292,10 +292,10 @@ class FullRefreshCheckpointReader(CheckpointReader):
         self._final_checkpoint = False
 
     def next(self) -> Optional[Mapping[str, Any]]:
-        item = next(self._stream_slices, None)
-        if item is None:
-            self._final_checkpoint = True
-        return item
+        for item in self._stream_slices:
+            return item
+        self._final_checkpoint = True
+        return None
 
     def observe(self, new_state: Mapping[str, Any]) -> None:
         pass
