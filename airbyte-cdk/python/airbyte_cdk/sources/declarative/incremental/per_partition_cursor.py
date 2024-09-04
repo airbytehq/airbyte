@@ -99,17 +99,13 @@ class PerPartitionCursor(DeclarativeCursor):
             return
 
         if "states" not in stream_state:
+            # We assume that `stream_state` is in a global format that can be applied to all partitions.
+            # Example: {"global_state_format_key": "global_state_format_value"}
             self._state_to_migrate_from = stream_state
-            return
-            # raise AirbyteTracedException(
-            #     internal_message=f"Could not sync parse the following state: {stream_state}",
-            #     message="The state for is format invalid. Validate that the migration steps included a reset and that it was performed "
-            #     "properly. Otherwise, please contact Airbyte support.",
-            #     failure_type=FailureType.config_error,
-            # )
 
-        for state in stream_state["states"]:
-            self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+        else:
+            for state in stream_state["states"]:
+                self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
