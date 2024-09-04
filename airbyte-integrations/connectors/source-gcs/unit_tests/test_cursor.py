@@ -18,11 +18,11 @@ def test_add_file_successfully_with_full_history(cursor, remote_file, remote_fil
 
 
 def test_add_file_with_no_history(cursor, remote_file, remote_file_b, logger):
-    DefaultFileBasedCursor.DEFAULT_MAX_HISTORY_SIZE = 1
+    DefaultFileBasedCursor.DEFAULT_MAX_HISTORY_SIZE = 0
     cursor.add_file(remote_file)
     cursor.add_file(remote_file_b)
 
-    assert len(cursor._file_to_datetime_history) == 1
+    assert len(cursor._file_to_datetime_history) == 0
 
 
 def test_get_files_to_sync_with_full_history(cursor, remote_file, remote_file_b, logger):
@@ -66,16 +66,6 @@ def test_get_files_to_sync_with_existing_older_file(cursor, remote_file, remote_
     cursor.add_file(remote_file)
 
     files_to_sync = list(cursor.get_files_to_sync([remote_file_older], logger))
-
-    assert len(files_to_sync) == 0
-
-
-def test_get_files_to_sync_with_existing_older_file(cursor, remote_file, remote_file_older, logger):
-    DefaultFileBasedCursor.DEFAULT_MAX_HISTORY_SIZE = 1
-    cursor.add_file(remote_file_older)
-    cursor.add_file(remote_file)
-
-    files_to_sync = list(cursor.get_files_to_sync([remote_file], logger))
 
     assert len(files_to_sync) == 0
 
