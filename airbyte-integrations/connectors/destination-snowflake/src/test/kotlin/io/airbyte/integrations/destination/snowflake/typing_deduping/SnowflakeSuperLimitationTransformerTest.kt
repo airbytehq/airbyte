@@ -71,9 +71,7 @@ class SnowflakeSuperLimitationTransformerTest {
         val jsonString = readResource("test.json")
         val jsonNode = deserializeExact(jsonString)
         // Calculate the size of the json before transformation, note that the original JsonNode is
-        // altered
-        // so
-        // serializing after transformation will return modified size.
+        // altered so serializing after transformation will return modified size.
         val jacksonDeserializationSize =
             serialize(jsonNode).toByteArray(StandardCharsets.UTF_8).size
         // Add a short length as predicate.
@@ -87,9 +85,6 @@ class SnowflakeSuperLimitationTransformerTest {
             jacksonDeserializeSizeAfterTransform,
             transformationInfo.originalBytes - transformationInfo.removedBytes
         )
-
-        //println(transformationInfo.meta)
-        //println(serialize(jsonNode))
     }
 
     @Test

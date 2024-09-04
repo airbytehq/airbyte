@@ -425,73 +425,6 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                              }
                            }
                            """.trimIndent()
-
-        //When ID1, ID2 and other columns are uppercase,
-        // then the queries run during sync get NULL values since those queries use lowercase column names
-//
-//        val record1 =
-//            """
-//                           {"type": "RECORD",
-//                             "record":{
-//                               "emitted_at": 1000,
-//                               "data": {
-//                                 "ID1": 1,
-//                                 "ID2": 200,
-//                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
-//                                 "_AB_CDC_DELETED_AT": null,
-//                                 "NAME": "PLACE_HOLDER",
-//                                 "ADDRESS": {"CITY": "San Francisco", "STATE": "CA"}}
-//                             }
-//                           }
-//                           """.trimIndent()
-//        val record2 =
-//            """
-//                           {"type": "RECORD",
-//                             "record":{
-//                               "emitted_at": 1001,
-//                               "data": {
-//                                 "ID1": 2,
-//                                 "ID2": 201,
-//                                 "UPDATED_AT": "2000-01-01T00:00:00Z",
-//                                 "_AB_CDC_DELETED_AT": null,
-//                                 "NAME": "PLACE_HOLDER",
-//                                 "ADDRESS": {"CITY": "New York", "STATE": "NY"}}
-//                             }
-//                           }
-//                           """.trimIndent()
-
-//        val record1 =
-//            """
-//                           {"type": "RECORD",
-//                             "record":{
-//                               "emitted_at": 1000,
-//                               "data": {
-//                                 "id1": 1,
-//                                 "id2": 200,
-//                                 "updated_at": "2000-01-01T00:00:00Z",
-//                                 "_ab_cdc_deleted_at": null,
-//                                 "name": "PLACE_HOLDER",
-//                                 "address": {"city": "San Francisco", "state": "CA"}}
-//                             }
-//                           }
-//                           """.trimIndent()
-//        val record2 =
-//            """
-//                           {"type": "RECORD",
-//                             "record":{
-//                               "emitted_at": 1000,
-//                               "data": {
-//                                 "id1": 2,
-//                                 "id2": 201,
-//                                 "updated_at": "2000-01-01T00:00:00Z",
-//                                 "_ab_cdc_deleted_at": null,
-//                                 "name": "PLACE_HOLDER",
-//                                 "address": {"city": "New York", "state": "NY"}}
-//                             }
-//                           }
-//                           """.trimIndent()
-
-
         val largeString1 =
             generateRandomString(SnowflakeSuperLimitationTransformer.SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE - 300)
         val largeString2 =
@@ -533,7 +466,6 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         val expectedFinalRecords = readRecords("dat/sync1_recordnull_expectedrecords_final.jsonl")
         // Only replace for first record, second record should be nulled by transformer.
         (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("name", largeString1)
-        //TODO: Temporarily commented for testing
         (expectedFinalRecords[0] as ObjectNode).put("NAME", largeString1)
         verifySyncResult(expectedRawRecords, expectedFinalRecords, disableFinalTableComparison())
     }
