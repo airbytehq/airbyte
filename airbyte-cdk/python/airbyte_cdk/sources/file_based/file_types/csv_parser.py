@@ -240,12 +240,9 @@ class CsvParser(FileTypeParser):
     def _to_nullable(
         row: Mapping[str, str], deduped_property_types: Mapping[str, str], null_values: Set[str], strings_can_be_null: bool
     ) -> Dict[str, Optional[str]]:
-        # Localize variables to avoid repeated lookups
-        _value_is_none = CsvParser._value_is_none
-        get = deduped_property_types.get
         nullable = {}
         for k, v in row.items():
-            nullable[k] = None if _value_is_none(v, get(k), null_values, strings_can_be_null) else v
+            nullable[k] = None if v in null_values and (strings_can_be_null or deduped_property_types.get(k) != "string") else v
         return nullable
 
     @staticmethod
@@ -340,6 +337,19 @@ class CsvParser(FileTypeParser):
                 f"{FileBasedSourceError.ERROR_CASTING_VALUE.value}: {','.join([w for w in warnings])}",
             )
         return result
+
+    @staticmethod
+    def _pre_process_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
+        output = {}
+        for prop, prop_type in property_types.items():
+            if isinstance(prop_type, list):
+                prop_type_distinct = {ptype for ptype in prop_type if ptype != "null"}
+                if len(prop_type_distinct) != 1:
+                    raise ValueError(f"Could not get non-nullable type from {prop_type}")
+                output[prop] = prop_type_distinct.pop()
+            else:
+                output[prop] = prop_type
+        return output
 
 
 class _TypeInferrer(ABC):
