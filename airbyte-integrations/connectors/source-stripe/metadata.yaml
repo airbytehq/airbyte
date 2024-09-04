@@ -48,7 +48,7 @@ data:
         upgradeDeadline: "2024-09-25"
         scopedImpact:
           - scopeType: stream
-            impactedScopes: [ "payment_methods" ]
+            impactedScopes: ["payment_methods"]
   suggestedStreams:
     streams:
       - customers
