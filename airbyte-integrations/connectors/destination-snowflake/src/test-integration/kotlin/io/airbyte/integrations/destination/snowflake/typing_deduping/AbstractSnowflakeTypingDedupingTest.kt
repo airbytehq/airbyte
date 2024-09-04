@@ -532,9 +532,9 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         val expectedRawRecords = readRecords("dat/sync1_recordnull_expectedrecords_raw.jsonl")
         val expectedFinalRecords = readRecords("dat/sync1_recordnull_expectedrecords_final.jsonl")
         // Only replace for first record, second record should be nulled by transformer.
-        (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("NAME", largeString1)
+        (expectedRawRecords[0]["_airbyte_data"] as ObjectNode).put("name", largeString1)
         //TODO: Temporarily commented for testing
-        //(expectedFinalRecords[0] as ObjectNode).put("NAME", largeString1)
+        (expectedFinalRecords[0] as ObjectNode).put("NAME", largeString1)
         verifySyncResult(expectedRawRecords, expectedFinalRecords, disableFinalTableComparison())
     }
 

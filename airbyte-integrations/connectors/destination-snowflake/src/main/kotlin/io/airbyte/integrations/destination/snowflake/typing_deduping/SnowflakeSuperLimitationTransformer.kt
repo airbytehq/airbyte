@@ -336,12 +336,12 @@ class SnowflakeSuperLimitationTransformer(
 
     companion object {
 
-//        //TODO: Remove changes added for testing
-//        const val SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE: Int = 5000
-//        const val SNOWFLAKE_SUPER_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
-
-        const val SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
+        //TODO: Remove changes added for testing
+        const val SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE: Int = 2000
         const val SNOWFLAKE_SUPER_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
+
+//        const val SNOWFLAKE_VARCHAR_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
+//        const val SNOWFLAKE_SUPER_MAX_BYTE_SIZE: Int = 16 * 1024 * 1024
 
         val DEFAULT_PREDICATE_VARCHAR_GREATER_THAN_64K: Predicate<String> =
             Predicate { text: String ->
