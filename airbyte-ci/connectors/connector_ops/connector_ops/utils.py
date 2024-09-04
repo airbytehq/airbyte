@@ -60,6 +60,7 @@ def download_catalog(catalog_url):
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 MANIFEST_FILE_NAME = "manifest.yaml"
+COMPONENTS_FILE_NAME = "components.py"
 DOCKERFILE_FILE_NAME = "Dockerfile"
 PYPROJECT_FILE_NAME = "pyproject.toml"
 ICON_FILE_NAME = "icon.svg"
@@ -346,6 +347,11 @@ class Connector:
             return self._manifest_only_path
 
         return self._manifest_low_code_path
+
+    @property
+    def manifest_only_components_path(self) -> Path:
+        """Return the path to the components.py file of a manifest-only connector."""
+        return self.code_directory / COMPONENTS_FILE_NAME
 
     @property
     def has_dockerfile(self) -> bool:

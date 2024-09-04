@@ -54,6 +54,7 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.12 | 2024-08-31 | [45000](https://github.com/airbytehq/airbyte/pull/45000) | Update dependencies |
 | 1.0.11 | 2024-08-24 | [44361](https://github.com/airbytehq/airbyte/pull/44361) | Update dependencies |
 | 1.0.10 | 2024-08-12 | [43756](https://github.com/airbytehq/airbyte/pull/43756) | Update dependencies |
 | 1.0.9 | 2024-08-10 | [43627](https://github.com/airbytehq/airbyte/pull/43627) | Update dependencies |

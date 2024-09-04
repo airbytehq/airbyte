@@ -25,6 +25,7 @@ from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
+    remove_latest_metadata_partitions,
     generate_cloud_registry,
     generate_oss_registry,
     generate_registry_entry,
@@ -93,7 +94,7 @@ METADATA_RESOURCE_TREE = {
     ),
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
-    ),
+    )
 }
 
 DATA_WAREHOUSE_RESOURCE_TREE = {
@@ -123,6 +124,12 @@ REGISTRY_ENTRY_RESOURCE_TREE = {
     ),
     "latest_oss_registry_entries_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/oss.json$"}
+    ),
+    "release_candidate_cloud_registry_entries_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*release_candidate/cloud.json$"}
+    ),
+    "release_candidate_oss_registry_entries_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*release_candidate/oss.json$"}
     ),
 }
 
@@ -167,10 +174,24 @@ SENSORS = [
         interval=60,
     ),
     new_gcs_blobs_sensor(
+        job=generate_oss_registry,
+        resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
+        gcs_blobs_resource_key="release_candidate_oss_registry_entries_file_blobs",
+        interval=60,
+        allow_duplicate_runs=True,
+    ),
+    new_gcs_blobs_sensor(
         job=generate_cloud_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
         gcs_blobs_resource_key="latest_cloud_registry_entries_file_blobs",
         interval=60,
+    ),
+    new_gcs_blobs_sensor(
+        job=generate_cloud_registry,
+        resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
+        gcs_blobs_resource_key="release_candidate_cloud_registry_entries_file_blobs",
+        interval=60,
+        allow_duplicate_runs=True,
     ),
     new_gcs_blobs_sensor(
         job=generate_nightly_reports,
@@ -183,7 +204,7 @@ SENSORS = [
 SCHEDULES = [
     ScheduleDefinition(job=add_new_metadata_partitions, cron_schedule="*/2 * * * *", tags={"dagster/priority": HIGH_QUEUE_PRIORITY}),
     ScheduleDefinition(
-        cron_schedule="0 1 * * *",  # Daily at 1am US/Pacific
+        cron_schedule="*/2 * * * *",  # Every 2 minutes
         execution_timezone="US/Pacific",
         job=remove_stale_metadata_partitions,
     ),
@@ -203,6 +224,7 @@ JOBS = [
     generate_nightly_reports,
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
+    remove_latest_metadata_partitions,
     generate_stale_gcs_latest_metadata_file,
 ]
 
