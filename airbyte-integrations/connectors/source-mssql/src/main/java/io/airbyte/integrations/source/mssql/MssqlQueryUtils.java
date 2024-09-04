@@ -14,7 +14,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CursorBasedStatus;
 import io.airbyte.cdk.integrations.source.relationaldb.models.InternalModels.StateType;
