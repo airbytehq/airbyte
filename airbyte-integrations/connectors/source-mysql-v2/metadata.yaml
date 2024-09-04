@@ -21,7 +21,7 @@ data:
       enabled: false
     oss:
       enabled: false
-  releaseStage: alpha
+  releaseStage: archived
   supportLevel: community
   tags:
     - language:java
