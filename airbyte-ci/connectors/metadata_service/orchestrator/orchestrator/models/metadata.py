@@ -66,6 +66,14 @@ class LatestMetadataEntry(BaseModel):
         return self.file_path.endswith(ending_path)
 
     @property
+    def is_release_candidate_version_path(self) -> bool:
+        """
+        Path is considered a latest version path if the subfolder containing METADATA_FILE_NAME is "latest"
+        """
+        ending_path = f"release_candidate/{METADATA_FILE_NAME}"
+        return self.file_path.endswith(ending_path)
+
+    @property
     def dependency_file_url(self) -> Optional[str]:
         if not self.bucket_name or not self.metadata_definition:
             return None

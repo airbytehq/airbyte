@@ -6,10 +6,11 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -72,12 +73,12 @@ object TestFixtures {
         checkpointTargetInterval: Duration = Duration.ofMinutes(1),
         maxConcurrency: Int = 10,
         maxMemoryBytesForTesting: Long = 1_000_000L,
-        constants: DefaultJdbcSharedState.Constants = DefaultJdbcSharedState.Constants(),
+        constants: DefaultJdbcConstants = DefaultJdbcConstants(),
         vararg mockedQueries: MockedQuery,
     ) =
         DefaultJdbcSharedState(
             StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency),
-            BufferingOutputConsumer(TestClockFactory().fixed()),
+            BufferingOutputConsumer(ClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting)
         )
@@ -119,7 +120,7 @@ object TestFixtures {
             get() = TODO("Not yet implemented")
         override val jdbcProperties: Map<String, String>
             get() = TODO("Not yet implemented")
-        override val schemas: Set<String>
+        override val namespaces: Set<String>
             get() = TODO("Not yet implemented")
         override val realPort: Int
             get() = TODO("Not yet implemented")
