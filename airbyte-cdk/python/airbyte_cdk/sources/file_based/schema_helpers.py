@@ -147,17 +147,13 @@ def _choose_wider_type(key: str, t1: Mapping[str, Any], t2: Mapping[str, Any]) -
 
 def is_equal_or_narrower_type(value: Any, expected_type: str) -> bool:
     if isinstance(value, list):
-        # We do not compare lists directly; the individual items are compared.
-        # If we hit this condition, it means that the expected type is not
-        # compatible with the inferred type.
         return False
 
-    inferred_type = ComparableType(get_inferred_type(value))
+    inferred_type = get_inferred_type(value)
 
     if inferred_type is None:
         return False
 
-    # Direct comparison without recreating ComparableType
     return inferred_type <= get_comparable_type(expected_type)
 
 
@@ -171,14 +167,15 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
       type in the schema.
     """
     schema_properties = schema.get("properties", {})
-    schema_columns = schema_properties.keys()
+    record_keys = record.keys()
 
-    if not record.keys() <= schema_columns:
+    if not record_keys <= schema_properties.keys():
         return False
 
-    for column, definition in schema_properties.items():
+    for column in record_keys:
+        definition = schema_properties[column]
         expected_type = definition.get("type")
-        value = record.get(column)
+        value = record[column]
 
         if value is not None:
             if isinstance(expected_type, list):
@@ -188,9 +185,8 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
                 if not isinstance(value, dict):
                     return False
             elif expected_type == "array":
-                if not (
-                    isinstance(value, list) and all(is_equal_or_narrower_type(v, definition.get("items", {}).get("type")) for v in value)
-                ):
+                item_type = definition.get("items", {}).get("type")
+                if not (isinstance(value, list) and all(is_equal_or_narrower_type(v, item_type) for v in value)):
                     return False
             elif not is_equal_or_narrower_type(value, expected_type):
                 return False
