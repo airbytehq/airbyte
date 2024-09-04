@@ -202,6 +202,18 @@ class ManifestDeclarativeSource(DeclarativeSource):
             )
         manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version, "manifest")
 
+        if cdk_major < manifest_major or (cdk_major == manifest_major and cdk_minor < manifest_minor):
+            raise ValidationError(
+                f"The manifest version {manifest_version} is greater than the airbyte-cdk package version ({cdk_version}). Your "
+                f"manifest may contain features that are not in the current CDK version."
+            )
+        elif manifest_major == 0 and manifest_minor < 29:
+            raise ValidationError(
+                f"The low-code framework was promoted to Beta in airbyte-cdk version 0.29.0 and contains many breaking changes to the "
+                f"language. The manifest version {manifest_version} is incompatible with the airbyte-cdk package version "
+                f"{cdk_version} which contains these breaking changes."
+            )
+
     @staticmethod
     def _get_version_parts(version: str, version_type: str) -> Tuple[int, int, int]:
         """

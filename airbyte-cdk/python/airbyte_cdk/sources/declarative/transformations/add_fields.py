@@ -115,7 +115,7 @@ class AddFields(RecordTransformation):
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         if config is None:
             config = {}
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
@@ -123,8 +123,6 @@ class AddFields(RecordTransformation):
             valid_types = (parsed_field.value_type,) if parsed_field.value_type else None
             value = parsed_field.value.eval(config, valid_types=valid_types, **kwargs)
             dpath.new(record, parsed_field.path, value)
-
-        return record
 
     def __eq__(self, other: Any) -> bool:
         return bool(self.__dict__ == other.__dict__)

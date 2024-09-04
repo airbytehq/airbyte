@@ -22,9 +22,9 @@ class RecordTransformation:
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> Dict[str, Any]:
+    ) -> None:
         """
-        Transform a record by adding, deleting, or mutating fields.
+        Transform a record by adding, deleting, or mutating fields directly from the record reference passed in argument.
 
         :param record: The input record to be transformed
         :param config: The user-provided configuration as specified by the source's spec
