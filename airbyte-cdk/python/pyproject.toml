@@ -43,7 +43,6 @@ PyYAML = "^6.0.1"
 requests = "*"
 requests_cache = "*"
 wcmatch = "8.4"
-orjson = "^3.10.0"
 # Extras depedencies
 avro = { version = "~1.11.2", optional = true }
 cohere = { version = "4.21", optional = true }
