@@ -81,8 +81,7 @@ class AbstractStreamStateConverter(ABC):
 
     @staticmethod
     def is_state_message_compatible(state: MutableMapping[str, Any]) -> bool:
-        state_type = state.get("state_type")
-        return bool(state) and state_type == ConcurrencyCompatibleStateType.date_range.value
+        return state.get("state_type") == "date-range"
 
     @abstractmethod
     def convert_from_sequential_state(
@@ -144,5 +143,4 @@ class AbstractStreamStateConverter(ABC):
 
     @property
     @abstractmethod
-    def zero_value(self) -> Any:
-        ...
+    def zero_value(self) -> Any: ...
