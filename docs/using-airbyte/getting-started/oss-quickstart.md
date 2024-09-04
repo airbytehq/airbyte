@@ -109,7 +109,7 @@ sudo mv abctl /usr/local/bin
 **5: Verify the installation**
 
 ```bash
-abctl --version
+abctl version
 ```
 
 If this command prints the installed version of the Airbyte Command Line Tool, it confirm that you are now ready to manage a local Airbyte instance using `abctl`.
