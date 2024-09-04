@@ -3,11 +3,41 @@
   "additionalProperties": true,
   "type": ["object", "null"],
   "properties": {
+    "acss_debit": {
+      "properties": {
+        "bank_name": {
+          "type": ["null", "string"]
+        },
+        "fingerprint": {
+          "type": ["null", "string"]
+        },
+        "institution_number": {
+          "type": ["null", "string"]
+        },
+        "last4": {
+          "type": ["null", "string"]
+        },
+        "transit_number": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "affirm": {
+      "type": ["null", "object"]
+    },
     "afterpay_clearpay": {
       "additionalProperties": true,
       "type": ["null", "object"]
     },
     "alipay": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "allow_redisplay": {
+      "type": ["null", "string"]
+    },
+    "amazon_pay": {
       "additionalProperties": true,
       "type": ["null", "object"]
     },
@@ -43,6 +73,29 @@
     },
     "bancontact": {
       "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "blik": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "boleto": {
+      "type": ["null", "object"],
+      "properties": {
+        "tax_id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "cashapp": {
+      "properties": {
+        "buyer_id": {
+          "type": ["null", "string"]
+        },
+        "cashtag": {
+          "type": ["null", "string"]
+        }
+      },
       "type": ["null", "object"]
     },
     "billing_details": {
