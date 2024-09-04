@@ -93,6 +93,7 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
 
 
 class StripeStream(HttpStream, ABC):
+    is_resumable = False
     url_base = "https://api.stripe.com/v1/"
     DEFAULT_SLICE_RANGE = 365
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -234,6 +235,7 @@ class IStreamSelector(ABC):
 
 
 class CreatedCursorIncrementalStripeStream(StripeStream):
+    is_resumable = True
     # Stripe returns most recently created objects first, so we don't want to persist state until the entire stream has been read
     state_checkpoint_interval = math.inf
 
@@ -337,6 +339,7 @@ class Events(CreatedCursorIncrementalStripeStream):
 
 
 class UpdatedCursorIncrementalStripeStream(StripeStream):
+    is_resumable = True
     """
     `CreatedCursorIncrementalStripeStream` does not provide a way to read updated data since given date because the API does not allow to do this.
     It only returns newly created entities since given date. So to have all the updated data as well we need to make use of the Events API,
@@ -452,6 +455,7 @@ class IncrementalStripeStreamSelector(IStreamSelector):
 
 
 class IncrementalStripeStream(StripeStream):
+    is_resumable = True
     """
     This class combines both normal incremental sync and event based sync. It uses common endpoints for sliced data syncs in
     the full refresh sync mode and initial incremental sync. For incremental syncs with a state, event based sync comes into action.
@@ -720,6 +724,7 @@ class IncrementalStripeLazySubStreamSelector(IStreamSelector):
 
 
 class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
+    is_resumable = True
     """
     This stream uses StripeLazySubStream under the hood to run full refresh or initial incremental syncs.
     In case of subsequent incremental syncs, it uses the UpdatedCursorIncrementalStripeStream class.
@@ -793,6 +798,7 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
 
 
 class ParentIncrementalStipeSubStream(StripeSubStream):
+    is_resumable = True
     """
     This stream differs from others in that it runs parent stream in exactly same sync mode it is run itself to generate stream slices.
     It also uses regular /v1 API endpoints to sync data no matter what the sync mode is. This means that the event-based API can only

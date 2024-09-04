@@ -23,7 +23,7 @@ class JdbcMetadataQuerierTest {
         JdbcMetadataQuerier.Factory(
             selectQueryGenerator = H2SourceOperations(),
             fieldTypeMapper = H2SourceOperations(),
-            checkQueries = JdbcCheckQueries().apply { queries = listOf() },
+            checkQueries = JdbcCheckQueries(),
             constants = DefaultJdbcConstants(),
         )
 
