@@ -29,6 +29,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The subdomain is mandatory as per the recent update for base url: `{config['subdomain']}.zendesk.com/api/v2/chat/`"
+        upgradeDeadline: "2024-10-29"
   supportLevel: certified
   tags:
     - language:python
