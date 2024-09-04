@@ -18,7 +18,9 @@
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "Required config which would be appended to the base url",
+        "description": "The unique subdomain of your Zendesk account. <a href=\"https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain\">See the Zendesk docs to find your subdomain</a>",
+        "pattern": "^(?!https://)",
+        "examples": ["myzendeskchat"],
         "default": ""
       },
       "credentials": {

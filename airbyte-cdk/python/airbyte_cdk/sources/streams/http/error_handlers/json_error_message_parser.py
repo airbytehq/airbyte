@@ -5,9 +5,8 @@
 from typing import Optional
 
 import requests
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorMessageParser
 from airbyte_cdk.sources.utils.types import JsonType
-
-from .error_message_parser import ErrorMessageParser
 
 
 class JsonErrorMessageParser(ErrorMessageParser):
@@ -26,6 +25,11 @@ class JsonErrorMessageParser(ErrorMessageParser):
                 or value.get("failures")
                 or value.get("failure")
                 or value.get("detail")
+                or value.get("err")
+                or value.get("error_message")
+                or value.get("msg")
+                or value.get("reason")
+                or value.get("status_message")
             )
             return self._try_get_error(new_value)
         return None
