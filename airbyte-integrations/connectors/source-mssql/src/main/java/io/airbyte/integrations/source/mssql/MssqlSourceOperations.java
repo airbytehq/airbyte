@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.cdk.db.DataTypeUtils.OFFSETDATETIME_FORMATTER;
 import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
