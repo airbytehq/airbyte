@@ -45,6 +45,7 @@ class PerPartitionCursor(DeclarativeCursor):
     _NO_CURSOR_STATE: Mapping[str, Any] = {}
     _KEY = 0
     _VALUE = 1
+    _state_to_migrate_from: Mapping[str, Any] = {}
 
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
@@ -56,7 +57,10 @@ class PerPartitionCursor(DeclarativeCursor):
         slices = self._partition_router.stream_slices()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
-            if not cursor:
+            if not cursor and self._state_to_migrate_from:
+                cursor = self._create_cursor(self._state_to_migrate_from)
+                self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
+            elif not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
                 self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
@@ -97,12 +101,14 @@ class PerPartitionCursor(DeclarativeCursor):
             return
 
         if "states" not in stream_state:
-            raise AirbyteTracedException(
-                internal_message=f"Could not sync parse the following state: {stream_state}",
-                message="The state for is format invalid. Validate that the migration steps included a reset and that it was performed "
-                "properly. Otherwise, please contact Airbyte support.",
-                failure_type=FailureType.config_error,
-            )
+            self._state_to_migrate_from = stream_state
+            return
+            # raise AirbyteTracedException(
+            #     internal_message=f"Could not sync parse the following state: {stream_state}",
+            #     message="The state for is format invalid. Validate that the migration steps included a reset and that it was performed "
+            #     "properly. Otherwise, please contact Airbyte support.",
+            #     failure_type=FailureType.config_error,
+            # )
 
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
