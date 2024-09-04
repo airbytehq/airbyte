@@ -524,7 +524,11 @@ schemas:
           - object
           - "null"
         description: Collaboration information added to the call
-        properties: null
+        properties: 
+          brief:
+            type:
+              - string
+              - "null"
       content:
         type:
           - object
@@ -1211,7 +1215,9 @@ schemas:
               type:
                 - "null"
                 - string
-              description: Unique identifier for the revision of the question answered.
+              description:
+                Unique identifier for the revision of the question
+                answered.
             score:
               type:
                 - "null"
@@ -1221,7 +1227,9 @@ schemas:
         type:
           - "null"
           - string
-        description: Unique identifier for the call associated with the answered scorecard.
+        description:
+          Unique identifier for the call associated with the answered
+          scorecard.
       callStartTime:
         type:
           - "null"
@@ -1260,4 +1268,6 @@ schemas:
         type:
           - "null"
           - string
-        description: Type indicating the visibility permissions for the answered scorecard.
+        description:
+          Type indicating the visibility permissions for the answered
+          scorecard.
