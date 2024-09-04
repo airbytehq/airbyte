@@ -78,12 +78,13 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader):
         """
         split_path = json_schema_path.split("/", 2)
 
+        # Remove leading empty segments
         if split_path[0] in {"", "."}:
-            split_path = split_path[1:]
+            del split_path[0]
 
-        if len(split_path) == 0:
+        # Handle different lengths and return appropriate tuple
+        if not split_path:
             return "", ""
-        elif len(split_path) == 1:
+        if len(split_path) == 1:
             return "", split_path[0]
-        else:
-            return split_path[0], split_path[1] if len(split_path) == 2 else f"{split_path[1]}/{split_path[2]}"
+        return split_path[0], split_path[1] if len(split_path) == 2 else f"{split_path[1]}/{split_path[2]}"
