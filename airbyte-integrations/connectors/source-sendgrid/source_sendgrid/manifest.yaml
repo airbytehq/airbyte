@@ -924,6 +924,8 @@ streams:
         extractor:
           type: DpathExtractor
           field_path: []
+    transformations:
+      - type: KeysToLower
 
 spec:
   connection_specification:

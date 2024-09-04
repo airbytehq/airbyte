@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, Dict, List, Mapping, Optional
 
 import dpath
 import dpath.exceptions
@@ -48,11 +48,11 @@ class RemoveFields(RecordTransformation):
 
     def transform(
         self,
-        record: Mapping[str, Any],
+        record: Dict[str, Any],
         config: Optional[Config] = None,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
-    ) -> Mapping[str, Any]:
+    ) -> Dict[str, Any]:
         """
         :param record: The record to be transformed
         :return: the input record with the requested fields removed
