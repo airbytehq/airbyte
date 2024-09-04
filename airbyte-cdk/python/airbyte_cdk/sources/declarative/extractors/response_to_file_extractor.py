@@ -20,10 +20,19 @@ DOWNLOAD_CHUNK_SIZE: int = 1024 * 1024 * 10
 
 
 @dataclass
-class HttpUrlToFileExtractor(RecordExtractor):
+class ResponseToFileExtractor(RecordExtractor):
+    """
+    This class is used when having very big HTTP responses (usually streamed) which would require too much memory so we use disk space as
+    a tradeoff.
+
+    Eventually, we want to support multiple file type by re-using the file based CDK parsers if possible. However, the lift is too high for
+    a first iteration so we will only support CSV parsing using pandas as salesforce and sendgrid were doing.
+    """
     def _get_response_encoding(self, headers: Dict[str, Any]) -> str:
         """
-        Get the encoding of the response based on the provided headers.
+        Get the encoding of the response based on the provided headers. This method is heavily inspired by the requests library
+        implementation.
+
         Args:
             headers (Dict[str, Any]): The headers of the response.
         Returns:
@@ -38,14 +47,14 @@ class HttpUrlToFileExtractor(RecordExtractor):
         content_type, params = requests.utils.parse_header_links(content_type)
 
         if "charset" in params:
-            # FIXME this was part of salesforce code but it is unclear why it is needed (see https://airbytehq-team.slack.com/archives/C02U9R3AF37/p1724693926504639)
-            return params["charset"].strip("'\"")
+            return params["charset"].strip("'\"")  # type: ignore  # we assume headers are returned as str
 
         return DEFAULT_ENCODING
 
     def _filter_null_bytes(self, b: bytes) -> bytes:
         """
         Filter out null bytes from a bytes object.
+
         Args:
             b (bytes): The input bytes object.
         Returns:
@@ -145,9 +154,6 @@ class HttpUrlToFileExtractor(RecordExtractor):
         Returns:
             None
         """
-
-        # FIXME salesforce will require pagination here
-
         if response:
             file_path, encoding = self._save_to_file(response)
             yield from self._read_with_chunks(file_path, encoding)

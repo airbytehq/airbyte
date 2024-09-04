@@ -10,14 +10,17 @@ from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.retrievers.async_retriever import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_protocol.models import ConnectorSpecification
 
 _A_STREAM_NAME = "a_stream_name"
+_EXTRACTOR_NOT_USED: RecordExtractor = None  # type: ignore  # the extractor should not be used. If it is the case, there is an issue that needs fixing
 
 from unittest.mock import MagicMock
 
@@ -44,29 +47,27 @@ class MockSource(AbstractSource):
         return ConnectorSpecification(connectionSpecification={})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # mock config
-        config = MagicMock()
-        # mock the selector
-        record_selector = RecordSelector(
-            extractor=MagicMock(),
-            config=config,
-            parameters={},
-            schema_normalization=MagicMock(),
-        )
-        # mock the orchestrator        
         job_orchestrator_factory_fn = lambda stream_slices: AsyncJobOrchestrator(
             MockAsyncJobRepository(), stream_slices,
         )
 
+        noop_record_selector = RecordSelector(
+            extractor=_EXTRACTOR_NOT_USED,
+            config={},
+            parameters={},
+            schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+            record_filter=None,
+            transformations=[]
+        )
         return [
             DeclarativeStream(
                 retriever=AsyncRetriever(
                     name="test_async_retriever",
                     primary_key="id",
-                    config=config,
-                    record_selector=record_selector,
-                    stream_slicer=SinglePartitionRouter({}),
+                    config={},
                     parameters={},
+                    record_selector=noop_record_selector,
+                    stream_slicer=SinglePartitionRouter({}),
                     job_orchestrator_factory=job_orchestrator_factory_fn,
                 ),
                 config={},
@@ -82,13 +83,13 @@ class MockSource(AbstractSource):
 
 
 class JobDeclarativeStreamTest(TestCase):
-    _CONFIG = {}
+    _CONFIG: Mapping[str, Any] = {}
 
     def setUp(self) -> None:
         self._source = MockSource()
         self._source.streams({})
 
-    def test_godo(self) -> None:
+    def test_read_with_mocked_job_repository(self) -> None:
         output = read(
             self._source, 
             self._CONFIG, 

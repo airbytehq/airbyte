@@ -153,7 +153,7 @@ class AsyncJobOrchestrator:
         job_ids = list(map(lambda job: job.api_job_id(), {job for job in partition.jobs}))
         LOGGER.info(f"The following jobs for stream slice {partition.stream_slice} have been completed: {job_ids}.")
 
-    def _process_running_partitions(self) -> Generator[AsyncPartition, Any, None]:
+    def _process_running_partitions_and_yield_completed_ones(self) -> Generator[AsyncPartition, Any, None]:
         """
         Process the running partitions.
 
@@ -208,7 +208,7 @@ class AsyncJobOrchestrator:
         if LOGGER.isEnabledFor(logging.DEBUG):
             # if statement in order to avoid string formatting if we're not in debug mode
             LOGGER.debug(
-                f"Polling status completed. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
+                f"Polling status in progress. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
             )
 
     def create_and_get_completed_partitions(self) -> Iterable[AsyncPartition]:
@@ -228,7 +228,7 @@ class AsyncJobOrchestrator:
                 break
 
             self._update_jobs_status()
-            yield from self._process_running_partitions()
+            yield from self._process_running_partitions_and_yield_completed_ones()
             self._log_polling_partitions()
             self._wait_on_status_update()
 

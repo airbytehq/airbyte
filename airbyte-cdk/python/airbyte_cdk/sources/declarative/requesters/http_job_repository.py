@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor, RecordExtractor
-from airbyte_cdk.sources.declarative.extractors.http_url_to_file_extractor import HttpUrlToFileExtractor
+from airbyte_cdk.sources.declarative.extractors.response_to_file_extractor import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
@@ -27,7 +27,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
 
-    record_extractor: RecordExtractor = HttpUrlToFileExtractor()
+    record_extractor: RecordExtractor = ResponseToFileExtractor()
 
     def __post_init__(self) -> None:
         self._create_job_response_by_id: Dict[str, Response] = {}
@@ -113,7 +113,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         """
 
         response: requests.Response = self._start_job_and_validate_response(stream_slice)
-        job_id: str = str(uuid.uuid4())  # FIXME is there value to extract the id from the response?
+        job_id: str = str(uuid.uuid4())
         self._create_job_response_by_id[job_id] = response
 
         return AsyncJob(api_job_id=job_id, job_parameters=stream_slice)
@@ -153,10 +153,11 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):
             stream_slice: StreamSlice = StreamSlice(partition={"url": url}, cursor_slice={})
+            # FIXME salesforce will require pagination here
             response = self.download_requester.send_request(stream_slice=stream_slice)
             if response:
                 yield from self.record_extractor.extract_records(response)
 
         yield from []
 
-        # clean self._create_job_response_by_id and self._polling_job_response_by_id
+        # FIXME clean self._create_job_response_by_id and self._polling_job_response_by_id
