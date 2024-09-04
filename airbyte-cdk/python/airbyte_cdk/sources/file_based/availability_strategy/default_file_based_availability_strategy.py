@@ -6,6 +6,7 @@ import logging
 import traceback
 from typing import TYPE_CHECKING, Optional, Tuple
 
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, CustomFileBasedException, FileBasedSourceError
@@ -66,6 +67,8 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
                 # If the parser is set to not check parsability, we still want to check that we can open the file.
                 handle = stream.stream_reader.open_file(file, parser.file_read_mode, None, logger)
                 handle.close()
+        except AirbyteTracedException as ate:
+            raise ate
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
 
@@ -98,6 +101,8 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
             # consider the connection check successful even though it means
             # we skip the schema validation check.
             return
+        except AirbyteTracedException as ate:
+            raise ate
         except Exception as exc:
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_READING_FILE, stream=stream.name, file=file.uri) from exc
 

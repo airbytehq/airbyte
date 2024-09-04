@@ -19,11 +19,12 @@ class H2SourceIntegrationTest {
     @Test
     fun testCheckFailBadConfig() {
         SyncsTestFixture.testCheck(
-            H2SourceConfigurationJsonObject().apply {
-                port = -1
-                database = ""
-            },
-            "Could not connect with provided configuration",
+            configPojo =
+                H2SourceConfigurationJsonObject().apply {
+                    port = -1
+                    database = ""
+                },
+            expectedFailure = "Could not connect with provided configuration",
         )
     }
 
@@ -35,7 +36,7 @@ class H2SourceIntegrationTest {
                     port = h2.port
                     database = h2.database + "_garbage"
                 }
-            SyncsTestFixture.testCheck(configPojo, "Database \"mem:.*_garbage\" not found")
+            SyncsTestFixture.testCheck(configPojo, "Connection failure: Database does not exist")
         }
     }
 
