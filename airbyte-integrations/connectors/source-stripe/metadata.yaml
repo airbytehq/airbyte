@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.6.0
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -43,6 +43,12 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["refunds"]
+      6.0.0:
+        message: Version 6.0.0 introduces fixes for the `Payment Methods` streams. The `Payment Methods` will now provide data about customers' payment methods.
+        upgradeDeadline: "2024-09-25"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: [ "payment_methods" ]
   suggestedStreams:
     streams:
       - customers
