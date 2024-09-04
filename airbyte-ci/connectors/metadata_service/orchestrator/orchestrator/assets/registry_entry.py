@@ -91,26 +91,29 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
 
 
 @deep_copy_params
-def apply_connector_breaking_changes_defaults(metadata: dict) -> Optional[pd.DataFrame]:
+def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
     documentation_url = metadata.get("documentationUrl")
-    if metadata.get("releases", {}).get("breakingChanges") is None:
-        return None
+    final_registry_releases = {}
 
-    final_metadata_releases = {}
+    if metadata.get("releases", {}).get("breakingChanges"):
+        # apply defaults for connector releases
+        final_registry_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(
+            metadata["releases"], documentation_url
+        )
 
-    # apply defaults for connector releases
-    final_metadata_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(metadata["releases"], documentation_url)
+        # releases has a dictionary field called breakingChanges, where the key is the version and the value is the data for the breaking change
+        # each breaking change has a migrationDocumentationUrl field that is optional, so we need to apply defaults to it
+        breaking_changes = metadata["releases"]["breakingChanges"]
+        if breaking_changes is not None:
+            for version, breaking_change in breaking_changes.items():
+                breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
+                    breaking_change, documentation_url, version
+                )
+            final_registry_releases["breakingChanges"] = breaking_changes
 
-    # releases has a dictionary field called breakingChanges, where the key is the version and the value is the data for the breaking change
-    # each breaking change has a migrationDocumentationUrl field that is optional, so we need to apply defaults to it
-    breaking_changes = metadata["releases"]["breakingChanges"]
-    if breaking_changes is not None:
-        for version, breaking_change in breaking_changes.items():
-            breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
-                breaking_change, documentation_url, version
-            )
-        final_metadata_releases["breakingChanges"] = breaking_changes
-    return final_metadata_releases
+    if metadata.get("releases", {}).get("rolloutConfiguration"):
+        final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
+    return final_registry_releases
 
 
 @deep_copy_params
@@ -280,7 +283,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, override_reg
 
     # apply generated fields
     overridden_metadata_data["iconUrl"] = metadata_entry.icon_url
-    overridden_metadata_data["releases"] = apply_connector_breaking_changes_defaults(overridden_metadata_data)
+    overridden_metadata_data["releases"] = apply_connector_releases(overridden_metadata_data)
     return overridden_metadata_data
 
 
@@ -366,7 +369,6 @@ def generate_registry_entry(
         metadata_entry (LatestMetadataEntry): The metadata entry.
         spec_cache (SpecCache): The spec cache.
         registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
-        release_candidate_metadata_entries (Optional[List[LatestMetadataEntry]], optional): The release candidate metadata entries. Defaults to None.
 
     Returns:
         PolymorphicRegistryEntry: The registry entry (could be a source or destination entry).
@@ -393,7 +395,6 @@ def generate_and_persist_registry_entry(
         spec_cache (SpecCache): The spec cache.
         metadata_directory_manager (GCSFileManager): The metadata directory manager.
         registry_name (str): The name of the registry_entry. One of "cloud" or "oss".
-        release_candidate_metadata_entries (Optional[List[LatestMetadataEntry]]): The release candidate metadata entries.
     Returns:
         str: The public url of the registry entry.
     """
@@ -707,26 +708,22 @@ def get_registry_entries(blob_resource) -> Output[List]:
 @asset(required_resource_keys={"latest_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def latest_cloud_registry_entries(context: OpExecutionContext) -> Output[List]:
-    release_candidate_metadata_file_blobs = context.resources.latest_cloud_registry_entries_file_blobs
-    return get_registry_entries(release_candidate_metadata_file_blobs)
+    return get_registry_entries(context.resources.latest_cloud_registry_entries_file_blobs)
 
 
 @asset(required_resource_keys={"latest_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def latest_oss_registry_entries(context: OpExecutionContext) -> Output[List]:
-    release_candidate_metadata_file_blobs = context.resources.latest_oss_registry_entries_file_blobs
-    return get_registry_entries(release_candidate_metadata_file_blobs)
+    return get_registry_entries(context.resources.latest_oss_registry_entries_file_blobs)
 
 
 @asset(required_resource_keys={"release_candidate_cloud_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def release_candidate_cloud_registry_entries(context: OpExecutionContext) -> Output[List]:
-    release_candidate_metadata_file_blobs = context.resources.release_candidate_cloud_registry_entries_file_blobs
-    return get_registry_entries(release_candidate_metadata_file_blobs)
+    return get_registry_entries(context.resources.release_candidate_cloud_registry_entries_file_blobs)
 
 
 @asset(required_resource_keys={"release_candidate_oss_registry_entries_file_blobs"}, group_name=GROUP_NAME)
 @sentry.instrument_asset_op
 def release_candidate_oss_registry_entries(context: OpExecutionContext) -> Output[List]:
-    release_candidate_metadata_file_blobs = context.resources.release_candidate_oss_registry_entries_file_blobs
-    return get_registry_entries(release_candidate_metadata_file_blobs)
+    return get_registry_entries(context.resources.release_candidate_oss_registry_entries_file_blobs)

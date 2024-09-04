@@ -8,6 +8,8 @@ additionalProperties: false
 properties:
   releaseCandidates:
     $ref: "#/definitions/ConnectorReleaseCandidates"
+  rolloutConfiguration:
+    $ref: RolloutConfiguration.yaml
   breakingChanges:
     $ref: ConnectorBreakingChanges.yaml
   migrationDocumentationUrl:
@@ -26,15 +28,8 @@ definitions:
         $ref: "#/definitions/VersionReleaseCandidate"
   VersionReleaseCandidate:
     description: Contains information about a release candidate version of a connector.
-    type: object
     additionalProperties: false
-    required:
-      - rolloutConfiguration
-    properties:
-      rolloutConfiguration:
-        $ref: RolloutConfiguration.yaml
-      registryEntry:
-        type: object
-        oneOf:
-          - $ref: ConnectorRegistrySourceDefinition.yaml
-          - $ref: ConnectorRegistryDestinationDefinition.yaml
+    type: object
+    oneOf:
+      - $ref: ConnectorRegistrySourceDefinition.yaml
+      - $ref: ConnectorRegistryDestinationDefinition.yaml

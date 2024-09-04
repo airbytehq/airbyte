@@ -59,14 +59,6 @@ class SuggestedStreams(BaseModel):
     )
 
 
-class StreamBreakingChangeScope(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    scopeType: Any = Field("stream", const=True)
-    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
-
-
 class RolloutConfiguration(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -80,6 +72,14 @@ class RolloutConfiguration(BaseModel):
     advanceDelayMinutes: Optional[conint(ge=10)] = Field(
         10, description="The number of minutes to wait before advancing the rollout percentage."
     )
+
+
+class StreamBreakingChangeScope(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    scopeType: Any = Field("stream", const=True)
+    impactedScopes: List[str] = Field(..., description="List of streams that are impacted by the breaking change.", min_items=1)
 
 
 class NormalizationDestinationDefinitionConfig(BaseModel):
@@ -239,6 +239,7 @@ class ConnectorRegistryReleases(BaseModel):
         extra = Extra.forbid
 
     releaseCandidates: Optional[ConnectorReleaseCandidates] = None
+    rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: Optional[ConnectorBreakingChanges] = None
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
@@ -259,8 +260,9 @@ class VersionReleaseCandidate(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    rolloutConfiguration: RolloutConfiguration
-    registryEntry: Optional[Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]] = None
+    __root__: Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition] = Field(
+        ..., description="Contains information about a release candidate version of a connector."
+    )
 
 
 class ConnectorRegistryDestinationDefinition(BaseModel):

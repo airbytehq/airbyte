@@ -87,46 +87,31 @@ def persist_registry_to_json(
 @sentry_sdk.trace
 def apply_release_candidates(
     latest_registry_entry: dict,
-    release_candidate_metadata_definition: MetadataDefinition,
     release_candidate_registry_entry: PolymorphicRegistryEntry,
 ) -> dict:
     updated_registry_entry = copy.deepcopy(latest_registry_entry)
     updated_registry_entry.setdefault("releases", {})
     updated_registry_entry["releases"]["releaseCandidates"] = {
-        release_candidate_metadata_definition.data.dockerImageTag: {
-            "rolloutConfiguration": release_candidate_metadata_definition.data.releases.rolloutConfiguration.dict(),
-            "registryEntry": to_json_sanitized_dict(release_candidate_registry_entry),
-        }
+        release_candidate_registry_entry.dockerImageTag: to_json_sanitized_dict(release_candidate_registry_entry)
     }
     return updated_registry_entry
 
 
-def apply_release_candidate_entries(
-    registry_entry_dict: dict, docker_repository_to_rc_metadata_entry: dict, docker_repository_to_rc_registry_entry: dict
-) -> dict:
+def apply_release_candidate_entries(registry_entry_dict: dict, docker_repository_to_rc_registry_entry: dict) -> dict:
     """Apply the optionally existing release candidate entries to the registry entry.
     We need both the release candidate metadata entry and the release candidate registry entry because the metadata entry contains the rollout configuration, and the registry entry contains the actual RC registry entry.
 
     Args:
         registry_entry_dict (dict): The registry entry.
-        docker_repository_to_rc_metadata_entry (dict): Mapping of docker repository to release candidate metadata entry.
         docker_repository_to_rc_registry_entry (dict): Mapping of docker repository to release candidate registry entry.
 
     Returns:
         dict: The registry entry with release candidates applied.
     """
     registry_entry_dict = copy.deepcopy(registry_entry_dict)
-    if (
-        registry_entry_dict["dockerRepository"] in docker_repository_to_rc_metadata_entry
-        and registry_entry_dict["dockerRepository"] in docker_repository_to_rc_registry_entry
-    ):
-        release_candidate_metadata_definition = docker_repository_to_rc_metadata_entry[
-            registry_entry_dict["dockerRepository"]
-        ].metadata_definition
+    if registry_entry_dict["dockerRepository"] in docker_repository_to_rc_registry_entry:
         release_candidate_registry_entry = docker_repository_to_rc_registry_entry[registry_entry_dict["dockerRepository"]]
-        registry_entry_dict = apply_release_candidates(
-            registry_entry_dict, release_candidate_metadata_definition, release_candidate_registry_entry
-        )
+        registry_entry_dict = apply_release_candidates(registry_entry_dict, release_candidate_registry_entry)
     return registry_entry_dict
 
 
@@ -144,7 +129,6 @@ def generate_and_persist_registry(
     context: OpExecutionContext,
     latest_registry_entries: List,
     release_candidate_registry_entries: List,
-    release_candidate_metadata_entries: List,
     registry_directory_manager: GCSFileManager,
     registry_name: str,
     latest_connector_metrics: dict,
@@ -167,10 +151,6 @@ def generate_and_persist_registry(
 
     registry_dict = {"sources": [], "destinations": []}
 
-    docker_repository_to_rc_metadata_entry = {
-        release_candidate_metadata_entries.metadata_definition.data.dockerRepository: release_candidate_metadata_entries
-        for release_candidate_metadata_entries in release_candidate_metadata_entries
-    }
     docker_repository_to_rc_registry_entry = {
         release_candidate_registry_entries.dockerRepository: release_candidate_registry_entries
         for release_candidate_registry_entries in release_candidate_registry_entries
@@ -184,9 +164,7 @@ def generate_and_persist_registry(
         # that can be parsed by pydantic.
         registry_entry_dict = to_json_sanitized_dict(latest_registry_entry)
         enriched_registry_entry_dict = apply_metrics_to_registry_entry(registry_entry_dict, connector_type, latest_connector_metrics)
-        enriched_registry_entry_dict = apply_release_candidate_entries(
-            enriched_registry_entry_dict, docker_repository_to_rc_metadata_entry, docker_repository_to_rc_registry_entry
-        )
+        enriched_registry_entry_dict = apply_release_candidate_entries(enriched_registry_entry_dict, docker_repository_to_rc_registry_entry)
 
         registry_dict[plural_connector_type].append(enriched_registry_entry_dict)
 
@@ -217,7 +195,6 @@ def generate_and_persist_registry(
         "registry_directory_manager",
         "latest_oss_registry_entries_file_blobs",
         "release_candidate_oss_registry_entries_file_blobs",
-        "release_candidate_metadata_file_blobs",
         "latest_metrics_gcs_blob",
     },
     group_name=GROUP_NAME,
@@ -228,7 +205,6 @@ def persisted_oss_registry(
     latest_connector_metrics: dict,
     latest_oss_registry_entries: List,
     release_candidate_oss_registry_entries: List,
-    release_candidate_metadata_entries: List,
 ) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the registry entries.
@@ -239,7 +215,6 @@ def persisted_oss_registry(
         context=context,
         latest_registry_entries=latest_oss_registry_entries,
         release_candidate_registry_entries=release_candidate_oss_registry_entries,
-        release_candidate_metadata_entries=release_candidate_metadata_entries,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
         latest_connector_metrics=latest_connector_metrics,
@@ -252,7 +227,6 @@ def persisted_oss_registry(
         "registry_directory_manager",
         "latest_cloud_registry_entries_file_blobs",
         "release_candidate_cloud_registry_entries_file_blobs",
-        "release_candidate_metadata_file_blobs",
         "latest_metrics_gcs_blob",
     },
     group_name=GROUP_NAME,
@@ -263,7 +237,6 @@ def persisted_cloud_registry(
     latest_connector_metrics: dict,
     latest_cloud_registry_entries: List,
     release_candidate_cloud_registry_entries: List,
-    release_candidate_metadata_entries: List,
 ) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the registry entries.
@@ -274,7 +247,6 @@ def persisted_cloud_registry(
         context=context,
         latest_registry_entries=latest_cloud_registry_entries,
         release_candidate_registry_entries=release_candidate_cloud_registry_entries,
-        release_candidate_metadata_entries=release_candidate_metadata_entries,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
         latest_connector_metrics=latest_connector_metrics,

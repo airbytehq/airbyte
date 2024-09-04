@@ -94,10 +94,7 @@ METADATA_RESOURCE_TREE = {
     ),
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
-    ),
-    "release_candidate_metadata_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*release_candidate/{METADATA_FILE_NAME}$"}
-    ),
+    )
 }
 
 DATA_WAREHOUSE_RESOURCE_TREE = {

@@ -139,10 +139,3 @@ def get_metadata_entries(blob_resource) -> Output:
 def latest_metadata_entries(context: OpExecutionContext) -> Output[List[LatestMetadataEntry]]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
     return get_metadata_entries(latest_metadata_file_blobs)
-
-
-@asset(required_resource_keys={"release_candidate_metadata_file_blobs"}, group_name=GROUP_NAME)
-@sentry.instrument_asset_op
-def release_candidate_metadata_entries(context: OpExecutionContext) -> Output[List[LatestMetadataEntry]]:
-    release_candidate_metadata_file_blobs = context.resources.release_candidate_metadata_file_blobs
-    return get_metadata_entries(release_candidate_metadata_file_blobs)
