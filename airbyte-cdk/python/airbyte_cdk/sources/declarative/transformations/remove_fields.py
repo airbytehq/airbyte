@@ -68,5 +68,3 @@ class RemoveFields(RecordTransformation):
             except dpath.exceptions.PathNotFound:
                 # if the (potentially nested) property does not exist, silently skip
                 pass
-
-        return record

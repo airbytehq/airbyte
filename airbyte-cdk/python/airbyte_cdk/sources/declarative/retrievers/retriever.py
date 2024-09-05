@@ -11,7 +11,6 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import StreamState
 
 
-@dataclass
 class Retriever:
     """
     Responsible for fetching a stream's records from an HTTP API source.
