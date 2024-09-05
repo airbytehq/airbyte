@@ -1,10 +1,13 @@
 # Teamwork
 This directory contains the manifest-only connector for `source-teamwork`.
 
-New Source: Teamwork
-Authentication Docs: https://apidocs.teamwork.com/guides/teamwork/authentication
-API Docs: https://apidocs.teamwork.com/docs/teamwork/v3/
-Website: https://www.teamwork.com/
+## Documentation reference:
+Visit `https://apidocs.teamwork.com/docs/teamwork/v3/` for API documentation
+
+## Authentication setup
+
+Teamwork uses basic http auth that uses username and password
+Your default login username and password could be used as secrets, ref: `https://apidocs.teamwork.com/guides/teamwork/authentication`
 
 ## Usage
 There are multiple ways to use this connector:

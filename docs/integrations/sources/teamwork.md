@@ -1,8 +1,20 @@
 # Teamwork
-New Source: Teamwork
-Authentication Docs: https://apidocs.teamwork.com/guides/teamwork/authentication
-API Docs: https://apidocs.teamwork.com/docs/teamwork/v3/
-Website: https://www.teamwork.com/
+
+This page contains the setup guide and reference information for the Teamwork source connector.
+
+## Prerequisites
+
+- Teamwork console username
+- Teamwork console password
+
+## Documentation reference:
+Visit `https://apidocs.teamwork.com/docs/teamwork/v3/` for API documentation
+
+## Authentication setup
+
+Teamwork uses basic http auth that uses username and password
+Your default login username and password could be used as secrets, ref: `https://apidocs.teamwork.com/guides/teamwork/authentication`
+
 
 ## Configuration
 
@@ -10,7 +22,7 @@ Website: https://www.teamwork.com/
 |-------|------|-------------|---------------|
 | `username` | `string` | Username.  |  |
 | `password` | `string` | Password.  |  |
-| `site_name` | `string` | Site Name. The teamwork site name appearing at the url |  |
+| `site_name` | `string` | Site Name. The teamwork site name which appears on the url |  |
 | `start_date` | `string` | Start date.  |  |
 
 ## Streams
@@ -43,8 +55,8 @@ Website: https://www.teamwork.com/
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-05 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-05 |[45155](https://github.com/airbytehq/airbyte/pull/45155) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
