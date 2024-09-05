@@ -3,7 +3,7 @@
 #
 import logging
 from abc import ABC, abstractmethod
-from airbyte_cdk.sources.streams.core import Stream
+
 
 class AbstractDiscoverErrorHandler(ABC):
     @abstractmethod

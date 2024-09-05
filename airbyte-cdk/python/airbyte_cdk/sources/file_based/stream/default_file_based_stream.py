@@ -9,7 +9,7 @@ from copy import deepcopy
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
@@ -76,7 +76,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
-    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:  # type: ignore # file based stream returns an AirbyteMessage while other implementations return mapping
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
 
