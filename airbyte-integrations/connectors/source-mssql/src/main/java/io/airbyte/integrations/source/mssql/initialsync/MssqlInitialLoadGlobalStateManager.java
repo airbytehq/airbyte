@@ -70,7 +70,8 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
         this.streamsThatHaveCompletedSnapshot.add(pairInStream);
       }
       if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-        if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)) {
+        if (configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey() != null
+            && !configuredAirbyteStream.getStream().getSourceDefinedPrimaryKey().isEmpty()) {
           this.resumableFullRefreshStreams.add(pairInStream);
         } else {
           this.nonResumableFullRefreshStreams.add(pairInStream);
