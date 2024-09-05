@@ -1190,6 +1190,7 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+            - "$ref": "#/definitions/KeysToLower"
       state_migrations:
         title: State Migrations
         description: Array of state migrations to be applied on the input state
@@ -1686,6 +1687,19 @@ definitions:
       type:
         type: string
         enum: [JsonlDecoder]
+  KeysToLower:
+    title: Keys to Lower Fields
+    description: A transformation that renames all keys to lower case.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [KeysToLower]
+      $parameters:
+        type: object
+        additionalProperties: true
   IterableDecoder:
     title: Iterable Decoder
     description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.

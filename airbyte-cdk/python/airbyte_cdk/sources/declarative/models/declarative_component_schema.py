@@ -613,6 +613,11 @@ class JsonlDecoder(BaseModel):
     type: Literal['JsonlDecoder']
 
 
+class KeysToLower(BaseModel):
+    type: Literal['KeysToLower']
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class IterableDecoder(BaseModel):
     type: Literal['IterableDecoder']
 
@@ -1389,7 +1394,7 @@ class DeclarativeStream(BaseModel):
         title='Schema Loader',
     )
     transformations: Optional[
-        List[Union[AddFields, CustomTransformation, RemoveFields]]
+        List[Union[AddFields, CustomTransformation, RemoveFields, KeysToLower]]
     ] = Field(
         None,
         description='A list of transformations to be applied to each output record.',
