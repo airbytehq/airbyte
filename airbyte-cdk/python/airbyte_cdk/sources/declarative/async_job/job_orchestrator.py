@@ -68,7 +68,8 @@ class AsyncPartition:
         else:
             return AsyncJobStatus.RUNNING
 
-    # TODO def __repr__(self) -> str: for slice printing
+    def __repr__(self) -> str:
+        return f"AsyncPartition(stream_slice={self._stream_slice}, attempt_per_job={self._attempts_per_job})"
 
 
 class AsyncJobOrchestrator:
