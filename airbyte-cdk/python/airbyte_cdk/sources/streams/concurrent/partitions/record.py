@@ -14,7 +14,7 @@ class Record:
     Represents a record read from a stream.
     """
 
-    def __init__(self, data: Mapping[str, Any], partition: Partition):
+    def __init__(self, data: Mapping[str, Any], partition: 'Partition'):
         self.data = data
         self.partition = partition
 
