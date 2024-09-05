@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "api.app.shortcut.com"
   registryOverrides:
     oss:
       enabled: true

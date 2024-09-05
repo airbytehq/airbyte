@@ -1,9 +1,12 @@
 # Shortcut
 This directory contains the manifest-only connector for `source-shortcut`.
 
-Website: https://app.shortcut.com/
-API Docs: https://developer.shortcut.com/api/rest/v3#Introduction
-Authentication Docs: https://developer.shortcut.com/api/rest/v3#Authentication
+## Documentation reference:
+Visit `https://developer.shortcut.com/api/rest/v3#Introduction` for API documentation
+
+## Authentication setup
+Shortcut uses API Key Authorization, Please visit `https://app.shortcut.com/janfab/settings/account/api-tokens` for copying the API tokens
+Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more details.
 
 ## Usage
 There are multiple ways to use this connector:
@@ -32,4 +35,3 @@ This will run the acceptance tests for the connector.
 ```bash
 airbyte-ci connectors --name=source-shortcut test
 ```
-

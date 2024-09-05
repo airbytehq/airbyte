@@ -1,7 +1,14 @@
 # Shortcut
-Website: https://app.shortcut.com/
-API Docs: https://developer.shortcut.com/api/rest/v3#Introduction
-Authentication Docs: https://developer.shortcut.com/api/rest/v3#Authentication
+This page contains the setup guide and reference information for the [Shortcut](https://app.shortcut.com/) source connector.
+
+## Prerequisites
+To set up the shortcut source connector with Airbyte, you'll need to create your API tokens from theie settings page. Please visit `https://app.shortcut.com/janfab/settings/account/api-tokens` for getting your api_key.
+
+## Documentation reference:
+Visit `https://developer.shortcut.com/api/rest/v3#Introduction` for API documentation
+
+## Authentication setup
+Refer `https://developer.shortcut.com/api/rest/v3#Authentication` for more details.
 
 ## Configuration
 
@@ -14,6 +21,7 @@ Authentication Docs: https://developer.shortcut.com/api/rest/v3#Authentication
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
+| search_epics | id | DefaultPaginator | ✅ |  ✅  |
 | categories | id | No pagination | ✅ |  ✅  |
 | categories_milestones | id | No pagination | ✅ |  ✅  |
 | categories_objectives | id | No pagination | ✅ |  ✅  |
@@ -37,15 +45,14 @@ Authentication Docs: https://developer.shortcut.com/api/rest/v3#Authentication
 | workflows | id | No pagination | ✅ |  ✅  |
 | stories_comments | id | No pagination | ✅ |  ✅  |
 | story_history | id | No pagination | ✅ |  ✅  |
-| search_epics | id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-05 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-05 |[45176](https://github.com/airbytehq/airbyte/pull/45176)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
