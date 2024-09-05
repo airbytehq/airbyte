@@ -10,7 +10,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import stripe
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -23,6 +23,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
@@ -531,7 +532,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(state=self._state)
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
         return [
             self._to_concurrent(
                 stream,
