@@ -246,6 +246,7 @@ class ConnectorRegistryReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    isReleaseCandidate: Optional[bool] = Field(None, description="Whether the current version is a release candidate.")
     releaseCandidates: Optional[ConnectorReleaseCandidates] = None
     rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: Optional[ConnectorBreakingChanges] = None
