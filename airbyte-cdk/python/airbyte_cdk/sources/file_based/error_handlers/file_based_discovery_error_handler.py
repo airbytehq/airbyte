@@ -4,7 +4,7 @@
 import logging
 from typing import Optional
 from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler
-from airbyte_cdk.sources.file_based.exceptions import InvalidSchemaError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.exceptions import InvalidSchemaError, SchemaInferenceError, ConfigValidationError
 
 
 class FileBasedDiscoverErrorHandler(AbstractDiscoverErrorHandler):
@@ -15,7 +15,8 @@ class FileBasedDiscoverErrorHandler(AbstractDiscoverErrorHandler):
         """
         exceptions_to_log = (
             InvalidSchemaError,
-            SchemaInferenceError
+            SchemaInferenceError,
+            ConfigValidationError
         )
 
         if isinstance(exception, exceptions_to_log):

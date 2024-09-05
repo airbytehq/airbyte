@@ -76,10 +76,12 @@ class AbstractSource(Source, ABC):
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
         streams = []
+        errors = []
         for stream in self.streams(config=config):
             try:
                 streams.append(stream.as_airbyte_stream())
             except Exception as exception:
+                errors.append(exception)
                 error = self.discover_error_handler().handle_discover_error(logger=stream.logger, exception=exception, name=stream.name)
                 if error:
                     raise error
@@ -87,7 +89,7 @@ class AbstractSource(Source, ABC):
         if not streams:
             raise AirbyteTracedException(
                 internal_message="No streams were discovered in the source.",
-                message="No streams were discovered in the source. Please check the source configuration.",
+                message=f"No streams were discovered in the source. Please check the source configuration: {errors}",
                 failure_type=FailureType.config_error
             )
 

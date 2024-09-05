@@ -198,10 +198,17 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     cursor = FileBasedFinalStateCursor(
                         stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
                     )
-                    stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
-                    )
-
+                    try:
+                        stream = FileBasedStreamFacade.create_from_stream(
+                            self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        )
+                    except Exception as exc:
+                        raise AirbyteTracedException(
+                            internal_message="Please check the logged errors for more information.",
+                            message=f"Unable to create stream {stream_config.name}.",
+                            exception=AirbyteTracedException(exception=exc),
+                            failure_type=FailureType.config_error,
+                        )
                 elif (
                     sync_mode == SyncMode.incremental
                     and issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)

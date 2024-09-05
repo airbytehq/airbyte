@@ -10,6 +10,7 @@ import os.path
 import socket
 import sys
 import tempfile
+import orjson
 from collections import defaultdict
 from functools import wraps
 from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
@@ -35,7 +36,6 @@ from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from orjson import orjson
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
@@ -163,9 +163,9 @@ class AirbyteEntrypoint(object):
             raise traced_exc
         except Exception as exc:
             raise AirbyteTracedException(
-                internal_message=f"An error occurred while discovering the source schema: {exc}",
+                internal_message="An error occurred while discovering the source schema.",
                 failure_type=FailureType.config_error,
-                message=f"An error occurred while discovering the source schema.",
+                message=f"An error occurred while discovering the source schema: {exc}",
                 exception=exc,
             )
 
