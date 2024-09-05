@@ -66,7 +66,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
-class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
+open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
