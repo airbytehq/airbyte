@@ -256,26 +256,27 @@ class CsvParser(FileTypeParser):
     def _pre_propcess_property_types(property_types: Dict[str, Any]) -> Mapping[str, str]:
         """
         Transform the property types to be non-nullable and remove duplicate types if any.
+
         Sample input:
         {
-        "col1": ["string", "null"],
-        "col2": ["string", "string", "null"],
-        "col3": "integer"
+            "col1": ["string", "null"],
+            "col2": ["string", "string", "null"],
+            "col3": "integer"
         }
 
         Sample output:
         {
-        "col1": "string",
-        "col2": "string",
-        "col3": "integer",
+            "col1": "string",
+            "col2": "string",
+            "col3": "integer",
         }
         """
         output = {}
         for prop, prop_type in property_types.items():
             if isinstance(prop_type, list):
-                prop_type_distinct = {ptype for ptype in prop_type if ptype != "null"}
+                prop_type_distinct = set(prop_type) - {"null"}
                 if len(prop_type_distinct) != 1:
-                    raise ValueError(f"Could not get non nullable type from {prop_type}")
+                    raise ValueError(f"Could not get non-nullable type from {prop_type}")
                 output[prop] = prop_type_distinct.pop()
             else:
                 output[prop] = prop_type
