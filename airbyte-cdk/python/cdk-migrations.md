@@ -13,7 +13,15 @@ The changes to Airbyte CDK itself are backwards-compatible, but some changes are
 
 If the connector uses Pydantic based Airbyte Protocol Models, the code will need to be updated to reflect the changes `pydantic`.
 It is recommended to import protocol classes not directly by `import airbyte_protocol` statement, but from `airbyte_cdk.models` package.
-It is also recommended to use `Serializers` from `airbyte_cdk.models` to manipulate the data or convert to/from JSON.
+It is also recommended to use *-`Serializer` from `airbyte_cdk.models` to manipulate the data or convert to/from JSON, e.g.
+```python3
+# Before (pydantic model message serialization) 
+AirbyteMessage().model_dump_json()
+
+# After (dataclass model serialization)
+orjson.dumps(AirbyteMessageSerializer.dump(AirbyteMessage())).decode()
+
+```
 
 ### Updating third-party libraries
 
