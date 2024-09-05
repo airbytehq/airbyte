@@ -34,7 +34,7 @@ data:
   # Disable the acceptanceTests suite for now
   # They are not passing
   # No Airbyte cloud usage
-  
+
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: acceptanceTests
