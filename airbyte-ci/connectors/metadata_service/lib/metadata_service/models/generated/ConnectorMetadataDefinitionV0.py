@@ -267,7 +267,9 @@ class ConnectorBreakingChanges(BaseModel):
         extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
-        ..., description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade."
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+        title="ConnectorBreakingChanges",
     )
 
 

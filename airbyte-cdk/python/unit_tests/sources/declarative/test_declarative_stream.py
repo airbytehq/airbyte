@@ -189,7 +189,7 @@ def test_no_state_migration_is_applied_if_the_state_should_not_be_migrated():
     [
         pytest.param(True, True, id="test_retriever_has_cursor"),
         pytest.param(False, False, id="test_retriever_has_cursor"),
-    ]
+    ],
 )
 def test_is_resumable(use_cursor, expected_supports_checkpointing):
     schema_loader = _schema_loader()

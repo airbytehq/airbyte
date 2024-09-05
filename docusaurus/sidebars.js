@@ -495,7 +495,6 @@ const understandingAirbyte = {
     "understanding-airbyte/database-data-catalog",
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
-    "understanding-airbyte/operations",
     "understanding-airbyte/secrets",
     "understanding-airbyte/cdc",
     "understanding-airbyte/resumability",
@@ -714,6 +713,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/aug_2024",
         "release_notes/july_2024",
         "release_notes/june_2024",
         "release_notes/may_2024",
