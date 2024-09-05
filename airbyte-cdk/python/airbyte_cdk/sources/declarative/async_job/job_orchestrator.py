@@ -5,11 +5,11 @@ import time
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 LOGGER = logging.getLogger("airbyte")
 
@@ -138,9 +138,17 @@ class AsyncJobOrchestrator:
         Returns:
             None
         """
+        self._debug_log(f"Polling status in progress. There are currently {len(self._running_partitions)} running partitions.")
+
         # wait only when there are running partitions
         if self._running_partitions:
+            self._debug_log(f"Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll...")
             time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
+
+    def _debug_log(self, message: str) -> None:
+        # if statement in order to avoid string formatting if we're not in debug mode
+        if LOGGER.isEnabledFor(logging.DEBUG):
+            LOGGER.debug(message)
 
     def _process_completed_partition(self, partition: AsyncPartition) -> None:
         """
@@ -196,21 +204,6 @@ class AsyncJobOrchestrator:
             failure_type=FailureType.system_error,
         )
 
-    def _log_polling_partitions(self) -> None:
-        """
-        Logs the status of the polling partitions.
-
-        This method logs the number of running partitions and the wait time before the next poll.
-
-        Returns:
-            None
-        """
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            # if statement in order to avoid string formatting if we're not in debug mode
-            LOGGER.debug(
-                f"Polling status in progress. There are currently {len(self._running_partitions)} running partitions. Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll..."
-            )
-
     def create_and_get_completed_partitions(self) -> Iterable[AsyncPartition]:
         """
         Creates and retrieves completed partitions.
@@ -229,7 +222,6 @@ class AsyncJobOrchestrator:
 
             self._update_jobs_status()
             yield from self._process_running_partitions_and_yield_completed_ones()
-            self._log_polling_partitions()
             self._wait_on_status_update()
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:

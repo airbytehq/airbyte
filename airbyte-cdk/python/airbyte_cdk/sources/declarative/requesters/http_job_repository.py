@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
@@ -14,7 +15,6 @@ from airbyte_cdk.sources.declarative.extractors.response_to_file_extractor impor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from requests import Response
 
 

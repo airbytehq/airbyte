@@ -4,6 +4,7 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Callable, Iterable, List, Mapping, Optional, Union
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator, AsyncPartition
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
@@ -13,7 +14,6 @@ from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 
 @dataclass
