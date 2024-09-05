@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
@@ -26,7 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Struct
 import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.changeDataTypeFromShowQuery
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
@@ -37,7 +38,6 @@ import java.util.*
 import java.util.stream.Collectors
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.apache.commons.text.StringSubstitutor
-import org.json.JSONObject
 import org.jooq.SQLDialect
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -72,21 +72,15 @@ class SnowflakeDestinationHandler(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
 
-        val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-        var showColumnsResult: List<JsonNode> = listOf()
-
         try {
+            val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
+
             for (stream in streamIds) {
                 val showColumnsQuery =
-                    String.format(
-                            """
-                                SHOW TABLES LIKE '%s' IN "%s"."%s";
-                            """.trimIndent(),
-                            stream.finalName,
-                            databaseName,
-                            stream.finalNamespace,
-                            )
-                showColumnsResult = database.queryJsons(
+                    """
+                    SHOW TABLES LIKE '${stream.finalName}' IN "$databaseName"."${stream.finalNamespace}";
+                    """.trimIndent()
+                val showColumnsResult = database.queryJsons(
                     showColumnsQuery,
                 )
                 for (result in showColumnsResult) {
@@ -99,14 +93,15 @@ class SnowflakeDestinationHandler(
                         rowCount.toInt()
                 }
             }
-        } catch (e: SQLException) {
-            showColumnsResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+            return tableRowCountsFromShowQuery
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
+                return LinkedHashMap<String, LinkedHashMap<String, Int>>()
+            } else {
+                throw e
+            }
         }
-        return tableRowCountsFromShowQuery
     }
-
 
     @Throws(Exception::class)
     private fun getInitialRawTableState(
@@ -116,28 +111,25 @@ class SnowflakeDestinationHandler(
 
         val rawTableName = id.rawName + suffix
         var tableExists = false
-        var showTablesResult: List<JsonNode> = listOf()
+
 
         try {
             val showTablesQuery =
-                String.format(
                     """
-                        SHOW TABLES LIKE '%s' IN "%s"."%s";
-                    """.trimIndent(),
-                    rawTableName,
-                    databaseName,
-                    id.rawNamespace,
-                    )
-            showTablesResult = database.queryJsons(
+                        SHOW TABLES LIKE '$rawTableName' IN "$databaseName"."${id.rawNamespace}";
+                    """.trimIndent()
+            val showTablesResult = database.queryJsons(
                 showTablesQuery,
             )
             if(showTablesResult.size > 0) {
                 tableExists = true
             }
-        } catch (e: SQLException) {
-            showTablesResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
+                tableExists = false
+            } else {
+                throw e
+            }
         }
 
         if (!tableExists) {
@@ -584,39 +576,22 @@ class SnowflakeDestinationHandler(
             streamIds: List<StreamId>
         ): LinkedHashMap<String, LinkedHashMap<String, TableDefinition>> {
 
-            val existingTablesFromShowQuery =
-                LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
-            var showColumnsResult: List<JsonNode> = listOf()
-
             try {
+                val existingTablesFromShowQuery =
+                    LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
                 for (stream in streamIds) {
                     val showColumnsQuery =
-                        String.format(
-                            """
-                                SHOW COLUMNS IN TABLE "%s"."%s"."%s";
-                            """.trimIndent(),
-                            databaseName,
-                            stream.finalNamespace,
-                            stream.finalName,
-                        )
-                    showColumnsResult = database.queryJsons(
+                        """
+                        SHOW COLUMNS IN TABLE "$databaseName"."${stream.finalNamespace}"."${stream.finalName}";
+                        """.trimIndent()
+                    val showColumnsResult = database.queryJsons(
                         showColumnsQuery,
                     )
-
                     for (result in showColumnsResult) {
                         val tableSchema = result["schema_name"].asText()
                         val tableName = result["table_name"].asText()
                         val columnName = result["column_name"].asText()
-                        var dataType = JSONObject(result["data_type"].asText()).getString("type")
-
-                        //TODO: Need to check if there are other datatype differences
-                        // between the original approach and the new approach with SHOW queries
-                        if(dataType.equals("FIXED")) {
-                            dataType = "NUMBER"
-                        } else if(dataType.equals("REAL")) {
-                            dataType = "FLOAT"
-                        }
-
+                        val dataType = changeDataTypeFromShowQuery(ObjectMapper().readTree(result["data_type"].asText()).path("type").asText())
                         val isNullable = result["null?"].asText()
                         val tableDefinition =
                             existingTablesFromShowQuery
@@ -629,16 +604,19 @@ class SnowflakeDestinationHandler(
                                 columnName,
                                 dataType,
                                 0,
-                                fromIsNullableSnowflakeString(isNullable),
+                                isNullable.toBoolean()
                             )
                     }
                 }
-            } catch (e: SQLException) {
-                showColumnsResult.stream().close()
-                //Not re-throwing the exception since the SQLException occurs when the table does not exist
-                //throw e
+                return existingTablesFromShowQuery
+            } catch (e: SnowflakeSQLException) {
+                if(e.message != null && e.message!!.contains("does not exist")) {
+                    return LinkedHashMap<String, LinkedHashMap<String, TableDefinition>>()
+                } else {
+                    throw e
+                }
             }
-            return existingTablesFromShowQuery
+
         }
     }
 }

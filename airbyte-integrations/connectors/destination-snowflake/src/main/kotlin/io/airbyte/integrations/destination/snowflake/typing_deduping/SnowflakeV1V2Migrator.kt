@@ -4,6 +4,7 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
@@ -13,11 +14,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.fromIsNullableSnowflakeString
-import java.sql.SQLException
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.changeDataTypeFromShowQuery
 import java.util.*
 import lombok.SneakyThrows
-import org.json.JSONObject
+import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -35,27 +35,22 @@ class SnowflakeV1V2Migrator(
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
 
-        var showSchemaResult : List<JsonNode> = listOf()
-
         try {
-            val showSchemaQuery = String.format(
+            val showSchemaQuery =
                 """
-               SHOW SCHEMAS LIKE '%s' IN DATABASE "%s";
-                """.trimIndent(),
-                streamConfig!!.id.rawNamespace,
-                databaseName,
-            )
-
-            showSchemaResult = database.queryJsons(
+                SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE "$databaseName";
+                """.trimIndent()
+            val showSchemaResult = database.queryJsons(
                                     showSchemaQuery,
                                 )
             return showSchemaResult.isNotEmpty()
-        } catch (e: SQLException) {
-            showSchemaResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
+                return false
+            } else {
+                throw e
+            }
         }
-        return false;
     }
 
     override fun schemaMatchesExpectation(
@@ -77,19 +72,12 @@ class SnowflakeV1V2Migrator(
         // translates
         // VARIANT as VARCHAR
 
-        var showColumnsResult : List<JsonNode> = listOf()
-
         try {
             val showColumnsQuery =
-                String.format(
                     """
-                       SHOW COLUMNS IN TABLE "%s"."%s"."%s";
-                    """.trimIndent(),
-                    databaseName,
-                    namespace,
-                    tableName,
-                )
-            showColumnsResult = database.queryJsons(
+                       SHOW COLUMNS IN TABLE "$databaseName"."$namespace"."$tableName";
+                    """.trimIndent()
+            val showColumnsResult = database.queryJsons(
                 showColumnsQuery
             )
             val columnsFromShowQuery = showColumnsResult
@@ -100,10 +88,9 @@ class SnowflakeV1V2Migrator(
                         map[row["column_name"].asText()] =
                             ColumnDefinition(
                                 row["column_name"].asText(),
-                                //row["data_type"].asText(),
-                                JSONObject(row["data_type"].asText()).getString("type"),
+                                changeDataTypeFromShowQuery(ObjectMapper().readTree(row["data_type"].asText()).path("type").asText()),
                                 0,
-                                fromIsNullableSnowflakeString(row["null?"].asText()),
+                                row["null?"].asText().toBoolean(),
                             )
                     },
                     { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
@@ -111,20 +98,18 @@ class SnowflakeV1V2Migrator(
                         obj.putAll(m!!)
                     },
                 )
-
             return if (columnsFromShowQuery.isEmpty()) {
                 Optional.empty()
             } else {
                 Optional.of(TableDefinition(columnsFromShowQuery))
             }
-
-        } catch (e: SQLException) {
-            showColumnsResult.stream().close()
-            //Not re-throwing the exception since the SQLException occurs when the table does not exist
-            //throw e
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
+                return Optional.empty()
+            } else {
+                throw e
+            }
         }
-
-        return Optional.empty()
     }
 
     override fun convertToV1RawName(streamConfig: StreamConfig): NamespacedTableName {
