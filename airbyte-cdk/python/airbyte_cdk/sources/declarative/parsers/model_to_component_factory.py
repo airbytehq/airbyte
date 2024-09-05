@@ -1181,6 +1181,10 @@ class ModelToComponentFactory:
     ) -> Mapping[str, AsyncJobStatus]:
         api_status_to_cdk_status = {}
         for cdk_status, api_statuses in model.dict().items():
+            if cdk_status == "type":
+                # This is an element of the dict because of the typing of the CDK but it is not a CDK status
+                continue
+
             for status in api_statuses:
                 if status in api_status_to_cdk_status:
                     raise ValueError(
