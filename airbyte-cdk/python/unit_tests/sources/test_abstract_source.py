@@ -304,6 +304,7 @@ def test_discover(mocker):
 
     assert src.discover(logger, {}) == expected
 
+
 def test_discover_raises_exception_by_default_when_error_occurs_during_discover(mocker):
     class CustomException(Exception):
         pass
@@ -316,6 +317,7 @@ def test_discover_raises_exception_by_default_when_error_occurs_during_discover(
     with pytest.raises(CustomException) as exc_info:
         src.discover(logger, {})
         assert isinstance(exc_info, CustomException)
+
 
 def test_discover_raises_exception_when_configured_catalog_is_empty(mocker):
     stream1 = MockStream()
