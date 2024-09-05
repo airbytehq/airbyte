@@ -29,15 +29,16 @@ class JdbcExceptionClassifier(
     }
 
     override fun classify(e: Throwable): ConnectorError? {
-        if (e !is SQLException) return null
+        var match: SQLException =
+            ExceptionClassifier.unwind(e) { it is SQLException } as? SQLException ?: return null
         val decoratedMessage: String =
             listOfNotNull(
-                    e.sqlState?.let { "State code: $it" },
-                    e.errorCode.takeIf { it != 0 }?.let { "Error code: $it" },
-                    e.message?.let { "Message: $it" },
+                    match.sqlState?.let { "State code: $it" },
+                    match.errorCode.takeIf { it != 0 }?.let { "Error code: $it" },
+                    match.message?.let { "Message: $it" },
                 )
                 .joinToString(separator = "; ")
-        val decoratedException = SQLException(decoratedMessage, e.sqlState, e.errorCode)
+        val decoratedException = SQLException(decoratedMessage, match.sqlState, match.errorCode)
         val ruleBasedMatch: ConnectorError? = super.classify(decoratedException)
         if (ruleBasedMatch != null) {
             return ruleBasedMatch

@@ -113,6 +113,7 @@ def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
 
     if metadata.get("releases", {}).get("rolloutConfiguration"):
         final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
+    final_registry_releases["isReleaseCandidate"] = metadata.get("releases", {}).get("isReleaseCandidate", False)
     return final_registry_releases
 
 
