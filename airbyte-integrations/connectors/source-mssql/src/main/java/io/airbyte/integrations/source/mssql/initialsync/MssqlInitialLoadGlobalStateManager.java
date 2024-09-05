@@ -30,6 +30,8 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   // No special handling for resumable full refresh streams. We will report the cursor as it is.
   private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
   private Set<AirbyteStreamNameNamespacePair> nonResumableFullRefreshStreams;
+  private Set<AirbyteStreamNameNamespacePair> completedNonResumableFullRefreshStreams;
+
 
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
@@ -95,6 +97,12 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
       }
     });
 
+    completedNonResumableFullRefreshStreams.forEach(stream -> {
+      streamStates.add(new AirbyteStreamState()
+          .withStreamDescriptor(
+              new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace())));
+    });
+
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
       AirbyteStreamNameNamespacePair pair =
           new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
@@ -120,10 +128,13 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
 
   @Override
   public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
+
+    final io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(
+        airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
     if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
-      io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(
-          airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
       streamsThatHaveCompletedSnapshot.add(pair);
+    } else if (nonResumableFullRefreshStreams.contains(pair)) {
+      completedNonResumableFullRefreshStreams.add(pair);
     }
     final List<AirbyteStreamState> streamStates = new ArrayList<>();
     streamsThatHaveCompletedSnapshot.forEach(stream -> {
@@ -136,7 +147,7 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
       streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
     });
 
-    nonResumableFullRefreshStreams.forEach(stream -> {
+    completedNonResumableFullRefreshStreams.forEach(stream -> {
       streamStates.add(new AirbyteStreamState()
           .withStreamDescriptor(
               new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace())));
