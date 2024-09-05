@@ -1,10 +1,13 @@
 # Survicate
 This directory contains the manifest-only connector for `source-survicate`.
 
-New Source: Survicate
-Website: https://survicate.com/
-API docs: https://developers.survicate.com/data-export/setup/
-API Authentication docs: https://developers.survicate.com/data-export/setup/#authentication
+## Documentation reference:
+Visit `https://developers.survicate.com/data-export/setup/` for API documentation
+
+## Authentication setup
+
+Teamwork uses basic http auth that uses username and password
+Your default login username and password could be used as secrets, ref: `https://developers.survicate.com/data-export/setup/#authentication`
 
 ## Usage
 There are multiple ways to use this connector:
@@ -33,4 +36,3 @@ This will run the acceptance tests for the connector.
 ```bash
 airbyte-ci connectors --name=source-survicate test
 ```
-
