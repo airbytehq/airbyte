@@ -802,7 +802,7 @@ schemas:
       id:
         type:
           - "null"
-          - string
+          - integer
         description: Unique identifier for the call (from metaData.id).
       interaction:
         type:
