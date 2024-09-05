@@ -35,7 +35,9 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
     private val acquiredResources = AtomicReference<AcquiredResources>()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        cdcResourceAcquire().or(return TryAcquireResourcesStatus.RETRY_LATER)
+        if (!cdcResourceAcquire()) {
+            return TryAcquireResourcesStatus.RETRY_LATER
+        }
 
         val acquiredResources: AcquiredResources =
             partition.tryAcquireResourcesForReader() ?: return TryAcquireResourcesStatus.RETRY_LATER
@@ -56,12 +58,13 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
     }
 
     override fun releaseResources() {
-        TODO("Not yet implemented")
         acquiredResources.getAndSet(null)?.close()
         // Release global CDC lock
     }
 
-    fun processDebeziumMessage(changeEvent: ChangeEvent<String?, String?>) {}
+    fun processDebeziumMessage(changeEvent: ChangeEvent<String?, String?>) {
+        TODO("Not yet implemented")
+    }
 
     fun convertToAirbyteMessage(record: DebeziumRecord): AirbyteRecordMessage {
         // TODO : Convert event to an airbyte message

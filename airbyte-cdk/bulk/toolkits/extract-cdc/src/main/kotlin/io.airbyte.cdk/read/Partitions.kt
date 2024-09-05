@@ -24,7 +24,9 @@ class CdcAwareJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
 ) : JdbcNonResumablePartitionReader<P>(partition), cdcAware {
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        cdcResourceAcquire().or(return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER)
+        if (!cdcResourceAcquire()) {
+            return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
+        }
         return super.tryAcquireResources()
     }
 }
