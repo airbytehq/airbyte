@@ -117,9 +117,9 @@ constructor(
     ): Stream<T> {
         val connection = dataSource.connection
         return JdbcDatabase.Companion.toUnsafeStream<T>(
-            statementCreator.apply(connection).executeQuery(),
-            recordTransform
-        )
+                statementCreator.apply(connection).executeQuery(),
+                recordTransform
+            )
             .onClose(
                 Runnable {
                     try {

@@ -27,6 +27,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
 import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator.Companion.QUOTE
 import java.sql.Connection
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
@@ -51,15 +52,15 @@ class SnowflakeDestinationHandler(
         rawTableSchema,
         SQLDialect.POSTGRES,
         generationHandler =
-        object : JdbcGenerationHandler {
-            override fun getGenerationIdInTable(
-                database: JdbcDatabase,
-                namespace: String,
-                name: String
-            ): Long? {
-                throw NotImplementedError()
+            object : JdbcGenerationHandler {
+                override fun getGenerationIdInTable(
+                    database: JdbcDatabase,
+                    namespace: String,
+                    name: String
+                ): Long? {
+                    throw NotImplementedError()
+                }
             }
-        }
     ) {
     // Postgres is close enough to Snowflake SQL for our purposes.
     // We don't quote the database name in any queries, so just upcase it.
@@ -150,11 +151,11 @@ class SnowflakeDestinationHandler(
                                 .createStatement()
                                 .executeQuery(
                                     StringSubstitutor(
-                                        java.util.Map.of(
-                                            "raw_table",
-                                            id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            java.util.Map.of(
+                                                "raw_table",
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            )
                                         )
-                                    )
                                         .replace(
                                             """
                 WITH MIN_TS AS (
@@ -185,7 +186,7 @@ class SnowflakeDestinationHandler(
                 rawTableExists = true,
                 hasUnprocessedRecords = true,
                 maxProcessedTimestamp =
-                minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
+                    minUnloadedTimestamp.map { text: String? -> Instant.parse(text) }
             )
         }
 
@@ -206,11 +207,11 @@ class SnowflakeDestinationHandler(
                                 .createStatement()
                                 .executeQuery(
                                     StringSubstitutor(
-                                        java.util.Map.of(
-                                            "raw_table",
-                                            id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            java.util.Map.of(
+                                                "raw_table",
+                                                id.rawTableId(SnowflakeSqlGenerator.QUOTE, suffix)
+                                            )
                                         )
-                                    )
                                         .replace(
                                             """
                 WITH MAX_TS AS (
@@ -290,7 +291,7 @@ class SnowflakeDestinationHandler(
             JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abRawIdColumnName) &&
             toJdbcTypeName(AirbyteProtocolType.STRING) ==
-            existingTable.columns[abRawIdColumnName]!!.type
+                existingTable.columns[abRawIdColumnName]!!.type
     }
 
     override fun isAirbyteExtractedAtColumnMatch(existingTable: TableDefinition): Boolean {
@@ -298,7 +299,7 @@ class SnowflakeDestinationHandler(
             JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abExtractedAtColumnName) &&
             toJdbcTypeName(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE) ==
-            existingTable.columns[abExtractedAtColumnName]!!.type
+                existingTable.columns[abExtractedAtColumnName]!!.type
     }
 
     override fun isAirbyteMetaColumnMatch(existingTable: TableDefinition): Boolean {
@@ -313,7 +314,7 @@ class SnowflakeDestinationHandler(
             JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase(Locale.getDefault())
         return existingTable.columns.containsKey(abGenerationIdColumnName) &&
             toJdbcTypeName(AirbyteProtocolType.INTEGER) ==
-            existingTable.columns[abGenerationIdColumnName]!!.type
+                existingTable.columns[abGenerationIdColumnName]!!.type
     }
 
     @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
@@ -327,9 +328,9 @@ class SnowflakeDestinationHandler(
         // TODO: Unify this using name transformer or something.
         if (
             !isAirbyteRawIdColumnMatch(existingTable) ||
-            !isAirbyteExtractedAtColumnMatch(existingTable) ||
-            !isAirbyteMetaColumnMatch(existingTable) ||
-            !isAirbyteGenerationIdColumnMatch(existingTable)
+                !isAirbyteExtractedAtColumnMatch(existingTable) ||
+                !isAirbyteMetaColumnMatch(existingTable) ||
+                !isAirbyteGenerationIdColumnMatch(existingTable)
         ) {
             // Missing AB meta columns from final table, we need them to do proper T+D so trigger
             // soft-reset
@@ -423,12 +424,7 @@ class SnowflakeDestinationHandler(
                         )
                     val finalTableGenerationId =
                         if (isFinalTablePresent && !isFinalTableEmpty) {
-                            // for now, just use 0. this means we will always use a temp final
-                            // table.
-                            // platform has a workaround for this, so it's OK.
-                            // TODO only fetch this on truncate syncs
-                            // TODO once we have destination state, use that instead of a query
-                            0L
+                            getFinalTableGenerationId(streamConfig.id)
                         } else {
                             null
                         }
@@ -452,6 +448,44 @@ class SnowflakeDestinationHandler(
                 }
             }
             .collect(Collectors.toList())
+    }
+
+    /**
+     * Query the final table to find the generation ID of any record. Assumes that the table exists
+     * and is nonempty.
+     */
+    private fun getFinalTableGenerationId(streamId: StreamId): Long? {
+        val tableExistsWithGenerationId =
+            jdbcDatabase.executeMetadataQuery {
+                // Find a column named _airbyte_generation_id
+                // in the relevant table.
+                val resultSet =
+                    it.getColumns(
+                        databaseName,
+                        streamId.finalNamespace,
+                        streamId.finalName,
+                        JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()
+                    )
+                // Check if there were any such columns.
+                resultSet.next()
+            }
+        // The table doesn't exist, or exists but doesn't have generation id
+        if (!tableExistsWithGenerationId) {
+            return null
+        }
+
+        return jdbcDatabase
+            .queryJsons(
+                """
+                SELECT ${JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase()}
+                FROM ${streamId.finalNamespace(QUOTE)}.${streamId.finalName(QUOTE)}
+                LIMIT 1
+                """.trimIndent(),
+            )
+            .first()
+            .get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID.uppercase())
+            ?.asLong()
+            ?: 0
     }
 
     override fun toJdbcTypeName(airbyteType: AirbyteType): String {
