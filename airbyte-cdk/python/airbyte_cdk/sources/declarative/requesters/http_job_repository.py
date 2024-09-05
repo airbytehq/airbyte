@@ -160,4 +160,8 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         yield from []
 
-        # FIXME clean self._create_job_response_by_id and self._polling_job_response_by_id
+        self._clean_up_job(job.api_job_id())
+
+    def _clean_up_job(self, job_id: str) -> None:
+        del self._create_job_response_by_id[job_id]
+        del self._polling_job_response_by_id[job_id]

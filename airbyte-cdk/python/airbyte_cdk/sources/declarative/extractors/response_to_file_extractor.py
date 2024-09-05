@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import os
 import uuid
 import zlib
@@ -19,7 +19,6 @@ DEFAULT_ENCODING: str = "utf-8"
 DOWNLOAD_CHUNK_SIZE: int = 1024 * 1024 * 10
 
 
-@dataclass
 class ResponseToFileExtractor(RecordExtractor):
     """
     This class is used when having very big HTTP responses (usually streamed) which would require too much memory so we use disk space as
@@ -28,6 +27,9 @@ class ResponseToFileExtractor(RecordExtractor):
     Eventually, we want to support multiple file type by re-using the file based CDK parsers if possible. However, the lift is too high for
     a first iteration so we will only support CSV parsing using pandas as salesforce and sendgrid were doing.
     """
+
+    def __init__(self) -> None:
+        self.logger = logging.getLogger("airbyte")
 
     def _get_response_encoding(self, headers: Dict[str, Any]) -> str:
         """
@@ -132,7 +134,7 @@ class ResponseToFileExtractor(RecordExtractor):
                     for row in chunk:
                         yield row
         except pd.errors.EmptyDataError as e:
-            # FIXME logger.info(f"Empty data received. {e}")
+            self.logger.info(f"Empty data received. {e}")
             yield from []
         except IOError as ioe:
             raise ValueError(f"The IO/Error occured while reading tmp data. Called: {path}", ioe)
