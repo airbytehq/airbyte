@@ -1,6 +1,6 @@
 # Stripe Migration Guide
 
-## Upgrading to 6.0.0
+## Upgrading to 5.6.0
 
 The `Payment Methods` stream previously sync data from Treasury flows. This version will now provide data about customers' payment methods.
 
@@ -8,6 +8,7 @@ The `Payment Methods` stream previously sync data from Treasury flows. This vers
 
 - The stream `Payment Methods` will now provide data about customers' payment methods.
 - The stream `Payment Methods` now incrementally syncs using the `events` endpoint.
+- `customer` field type will be changed from `object` to `string`.
 
 ### Refresh affected schemas and reset data
 
