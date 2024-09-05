@@ -6,8 +6,8 @@ Visit `https://developers.survicate.com/data-export/setup/` for API documentatio
 
 ## Authentication setup
 
-Teamwork uses basic http auth that uses username and password
-Your default login username and password could be used as secrets, ref: `https://developers.survicate.com/data-export/setup/#authentication`
+Survicate uses API Key Authorization, Please visit `https://panel.survicate.com/o/YOUR_ID/w/YOUR_WORKSPACE/settings/access-keys` for copying the access keys
+Refer `https://developers.survicate.com/data-export/setup/#authentication` for more details.
 
 ## Usage
 There are multiple ways to use this connector:

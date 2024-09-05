@@ -1,19 +1,14 @@
 # Survicate
-
 This page contains the setup guide and reference information for the [Survicate](https://survicate.com/) source connector.
 
 ## Prerequisites
-
 To set up the Survicate source connector with Airbyte, you'll need to create your API keys from theie settings page. Please refer `https://developers.survicate.com/data-export/setup/` for getting your api_key.
-
 
 ## Documentation reference:
 Visit `https://developers.survicate.com/data-export/setup/` for API documentation
 
 ## Authentication setup
-
-Teamwork uses basic http auth that uses username and password
-Your default login username and password could be used as secrets, ref: `https://developers.survicate.com/data-export/setup/#authentication`
+Refer `https://developers.survicate.com/data-export/setup/#authentication` for more details.
 
 ## Configuration
 
