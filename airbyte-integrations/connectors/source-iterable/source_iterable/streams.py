@@ -384,7 +384,7 @@ class CampaignsMetrics(IterableStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = Campaigns(authenticator=self._cred)
+        lists = Campaigns(authenticator=self._cred, region=self._region)
         campaign_ids = []
         for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
             campaign_ids.append(list_record["id"])

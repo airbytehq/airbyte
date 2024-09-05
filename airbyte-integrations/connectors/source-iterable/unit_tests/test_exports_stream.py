@@ -38,6 +38,7 @@ def test_stream_correct(config):
     stream_name = "users"
     source_iterable = SourceIterable()
     stream = next(filter(lambda x: x.name == stream_name, source_iterable.streams(config=config)))
+    stream.region = "US"
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=stream_slice, stream_state={}))
 
     assert len(records) == number_of_records

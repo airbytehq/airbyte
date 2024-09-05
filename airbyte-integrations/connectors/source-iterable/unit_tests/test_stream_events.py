@@ -198,6 +198,7 @@ def test_events_parse_response(response_objects, expected_objects, jsonl_body, c
     response = requests.get("https://api.iterable.com/api/export/userEvents?includeCustomEvents=true&email=user1")
 
     stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
+    stream.region = "US"
 
     if jsonl_body:
         stream_slice = StreamSlice(partition={"email": "user1", "parent_slice": {"list_id": 111111, "parent_slice": {}}}, cursor_slice={})

@@ -15,8 +15,13 @@ def test_source_streams(config, body, status, expected_streams):
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", body=body, status=status)
 
-    streams = SourceIterable().streams(config=config)
+    source_iterable = SourceIterable()
+    streams = source_iterable.streams(config=config)
 
+    for stream in streams:
+        if hasattr(stream, "region"):
+            stream.region = "US"
+            
     assert len(streams) == expected_streams
 
 
