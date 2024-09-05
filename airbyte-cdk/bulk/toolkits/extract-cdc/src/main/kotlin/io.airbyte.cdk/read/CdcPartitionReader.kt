@@ -13,6 +13,7 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.cdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
+import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
@@ -21,9 +22,11 @@ import io.debezium.engine.spi.OffsetCommitPolicy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import io.airbyte.commons.json.Jsons
 
-class CdcPartitionReader<P: CdcPartition<DefaultJdbcSharedState>>(cdcContext: io.airbyte.cdk.read.CdcContext, val partition: P) : PartitionReader, cdcAware, cdcResourceTaker {
+class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
+    cdcContext: io.airbyte.cdk.read.CdcContext,
+    val partition: P
+) : PartitionReader, cdcAware, cdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
@@ -35,8 +38,7 @@ class CdcPartitionReader<P: CdcPartition<DefaultJdbcSharedState>>(cdcContext: io
         cdcResourceAcquire().or(return TryAcquireResourcesStatus.RETRY_LATER)
 
         val acquiredResources: AcquiredResources =
-            partition.tryAcquireResourcesForReader()
-                ?: return TryAcquireResourcesStatus.RETRY_LATER
+            partition.tryAcquireResourcesForReader() ?: return TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
         return TryAcquireResourcesStatus.READY_TO_RUN
     }

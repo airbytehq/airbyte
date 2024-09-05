@@ -1,10 +1,14 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.read
 
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.sync.Semaphore
 
 interface cdcAware {
-    fun cdcResourceAcquire() : Boolean =
+    fun cdcResourceAcquire(): Boolean =
         cdcRan.get() || this is cdcResourceTaker && cdcResource.tryAcquire()
 
     companion object {
@@ -16,11 +20,11 @@ interface cdcAware {
 interface cdcResourceTaker {}
 
 class CdcAwareJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
-    partition: P,) : JdbcNonResumablePartitionReader<P>(partition), cdcAware {
+    partition: P,
+) : JdbcNonResumablePartitionReader<P>(partition), cdcAware {
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         cdcResourceAcquire().or(return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER)
         return super.tryAcquireResources()
     }
 }
-
