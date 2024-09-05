@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 00405b19-9768-4e0c-b1ae-9fc2ee2b2a8c
-  dockerImageTag: 1.0.6
+  dockerImageTag: 1.0.7
   dockerRepository: airbyte/source-looker
   githubIssueLabel: source-looker
   icon: looker.svg
@@ -14,7 +14,7 @@ data:
       packageName: airbyte-source-looker
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
