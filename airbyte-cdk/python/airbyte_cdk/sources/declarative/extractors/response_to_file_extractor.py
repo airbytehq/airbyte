@@ -28,6 +28,7 @@ class ResponseToFileExtractor(RecordExtractor):
     Eventually, we want to support multiple file type by re-using the file based CDK parsers if possible. However, the lift is too high for
     a first iteration so we will only support CSV parsing using pandas as salesforce and sendgrid were doing.
     """
+
     def _get_response_encoding(self, headers: Dict[str, Any]) -> str:
         """
         Get the encoding of the response based on the provided headers. This method is heavily inspired by the requests library

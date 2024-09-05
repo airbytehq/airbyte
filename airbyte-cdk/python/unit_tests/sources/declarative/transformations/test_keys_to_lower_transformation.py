@@ -4,7 +4,6 @@
 
 from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformation import KeysToLowerTransformation
 
-
 _ANY_VALUE = -1
 
 
