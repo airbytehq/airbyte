@@ -28,4 +28,3 @@ class KeysToLowerTransformation(RecordTransformation):
     ) -> None:
         for key in set(record.keys()):
             record[key.lower()] = record.pop(key)
-        return None  # type: ignore  # the typing from the parent class is inaccurate based on its usage
