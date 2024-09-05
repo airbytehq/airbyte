@@ -377,25 +377,25 @@ class _JsonTypeInferrer(_TypeInferrer):
         self._values.add(value)
 
     def infer(self) -> str:
-        types: set[str] = set()
+        types_intersection = None
         for value in self._values:
             inferred_types = self._infer_type(value)
             if self._NULL_TYPE not in inferred_types:
-                if not types:
-                    types = inferred_types
+                if types_intersection is None:
+                    types_intersection = inferred_types
                 else:
-                    types &= inferred_types
+                    types_intersection &= inferred_types
 
-        if not types:
-            # this is highly unusual but we will consider the column as a string
+        if not types_intersection:
             return self._STRING_TYPE
 
-        if self._BOOLEAN_TYPE in types:
+        if self._BOOLEAN_TYPE in types_intersection:
             return self._BOOLEAN_TYPE
-        elif self._INTEGER_TYPE in types:
+        if self._INTEGER_TYPE in types_intersection:
             return self._INTEGER_TYPE
-        elif self._NUMBER_TYPE in types:
+        if self._NUMBER_TYPE in types_intersection:
             return self._NUMBER_TYPE
+
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
@@ -403,12 +403,16 @@ class _JsonTypeInferrer(_TypeInferrer):
 
         if value in self._null_values:
             inferred_types.add(self._NULL_TYPE)
-        if self._is_boolean(value):
+        if value in self._boolean_trues or value in self._boolean_falses:
             inferred_types.add(self._BOOLEAN_TYPE)
-        if self._is_integer(value):
+        elif value.isdigit() or (value.startswith("-") and value[1:].isdigit()):
             inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
-        elif self._is_number(value):
-            inferred_types.add(self._NUMBER_TYPE)
+        else:
+            try:
+                float(value)
+                inferred_types.add(self._NUMBER_TYPE)
+            except ValueError:
+                pass
 
         return inferred_types
 
