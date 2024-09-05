@@ -21,8 +21,8 @@ data:
       enabled: false
     oss:
       enabled: false
-  releaseStage: archived
-  supportLevel: community
+  releaseStage: alpha
+  supportLevel: archived
   tags:
     - language:java
 metadataSpecVersion: "1.0"
