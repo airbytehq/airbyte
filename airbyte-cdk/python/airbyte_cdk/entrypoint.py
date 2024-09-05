@@ -163,9 +163,9 @@ class AirbyteEntrypoint(object):
             raise traced_exc
         except Exception as exc:
             raise AirbyteTracedException(
-                internal_message="An error occurred while discovering the source schema",
+                internal_message=f"An error occurred while discovering the source schema: {exc}",
                 failure_type=FailureType.config_error,
-                message=f"An error occurred while discovering the source schema: {exc}",
+                message=f"An error occurred while discovering the source schema.",
                 exception=exc,
             )
 

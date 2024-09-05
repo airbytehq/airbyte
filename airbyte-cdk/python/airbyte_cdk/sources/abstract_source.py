@@ -80,7 +80,9 @@ class AbstractSource(Source, ABC):
             try:
                 streams.append(stream.as_airbyte_stream())
             except Exception as exception:
-                self.discover_error_handler().handle_discover_error(logger=stream.logger, exception=exception, name=stream.name)
+                error = self.discover_error_handler().handle_discover_error(logger=stream.logger, exception=exception, name=stream.name)
+                if error:
+                    raise error
 
         if not streams:
             raise AirbyteTracedException(
