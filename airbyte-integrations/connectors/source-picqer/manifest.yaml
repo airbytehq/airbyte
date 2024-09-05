@@ -2,10 +2,12 @@ version: 4.6.2
 
 type: DeclarativeSource
 
-description: |2-
+description: >-
     Website: https://picqer.com/
+
     Authentication Docs:
     https://picqer.com/en/api#h-authentication
+
     API Docs: https://picqer.com/en/api
 
 check:

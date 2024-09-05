@@ -1,8 +1,11 @@
 # Picqer
-  Website: https://picqer.com/
-  Authentication Docs:
-  https://picqer.com/en/api#h-authentication
-  API Docs: https://picqer.com/en/api
+
+This page contains the setup guide and reference information for the [Picqer](https://picqer.com/) source connector.
+
+## Prerequisites
+
+Picqer user basic http for its authentication, follow the [API documentation](https://picqer.com/en/api/) and visit settings page to get your api key.
+Configure the API key as your username and leave password field as blank
 
 ## Configuration
 
@@ -37,8 +40,8 @@
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-05 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-05 | [45159](https://github.com/airbytehq/airbyte/pull/45159) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

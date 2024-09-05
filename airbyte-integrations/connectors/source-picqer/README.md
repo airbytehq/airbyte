@@ -1,10 +1,14 @@
 # Picqer
 This directory contains the manifest-only connector for `source-picqer`.
 
-  Website: https://picqer.com/
-  Authentication Docs:
-  https://picqer.com/en/api#h-authentication
-  API Docs: https://picqer.com/en/api
+## Documentation reference:
+Visit `https://picqer.com/en/api` for API documentation
+
+## Authentication setup
+
+Teamwork uses basic http auth that uses username and password
+Your default login username and password could be used as secrets, ref: `https://picqer.com/en/api#h-authentication`
+
 
 ## Usage
 There are multiple ways to use this connector:
