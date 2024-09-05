@@ -2369,13 +2369,21 @@ definitions:
         type: string
         enum: [AsyncJobStatusMap]
       running:
-        type: string
+        type: array
+        items:
+          type: string
       completed:
-        type: string
+        type: array
+        items:
+          type: string
       failed:
-        type: string
+        type: array
+        items:
+          type: string
       timeout:
-        type: string
+        type: array
+        items:
+          type: string
   AsyncRetriever:
     description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object

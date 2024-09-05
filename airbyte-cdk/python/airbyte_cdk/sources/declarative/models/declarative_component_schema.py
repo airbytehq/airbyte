@@ -888,10 +888,10 @@ class LegacySessionTokenAuthenticator(BaseModel):
 
 class AsyncJobStatusMap(BaseModel):
     type: Optional[Literal['AsyncJobStatusMap']] = None
-    running: str
-    completed: str
-    failed: str
-    timeout: str
+    running: List[str]
+    completed: List[str]
+    failed: List[str]
+    timeout: List[str]
 
 
 class ValueType(Enum):
