@@ -399,16 +399,18 @@ class _JsonTypeInferrer(_TypeInferrer):
         return self._STRING_TYPE
 
     def _infer_type(self, value: str) -> Set[str]:
-        inferred_types = {self._STRING_TYPE}
+        inferred_types = {self._STRING_TYPE}  # Assuming that self._STRING_TYPE is defined somewhere in _TypeInferrer
+
+        is_boolean = value in self._boolean_trues or value in self._boolean_falses
 
         if value in self._null_values:
-            inferred_types.add(self._NULL_TYPE)
-        if self._is_boolean(value):
-            inferred_types.add(self._BOOLEAN_TYPE)
-        if self._is_integer(value):
-            inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})
+            inferred_types.add(self._NULL_TYPE)  # Assuming that self._NULL_TYPE is defined somewhere in _TypeInferrer
+        elif is_boolean:
+            inferred_types.add(self._BOOLEAN_TYPE)  # Assuming that self._BOOLEAN_TYPE is defined somewhere in _TypeInferrer
+        elif self._is_integer(value):
+            inferred_types.update({self._INTEGER_TYPE, self._NUMBER_TYPE})  # Assuming that these are defined in _TypeInferrer
         elif self._is_number(value):
-            inferred_types.add(self._NUMBER_TYPE)
+            inferred_types.add(self._NUMBER_TYPE)  # Assuming that self._NUMBER_TYPE is defined somewhere in _TypeInferrer
 
         return inferred_types
 
