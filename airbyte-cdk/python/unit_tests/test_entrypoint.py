@@ -32,6 +32,7 @@ from airbyte_cdk.models import (
     AirbyteStreamStatusTraceMessage,
     AirbyteTraceMessage,
     ConnectorSpecification,
+    FailureType,
     OrchestratorType,
     Status,
     StreamDescriptor,
@@ -239,13 +240,28 @@ def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_m
     assert spec_mock.called
 
 
-def test_run_discover_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+@pytest.mark.parametrize(
+    "exception, expected_error_message",
+    [
+        (
+            ValueError(),
+            "An error occurred while discovering the source schema",
+        ),
+        (
+            AirbyteTracedException(internal_message="Test"),
+            "Test",
+        ),
+    ],
+)
+def test_run_discover_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock, exception, expected_error_message):
     parsed_args = Namespace(command="discover", config="config_path")
-    mocker.patch.object(MockSource, "discover", side_effect=ValueError("Any error"))
+    mocker.patch.object(MockSource, "discover", side_effect=exception)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(AirbyteTracedException) as exc:
         messages = list(entrypoint.run(parsed_args))
         assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode()] == messages
+        assert expected_error_message in exc.internal_message
+        assert exc.failure_type == FailureType.config_error
 
 
 def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
