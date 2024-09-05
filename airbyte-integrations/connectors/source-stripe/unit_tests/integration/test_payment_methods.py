@@ -122,7 +122,7 @@ class FullRefreshTest(TestCase):
         assert len(output.records) == 2
 
     @HttpMocker()
-    def test_given_many_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
+    def test_given_two_pages_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
             StripeRequestBuilder.customers_endpoint(_ACCOUNT_ID, _CLIENT_SECRET).with_any_query_params().build(),
             _customers_response()
