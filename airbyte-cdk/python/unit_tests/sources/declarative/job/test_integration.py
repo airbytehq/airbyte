@@ -3,7 +3,7 @@
 
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from airbyte_cdk import AbstractSource, DeclarativeStream, SinglePartitionRouter, Stream, StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordEx
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.retrievers.async_retriever import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -21,8 +22,6 @@ from airbyte_protocol.models import ConnectorSpecification
 
 _A_STREAM_NAME = "a_stream_name"
 _EXTRACTOR_NOT_USED: RecordExtractor = None  # type: ignore  # the extractor should not be used. If it is the case, there is an issue that needs fixing
-
-from unittest.mock import MagicMock
 
 
 class MockAsyncJobRepository(AsyncJobRepository):
@@ -39,6 +38,9 @@ class MockAsyncJobRepository(AsyncJobRepository):
 
 
 class MockSource(AbstractSource):
+
+    def __init__(self, stream_slicer: Optional[StreamSlicer] = None) -> None:
+        self._stream_slicer = SinglePartitionRouter({}) if stream_slicer is None else stream_slicer
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         return True, None
@@ -67,7 +69,7 @@ class MockSource(AbstractSource):
                     config={},
                     parameters={},
                     record_selector=noop_record_selector,
-                    stream_slicer=SinglePartitionRouter({}),
+                    stream_slicer=self._stream_slicer,
                     job_orchestrator_factory=job_orchestrator_factory_fn,
                 ),
                 config={},
@@ -86,10 +88,11 @@ class JobDeclarativeStreamTest(TestCase):
     _CONFIG: Mapping[str, Any] = {}
 
     def setUp(self) -> None:
-        self._source = MockSource()
+        self._stream_slicer = mock.Mock(wraps=SinglePartitionRouter({}))
+        self._source = MockSource(self._stream_slicer)
         self._source.streams({})
 
-    def test_read_with_mocked_job_repository(self) -> None:
+    def test_when_read_then_return_records_from_repository(self) -> None:
         output = read(
             self._source, 
             self._CONFIG, 
@@ -97,3 +100,16 @@ class JobDeclarativeStreamTest(TestCase):
         )
 
         assert len(output.records) == 1
+
+    def test_when_read_then_call_stream_slices_only_once(self) -> None:
+        """
+        As generating stream slices is very expensive, we want to ensure that during a read, it is only called once.
+        """
+        output = read(
+            self._source,
+            self._CONFIG,
+            CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_A_STREAM_NAME)).build()
+        )
+
+        assert not output.errors
+        assert self._stream_slicer.stream_slices.call_count == 1
