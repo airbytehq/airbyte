@@ -75,8 +75,10 @@ class TestConcurrentReadProcessor(unittest.TestCase):
         )
 
         self._record_data = {"id": 1, "value": "A"}
+        self._partition = Mock(spec=Partition)
+        self._partition.stream_name = lambda: _STREAM_NAME
         self._record = Mock(spec=Record)
-        self._record.stream_name = _STREAM_NAME
+        self._record.partition = self._partition
         self._record.data = self._record_data
 
     def test_stream_is_not_done_initially(self):

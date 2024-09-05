@@ -36,8 +36,8 @@ def _partition(_slice: Optional[Mapping[str, Any]]) -> Partition:
     return partition
 
 
-def _record(cursor_value: CursorValueType) -> Record:
-    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value}, stream_name=_A_STREAM_NAME)
+def _record(cursor_value: CursorValueType, partition: Optional[Partition] = Mock(spec=Partition)) -> Record:
+    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value}, partition=partition)
 
 
 class ConcurrentCursorStateTest(TestCase):
@@ -129,8 +129,9 @@ class ConcurrentCursorStateTest(TestCase):
 
     def test_given_no_boundary_fields_when_close_partition_then_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
-        cursor.observe(_record(10))
-        cursor.close_partition(_partition(_NO_SLICE))
+        partition = _partition(_NO_SLICE)
+        cursor.observe(_record(10, partition=partition))
+        cursor.close_partition(partition)
 
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
@@ -140,11 +141,12 @@ class ConcurrentCursorStateTest(TestCase):
 
     def test_given_no_boundary_fields_when_close_multiple_partitions_then_raise_exception(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
-        cursor.observe(_record(10))
-        cursor.close_partition(_partition(_NO_SLICE))
+        partition = _partition(_NO_SLICE)
+        cursor.observe(_record(10, partition=partition))
+        cursor.close_partition(partition)
 
         with pytest.raises(ValueError):
-            cursor.close_partition(_partition(_NO_SLICE))
+            cursor.close_partition(partition)
 
     def test_given_no_records_observed_when_close_partition_then_do_not_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
