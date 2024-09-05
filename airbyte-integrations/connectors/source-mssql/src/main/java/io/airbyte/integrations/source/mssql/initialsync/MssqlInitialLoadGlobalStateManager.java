@@ -32,7 +32,6 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   private Set<AirbyteStreamNameNamespacePair> nonResumableFullRefreshStreams;
   private Set<AirbyteStreamNameNamespacePair> completedNonResumableFullRefreshStreams;
 
-
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
                                             final StateManager stateManager,
