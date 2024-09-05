@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import functools
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Protocol, Tuple
@@ -199,8 +200,12 @@ class ConcurrentCursor(Cursor):
                 )
             self.state["slices"].append(
                 {
-                    self._connector_state_converter.START_KEY: self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
-                    self._connector_state_converter.END_KEY: self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
+                    self._connector_state_converter.START_KEY: self._extract_from_slice(
+                        partition, self._slice_boundary_fields[self._START_BOUNDARY]
+                    ),
+                    self._connector_state_converter.END_KEY: self._extract_from_slice(
+                        partition, self._slice_boundary_fields[self._END_BOUNDARY]
+                    ),
                     "most_recent_cursor_value": most_recent_cursor_value,
                 }
             )
@@ -224,7 +229,9 @@ class ConcurrentCursor(Cursor):
             self.state["slices"].append(
                 {
                     self._connector_state_converter.START_KEY: self.start,
-                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record_per_partition[partition.stream_name()]),
+                    self._connector_state_converter.END_KEY: self._extract_cursor_value(
+                        self._most_recent_record_per_partition[partition.stream_name()]
+                    ),
                     "most_recent_cursor_value": most_recent_cursor_value,
                 }
             )

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Tuple
@@ -129,9 +128,7 @@ class AbstractStreamStateConverter(ABC):
             is_last_interval_with_cursor = current_interval == sorted_intervals[-1] and most_recent_cursor_value is not None
 
             last_interval_end = (
-                min(last_interval[self.END_KEY], most_recent_cursor_value)
-                if is_last_interval_with_cursor
-                else last_interval[self.END_KEY]
+                min(last_interval[self.END_KEY], most_recent_cursor_value) if is_last_interval_with_cursor else last_interval[self.END_KEY]
             )
             current_interval_start = current_interval[self.START_KEY]
 
