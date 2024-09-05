@@ -341,9 +341,11 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
@@ -409,9 +411,11 @@ class ModelToComponentFactory:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             config=config,
             parameters=model.parameters or {},
         )
@@ -1180,12 +1184,9 @@ class ModelToComponentFactory:
         self, model: AsyncJobStatusMapModel, config: Config, **kwargs: Any
     ) -> Mapping[str, AsyncJobStatus]:
         api_status_to_cdk_status = {}
-        for cdk_status, api_statuses in model.dict().items():
-            if cdk_status == "type":
-                # This is an element of the dict because of the typing of the CDK but it is not a CDK status
-                continue
-
-            for status in api_statuses:
+        model_dict = model.dict()
+        for cdk_status in ["running", "completed", "failed", "timeout"]:
+            for status in model_dict.get(cdk_status, []):
                 if status in api_status_to_cdk_status:
                     raise ValueError(
                         f"API status {status} is already set for CDK status {cdk_status}. Please ensure API statuses are only provided once"
@@ -1194,17 +1195,10 @@ class ModelToComponentFactory:
         return api_status_to_cdk_status
 
     def _get_async_job_status(self, status: str) -> AsyncJobStatus:
-        match status:
-            case "running":
-                return AsyncJobStatus.RUNNING
-            case "completed":
-                return AsyncJobStatus.COMPLETED
-            case "failed":
-                return AsyncJobStatus.FAILED
-            case "timeout":
-                return AsyncJobStatus.TIMED_OUT
-            case _:
-                raise ValueError(f"Unsupported CDK status {status}")
+        if status in self.status_mapping:
+            return self.status_mapping[status]
+        else:
+            raise ValueError(f"Unsupported CDK status {status}")
 
     def create_async_retriever(
         self,
@@ -1313,3 +1307,14 @@ class ModelToComponentFactory:
 
     def _evaluate_log_level(self, emit_connector_builder_messages: bool) -> Level:
         return Level.DEBUG if emit_connector_builder_messages else Level.INFO
+
+    def _init_mappings(self) -> None:
+        self.status_mapping = {
+            "running": AsyncJobStatus.RUNNING,
+            "completed": AsyncJobStatus.COMPLETED,
+            "failed": AsyncJobStatus.FAILED,
+            "timeout": AsyncJobStatus.TIMED_OUT,
+        }
+
+    def _evaluate_log_level(self, emit_connector_builder_messages: bool) -> str:
+        return "DEBUG" if emit_connector_builder_messages else "INFO"
