@@ -3,12 +3,13 @@
 #
 
 from dagster import AssetSelection, SkipReason, define_asset_job, job, op
-from orchestrator.assets import registry_entry
+from orchestrator.assets import metadata, registry, registry_entry, specs_secrets_mask
 from orchestrator.config import HIGH_QUEUE_PRIORITY, MAX_METADATA_PARTITION_RUN_REQUEST
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
 
 oss_registry_inclusive = AssetSelection.keys("persisted_oss_registry", "specs_secrets_mask_yaml").upstream()
 generate_oss_registry = define_asset_job(name="generate_oss_registry", selection=oss_registry_inclusive)
+
 
 cloud_registry_inclusive = AssetSelection.keys("persisted_cloud_registry", "specs_secrets_mask_yaml").upstream()
 generate_cloud_registry = define_asset_job(name="generate_cloud_registry", selection=cloud_registry_inclusive)
