@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Tuple
@@ -51,7 +52,6 @@ class AbstractStreamStateConverter(ABC):
         """
         if not slices:
             raise RuntimeError("Expected at least one slice but there were none. This is unexpected; please contact Support.")
-
         merged_intervals = self.merge_intervals(slices)
         first_interval = merged_intervals[0]
         return first_interval[self.END_KEY]
@@ -120,17 +120,27 @@ class AbstractStreamStateConverter(ABC):
         if not intervals:
             return []
 
-        sorted_intervals = sorted(intervals, key=lambda x: (x[self.START_KEY], x[self.END_KEY]))
+        sorted_intervals = sorted(intervals, key=lambda interval: (interval[self.START_KEY], interval[self.END_KEY]))
         merged_intervals = [sorted_intervals[0]]
 
-        for interval in sorted_intervals[1:]:
-            last_end_time = merged_intervals[-1][self.END_KEY]
-            current_start_time = interval[self.START_KEY]
-            if bool(self.increment(last_end_time) >= current_start_time):
-                merged_end_time = max(last_end_time, interval[self.END_KEY])
-                merged_intervals[-1][self.END_KEY] = merged_end_time
+        for current_interval in sorted_intervals[1:]:
+            last_interval = merged_intervals[-1]
+            most_recent_cursor_value = last_interval.get("most_recent_cursor_value")
+            is_last_interval_with_cursor = current_interval == sorted_intervals[-1] and most_recent_cursor_value is not None
+
+            last_interval_end = (
+                min(last_interval[self.END_KEY], most_recent_cursor_value)
+                if is_last_interval_with_cursor
+                else last_interval[self.END_KEY]
+            )
+            current_interval_start = current_interval[self.START_KEY]
+
+            if self.increment(last_interval_end) >= current_interval_start:
+                # Merge overlapping or adjacent intervals
+                last_interval[self.END_KEY] = max(last_interval_end, current_interval[self.END_KEY])
             else:
-                merged_intervals.append(interval)
+                # Add a new interval if no overlap
+                merged_intervals.append(current_interval)
 
         return merged_intervals
 

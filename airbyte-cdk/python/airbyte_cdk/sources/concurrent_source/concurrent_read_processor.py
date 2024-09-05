@@ -128,8 +128,8 @@ class ConcurrentReadProcessor:
         # Do not pass a transformer or a schema
         # AbstractStreams are expected to return data as they are expected.
         # Any transformation on the data should be done before reaching this point
-        message = stream_data_to_airbyte_message(record.stream_name, record.data)
-        stream = self._stream_name_to_instance[record.stream_name]
+        message = stream_data_to_airbyte_message(record.partition.stream_name(), record.data)
+        stream = self._stream_name_to_instance[record.partition.stream_name()]
 
         if message.type == MessageType.RECORD:
             if self._record_counter[stream.name] == 0:
