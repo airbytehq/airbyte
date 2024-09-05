@@ -22,9 +22,7 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeSourceOperations
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.dumpFinalTable
 import io.airbyte.integrations.destination.snowflake.migrations.SnowflakeState
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
