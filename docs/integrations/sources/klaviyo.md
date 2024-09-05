@@ -95,6 +95,7 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                       |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
+| 2.11.0 | 2024-09-05 | [45165](https://github.com/airbytehq/airbyte/pull/45165) | Migrating to CDK ^5 |
 | 2.10.3 | 2024-08-31 | [45064](https://github.com/airbytehq/airbyte/pull/45064) | Update dependencies |
 | 2.10.2 | 2024-08-30 | [44930](https://github.com/airbytehq/airbyte/pull/44930) | Fix typing in profiles stream for field `attributes.location.region` |
 | 2.10.1 | 2024-08-24 | [44628](https://github.com/airbytehq/airbyte/pull/44628) | Update dependencies |
