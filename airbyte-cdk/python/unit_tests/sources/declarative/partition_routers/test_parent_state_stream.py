@@ -630,7 +630,6 @@ def test_incremental_parent_state_no_incremental_dependency(
         assert final_state[-1] == expected_state
 
 
-
 SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR: MutableMapping[str, Any] = {
     "version": "0.51.42",
     "type": "DeclarativeSource",
