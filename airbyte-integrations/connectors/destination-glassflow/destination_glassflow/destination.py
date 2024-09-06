@@ -79,8 +79,9 @@ class DestinationGlassflow(Destination):
         """
         try:
             connection = create_connection(config)
-            connection.consume()
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            if connection.is_access_token_valid():
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"The pipeline access token is not valid")
         except Exception as e:
             logger.error(f"Failed to create connection. Error: {e}")
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

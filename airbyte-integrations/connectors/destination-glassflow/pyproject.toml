@@ -18,7 +18,7 @@ include = "destination_glassflow"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^4.6.2"
-glassflow = "==1.0.9"
+glassflow = "==1.0.10"
 
 [tool.poetry.scripts]
 destination-glassflow = "destination_glassflow.run:run"

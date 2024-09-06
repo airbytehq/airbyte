@@ -34,7 +34,7 @@ def _init_mocks(client):
 @mock.patch("glassflow.client.PipelineClient")
 def test_check_succeeds(client):
     pipeline = _init_mocks(client)
-    pipeline.consume.return_value = {}
+    pipeline.is_access_token_valid.return_value = True
     destination = DestinationGlassflow()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.SUCCEEDED
@@ -43,7 +43,7 @@ def test_check_succeeds(client):
 @mock.patch("glassflow.client.PipelineClient")
 def test_check_fails(client):
     pipeline = _init_mocks(client)
-    pipeline.consume.side_effect = Exception("Failed to connect to Glassflow Pipeline")
+    pipeline.is_access_token_valid.return_value = False
     destination = DestinationGlassflow()
     status = destination.check(logger=Mock(), config=config)
     assert status.status == Status.FAILED
