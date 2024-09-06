@@ -52,6 +52,8 @@ class PerPartitionCursor(DeclarativeCursor):
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
+        # The dict is ordered to ensure that once the maximum number of partitions is reached,
+        # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._partition_serializer = PerPartitionKeySerializer()
 
