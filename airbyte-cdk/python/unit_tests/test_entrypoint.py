@@ -295,7 +295,7 @@ def test_run_read_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_moc
     mocker.patch.object(MockSource, "read_catalog", return_value={})
     mocker.patch.object(MockSource, "read", side_effect=ValueError("Any error"))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(AirbyteTracedException):
         messages = list(entrypoint.run(parsed_args))
         assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode()] == messages
 
