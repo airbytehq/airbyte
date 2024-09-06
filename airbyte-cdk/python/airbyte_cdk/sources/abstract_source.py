@@ -33,6 +33,8 @@ from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler, DefaultDiscoverErrorHandler
+import traceback
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 _default_message_repository = InMemoryMessageRepository()
 
@@ -63,6 +65,7 @@ class AbstractSource(Source, ABC):
         Any stream construction related operation should happen here.
         :return: A list of the streams in this source connector.
         """
+        pass
 
     # Stream name to instance map for applying output object transformation
     _stream_to_instance_map: Dict[str, Stream] = {}
@@ -83,9 +86,7 @@ class AbstractSource(Source, ABC):
                 airbyte_streams.append(stream.as_airbyte_stream())
             except Exception as exception:
                 errors.append(exception)
-                error = self.discover_error_handler().handle_discover_error(
-                    logger=logger, exception=exception
-                )
+                error = self.discover_error_handler().handle_discover_error(logger=logger, exception=exception)
                 if error:
                     raise error
 
@@ -302,3 +303,10 @@ class AbstractSource(Source, ABC):
         on the first error seen and emit a single error trace message for that stream.
         """
         return False
+
+    def _format_stack_trace(self) -> str:
+        trace_exc = self._exception or self
+        return "".join(traceback.TracebackException.from_exception(trace_exc).format())
+
+    def _sanitize_trace_message(self, msg) -> str:
+        return filter_secrets(msg) if msg else msg
