@@ -75,6 +75,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             for partition in self._partition_router.stream_slices()
             for cursor_slice in self._stream_cursor.stream_slices()
         )
+        self._timer.start()
 
         for slice in slice_generator:
             if previous_slice is not None:
@@ -165,6 +166,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         with self._lock:
             self._slice_semaphore.acquire()
             if self._all_slices_yielded and self._slice_semaphore._value == 0:
+                self._lookback_window = self._timer.finish()
                 self._stream_cursor.close_slice(StreamSlice(partition={}, cursor_slice=stream_slice.cursor_slice), *args)
 
     def get_stream_state(self) -> StreamState:
