@@ -24,6 +24,7 @@ from airbyte.secrets import GoogleGSMSecretManager, SecretHandle
 
 
 AIRBYTE_INTERNAL_GCP_PROJECT = "dataline-integration-testing"
+CONNECTOR_NAME = "source-s3"
 
 
 def main() -> None:
@@ -36,7 +37,7 @@ def main() -> None:
     # Fetch and write secrets to the `secrets/` directory, using the `filename` label
     # to name the file.
     secret: SecretHandle
-    for secret in secret_mgr.fetch_connector_secrets("source-s3"):
+    for secret in secret_mgr.fetch_connector_secrets(CONNECTOR_NAME):
         if "filename" in secret.labels:
             secret.write_to_file(Path(f'secrets/{secret.labels["filename"]}.json'))
 
