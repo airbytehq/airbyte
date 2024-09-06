@@ -20,6 +20,7 @@ from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import Per
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.types import Record
+from orjson import orjson
 
 CURSOR_FIELD = "cursor_field"
 SYNC_MODE = SyncMode.incremental
@@ -327,7 +328,7 @@ def test_partition_limitation():
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
                 stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                stream_state=AirbyteStateBlob.parse_obj(
+                stream_state=AirbyteStateBlob(
                     {
                         "states": [
                             {
@@ -356,7 +357,7 @@ def test_partition_limitation():
             output = list(source.read(logger, {}, catalog, initial_state))
 
     # assert output_data == expected_records
-    final_state = [message.state.stream.stream_state.dict() for message in output if message.state]
+    final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
     assert final_state[-1] == {
         "states": [
             {
