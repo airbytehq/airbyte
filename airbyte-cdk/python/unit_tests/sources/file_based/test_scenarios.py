@@ -246,5 +246,5 @@ def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[
 
 def get_error_message_from_exc(exc: ExceptionInfo[Any]) -> str:
     if isinstance(exc.value, AirbyteTracedException):
-        return exc.value.message
+        return exc.value.internal_message
     return str(exc.value.args[0])

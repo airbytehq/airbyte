@@ -162,7 +162,7 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
 from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read, verify_spec
 
 discover_failure_scenarios = [
-    empty_schema_inference_scenario,
+    empty_schema_inference_scenario
 ]
 
 discover_success_scenarios = [
@@ -290,6 +290,8 @@ read_scenarios = discover_success_scenarios + [
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
 ]
+
+read_scenarios = [schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario]
 
 spec_scenarios = [
     single_csv_scenario,

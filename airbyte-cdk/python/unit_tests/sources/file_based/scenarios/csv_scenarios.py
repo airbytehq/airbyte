@@ -2032,7 +2032,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
     .set_expected_check_status("FAILED")
     .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
-    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_read_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
 csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSource] = (
