@@ -72,35 +72,34 @@ class SnowflakeDestinationHandler(
         streamIds: List<StreamId>
     ): LinkedHashMap<String, LinkedHashMap<String, Int>> {
 
-        try {
             val tableRowCountsFromShowQuery = LinkedHashMap<String, LinkedHashMap<String, Int>>()
-
             for (stream in streamIds) {
-                val showColumnsQuery =
-                    """
-                    SHOW TABLES LIKE '${stream.finalName}' IN "$databaseName"."${stream.finalNamespace}";
-                    """.trimIndent()
-                val showColumnsResult = database.queryJsons(
-                    showColumnsQuery,
-                )
-                for (result in showColumnsResult) {
-                    val tableSchema = result["schema_name"].asText()
-                    val tableName = result["name"].asText()
-                    val rowCount = result["rows"].asText()
+                try {
+                    val showColumnsQuery =
+                        """
+                        SHOW TABLES LIKE '${stream.finalName}' IN "$databaseName"."${stream.finalNamespace}";
+                        """.trimIndent()
+                    val showColumnsResult = database.queryJsons(
+                        showColumnsQuery,
+                    )
+                    for (result in showColumnsResult) {
+                        val tableSchema = result["schema_name"].asText()
+                        val tableName = result["name"].asText()
+                        val rowCount = result["rows"].asText()
 
-                    tableRowCountsFromShowQuery
-                        .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
-                        rowCount.toInt()
+                        tableRowCountsFromShowQuery
+                            .computeIfAbsent(tableSchema) { _: String? -> LinkedHashMap() }[tableName] =
+                            rowCount.toInt()
+                    }
+                } catch (e: SnowflakeSQLException) {
+                    if(e.message != null && e.message!!.contains("does not exist")) {
+                        return LinkedHashMap<String, LinkedHashMap<String, Int>>()
+                    } else {
+                        throw e
+                    }
                 }
             }
             return tableRowCountsFromShowQuery
-        } catch (e: SnowflakeSQLException) {
-            if(e.message != null && e.message!!.contains("does not exist")) {
-                return LinkedHashMap<String, LinkedHashMap<String, Int>>()
-            } else {
-                throw e
-            }
-        }
     }
 
     @Throws(Exception::class)
@@ -111,7 +110,6 @@ class SnowflakeDestinationHandler(
 
         val rawTableName = id.rawName + suffix
         var tableExists = false
-
 
         try {
             val showTablesQuery =
