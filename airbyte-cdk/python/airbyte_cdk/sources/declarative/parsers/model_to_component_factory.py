@@ -38,6 +38,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
+    GlobalSubstreamCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
@@ -340,9 +341,11 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
@@ -408,9 +411,11 @@ class ModelToComponentFactory:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             config=config,
             parameters=model.parameters or {},
         )
@@ -642,11 +647,13 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, PerPartitionCursor)):
+            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)
+            if combined_slicers and not isinstance(combined_slicers, supported_slicers):
                 raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
+                "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
         transformations = []
         if model.transformations:
@@ -699,6 +706,7 @@ class ModelToComponentFactory:
             and model.retriever.partition_router
         ):
             stream_slicer_model = model.retriever.partition_router
+
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -708,12 +716,16 @@ class ModelToComponentFactory:
 
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
-            return PerPartitionCursor(
-                cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
-                ),
-                partition_router=stream_slicer,
-            )
+            if hasattr(incremental_sync_model, "global_substream_cursor") and incremental_sync_model.global_substream_cursor:
+                cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
+                return GlobalSubstreamCursor(stream_cursor=cursor_component, partition_router=stream_slicer)
+            else:
+                return PerPartitionCursor(
+                    cursor_factory=CursorFactory(
+                        lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+                    ),
+                    partition_router=stream_slicer,
+                )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
@@ -1181,29 +1193,28 @@ class ModelToComponentFactory:
         api_status_to_cdk_status = {}
         for cdk_status, api_statuses in model.dict().items():
             if cdk_status == "type":
-                # This is an element of the dict because of the typing of the CDK but it is not a CDK status
                 continue
 
+            async_job_status = self._get_async_job_status(cdk_status)
             for status in api_statuses:
                 if status in api_status_to_cdk_status:
                     raise ValueError(
                         f"API status {status} is already set for CDK status {cdk_status}. Please ensure API statuses are only provided once"
                     )
-                api_status_to_cdk_status[status] = self._get_async_job_status(cdk_status)
+                api_status_to_cdk_status[status] = async_job_status
         return api_status_to_cdk_status
 
     def _get_async_job_status(self, status: str) -> AsyncJobStatus:
-        match status:
-            case "running":
-                return AsyncJobStatus.RUNNING
-            case "completed":
-                return AsyncJobStatus.COMPLETED
-            case "failed":
-                return AsyncJobStatus.FAILED
-            case "timeout":
-                return AsyncJobStatus.TIMED_OUT
-            case _:
-                raise ValueError(f"Unsupported CDK status {status}")
+        status_map = {
+            "running": AsyncJobStatus.RUNNING,
+            "completed": AsyncJobStatus.COMPLETED,
+            "failed": AsyncJobStatus.FAILED,
+            "timeout": AsyncJobStatus.TIMED_OUT,
+        }
+
+        if status not in status_map:
+            raise ValueError(f"Unsupported CDK status {status}")
+        return status_map[status]
 
     def create_async_retriever(
         self,
