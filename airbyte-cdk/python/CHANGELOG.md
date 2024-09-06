@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.2.1
+Fix error in incremental sync docs
+
+## 5.2.0
+Add Global Parent State Cursor
+
+## 5.1.0
+Add limitation for number of partitions to PerPartitionCursor
+
 ## 5.0.1
 Fix source-declarative-manifest
 
