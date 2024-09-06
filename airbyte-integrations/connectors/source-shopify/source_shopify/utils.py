@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional
 import requests
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.models import FailureType
 
 
 class ShopifyNonRetryableErrors:
