@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.1.0
+Add limitation for number of partitions to PerPartitionCursor
+
 ## 5.0.1
 Fix source-declarative-manifest
 
