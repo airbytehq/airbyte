@@ -8,7 +8,7 @@ from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 from pendulum.datetime import DateTime
 from source_zendesk_support import SourceZendeskSupport
 
