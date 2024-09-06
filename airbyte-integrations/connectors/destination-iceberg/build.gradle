@@ -55,8 +55,8 @@ dependencies {
         }
     }
 
-    testImplementation libs.testcontainers.postgresql
-    integrationTestJavaImplementation libs.testcontainers.postgresql
+    testImplementation 'org.testcontainers:postgresql:1.19.0'
+    integrationTestJavaImplementation 'org.testcontainers:postgresql:1.19.0'
 
     testImplementation 'org.mockito:mockito-inline:4.7.0'
 }

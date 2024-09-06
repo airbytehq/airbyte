@@ -19,16 +19,16 @@ data:
   name: Orbit
   registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseDate: "2022-06-27"
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-orbit
-  supportLevel: community
+  supportLevel: archived
   tags:
     - language:python
     - cdk:low-code

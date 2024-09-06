@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                 | Subject                                                                                                                                                        |
 | :--------- | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.44.21    | 2024-09-04 | [\#45143](https://github.com/airbytehq/airbyte/pull/45143)  | S3-destination: don't overwrite existing files, skip those file indexes instead                                                                                |
 | 0.44.20    | 2024-08-30 | [\#44933](https://github.com/airbytehq/airbyte/pull/44933)   | Avro/Parquet destinations: handle `{}` schemas inside objects/arrays                                                                                           |
 | 0.44.19    | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase Jackson message length limit to 100mb                                                                                                                 |
 | 0.44.18    | 2024-08-22 | [\#44505](https://github.com/airbytehq/airbyte/pull/44505)   | Improve handling of incoming debezium change events                                                                                                            |

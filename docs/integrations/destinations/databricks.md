@@ -9,6 +9,12 @@ This destination syncs data to Delta Lake on Databricks Lakehouse. Each stream i
 You **must** be using Unity Catalog to use this connector.
 :::
 
+:::info
+Please note, at this time OAuth2 authentication is only supported in AWS
+deployments. If you are running Databricks in GCP, you **must** use an access
+token.
+:::
+
 This connector requires a JDBC driver to connect to the Databricks cluster. By using the driver and
 the connector, you must agree to the
 [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can
