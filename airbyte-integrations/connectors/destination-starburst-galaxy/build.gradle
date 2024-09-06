@@ -36,7 +36,7 @@ dependencies {
     implementation 'org.apache.iceberg:iceberg-aws:1.1.0'
     implementation 'org.apache.iceberg:iceberg-parquet:1.1.0'
 
-    implementation 'org.apache.hadoop:hadoop-common:3.3.3'
+    implementation 'org.apache.hadoop:hadoop-common:3.4.0'
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
 
     implementation 'software.amazon.awssdk:bundle:2.20.20'
