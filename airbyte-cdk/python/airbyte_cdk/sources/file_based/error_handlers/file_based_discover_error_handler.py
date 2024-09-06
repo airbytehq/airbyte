@@ -20,7 +20,7 @@ class FileBasedDiscoverErrorHandler(AbstractDiscoverErrorHandler):
         )
 
         if isinstance(exception, exceptions_to_log):
-            logger.warn(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}", exc_info=True)
+            logger.error(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}", exc_info=True)
             return None
         else:
             return exception

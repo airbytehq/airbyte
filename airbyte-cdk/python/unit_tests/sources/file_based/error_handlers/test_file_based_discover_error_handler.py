@@ -28,4 +28,4 @@ def test_handle_discover_error(exception, exception_expected):
             assert file_based_discover_error_handler.handle_discover_error(mocked_logger, exception) == exception
     else:
         assert file_based_discover_error_handler.handle_discover_error(mocked_logger, exception) is None
-        mocked_logger.warn.assert_called_with(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}", exc_info=True)
+        mocked_logger.error.assert_called_with(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}", exc_info=True)
