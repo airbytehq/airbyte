@@ -45,7 +45,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler
-from airbyte_cdk.sources.file_based.error_handlers.file_based_discovery_error_handler import FileBasedDiscoverErrorHandler
+from airbyte_cdk.sources.file_based.error_handlers.file_based_discover_error_handler import FileBasedDiscoverErrorHandler
 from pydantic.v1.error_wrappers import ValidationError
 
 DEFAULT_CONCURRENCY = 100
