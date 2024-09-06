@@ -10,12 +10,12 @@ import os.path
 import socket
 import sys
 import tempfile
-import orjson
 from collections import defaultdict
 from functools import wraps
 from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
 from urllib.parse import urlparse
 
+import orjson
 import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -187,7 +187,7 @@ class AirbyteEntrypoint(object):
             raise AirbyteTracedException(
                 internal_message=f"An error occurred while attempting to read from the source. Please check the logged errors for more information. {exc}",
                 message="An error occurred while attempting to read from the source.",
-                failure_type=FailureType.system_error
+                failure_type=FailureType.system_error,
             )
         for message in self._emit_queued_messages(self.source):
             yield self.handle_record_counts(message, stream_message_counter)

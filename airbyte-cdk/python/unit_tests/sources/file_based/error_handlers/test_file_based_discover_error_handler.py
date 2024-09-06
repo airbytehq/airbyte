@@ -3,10 +3,11 @@
 #
 
 import logging
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from airbyte_cdk.sources.file_based.error_handlers.file_based_discover_error_handler import FileBasedDiscoverErrorHandler
-from airbyte_cdk.sources.file_based.exceptions import InvalidSchemaError, SchemaInferenceError, ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
 
 file_based_discover_error_handler = FileBasedDiscoverErrorHandler()
 

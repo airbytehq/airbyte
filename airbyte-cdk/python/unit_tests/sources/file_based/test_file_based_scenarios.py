@@ -79,15 +79,15 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_config_limit_for_inference,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_stream_csv_and_jsonl_scenario,
+    multi_stream_csv_with_one_invalid_file_scenario,
+    multi_stream_csv_with_two_invalid_streams_scenario,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
     schemaless_csv_scenario,
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
-    multi_stream_csv_and_jsonl_scenario,
-    multi_stream_csv_with_one_invalid_file_scenario,
-    multi_stream_csv_with_two_invalid_streams_scenario
 )
 from unit_tests.sources.file_based.scenarios.excel_scenarios import (
     excel_all_types_scenario,
