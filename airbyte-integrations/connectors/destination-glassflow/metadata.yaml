@@ -22,5 +22,19 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorTestSuitesOptions:
     - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-GLASSFLOW__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION-GLASSFLOW__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   releaseStage: alpha
 metadataSpecVersion: "1.0"
