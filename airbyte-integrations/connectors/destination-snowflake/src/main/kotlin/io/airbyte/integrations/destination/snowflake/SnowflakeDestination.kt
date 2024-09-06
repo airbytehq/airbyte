@@ -286,9 +286,6 @@ constructor(
         parsedCatalog: ParsedCatalog?,
         defaultNamespace: String?
     ): StreamAwareDataTransformer {
-        // Redundant override to keep in consistent with InsertDestination. TODO: Unify these 2
-        // classes with
-        // composition.
         return SnowflakeSuperLimitationTransformer(parsedCatalog, defaultNamespace!!)
     }
 
