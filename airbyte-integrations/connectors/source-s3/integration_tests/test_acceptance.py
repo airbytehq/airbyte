@@ -2,7 +2,7 @@
 
 This test file provides a means to easily step through a subset of acceptance tests, debugging
 and verifying the behavior of the source-s3 connector. The tests are redundant with CAT, but
-are much faster to run, and easier to run and easier to debug.
+are much faster to run and easier to debug.
 """
 
 from __future__ import annotations
