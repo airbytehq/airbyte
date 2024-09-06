@@ -952,7 +952,7 @@ SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR_NO_DEPENDENCY["definitions"]["post_comme
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj(
+                        stream_state=AirbyteStateBlob(
                             {
                                 "parent_state": {
                                     "post_comments": {
@@ -1087,7 +1087,7 @@ SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR_NO_DEPENDENCY["definitions"]["post_comme
                     type=AirbyteStateType.STREAM,
                     stream=AirbyteStreamState(
                         stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
-                        stream_state=AirbyteStateBlob.parse_obj(
+                        stream_state=AirbyteStateBlob(
                             {
                                 "parent_state": {
                                     "post_comments": {
@@ -1121,7 +1121,7 @@ def test_incremental_global_parent_state(test_name, manifest, mock_requests, exp
         output_data = [message.record.data for message in output if message.record]
 
         assert output_data == expected_records
-        final_state = [message.state.stream.stream_state.dict() for message in output if message.state][-1]
+        final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state][-1]
         assert "lookback_window" in final_state
         final_state.pop("lookback_window")
         assert final_state == expected_state
