@@ -163,12 +163,11 @@ class AirbyteEntrypoint(object):
             raise traced_exc
         except Exception as exc:
             raise AirbyteTracedException(
-                internal_message="An error occurred while discovering the source schema.",
+                internal_message=f"An error occurred while discovering the source schema. Please check the logged errors for more information: {exc}",
                 failure_type=FailureType.config_error,
-                message=f"An error occurred while discovering the source schema: {exc}",
+                message="An error occurred while discovering the source schema.",
                 exception=exc,
             )
-
         yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
@@ -179,8 +178,17 @@ class AirbyteEntrypoint(object):
 
         # The Airbyte protocol dictates that counts be expressed as float/double to better protect against integer overflows
         stream_message_counter: DefaultDict[HashableStreamDescriptor, float] = defaultdict(float)
-        for message in self.source.read(self.logger, config, catalog, state):
-            yield self.handle_record_counts(message, stream_message_counter)
+        try:
+            for message in self.source.read(self.logger, config, catalog, state):
+                yield self.handle_record_counts(message, stream_message_counter)
+        except AirbyteTracedException as ate:
+            raise ate
+        except Exception as exc:
+            raise AirbyteTracedException(
+                internal_message=f"An error occurred while attempting to read from the source. Please check the logged errors for more information. {exc}",
+                message="An error occurred while attempting to read from the source.",
+                failure_type=FailureType.system_error
+            )
         for message in self._emit_queued_messages(self.source):
             yield self.handle_record_counts(message, stream_message_counter)
 
