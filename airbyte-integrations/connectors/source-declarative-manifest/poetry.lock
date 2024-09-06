@@ -2,17 +2,17 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "4.6.2"
+version = "5.2.1"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte_cdk-4.6.2-py3-none-any.whl", hash = "sha256:3a37bd96c4b4f874b15fc18839b1e163eb30d1e4ef80d7dde2854e6a48efe934"},
-    {file = "airbyte_cdk-4.6.2.tar.gz", hash = "sha256:c034f11ba6abe73dd7346ce2bc7017ff71ef0db1fd1ae86fb86beaeae35d8baf"},
+    {file = "airbyte_cdk-5.2.1-py3-none-any.whl", hash = "sha256:b6d19a36e35c5002c248e0c09beb8d5d23ef045ad0bfa8fecbad8ad227641890"},
+    {file = "airbyte_cdk-5.2.1.tar.gz", hash = "sha256:940c1b1f94d476584ba49d2d126ec77da14104b7ca1e4d7e25e0836f15cd25cc"},
 ]
 
 [package.dependencies]
-airbyte-protocol-models-pdv2 = ">=0.12.2,<0.13.0"
+airbyte-protocol-models-dataclasses = ">=0.13,<0.14"
 backoff = "*"
 cachetools = "*"
 cryptography = ">=42.0.5,<43.0.0"
@@ -35,6 +35,7 @@ pytz = "2024.1"
 PyYAML = ">=6.0.1,<7.0.0"
 requests = "*"
 requests_cache = "*"
+serpyco-rs = ">=1.10.2,<2.0.0"
 wcmatch = "8.4"
 
 [package.extras]
@@ -43,18 +44,15 @@ sphinx-docs = ["Sphinx (>=4.2,<4.3)", "sphinx-rtd-theme (>=1.0,<1.1)"]
 vector-db-based = ["cohere (==4.21)", "langchain (==0.1.16)", "openai[embeddings] (==0.27.9)", "tiktoken (==0.4.0)"]
 
 [[package]]
-name = "airbyte-protocol-models-pdv2"
-version = "0.12.2"
-description = "Declares the Airbyte Protocol."
+name = "airbyte-protocol-models-dataclasses"
+version = "0.13.0"
+description = "Declares the Airbyte Protocol using Python Dataclasses. Dataclasses in Python have less performance overhead compared to Pydantic models, making them a more efficient choice for scenarios where speed and memory usage are critical"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "airbyte_protocol_models_pdv2-0.12.2-py3-none-any.whl", hash = "sha256:8b3f9d0388928547cdf2e9134c0d589e4bcaa6f63bf71a21299f6824bfb7ad0e"},
-    {file = "airbyte_protocol_models_pdv2-0.12.2.tar.gz", hash = "sha256:130c9ab289f3f53749ce63ff1abbfb67a44b7e5bd2794865315a2976138b672b"},
+    {file = "airbyte_protocol_models_dataclasses-0.13.0-py3-none-any.whl", hash = "sha256:0aedb99ffc4f9aab0ce91bba2c292fa17cd8fd4b42eeba196d6a16c20bbbd7a5"},
+    {file = "airbyte_protocol_models_dataclasses-0.13.0.tar.gz", hash = "sha256:72e67850d661e2808406aec5839b3158ebb94d3553b798dbdae1b4a278548d2f"},
 ]
-
-[package.dependencies]
-pydantic = ">=2.7.2,<3.0.0"
 
 [[package]]
 name = "annotated-types"
@@ -65,6 +63,17 @@ python-versions = ">=3.8"
 files = [
     {file = "annotated_types-0.7.0-py3-none-any.whl", hash = "sha256:1f02e8b43a8fbbc3f3e0d4f0f4bfc8131bcb4eebe8849b8e5c773f3a1c582a53"},
     {file = "annotated_types-0.7.0.tar.gz", hash = "sha256:aff07c09a53a08bc8cfccb9c85b05f1aa9a2a6f23728d790723543408344ce89"},
+]
+
+[[package]]
+name = "attributes-doc"
+version = "0.4.0"
+description = "PEP 224 implementation"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "attributes-doc-0.4.0.tar.gz", hash = "sha256:b1576c94a714e9fc2c65c47cf10d0c8e1a5f7c4f5ae7f69006be108d95cbfbfb"},
+    {file = "attributes_doc-0.4.0-py2.py3-none-any.whl", hash = "sha256:4c3007d9e58f3a6cb4b9c614c4d4ce2d92161581f28e594ddd8241cc3a113bdd"},
 ]
 
 [[package]]
@@ -1340,6 +1349,52 @@ requests = ">=2.22,<3"
 fixture = ["fixtures"]
 
 [[package]]
+name = "serpyco-rs"
+version = "1.10.2"
+description = ""
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "serpyco_rs-1.10.2-cp310-cp310-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:e01d824fdebb9bded57ec40b9ac0ca3b312ad617fd5deba61113a3b23bcb915d"},
+    {file = "serpyco_rs-1.10.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0ef9a31f8d62c17b1ccfffb3e91c5aed2d6fd2187c7611ee3ca1b572046150cd"},
+    {file = "serpyco_rs-1.10.2-cp310-cp310-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:aab2241b2d87bca5f15d5d34a3948b1c9ad1724cc55d1332e0c5325aff02635f"},
+    {file = "serpyco_rs-1.10.2-cp310-cp310-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:87d8118e9ba6e37aee1b0f7c14b19fe494f1589dc81ae0cc5168812779e1bfab"},
+    {file = "serpyco_rs-1.10.2-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:3d18a77d23aeb49904b2462410e57b4027511158845291bf6251e5857a881d60"},
+    {file = "serpyco_rs-1.10.2-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:a8da7ff487ada75f6b724d6ef9e40cde5cf703a2b89e6a3f466a8db0049e153a"},
+    {file = "serpyco_rs-1.10.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:5212fa00ff8874ecabca0cf5f11eb7c1291b55ec9ee6aa7ee3ae2ec344abcf7f"},
+    {file = "serpyco_rs-1.10.2-cp310-none-win_amd64.whl", hash = "sha256:ff83f5296f0ab08e77d09a4888020e636d4385a642fec52eacd2ab480d0ec22c"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:8d0e6d6546145ba30d6032381b27261e338f7c1b96b9fb0773a481970a809827"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cf4d5c69d1fcd7007b7792cb5ea62a0702822f6f8982349f44b795677ab7414c"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:9fc4c1241c0707bfdd93991c0a2cea3f51a17acad343d9b5c296fc0a9f044d78"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:413fe29db4cab826269371a89ff9ccbd897ee7ff0eaaf1090362fdb86d5b8beb"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:54ce4d5ac0ac4d62911998bfba1ac149a61c43f5dbfa23f831f0d87290c1861a"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:bd9c8a31440a3158c601fdcd523e77cd5fefa2ae5be061a4151c38a7a6060624"},
+    {file = "serpyco_rs-1.10.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e8e323f5420c3e6f99627291a2d47d7fcd7f5c4433aaa6cc35e15d5b22ba19d6"},
+    {file = "serpyco_rs-1.10.2-cp311-none-win_amd64.whl", hash = "sha256:743c1e1943f51883cb498c2c16c5f49bab2adb991c842077fcd0fa5a1658da25"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:6379d789daff44e5f535d7e1c0131b30cee86988e9561cc9d98e87021188220d"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:805162d7b67fd08b04b1e2ef1deeaedc37c7ee24a200f24778fb98b9fe7f5cdd"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:1366df15ae2548a8a063eca84b9a8c2af92ac55df73ce60a7c4f2dfe71e2526b"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:35d0a1a1a69ae074b123f6ad1487dc67717727d9dce4f95a393298743d60aafb"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4a79517070e0b021803cafdf11d326e1149eac4a226443040e9fa1492c74337b"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:bdd2b8d3b9160ddcab0400ca5e258c16e870ae49c6586ed5405c18e8910c957b"},
+    {file = "serpyco_rs-1.10.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:045965a32c651797a73c7b7165165ed0d78efc233af4bf24c47acd41d222fae8"},
+    {file = "serpyco_rs-1.10.2-cp312-none-win_amd64.whl", hash = "sha256:c6c95f6c9e04af94c33e4e514291df7380c3960a155e9fe264ccaaa46d4d0de8"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:f19a82836699d102b288b17ae370dd4d37af60ccd2254f5bfdbd053d168cecee"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3c3830bb3f6a342825e27592e86baa46774bfb1f08c82dbf561b5f1380a18b48"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f726392e6380b1e7d642d7633ac27929c8616a59db0a54632f5a9ab80987e071"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:9ce029f8f29f4f335d0f3c9e005b71d7e8a934735d9654e3f03ccc54d50c107a"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:e1f011370259602b55141ce866bf31dcdc9d8b68105c32f18ee442bc651ee880"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:14d9e22016e2860c1f524aa123cfadd4a4eea25af10d1be76cc3d97d9c85c2e2"},
+    {file = "serpyco_rs-1.10.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:441b8045f91f30120c00a1f617a0ad6f22c1753c6b98899e8476d6e7775a3667"},
+    {file = "serpyco_rs-1.10.2-cp39-none-win_amd64.whl", hash = "sha256:a124608cc998e3854fc743dea5dd7d948edbeaa70c1c1777b6dbb4b64ce465b0"},
+    {file = "serpyco_rs-1.10.2.tar.gz", hash = "sha256:9cf06956eb14b326e522c9665aa5136f8fd7ece2df8a393c2e84bee8204362d0"},
+]
+
+[package.dependencies]
+attributes-doc = "*"
+typing-extensions = "*"
+
+[[package]]
 name = "setuptools"
 version = "72.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -1550,4 +1605,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "d4d9e3b95d04f7697dceb79e70c3705d9519801d056f0e75664d3f5fbc8ac14f"
+content-hash = "ebea97fabc6fd3b9a36cd0b764ccd6dcaa59a5a6502f35700ef60ebe441c5b57"

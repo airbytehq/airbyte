@@ -34,7 +34,7 @@ class TeardownTask(
         }
 
         /** Ensure we don't run until all streams have completed */
-        streamsManager.awaitAllStreamsComplete()
+        streamsManager.awaitAllStreamsClosed()
 
         destination.teardown()
         taskLauncher.stop()

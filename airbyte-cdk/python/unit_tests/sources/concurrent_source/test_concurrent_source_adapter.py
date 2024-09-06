@@ -43,7 +43,15 @@ class _MockSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            StreamFacade.create_from_stream(s, self, self._logger, None, FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository())) if is_concurrent else s
+            StreamFacade.create_from_stream(
+                s,
+                self,
+                self._logger,
+                None,
+                FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository()),
+            )
+            if is_concurrent
+            else s
             for s, is_concurrent in self._streams_to_is_concurrent.items()
         ]
 
@@ -96,7 +104,13 @@ def test_concurrent_source_adapter(as_stream_status, remove_stack_trace):
 
     assert records == expected_records
 
-    unavailable_stream_trace_messages = [m for m in messages if m.type == MessageType.TRACE and m.trace.type == TraceType.STREAM_STATUS and m.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE]
+    unavailable_stream_trace_messages = [
+        m
+        for m in messages
+        if m.type == MessageType.TRACE
+        and m.trace.type == TraceType.STREAM_STATUS
+        and m.trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE
+    ]
     expected_status = [as_stream_status("s3", AirbyteStreamStatus.INCOMPLETE)]
 
     assert len(unavailable_stream_trace_messages) == 1
@@ -133,7 +147,9 @@ def _configured_catalog(streams: List[Stream]):
 
 
 @pytest.mark.parametrize("raise_exception_on_missing_stream", [True, False])
-def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(mocker, remove_stack_trace, as_stream_status, raise_exception_on_missing_stream):
+def test_read_nonexistent_concurrent_stream_emit_incomplete_stream_status(
+    mocker, remove_stack_trace, as_stream_status, raise_exception_on_missing_stream
+):
     """
     Tests that attempting to sync a stream which the source does not return from the `streams` method emits incomplete stream status.
     """
