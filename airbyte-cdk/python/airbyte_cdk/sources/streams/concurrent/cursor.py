@@ -175,7 +175,7 @@ class ConcurrentCursor(Cursor):
         cursor_value = self._extract_cursor_value(record)
 
         if most_recent_cursor_value is None or most_recent_cursor_value < cursor_value:
-            self._most_recent_cursor_value_per_partition[record.partition] = record
+            self._most_recent_cursor_value_per_partition[record.partition] = cursor_value
 
     def _extract_cursor_value(self, record: Record) -> Any:
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
