@@ -10,10 +10,9 @@ import io.airbyte.cdk.command.WriteConfiguration
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.DestinationRecordWrapped
 import io.airbyte.cdk.message.MessageQueueReader
-import io.airbyte.cdk.message.SpooledRawMessagesLocalFile
+import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.message.StreamCompleteWrapped
 import io.airbyte.cdk.message.StreamRecordWrapped
-import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.nio.file.Files
@@ -24,6 +23,8 @@ import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+
+interface SpillToDiskTask : Task
 
 /**
  * Reads records from the message queue and writes them to disk. This task is internal and does not
@@ -37,12 +38,12 @@ import kotlinx.coroutines.yield
  * recorded, as it will allow the stream manager to report exactly how many records have been
  * spilled.
  */
-class SpillToDiskTask(
+class DefaultSpillToDiskTask(
     private val config: WriteConfiguration,
     private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>,
-    private val streamLoader: StreamLoader,
+    private val stream: DestinationStream,
     private val launcher: DestinationTaskLauncher
-) : Task {
+) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
     data class ReadResult(
@@ -71,7 +72,7 @@ class SpillToDiskTask(
                     val result =
                         path.bufferedWriter(Charsets.UTF_8).use {
                             queueReader
-                                .readChunk(streamLoader.stream, config.recordBatchSizeBytes)
+                                .readChunk(stream, config.recordBatchSizeBytes)
                                 .runningFold(ReadResult()) { (range, sizeBytes, _), wrapped ->
                                     when (wrapped) {
                                         is StreamRecordWrapped -> {
@@ -107,23 +108,28 @@ class SpillToDiskTask(
                 return
             }
 
-            val wrapped = BatchEnvelope(SpooledRawMessagesLocalFile(path, sizeBytes), range)
-            launcher.startProcessRecordsTask(streamLoader, wrapped)
+            val batch = SpilledRawMessagesLocalFile(path, sizeBytes)
+            val wrapped = BatchEnvelope(batch, range)
+            launcher.handleNewSpilledFile(stream, wrapped)
 
             yield()
         } while (!endOfStream)
     }
 }
 
+interface SpillToDiskTaskFactory {
+    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): SpillToDiskTask
+}
+
 @Singleton
-class SpillToDiskTaskFactory(
+class DefaultSpillToDiskTaskFactory(
     private val config: WriteConfiguration,
     private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>
-) {
-    fun make(
+) : SpillToDiskTaskFactory {
+    override fun make(
         taskLauncher: DestinationTaskLauncher,
-        streamLoader: StreamLoader,
+        stream: DestinationStream
     ): SpillToDiskTask {
-        return SpillToDiskTask(config, queueReader, streamLoader, taskLauncher)
+        return DefaultSpillToDiskTask(config, queueReader, stream, taskLauncher)
     }
 }

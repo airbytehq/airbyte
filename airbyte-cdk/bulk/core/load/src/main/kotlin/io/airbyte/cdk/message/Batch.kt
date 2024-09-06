@@ -21,7 +21,7 @@ import java.nio.file.Path
  * the associated ranges have been persisted remotely, and that platform checkpoint messages can be
  * emitted.
  *
- * [State.SPOOLED] is used internally to indicate that records have been spooled to disk for
+ * [State.SPILLED] is used internally to indicate that records have been spooled to disk for
  * processing and should not be used by implementors.
  *
  * When a stream has been read to End-of-stream, and all ranges between 0 and End-of-stream are
@@ -47,7 +47,7 @@ import java.nio.file.Path
  */
 interface Batch {
     enum class State {
-        SPOOLED,
+        SPILLED,
         LOCAL,
         PERSISTED,
         COMPLETE
@@ -61,9 +61,9 @@ data class SimpleBatch(override val state: Batch.State) : Batch
 
 /** Represents a file of records locally staged. */
 abstract class StagedLocalFile() : Batch {
-    override val state: Batch.State = Batch.State.LOCAL
     abstract val localPath: Path
     abstract val totalSizeBytes: Long
+    override val state: Batch.State = Batch.State.LOCAL
 }
 
 /** Represents a remote object containing persisted records. */
@@ -76,10 +76,10 @@ abstract class RemoteObject() : Batch {
  * Represents a file of raw records staged to disk for pre-processing. Used internally by the
  * framework
  */
-data class SpooledRawMessagesLocalFile(
+data class SpilledRawMessagesLocalFile(
     override val localPath: Path,
     override val totalSizeBytes: Long,
-    override val state: Batch.State = Batch.State.SPOOLED
+    override val state: Batch.State = Batch.State.SPILLED
 ) : StagedLocalFile()
 
 /**
