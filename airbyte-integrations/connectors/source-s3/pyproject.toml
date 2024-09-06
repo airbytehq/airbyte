@@ -37,8 +37,9 @@ extras = ["file-based",]
 
 # Toggle one of the following lines to switch between the local CDK or the published version.
 # Uncomment `path` for local dev, or uncomment `version` for release.
-# path = "../../../airbyte-cdk/python"
-version = "^4"
+path = "../../../airbyte-cdk/python"
+develop = true
+# version = "^4"  # TODO: Uncomment this line and toggle back when the CDK is published.
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
