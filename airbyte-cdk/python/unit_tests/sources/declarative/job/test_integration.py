@@ -60,8 +60,6 @@ class MockSource(AbstractSource):
         return [
             DeclarativeStream(
                 retriever=AsyncRetriever(
-                    name="test_async_retriever",
-                    primary_key="id",
                     config={},
                     parameters={},
                     record_selector=noop_record_selector,
