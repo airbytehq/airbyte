@@ -55,11 +55,9 @@ class PerPartitionCursor(DeclarativeCursor):
         slices = self._partition_router.stream_slices()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
-            if not cursor and self._state_to_migrate_from:
-                cursor = self._create_cursor(self._state_to_migrate_from)
-                self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
-            elif not cursor:
-                cursor = self._create_cursor(self._NO_CURSOR_STATE)
+            if not cursor:
+                partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
+                cursor = self._create_cursor(partition_state)
                 self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
             for cursor_slice in cursor.stream_slices():
