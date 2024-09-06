@@ -220,7 +220,7 @@ The default state format is **per partition**, but there are options to enhance 
   ```
 
 ### Summary
-- **Per Partition**: Default, use for manageable partitions (<10k).
+- **Per Partition**: Default, use for manageable partitions (\<10k).
 - **Incremental Dependency**: Use for incremental parent streams with a dependent child cursor. Ensure API updates parent cursor with child records.
 - **Global Substream Cursor**: Ideal for large-scale parent streams with many partitions to optimize performance.
 
