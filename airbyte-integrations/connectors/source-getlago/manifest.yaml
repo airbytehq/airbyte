@@ -318,6 +318,17 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /customers/{{stream_slice.customer_external_id}}/current_usage
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{response.status == 405 and response.code ==
+                      'no_active_subscription' }}
+                    http_codes: []
         record_selector:
           type: RecordSelector
           extractor:
