@@ -54,6 +54,8 @@ class PerPartitionCursor(DeclarativeCursor):
         # The dict is ordered to ensure that once the maximum number of partitions is reached,
         # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
+        self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
+        self._over_limit = 0
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -76,8 +78,12 @@ class PerPartitionCursor(DeclarativeCursor):
         Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
         """
         while len(self._cursor_per_partition) > self.DEFAULT_MAX_PARTITIONS_NUMBER - 1:
+            self._over_limit += 1
             oldest_partition = self._cursor_per_partition.popitem(last=False)[0]  # Remove the oldest partition
-            logging.warning(f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}.")
+            logging.warning(f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}. Over limit: {self._over_limit}.")
+
+    def limit_reached(self) -> bool:
+        return self._over_limit > self.DEFAULT_MAX_PARTITIONS_NUMBER
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """

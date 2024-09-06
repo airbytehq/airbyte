@@ -42,6 +42,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
+from airbyte_cdk.sources.declarative.incremental.per_partition_with_global import PerPartitionWithGlobalCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.migrations.legacy_to_per_partition_state_migration import LegacyToPerPartitionStateMigration
@@ -645,7 +646,7 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)
+            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor, PerPartitionWithGlobalCursor)
             if combined_slicers and not isinstance(combined_slicers, supported_slicers):
                 raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
             client_side_incremental_sync = {
@@ -718,12 +719,20 @@ class ModelToComponentFactory:
                 cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
                 return GlobalSubstreamCursor(stream_cursor=cursor_component, partition_router=stream_slicer)
             else:
-                return PerPartitionCursor(
+                cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
+                return PerPartitionWithGlobalCursor(
                     cursor_factory=CursorFactory(
                         lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
                     ),
                     partition_router=stream_slicer,
+                    stream_cursor=cursor_component,
                 )
+                # return PerPartitionCursor(
+                #     cursor_factory=CursorFactory(
+                #         lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+                #     ),
+                #     partition_router=stream_slicer,
+                # )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
