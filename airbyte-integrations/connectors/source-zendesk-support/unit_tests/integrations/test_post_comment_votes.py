@@ -6,12 +6,12 @@ from unittest.mock import patch
 
 import freezegun
 import pendulum
-from airbyte_cdk.test.mock_http import HttpMocker
-from airbyte_cdk.test.mock_http.response_builder import FieldPath
-from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.models import AirbyteStateBlob
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http.response_builder import FieldPath
+from airbyte_cdk.test.state_builder import StateBuilder
 
 from .config import ConfigBuilder
 from .helpers import given_post_comments, given_posts, given_ticket_forms
