@@ -135,7 +135,11 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/profiles_schema"
-    retriever: "#/definitions/profiles_retriever"
+    retriever:
+      $ref: "#/definitions/profiles_retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        schema_normalization: Default
     $parameters:
       path: "profiles"
 

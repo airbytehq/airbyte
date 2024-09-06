@@ -2,14 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Callable, Iterable, Mapping, MutableMapping, Optional, Union
+import logging
+from collections import OrderedDict
+from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 
 class CursorFactory:
@@ -41,6 +43,7 @@ class PerPartitionCursor(DeclarativeCursor):
     Therefore, we need to manage state per partition.
     """
 
+    DEFAULT_MAX_PARTITIONS_NUMBER = 10000
     _NO_STATE: Mapping[str, Any] = {}
     _NO_CURSOR_STATE: Mapping[str, Any] = {}
     _KEY = 0
@@ -49,12 +52,17 @@ class PerPartitionCursor(DeclarativeCursor):
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
-        self._cursor_per_partition: MutableMapping[str, DeclarativeCursor] = {}
+        # The dict is ordered to ensure that once the maximum number of partitions is reached,
+        # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
+        self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._partition_serializer = PerPartitionKeySerializer()
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         slices = self._partition_router.stream_slices()
         for partition in slices:
+            # Ensure the maximum number of partitions is not exceeded
+            self._ensure_partition_limit()
+
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
             if not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
@@ -62,6 +70,14 @@ class PerPartitionCursor(DeclarativeCursor):
 
             for cursor_slice in cursor.stream_slices():
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
+
+    def _ensure_partition_limit(self) -> None:
+        """
+        Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
+        """
+        while len(self._cursor_per_partition) > self.DEFAULT_MAX_PARTITIONS_NUMBER - 1:
+            oldest_partition = self._cursor_per_partition.popitem(last=False)[0]  # Remove the oldest partition
+            logging.warning(f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}.")
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """

@@ -490,15 +490,13 @@ class AutoFailTrueHttpStream(StubBasicReadHttpStream):
     [
         (300, True, True, ResponseAction.RETRY),
         (200, False, True, ResponseAction.SUCCESS),
-        (503, False,True, ResponseAction.FAIL),
-        (503,False,False, ResponseAction.IGNORE)
-    ]
+        (503, False, True, ResponseAction.FAIL),
+        (503, False, False, ResponseAction.IGNORE),
+    ],
 )
-def test_http_stream_adapter_http_status_error_handler_should_retry_false_raise_on_http_errors(mocker,
-                                                                                               response_status_code: int,
-                                                                                               should_retry: bool,
-                                                                                               raise_on_http_errors: bool,
-                                                                                               expected_response_action: ResponseAction):
+def test_http_stream_adapter_http_status_error_handler_should_retry_false_raise_on_http_errors(
+    mocker, response_status_code: int, should_retry: bool, raise_on_http_errors: bool, expected_response_action: ResponseAction
+):
     stream = AutoFailTrueHttpStream()
     mocker.patch.object(stream, "should_retry", return_value=should_retry)
     mocker.patch.object(stream, "raise_on_http_errors", raise_on_http_errors)
@@ -664,9 +662,19 @@ def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, pa
 
     if expected_url is None:
         with pytest.raises(ValueError):
-            stream._http_client._create_prepared_request(http_method=stream.http_method, url=stream._join_url(stream.url_base, path), params=params, dedupe_query_params=deduplicate_query_params)
+            stream._http_client._create_prepared_request(
+                http_method=stream.http_method,
+                url=stream._join_url(stream.url_base, path),
+                params=params,
+                dedupe_query_params=deduplicate_query_params,
+            )
     else:
-        prepared_request = stream._http_client._create_prepared_request(http_method=stream.http_method, url=stream._join_url(stream.url_base, path), params=params, dedupe_query_params=deduplicate_query_params)
+        prepared_request = stream._http_client._create_prepared_request(
+            http_method=stream.http_method,
+            url=stream._join_url(stream.url_base, path),
+            params=params,
+            dedupe_query_params=deduplicate_query_params,
+        )
         assert prepared_request.url == expected_url
 
 
@@ -689,8 +697,13 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
     def url_base(self) -> str:
         return "https://airbyte.io/api/v1"
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return "/stub"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -709,12 +722,12 @@ class StubParentHttpStream(HttpStream, CheckpointMixin):
         self.state = {"__ab_full_refresh_sync_complete": True}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
@@ -736,8 +749,13 @@ class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
     def url_base(self) -> str:
         return "https://airbyte.io/api/v1"
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return "/stub"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -759,12 +777,12 @@ class StubParentResumableFullRefreshStream(HttpStream, CheckpointMixin):
             self.state = {"__ab_full_refresh_sync_complete": True}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
@@ -779,8 +797,13 @@ class StubHttpSubstream(HttpSubStream):
     def url_base(self) -> str:
         return "https://airbyte.io/api/v1"
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return "/stub"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -800,12 +823,12 @@ class StubHttpSubstream(HttpSubStream):
         ]
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         return []
 
@@ -841,7 +864,7 @@ def test_substream_with_resumable_full_refresh_parent():
         [
             {"id": "page_3_abc"},
             {"id": "page_3_def"},
-        ]
+        ],
     ]
 
     expected_slices = [
@@ -987,10 +1010,7 @@ def test_resumable_full_refresh_read_from_state(mocker):
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
 
     checkpoint_reader = stream._get_checkpoint_reader(
-        cursor_field=[],
-        logger=logging.getLogger("airbyte"),
-        sync_mode=SyncMode.full_refresh,
-        stream_state={"page": 3}
+        cursor_field=[], logger=logging.getLogger("airbyte"), sync_mode=SyncMode.full_refresh, stream_state={"page": 3}
     )
     next_stream_slice = checkpoint_reader.next()
     records = []
@@ -1036,10 +1056,7 @@ def test_resumable_full_refresh_legacy_stream_slice(mocker):
         mocker.patch.object(stream, method, wraps=getattr(stream, method))
 
     checkpoint_reader = stream._get_checkpoint_reader(
-        cursor_field=[],
-        logger=logging.getLogger("airbyte"),
-        sync_mode=SyncMode.full_refresh,
-        stream_state={"page": 2}
+        cursor_field=[], logger=logging.getLogger("airbyte"), sync_mode=SyncMode.full_refresh, stream_state={"page": 2}
     )
     next_stream_slice = checkpoint_reader.next()
     records = []
@@ -1082,8 +1099,13 @@ class StubSubstreamResumableFullRefreshStream(HttpSubStream, CheckpointMixin):
     def url_base(self) -> str:
         return "https://airbyte.io/api/v1"
 
-    def path(self, *, stream_state: Optional[Mapping[str, Any]] = None, stream_slice: Optional[Mapping[str, Any]] = None,
-             next_page_token: Optional[Mapping[str, Any]] = None) -> str:
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
         return f"/parents/{stream_slice.get('parent_id')}/children"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -1113,12 +1135,12 @@ class StubSubstreamResumableFullRefreshStream(HttpSubStream, CheckpointMixin):
         return requests.PreparedRequest(), requests.Response()
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         partition_id = stream_slice.get("parent").get("parent_id")
         if partition_id in self._partition_id_to_child_records:
@@ -1141,14 +1163,21 @@ def test_substream_resumable_full_refresh_read_from_start(mocker):
         {"parent_id": "100", "name": "christopher_nolan"},
         {"parent_id": "101", "name": "celine_song"},
         {"parent_id": "102", "name": "david_fincher"},
-
     ]
     parent_stream = StubParentHttpStream(records=parent_records)
 
     parents_to_children_records = {
-        "100": [{"id": "a200", "parent_id": "100", "film": "interstellar"}, {"id": "a201", "parent_id": "100", "film": "oppenheimer"}, {"id": "a202", "parent_id": "100", "film": "inception"}],
+        "100": [
+            {"id": "a200", "parent_id": "100", "film": "interstellar"},
+            {"id": "a201", "parent_id": "100", "film": "oppenheimer"},
+            {"id": "a202", "parent_id": "100", "film": "inception"},
+        ],
         "101": [{"id": "b200", "parent_id": "101", "film": "past_lives"}, {"id": "b201", "parent_id": "101", "film": "materialists"}],
-        "102": [{"id": "c200", "parent_id": "102", "film": "the_social_network"}, {"id": "c201", "parent_id": "102", "film": "gone_girl"}, {"id": "c202", "parent_id": "102", "film": "the_curious_case_of_benjamin_button"}],
+        "102": [
+            {"id": "c200", "parent_id": "102", "film": "the_social_network"},
+            {"id": "c201", "parent_id": "102", "film": "gone_girl"},
+            {"id": "c202", "parent_id": "102", "film": "the_curious_case_of_benjamin_button"},
+        ],
     }
     stream = StubSubstreamResumableFullRefreshStream(parent=parent_stream, partition_id_to_child_records=parents_to_children_records)
 
@@ -1168,61 +1197,31 @@ def test_substream_resumable_full_refresh_read_from_start(mocker):
         {
             "states": [
                 {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "christopher_nolan", "parent_id": "100"}
-                    }
+                    "cursor": {"__ab_full_refresh_sync_complete": True},
+                    "partition": {"parent": {"name": "christopher_nolan", "parent_id": "100"}},
                 }
             ]
         },
         {
             "states": [
                 {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "christopher_nolan", "parent_id": "100"}
-                    }
+                    "cursor": {"__ab_full_refresh_sync_complete": True},
+                    "partition": {"parent": {"name": "christopher_nolan", "parent_id": "100"}},
                 },
-                {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "celine_song", "parent_id": "101"}
-                    }
-                }
+                {"cursor": {"__ab_full_refresh_sync_complete": True}, "partition": {"parent": {"name": "celine_song", "parent_id": "101"}}},
             ]
         },
         {
             "states": [
                 {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "christopher_nolan", "parent_id": "100"}
-                    }
+                    "cursor": {"__ab_full_refresh_sync_complete": True},
+                    "partition": {"parent": {"name": "christopher_nolan", "parent_id": "100"}},
                 },
+                {"cursor": {"__ab_full_refresh_sync_complete": True}, "partition": {"parent": {"name": "celine_song", "parent_id": "101"}}},
                 {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "celine_song", "parent_id": "101"}
-                    }
+                    "cursor": {"__ab_full_refresh_sync_complete": True},
+                    "partition": {"parent": {"name": "david_fincher", "parent_id": "102"}},
                 },
-                {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "david_fincher", "parent_id": "102"}
-                    }
-                }
             ]
         },
     ]
@@ -1239,46 +1238,14 @@ def test_substream_resumable_full_refresh_read_from_start(mocker):
     assert getattr(stream, "_read_pages").call_count == 3
 
     expected = [
-        {
-            "film": "interstellar",
-            "id": "a200",
-            "parent_id": "100"
-        },
-        {
-            "film": "oppenheimer",
-            "id": "a201",
-            "parent_id": "100"
-        },
-        {
-            "film": "inception",
-            "id": "a202",
-            "parent_id": "100"
-        },
-        {
-            "film": "past_lives",
-            "id": "b200",
-            "parent_id": "101"
-        },
-        {
-            "film": "materialists",
-            "id": "b201",
-            "parent_id": "101"
-        },
-        {
-            "film": "the_social_network",
-            "id": "c200",
-            "parent_id": "102"
-        },
-        {
-            "film": "gone_girl",
-            "id": "c201",
-            "parent_id": "102"
-        },
-        {
-            "film": "the_curious_case_of_benjamin_button",
-            "id": "c202",
-            "parent_id": "102"
-        }
+        {"film": "interstellar", "id": "a200", "parent_id": "100"},
+        {"film": "oppenheimer", "id": "a201", "parent_id": "100"},
+        {"film": "inception", "id": "a202", "parent_id": "100"},
+        {"film": "past_lives", "id": "b200", "parent_id": "101"},
+        {"film": "materialists", "id": "b201", "parent_id": "101"},
+        {"film": "the_social_network", "id": "c200", "parent_id": "102"},
+        {"film": "gone_girl", "id": "c201", "parent_id": "102"},
+        {"film": "the_curious_case_of_benjamin_button", "id": "c202", "parent_id": "102"},
     ]
 
     assert records == expected
@@ -1294,13 +1261,15 @@ def test_substream_resumable_full_refresh_read_from_state(mocker):
     parent_records = [
         {"parent_id": "100", "name": "christopher_nolan"},
         {"parent_id": "101", "name": "celine_song"},
-
     ]
     parent_stream = StubParentHttpStream(records=parent_records)
 
     parents_to_children_records = {
-        "100": [{"id": "a200", "parent_id": "100", "film": "interstellar"}, {"id": "a201", "parent_id": "100", "film": "oppenheimer"},
-                {"id": "a202", "parent_id": "100", "film": "inception"}],
+        "100": [
+            {"id": "a200", "parent_id": "100", "film": "interstellar"},
+            {"id": "a201", "parent_id": "100", "film": "oppenheimer"},
+            {"id": "a202", "parent_id": "100", "film": "inception"},
+        ],
         "101": [{"id": "b200", "parent_id": "101", "film": "past_lives"}, {"id": "b201", "parent_id": "101", "film": "materialists"}],
     }
     stream = StubSubstreamResumableFullRefreshStream(parent=parent_stream, partition_id_to_child_records=parents_to_children_records)
@@ -1318,15 +1287,11 @@ def test_substream_resumable_full_refresh_read_from_state(mocker):
         stream_state={
             "states": [
                 {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "christopher_nolan", "parent_id": "100"}
-                    }
+                    "cursor": {"__ab_full_refresh_sync_complete": True},
+                    "partition": {"parent": {"name": "christopher_nolan", "parent_id": "100"}},
                 },
             ]
-        }
+        },
     )
     next_stream_slice = checkpoint_reader.next()
     records = []
@@ -1335,21 +1300,10 @@ def test_substream_resumable_full_refresh_read_from_state(mocker):
         {
             "states": [
                 {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "christopher_nolan", "parent_id": "100"}
-                    }
+                    "cursor": {"__ab_full_refresh_sync_complete": True},
+                    "partition": {"parent": {"name": "christopher_nolan", "parent_id": "100"}},
                 },
-                {
-                    "cursor": {
-                        "__ab_full_refresh_sync_complete": True
-                    },
-                    "partition": {
-                        "parent": {"name": "celine_song", "parent_id": "101"}
-                    }
-                }
+                {"cursor": {"__ab_full_refresh_sync_complete": True}, "partition": {"parent": {"name": "celine_song", "parent_id": "101"}}},
             ]
         },
     ]
@@ -1366,16 +1320,8 @@ def test_substream_resumable_full_refresh_read_from_state(mocker):
     assert getattr(stream, "_read_pages").call_count == 1
 
     expected = [
-        {
-            "film": "past_lives",
-            "id": "b200",
-            "parent_id": "101"
-        },
-        {
-            "film": "materialists",
-            "id": "b201",
-            "parent_id": "101"
-        },
+        {"film": "past_lives", "id": "b200", "parent_id": "101"},
+        {"film": "materialists", "id": "b201", "parent_id": "101"},
     ]
 
     assert records == expected
@@ -1398,8 +1344,13 @@ class StubWithCursorFields(StubBasicReadHttpStream):
         pytest.param([], False, ResumableFullRefreshCursor(), id="test_stream_supports_resumable_full_refresh_cursor"),
         pytest.param(["updated_at"], False, None, id="test_incremental_stream_does_not_use_cursor"),
         pytest.param(["updated_at"], True, None, id="test_incremental_substream_does_not_use_cursor"),
-        pytest.param([], True, SubstreamResumableFullRefreshCursor(), id="test_full_refresh_substream_automatically_applies_substream_resumable_full_refresh_cursor"),
-    ]
+        pytest.param(
+            [],
+            True,
+            SubstreamResumableFullRefreshCursor(),
+            id="test_full_refresh_substream_automatically_applies_substream_resumable_full_refresh_cursor",
+        ),
+    ],
 )
 def test_get_cursor(cursor_field, is_substream, expected_cursor):
     stream = StubWithCursorFields(set_cursor_field=cursor_field, has_multiple_slices=is_substream)
