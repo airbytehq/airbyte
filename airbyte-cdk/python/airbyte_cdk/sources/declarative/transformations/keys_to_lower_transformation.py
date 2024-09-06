@@ -11,7 +11,6 @@ from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 @dataclass
 class KeysToLowerTransformation(RecordTransformation):
-
     def transform(
         self,
         record: Dict[str, Any],
