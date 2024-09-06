@@ -14,6 +14,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests.exceptions import InvalidURL
 
 from .streams import IssueFields, Issues, PullRequests
+from pydantic import ValidationError
 from .utils import read_full_refresh
 
 
