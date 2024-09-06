@@ -574,7 +574,7 @@ def test_read_returns_error_response(mock_from_exception):
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalogSerializer.load(CONFIGURED_CATALOG), _A_STATE, limits)
 
     expected_stream_read = StreamRead(
-        logs=[LogMessage("error_message - a stack trace", "ERROR")],
+        logs=[LogMessage("An error occurred while attempting to read from the source. Please check the logged errors for more information. error_message - a stack trace", "ERROR")],
         slices=[],
         test_read_limit_reached=False,
         auxiliary_requests=[],
