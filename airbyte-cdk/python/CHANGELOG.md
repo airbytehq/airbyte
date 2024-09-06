@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.2.1
+Fix error in incremental sync docs
+
 ## 5.2.0
 Add Global Parent State Cursor
 
