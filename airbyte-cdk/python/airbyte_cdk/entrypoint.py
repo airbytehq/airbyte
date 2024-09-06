@@ -20,6 +20,7 @@ from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import (  # type: ignore [attr-defined]
+    AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteMessageSerializer,
     AirbyteStateStats,
@@ -144,7 +145,13 @@ class AirbyteEntrypoint(object):
                 yield connection_status
                 return
 
-        check_result = self.source.check(self.logger, config)
+        try:
+            check_result = self.source.check(self.logger, config)
+        except AirbyteTracedException as traced_exc:
+            yield from self._emit_queued_messages(self.source)
+            yield traced_exc.as_airbyte_message()
+            yield AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(Status.FAILED, message=repr(traced_exc)))
+            return
         if check_result.status == Status.SUCCEEDED:
             self.logger.info("Check succeeded")
         else:

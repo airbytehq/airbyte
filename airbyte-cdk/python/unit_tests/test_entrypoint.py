@@ -225,7 +225,7 @@ def test_run_check_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mo
 
     with pytest.raises(ValueError):
         messages = list(entrypoint.run(parsed_args))
-        assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode()] == messages
+        assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode(),  _wrap_message(AirbyteConnectionStatus(status=Status.FAILED))] == messages
 
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
