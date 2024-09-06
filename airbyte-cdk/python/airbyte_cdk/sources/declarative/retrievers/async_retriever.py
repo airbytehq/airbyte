@@ -22,27 +22,12 @@ class AsyncRetriever(Retriever):
     parameters: InitVar[Mapping[str, Any]]
     job_orchestrator_factory: Callable[[Iterable[StreamSlice]], AsyncJobOrchestrator]
     record_selector: RecordSelector
-    _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
-    _primary_key: str = field(init=False, repr=False, default="")
     stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._job_orchestrator_factory = self.job_orchestrator_factory
         self.__job_orchestrator: Optional[AsyncJobOrchestrator] = None
         self._parameters = parameters
-        self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
-
-    @property
-    def name(self) -> str:
-        """
-        :return: Stream name
-        """
-        return str(self._name.eval(self.config)) if isinstance(self._name, InterpolatedString) else self._name
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        """The stream's primary key"""
-        return self._primary_key
 
     @property
     def state(self) -> StreamState:

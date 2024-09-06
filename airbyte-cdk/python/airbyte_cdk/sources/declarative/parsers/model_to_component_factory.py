@@ -1243,8 +1243,6 @@ class ModelToComponentFactory:
         job_orchestrator_factory = lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices)
 
         return AsyncRetriever(
-            name=name,
-            primary_key=primary_key,
             job_orchestrator_factory=job_orchestrator_factory,
             record_selector=record_selector,
             stream_slicer=stream_slicer,

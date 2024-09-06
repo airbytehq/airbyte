@@ -43,3 +43,6 @@ class AsyncJob:
             self._timer.stop()
 
         self._status = status
+
+    def __repr__(self) -> str:
+        return f"AsyncJob(data={self.api_job_id()}, job_parameters={self.job_parameters()}, status={self.status()})"
