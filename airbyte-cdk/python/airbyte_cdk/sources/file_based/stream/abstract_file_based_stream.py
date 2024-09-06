@@ -5,10 +5,12 @@
 import copy
 import datetime
 import logging
+import sys
 from abc import abstractmethod
 from collections.abc import MutableMapping
 from functools import cache, cached_property, lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
+from io import StringIO
+from typing import Any, Dict, Iterable, List, Mapping, Optional, TextIO, Type
 
 import polars as pl
 from deprecated import deprecated
@@ -265,6 +267,19 @@ class AbstractFileBasedStream(Stream):
         if should_checkpoint and checkpoint is not None:
             airbyte_state_message = self._checkpoint_state(checkpoint, state_manager=state_manager)
             yield airbyte_state_message
+
+    def read_to_buffer(
+        self,
+        configured_stream: ConfiguredAirbyteStream,
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager: ConnectorStateManager,
+        internal_config: InternalConfig,
+        stdout_buffer: TextIO = sys.stdout,
+    ) -> Iterable[AirbyteMessage]:
+        """Bulk process data into messages, and write directly to the IO buffer."""
+        raise NotImplementedError("Bulk processing to buffer is not yet implemented.")
 
     def read_records(
         self,
