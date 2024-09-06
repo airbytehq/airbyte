@@ -11,6 +11,9 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
@@ -126,6 +129,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
@@ -153,11 +157,6 @@ from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
 ComponentDefinition = Mapping[str, Any]
-
-from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
-from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
-from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
-from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 
 
 class ModelToComponentFactory:
@@ -300,7 +299,7 @@ class ModelToComponentFactory:
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
 
     def create_keys_to_lower_transformation(self, model: KeysToLowerModel, config: Config, **kwargs: Any) -> KeysToLowerTransformation:
-        return KeysToLowerTransformation(parameters=model.parameters or {})
+        return KeysToLowerTransformation()
 
     @staticmethod
     def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:

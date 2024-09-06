@@ -54,8 +54,6 @@ def _status_update_per_jobs(status_update_per_jobs: Mapping[AsyncJob, List[Async
     return _update_status
 
 
-
-
 sleep_mock_target = "airbyte_cdk.sources.declarative.async_job.job_orchestrator.time.sleep"
 
 class AsyncJobOrchestratorTest(TestCase):
@@ -128,7 +126,6 @@ class AsyncJobOrchestratorTest(TestCase):
         with pytest.raises(AirbyteTracedException):
             list(orchestrator.create_and_get_completed_partitions())
         assert self._job_repository.start.call_args_list == [call(_A_STREAM_SLICE)] * 4
-
 
     def test_when_fetch_records_then_yield_records_from_each_job(self) -> None:
         self._job_repository.fetch_records.return_value = [_ANY_RECORD]

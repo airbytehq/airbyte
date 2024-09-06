@@ -6,7 +6,6 @@ import os
 import uuid
 import zlib
 from contextlib import closing
-from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Mapping, Optional, Tuple
 
 import pandas as pd

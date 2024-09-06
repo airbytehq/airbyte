@@ -49,10 +49,6 @@ class MockSource(AbstractSource):
         return ConnectorSpecification(connectionSpecification={})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        job_orchestrator_factory_fn = lambda stream_slices: AsyncJobOrchestrator(
-            MockAsyncJobRepository(), stream_slices,
-        )
-
         noop_record_selector = RecordSelector(
             extractor=_EXTRACTOR_NOT_USED,
             config={},
@@ -70,7 +66,9 @@ class MockSource(AbstractSource):
                     parameters={},
                     record_selector=noop_record_selector,
                     stream_slicer=self._stream_slicer,
-                    job_orchestrator_factory=job_orchestrator_factory_fn,
+                    job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                        MockAsyncJobRepository(), stream_slices,
+                    ),
                 ),
                 config={},
                 parameters={},
@@ -94,8 +92,8 @@ class JobDeclarativeStreamTest(TestCase):
 
     def test_when_read_then_return_records_from_repository(self) -> None:
         output = read(
-            self._source, 
-            self._CONFIG, 
+            self._source,
+            self._CONFIG,
             CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(_A_STREAM_NAME)).build()
         )
 

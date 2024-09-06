@@ -3,7 +3,6 @@
 #
 
 from abc import abstractmethod
-from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice

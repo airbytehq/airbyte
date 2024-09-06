@@ -2,22 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Type, Union
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 
-import dpath
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.types import Config, FieldPointer, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
 class KeysToLowerTransformation(RecordTransformation):
-
-    parameters: InitVar[Mapping[str, Any]]
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        pass  # parameters does not need to be considered here
 
     def transform(
         self,
