@@ -158,7 +158,7 @@ class ConcurrentCursor(Cursor):
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
         self._lookback_window = lookback_window
         self._slice_range = slice_range
-        self._most_recent_record_per_partition: MutableMapping[Partition, Record] = {}
+        self._most_recent_cursor_value_per_partition: MutableMapping[Partition, Record] = {}
         self._has_closed_at_least_one_slice = False
 
     @property
@@ -171,12 +171,11 @@ class ConcurrentCursor(Cursor):
         return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
 
     def observe(self, record: Record) -> None:
-        most_recent_record = self._most_recent_record_per_partition.get(record.partition)
-        most_recent_cursor_value = self._extract_cursor_value(most_recent_record) if most_recent_record else None
+        most_recent_cursor_value = self._most_recent_cursor_value_per_partition.get(record.partition)
         cursor_value = self._extract_cursor_value(record)
 
         if most_recent_cursor_value is None or most_recent_cursor_value < cursor_value:
-            self._most_recent_record_per_partition[record.partition] = record
+            self._most_recent_cursor_value_per_partition[record.partition] = record
 
     def _extract_cursor_value(self, record: Record) -> Any:
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
@@ -190,8 +189,7 @@ class ConcurrentCursor(Cursor):
         self._has_closed_at_least_one_slice = True
 
     def _add_slice_to_state(self, partition: Partition) -> None:
-        most_recent_record = self._most_recent_record_per_partition.get(partition)
-        most_recent_cursor_value = self._extract_cursor_value(most_recent_record) if most_recent_record else None
+        most_recent_cursor_value = self._most_recent_cursor_value_per_partition.get(partition)
 
         if self._slice_boundary_fields:
             if "slices" not in self.state:
@@ -229,7 +227,7 @@ class ConcurrentCursor(Cursor):
             self.state["slices"].append(
                 {
                     self._connector_state_converter.START_KEY: self.start,
-                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record_per_partition[partition]),
+                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_cursor_value_per_partition[partition]),
                     "most_recent_cursor_value": most_recent_cursor_value,
                 }
             )
