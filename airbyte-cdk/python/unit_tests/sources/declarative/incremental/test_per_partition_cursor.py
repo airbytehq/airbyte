@@ -536,10 +536,18 @@ def test_per_partition_state_when_set_initial_global_state(mocked_cursor_factory
     assert cursor._state_to_migrate_from == global_state
     list(cursor.stream_slices())
     assert cursor._cursor_per_partition['{"first_partition_key":"first_partition_value"}'].set_initial_state.call_count == 1
-    assert cursor._cursor_per_partition['{"first_partition_key":"first_partition_value"}'].set_initial_state.call_args[0] == ({'global_state_format_key': 'global_state_format_value'},)
+    assert cursor._cursor_per_partition['{"first_partition_key":"first_partition_value"}'].set_initial_state.call_args[0] == (
+        {"global_state_format_key": "global_state_format_value"},
+    )
     assert cursor._cursor_per_partition['{"second_partition_key":"second_partition_value"}'].set_initial_state.call_count == 1
-    assert cursor._cursor_per_partition['{"second_partition_key":"second_partition_value"}'].set_initial_state.call_args[0] == ({'global_state_format_key': 'global_state_format_value'},)
-    assert cursor.get_stream_state()["states"] == [{'cursor': {'global_state_format_key': 'global_state_format_value'},
-  'partition': {'first_partition_key': 'first_partition_value'}},
- {'cursor': {'global_state_format_key': 'global_state_format_value'},
-  'partition': {'second_partition_key': 'second_partition_value'}}]
+    assert cursor._cursor_per_partition['{"second_partition_key":"second_partition_value"}'].set_initial_state.call_args[0] == (
+        {"global_state_format_key": "global_state_format_value"},
+    )
+    expected_state = [
+        {"cursor": {"global_state_format_key": "global_state_format_value"}, "partition": {"first_partition_key": "first_partition_value"}},
+        {
+            "cursor": {"global_state_format_key": "global_state_format_value"},
+            "partition": {"second_partition_key": "second_partition_value"},
+        },
+    ]
+    assert cursor.get_stream_state()["states"] == expected_state
