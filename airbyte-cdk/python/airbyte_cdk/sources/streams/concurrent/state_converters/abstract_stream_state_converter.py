@@ -3,6 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Any, List, MutableMapping, Optional, Tuple
 
@@ -53,7 +54,7 @@ class AbstractStreamStateConverter(ABC):
             raise RuntimeError("Expected at least one slice but there were none. This is unexpected; please contact Support.")
         merged_intervals = self.merge_intervals(slices)
         first_interval = merged_intervals[0]
-        return first_interval[self.END_KEY]
+        return first_interval["most_recent_cursor_value"]
 
     def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -124,17 +125,19 @@ class AbstractStreamStateConverter(ABC):
 
         for current_interval in sorted_intervals[1:]:
             last_interval = merged_intervals[-1]
-            most_recent_cursor_value = last_interval.get("most_recent_cursor_value")
-            is_last_interval_with_cursor = current_interval == sorted_intervals[-1] and most_recent_cursor_value is not None
-
-            last_interval_end = (
-                min(last_interval[self.END_KEY], most_recent_cursor_value) if is_last_interval_with_cursor else last_interval[self.END_KEY]
-            )
+            last_interval_end = last_interval[self.END_KEY]
             current_interval_start = current_interval[self.START_KEY]
 
             if self.increment(last_interval_end) >= current_interval_start:
-                # Merge overlapping or adjacent intervals
                 last_interval[self.END_KEY] = max(last_interval_end, current_interval[self.END_KEY])
+                current_interval_cursor_value = last_interval.get("most_recent_cursor_value")
+                last_interval_cursor_value = current_interval.get("most_recent_cursor_value")
+
+                last_interval["most_recent_cursor_value"] = (
+                    max(current_interval_cursor_value, last_interval_cursor_value)
+                    if current_interval_cursor_value and last_interval_cursor_value
+                    else current_interval_cursor_value or last_interval_cursor_value
+                )
             else:
                 # Add a new interval if no overlap
                 merged_intervals.append(current_interval)

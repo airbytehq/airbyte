@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, TYPE_CHECKING
-
+from typing import TYPE_CHECKING, Any, Mapping
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -14,7 +13,7 @@ class Record:
     Represents a record read from a stream.
     """
 
-    def __init__(self, data: Mapping[str, Any], partition: 'Partition'):
+    def __init__(self, data: Mapping[str, Any], partition: "Partition"):
         self.data = data
         self.partition = partition
 
