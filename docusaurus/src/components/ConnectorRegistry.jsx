@@ -108,7 +108,7 @@ export default function ConnectorRegistry({ type }) {
 
   return (
     <Tabs>
-      <TabItem value="certified" label="Airbyte Connector" default>
+      <TabItem value="certified" label="Airbyte Connectors" default>
         <ConnectorTable
           connectors={connectors}
           connectorSupportLevel={"certified"}
