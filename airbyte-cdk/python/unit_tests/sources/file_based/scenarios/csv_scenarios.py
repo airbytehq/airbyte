@@ -3342,3 +3342,261 @@ csv_no_files_scenario: TestScenario[InMemoryFilesSource] = (
     .set_expected_records(None)
     .set_expected_check_error(AirbyteTracedException, None)
 ).build()
+
+multi_stream_csv_and_jsonl_scenario: TestScenario[InMemoryFilesSource] = (
+    # Tests that the source will generate a ConfiguredAirbyteCatalog with one stream even if the other stream fails discovery
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_csv_and_jsonl_stream")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "csv_stream",
+                    "format": {"filetype": "csv"},
+                    "globs": ["a.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "jsonl_stream",
+                    "format": {"filetype": "jsonl"},
+                    "globs": ["b.jsonl"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.jsonl": {
+                    "contents": [
+                        {"col1": "val11b", "col2": "val12b"},
+                        {"col1": "val21b", "col2": "val22b"},
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "csv_stream",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "csv_stream",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.csv",
+                },
+                "stream": "csv_stream",
+            },
+        ]
+    )
+).build()
+
+multi_stream_csv_with_one_invalid_file_scenario: TestScenario[InMemoryFilesSource] = (
+    # Tests that the source will generate a ConfiguredAirbyteCatalog with one stream even if the other stream fails discovery due to invalid format
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_stream_csv_with_one_invalid_file")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "csv_success_stream",
+                    "format": {"filetype": "csv"},
+                    "globs": ["success.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "csv_fail_stream",
+                    "format": {"filetype": "csv"},
+                    "globs": ["fail.csv"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "success.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "fail.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val11b", "val12b"),
+                        ("val21b", "val22b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "csv_success_stream",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "success.csv",
+                },
+                "stream": "csv_success_stream",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "success.csv",
+                },
+                "stream": "csv_success_stream",
+            },
+        ]
+    )
+).build()
+
+multi_stream_csv_with_two_invalid_streams_scenario: TestScenario[InMemoryFilesSource] = (
+    # Tests that the source will raise an AirbyteTracedException if all streams fail discovery w/ invalid file formats
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_stream_csv_with_two_invalid_streams")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "csv_a_stream",
+                    "format": {"filetype": "csv"},
+                    "globs": ["a.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "csv_b_stream",
+                    "format": {"filetype": "csv"},
+                    "globs": ["b.csv"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val11b", "val12b"),
+                        ("val21b", "val22b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
+                    },
+                    "name": "csv_a_stream",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        []
+    )
+    .set_expected_discover_error(AirbyteTracedException, "An error occurred while discovering the source schema. Please check the logged errors for more information:")
+    .set_expected_read_error(AirbyteTracedException, "An error occurred while attempting to read from the source. Please check the logged errors for more information.")
+).build()
