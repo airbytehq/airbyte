@@ -113,6 +113,7 @@ The key that you are assigned is rate-limited and as such any applications that 
 
 | Version | Date       | Pull Request                                              | Subject                                        |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.2.0 | 2024-09-06 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Refactor connector to manifest-only format |
 | 0.1.9 | 2024-08-31 | [44997](https://github.com/airbytehq/airbyte/pull/44997) | Update dependencies |
 | 0.1.8 | 2024-08-24 | [44746](https://github.com/airbytehq/airbyte/pull/44746) | Update dependencies |
 | 0.1.7 | 2024-08-17 | [44208](https://github.com/airbytehq/airbyte/pull/44208) | Update dependencies |
