@@ -1,3 +1,5 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 """Run a subset of acceptance tests in PyTest.
 
 This test file provides a means to easily step through a subset of acceptance tests, debugging
@@ -11,10 +13,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, AirbyteTracedException, Type, launch
 from pydantic import BaseModel
 from source_s3.run import get_source
-
-from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, AirbyteTracedException, Type, launch
 
 
 class AcceptanceTestExpectRecords(BaseModel):
