@@ -1107,6 +1107,11 @@ class DatetimeBasedCursor(BaseModel):
         description='Set to True if the target API does not accept queries where the start time equal the end time.',
         title='Whether to skip requests if the start time equals the end time',
     )
+    global_substream_cursor: Optional[bool] = Field(
+        False,
+        description='This setting optimizes performance when the parent stream has thousands of partitions by storing the cursor as a single value rather than per partition. Notably, the substream state is updated only at the end of the sync, which helps prevent data loss in case of a sync failure. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/incremental-syncs).',
+        title='Whether to store cursor as one value instead of per partition',
+    )
     lookback_window: Optional[str] = Field(
         None,
         description='Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.',
