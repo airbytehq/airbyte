@@ -72,6 +72,8 @@ class ResourceDrivenMetadataQuerierFactory(
                     ?: throw SQLException("query failed", "tbl")
             }
 
+            override fun extraChecks() {}
+
             override fun close() {
                 isClosed = true
             }
