@@ -13,13 +13,13 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErr
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_http_response_filter import DefaultHttpResponseFilter
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.types import Record
-from airbyte_cdk.sources.types import Config
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
-    create_fallback_error_resolution,
     SUCCESS_RESOLUTION,
     ErrorResolution,
     ResponseAction,
+    create_fallback_error_resolution,
 )
+from airbyte_cdk.sources.types import Config
 
 
 class USCensusRecordExtractor(RecordExtractor):
@@ -135,7 +135,12 @@ class USCensusErrorHandler(DefaultErrorHandler):
         default_reponse_filter = DefaultHttpResponseFilter(parameters={}, config=self.config)
         default_response_filter_resolution = default_reponse_filter.matches(response_or_exception)
 
-        return default_response_filter_resolution if default_response_filter_resolution else create_fallback_error_resolution(response_or_exception)
+        return (
+            default_response_filter_resolution
+            if default_response_filter_resolution
+            else create_fallback_error_resolution(response_or_exception)
+        )
+
 
 @dataclass
 class USCensusSchema(SchemaLoader):
@@ -148,26 +153,25 @@ class USCensusSchema(SchemaLoader):
     In this implementation all records are of type "string", but this function could
     be changed to try and infer the data type based on the values it finds.
     """
+
     config: Config
 
     def get_json_schema(self) -> Mapping[str, Any]:
         query_params = self.config.get("query_params")
         if query_params:
-            parts = query_params.split('&')
+            parts = query_params.split("&")
             parameters = []
             for part in parts:
-                key, value = part.split('=', 1)
-                if key == 'get':
-                    parameters += value.split(',')
-                elif key == 'for':
-                    parameters.append(value.split(':')[0])
+                key, value = part.split("=", 1)
+                if key == "get":
+                    parameters += value.split(",")
+                elif key == "for":
+                    parameters.append(value.split(":")[0])
                 else:
                     parameters.append(key)
             json_schema = {k: {"type": "string"} for k in parameters}
         else:
-            json_schema = {
-                "{  @context: https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld": {"type": "string"}
-                }
+            json_schema = {"{  @context: https://project-open-data.cio.gov/v1.1/schema/catalog.jsonld": {"type": "string"}}
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "additionalProperties": True,
