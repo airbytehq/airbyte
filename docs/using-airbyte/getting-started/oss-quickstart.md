@@ -379,6 +379,14 @@ abctl local credentials --email <USER@COMPANY.EXAMPLE>
 
 The password for this user can be retrieved by running `abctl local credentials`.
 
+### Using Custom Connectors
+In order to run a custom connector with an Airbyte instance that is running in kind, you must load the docker image of that connector into the cluster. A connector container can be loaded using the following command:
+```
+kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
+```
+
+For more troubleshooting information review the troubleshooting section in [Uploading Customer Connectors](../../operator-guides/using-custom-connectors#troubleshooting)
+
 ### Additional Resources
 
 There are several channels for community support of local setup and deployment. 
