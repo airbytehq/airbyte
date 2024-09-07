@@ -16,8 +16,8 @@ import pendulum
 import pytest
 import pytz
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from airbyte_protocol.models import SyncMode
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
 from source_zendesk_support.streams import (
     DATETIME_FORMAT,
