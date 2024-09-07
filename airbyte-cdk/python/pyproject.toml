@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-cdk"
-version = "4.5.4"
+version = "5.2.1"
 description = "A framework for writing Airbyte Connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -22,9 +22,10 @@ classifiers = [
 ]
 keywords = ["airbyte", "connector-development-kit", "cdk"]
 
+
 [tool.poetry.dependencies]
 python = "^3.10"
-airbyte-protocol-models-pdv2 = "^0.12.2"
+airbyte-protocol-models-dataclasses = "^0.13"
 backoff = "*"
 cachetools = "*"
 Deprecated = "~1.2"
@@ -65,6 +66,8 @@ unstructured = { version = "0.10.27", extras = ["docx", "pptx"], optional = true
 pyjwt = "^2.8.0"
 cryptography = "^42.0.5"
 pytz = "2024.1"
+orjson = "^3.10.7"
+serpyco-rs = "^1.10.2"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"

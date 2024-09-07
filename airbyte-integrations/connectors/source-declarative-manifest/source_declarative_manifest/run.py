@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import os
 import pkgutil
 import sys
 from pathlib import Path
@@ -12,7 +11,7 @@ from typing import List
 
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteMessage, ConnectorSpecification, Type
+from airbyte_cdk.models import AirbyteMessage, ConnectorSpecificationSerializer, Type
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
@@ -64,7 +63,7 @@ def handle_remote_manifest_command(args: List[str]) -> None:
     if args[0] == "spec":
         json_spec = pkgutil.get_data("source_declarative_manifest", "spec.json")
         spec_obj = json.loads(json_spec)
-        spec = ConnectorSpecification.parse_obj(spec_obj)
+        spec = ConnectorSpecificationSerializer.load(spec_obj)
 
         message = AirbyteMessage(type=Type.SPEC, spec=spec)
         print(AirbyteEntrypoint.airbyte_message_to_string(message))

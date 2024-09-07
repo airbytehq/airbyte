@@ -41,6 +41,7 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------|
+| 0.1.16 | 2024-08-31 | [45053](https://github.com/airbytehq/airbyte/pull/45053) | Update dependencies |
 | 0.1.15 | 2024-08-24 | [44712](https://github.com/airbytehq/airbyte/pull/44712) | Update dependencies |
 | 0.1.14 | 2024-08-17 | [44358](https://github.com/airbytehq/airbyte/pull/44358) | Update dependencies |
 | 0.1.13 | 2024-08-12 | [43738](https://github.com/airbytehq/airbyte/pull/43738) | Update dependencies |
