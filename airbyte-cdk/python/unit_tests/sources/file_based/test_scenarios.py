@@ -206,7 +206,7 @@ def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenar
         ["check", "--config", make_file(tmp_path / "config.json", scenario.config)],
     )
     captured = capsys.readouterr()
-    return json.loads(captured.out.splitlines()[0])["connectionStatus"]  # type: ignore
+    return json.loads(captured.out.splitlines()[-1])["connectionStatus"]  # type: ignore
 
 
 def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> Dict[str, Any]:
