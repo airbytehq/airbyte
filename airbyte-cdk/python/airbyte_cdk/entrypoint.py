@@ -53,7 +53,6 @@ class AirbyteEntrypoint(object):
             _init_internal_request_filter()
 
         self.source = source
-        self._source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
     @staticmethod
