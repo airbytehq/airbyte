@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from airbyte_cdk import AirbyteTracedException
+
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.helpers import (
     FailingSchemaValidationPolicy,
