@@ -220,12 +220,13 @@ def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
 
 
 def test_run_check_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    exception = ValueError("Any error")
     parsed_args = Namespace(command="check", config="config_path")
-    mocker.patch.object(MockSource, "check", side_effect=ValueError("Any error"))
+    mocker.patch.object(MockSource, "check", side_effect=exception)
 
     with pytest.raises(ValueError):
         messages = list(entrypoint.run(parsed_args))
-        assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode()] == messages
+        assert [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode(),  _wrap_message(AirbyteConnectionStatus(status=Status.FAILED, message=repr(exception)))] == messages
 
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
