@@ -209,7 +209,7 @@ def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenar
     return _find_connection_status(captured.out.splitlines())
 
 def _find_connection_status(output: List[str]) -> Mapping[str, Any]:
-    for line in output.splitlines():
+    for line in output:
         json_line = json.loads(line)
         if "connectionStatus" in json_line:
             return json_line["connectionStatus"]

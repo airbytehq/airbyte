@@ -150,7 +150,9 @@ class AirbyteEntrypoint(object):
         except AirbyteTracedException as traced_exc:
             yield from self._emit_queued_messages(self.source)
             yield traced_exc.as_airbyte_message()
-            yield AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(Status.FAILED, message=repr(traced_exc)))
+            yield AirbyteMessage(
+                type=Type.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(Status.FAILED, message=repr(traced_exc))
+            )
             return
         if check_result.status == Status.SUCCEEDED:
             self.logger.info("Check succeeded")
