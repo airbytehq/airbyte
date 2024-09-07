@@ -7,7 +7,7 @@ from pytest import fixture
 @fixture
 def config_pass():
     return {
-        "ingest_start": "2024-05-20T20:30:40Z",
+        "ingest_start": "2024-05-20",
         "api_token": "token",
         "metrics": ["installs", "network_installs", "network_cost", "network_ecpi"],
         "dimensions": ["app", "partner_name", "campaign", "campaign_id_network", "campaign_network"],

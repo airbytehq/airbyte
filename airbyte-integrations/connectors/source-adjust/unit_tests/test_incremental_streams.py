@@ -30,7 +30,7 @@ def test_stream_slices(requests_mock, config_pass, report_url, mock_report_respo
     stream = get_stream_by_name("AdjustReport", config_pass)
     period = 5
     start = datetime.today() - timedelta(days=period)
-    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": "day", "stream_state": {"day": start.isoformat()}}
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": "day", "stream_state": {"day": start.date().isoformat()}}
     assert list(stream.stream_slices(**inputs)) is not None
 
 

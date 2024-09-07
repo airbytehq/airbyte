@@ -49,7 +49,7 @@ def test_parse_response(requests_mock, config_pass, report_url, mock_report_resp
     records = []
     for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
         records.extend(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
-    days_difference = (datetime.today() - datetime.strptime(config_pass["ingest_start"], "%Y-%m-%dT%H:%M:%SZ")).days
+    days_difference = (datetime.today() - datetime.strptime(config_pass["ingest_start"], "%Y-%m-%d")).days
     assert len(records) == days_difference + 1
     assert sorted(records[0].keys()) == sorted(expected_parsed_record.keys())
 
