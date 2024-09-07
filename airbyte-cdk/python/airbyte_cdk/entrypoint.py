@@ -20,7 +20,6 @@ from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
 from airbyte_cdk.models import (  # type: ignore [attr-defined]
-    AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteMessageSerializer,
     AirbyteStateStats,
