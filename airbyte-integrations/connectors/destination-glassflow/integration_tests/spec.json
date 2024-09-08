@@ -11,12 +11,17 @@
     "required": ["pipeline_id", "pipeline_access_token"],
     "properties": {
       "pipeline_id": {
+        "title": "Pipeline ID",
         "type": "string",
-        "description": "The GlassFlow pipeline id."
+        "description": "The GlassFlow pipeline id.",
+        "order": 0
       },
       "pipeline_access_token": {
+        "title": "Pipeline Access Token",
         "type": "string",
-        "description": "The GlassFlow pipeline access token."
+        "description": "The GlassFlow pipeline access token.",
+        "airbyte_secret": true,
+        "order": 1
       }
     }
   }
