@@ -11,6 +11,10 @@ data:
   tags:
     - language:python
     - cdk:python
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-destination-glassflow
   registryOverrides:
     oss:
       enabled: true
