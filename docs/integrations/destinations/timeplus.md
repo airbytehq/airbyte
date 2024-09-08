@@ -39,7 +39,8 @@ You'll need the following information to configure the Timeplus destination:
 
 | Version | Date       | Pull Request                                              | Subject              |
 |:--------| :--------- | :-------------------------------------------------------- | :------------------- |
-| 0.1.19 | 2024-09-02 | [44707](https://github.com/airbytehq/airbyte/pull/44758) | Support new Timeplus Cloud using latest timeplus Python SDK |
+| 0.1.20 | 2024-09-08 | [44758](https://github.com/airbytehq/airbyte/pull/44758) | Support new Timeplus Cloud using latest timeplus Python SDK |
+| 0.1.19 | 2024-09-07 | [45218](https://github.com/airbytehq/airbyte/pull/45218) | Update dependencies |
 | 0.1.18 | 2024-08-31 | [45020](https://github.com/airbytehq/airbyte/pull/45020) | Update dependencies |
 | 0.1.17 | 2024-08-24 | [44707](https://github.com/airbytehq/airbyte/pull/44707) | Update dependencies |
 | 0.1.16 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
