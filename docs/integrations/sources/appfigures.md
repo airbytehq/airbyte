@@ -1,7 +1,12 @@
 # Appfigures
-Website: https://appfigures.com/
-API Docs: https://docs.appfigures.com/api/reference/v2/
-Authentication Docs: https://docs.appfigures.com/api/reference/v2/authentication
+This page contains the setup guide and reference information for the [Appfigures](https://appfigures.com/) source connector.
+
+## Documentation reference:
+Visit `https://docs.appfigures.com/api/reference/v2/` for API documentation
+
+## Authentication setup
+Appfigures uses personal access token as API Key Authorization, Please visit `https://appfigures.com/account/apis` for getting your API tokens
+Refer `https://docs.appfigures.com/api/reference/v2/authentication` for more details.
 
 ## Configuration
 
@@ -32,8 +37,8 @@ Authentication Docs: https://docs.appfigures.com/api/reference/v2/authentication
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-08 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|--|----------------|
+| 0.0.1 | 2024-09-08 |[45332](https://github.com/airbytehq/airbyte/pull/45332)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

@@ -1,9 +1,12 @@
 # Appfigures
 This directory contains the manifest-only connector for `source-appfigures`.
 
-Website: https://appfigures.com/
-API Docs: https://docs.appfigures.com/api/reference/v2/
-Authentication Docs: https://docs.appfigures.com/api/reference/v2/authentication
+## Documentation reference:
+Visit `https://docs.appfigures.com/api/reference/v2/` for API documentation
+
+## Authentication setup
+Appfigures uses personal access token as API Key Authorization, Please visit `https://appfigures.com/account/apis` for getting your API tokens
+Refer `https://docs.appfigures.com/api/reference/v2/authentication` for more details.
 
 ## Usage
 There are multiple ways to use this connector:
