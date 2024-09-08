@@ -654,6 +654,7 @@ module.exports = {
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",
         "operator-guides/using-kestra-plugin",
+        "operator-guides/using-orchestra-task",
       ],
     },
     {
