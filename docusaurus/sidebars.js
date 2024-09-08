@@ -69,6 +69,7 @@ function getSourceConnectors() {
     "readme",
     "postgres",
     "mongodb-v2",
+    "mssql",
     "mysql",
   ]);
 }
@@ -147,6 +148,22 @@ const sourceMysql = {
   ],
 };
 
+const sourceMssql = {
+  type: "category",
+  label: "MS SQL Server (MSSQL)",
+  link: {
+    type: "doc",
+    id: "integrations/sources/mssql",
+  },
+  items: [
+    {
+      type: "doc",
+      label: "Troubleshooting",
+      id: "integrations/sources/mssql/mssql-troubleshooting",
+    },
+  ],
+};
+
 const destinationS3 = {
   type: "category",
   label: "S3",
@@ -156,15 +173,15 @@ const destinationS3 = {
   },
   items: [
     {
-       type: "doc",
-       label: "Migration Guide",
-       id: "integrations/destinations/s3-migrations",
+      type: "doc",
+      label: "Migration Guide",
+      id: "integrations/destinations/s3-migrations",
     },
     {
       type: "doc",
       label: "Troubleshooting",
       id: "integrations/destinations/s3/s3-troubleshooting",
-    }
+    },
   ],
 };
 
@@ -350,6 +367,7 @@ const connectorCatalog = {
         sourcePostgres,
         sourceMongoDB,
         sourceMysql,
+        sourceMssql,
         ...getSourceConnectors(),
       ].sort((itemA, itemB) => itemA.label.localeCompare(itemB.label)),
     },
@@ -477,7 +495,6 @@ const understandingAirbyte = {
     "understanding-airbyte/database-data-catalog",
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
-    "understanding-airbyte/operations",
     "understanding-airbyte/secrets",
     "understanding-airbyte/cdc",
     "understanding-airbyte/resumability",
@@ -573,9 +590,7 @@ module.exports = {
         type: "doc",
         id: "operator-guides/upgrading-airbyte",
       },
-      items: [
-        "managing-airbyte/connector-updates"
-      ],
+      items: ["managing-airbyte/connector-updates"],
     },
     {
       type: "category",
@@ -639,6 +654,7 @@ module.exports = {
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",
         "operator-guides/using-kestra-plugin",
+        "operator-guides/using-orchestra-task",
       ],
     },
     {
@@ -698,6 +714,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/aug_2024",
         "release_notes/july_2024",
         "release_notes/june_2024",
         "release_notes/may_2024",

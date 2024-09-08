@@ -313,6 +313,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version   | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.2 | 2024-09-07 | [45263](https://github.com/airbytehq/airbyte/pull/45263) | Update dependencies |
+| 3.7.1 | 2024-08-31 | [44326](https://github.com/airbytehq/airbyte/pull/44326) | Update dependencies |
 | `3.7.0  ` | 2024-08-15 | [44095](https://github.com/airbytehq/airbyte/pull/44095) | Migrate to google-ads v17                                                                                                            |
 | `3.6.5  ` | 2024-08-12 | [43882](https://github.com/airbytehq/airbyte/pull/43882) | Update dependencies                                                                                                                  |
 | `3.6.4`   | 2024-08-10 | [43628](https://github.com/airbytehq/airbyte/pull/43628) | Update dependencies                                                                                                                  |

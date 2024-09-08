@@ -222,6 +222,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.9 | 2024-09-07 | [45320](https://github.com/airbytehq/airbyte/pull/45320) | Update dependencies |
+| 1.8.8 | 2024-08-23 | [44592](https://github.com/airbytehq/airbyte/pull/44592) | Fix state handling for stream WorkflowRuns |
+| 1.8.7 | 2024-08-31 | [45061](https://github.com/airbytehq/airbyte/pull/45061) | Update dependencies |
 | 1.8.6 | 2024-08-24 | [44703](https://github.com/airbytehq/airbyte/pull/44703) | Update dependencies |
 | 1.8.5 | 2024-08-17 | [44227](https://github.com/airbytehq/airbyte/pull/44227) | Update dependencies |
 | 1.8.4 | 2024-08-12 | [43749](https://github.com/airbytehq/airbyte/pull/43749) | Update dependencies |
