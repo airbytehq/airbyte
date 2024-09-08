@@ -115,7 +115,11 @@ vector_store.similarity_search("test")
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
-| :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.31 | 2024-09-07 | [45281](https://github.com/airbytehq/airbyte/pull/45281) | Update dependencies |
+| 0.0.30 | 2024-08-31 | [44960](https://github.com/airbytehq/airbyte/pull/44960) | Update dependencies |
+| 0.0.29 | 2024-08-24 | [44754](https://github.com/airbytehq/airbyte/pull/44754) | Update dependencies |
+| 0.0.28 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.0.27 | 2024-08-17 | [44242](https://github.com/airbytehq/airbyte/pull/44242) | Update dependencies |
 | 0.0.26 | 2024-08-12 | [43776](https://github.com/airbytehq/airbyte/pull/43776) | Update dependencies |
 | 0.0.25 | 2024-08-10 | [43619](https://github.com/airbytehq/airbyte/pull/43619) | Update dependencies |

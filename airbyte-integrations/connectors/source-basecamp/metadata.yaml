@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "3.basecampapi.com"
   registryOverrides:
     oss:
       enabled: true
