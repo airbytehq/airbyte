@@ -159,6 +159,7 @@ class ModelToComponentFactory:
         limit_slices_fetched: Optional[int] = None,
         emit_connector_builder_messages: bool = False,
         disable_retries: bool = False,
+        disable_cache: bool = False,
         message_repository: Optional[MessageRepository] = None,
     ):
         self._init_mappings()
@@ -166,6 +167,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._disable_cache = disable_cache
         self._message_repository = message_repository or InMemoryMessageRepository(  # type: ignore
             self._evaluate_log_level(emit_connector_builder_messages)
         )
@@ -825,6 +827,8 @@ class ModelToComponentFactory:
         assert model.use_cache is not None  # for mypy
         assert model.http_method is not None  # for mypy
 
+        use_cache = model.use_cache and not self._disable_cache
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
@@ -837,7 +841,7 @@ class ModelToComponentFactory:
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
-            use_cache=model.use_cache,
+            use_cache=use_cache,
             decoder=decoder,
             stream_response=decoder.is_stream_response() if decoder else False,
         )
@@ -1199,6 +1203,7 @@ class ModelToComponentFactory:
             limit_slices_fetched=self._limit_slices_fetched,
             emit_connector_builder_messages=self._emit_connector_builder_messages,
             disable_retries=self._disable_retries,
+            disable_cache=self._disable_cache,
             message_repository=LogAppenderMessageRepositoryDecorator(
                 {"airbyte_cdk": {"stream": {"is_substream": True}}, "http": {"is_auxiliary": True}},
                 self._message_repository,
