@@ -8,7 +8,6 @@ from airbyte_cdk import StreamSlice
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 
 
-@dataclass
 class AsyncJobRepository:
     @abstractmethod
     def start(self, stream_slice: StreamSlice) -> AsyncJob:

@@ -1688,7 +1688,7 @@ definitions:
         type: string
         enum: [JsonlDecoder]
   KeysToLower:
-    title: Keys to Lower Fields
+    title: Keys to Lower Case
     description: A transformation that renames all keys to lower case.
     type: object
     required:

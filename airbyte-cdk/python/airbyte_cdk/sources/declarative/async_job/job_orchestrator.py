@@ -5,6 +5,7 @@ import time
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
+from airbyte_cdk.logger import lazy_log
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
@@ -94,8 +95,8 @@ class AsyncJobOrchestrator:
 
     def _start_jobs(self) -> None:
         """
-        Start the jobs for each slice in the slice iterator.
-        This method iterates over the slice iterator and starts a job for each slice.
+        Retry failed jobs and start jobs for each slice in the slice iterator.
+        This method iterates over the running jobs and slice iterator and starts a job for each slice.
         The started jobs are added to the running partitions.
         Returns:
             None
@@ -139,25 +140,26 @@ class AsyncJobOrchestrator:
         Returns:
             None
         """
-        self._debug_log(f"Polling status in progress. There are currently {len(self._running_partitions)} running partitions.")
+        lazy_log(
+            LOGGER,
+            logging.DEBUG,
+            lambda: f"Polling status in progress. There are currently {len(self._running_partitions)} running partitions.",
+        )
 
         # wait only when there are running partitions
         if self._running_partitions:
-            self._debug_log(f"Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll...")
+            lazy_log(
+                LOGGER,
+                logging.DEBUG,
+                lambda: f"Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll...",
+            )
             time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
-
-    def _debug_log(self, message: str) -> None:
-        # if statement in order to avoid string formatting if we're not in debug mode
-        if LOGGER.isEnabledFor(logging.DEBUG):
-            LOGGER.debug(message)
 
     def _process_completed_partition(self, partition: AsyncPartition) -> None:
         """
         Process a completed partition.
         Args:
             partition (AsyncPartition): The completed partition to process.
-        Returns:
-            AsyncPartition: The processed partition.
         """
         job_ids = list(map(lambda job: job.api_job_id(), {job for job in partition.jobs}))
         LOGGER.info(f"The following jobs for stream slice {partition.stream_slice} have been completed: {job_ids}.")

@@ -71,7 +71,7 @@ class ResponseToFileExtractor(RecordExtractor):
             self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
-    def _save_to_file(self, response: Optional[requests.Response] = None) -> Tuple[str, str]:
+    def _save_to_file(self, response: requests.Response) -> Tuple[str, str]:
         """
         Saves the binary data from the given response to a temporary file and returns the filepath and response encoding.
 
@@ -86,27 +86,27 @@ class ResponseToFileExtractor(RecordExtractor):
         """
         # set filepath for binary data from response
         decompressor = zlib.decompressobj(zlib.MAX_WBITS | 32)
+        needs_decompression = True  # we will assume at first that the response is compressed and change the flag if not
 
-        if response:
-            tmp_file = str(uuid.uuid4())
-            with closing(response) as response, open(tmp_file, "wb") as data_file:
-                response_encoding = self._get_response_encoding(dict(response.headers or {}))
-                for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
-                    try:
+        tmp_file = str(uuid.uuid4())
+        with closing(response) as response, open(tmp_file, "wb") as data_file:
+            response_encoding = self._get_response_encoding(dict(response.headers or {}))
+            for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                try:
+                    if needs_decompression:
                         data_file.write(decompressor.decompress(chunk))
-                    except zlib.error:
-                        # we bypass having the context of the error here,
-                        # since it's just a flag-type exception to handle a different scenario.
+                        needs_decompression = True
+                    else:
                         data_file.write(self._filter_null_bytes(chunk))
+                except zlib.error:
+                    data_file.write(self._filter_null_bytes(chunk))
+                    needs_decompression = False
 
-            # check the file exists
-            if os.path.isfile(tmp_file):
-                return tmp_file, response_encoding
-            else:
-                raise ValueError(f"The IO/Error occured while verifying binary data. Tmp file {tmp_file} doesn't exist.")
-
-        # return default values
-        return EMPTY_STR, EMPTY_STR
+        # check the file exists
+        if os.path.isfile(tmp_file):
+            return tmp_file, response_encoding
+        else:
+            raise ValueError(f"The IO/Error occured while verifying binary data. Tmp file {tmp_file} doesn't exist.")
 
     def _read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[Mapping[str, Any]]:
         """

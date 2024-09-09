@@ -12,6 +12,8 @@ from .status import AsyncJobStatus
 
 class AsyncJob:
     """
+    Description of an API job.
+
     Note that the timer will only stop once `update_status` is called so the job might be completed on the API side but until we query for
     it and call `ApiJob.update_status`, `ApiJob.status` will not reflect the actual API side status.
     """
@@ -39,7 +41,7 @@ class AsyncJob:
     def update_status(self, status: AsyncJobStatus) -> None:
         if self._status != AsyncJobStatus.RUNNING and status == AsyncJobStatus.RUNNING:
             self._timer.start()
-        elif status in [AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT, AsyncJobStatus.COMPLETED]:
+        elif status.is_terminal():
             self._timer.stop()
 
         self._status = status

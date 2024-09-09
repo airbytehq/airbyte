@@ -1227,9 +1227,15 @@ class ModelToComponentFactory:
             client_side_incremental_sync=client_side_incremental_sync,
         )
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
-        creation_requester = self._create_component_from_model(model=model.creation_requester, decoder=decoder, config=config, name=name)
-        polling_requester = self._create_component_from_model(model=model.polling_requester, decoder=decoder, config=config, name=name)
-        download_requester = self._create_component_from_model(model=model.download_requester, decoder=decoder, config=config, name=name)
+        creation_requester = self._create_component_from_model(
+            model=model.creation_requester, decoder=decoder, config=config, name=f"job creation - {name}"
+        )
+        polling_requester = self._create_component_from_model(
+            model=model.polling_requester, decoder=decoder, config=config, name=f"job polling - {name}"
+        )
+        download_requester = self._create_component_from_model(
+            model=model.download_requester, decoder=decoder, config=config, name=f"job download - {name}"
+        )
         status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
         urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(

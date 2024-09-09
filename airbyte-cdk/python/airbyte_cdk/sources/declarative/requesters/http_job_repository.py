@@ -1,11 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
-
+import logging
 import uuid
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
+from airbyte_cdk.logger import lazy_log
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
@@ -16,6 +16,8 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import Response
+
+LOGGER = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -122,6 +124,10 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         """
         Updates the status of multiple jobs.
 
+        Because we don't have interpolation on random fields, we have this hack which consist on using the stream_slice to allow for
+        interpolation. We are looking at enabling interpolation on more field which would require a change to those three layers:
+        HttpRequester, RequestOptionProvider, RequestInputProvider.
+
         Args:
             jobs (Iterable[AsyncJob]): An iterable of AsyncJob objects representing the jobs to update.
 
@@ -135,6 +141,10 @@ class AsyncHttpJobRepository(AsyncJobRepository):
             )
             polling_response: requests.Response = self._get_validated_polling_response(stream_slice)
             job_status: AsyncJobStatus = self._get_validated_job_status(polling_response)
+
+            if job_status != job.status():
+                lazy_log(LOGGER, logging.DEBUG, lambda: f"Status of job {job.api_job_id()} changed from {job.status()} to {job_status}")
+
             job.update_status(job_status)
             if job_status == AsyncJobStatus.COMPLETED:
                 self._polling_job_response_by_id[job.api_job_id()] = polling_response
