@@ -9,6 +9,7 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 5.4.0 | 2024-09-09 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.4.0 |
 | 5.3.0 | 2024-09-09 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.3.0 |
 | 5.2.1 | 2024-09-06 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.2.1 |
 | 5.2.0 | 2024-09-06 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.2.0 |
