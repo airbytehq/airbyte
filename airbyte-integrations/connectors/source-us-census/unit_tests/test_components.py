@@ -1,8 +1,10 @@
-import pytest
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from dataclasses import dataclass
-from typing import Mapping, Any
+from typing import Any, Mapping
 from unittest.mock import Mock
 
+import pytest
 from source_us_census.components import USCensusSchema
 
 
