@@ -10,7 +10,7 @@ class ConfigBuilder:
             "account_id": "ConfigBuilder default account id",
             "start_date": "2020-05-01T00:00:00Z",
             "credentials": {
-                "credentials_title": "Secret Key Credential",
+                "credentials_title": "Client Secret Credentials",
                 "client_secret": "ConfigBuilder default client secret",
             }
         }

@@ -56,18 +56,18 @@ connectionSpecification:
                 - "rt_1234567890"
               airbyte_secret: true
         - type: object
-          title: Secret Key
+          title: Client Secret
           required:
-            - secret_key
+            - client_secret
           properties:
             credentials_title:
               type: string
               title: Auth Type
               description: Name of the credentials
-              const: Secret Key Credentials
+              const: Client Secret Credentials
               order: 0
-            secret_key:
-              title: Secret Key
+            client_secret:
+              title: Client Secret
               description: >-
                 Stripe API key (usually starts with 'sk_live_'; find yours <a
                 href="https://dashboard.stripe.com/apikeys">here</a>).

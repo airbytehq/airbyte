@@ -117,15 +117,15 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         return False
 
-    def has_secret_key_auth(self, config: Mapping[str, Any]) -> bool:
+    def has_client_secret_auth(self, config: Mapping[str, Any]) -> bool:
         """
-        Check if the source connector uses Secret Key authentication.
+        Check if the source connector uses Client Secret authentication.
 
         Args:
             config: source connector configuration.
         """
         if "credentials" in config:
-            return config["credentials"]["credentials_title"] == "Secret Key Credentials"
+            return config["credentials"]["credentials_title"] == "Client Secret Credentials"
 
         return False
 
@@ -146,7 +146,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                 client_secret=credentials["client_secret"],
                 refresh_token=credentials["refresh_token"],
             )
-        elif self.has_secret_key_auth(config):
+        elif self.has_client_secret_auth(config):
             self._authenticator =  TokenAuthenticator(credentials["client_secret"])
         else:
             raise ValueError(f"Unknown credentials_title: {credentials_title}")
@@ -174,7 +174,7 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         if self.has_oauth2_auth(config):
             return authenticator.get_access_token()
-        elif self.has_secret_key_auth(config):
+        elif self.has_client_secret_auth(config):
             return authenticator._token
         else:
             raise ValueError("Unknown authentication")
