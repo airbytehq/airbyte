@@ -88,16 +88,12 @@ data:
               - "campaign_groups"
               - "conversions"
       5.0.0:
-        message: This release introduces updated format of state for incremental streams and changes primary key for AccountUsers streams from account to account. Users will need to reset affected streams after upgrading. Please see migration guide for more details.
-        upgradeDeadline: "2024-09-25"
+        message: This release changes primary key for AccountUsers streams from account to account. Users will need to reset affected stream after upgrading. Please see migration guide for more details.
+        upgradeDeadline: "2024-09-30"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
               - "account_users"
-              - "campaigns"
-              - "creatives"
-              - "campaign_groups"
-              - "conversions"
   suggestedStreams:
     streams:
       - accounts
