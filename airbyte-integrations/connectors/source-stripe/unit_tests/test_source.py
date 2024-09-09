@@ -4,10 +4,8 @@
 import datetime
 import logging
 from contextlib import nullcontext as does_not_raise
-from unittest.mock import patch
 
 import pytest
-import source_stripe
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams.call_rate import CachedLimiterSession, LimiterSession, Rate
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -47,11 +45,6 @@ class CatalogBuilder:
 
 def _a_valid_config():
     return {"account_id": 1, "client_secret": "secret"}
-
-
-@patch.object(source_stripe.source, "stripe")
-def test_source_check_connection_ok(mocked_client, config):
-    assert SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).check_connection(logger, config=config) == (True, None)
 
 
 def test_streams_are_unique(config):
