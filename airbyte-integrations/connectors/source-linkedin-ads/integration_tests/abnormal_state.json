@@ -105,10 +105,10 @@
     }
   },
   {
-    "type":"STREAM",
-    "stream":{
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "lastModified": 2524608000000 },
-      "stream_descriptor":{ "name":"conversions" }
+      "stream_descriptor": { "name": "conversions" }
     }
   }
 ]
