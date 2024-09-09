@@ -90,8 +90,9 @@ def github_metadata_definitions(context):
     for metadata_file in github_connectors_metadata_files:
         metadata_raw = _get_content_of_github_file(context, github_connector_repo, metadata_file["path"])
         metadata_dict = yaml.safe_load(metadata_raw.decoded_content)
-        if metadata_dict.get("data").get("supportLevel") == "archived":
-            print(f"Skipping archived connector: {metadata_dict.get('data').get('dockerRepository')}")
+        support_level = metadata_dict.get("data").get("supportLevel")
+        if support_level in ("archived", "incubating"):
+            print(f"Skipping {support_level} connector: {metadata_dict.get('data').get('dockerRepository')}")
             continue
         metadata_definitions.append(
             LatestMetadataEntry(
@@ -111,7 +112,7 @@ def entry_is_younger_than_grace_period(entry: LatestMetadataEntry) -> bool:
 def entry_should_be_on_gcs(metadata_entry: LatestMetadataEntry) -> bool:
     """For stale metadata detection, we only want to scan latest metadata files from our master branch that are expected to be on GCS.
     A metadata file should be on GCS, in the latest directory, if:
-    - it is not archived
+    - it is not archived or incubating
     - not a release candidate
     - has been published for more than the grace period (just to reduce false positives when publish pipeline and stale detection run concurrently).
 
@@ -121,7 +122,7 @@ def entry_should_be_on_gcs(metadata_entry: LatestMetadataEntry) -> bool:
     Returns:
         bool: True if the metadata entry should be on GCS, False otherwise
     """
-    if metadata_entry.metadata_definition.data.supportLevel == "archived":
+    if metadata_entry.metadata_definition.data.supportLevel in ("archived", "incubating"):
         return False
     if getattr(metadata_entry.metadata_definition.data.releases, "isReleaseCandidate", False):
         return False
@@ -145,7 +146,7 @@ def stale_gcs_latest_metadata_file(context, github_metadata_definitions: list, l
     latest_versions_on_gcs = {
         metadata_entry.metadata_definition.data.dockerRepository: metadata_entry.metadata_definition.data.dockerImageTag
         for metadata_entry in latest_metadata_entries
-        if metadata_entry.metadata_definition.data.supportLevel != "archived"
+        if metadata_entry.metadata_definition.data.supportLevel not in ("archived", "incubating")
     }
 
     latest_versions_on_github = {

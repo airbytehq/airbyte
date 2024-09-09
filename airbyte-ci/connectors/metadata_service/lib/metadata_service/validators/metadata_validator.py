@@ -88,6 +88,24 @@ def validate_all_tags_are_keyvalue_pairs(
     return True, None
 
 
+def validate_major_version_is_zero_when_incubating(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    """Ensure that incubating connector versions are zero."""
+    metadata_definition_dict = metadata_definition.dict()
+    image_tag = get(metadata_definition_dict, "data.dockerImageTag")
+    support_level = get(metadata_definition_dict, "data.supportLevel")
+
+    if support_level != "incubating":
+        return True, None
+
+    semver_version = semver.Version.parse(image_tag)
+    if semver_version.major == 0:
+        return True, None
+
+    return False, f"Major version {image_tag} must be zero when 'supportLevel' is 'incubating'."
+
+
 def is_major_version(version: str) -> bool:
     """Check whether the version is of format N.0.0"""
     semver_version = semver.Version.parse(version)
@@ -205,6 +223,7 @@ def validate_docker_image_tag_is_not_decremented(
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
+    validate_major_version_is_zero_when_incubating,
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
     validate_metadata_base_images_in_dockerhub,

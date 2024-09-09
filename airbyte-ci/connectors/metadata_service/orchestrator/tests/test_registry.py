@@ -363,7 +363,7 @@ def test_sbom_url():
 
 def test_support_level_default():
     """
-    Test if supportLevel is defaulted to alpha in the registry entry.
+    Test if supportLevel is defaulted to community in the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
