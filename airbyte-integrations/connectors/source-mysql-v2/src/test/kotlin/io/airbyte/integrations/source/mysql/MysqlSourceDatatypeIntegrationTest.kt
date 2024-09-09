@@ -2,7 +2,6 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.TestClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteType
 import io.airbyte.cdk.data.LeafAirbyteType
@@ -126,7 +125,7 @@ class MysqlSourceDatatypeIntegrationTest {
             actualStream!!.supportedSyncModes.contains(SyncMode.INCREMENTAL)
         val jsonSchema: JsonNode = actualStream.jsonSchema?.get("properties")!!
         if (streamName == testCase.tableName) {
-            val actualSchema: JsonNode? = jsonSchema[testCase.columnName]
+            val actualSchema: JsonNode = jsonSchema[testCase.columnName]
             Assertions.assertNotNull(actualSchema)
             val expectedSchema: JsonNode = testCase.airbyteType.asJsonSchema()
             Assertions.assertEquals(expectedSchema, actualSchema)

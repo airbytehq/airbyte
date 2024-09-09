@@ -20,6 +20,8 @@ allprojects {
         api platform('org.slf4j:slf4j-bom:2.0.13')
         api platform('org.apache.logging.log4j:log4j-bom:2.21.1')
         api platform('org.testcontainers:testcontainers-bom:1.20.1')
+        api platform('org.codehaus.plexus:plexus-utils:4.0.0')
+
 
         api 'org.jetbrains.kotlin:kotlin-stdlib'
         api 'com.google.dagger:dagger:2.51.1'
