@@ -3,18 +3,18 @@
 #
 
 import logging
-import pytest
-from unittest.mock import MagicMock
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock
+
+import pytest
 from requests import Response, Session
 from requests.models import PreparedRequest
-
 from source_linkedin_ads.components import (
     AnalyticsDatetimeBasedCursor,
-    LinkedInAdsRecordExtractor,
     LinkedInAdsCustomRetriever,
-    SafeHttpClient,
+    LinkedInAdsRecordExtractor,
     SafeEncodeHttpRequester,
+    SafeHttpClient,
     StreamSlice,
 )
 
@@ -31,6 +31,16 @@ def mock_response():
         ]
     }
     return response
+
+
+@pytest.fixture
+def mock_analytics_cursor_params():
+    return {"start_datetime": MagicMock(), "cursor_field": MagicMock(), "datetime_format": "%s", "config": MagicMock(), "parameters": MagicMock()}
+
+
+@pytest.fixture
+def mock_retriever_params():
+    return {"requester": MagicMock(), "record_selector": MagicMock(), "config": MagicMock(), "parameters": MagicMock()}
 
 
 def test_safe_http_client_create_prepared_request():
@@ -65,14 +75,8 @@ def test_safe_encode_http_requester_post_init():
     assert isinstance(requester._http_client, SafeHttpClient)
 
 
-def test_analytics_datetime_based_cursor_chunk_analytics_fields():
-    cursor = AnalyticsDatetimeBasedCursor(
-        start_datetime=MagicMock(),
-        cursor_field=MagicMock(),
-        datetime_format=MagicMock(),
-        config=MagicMock(),
-        parameters=MagicMock(),
-    )
+def test_analytics_datetime_based_cursor_chunk_analytics_fields(mock_analytics_cursor_params):
+    cursor = AnalyticsDatetimeBasedCursor(**mock_analytics_cursor_params)
     chunks = list(cursor.chunk_analytics_fields(fields=["field1", "field2", "field3"], fields_chunk_size=2))
 
     assert len(chunks) == 2
@@ -80,14 +84,8 @@ def test_analytics_datetime_based_cursor_chunk_analytics_fields():
         assert "dateRange" in chunk and "pivotValues" in chunk
 
 
-def test_analytics_datetime_based_cursor_partition_daterange():
-    cursor = AnalyticsDatetimeBasedCursor(
-        start_datetime=MagicMock(),
-        cursor_field=MagicMock(),
-        datetime_format="%s",
-        config=MagicMock(),
-        parameters=MagicMock(),
-    )
+def test_analytics_datetime_based_cursor_partition_daterange(mock_analytics_cursor_params):
+    cursor = AnalyticsDatetimeBasedCursor(**mock_analytics_cursor_params)
     start = datetime(2024, 9, 1)
     end = datetime(2024, 9, 5)
     step = timedelta(days=2)
@@ -109,25 +107,15 @@ def test_linkedin_ads_record_extractor_extract_records(mock_response):
         assert "created" in record
 
 
-def test_linkedin_ads_custom_retriever_stream_slices():
-    retriever = LinkedInAdsCustomRetriever(
-        requester=MagicMock(),
-        record_selector=MagicMock(),
-        config=MagicMock(),
-        parameters=MagicMock(),
-    )
+def test_linkedin_ads_custom_retriever_stream_slices(mock_retriever_params):
+    retriever = LinkedInAdsCustomRetriever(**mock_retriever_params)
     slices = list(retriever.stream_slices())
 
     assert len(slices) > 0
 
 
-def test_linkedin_ads_custom_retriever_read_records(mock_response):
-    retriever = LinkedInAdsCustomRetriever(
-        requester=MagicMock(),
-        record_selector=MagicMock(),
-        config=MagicMock(),
-        parameters=MagicMock(),
-    )
+def test_linkedin_ads_custom_retriever_read_records(mock_response, mock_retriever_params):
+    retriever = LinkedInAdsCustomRetriever(**mock_retriever_params)
 
     retriever._apply_transformations = MagicMock()
     retriever.stream_slicer = MagicMock()
