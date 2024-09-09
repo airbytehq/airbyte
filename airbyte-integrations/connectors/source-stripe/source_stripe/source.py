@@ -4,11 +4,11 @@
 
 import logging
 import os
+import traceback
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
-import stripe
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -21,6 +21,7 @@ from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudg
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
@@ -107,12 +108,26 @@ class SourceStripe(ConcurrentSourceAdapter):
         return config
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        self.validate_and_fill_with_defaults(config)
-        stripe.api_key = config["client_secret"]
+        config = self.validate_and_fill_with_defaults(config)
+        authenticator = TokenAuthenticator(config["client_secret"])
+
+        start_timestamp = self._start_date_to_timestamp(config)
+        args = {
+            "authenticator": authenticator,
+            "account_id": config["account_id"],
+            "start_date": start_timestamp,
+            "slice_range": config["slice_range"],
+            "api_budget": self.get_api_call_budget(config),
+        }
+        account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
+        availability_strategy = HttpAvailabilityStrategy()
         try:
-            stripe.Account.retrieve(config["account_id"])
-        except (stripe.error.AuthenticationError, stripe.error.PermissionError) as e:
-            return False, str(e)
+            stream_is_available, reason = availability_strategy.check_availability(account_stream, logger)
+            if not stream_is_available:
+                return False, reason
+        except Exception as error:
+            logger.error(f"Encountered an error trying to connect to stream {account_stream.name}. Error: \n {traceback.format_exc()}")
+            return False, f"Unable to connect to stream {account_stream.name} - {error}"
         return True, None
 
     @staticmethod
