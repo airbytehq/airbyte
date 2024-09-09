@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from abc import abstractmethod
-from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Set
 
 from airbyte_cdk import StreamSlice

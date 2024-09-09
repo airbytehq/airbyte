@@ -56,6 +56,7 @@ def _status_update_per_jobs(status_update_per_jobs: Mapping[AsyncJob, List[Async
 
 sleep_mock_target = "airbyte_cdk.sources.declarative.async_job.job_orchestrator.time.sleep"
 
+
 class AsyncJobOrchestratorTest(TestCase):
     def setUp(self) -> None:
         self._job_repository = Mock(spec=AsyncJobRepository)

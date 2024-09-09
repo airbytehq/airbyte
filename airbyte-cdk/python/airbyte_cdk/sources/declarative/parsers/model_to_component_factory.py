@@ -1246,10 +1246,9 @@ class ModelToComponentFactory:
             status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
             urls_extractor=urls_extractor,
         )
-        job_orchestrator_factory = lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices)
 
         return AsyncRetriever(
-            job_orchestrator_factory=job_orchestrator_factory,
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices),
             record_selector=record_selector,
             stream_slicer=stream_slicer,
             config=config,
