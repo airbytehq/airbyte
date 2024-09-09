@@ -1211,11 +1211,11 @@ class ModelToComponentFactory:
         config: Config,
         *,
         name: str,
-        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],  # this seems to be needed to match create_simple_retriever
         stream_slicer: Optional[StreamSlicer],
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
-        **kwargs,
+        **kwargs: Any,
     ) -> AsyncRetriever:
 
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
