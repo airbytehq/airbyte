@@ -843,6 +843,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.36.0  | [#45339](https://github.com/airbytehq/airbyte/pull/45339)  | Support connectors with `supportLevel: incubating`.                                                                          |
 | 4.35.1  | [#45160](https://github.com/airbytehq/airbyte/pull/45160)  | Remove deps.toml dependency for java connectors.                                                                             |
 | 4.35.0  | [#44879](https://github.com/airbytehq/airbyte/pull/44879)  | Mount `components.py` when building manifest-only connector image                                                            |
 | 4.34.2  | [#44786](https://github.com/airbytehq/airbyte/pull/44786)  | Pre-emptively skip archived connectors when searching for modified files                                                     |
