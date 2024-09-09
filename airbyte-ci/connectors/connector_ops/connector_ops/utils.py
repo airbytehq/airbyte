@@ -780,3 +780,4 @@ class SupportLevelEnum(str, Enum):
     certified = "certified"
     community = "community"
     archived = "archived"
+    incubating = "incubating"
