@@ -148,6 +148,9 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Connector-specific configurations
 
 ### Custom reports

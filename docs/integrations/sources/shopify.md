@@ -167,6 +167,9 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Capturing deleted records
 
 The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
