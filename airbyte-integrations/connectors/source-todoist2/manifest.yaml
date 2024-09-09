@@ -1,0 +1,275 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: its new
+
+check:
+  type: CheckStream
+  stream_names:
+    - tasks
+    - projects
+
+definitions:
+  streams:
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.todoist.com/rest/v2
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/projects"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - token
+    properties:
+      token:
+        type: string
+        description: API authorization bearer token for authenticating the API
+        order: 0
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    tasks:
+      streamHash: d3bada7867f56b0d9a4fe5bedcc5b0634040626e
+    projects:
+      streamHash: 28835214e05c277fcff3039240c5310740c68d5b
+  autoImportSchema:
+    tasks: false
+    projects: false
+
+schemas:
+  tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+        description: Additional details or notes about the task
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the task
+      due:
+        description: The due date and time of the task
+        anyOf:
+          - type:
+              - "null"
+              - object
+          - type:
+              - "null"
+              - object
+            properties:
+              date:
+                type:
+                  - "null"
+                  - string
+              lang:
+                type:
+                  - "null"
+                  - string
+              string:
+                type:
+                  - "null"
+                  - string
+              is_recurring:
+                type:
+                  - "null"
+                  - boolean
+      url:
+        type:
+          - "null"
+          - string
+        description: The URL link to view the task details
+      order:
+        type:
+          - "null"
+          - integer
+        description: The position or order of the task within a project or section
+      labels:
+        type:
+          - "null"
+          - array
+        description: List of labels associated with the task
+        items:
+          type:
+            - "null"
+            - string
+      content:
+        type:
+          - "null"
+          - string
+        description: The title or description of the task
+      duration:
+        type:
+          - "null"
+          - string
+        description: The estimated duration or time required to complete the task
+      priority:
+        type:
+          - "null"
+          - integer
+        description: The priority level of the task (e.g., high, medium, low)
+      parent_id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the parent task if this task is subtask
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the task was created
+      creator_id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the user who created the task
+      project_id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the project to which the task belongs
+      section_id:
+        type:
+          - "null"
+          - string
+        description: >-
+          The unique identifier of the section within a project where the task
+          is located
+      assignee_id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the user assigned to the task
+      assigner_id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier of the user who assigned the task
+      is_completed:
+        type:
+          - "null"
+          - boolean
+        description: Indicates whether the task is completed or not (true/false)
+      comment_count:
+        type:
+          - "null"
+          - integer
+        description: The count of comments on the task
+    additionalProperties: true
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+        description: The unique identifier for the project.
+      url:
+        type:
+          - "null"
+          - string
+        description: The URL for accessing the project.
+      name:
+        type:
+          - "null"
+          - string
+        description: The name or title of the project.
+      color:
+        type:
+          - "null"
+          - string
+        description: The color associated with the project.
+      order:
+        type:
+          - "null"
+          - integer
+        description: The order or priority of the project in the list.
+      is_shared:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the project is shared with others.
+      parent_id:
+        type:
+          - "null"
+          - string
+        description: The ID of the parent project if this is a subproject.
+      view_style:
+        type:
+          - "null"
+          - string
+        description: The style or layout for viewing the project.
+      is_favorite:
+        type:
+          - "null"
+          - boolean
+        description: Indicates if the project is marked as favorite.
+      comment_count:
+        type:
+          - "null"
+          - integer
+        description: The number of comments on the project.
+      is_team_inbox:
+        type:
+          - "null"
+          - boolean
+        description: Specifies if the project is a team inbox.
+      is_inbox_project:
+        type:
+          - "null"
+          - boolean
+        description: Specifies if the project is the inbox project.
+    additionalProperties: true
