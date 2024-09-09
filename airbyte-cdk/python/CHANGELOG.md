@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.4.0
+add migration of global stream_state to per_partition format
+
 ## 5.3.0
 Connector builder: add flag to disable cache 
 
