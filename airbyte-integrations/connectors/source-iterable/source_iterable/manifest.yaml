@@ -7,7 +7,6 @@ spec:
     required:
       - start_date
       - api_key
-      - region
     additionalProperties: true
     properties:
       api_key:
@@ -31,6 +30,7 @@ spec:
       region:
         type: "string"
         title: "Iterable Region"
+        default: "US"
         description: >-
           The region of your Iterable API. Use 'US' for the US and 'EU' for the
           EU.
