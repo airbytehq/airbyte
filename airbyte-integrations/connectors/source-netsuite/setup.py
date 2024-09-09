@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.2",
     "requests-oauthlib",
 ]
 
@@ -15,7 +15,6 @@ TEST_REQUIREMENTS = [
     "pytest-mock~=3.6.1",
     "requests-mock",
 ]
-
 setup(
     entry_points={
         "console_scripts": [
