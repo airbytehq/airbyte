@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import logging
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
@@ -29,7 +29,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
 
-    record_extractor: RecordExtractor = ResponseToFileExtractor()
+    record_extractor: RecordExtractor = field(init=False, repr=False, default_factory=lambda: ResponseToFileExtractor())
 
     def __post_init__(self) -> None:
         self._create_job_response_by_id: Dict[str, Response] = {}
