@@ -24,6 +24,7 @@ from .models import DocumentationContent, TemplateContent
 
 class DocumentationCheck(Check):
     category = CheckCategory.DOCUMENTATION
+    applies_to_connector_support_levels = ["certified", "community", "archived"]  # all but incubating
 
 
 class CheckMigrationGuide(DocumentationCheck):

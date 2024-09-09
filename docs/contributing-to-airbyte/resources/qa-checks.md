@@ -12,7 +12,7 @@ They are by no mean replacing the need for a manual review of the connector code
 
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -23,7 +23,7 @@ This document should contain a section for each breaking change, in order of the
 
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -33,7 +33,7 @@ The user facing connector documentation should be stored under `./docs/integrati
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -43,7 +43,7 @@ The user facing connector documentation should update invalid links in connector
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -121,7 +121,7 @@ List of not required headers, which can be not exist in the documentation and th
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -132,7 +132,7 @@ If spec has required credentials/access_token/refresh_token etc, check searches 
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -155,7 +155,7 @@ This page contains the setup guide and reference information for the [CONNECTOR_
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -176,7 +176,7 @@ Check verifies that For Airbyte Cloud: header section content follows standard t
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -194,7 +194,7 @@ Check verifies that For Airbyte Open Source: header section content follows stan
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -213,7 +213,7 @@ The CONNECTOR_NAME_FROM_METADATA source connector supports the following [sync m
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -232,7 +232,7 @@ Now that you have set up the CONNECTOR_NAME_FROM_METADATA source connector, chec
 
 _Applies to the following connector types: source_
 _Applies to the following connector languages: python, low-code_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
@@ -250,7 +250,7 @@ Check verifies that Changelog header section content follows standard template:
 
 _Applies to the following connector types: source, destination_
 _Applies to the following connector languages: java, low-code, python, manifest-only_
-_Applies to connector with any support level_
+_Applies to connector with certified, community, archived support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 

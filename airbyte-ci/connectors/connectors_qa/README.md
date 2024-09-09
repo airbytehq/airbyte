@@ -108,6 +108,10 @@ poe lint
 
 ## Changelog
 
+### 1.8.0
+
+Added support for `supportLevel: incubating`, which skips all documentation checks.
+
 ### 1.7.0
 
 Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`, 
