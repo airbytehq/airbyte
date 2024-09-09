@@ -14,7 +14,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk import BackoffStrategy
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -22,7 +22,6 @@ from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping impor
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -492,6 +491,9 @@ class Tickets(SourceZendeskIncrementalExportStream):
 
 
 class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
+
+    cursor_field = "generated_timestamp"
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
@@ -504,32 +506,29 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_state = None
-        if stream_state:
-            cursor_value = stream_state.get(self.cursor_field)
-            parent_stream_state = {self.parent.cursor_field: pendulum.parse(cursor_value).int_timestamp}
-        else:
-            cursor_value = self._start_date
-
+        cursor_value = (stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        parent_stream_state = {self.parent.cursor_field: cursor_value}
         parent_records = self.parent.read_records(
             sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=None, stream_state=parent_stream_state
         )
 
         for record in parent_records:
-            yield {"ticket_id": record["id"], self.cursor_field: cursor_value}
+            yield {
+                "ticket_id": record["id"],
+                self.cursor_field: record.get(self.cursor_field),
+            }
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 404:
-            #  not found in case of deleted ticket
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        return super().should_retry(response)
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        return {self.cursor_field: max(new_value, old_value)}
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
         error_mapping = DEFAULT_ERROR_MAPPING | {
             403: ErrorResolution(
                 response_action=ResponseAction.IGNORE,
                 failure_type=FailureType.config_error,
-                error_message="Forbidden. Please ensure the authenticated user has access to this stream. If the issue persists, contact Zendesk support.",
+                error_message=f"Please ensure the authenticated user has access to stream: {self.name}. If the issue persists, contact Zendesk support.",
             ),
             404: ErrorResolution(
                 response_action=ResponseAction.IGNORE,
@@ -608,6 +607,7 @@ class TicketMetrics(TicketSubstream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/#show-ticket-metrics"""
 
     response_list_name = "ticket_metric"
+    cursor_field = "generated_timestamp"
 
     def path(
         self,
@@ -634,10 +634,8 @@ class TicketMetrics(TicketSubstream):
 
         # no data in case of http errors
         if data:
-            cursor_date = (stream_slice or {}).get(self.cursor_field)
-            updated = data[self.cursor_field]
-            if not cursor_date or updated >= cursor_date:
-                yield data
+            data[self.cursor_field] = (stream_slice or {}).get(self.cursor_field)
+            yield data
 
 
 class TicketSkips(CursorPaginationZendeskSupportStream):

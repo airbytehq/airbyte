@@ -19,6 +19,9 @@ class MockContainerClass:
     async def with_exec(self, *args, **kwargs):
         return self
 
+    def with_file(self, *args, **kwargs):
+        return self
+
 
 def pick_a_random_connector(
     language: ConnectorLanguage = None,
@@ -35,6 +38,8 @@ def pick_a_random_connector(
         all_connectors = [c for c in all_connectors if c.language is language]
     if support_level:
         all_connectors = [c for c in all_connectors if c.support_level == support_level]
+    else:
+        all_connectors = [c for c in all_connectors if c.support_level != "archived"]
     picked_connector = random.choice(all_connectors)
     if other_picked_connectors:
         while picked_connector in other_picked_connectors:
@@ -44,7 +49,7 @@ def pick_a_random_connector(
 
 def pick_a_strict_encrypt_variant_pair():
     for c in ALL_CONNECTORS:
-        if c.technical_name.endswith("-strict-encrypt"):
+        if c.technical_name.endswith("-strict-encrypt") and c.support_level != "archived":
             main_connector = Connector(c.relative_connector_path.replace("-strict-encrypt", ""))
             return main_connector, c
 
@@ -53,4 +58,5 @@ def mock_container():
     container_mock = AsyncMock(MockContainerClass)
     container_mock.with_label.return_value = container_mock
     container_mock.with_exec.return_value = container_mock
+    container_mock.with_file.return_value = container_mock
     return container_mock

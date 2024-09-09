@@ -38,6 +38,10 @@ Toggl APIs are under rate limits for the number of API calls allowed per API key
 
 | Version | Date       | Pull Request                                              | Subject                                 |
 |:--------|:-----------| :-------------------------------------------------------- | :-------------------------------------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0 | 2024-08-14 | [44056](https://github.com/airbytehq/airbyte/pull/44056) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-12 | [43860](https://github.com/airbytehq/airbyte/pull/43860) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43485](https://github.com/airbytehq/airbyte/pull/43485) | Update dependencies |
 | 0.1.12 | 2024-08-03 | [43064](https://github.com/airbytehq/airbyte/pull/43064) | Update dependencies |
 | 0.1.11 | 2024-07-27 | [42755](https://github.com/airbytehq/airbyte/pull/42755) | Update dependencies |
 | 0.1.10 | 2024-07-20 | [42244](https://github.com/airbytehq/airbyte/pull/42244) | Update dependencies |

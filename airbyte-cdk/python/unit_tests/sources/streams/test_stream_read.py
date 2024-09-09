@@ -194,7 +194,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     logger = _mock_logger(True)
     message_repository = InMemoryMessageRepository(Level.DEBUG)
     stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
 
     expected_records = [
         AirbyteMessage(
@@ -252,7 +252,7 @@ def test_full_refresh_read_a_single_slice(constructor):
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
 
     records = [
         {"id": 1, "partition": 1},
@@ -309,7 +309,7 @@ def test_full_refresh_read_two_slices(constructor):
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
 
     records_partition_1 = [
         {"id": 1, "partition": 1},
@@ -367,7 +367,7 @@ def test_incremental_read_two_slices():
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
     timestamp = "1708899427"
 
     records_partition_1 = [
@@ -406,7 +406,7 @@ def test_concurrent_incremental_read_two_slices():
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
     slice_timestamp_1 = "1708850000"
     slice_timestamp_2 = "1708950000"
     cursor = MockConcurrentCursor(message_repository)
@@ -456,7 +456,7 @@ def setup_stream_dependencies(configured_json_schema):
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
     message_repository = InMemoryMessageRepository(Level.INFO)
-    state_manager = ConnectorStateManager(stream_instance_map={})
+    state_manager = ConnectorStateManager()
     return configured_stream, internal_config, logger, slice_logger, message_repository, state_manager
 
 
@@ -470,7 +470,9 @@ def test_configured_json_schema():
         },
     }
 
-    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(current_json_schema)
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(
+        current_json_schema
+    )
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
@@ -506,7 +508,9 @@ def test_configured_json_schema_with_invalid_properties():
     del stream_schema["properties"][old_user_insights]
     del stream_schema["properties"][old_feature_info]
 
-    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(configured_json_schema)
+    configured_stream, internal_config, logger, slice_logger, message_repository, state_manager = setup_stream_dependencies(
+        configured_json_schema
+    )
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
@@ -521,7 +525,9 @@ def test_configured_json_schema_with_invalid_properties():
     assert old_user_insights not in configured_json_schema_properties
     assert old_feature_info not in configured_json_schema_properties
     for stream_schema_property in stream_schema["properties"]:
-        assert stream_schema_property in configured_json_schema_properties, f"Stream schema property: {stream_schema_property} missing in configured schema"
+        assert (
+            stream_schema_property in configured_json_schema_properties
+        ), f"Stream schema property: {stream_schema_property} missing in configured schema"
         assert stream_schema["properties"][stream_schema_property] == configured_json_schema_properties[stream_schema_property]
 
 

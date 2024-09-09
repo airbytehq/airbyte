@@ -51,6 +51,10 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject    |
 | :------ | :--------- | :------------------------------------------------------- | :--------- |
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0 | 2024-08-14 | [44055](https://github.com/airbytehq/airbyte/pull/44055) | Refactor connector to manifest-only format |
+| 0.1.13 | 2024-08-12 | [43740](https://github.com/airbytehq/airbyte/pull/43740) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43530](https://github.com/airbytehq/airbyte/pull/43530) | Update dependencies |
 | 0.1.11 | 2024-08-03 | [43094](https://github.com/airbytehq/airbyte/pull/43094) | Update dependencies |
 | 0.1.10 | 2024-07-27 | [42640](https://github.com/airbytehq/airbyte/pull/42640) | Update dependencies |
 | 0.1.9 | 2024-07-20 | [42386](https://github.com/airbytehq/airbyte/pull/42386) | Update dependencies |

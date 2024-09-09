@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import re
+from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import FailureType, Level
@@ -30,9 +31,11 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFil
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
+    ChildPartitionResumableFullRefreshCursor,
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
+    GlobalSubstreamCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
@@ -627,11 +630,13 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, PerPartitionCursor)):
+            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)
+            if combined_slicers and not isinstance(combined_slicers, supported_slicers):
                 raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
+                "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
         transformations = []
         if model.transformations:
@@ -684,6 +689,7 @@ class ModelToComponentFactory:
             and model.retriever.partition_router
         ):
             stream_slicer_model = model.retriever.partition_router
+
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -693,20 +699,27 @@ class ModelToComponentFactory:
 
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
-            return PerPartitionCursor(
-                cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
-                ),
-                partition_router=stream_slicer,
-            )
+            if hasattr(incremental_sync_model, "global_substream_cursor") and incremental_sync_model.global_substream_cursor:
+                cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
+                return GlobalSubstreamCursor(stream_cursor=cursor_component, partition_router=stream_slicer)
+            else:
+                return PerPartitionCursor(
+                    cursor_factory=CursorFactory(
+                        lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+                    ),
+                    partition_router=stream_slicer,
+                )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
-        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
-            # To incrementally deliver RFR for low-code we're first implementing this for streams that do not use
-            # nested state like substreams or those using list partition routers
-            return ResumableFullRefreshCursor(parameters={})
         elif stream_slicer:
-            return stream_slicer
+            # For the Full-Refresh sub-streams, we use the nested `ChildPartitionResumableFullRefreshCursor`
+            return PerPartitionCursor(
+                cursor_factory=CursorFactory(create_function=partial(ChildPartitionResumableFullRefreshCursor, {})),
+                partition_router=stream_slicer,
+            )
+        elif hasattr(model.retriever, "paginator") and model.retriever.paginator and not stream_slicer:
+            # For the regular Full-Refresh streams, we use the high level `ResumableFullRefreshCursor`
+            return ResumableFullRefreshCursor(parameters={})
         else:
             return None
 

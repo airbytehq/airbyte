@@ -2,7 +2,7 @@
 package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.exceptions.ConfigErrorException
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
@@ -35,6 +35,8 @@ class InputStateFactory {
     ): InputState {
         val list: List<AirbyteStateMessage> =
             ValidatedJsonUtils.parseList(AirbyteStateMessage::class.java, json ?: "[]")
+                // Discard states messages with unset type to allow {} as a valid input state.
+                .filter { it.type != null }
         if (list.isEmpty()) {
             return EmptyInputState
         }
@@ -89,13 +91,20 @@ class InputStateFactory {
 
     private fun validateStateMessage(message: AirbyteStateMessage) {
         when (message.type) {
-            AirbyteStateMessage.AirbyteStateType.GLOBAL,
-            AirbyteStateMessage.AirbyteStateType.STREAM, -> Unit
-            AirbyteStateMessage.AirbyteStateType.LEGACY ->
-                throw ConfigErrorException("Unsupported LEGACY state type in $message.")
-            null -> throw ConfigErrorException("State type not set in $message.")
+            AirbyteStateMessage.AirbyteStateType.GLOBAL -> {
+                if (message.global == null) {
+                    throw ConfigErrorException("global state not set in $message.")
+                }
+            }
+            AirbyteStateMessage.AirbyteStateType.STREAM -> {
+                if (message.stream == null) {
+                    throw ConfigErrorException("stream state not set in $message.")
+                }
+            }
+            else -> {
+                throw ConfigErrorException("Unsupported state type ${message.type} in $message.")
+            }
         }
-        // TODO: add more validation?
     }
 
     @Singleton

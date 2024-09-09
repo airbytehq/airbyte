@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-instagram
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -46,11 +46,12 @@ data:
       - users
       - user_lifetime_insights
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
+  erdUrl: https://dbdocs.io/airbyteio/source-instagram?view=relationships
   tags:
     - language:python
     - cdk:low-code
   ab_internal:
-    sl: 200
+    sl: 300
     ql: 400
   supportLevel: certified
   connectorTestSuitesOptions:

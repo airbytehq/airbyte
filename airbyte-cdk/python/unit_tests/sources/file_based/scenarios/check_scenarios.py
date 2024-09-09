@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError
 from unit_tests.sources.file_based.helpers import (
     FailingSchemaValidationPolicy,
@@ -130,7 +130,7 @@ error_empty_stream_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_empty_stream_scenario")
     .set_source_builder(_base_failure_scenario.copy().source_builder.copy().set_files({}))
-    .set_expected_check_error(None, FileBasedSourceError.EMPTY_STREAM.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.EMPTY_STREAM.value)
 ).build()
 
 
@@ -142,7 +142,7 @@ error_listing_files_scenario = (
             TestErrorListMatchingFilesInMemoryFilesStreamReader(files=_base_failure_scenario.source_builder._files, file_type="csv")
         )
     )
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_LISTING_FILES.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.ERROR_LISTING_FILES.value)
 ).build()
 
 
@@ -154,7 +154,7 @@ error_reading_file_scenario = (
             TestErrorOpenFileInMemoryFilesStreamReader(files=_base_failure_scenario.source_builder._files, file_type="csv")
         )
     )
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.ERROR_READING_FILE.value)
 ).build()
 
 
@@ -216,5 +216,5 @@ error_multi_stream_scenario = (
             ],
         }
     )
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE.value)
+    .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.ERROR_READING_FILE.value)
 ).build()

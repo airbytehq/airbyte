@@ -5,7 +5,6 @@
 import copy
 import datetime
 import logging
-from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from unittest.mock import Mock
 
@@ -199,7 +198,6 @@ class MockStreamWithCursor(MockStream):
 
 
 class MockStreamWithState(MockStreamWithCursor):
-
     def __init__(self, inputs_and_mocked_outputs: List[Tuple[Mapping[str, Any], Iterable[Mapping[str, Any]]]], name: str, state=None):
         super().__init__(inputs_and_mocked_outputs, name)
         self._state = state
@@ -423,7 +421,7 @@ def _as_state(stream_name: str = "", per_stream_state: Dict[str, Any] = None):
         state=AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
             stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(per_stream_state)
+                stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(per_stream_state)
             ),
         ),
     )
@@ -600,28 +598,16 @@ def test_read_incremental_with_slices_sends_slice_messages(mocker):
 
 
 class TestIncrementalRead:
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_state_attribute(self, mocker, use_legacy):
+    def test_with_state_attribute(self, mocker):
         """Test correct state passing for the streams that have a state attribute"""
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
         old_state = {"cursor": "old_value"}
-        if use_legacy:
-            input_state = {"s1": old_state}
-        else:
-            input_state = [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(old_state)
-                    ),
-                ),
-            ]
+        input_state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob(old_state)),
+            ),
+        ]
         new_state_from_connector = {"cursor": "new_value"}
 
         stream_1 = MockStreamWithState(
@@ -690,21 +676,11 @@ class TestIncrementalRead:
         # once for each record (4 times), and at the end of each slice (2 times)
         assert len(state_property.fget.mock_calls) == 8
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_checkpoint_interval(self, mocker, use_legacy):
+    def test_with_checkpoint_interval(self, mocker):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs a STATE message
         after reading N records within a stream.
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
         stream_1 = MockStream(
@@ -759,21 +735,11 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_no_interval(self, mocker, use_legacy):
+    def test_with_no_interval(self, mocker):
         """Tests that an incremental read which doesn't specify a checkpoint interval outputs
         a STATE message only after fully reading the stream and does not output any STATE messages during syncing the stream.
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         stream_output = [{"k1": "v1"}, {"k2": "v2"}]
 
         stream_1 = MockStream(
@@ -816,19 +782,9 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_slices(self, mocker, use_legacy):
+    def test_with_slices(self, mocker):
         """Tests that an incremental read which uses slices outputs each record in the slice followed by a STATE message, for each slice"""
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
 
@@ -901,43 +857,23 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    @pytest.mark.parametrize(
-        "slices",
-        [
-            pytest.param([], id="test_slices_as_list"),
-            pytest.param(iter([]), id="test_slices_as_iterator")
-        ]
-    )
-    def test_no_slices(self, mocker, use_legacy, slices):
+    @pytest.mark.parametrize("slices", [pytest.param([], id="test_slices_as_list"), pytest.param(iter([]), id="test_slices_as_iterator")])
+    def test_no_slices(self, mocker, slices):
         """
         Tests that an incremental read returns at least one state messages even if no records were read:
             1. outputs a state message after reading the entire stream
         """
         state = {"cursor": "value"}
-        if use_legacy:
-            input_state = {"s1": state, "s2": state}
-        else:
-            input_state = [
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob.parse_obj(state)
-                    ),
-                ),
-                AirbyteStateMessage(
-                    type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob.parse_obj(state)
-                    ),
-                ),
-            ]
+        input_state = [
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="s1"), stream_state=AirbyteStateBlob(state)),
+            ),
+            AirbyteStateMessage(
+                type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="s2"), stream_state=AirbyteStateBlob(state)),
+            ),
+        ]
 
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         stream_1 = MockStreamWithState(
@@ -1004,24 +940,14 @@ class TestIncrementalRead:
 
         assert messages == expected
 
-    @pytest.mark.parametrize(
-        "use_legacy",
-        [
-            pytest.param(True, id="test_incoming_stream_state_as_legacy_format"),
-            pytest.param(False, id="test_incoming_stream_state_as_per_stream_format"),
-        ],
-    )
-    def test_with_slices_and_interval(self, mocker, use_legacy):
+    def test_with_slices_and_interval(self, mocker):
         """
         Tests that an incremental read which uses slices and a checkpoint interval:
             1. outputs all records
             2. outputs a state message every N records (N=checkpoint_interval)
             3. outputs a state message after reading the entire slice
         """
-        if use_legacy:
-            input_state = defaultdict(dict)
-        else:
-            input_state = []
+        input_state = []
         slices = [{"1": "1"}, {"2": "2"}]
         stream_output = [{"k1": "v1"}, {"k2": "v2"}, {"k3": "v3"}]
         stream_1 = MockStream(
@@ -1246,15 +1172,12 @@ class TestIncrementalRead:
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
-                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob.parse_obj(initial_state)
+                    stream_descriptor=StreamDescriptor(name=stream_name), stream_state=AirbyteStateBlob(initial_state)
                 ),
             ),
         ]
         stream_with_cursor = MockStreamWithCursor(
-            [
-                (
-                    {"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": initial_state}, stream_output)
-            ],
+            [({"sync_mode": SyncMode.incremental, "stream_slice": {}, "stream_state": initial_state}, stream_output)],
             name=stream_name,
         )
 
@@ -1262,6 +1185,7 @@ class TestIncrementalRead:
             state_cursor_value = current_stream_state.get(current_stream.cursor_field, 0)
             latest_record_value = latest_record.get(current_stream.cursor_field)
             return {current_stream.cursor_field: max(latest_record_value, state_cursor_value)}
+
         mocker.patch.object(MockStreamWithCursor, "get_updated_state", mock_get_updated_state)
         mocker.patch.object(MockStreamWithCursor, "get_json_schema", return_value={})
         src = MockSource(streams=[stream_with_cursor])
@@ -1367,7 +1291,7 @@ class TestResumableFullRefreshRead:
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s1"),
-                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                    stream_state=AirbyteStateBlob({"page": 10}),
                 ),
             )
         ]
@@ -1494,16 +1418,16 @@ class TestResumableFullRefreshRead:
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s1"),
-                    stream_state=AirbyteStateBlob.parse_obj({"__ab_full_refresh_sync_complete": True}),
+                    stream_state=AirbyteStateBlob({"__ab_full_refresh_sync_complete": True}),
                 ),
             ),
             AirbyteStateMessage(
                 type=AirbyteStateType.STREAM,
                 stream=AirbyteStreamState(
                     stream_descriptor=StreamDescriptor(name="s2"),
-                    stream_state=AirbyteStateBlob.parse_obj({"page": 10}),
+                    stream_state=AirbyteStateBlob({"page": 10}),
                 ),
-            )
+            ),
         ]
 
         src = MockSource(streams=[s1, s2])
@@ -1774,8 +1698,10 @@ def test_read_nonexistent_stream_emit_incomplete_stream_status(mocker, remove_st
 
     expected = _fix_emitted_at([as_stream_status("this_stream_doesnt_exist_in_the_source", AirbyteStreamStatus.INCOMPLETE)])
 
-    expected_error_message = "The stream 'this_stream_doesnt_exist_in_the_source' in your connection configuration was not found in the " \
-                             "source. Refresh the schema in your replication settings and remove this stream from future sync attempts."
+    expected_error_message = (
+        "The stream 'this_stream_doesnt_exist_in_the_source' in your connection configuration was not found in the "
+        "source. Refresh the schema in your replication settings and remove this stream from future sync attempts."
+    )
 
     with pytest.raises(AirbyteTracedException) as exc_info:
         messages = [remove_stack_trace(message) for message in src.read(logger, {}, catalog)]
