@@ -63,11 +63,13 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
     }
 
     fun processDebeziumMessage(changeEvent: ChangeEvent<String?, String?>) {
+        log.info { changeEvent }
         TODO("Not yet implemented")
     }
 
     fun convertToAirbyteMessage(record: DebeziumRecord): AirbyteRecordMessage {
         // TODO : Convert event to an airbyte message
+        log.info { record }
         return AirbyteRecordMessage()
     }
 
@@ -137,6 +139,7 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
 
     fun reachedTargetPosition(record: DebeziumRecord): Boolean {
         // TODO : Implement this
+        log.info { record }
         return false
     }
     enum class DebeziumCloseReason() {
@@ -149,6 +152,7 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
 
     private fun requestClose(closeLogMessage: String, closeReason: DebeziumCloseReason) {
         log.info { closeLogMessage }
+        log.info { closeReason }
         // TODO : send close analytics message
         // TODO : Close the engine. Note that engine must be closed in a different thread
         // than the running engine.
