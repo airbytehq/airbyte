@@ -61,6 +61,8 @@ The Pardot connector should not run into Pardot API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 0.1.17 | 2024-09-07 | [45307](https://github.com/airbytehq/airbyte/pull/45307) | Update dependencies |
+| 0.1.16 | 2024-08-31 | [45005](https://github.com/airbytehq/airbyte/pull/45005) | Update dependencies |
 | 0.1.15 | 2024-08-24 | [44728](https://github.com/airbytehq/airbyte/pull/44728) | Update dependencies |
 | 0.1.14 | 2024-08-17 | [44232](https://github.com/airbytehq/airbyte/pull/44232) | Update dependencies |
 | 0.1.13 | 2024-08-10 | [43471](https://github.com/airbytehq/airbyte/pull/43471) | Update dependencies |
