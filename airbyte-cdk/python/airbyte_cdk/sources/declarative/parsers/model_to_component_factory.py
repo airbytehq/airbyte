@@ -11,6 +11,9 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
@@ -46,6 +49,8 @@ from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncJobStatusMap as AsyncJobStatusMapModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncRetriever as AsyncRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
@@ -82,6 +87,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import KeysToLower as KeysToLowerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
 )
@@ -124,6 +130,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
@@ -136,12 +143,13 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformation import KeysToLowerTransformation
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
@@ -159,6 +167,7 @@ class ModelToComponentFactory:
         limit_slices_fetched: Optional[int] = None,
         emit_connector_builder_messages: bool = False,
         disable_retries: bool = False,
+        disable_cache: bool = False,
         message_repository: Optional[MessageRepository] = None,
     ):
         self._init_mappings()
@@ -166,6 +175,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._disable_cache = disable_cache
         self._message_repository = message_repository or InMemoryMessageRepository(  # type: ignore
             self._evaluate_log_level(emit_connector_builder_messages)
         )
@@ -206,6 +216,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonlDecoderModel: self.create_jsonl_decoder,
+            KeysToLowerModel: self.create_keys_to_lower_transformation,
             IterableDecoderModel: self.create_iterable_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
@@ -230,6 +241,7 @@ class ModelToComponentFactory:
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
+            AsyncRetrieverModel: self.create_async_retriever,
         }
 
         # Needed for the case where we need to perform a second parse on the fields of a custom component
@@ -288,6 +300,9 @@ class ModelToComponentFactory:
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
+
+    def create_keys_to_lower_transformation(self, model: KeysToLowerModel, config: Config, **kwargs: Any) -> KeysToLowerTransformation:
+        return KeysToLowerTransformation()
 
     @staticmethod
     def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
@@ -825,6 +840,8 @@ class ModelToComponentFactory:
         assert model.use_cache is not None  # for mypy
         assert model.http_method is not None  # for mypy
 
+        use_cache = model.use_cache and not self._disable_cache
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
@@ -837,7 +854,7 @@ class ModelToComponentFactory:
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
-            use_cache=model.use_cache,
+            use_cache=use_cache,
             decoder=decoder,
             stream_response=decoder.is_stream_response() if decoder else False,
         )
@@ -1170,6 +1187,86 @@ class ModelToComponentFactory:
             parameters=model.parameters or {},
         )
 
+    def _create_async_job_status_mapping(
+        self, model: AsyncJobStatusMapModel, config: Config, **kwargs: Any
+    ) -> Mapping[str, AsyncJobStatus]:
+        api_status_to_cdk_status = {}
+        for cdk_status, api_statuses in model.dict().items():
+            if cdk_status == "type":
+                # This is an element of the dict because of the typing of the CDK but it is not a CDK status
+                continue
+
+            for status in api_statuses:
+                if status in api_status_to_cdk_status:
+                    raise ValueError(
+                        f"API status {status} is already set for CDK status {cdk_status}. Please ensure API statuses are only provided once"
+                    )
+                api_status_to_cdk_status[status] = self._get_async_job_status(cdk_status)
+        return api_status_to_cdk_status
+
+    def _get_async_job_status(self, status: str) -> AsyncJobStatus:
+        match status:
+            case "running":
+                return AsyncJobStatus.RUNNING
+            case "completed":
+                return AsyncJobStatus.COMPLETED
+            case "failed":
+                return AsyncJobStatus.FAILED
+            case "timeout":
+                return AsyncJobStatus.TIMED_OUT
+            case _:
+                raise ValueError(f"Unsupported CDK status {status}")
+
+    def create_async_retriever(
+        self,
+        model: AsyncRetrieverModel,
+        config: Config,
+        *,
+        name: str,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],  # this seems to be needed to match create_simple_retriever
+        stream_slicer: Optional[StreamSlicer],
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
+        transformations: List[RecordTransformation],
+        **kwargs: Any,
+    ) -> AsyncRetriever:
+
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        record_selector = self._create_component_from_model(
+            model=model.record_selector,
+            config=config,
+            decoder=decoder,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+        creation_requester = self._create_component_from_model(
+            model=model.creation_requester, decoder=decoder, config=config, name=f"job creation - {name}"
+        )
+        polling_requester = self._create_component_from_model(
+            model=model.polling_requester, decoder=decoder, config=config, name=f"job polling - {name}"
+        )
+        download_requester = self._create_component_from_model(
+            model=model.download_requester, decoder=decoder, config=config, name=f"job download - {name}"
+        )
+        status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
+        urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
+        job_repository: AsyncJobRepository = AsyncHttpJobRepository(
+            creation_requester=creation_requester,
+            polling_requester=polling_requester,
+            download_requester=download_requester,
+            status_extractor=status_extractor,
+            status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
+            urls_extractor=urls_extractor,
+        )
+
+        return AsyncRetriever(
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices),
+            record_selector=record_selector,
+            stream_slicer=stream_slicer,
+            config=config,
+            parameters=model.parameters or {},
+        )
+
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs: Any) -> Spec:
         return Spec(
@@ -1199,6 +1296,7 @@ class ModelToComponentFactory:
             limit_slices_fetched=self._limit_slices_fetched,
             emit_connector_builder_messages=self._emit_connector_builder_messages,
             disable_retries=self._disable_retries,
+            disable_cache=self._disable_cache,
             message_repository=LogAppenderMessageRepositoryDecorator(
                 {"airbyte_cdk": {"stream": {"is_substream": True}}, "http": {"is_auxiliary": True}},
                 self._message_repository,
