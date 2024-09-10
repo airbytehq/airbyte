@@ -183,6 +183,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             describe_stream.state_converter,
             self._get_slice_boundary_fields(describe_stream, state_manager),
             start,
+            describe_stream.state_converter.get_end_provider(),
             lookback_window=lookback_window,
             slice_range=slice_range,
         )
@@ -209,12 +210,15 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 )
                 continue
 
+            converter = stream.state_converter
+
             cursor = self.initialize_cursor(
                 stream,
                 state_manager,
-                stream.state_converter,
+                converter,
                 self._get_slice_boundary_fields(stream, state_manager),
                 start,
+                converter.get_end_provider(),
                 lookback_window=lookback_window,
                 slice_range=slice_range,
             )

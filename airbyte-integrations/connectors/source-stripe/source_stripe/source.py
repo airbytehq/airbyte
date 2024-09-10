@@ -549,6 +549,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                     converter,
                     self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream)),
                     start,
+                    converter.get_end_provider(),
                     slice_range=slice_range,
                 ),
             )

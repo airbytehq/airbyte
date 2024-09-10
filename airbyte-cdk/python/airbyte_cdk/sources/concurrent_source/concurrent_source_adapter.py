@@ -48,7 +48,10 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         if abstract_streams:
             yield from self._concurrent_source.read(abstract_streams)
         if configured_catalog_for_regular_streams.streams:
-            yield from super().read(logger, config, configured_catalog_for_regular_streams, state)  # type: ignore[arg-type]
+            if isinstance(state, MutableMapping):
+                state = [AirbyteStateMessage(data=dict(state))]
+
+            yield from super().read(logger, config, configured_catalog_for_regular_streams, state)
 
     def _select_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:
         """
@@ -66,17 +69,17 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
 
-    def _convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None) -> Stream:
+    def _convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Cursor) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
         managing the stream's state, and returning an updated Stream instance.
         """
-        state = {}
+        state: MutableMapping[str, Any] = {}
 
         if isinstance(cursor, ConcurrentCursor):
             state = cursor.state
 
-            stream.cursor = cursor
+            stream.cursor = cursor  # type: ignore[assignment]  # cursor is of type ConcurrentCursor, which inherits from Cursor
             if hasattr(stream, "parent"):
                 stream.parent.cursor = cursor
 
@@ -89,24 +92,23 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         converter: AbstractStreamStateConverter,
         slice_boundary_fields: Optional[Tuple[str, str]],
         start: Optional[CursorValueType],
-        end_provider: Optional[Callable[[], CursorValueType]] = None,
+        end_provider: Callable[[], CursorValueType],
         lookback_window: Optional[GapType] = None,
         slice_range: Optional[GapType] = None,
-    ) -> Optional[ConcurrentCursor]:
-        end_provider = converter.get_end_provider() if end_provider is None else end_provider
+    ) -> Optional[Union[ConcurrentCursor, FinalStateCursor]]:
         lookback_window = timedelta(seconds=DEFAULT_LOOKBACK_SECONDS) if lookback_window is None else lookback_window
 
-        cursor_field = stream.cursor_field
+        cursor_field_name = stream.cursor_field
 
-        if cursor_field:
+        if cursor_field_name:
             stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-            cursor_field = CursorField(cursor_field) if isinstance(cursor_field, str) else CursorField(cursor_field[0])
+            cursor_field = CursorField(cursor_field_name) if isinstance(cursor_field_name, str) else CursorField(cursor_field_name[0])
 
             return ConcurrentCursor(
                 stream.name,
                 stream.namespace,
                 stream_state,
-                self.message_repository,
+                self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
                 state_manager,
                 converter,
                 cursor_field,
