@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.5.1
+Bug fix: Return a connection status failure on an expected check failure
+
+## 5.5.0
+Declarative async job components
+
 ## 5.4.0
 add migration of global stream_state to per_partition format
 
