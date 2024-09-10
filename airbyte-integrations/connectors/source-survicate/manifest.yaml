@@ -54,8 +54,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -64,7 +64,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -111,8 +111,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -162,8 +162,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -180,7 +180,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -225,8 +225,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -274,8 +274,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"next_url\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"has_more\", False) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("next_url", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("has_more", False) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
