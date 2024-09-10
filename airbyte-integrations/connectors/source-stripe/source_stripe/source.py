@@ -4,6 +4,7 @@
 
 import logging
 import os
+import requests
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -180,10 +181,12 @@ class SourceStripe(ConcurrentSourceAdapter):
             raise ValueError("Unknown authentication")
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        args = self._get_stream_base_args(config)
-        account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         try:
-            next(account_stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            access_token = self.get_access_token(config)
+            requests.get(
+                f"https://api.stripe.com/v1/accounts/{config['account_id']}",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
         except AirbyteTracedException as error:
             if error.failure_type == FailureType.config_error:
                 return False, error.message
