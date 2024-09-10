@@ -108,17 +108,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         return config
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        config = self.validate_and_fill_with_defaults(config)
-        authenticator = TokenAuthenticator(config["client_secret"])
-
-        start_timestamp = self._start_date_to_timestamp(config)
-        args = {
-            "authenticator": authenticator,
-            "account_id": config["account_id"],
-            "start_date": start_timestamp,
-            "slice_range": config["slice_range"],
-            "api_budget": self.get_api_call_budget(config),
-        }
+        args = self._get_stream_base_args(config)
         account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         availability_strategy = HttpAvailabilityStrategy()
         try:
@@ -129,6 +119,19 @@ class SourceStripe(ConcurrentSourceAdapter):
             logger.error(f"Encountered an error trying to connect to stream {account_stream.name}. Error: \n {traceback.format_exc()}")
             return False, f"Unable to connect to stream {account_stream.name} - {error}"
         return True, None
+
+    def _get_stream_base_args(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config = self.validate_and_fill_with_defaults(config)
+        authenticator = TokenAuthenticator(config["client_secret"])
+        start_timestamp = self._start_date_to_timestamp(config)
+        args = {
+            "authenticator": authenticator,
+            "account_id": config["account_id"],
+            "start_date": start_timestamp,
+            "slice_range": config["slice_range"],
+            "api_budget": self.get_api_call_budget(config),
+        }
+        return args
 
     @staticmethod
     def customers(**args):
@@ -189,17 +192,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         return HttpAPIBudget(policies=policies)
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
-        config = self.validate_and_fill_with_defaults(config)
-        authenticator = TokenAuthenticator(config["client_secret"])
-
-        start_timestamp = self._start_date_to_timestamp(config)
-        args = {
-            "authenticator": authenticator,
-            "account_id": config["account_id"],
-            "start_date": start_timestamp,
-            "slice_range": config["slice_range"],
-            "api_budget": self.get_api_call_budget(config),
-        }
+        args = self._get_stream_base_args(config)
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
