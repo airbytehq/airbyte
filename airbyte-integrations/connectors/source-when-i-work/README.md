@@ -1,9 +1,23 @@
 # When_i_work
 This directory contains the manifest-only connector for `source-when-i-work`.
 
-Website: https://wheniwork.com/
-Auth page: https://apidocs.wheniwork.com/external/index.html?repo=login
-API Docs: https://apidocs.wheniwork.com/external/index.html
+## Documentation reference:
+Visit `https://apidocs.wheniwork.com/external/index.html` for API documentation
+
+## Authentication setup
+Appfigures uses personal access token as bearer token authentication,
+Refer `https://apidocs.wheniwork.com/external/index.html?repo=login` for more details.
+
+## Getting token via postman
+Make a POST call to URL `https://api.login.wheniwork.com/login`
+Along with body as raw-json with your login email and password
+```bash
+{
+  "email": "xxxx@yyyy.com",
+  "password": "123456789"
+}
+```
+You will get a response containing token for your authentication.
 
 ## Usage
 There are multiple ways to use this connector:

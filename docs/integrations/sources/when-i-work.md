@@ -1,7 +1,24 @@
 # When_i_work
-Website: https://wheniwork.com/
-Auth page: https://apidocs.wheniwork.com/external/index.html?repo=login
-API Docs: https://apidocs.wheniwork.com/external/index.html
+This page contains the setup guide and reference information for the [When I Work](https://wheniwork.com/) source connector.
+Website: 
+
+## Documentation reference:
+Visit `https://apidocs.wheniwork.com/external/index.html` for API documentation
+
+## Authentication setup
+Appfigures uses personal access token as bearer token authentication,
+Refer `https://apidocs.wheniwork.com/external/index.html?repo=login` for more details.
+
+## Getting token via postman
+Make a POST call to URL `https://api.login.wheniwork.com/login`
+Along with body as raw-json with your login email and password
+```bash
+{
+  "email": "xxxx@yyyy.com",
+  "password": "123456789"
+}
+```
+You will get a response containing token for your authentication.
 
 ## Configuration
 
@@ -30,8 +47,8 @@ API Docs: https://apidocs.wheniwork.com/external/index.html
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-10 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-10 |[45367](https://github.com/airbytehq/airbyte/pull/45367)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
