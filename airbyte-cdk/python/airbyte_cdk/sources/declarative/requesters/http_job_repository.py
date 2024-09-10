@@ -25,6 +25,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     creation_requester: Requester
     polling_requester: Requester
     download_requester: Requester
+    abort_requester: Optional[Requester]
     status_extractor: DpathExtractor
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
@@ -135,10 +136,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
             None
         """
         for job in jobs:
-            stream_slice = StreamSlice(
-                partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]},
-                cursor_slice={},
-            )
+            stream_slice = self._get_create_job_stream_slice(job)
             polling_response: requests.Response = self._get_validated_polling_response(stream_slice)
             job_status: AsyncJobStatus = self._get_validated_job_status(polling_response)
 
@@ -175,3 +173,16 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     def _clean_up_job(self, job_id: str) -> None:
         del self._create_job_response_by_id[job_id]
         del self._polling_job_response_by_id[job_id]
+
+    def abort(self, job: AsyncJob) -> None:
+        if not self.abort_requester:
+            return
+
+        self.abort_requester.send_request(stream_slice=self._get_create_job_stream_slice(job))
+
+    def _get_create_job_stream_slice(self, job: AsyncJob) -> StreamSlice:
+        stream_slice = StreamSlice(
+            partition={"create_job_response": self._create_job_response_by_id[job.api_job_id()]},
+            cursor_slice={},
+        )
+        return stream_slice

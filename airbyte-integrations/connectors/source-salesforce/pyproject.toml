@@ -16,9 +16,9 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_salesforce"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
+python = "^3.10,<3.12"
 pandas = "2.2.1"
-airbyte-cdk = "^2"
+airbyte_cdk = { path = "../../../airbyte-cdk/python", develop = true }
 
 [tool.poetry.scripts]
 source-salesforce = "source_salesforce.run:run"

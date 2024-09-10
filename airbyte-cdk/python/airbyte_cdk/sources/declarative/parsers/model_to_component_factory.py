@@ -1248,12 +1248,16 @@ class ModelToComponentFactory:
         download_requester = self._create_component_from_model(
             model=model.download_requester, decoder=decoder, config=config, name=f"job download - {name}"
         )
+        abort_requester = self._create_component_from_model(
+            model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}"
+        ) if model.abort_requester else None
         status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
         urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
             download_requester=download_requester,
+            abort_requester=abort_requester,
             status_extractor=status_extractor,
             status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
             urls_extractor=urls_extractor,

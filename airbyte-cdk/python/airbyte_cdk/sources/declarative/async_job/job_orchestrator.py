@@ -72,6 +72,9 @@ class AsyncPartition:
     def __repr__(self) -> str:
         return f"AsyncPartition(stream_slice={self._stream_slice}, attempt_per_job={self._attempts_per_job})"
 
+    def __json_serializable__(self):
+        return self._stream_slice
+
 
 class AsyncJobOrchestrator:
     _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 5

@@ -19,3 +19,7 @@ class AsyncJobRepository:
     @abstractmethod
     def fetch_records(self, job: AsyncJob) -> Iterable[Mapping[str, Any]]:
         pass
+
+    @abstractmethod
+    def abort(self, job: AsyncJob) -> None:
+        pass

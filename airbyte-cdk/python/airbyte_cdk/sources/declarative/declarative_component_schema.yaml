@@ -2435,6 +2435,11 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
+      abort_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to abort a job once it is timed out from the source's perspective.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.

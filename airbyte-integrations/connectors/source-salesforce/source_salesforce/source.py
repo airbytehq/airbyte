@@ -170,7 +170,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
+        state_manager = ConnectorStateManager(state=self.state)
         for stream_name, sobject_options in stream_objects.items():
             json_schema = schemas.get(stream_name, {})
 
