@@ -107,16 +107,45 @@ class AbstractFileBasedStreamReader(ABC):
         prefixes = {glob.split("*")[0] for glob in globs}
         return set(filter(lambda x: bool(x), prefixes))
 
-    @abstractmethod
-    def get_qualified_uri(self, file_uri: str) -> str:
-        """Return a fully qualified URI for the given URI.
+    def is_polars_supported(self, file: RemoteFile | None = None) -> bool:
+        """
+        Return `True` if Polars is supported and `False` otherwise.
+        Optionally, the method can take a file to check if Polars is supported for that file.
+
+        The default implementation returns True for all files.
+        """
+        try:
+            # If any part of this block raises an exception, we assume Polars is not supported
+            # and we return False.
+            if file and not self.get_qualified_uri(file.uri):
+                return False
+
+            if not self.polars_storage_options:
+                return False
+        except NotImplementedError:
+            return False
+        else:
+            # No exceptions were raised, so we assume Polars is supported.
+            return True
+
+    def get_qualified_uri(
+        self,
+        file_uri: str,
+    ) -> str:
+        """Returns the fully qualified URI for the given file URI.
 
         For example, if the source uses S3, this method would prepend the bucket name to the URI.
         """
-        ...
+        if "://" in file_uri:
+            return file_uri
+
+        raise NotImplementedError("The `get_qualified_uri()` method is not implemented by class: " + type(self).__name__)
 
     @property
-    @abstractmethod
     def polars_storage_options(self) -> dict[str, str]:
-        """Return storage options for the stream reader."""
-        ...
+        """Return storage options for the stream reader.
+
+        Raises:
+            NotImplementedError: If the method is not implemented by the concrete class.
+        """
+        raise NotImplementedError("The `polars_storage_options()` method is not implemented by class: " + type(self).__name__)
