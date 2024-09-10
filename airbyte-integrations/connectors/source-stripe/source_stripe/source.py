@@ -4,7 +4,6 @@
 
 import logging
 import os
-import traceback
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -21,7 +20,6 @@ from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudg
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
@@ -110,14 +108,12 @@ class SourceStripe(ConcurrentSourceAdapter):
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
         args = self._get_stream_base_args(config)
         account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
-        availability_strategy = HttpAvailabilityStrategy()
         try:
-            stream_is_available, reason = availability_strategy.check_availability(account_stream, logger)
-            if not stream_is_available:
-                return False, reason
-        except Exception as error:
-            logger.error(f"Encountered an error trying to connect to stream {account_stream.name}. Error: \n {traceback.format_exc()}")
-            return False, f"Unable to connect to stream {account_stream.name} - {error}"
+            next(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+        except AirbyteTracedException as error:
+            if error.failure_type == FailureType.config_error:
+                return False, error.message
+            raise error
         return True, None
 
     def _get_stream_base_args(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
