@@ -7,6 +7,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+      - config_path: "secrets/config_session.json"
+        status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
       - config_path: "integration_tests/config_http_url.json"

@@ -1,16 +1,36 @@
 # Metabase
 
-This page contains the setup guide and reference information for the Metabase source connector.
-
 ## Prerequisites
 
-To set up Metabase you need:
+To set up the Metabase source connector you need:
 
-- `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account every time this is being used to open a new session.
-- `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.
 - `instance_api_url` - URL to interact with Metabase instance API, that uses https.
+- Either an [API Key](https://www.metabase.com/docs/latest/people-and-groups/api-keys) or a Metabase user with the proper authorization
+
 
 ## Setup guide
+
+The Metabse source connector supports two authentication methods:
+- API token (recommended)
+- User Session token
+
+
+### Generate an API Token
+1. Login to Metabase as an Administrator
+2. Click on the gear icon in the upper right.
+3. Select Admin settings.
+4. Go to the Settings tab.
+5. Click on the Authentication tab on the left menu.
+6. Scroll to API Keys and click Manage.
+7. Click the Create API Key button.
+8. Enter a Key name. You can have multiple API keys, so give it a name that will help you remember what you’re using the key for.
+9. Select a Group. The key will have the same permissions granted to that group.
+10. Click Create.
+11. Copy the generated API key and save it somewhere safe. Metabase won’t be able to show you the key again. If you lose the key, you’ll need to regenerate a new key.
+
+### Use an existing Metabase User
+- `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account every time this is being used to open a new session.
+- `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.
 
 You can find or create authentication tokens from [Metabase](https://www.metabase.com/learn/administration/metabase-api.html#authenticate-your-requests-with-a-session-token) by running the following command:`
 
@@ -77,6 +97,7 @@ The Metabase source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 2.2.0   | 2024-08-27 | 
 | 2.1.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
 | 2.1.0 | 2024-08-15 | [44127](https://github.com/airbytehq/airbyte/pull/44127) | Refactor connector to manifest-only format |
 | 2.0.13 | 2024-08-12 | [43857](https://github.com/airbytehq/airbyte/pull/43857) | Update dependencies |
