@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-pokeapi-new
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.3.0@sha256:538af3f6237799f10458b2b7bb5d69889c4ebae2b7d82b84b7b887fde9c53aa4
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 39566fe0-533a-4acd-8ab8-ff1c89b04f44
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-pokeapi-new
+  githubIssueLabel: source-pokeapi-new
+  icon: icon.svg
+  license: MIT
+  name: PokeAPI
+  releaseDate: 2024-09-10
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi-new
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
