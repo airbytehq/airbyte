@@ -61,7 +61,7 @@ public class MssqlSourceOperationsTest {
       executeQuery(insertQuery);
       expectedRecords.add(jsonNode);
     }
-    final String cursorAnchorValue = "2023-01-01 00:00:00.0000000 +00:00";
+    final String cursorAnchorValue = "2023-01-01T00:00:00.000000+00:00";
     final List<JsonNode> actualRecords = new ArrayList<>();
     try (final Connection connection = testdb.getContainer().createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(

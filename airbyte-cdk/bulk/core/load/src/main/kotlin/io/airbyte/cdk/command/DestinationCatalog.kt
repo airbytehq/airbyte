@@ -25,8 +25,12 @@ data class DestinationCatalog(
     }
 }
 
+interface DestinationCatalogFactory {
+    fun make(): DestinationCatalog
+}
+
 @Factory
-class DestinationCatalogFactory(
+class DefaultDestinationCatalogFactory(
     private val catalog: ConfiguredAirbyteCatalog,
     private val streamFactory: DestinationStreamFactory
 ) {
