@@ -19,7 +19,6 @@ class AsyncJobTest(TestCase):
         job = AsyncJob(_AN_API_JOB_ID, _ANY_STREAM_SLICE, _A_VERY_BIG_TIMEOUT)
         assert job.status() == AsyncJobStatus.RUNNING
 
-
     def test_given_timer_is_out_when_status_then_return_timed_out(self) -> None:
         job = AsyncJob(_AN_API_JOB_ID, _ANY_STREAM_SLICE, _IMMEDIATELY_TIMED_OUT)
         time.sleep(0.001)
