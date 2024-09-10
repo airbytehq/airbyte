@@ -260,6 +260,16 @@ def test_run_check_with_config_error(entrypoint: AirbyteEntrypoint, mocker, spec
     assert messages == expected_messages
 
 
+@freezegun.freeze_time("1970-01-01T00:00:00.001Z")
+def test_run_check_with_transient_error(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    exception = AirbyteTracedException.from_exception(ValueError("Any error"))
+    exception.failure_type = FailureType.transient_error
+    parsed_args = Namespace(command="check", config="config_path")
+    mocker.patch.object(MockSource, "check", side_effect=exception)
+
+    with pytest.raises(AirbyteTracedException):
+        messages = list(entrypoint.run(parsed_args))
+
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="discover", config="config_path")
