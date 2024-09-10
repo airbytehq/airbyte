@@ -12,6 +12,26 @@ from airbyte_cdk.sources.declarative.incremental.declarative_cursor import Decla
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
+
+def iterate_with_last_flag(generator):
+    """
+    Iterates over the given generator and returns a tuple containing the element and a flag
+    indicating whether it's the last element in the generator.
+
+    Args:
+        generator (Generator): The generator to iterate through.
+
+    Yields:
+        tuple: A tuple containing (element, is_last) where is_last is a boolean indicating if the element is the last one.
+    """
+    iterator = iter(generator)
+    prev = next(iterator)  # Get the first element
+    for item in iterator:
+        yield prev, False  # This is not the last element
+        prev = item
+    yield prev, True  # The last element
+
+
 class PerPartitionWithGlobalCursor(DeclarativeCursor):
     """
     Manages state for streams with multiple partitions, with an optional fallback to a global cursor when specific conditions are met.
@@ -57,8 +77,8 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
             if self._use_global_cursor:
                 yield from self._global_cursor.generate_slices_from_partition(partition=partition)
             else:
-                for slice in self._per_partition_cursor.generate_slices_from_partition(partition=partition):
-                    self._global_cursor.add_slice(slice)
+                for slice, flag in iterate_with_last_flag(self._per_partition_cursor.generate_slices_from_partition(partition=partition)):
+                    self._global_cursor.add_slice(slice, flag)
                     yield slice
 
     def set_initial_state(self, stream_state: StreamState) -> None:

@@ -85,7 +85,6 @@ class PerPartitionCursor(DeclarativeCursor):
         for cursor_slice in cursor.stream_slices():
             yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
-
     def _ensure_partition_limit(self) -> None:
         """
         Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
@@ -93,7 +92,9 @@ class PerPartitionCursor(DeclarativeCursor):
         while len(self._cursor_per_partition) > self.DEFAULT_MAX_PARTITIONS_NUMBER - 1:
             self._over_limit += 1
             oldest_partition = self._cursor_per_partition.popitem(last=False)[0]  # Remove the oldest partition
-            logging.warning(f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}. Over limit: {self._over_limit}.")
+            logging.warning(
+                f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}. Over limit: {self._over_limit}."
+            )
 
     def limit_reached(self) -> bool:
         return self._over_limit > self.DEFAULT_MAX_PARTITIONS_NUMBER

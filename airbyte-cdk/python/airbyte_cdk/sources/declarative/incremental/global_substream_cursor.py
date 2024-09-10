@@ -107,8 +107,10 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         if previous_slice is not None:
             yield previous_slice
 
-    def add_slice(self, slice: StreamSlice) -> None:
+    def add_slice(self, slice: StreamSlice, last: bool) -> None:
         self._slice_semaphore.release()
+        if last:
+            self._all_slices_yielded = True
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
@@ -140,7 +142,8 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             self._lookback_window = stream_state["lookback_window"]
             self._inject_lookback_into_stream_cursor(stream_state["lookback_window"])
 
-        self._stream_cursor.set_initial_state(stream_state["state"])
+        if "state" in stream_state:
+            self._stream_cursor.set_initial_state(stream_state["state"])
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
