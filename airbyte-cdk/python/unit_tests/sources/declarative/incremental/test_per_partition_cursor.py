@@ -10,8 +10,6 @@ from airbyte_cdk.sources.declarative.incremental.declarative_cursor import Decla
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionKeySerializer, StreamSlice
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record
-from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 PARTITION = {
     "partition_key string": "partition value",
@@ -519,10 +517,37 @@ def test_get_stream_state_includes_parent_state(mocked_cursor_factory, mocked_pa
     assert stream_state == expected_state
 
 
-def test_given_invalid_state_when_set_initial_state_then_raise_config_error(mocked_cursor_factory, mocked_partition_router) -> None:
+def test_per_partition_state_when_set_initial_global_state(mocked_cursor_factory, mocked_partition_router) -> None:
+    first_partition = {"first_partition_key": "first_partition_value"}
+    second_partition = {"second_partition_key": "second_partition_value"}
+    global_state = {"global_state_format_key": "global_state_format_value"}
+
+    mocked_partition_router.stream_slices.return_value = [
+        StreamSlice(partition=first_partition, cursor_slice={}),
+        StreamSlice(partition=second_partition, cursor_slice={}),
+    ]
+    mocked_cursor_factory.create.side_effect = [
+        MockedCursorBuilder().with_stream_state(global_state).build(),
+        MockedCursorBuilder().with_stream_state(global_state).build(),
+    ]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
-
-    with pytest.raises(AirbyteTracedException) as exception:
-        cursor.set_initial_state({"invalid_state": 1})
-
-    assert exception.value.failure_type == FailureType.config_error
+    global_state = {"global_state_format_key": "global_state_format_value"}
+    cursor.set_initial_state(global_state)
+    assert cursor._state_to_migrate_from == global_state
+    list(cursor.stream_slices())
+    assert cursor._cursor_per_partition['{"first_partition_key":"first_partition_value"}'].set_initial_state.call_count == 1
+    assert cursor._cursor_per_partition['{"first_partition_key":"first_partition_value"}'].set_initial_state.call_args[0] == (
+        {"global_state_format_key": "global_state_format_value"},
+    )
+    assert cursor._cursor_per_partition['{"second_partition_key":"second_partition_value"}'].set_initial_state.call_count == 1
+    assert cursor._cursor_per_partition['{"second_partition_key":"second_partition_value"}'].set_initial_state.call_args[0] == (
+        {"global_state_format_key": "global_state_format_value"},
+    )
+    expected_state = [
+        {"cursor": {"global_state_format_key": "global_state_format_value"}, "partition": {"first_partition_key": "first_partition_value"}},
+        {
+            "cursor": {"global_state_format_key": "global_state_format_value"},
+            "partition": {"second_partition_key": "second_partition_value"},
+        },
+    ]
+    assert cursor.get_stream_state()["states"] == expected_state
