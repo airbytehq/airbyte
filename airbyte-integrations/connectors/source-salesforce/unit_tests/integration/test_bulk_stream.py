@@ -8,7 +8,7 @@ from unittest import TestCase
 
 import freezegun
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-from airbyte_protocol.models import AirbyteStreamStatus, SyncMode
+from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
 from config_builder import ConfigBuilder
 from integration.test_rest_stream import create_http_request as create_standard_http_request
 from integration.test_rest_stream import create_http_response as create_standard_http_response
@@ -295,6 +295,9 @@ class BulkStreamTest(TestCase):
         assert len(output.records) == 3
 
     def test_given_slice_fails_when_read_then_state_is_partitioned(self) -> None:
+        # FIXME this test fails because the error happens in the thread that generates the slices as oppose to the thread the read the
+        #  partition. In order to fix that, we probably need a flag to allow for the job orchestrator to continue creating the jobs even if
+        #  there is an error
         start_date = (_NOW - timedelta(days=20)).replace(microsecond=0)
         slice_range = timedelta(days=7)
         first_upper_boundary = start_date + slice_range
@@ -320,7 +323,7 @@ class BulkStreamTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}"),
-            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            JobInfoResponseBuilder().with_id(job_id).with_state("JobComplete").build(),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}/results"),

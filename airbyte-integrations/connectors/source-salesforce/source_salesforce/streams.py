@@ -370,7 +370,7 @@ class RestSalesforceSubStream(BatchedSubStream, RestSalesforceStream):
 
 
 class BulkDatetimeStreamSlicer(StreamSlicer):
-    def __init__(self, cursor: ConcurrentCursor) -> None:
+    def __init__(self, cursor: Optional[ConcurrentCursor]) -> None:
         self._cursor = cursor
 
     def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
@@ -390,6 +390,10 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
+        if not self._cursor:
+            yield from [StreamSlice(partition={}, cursor_slice={})]
+            return
+
         for slice_start, slice_end in self._cursor.generate_slices():
             yield StreamSlice(
                 partition={},
@@ -404,6 +408,18 @@ class BulkSalesforceStream(SalesforceStream):
     def __init__(self, **kwargs) -> None:
         self._stream_slicer_cursor = None
         super().__init__(**kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method needs to be there as `HttpStream.next_page_token` is abstract but it will never get called
+        """
+        pass
+
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
+        """
+        This method needs to be there as `HttpStream.path` is abstract but it will never get called
+        """
+        pass
 
     def _instantiate_declarative_stream(self):
         """
@@ -425,7 +441,7 @@ class BulkSalesforceStream(SalesforceStream):
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
-            where_in_query = '{{ " where " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
+            where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
             lower_boundary_interpolation = '{{ "'f'{self.cursor_field}'' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
             and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
             upper_boundary_interpolation = '{{ "'f'{self.cursor_field}'' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
@@ -558,11 +574,6 @@ class BulkSalesforceStream(SalesforceStream):
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
-    def set_cursor(self, cursor: ConcurrentCursor) -> None:
-        if hasattr(super(), "set_cursor"):
-            super().set_cursor(cursor)
-        self._instantiate_declarative_stream()
-
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @property
@@ -611,6 +622,7 @@ class BulkSalesforceStream(SalesforceStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream()
         yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:

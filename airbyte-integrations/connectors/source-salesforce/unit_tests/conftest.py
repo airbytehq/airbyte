@@ -8,13 +8,14 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage
 from config_builder import ConfigBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 
-_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CATALOG = CatalogBuilder().build()
 _ANY_CONFIG = ConfigBuilder().build()
 _ANY_STATE = StateBuilder().build()
 
