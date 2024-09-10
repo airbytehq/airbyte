@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  dockerImageTag: 5.0.0
+  dockerImageTag: 4.1.0
   dockerRepository: airbyte/source-linkedin-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
@@ -87,13 +87,6 @@ data:
               - "creatives"
               - "campaign_groups"
               - "conversions"
-      5.0.0:
-        message: This release changes primary key for AccountUsers streams from account to account. Users will need to reset affected stream after upgrading. Please see migration guide for more details.
-        upgradeDeadline: "2024-09-30"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - "account_users"
   suggestedStreams:
     streams:
       - accounts
