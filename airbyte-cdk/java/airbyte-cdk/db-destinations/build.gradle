@@ -10,8 +10,8 @@ dependencies {
 
     implementation 'io.aesy:datasize:1.0.0'
 
-    testFixturesCompileOnly libs.lombok
-    testFixturesAnnotationProcessor libs.lombok
+    testFixturesCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     testFixturesImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies'))
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')

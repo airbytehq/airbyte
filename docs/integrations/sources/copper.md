@@ -39,8 +39,31 @@ The Copper source connector supports the following [sync modes](https://docs.air
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                             |
-| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------- |
-| 0.3.0   | 2023-08-10 | [*****](https://github.com/airbytehq/airbyte/pull/*****)  | Migrate to low code                 |
-| 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824)  | Add `opportunities` stream          |
-| 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848)  | 🎉 New Source: Copper [python cdk]  |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                                                                         |
+| :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.4.0 | 2024-08-15 | [44159](https://github.com/airbytehq/airbyte/pull/44159) | Refactor connector to manifest-only format |
+| 0.3.16 | 2024-08-10 | [43674](https://github.com/airbytehq/airbyte/pull/43674) | Update dependencies |
+| 0.3.15 | 2024-08-03 | [43118](https://github.com/airbytehq/airbyte/pull/43118) | Update dependencies |
+| 0.3.14 | 2024-07-27 | [42710](https://github.com/airbytehq/airbyte/pull/42710) | Update dependencies |
+| 0.3.13 | 2024-07-20 | [42266](https://github.com/airbytehq/airbyte/pull/42266) | Update dependencies |
+| 0.3.12 | 2024-07-13 | [41843](https://github.com/airbytehq/airbyte/pull/41843) | Update dependencies |
+| 0.3.11 | 2024-07-10 | [41385](https://github.com/airbytehq/airbyte/pull/41385) | Update dependencies |
+| 0.3.10 | 2024-07-09 | [41111](https://github.com/airbytehq/airbyte/pull/41111) | Update dependencies |
+| 0.3.9 | 2024-07-06 | [41004](https://github.com/airbytehq/airbyte/pull/41004) | Update dependencies |
+| 0.3.8 | 2024-06-25 | [40260](https://github.com/airbytehq/airbyte/pull/40260) | Update dependencies |
+| 0.3.7 | 2024-06-22 | [40090](https://github.com/airbytehq/airbyte/pull/40090) | Update dependencies |
+| 0.3.6 | 2024-06-06 | [39234](https://github.com/airbytehq/airbyte/pull/39234) | [autopull] Upgrade base image to v1.2.2 |
+| 0.3.5 | 2024-05-17 | [38214](https://github.com/airbytehq/airbyte/pull/38214) | Make connector compatable with builder |
+| 0.3.4 | 2024-04-19 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | Updating to 0.80.0 CDK |
+| 0.3.3 | 2024-04-18 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | Manage dependencies with Poetry. |
+| 0.3.2 | 2024-04-15 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.3.1 | 2024-04-12 | [37145](https://github.com/airbytehq/airbyte/pull/37145) | schema descriptions |
+| 0.3.0   | 2023-08-10 | [**\***](https://github.com/airbytehq/airbyte/pull/*****) | Migrate to low code                                                             |
+| 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824)  | Add `opportunities` stream                                                      |
+| 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848)  | 🎉 New Source: Copper [python cdk]                                              |
+
+</details>

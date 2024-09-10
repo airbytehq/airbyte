@@ -1,0 +1,788 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - tags
+definitions:
+  streams:
+    avatars:
+      type: DeclarativeStream
+      name: avatars
+      primary_key:
+        - avatar_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.smartengage.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /avatars/list
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            avatar_id:
+              type: string
+              description: Unique identifier for the avatar
+            brand_image:
+              type:
+                - string
+                - "null"
+              description: URL to the brand image associated with the avatar
+            brand_name:
+              type:
+                - string
+                - "null"
+              description: Name of the brand or company related to the avatar
+            facebook_page_id:
+              type:
+                - string
+                - "null"
+              description: Identifier for the Facebook page linked to the avatar
+            user_role:
+              type:
+                - string
+                - "null"
+              description: Role or position of the user associated with the avatar
+          required:
+            - avatar_id
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - tag_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.smartengage.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /tags/list
+          http_method: GET
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: avatar_id
+                partition_field: avatar_id
+                stream:
+                  type: DeclarativeStream
+                  name: avatars
+                  primary_key:
+                    - avatar_id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://api.smartengage.com
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['api_key'] }}"
+                      path: /avatars/list
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        avatar_id:
+                          type: string
+                          description: Unique identifier for the avatar
+                        brand_image:
+                          type:
+                            - string
+                            - "null"
+                          description: URL to the brand image associated with the avatar
+                        brand_name:
+                          type:
+                            - string
+                            - "null"
+                          description: Name of the brand or company related to the avatar
+                        facebook_page_id:
+                          type:
+                            - string
+                            - "null"
+                          description:
+                            Identifier for the Facebook page linked to the
+                            avatar
+                        user_role:
+                          type:
+                            - string
+                            - "null"
+                          description:
+                            Role or position of the user associated with the
+                            avatar
+                      required:
+                        - avatar_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            tag_id:
+              type: string
+              description: Unique identifier for a tag.
+            tag_name:
+              type:
+                - string
+                - "null"
+              description: Name or label associated with the tag.
+          required:
+            - tag_id
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - custom_field_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.smartengage.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /customfields/list
+          http_method: GET
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: avatar_id
+                partition_field: avatar_id
+                stream:
+                  type: DeclarativeStream
+                  name: avatars
+                  primary_key:
+                    - avatar_id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://api.smartengage.com
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['api_key'] }}"
+                      path: /avatars/list
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        avatar_id:
+                          type: string
+                          description: Unique identifier for the avatar
+                        brand_image:
+                          type:
+                            - string
+                            - "null"
+                          description: URL to the brand image associated with the avatar
+                        brand_name:
+                          type:
+                            - string
+                            - "null"
+                          description: Name of the brand or company related to the avatar
+                        facebook_page_id:
+                          type:
+                            - string
+                            - "null"
+                          description:
+                            Identifier for the Facebook page linked to the
+                            avatar
+                        user_role:
+                          type:
+                            - string
+                            - "null"
+                          description:
+                            Role or position of the user associated with the
+                            avatar
+                      required:
+                        - avatar_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            custom_field_id:
+              type: string
+              description: The unique identifier for the custom field.
+            custom_field_name:
+              type:
+                - string
+                - "null"
+              description: The name or label associated with the custom field.
+          required:
+            - custom_field_id
+    sequences:
+      type: DeclarativeStream
+      name: sequences
+      primary_key:
+        - sequence_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.smartengage.com
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /sequences/list
+          http_method: GET
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: avatar_id
+                partition_field: avatar_id
+                stream:
+                  type: DeclarativeStream
+                  name: avatars
+                  primary_key:
+                    - avatar_id
+                  retriever:
+                    type: SimpleRetriever
+                    requester:
+                      type: HttpRequester
+                      url_base: https://api.smartengage.com
+                      authenticator:
+                        type: BearerAuthenticator
+                        api_token: "{{ config['api_key'] }}"
+                      path: /avatars/list
+                      http_method: GET
+                    record_selector:
+                      type: RecordSelector
+                      extractor:
+                        type: DpathExtractor
+                        field_path: []
+                  schema_loader:
+                    type: InlineSchemaLoader
+                    schema:
+                      type: object
+                      additionalProperties: true
+                      properties:
+                        avatar_id:
+                          type: string
+                          description: Unique identifier for the avatar
+                        brand_image:
+                          type:
+                            - string
+                            - "null"
+                          description: URL to the brand image associated with the avatar
+                        brand_name:
+                          type:
+                            - string
+                            - "null"
+                          description: Name of the brand or company related to the avatar
+                        facebook_page_id:
+                          type:
+                            - string
+                            - "null"
+                          description:
+                            Identifier for the Facebook page linked to the
+                            avatar
+                        user_role:
+                          type:
+                            - string
+                            - "null"
+                          description:
+                            Role or position of the user associated with the
+                            avatar
+                      required:
+                        - avatar_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties:
+            sequence_id:
+              type: string
+              description: Unique identifier for the sequence data
+            sequence_name:
+              type:
+                - string
+                - "null"
+              description: Name of the sequence
+          required:
+            - sequence_id
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.smartengage.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: avatars
+    primary_key:
+      - avatar_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.smartengage.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /avatars/list
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          avatar_id:
+            type: string
+            description: Unique identifier for the avatar
+          brand_image:
+            type:
+              - string
+              - "null"
+            description: URL to the brand image associated with the avatar
+          brand_name:
+            type:
+              - string
+              - "null"
+            description: Name of the brand or company related to the avatar
+          facebook_page_id:
+            type:
+              - string
+              - "null"
+            description: Identifier for the Facebook page linked to the avatar
+          user_role:
+            type:
+              - string
+              - "null"
+            description: Role or position of the user associated with the avatar
+        required:
+          - avatar_id
+  - type: DeclarativeStream
+    name: tags
+    primary_key:
+      - tag_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.smartengage.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /tags/list
+        http_method: GET
+        request_parameters:
+          avatar_id: "{{ stream_slice.avatar_id }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: avatar_id
+              partition_field: avatar_id
+              stream:
+                type: DeclarativeStream
+                name: avatars
+                primary_key:
+                  - avatar_id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.smartengage.com
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                    path: /avatars/list
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    additionalProperties: true
+                    properties:
+                      avatar_id:
+                        type: string
+                        description: Unique identifier for the avatar
+                      brand_image:
+                        type:
+                          - string
+                          - "null"
+                        description: URL to the brand image associated with the avatar
+                      brand_name:
+                        type:
+                          - string
+                          - "null"
+                        description: Name of the brand or company related to the avatar
+                      facebook_page_id:
+                        type:
+                          - string
+                          - "null"
+                        description: Identifier for the Facebook page linked to the avatar
+                      user_role:
+                        type:
+                          - string
+                          - "null"
+                        description: Role or position of the user associated with the avatar
+                    required:
+                      - avatar_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          tag_id:
+            type: string
+            description: Unique identifier for a tag.
+          tag_name:
+            type:
+              - string
+              - "null"
+            description: Name or label associated with the tag.
+        required:
+          - tag_id
+  - type: DeclarativeStream
+    name: custom_fields
+    primary_key:
+      - custom_field_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.smartengage.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /customfields/list
+        http_method: GET
+        request_parameters:
+          avatar_id: "{{ stream_slice.avatar_id }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: avatar_id
+              partition_field: avatar_id
+              stream:
+                type: DeclarativeStream
+                name: avatars
+                primary_key:
+                  - avatar_id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.smartengage.com
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                    path: /avatars/list
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    additionalProperties: true
+                    properties:
+                      avatar_id:
+                        type: string
+                        description: Unique identifier for the avatar
+                      brand_image:
+                        type:
+                          - string
+                          - "null"
+                        description: URL to the brand image associated with the avatar
+                      brand_name:
+                        type:
+                          - string
+                          - "null"
+                        description: Name of the brand or company related to the avatar
+                      facebook_page_id:
+                        type:
+                          - string
+                          - "null"
+                        description: Identifier for the Facebook page linked to the avatar
+                      user_role:
+                        type:
+                          - string
+                          - "null"
+                        description: Role or position of the user associated with the avatar
+                    required:
+                      - avatar_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          custom_field_id:
+            type: string
+            description: The unique identifier for the custom field.
+          custom_field_name:
+            type:
+              - string
+              - "null"
+            description: The name or label associated with the custom field.
+        required:
+          - custom_field_id
+  - type: DeclarativeStream
+    name: sequences
+    primary_key:
+      - sequence_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.smartengage.com
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /sequences/list
+        http_method: GET
+        request_parameters:
+          avatar_id: "{{ stream_slice.avatar_id }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: avatar_id
+              partition_field: avatar_id
+              stream:
+                type: DeclarativeStream
+                name: avatars
+                primary_key:
+                  - avatar_id
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.smartengage.com
+                    authenticator:
+                      type: BearerAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                    path: /avatars/list
+                    http_method: GET
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    additionalProperties: true
+                    properties:
+                      avatar_id:
+                        type: string
+                        description: Unique identifier for the avatar
+                      brand_image:
+                        type:
+                          - string
+                          - "null"
+                        description: URL to the brand image associated with the avatar
+                      brand_name:
+                        type:
+                          - string
+                          - "null"
+                        description: Name of the brand or company related to the avatar
+                      facebook_page_id:
+                        type:
+                          - string
+                          - "null"
+                        description: Identifier for the Facebook page linked to the avatar
+                      user_role:
+                        type:
+                          - string
+                          - "null"
+                        description: Role or position of the user associated with the avatar
+                    required:
+                      - avatar_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          sequence_id:
+            type: string
+            description: Unique identifier for the sequence data
+          sequence_name:
+            type:
+              - string
+              - "null"
+            description: Name of the sequence
+        required:
+          - sequence_id
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: API Key
+        order: 0
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    avatars: false
+    tags: false
+    custom_fields: false
+    sequences: false
+schemas:
+  avatars:
+    type: object
+    additionalProperties: true
+    properties:
+      avatar_id:
+        type: string
+        description: Unique identifier for the avatar
+      brand_image:
+        type:
+          - string
+          - "null"
+        description: URL to the brand image associated with the avatar
+      brand_name:
+        type:
+          - string
+          - "null"
+        description: Name of the brand or company related to the avatar
+      facebook_page_id:
+        type:
+          - string
+          - "null"
+        description: Identifier for the Facebook page linked to the avatar
+      user_role:
+        type:
+          - string
+          - "null"
+        description: Role or position of the user associated with the avatar
+    required:
+      - avatar_id
+  tags:
+    type: object
+    additionalProperties: true
+    properties:
+      tag_id:
+        type: string
+        description: Unique identifier for a tag.
+      tag_name:
+        type:
+          - string
+          - "null"
+        description: Name or label associated with the tag.
+    required:
+      - tag_id
+  custom_fields:
+    type: object
+    additionalProperties: true
+    properties:
+      custom_field_id:
+        type: string
+        description: The unique identifier for the custom field.
+      custom_field_name:
+        type:
+          - string
+          - "null"
+        description: The name or label associated with the custom field.
+    required:
+      - custom_field_id
+  sequences:
+    type: object
+    additionalProperties: true
+    properties:
+      sequence_id:
+        type: string
+        description: Unique identifier for the sequence data
+      sequence_name:
+        type:
+          - string
+          - "null"
+        description: Name of the sequence
+    required:
+      - sequence_id

@@ -126,7 +126,7 @@ class AvroParser(FileTypeParser):
                 return {"type": "string", "pattern": f"^-?\\d{{{1,max_whole_number_range}}}(?:\\.\\d{1,decimal_range})?$"}
             elif "logicalType" in avro_field:
                 if avro_field["logicalType"] not in AVRO_LOGICAL_TYPE_TO_JSON:
-                    raise ValueError(f"{avro_field['logical_type']} is not a valid Avro logical type")
+                    raise ValueError(f"{avro_field['logicalType']} is not a valid Avro logical type")
                 return AVRO_LOGICAL_TYPE_TO_JSON[avro_field["logicalType"]]
             else:
                 raise ValueError(f"Unsupported avro type: {avro_field}")
@@ -166,7 +166,9 @@ class AvroParser(FileTypeParser):
 
     @staticmethod
     def _to_output_value(avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
-        if not isinstance(record_type, Mapping):
+        if isinstance(record_value, bytes):
+            return record_value.decode()
+        elif not isinstance(record_type, Mapping):
             if record_type == "double" and avro_format.double_as_string:
                 return str(record_value)
             return record_value
@@ -174,6 +176,10 @@ class AvroParser(FileTypeParser):
             return str(record_value)
         elif record_type.get("logicalType") == "date":
             return record_value.isoformat()
+        elif record_type.get("logicalType") == "timestamp-millis":
+            return record_value.isoformat(sep="T", timespec="milliseconds")
+        elif record_type.get("logicalType") == "timestamp-micros":
+            return record_value.isoformat(sep="T", timespec="microseconds")
         elif record_type.get("logicalType") == "local-timestamp-millis":
             return record_value.isoformat(sep="T", timespec="milliseconds")
         elif record_type.get("logicalType") == "local-timestamp-micros":

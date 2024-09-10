@@ -8,70 +8,102 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.InitialLoadStreams;
 import io.airbyte.integrations.source.mssql.initialsync.MssqlInitialReadUtil.OrderedColumnInfo;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
-import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateManager {
 
-  private final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo;
-  private final CdcState cdcState;
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(MssqlInitialLoadGlobalStateManager.class);
+  private StateManager stateManager;
+  private final CdcState initialCdcState;
   // Only one global state is emitted, which is fanned out into many entries in the DB by platform. As
   // a result, we need to keep track of streams that have completed the snapshot.
-  private final Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+  private Set<AirbyteStreamNameNamespacePair> streamsThatHaveCompletedSnapshot;
+
+  // No special handling for resumable full refresh streams. We will report the cursor as it is.
+  private Set<AirbyteStreamNameNamespacePair> resumableFullRefreshStreams;
+  private Set<AirbyteStreamNameNamespacePair> nonResumableFullRefreshStreams;
 
   public MssqlInitialLoadGlobalStateManager(final InitialLoadStreams initialLoadStreams,
                                             final Map<AirbyteStreamNameNamespacePair, OrderedColumnInfo> pairToOrderedColInfo,
-                                            final CdcState cdcState,
+                                            final StateManager stateManager,
                                             final ConfiguredAirbyteCatalog catalog,
-                                            final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
-    this.cdcState = cdcState;
+                                            final CdcState initialCdcState) {
     this.pairToOrderedColLoadStatus = MssqlInitialLoadStateManager.initPairToOrderedColumnLoadStatusMap(initialLoadStreams.pairToInitialLoadStatus());
     this.pairToOrderedColInfo = pairToOrderedColInfo;
-    this.streamsThatHaveCompletedSnapshot = initStreamsCompletedSnapshot(initialLoadStreams, catalog);
-    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.stateManager = stateManager;
+    this.initialCdcState = initialCdcState;
+    this.streamStateForIncrementalRunSupplier = pair -> Jsons.emptyObject();
+    initStreams(initialLoadStreams, catalog);
   }
 
-  private static Set<AirbyteStreamNameNamespacePair> initStreamsCompletedSnapshot(final InitialLoadStreams initialLoadStreams,
-                                                                                  final ConfiguredAirbyteCatalog catalog) {
+  private AirbyteGlobalState generateGlobalState(final List<AirbyteStreamState> streamStates) {
+    CdcState cdcState = stateManager.getCdcStateManager().getCdcState();
+    if (cdcState == null || cdcState.getState() == null) {
+      cdcState = initialCdcState;
+    }
 
-    return catalog.getStreams().stream()
-        .filter(s -> !initialLoadStreams.streamsForInitialLoad().contains(s))
-        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
-        .map(s -> new AirbyteStreamNameNamespacePair(s.getStream().getName(), s.getStream().getNamespace()))
-        .collect(Collectors.toSet());
-  }
-
-  @Override
-  public AirbyteStateMessage createIntermediateStateMessage(final AirbyteStreamNameNamespacePair pair, final OrderedColumnLoadStatus ocLoadStatus) {
-    final List<AirbyteStreamState> streamStates = streamsThatHaveCompletedSnapshot.stream()
-        .map(s -> getAirbyteStreamState(s, Jsons.jsonNode(getFinalState(s))))
-        .collect(Collectors.toList());
-
-    streamStates.add(getAirbyteStreamState(pair, (Jsons.jsonNode(ocLoadStatus))));
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(cdcState));
     globalState.setStreamStates(streamStates);
+    return globalState;
+  }
+
+  private void initStreams(final InitialLoadStreams initialLoadStreams,
+                           final ConfiguredAirbyteCatalog catalog) {
+    this.streamsThatHaveCompletedSnapshot = new HashSet<>();
+    this.resumableFullRefreshStreams = new HashSet<>();
+    this.nonResumableFullRefreshStreams = new HashSet<>();
+
+    catalog.getStreams().forEach(configuredAirbyteStream -> {
+      var pairInStream =
+          new AirbyteStreamNameNamespacePair(configuredAirbyteStream.getStream().getName(), configuredAirbyteStream.getStream().getNamespace());
+      if (!initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)
+          && configuredAirbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+        this.streamsThatHaveCompletedSnapshot.add(pairInStream);
+      }
+      if (configuredAirbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
+        if (initialLoadStreams.streamsForInitialLoad().contains(configuredAirbyteStream)) {
+          this.resumableFullRefreshStreams.add(pairInStream);
+        } else {
+          this.nonResumableFullRefreshStreams.add(pairInStream);
+        }
+      }
+    });
+  }
+
+  @Override
+  public AirbyteStateMessage generateStateMessageAtCheckpoint(final ConfiguredAirbyteStream airbyteStream) {
+    final List<AirbyteStreamState> streamStates = new ArrayList<>();
+    streamsThatHaveCompletedSnapshot.forEach(stream -> {
+      final DbStreamState state = getFinalState(stream);
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
+    });
+
+    resumableFullRefreshStreams.forEach(stream -> {
+      var ocStatus = getOrderedColumnLoadStatus(stream);
+      if (ocStatus != null) {
+        streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
+      }
+    });
+
+    if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+      AirbyteStreamNameNamespacePair pair =
+          new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+      var ocStatus = getOrderedColumnLoadStatus(pair);
+      streamStates.add(getAirbyteStreamState(pair, Jsons.jsonNode(ocStatus)));
+    }
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   private AirbyteStreamState getAirbyteStreamState(final AirbyteStreamNameNamespacePair pair, final JsonNode stateData) {
@@ -86,25 +118,32 @@ public class MssqlInitialLoadGlobalStateManager extends MssqlInitialLoadStateMan
   }
 
   @Override
-  public AirbyteStateMessage createFinalStateMessage(final AirbyteStreamNameNamespacePair pair, final JsonNode streamStateForIncrementalRun) {
-    streamsThatHaveCompletedSnapshot.add(pair);
+  public AirbyteStateMessage createFinalStateMessage(final ConfiguredAirbyteStream airbyteStream) {
+    if (airbyteStream.getSyncMode() == SyncMode.INCREMENTAL) {
+      io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair pair = new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(
+          airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+      streamsThatHaveCompletedSnapshot.add(pair);
+    }
+    final List<AirbyteStreamState> streamStates = new ArrayList<>();
+    streamsThatHaveCompletedSnapshot.forEach(stream -> {
+      final DbStreamState state = getFinalState(stream);
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(state)));
+    });
 
-    final List<AirbyteStreamState> streamStates = streamsThatHaveCompletedSnapshot.stream()
-        .map(s -> getAirbyteStreamState(s, Jsons.jsonNode(getFinalState(s))))
-        .collect(Collectors.toList());
+    resumableFullRefreshStreams.forEach(stream -> {
+      var ocStatus = getOrderedColumnLoadStatus(stream);
+      streamStates.add(getAirbyteStreamState(stream, Jsons.jsonNode(ocStatus)));
+    });
 
-    final AirbyteGlobalState globalState = new AirbyteGlobalState();
-    globalState.setSharedState(Jsons.jsonNode(cdcState));
-    globalState.setStreamStates(streamStates);
+    nonResumableFullRefreshStreams.forEach(stream -> {
+      streamStates.add(new AirbyteStreamState()
+          .withStreamDescriptor(
+              new StreamDescriptor().withName(stream.getName()).withNamespace(stream.getNamespace())));
+    });
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
-        .withGlobal(globalState);
-  }
-
-  @Override
-  public OrderedColumnInfo getOrderedColumnInfo(final AirbyteStreamNameNamespacePair pair) {
-    return pairToOrderedColInfo.get(pair);
+        .withGlobal(generateGlobalState(streamStates));
   }
 
   private DbStreamState getFinalState(final AirbyteStreamNameNamespacePair pair) {

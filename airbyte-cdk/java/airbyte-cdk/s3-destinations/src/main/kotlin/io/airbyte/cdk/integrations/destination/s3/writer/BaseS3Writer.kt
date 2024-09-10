@@ -13,14 +13,14 @@ import io.airbyte.cdk.integrations.destination.s3.util.S3OutputPathHelper
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * The base implementation takes care of the following:
  *
@@ -48,13 +48,13 @@ protected constructor(
         try {
             val bucket = config.bucketName
             if (!s3Client.doesBucketExistV2(bucket)) {
-                LOGGER.info("Bucket {} does not exist; creating...", bucket)
+                LOGGER.info { "Bucket $bucket does not exist; creating..." }
                 s3Client.createBucket(bucket)
-                LOGGER.info("Bucket {} has been created.", bucket)
+                LOGGER.info { "Bucket $bucket has been created." }
             }
 
             if (syncMode == DestinationSyncMode.OVERWRITE) {
-                LOGGER.info("Overwrite mode")
+                LOGGER.info { "Overwrite mode" }
                 val keysToDelete: MutableList<DeleteObjectsRequest.KeyVersion> = LinkedList()
                 val objects = s3Client.listObjects(bucket, outputPrefix).objectSummaries
                 for (`object` in objects) {
@@ -62,21 +62,18 @@ protected constructor(
                 }
 
                 if (keysToDelete.size > 0) {
-                    LOGGER.info(
-                        "Purging non-empty output path for stream '{}' under OVERWRITE mode...",
-                        stream.name
-                    )
+                    LOGGER.info {
+                        "Purging non-empty output path for stream '${stream.name}' under OVERWRITE mode..."
+                    }
                     val result =
                         s3Client.deleteObjects(DeleteObjectsRequest(bucket).withKeys(keysToDelete))
-                    LOGGER.info(
-                        "Deleted {} file(s) for stream '{}'.",
-                        result.deletedObjects.size,
-                        stream.name
-                    )
+                    LOGGER.info {
+                        "Deleted ${result.deletedObjects.size} file(s) for stream '${stream.name}'."
+                    }
                 }
             }
         } catch (e: Exception) {
-            LOGGER.error("Failed to initialize: ", e)
+            LOGGER.error(e) { "Failed to initialize: " }
             closeWhenFail()
             throw e
         }
@@ -86,13 +83,13 @@ protected constructor(
     @Throws(IOException::class)
     override fun close(hasFailed: Boolean) {
         if (hasFailed) {
-            LOGGER.warn("Failure detected. Aborting upload of stream '{}'...", stream.name)
+            LOGGER.warn { "Failure detected. Aborting upload of stream '${stream.name}'..." }
             closeWhenFail()
-            LOGGER.warn("Upload of stream '{}' aborted.", stream.name)
+            LOGGER.warn { "Upload of stream '${stream.name}' aborted." }
         } else {
-            LOGGER.info("Uploading remaining data for stream '{}'.", stream.name)
+            LOGGER.info { "Uploading remaining data for stream '${stream.name}'." }
             closeWhenSucceed()
-            LOGGER.info("Upload completed for stream '{}'.", stream.name)
+            LOGGER.info { "Upload completed for stream '${stream.name}'." }
         }
     }
 
@@ -109,7 +106,6 @@ protected constructor(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(BaseS3Writer::class.java)
 
         private val s3FilenameTemplateManager = S3FilenameTemplateManager()
         private const val DEFAULT_SUFFIX = "_0"

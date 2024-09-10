@@ -5,106 +5,139 @@
   "type": ["null", "object"],
   "properties": {
     "default_template_sid": {
+      "description": "The unique identifier for the default template used for verification messages.",
       "type": ["null", "string"]
     },
     "tts_name": {
+      "description": "The name used for text-to-speech (TTS) in verification calls.",
       "type": ["null", "string"]
     },
     "psd2_enabled": {
+      "description": "Indicates if PSD2 (Payment Services Directive 2) verification is enabled.",
       "type": ["null", "boolean"]
     },
     "do_not_share_warning_enabled": {
+      "description": "Indicates if the 'do not share' warning is enabled for verification codes.",
       "type": ["null", "boolean"]
     },
     "mailer_sid": {
+      "description": "Unique identifier for the mailer service associated with the verify service.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-friendly name for the verify service.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The URL associated with the verify service.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "Unique identifier for the account associated with the verify service.",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when the verify service was last updated.",
       "type": ["null", "string"]
     },
     "totp": {
+      "description": "Object containing configuration settings for Time-based One-Time Password (TOTP) verification method.",
       "type": ["null", "object"],
       "properties": {
         "time_step": {
+          "description": "The time step interval for generating TOTP codes.",
           "type": ["null", "number"]
         },
         "skew": {
+          "description": "The time skew allowed for TOTP code validation.",
           "type": ["null", "number"]
         },
         "code_length": {
+          "description": "The number of digits in the TOTP (Time-based One-Time Password) code.",
           "type": ["null", "number"]
         },
         "issuer": {
+          "description": "The issuer name included in TOTP messages.",
           "type": ["null", "string"]
         }
       }
     },
     "code_length": {
+      "description": "The number of digits in the verification code sent to users.",
       "type": ["null", "number"]
     },
     "custom_code_enabled": {
+      "description": "Indicates whether custom verification codes are enabled.",
       "type": ["null", "boolean"]
     },
     "sid": {
+      "description": "Unique identifier for the verify service.",
       "type": ["null", "string"]
     },
     "push": {
+      "description": "Object containing configuration settings for push verification method.",
       "type": ["null", "object"],
       "properties": {
         "apn_credential_sid": {
+          "description": "Unique identifier for the APN (Apple Push Notification) credential associated with the verify service.",
           "type": ["null", "string"]
         },
         "include_date": {
+          "description": "Indicates if the date should be included in push notifications.",
           "type": ["null", "boolean"]
         },
         "fcm_credential_sid": {
+          "description": "Unique identifier for the FCM (Firebase Cloud Messaging) credential associated with the verify service.",
           "type": ["null", "string"]
         }
       }
     },
     "date_created": {
+      "description": "The date and time when the verify service was created.",
       "type": ["null", "string"]
     },
     "dtmf_input_required": {
+      "description": "Indicates whether DTMF input is required during verification.",
       "type": ["null", "boolean"]
     },
     "skip_sms_to_landlines": {
+      "description": "Indicates whether SMS messages are skipped for landline numbers during verification.",
       "type": ["null", "boolean"]
     },
     "lookup_enabled": {
+      "description": "Indicates if phone number lookup is enabled for the verify service.",
       "type": ["null", "boolean"]
     },
     "links": {
+      "description": "Object containing related hyperlinks for verify_services data.",
       "type": ["null", "object"],
       "properties": {
         "verification_checks": {
+          "description": "Links related to verification checks for the verify service.",
           "type": ["null", "string"]
         },
         "rate_limits": {
+          "description": "Links related to rate limits for the verify service.",
           "type": ["null", "string"]
         },
         "entities": {
+          "description": "Links related to entities associated with the verify service.",
           "type": ["null", "string"]
         },
         "access_tokens": {
+          "description": "Links related to access tokens for the verify service.",
           "type": ["null", "string"]
         },
         "verifications": {
+          "description": "Links related to verifications performed using the verify service.",
           "type": ["null", "string"]
         },
         "webhooks": {
+          "description": "Links related to webhooks for the verify service.",
           "type": ["null", "string"]
         },
         "messaging_configurations": {
+          "description": "Links related to messaging configurations for the verify service.",
           "type": ["null", "string"]
         }
       }

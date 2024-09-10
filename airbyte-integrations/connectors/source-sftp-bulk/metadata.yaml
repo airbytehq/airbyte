@@ -1,13 +1,13 @@
 data:
   ab_internal:
     ql: 200
-    sl: 100
+    sl: 300
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: file
   connectorType: source
   definitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-sftp-bulk
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   githubIssueLabel: source-sftp-bulk
@@ -18,7 +18,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-sftp-bulk
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -33,4 +33,24 @@ data:
   tags:
     - language:python
     - cdk:python-file-based
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sftp-bulk_config_dev_null
+          id: 35b9a87f-e585-45b7-b7f8-617e9ff47cc5
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-SFTP-BULK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SFTP-BULK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

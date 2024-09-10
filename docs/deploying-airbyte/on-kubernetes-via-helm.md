@@ -17,13 +17,6 @@ Kubernetes cluster on AWS. Follow [this guide](on-restack.md) to get started.
 
 :::note
 
-Airbyte running on Self-Hosted Kubernetes doesn't support DBT Transformations. Please refer to
-[#5901](https://github.com/airbytehq/airbyte/issues/5091)
-
-:::
-
-:::note
-
 Airbyte Kubernetes Community Edition does not support basic auth by default. To enable basic auth,
 consider adding a reverse proxy in front of Airbyte.
 
@@ -216,7 +209,7 @@ global:
     affinity: {}
 ```
 
-GCS Logging information is below but you can try to use `External Minio` as well but it was not
+Amazon S3 Logging information is below but you can try to use `External Minio` as well but it was not
 tested yet. Feel free to run tests and update the documentation.
 
 Add extra env variables to the following blocks:
@@ -298,9 +291,11 @@ Than run:
 
 ### External Logs with GCS
 
-:::Info
+:::info
+
 GCS Logging is similar to the approach taken for S3 above, with a few small differences
 GCS logging was tested on [Airbyte Helm Chart Version 0.54.69](https://artifacthub.io/packages/helm/airbyte/airbyte/0.54.69)
+
 :::
 
 #### Create Google Cloud Storage Bucket
@@ -316,7 +311,7 @@ GCS logging was tested on [Airbyte Helm Chart Version 0.54.69](https://artifacth
 2. **Create Service Account**: Click "Create Service Account", enter a name, description, and then click "Create".
 3. **Grant Permissions**: Assign the role of "Storage Object Admin" to the service account by selecting it from the role list.
 4. **Create Key**: After creating the service account, click on it, go to the "Keys" tab, and then click "Add Key" > "Create new key". Choose JSON as the key type and click "Create". The key file will be downloaded automatically to your computer.
-5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as `<encoded_key>` 
+5. **Encode Key**: Encode GCP credentials file contents using Base64. This key will be referenced as `<encoded_key>`
 
 #### Update the values.yaml with the GCS Logging Information below
 
@@ -333,15 +328,15 @@ global:
      type: "GCS"
    gcs:
      bucket: "<bucket_name>"
-     credentials: "/secrets/gcs-log-creds/gcp.json"      
+     credentials: "/secrets/gcs-log-creds/gcp.json"
      credentialsJson: "<encoded_key>"
 ```
 
-
 Update the following Environment Variables in the worker section:
+
 ```
 worker:
- 
+
  extraEnv:
    - name: STATE_STORAGE_GCS_BUCKET_NAME
      value: <bucket_name>

@@ -21,8 +21,8 @@ def publish_context(mocker, dagger_client, tmpdir):
     return mocker.MagicMock(
         dagger_client=dagger_client,
         get_connector_dir=mocker.MagicMock(return_value=dagger_client.host().directory(str(tmpdir))),
-        docker_hub_username_secret=None,
-        docker_hub_password_secret=None,
+        docker_hub_username=None,
+        docker_hub_password=None,
         docker_image="hello-world:latest",
     )
 
@@ -98,7 +98,7 @@ class TestUploadSpecToCache:
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
                 publish_context.spec_cache_bucket_name,
-                publish_context.spec_cache_gcs_credentials_secret,
+                publish_context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
 
@@ -155,6 +155,7 @@ STEPS_TO_PATCH = [
     (publish_pipeline, "PullConnectorImageFromRegistry"),
     (publish_pipeline.steps, "run_connector_build"),
     (publish_pipeline, "CheckPythonRegistryPackageDoesNotExist"),
+    (publish_pipeline, "UploadSbom"),
 ]
 
 
@@ -203,9 +204,11 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
-    # ensure spec always succeeds
+    # ensure spec and sbom upload always succeeds
     run_upload_spec_to_cache = publish_pipeline.UploadSpecToCache.return_value.run
     run_upload_spec_to_cache.return_value = mocker.Mock(status=StepStatus.SUCCESS)
+    run_upload_sbom = publish_pipeline.UploadSbom.return_value.run
+    run_upload_sbom.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
     run_check_connector_image_does_not_exist = publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run
     run_check_connector_image_does_not_exist.return_value = mocker.Mock(status=check_image_exists_status)
@@ -219,7 +222,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
 
     # Check that nothing else is called
     for module, to_mock in STEPS_TO_PATCH:
-        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache"]:
+        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache", "UploadSbom"]:
             getattr(module, to_mock).return_value.run.assert_not_called()
 
     if check_image_exists_status is StepStatus.SKIPPED:
@@ -231,6 +234,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
                 run_metadata_validation.return_value,
                 run_check_connector_image_does_not_exist.return_value,
                 run_upload_spec_to_cache.return_value,
+                run_upload_sbom.return_value,
                 run_metadata_upload.return_value,
             ]
         )
@@ -384,7 +388,7 @@ async def test_run_connector_python_registry_publish_pipeline(
     )
 
     context = mocker.MagicMock(
-        ci_gcs_credentials="",
+        ci_gcp_credentials="",
         pre_release=False,
         connector=mocker.MagicMock(
             code_directory="path/to/connector",
@@ -394,17 +398,49 @@ async def test_run_connector_python_registry_publish_pipeline(
         python_registry_url="https://test.pypi.org/legacy/",
     )
     semaphore = anyio.Semaphore(1)
-    await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
-    if expect_publish_to_pypi_called:
-        mocked_publish_to_python_registry.return_value.run.assert_called_once()
-        # assert that the first argument passed to mocked_publish_to_pypi contains the things from the context
-        assert mocked_publish_to_python_registry.call_args.args[0].python_registry_token == api_token
-        assert mocked_publish_to_python_registry.call_args.args[0].package_metadata.name == "test"
-        assert mocked_publish_to_python_registry.call_args.args[0].package_metadata.version == "1.2.3"
-        assert mocked_publish_to_python_registry.call_args.args[0].registry == "https://test.pypi.org/legacy/"
-        assert mocked_publish_to_python_registry.call_args.args[0].package_path == "path/to/connector"
+    if api_token is None:
+        with pytest.raises(AssertionError):
+            await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
     else:
-        mocked_publish_to_python_registry.return_value.run.assert_not_called()
+        await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
+        if expect_publish_to_pypi_called:
+            mocked_publish_to_python_registry.return_value.run.assert_called_once()
+            # assert that the first argument passed to mocked_publish_to_pypi contains the things from the context
+            assert mocked_publish_to_python_registry.call_args.args[0].python_registry_token == api_token
+            assert mocked_publish_to_python_registry.call_args.args[0].package_metadata.name == "test"
+            assert mocked_publish_to_python_registry.call_args.args[0].package_metadata.version == "1.2.3"
+            assert mocked_publish_to_python_registry.call_args.args[0].registry == "https://test.pypi.org/legacy/"
+            assert mocked_publish_to_python_registry.call_args.args[0].package_path == "path/to/connector"
+        else:
+            mocked_publish_to_python_registry.return_value.run.assert_not_called()
 
-    if expect_build_connector_called:
-        publish_pipeline.steps.run_connector_build.assert_called_once()
+        if expect_build_connector_called:
+            publish_pipeline.steps.run_connector_build.assert_called_once()
+
+
+class TestPushConnectorImageToRegistry:
+    @pytest.mark.parametrize(
+        "is_pre_release, is_release_candidate, should_publish_latest",
+        [
+            (False, False, True),
+            (True, False, False),
+            (False, True, False),
+            (True, True, False),
+        ],
+    )
+    async def test_publish_latest_tag(self, mocker, publish_context, is_pre_release, is_release_candidate, should_publish_latest):
+        publish_context.docker_image = "airbyte/source-pokeapi:0.0.0"
+        publish_context.docker_repository = "airbyte/source-pokeapi"
+        publish_context.pre_release = is_pre_release
+        publish_context.connector.metadata = {"releases": {"isReleaseCandidate": is_release_candidate}}
+        step = publish_pipeline.PushConnectorImageToRegistry(publish_context)
+        amd_built_container = mocker.Mock(publish=mocker.AsyncMock())
+        arm_built_container = mocker.Mock(publish=mocker.AsyncMock())
+        built_containers_per_platform = [amd_built_container, arm_built_container]
+        await step.run(built_containers_per_platform)
+        assert amd_built_container.publish.call_args_list[0][0][0] == "docker.io/airbyte/source-pokeapi:0.0.0"
+        if should_publish_latest:
+            assert amd_built_container.publish.await_count == 2, "Expected to publish the latest tag and the specific version tag"
+            assert amd_built_container.publish.call_args_list[1][0][0] == "docker.io/airbyte/source-pokeapi:latest"
+        else:
+            assert amd_built_container.publish.await_count == 1, "Expected to publish only the specific version tag"

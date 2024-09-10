@@ -10,8 +10,6 @@ from json import loads
 from os import remove
 from typing import Any, Callable, Final, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk import AirbyteLogger
-
 from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery
 from .tools import END_OF_FILE, BulkTools
@@ -25,12 +23,14 @@ class ShopifyBulkRecord:
     buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
 
     # default logger
-    logger: Final[AirbyteLogger] = logging.getLogger("airbyte")
+    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     def __post_init__(self) -> None:
         self.composition: Optional[Mapping[str, Any]] = self.query.record_composition
         self.record_process_components: Optional[Callable[[MutableMapping], MutableMapping]] = self.query.record_process_components
         self.components: List[str] = self.composition.get("record_components", []) if self.composition else []
+        # how many records composed
+        self.record_composed: int = 0
 
     @property
     def tools(self) -> BulkTools:
@@ -112,14 +112,13 @@ class ShopifyBulkRecord:
         # while resolving the `id` in `record_resolve_id`,
         # we re-assign the original id like `"gid://shopify/Order/19435458986123"`,
         # into `admin_graphql_api_id` have the ability to identify the record oigin correctly in subsequent actions.
+        # IF NOT `id` field is provided by the query results, we should return composed record `as is`.
         id = record.get("id")
-        if isinstance(id, str):
+        if id and isinstance(id, str):
             record["admin_graphql_api_id"] = id
             # extracting the int(id) and reassign
             record["id"] = self.tools.resolve_str_id(id)
-            return record
-        elif isinstance(id, int):
-            return record
+        return record
 
     def produce_records(self, filename: str) -> Iterable[MutableMapping[str, Any]]:
         """
@@ -130,8 +129,12 @@ class ShopifyBulkRecord:
         """
 
         with open(filename, "r") as jsonl_file:
+            # reset the counter
+            self.record_composed = 0
+
             for record in self.process_line(jsonl_file):
                 yield self.tools.fields_names_to_snake_case(record)
+                self.record_composed += 1
 
     def read_file(self, filename: str, remove_file: Optional[bool] = True) -> Iterable[Mapping[str, Any]]:
         try:

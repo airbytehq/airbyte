@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "products",
+        "name": "products_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,7 +11,7 @@
     },
     {
       "stream": {
-        "name": "ideas",
+        "name": "ideas_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -20,7 +20,7 @@
     },
     {
       "stream": {
-        "name": "users",
+        "name": "users_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -29,7 +29,7 @@
     },
     {
       "stream": {
-        "name": "idea_categories",
+        "name": "idea_categories_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -38,7 +38,7 @@
     },
     {
       "stream": {
-        "name": "idea_endorsements",
+        "name": "idea_endorsements_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -47,7 +47,7 @@
     },
     {
       "stream": {
-        "name": "idea_comments",
+        "name": "idea_comments_stream",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

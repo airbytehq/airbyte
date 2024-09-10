@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.chargebee.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.6.9
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   githubIssueLabel: source-chargebee
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-chargebee
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -45,4 +45,17 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: chargebee_config_dev_null
+          id: 092f90df-53ab-4822-9811-96603a7dc8b1
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-CHARGEBEE__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

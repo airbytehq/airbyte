@@ -23,6 +23,7 @@ definitions:
         backoff_strategies:
           - type: WaitTimeFromHeader
             header: Retry-After
+      - type: DefaultErrorHandler
         response_filters:
           - http_codes: [401]
             action: IGNORE

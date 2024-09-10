@@ -23,7 +23,7 @@ public class PostgresCdcConnectorMetadataInjector implements CdcMetadataInjector
     this.lsn = null;
   }
 
-  PostgresCdcConnectorMetadataInjector(final String transactionTimestamp, final Long lsn) {
+  public PostgresCdcConnectorMetadataInjector(final String transactionTimestamp, final Long lsn) {
     this.transactionTimestamp = transactionTimestamp;
     this.lsn = lsn;
   }

@@ -27,6 +27,7 @@ from orchestrator.assets.registry_report import (
     oss_sources_dataframe,
 )
 from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.blob_helpers import yaml_blob_to_dict
 from pydantic import ValidationError
 
 VALID_METADATA_DICT = {
@@ -43,7 +44,7 @@ VALID_METADATA_DICT = {
         "connectorSubtype": "api",
         "supportLevel": "community",
         "releaseStage": "alpha",
-        "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+        "registryOverrides": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
     },
 }
 INVALID_METADATA_DICT = {"invalid": "metadata"}
@@ -64,11 +65,13 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
     mock_blob.name = blob_name
     mock_blob.download_as_string.return_value = blob_content.encode("utf-8")
 
+    metadata_dict = yaml_blob_to_dict(mock_blob)
+
     if expected_exception:
         with pytest.raises(expected_exception):
-            safe_parse_metadata_definition(mock_blob)
+            safe_parse_metadata_definition(mock_blob.name, metadata_dict)
     else:
-        result = safe_parse_metadata_definition(mock_blob)
+        result = safe_parse_metadata_definition(mock_blob.name, metadata_dict)
         # assert the name is set correctly
         assert result == expected_result
 
@@ -128,7 +131,7 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
             "connectorSubtype": "api",
             "releaseStage": "alpha",
             "supportLevel": "community",
-            "registries": registries_data,
+            "registryOverrides": registries_data,
         },
     }
     metadata_definition = MetadataDefinition.parse_obj(metadata_dict)
@@ -212,12 +215,14 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     Test if the definitionId in the metadata is successfully converted to
     destinationDefinitionId or sourceDefinitionId in the registry entry.
     """
-    metadata = {"data": {"connectorType": connector_type, "definitionId": "test-id", "registries": {registry_type: {"enabled": True}}}}
+    metadata = {
+        "data": {"connectorType": connector_type, "definitionId": "test-id", "registryOverrides": {registry_type: {"enabled": True}}}
+    }
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
-
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
     result = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert "definitionId" not in result
     assert "test-id" == result[expected_id_field]
@@ -227,11 +232,12 @@ def test_tombstone_custom_public_set():
     """
     Test if tombstone, custom and public are set correctly in the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["tombstone"] is False
@@ -243,14 +249,15 @@ def test_fields_deletion():
     """
     Test if registries, connectorType, and definitionId fields were deleted from the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
-    assert "registries" not in result
+    assert "registryOverrides" not in result
     assert "connectorType" not in result
     assert "definitionId" not in result
 
@@ -269,7 +276,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
             "connectorType": "source",
             "definitionId": "test-id",
             "dockerImageTag": "base_tag",
-            "registries": {
+            "registryOverrides": {
                 "oss": {"enabled": True, "dockerImageTag": "oss_tag", "additionalField": "oss_value"},
                 "cloud": {"enabled": True, "dockerImageTag": "cloud_tag", "additionalField": "cloud_value"},
             },
@@ -280,6 +287,7 @@ def test_overrides_application(registry_type, expected_docker_image_tag, expecte
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.file_path = f"metadata/{expected_docker_image_tag}/metadata.yaml"
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     registry_entry = metadata_to_registry_entry(mock_metadata_entry, registry_type)
     assert registry_entry["dockerImageTag"] == expected_docker_image_tag
@@ -298,27 +306,71 @@ def test_source_type_extraction():
             "connectorType": "source",
             "connectorSubtype": "database",
             "definitionId": "test-id",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
         }
     }
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["sourceType"] == "database"
+
+
+def test_erd_url():
+    """
+    Test that if when defined in the metadata, the erd_url will be populated in the registry
+    """
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "erdUrl": "https://an-erd.com",
+        }
+    }
+    mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["erdUrl"] == "https://an-erd.com"
+
+
+def test_sbom_url():
+    """
+    Test that if when defined in the metadata, the sbom url will be populated in the registry
+    """
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "dockerRepository": "test-connector",
+            "dockerImageTag": "test-tag",
+            "generated": {"sbomUrl": "test-sbom-url"},
+        }
+    }
+    mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["generated"]["sbomUrl"] == "test-sbom-url"
 
 
 def test_support_level_default():
     """
     Test if supportLevel is defaulted to alpha in the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["supportLevel"] == "community"
@@ -333,7 +385,7 @@ def test_migration_documentation_url_default():
             "connectorType": "source",
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
             "releases": {"migrationDocumentationUrl": None, "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": None}}},
         }
     }
@@ -341,6 +393,7 @@ def test_migration_documentation_url_default():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     expected_top_migration_documentation_url = "test-doc-url-migrations"
     expected_version_migration_documentation_url = "test-doc-url-migrations#1.0.0"
@@ -359,7 +412,7 @@ def test_breaking_changes_migration_documentation_url():
             "connectorType": "source",
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
-            "registries": {"oss": {"enabled": True}},
+            "registryOverrides": {"oss": {"enabled": True}},
             "releases": {
                 "migrationDocumentationUrl": "test-migration-doc-url",
                 "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": "test-migration-doc-url-version"}},
@@ -370,6 +423,7 @@ def test_breaking_changes_migration_documentation_url():
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["releases"]["migrationDocumentationUrl"] == "test-migration-doc-url"
@@ -380,11 +434,54 @@ def test_icon_url():
     """
     Test if the iconUrl in the metadata entry is correctly set in the registry entry.
     """
-    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
+    metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registryOverrides": {"oss": {"enabled": True}}}}
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
     mock_metadata_entry.icon_url = "test-icon-url"
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["iconUrl"] == "test-icon-url"
+
+
+def test_set_language_from_tags():
+    """
+    Test if the language is set from the tags in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "tags": ["language:manifest-only", "key:value"],
+        }
+    }
+
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["language"] == "manifest-only"
+
+
+def test_language_from_tags_does_not_override_top_level_language():
+    """
+    Test if the language is not set from the tags if it is already set in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registryOverrides": {"oss": {"enabled": True}},
+            "language": "python",
+            "tags": ["language:manifest-only", "key:value"],
+        }
+    }
+
+    mock_metadata_entry = mock.Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
+    result = metadata_to_registry_entry(mock_metadata_entry, "oss")
+    assert result["language"] == "python"

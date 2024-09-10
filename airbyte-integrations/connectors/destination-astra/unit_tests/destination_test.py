@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_astra.config import ConfigModel
 from destination_astra.destination import DestinationAstra
@@ -24,7 +24,7 @@ class TestDestinationAstra(unittest.TestCase):
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     @patch("destination_astra.destination.AstraIndexer")
     @patch("destination_astra.destination.create_from_config")

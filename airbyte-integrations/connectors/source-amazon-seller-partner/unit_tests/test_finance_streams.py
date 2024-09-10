@@ -9,6 +9,8 @@ import pendulum
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from source_amazon_seller_partner.streams import ListFinancialEventGroups, ListFinancialEvents, RestockInventoryReports
 
 list_financial_event_groups_data = {
@@ -204,11 +206,24 @@ def test_financial_events_stream_parse_response(mocker, list_financial_events_st
         )
 
 
-def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
+def test_reports_read_records_raise_on_backoff(mocker, requests_mock, caplog):
     mocker.patch("time.sleep", lambda x: None)
-    requests_mock.post("https://test.url/reports/2021-06-30/reports", status_code=429)
+    requests_mock.post(
+        "https://test.url/reports/2021-06-30/reports",
+        status_code=429,
+        json={
+            "errors": [
+                {
+                    "code": "QuotaExceeded",
+                    "message": "You exceeded your quota for the requested resource.",
+                    "details": ""
+                }
+            ]
+        },
+    )
 
     stream = RestockInventoryReports(
+        stream_name="GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT",
         url_base="https://test.url",
         replication_start_date=START_DATE_1,
         replication_end_date=END_DATE_1,
@@ -217,10 +232,10 @@ def test_reports_read_records_exit_on_backoff(mocker, requests_mock, caplog):
         period_in_days=0,
         report_options=None,
     )
-    assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == []
-    assert (
-        "The report for stream 'GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT' was cancelled due to several failed retry attempts."
-    ) in caplog.messages[-1]
+    with pytest.raises(AirbyteTracedException) as exception:
+        list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert exception.value.failure_type == FailureType.transient_error
 
 
 @pytest.mark.parametrize(

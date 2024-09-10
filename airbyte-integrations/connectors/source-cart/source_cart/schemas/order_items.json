@@ -4,147 +4,195 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier of the order item.",
       "type": "integer"
     },
     "order_id": {
+      "description": "Identifier of the order to which the item belongs.",
       "type": ["integer", "null"]
     },
     "product_id": {
+      "description": "Unique identifier of the product associated with the order item.",
       "type": ["integer", "null"]
     },
     "item_number": {
+      "description": "Number assigned to the order item.",
       "type": ["string", "null"]
     },
     "item_name": {
+      "description": "Name of the order item.",
       "type": ["string", "null"]
     },
     "price": {
+      "description": "Price of the order item.",
       "type": ["number", "null"]
     },
     "cost": {
+      "description": "Cost of the order item.",
       "type": ["number", "null"]
     },
     "quantity": {
+      "description": "Quantity of the order item.",
       "type": ["integer", "null"]
     },
     "is_discount_item": {
+      "description": "Flag indicating if the item is eligible for discounts.",
       "type": ["boolean", "null"]
     },
     "weight": {
+      "description": "Weight of the order item.",
       "type": ["number", "null"]
     },
     "is_taxable": {
+      "description": "Flag indicating if the item is taxable.",
       "type": ["boolean", "null"]
     },
     "weigh_unit": {
+      "description": "Unit of measurement for weight.",
       "type": ["string", "null"]
     },
     "parent_order_item_id": {
+      "description": "Identifier of the parent order item, if any.",
       "type": ["integer", "null"]
     },
     "is_quantity_bound_to_parent": {
+      "description": "Flag indicating whether the quantity is bound to the parent item.",
       "type": ["boolean", "null"]
     },
     "updated_at": {
+      "description": "Date and time when the order item was last updated.",
       "type": ["string", "null"]
     },
     "created_at": {
+      "description": "Date and time when the order item was created.",
       "type": ["string", "null"]
     },
     "height": {
+      "description": "Height dimension of the order item.",
       "type": ["number", "null"]
     },
     "length": {
+      "description": "Length dimension of the order item.",
       "type": ["number", "null"]
     },
     "width": {
+      "description": "Width dimension of the order item.",
       "type": ["number", "null"]
     },
     "size_unit": {
+      "description": "Unit of measurement for size dimensions.",
       "type": ["string", "null"]
     },
     "admin_comments": {
+      "description": "Comments or notes added by the admin regarding the order item.",
       "type": ["string", "null"]
     },
     "do_not_discount": {
+      "description": "Flag indicating whether the item is not eligible for discounts.",
       "type": ["boolean", "null"]
     },
     "line_item_note": {
+      "description": "Notes specific to the line item.",
       "type": ["string", "null"]
     },
     "gift_message": {
+      "description": "Message included as a gift with the order item.",
       "type": ["string", "null"]
     },
     "delivery_date": {
+      "description": "Planned delivery date of the order item.",
       "type": ["string", "null"]
     },
     "is_subscription_product": {
+      "description": "Flag indicating if the item is a subscription product.",
       "type": ["boolean", "null"]
     },
     "warehouse_id": {
+      "description": "Identifier of the warehouse holding the item.",
       "type": ["integer", "null"]
     },
     "configuration": {
+      "description": "Configuration details of the order item.",
       "type": ["string", "null"]
     },
     "description": {
+      "description": "Description of the order item.",
       "type": ["string", "null"]
     },
     "discount_amount": {
+      "description": "Amount of discount applied to the order item.",
       "type": ["number", "null"]
     },
     "discount_percentage": {
+      "description": "Percentage of discount applied to the order item.",
       "type": ["number", "null"]
     },
     "fitment": {
+      "description": "Fitment details of the product.",
       "type": ["string", "null"]
     },
     "is_non_shipping_item": {
+      "description": "Flag indicating if the item does not require shipping.",
       "type": ["boolean", "null"]
     },
     "item_number_full": {
+      "description": "Full number assigned to the order item.",
       "type": ["string", "null"]
     },
     "order_shipping_address_id": {
+      "description": "Identifier of the shipping address for the order item.",
       "type": ["string", "null"]
     },
     "personalizations": {
+      "description": "Customizations or personalizations applied to the item.",
       "type": ["array", "null"]
     },
     "selected_shipping_method": {
+      "description": "Selected shipping method for the order item.",
       "type": ["string", "null"]
     },
     "selected_shipping_method_id": {
+      "description": "Identifier of the selected shipping method.",
       "type": ["string", "null"]
     },
     "selected_shipping_provider_service": {
+      "description": "Provider service for the selected shipping method.",
       "type": ["string", "null"]
     },
     "shipping_total": {
+      "description": "Total shipping cost for the order item.",
       "type": ["string", "null"]
     },
     "status": {
+      "description": "Status of the order item.",
       "type": ["string", "null"]
     },
     "tax": {
+      "description": "Tax amount applied to the order item.",
       "type": ["number", "null"]
     },
     "tax_code": {
+      "description": "Tax code related to the item.",
       "type": ["string", "null"]
     },
     "variant_inventory_id": {
+      "description": "Identifier of the product variant inventory.",
       "type": ["string", "null"]
     },
     "shipping_classification_code": {
+      "description": "Code representing the shipping classification.",
       "type": ["string", "null"]
     },
     "variants": {
+      "description": "Variants or options selected for the product.",
       "type": ["array", "null"]
     },
     "vendor_store_id": {
+      "description": "Identifier of the vendor store associated with the item.",
       "type": ["integer", "null"]
     },
     "weight_unit": {
+      "description": "Unit of measurement for weight.",
       "type": ["string", "null"]
     }
   }
