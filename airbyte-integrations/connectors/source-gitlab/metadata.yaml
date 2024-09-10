@@ -6,11 +6,11 @@ data:
     hosts:
       - ${api_url}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
-  dockerImageTag: 4.0.1
+  dockerImageTag: 4.3.3
   dockerRepository: airbyte/source-gitlab
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   githubIssueLabel: source-gitlab
@@ -22,7 +22,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-gitlab
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -31,10 +31,7 @@ data:
   releases:
     breakingChanges:
       4.0.0:
-        message:
-          In this release, several changes have been made to the Gitlab connector.
-          The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`.
-          Users will need to refresh schemas and reset the affected streams after upgrading.
+        message: In this release, several changes have been made to the Gitlab connector. The primary key was changed for streams `group_members`, `group_labels`, `project_members`, `project_labels`, `branches`, and `tags`. Users will need to refresh schemas and reset the affected streams after upgrading.
         upgradeDeadline: "2024-04-15"
         scopedImpact:
           - scopeType: stream
@@ -50,18 +47,13 @@ data:
               - "branches"
               - "tags"
       3.0.0:
-        message:
-          In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request.
-          Users will need to refresh the source schema and reset merge_request_commits stream after upgrading.
+        message: In this release, merge_request_commits stream schema has been fixed so that it returns commits for each merge_request. Users will need to refresh the source schema and reset merge_request_commits stream after upgrading.
         upgradeDeadline: "2024-02-13"
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["merge_request_commits"]
       2.0.0:
-        message:
-          In this release, several streams were updated to date-time field format, as declared in the Gitlab API.
-          These changes impact pipeline.created_at and pipeline.updated_at fields for stream Deployments and expires_at field for stream Group Members and stream Project Members.
-          Users will need to refresh the source schema and reset affected streams after upgrading.
+        message: In this release, several streams were updated to date-time field format, as declared in the Gitlab API. These changes impact pipeline.created_at and pipeline.updated_at fields for stream Deployments and expires_at field for stream Group Members and stream Project Members. Users will need to refresh the source schema and reset affected streams after upgrading.
         upgradeDeadline: "2023-11-09"
   suggestedStreams:
     streams:
@@ -74,4 +66,36 @@ data:
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: gitlab_config_with_ids_dev_null
+          id: 0a232b74-3f4e-492e-b522-cdd87d7e78c1
+        - name: gitlab_config_oauth_dev_null
+          id: 4b892767-e35e-4126-b1ab-b4fd02d08c15
+        - name: gitlab_config_dev_null
+          id: 8e190e6d-1f8f-411f-8468-9ce77fec5b4c
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GITLAB_CREDS_WITH_IDS
+          fileName: config_with_ids.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITLAB_OAUTH__CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITLAB_WITH_IDS__CREDS
+          fileName: config_with_ids.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GITLAB__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -3,5 +3,7 @@
   "credentials": {
     "auth_method": "access_token",
     "access_token": "example_token_string123"
-  }
+  },
+  "start_date": "2023-10-31T00:00:00Z",
+  "time_granularity_type": "DAY"
 }

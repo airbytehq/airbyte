@@ -132,7 +132,7 @@ class IncrementalSingleSliceCursor(Cursor):
         if self.is_greater_than_or_equal(record, self._state):
             self._cursor = record_cursor_value
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
         cursor_field = self.cursor_field.eval(self.config)
         self._state[cursor_field] = self._cursor
 

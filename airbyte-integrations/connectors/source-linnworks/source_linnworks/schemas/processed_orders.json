@@ -94,6 +94,7 @@
       "description": "Courier name (e.g. DPD)"
     },
     "BillingEmailAddress": {
+      "description": "The email address used for billing purposes",
       "type": ["null", "string"]
     },
     "ReferenceNum": {

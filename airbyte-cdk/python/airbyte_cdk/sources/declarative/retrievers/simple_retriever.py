@@ -1,16 +1,17 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import json
 from dataclasses import InitVar, dataclass, field
 from functools import partial
 from itertools import islice
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import requests
 from airbyte_cdk.models import AirbyteMessage
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.incremental import ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -18,10 +19,12 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.utils.mapping_helpers import combine_mappings
+
+FULL_REFRESH_SYNC_COMPLETE_KEY = "__ab_full_refresh_sync_complete"
 
 
 @dataclass
@@ -57,16 +60,21 @@ class SimpleRetriever(Retriever):
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
-    stream_slicer: StreamSlicer = SinglePartitionRouter(parameters={})
-    cursor: Optional[Cursor] = None
+    stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
+    cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._paginator = self.paginator or NoPagination(parameters=parameters)
         self._last_response: Optional[requests.Response] = None
-        self._records_from_last_response: List[Record] = []
+        self._last_page_size: int = 0
+        self._last_record: Optional[Record] = None
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
+
+        # This mapping is used during a resumable full refresh syncs to indicate whether a partition has started syncing
+        # records. Partitions serve as the key and map to True if they already began processing records
+        self._partition_started: MutableMapping[Any, bool] = dict()
 
     @property  # type: ignore
     def name(self) -> str:
@@ -223,19 +231,21 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            self._records_from_last_response = []
             return []
 
         self._last_response = response
-        records = self.record_selector.select_records(
+        record_generator = self.record_selector.select_records(
             response=response,
             stream_state=stream_state,
             records_schema=records_schema,
             stream_slice=stream_slice,
             next_page_token=next_page_token,
         )
-        self._records_from_last_response = records
-        return records
+        self._last_page_size = 0
+        for record in record_generator:
+            self._last_page_size += 1
+            self._last_record = record
+            yield record
 
     @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -255,7 +265,7 @@ class SimpleRetriever(Retriever):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self._paginator.next_page_token(response, self._records_from_last_response)
+        return self._paginator.next_page_token(response, self._last_page_size, self._last_record)
 
     def _fetch_next_page(
         self, stream_state: Mapping[str, Any], stream_slice: StreamSlice, next_page_token: Optional[Mapping[str, Any]] = None
@@ -298,6 +308,26 @@ class SimpleRetriever(Retriever):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    def _read_single_page(
+        self,
+        records_generator_fn: Callable[[Optional[requests.Response]], Iterable[StreamData]],
+        stream_state: Mapping[str, Any],
+        stream_slice: StreamSlice,
+    ) -> Iterable[StreamData]:
+        response = self._fetch_next_page(stream_state, stream_slice)
+        yield from records_generator_fn(response)
+
+        if not response:
+            next_page_token: Mapping[str, Any] = {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
+        else:
+            next_page_token = self._next_page_token(response) or {FULL_REFRESH_SYNC_COMPLETE_KEY: True}
+
+        if self.cursor:
+            self.cursor.close_slice(StreamSlice(cursor_slice=next_page_token, partition=stream_slice.partition))
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
     def read_records(
         self,
         records_schema: Mapping[str, Any],
@@ -311,8 +341,6 @@ class SimpleRetriever(Retriever):
         :return: The records read from the API source
         """
         _slice = stream_slice or StreamSlice(partition={}, cursor_slice={})  # None-check
-        # Fixing paginator types has a long tail of dependencies
-        self._paginator.reset()
 
         most_recent_record_from_slice = None
         record_generator = partial(
@@ -321,19 +349,42 @@ class SimpleRetriever(Retriever):
             stream_slice=_slice,
             records_schema=records_schema,
         )
-        for stream_data in self._read_pages(record_generator, self.state, _slice):
-            current_record = self._extract_record(stream_data, _slice)
-            if self.cursor and current_record:
-                self.cursor.observe(_slice, current_record)
 
-            # Latest record read, not necessarily within slice boundaries.
-            # TODO Remove once all custom components implement `observe` method.
-            # https://github.com/airbytehq/airbyte-internal-issues/issues/6955
-            most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
-            yield stream_data
+        if self.cursor and isinstance(self.cursor, ResumableFullRefreshCursor):
+            stream_state = self.state
 
-        if self.cursor:
-            self.cursor.close_slice(_slice, most_recent_record_from_slice)
+            # Before syncing the RFR stream, we check if the job's prior attempt was successful and don't need to fetch more records
+            # The platform deletes stream state for full refresh streams before starting a new job, so we don't need to worry about
+            # this value existing for the initial attempt
+            if stream_state.get(FULL_REFRESH_SYNC_COMPLETE_KEY):
+                return
+            cursor_value = stream_state.get("next_page_token")
+
+            # The first attempt to read a page for the current partition should reset the paginator to the current
+            # cursor state which is initially assigned to the incoming state from the platform
+            partition_key = self._to_partition_key(_slice.partition)
+            if partition_key not in self._partition_started:
+                self._partition_started[partition_key] = True
+                self._paginator.reset(reset_value=cursor_value)
+
+            yield from self._read_single_page(record_generator, stream_state, _slice)
+        else:
+            # Fixing paginator types has a long tail of dependencies
+            self._paginator.reset()
+
+            for stream_data in self._read_pages(record_generator, self.state, _slice):
+                current_record = self._extract_record(stream_data, _slice)
+                if self.cursor and current_record:
+                    self.cursor.observe(_slice, current_record)
+
+                # Latest record read, not necessarily within slice boundaries.
+                # TODO Remove once all custom components implement `observe` method.
+                # https://github.com/airbytehq/airbyte-internal-issues/issues/6955
+                most_recent_record_from_slice = self._get_most_recent_record(most_recent_record_from_slice, current_record, _slice)
+                yield stream_data
+
+            if self.cursor:
+                self.cursor.close_slice(_slice, most_recent_record_from_slice)
         return
 
     def _get_most_recent_record(
@@ -400,6 +451,11 @@ class SimpleRetriever(Retriever):
 
     def must_deduplicate_query_params(self) -> bool:
         return True
+
+    @staticmethod
+    def _to_partition_key(to_serialize: Any) -> str:
+        # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
+        return json.dumps(to_serialize, indent=None, separators=(",", ":"), sort_keys=True)
 
 
 @dataclass

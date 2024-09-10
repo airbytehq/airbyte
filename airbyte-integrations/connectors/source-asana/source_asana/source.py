@@ -2,87 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
-from typing import Any, List, Mapping, Tuple, Union
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from source_asana.oauth import AsanaOauth2Authenticator
-
-from .streams import (
-    Attachments,
-    AttachmentsCompact,
-    CustomFields,
-    Events,
-    OrganizationExports,
-    Portfolios,
-    PortfoliosCompact,
-    PortfoliosMemberships,
-    Projects,
-    Sections,
-    SectionsCompact,
-    Stories,
-    StoriesCompact,
-    Tags,
-    Tasks,
-    TeamMemberships,
-    Teams,
-    Users,
-    Workspaces,
-)
+WARNING: Do not modify this file.
+"""
 
 
-class SourceAsana(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            workspaces_stream = Workspaces(authenticator=self._get_authenticator(config))
-            next(workspaces_stream.read_records(sync_mode=SyncMode.full_refresh))
-            return True, None
-        except Exception as e:
-            return False, e
-
-    @staticmethod
-    def _get_authenticator(config: dict) -> Union[TokenAuthenticator, AsanaOauth2Authenticator]:
-        if "access_token" in config:
-            # Before Oauth we had Person Access Token stored under "access_token"
-            # config field, this code here is for backward compatibility
-            return TokenAuthenticator(token=config["access_token"])
-        creds = config.get("credentials")
-        if "personal_access_token" in creds:
-            return TokenAuthenticator(token=creds["personal_access_token"])
-        else:
-            return AsanaOauth2Authenticator(
-                token_refresh_endpoint="https://app.asana.com/-/oauth_token",
-                client_secret=creds["client_secret"],
-                client_id=creds["client_id"],
-                refresh_token=creds["refresh_token"],
-            )
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = {"authenticator": self._get_authenticator(config), "test_mode": config.get("test_mode", False)}
-        streams = [
-            AttachmentsCompact(**args),
-            Attachments(**args),
-            CustomFields(**args),
-            Events(**args),
-            PortfoliosCompact(**args),
-            Portfolios(**args),
-            PortfoliosMemberships(**args),
-            Projects(**args),
-            SectionsCompact(**args),
-            Sections(**args),
-            StoriesCompact(**args),
-            Stories(**args),
-            Tags(**args),
-            Tasks(**args),
-            Teams(**args),
-            TeamMemberships(**args),
-            Users(**args),
-            Workspaces(**args),
-        ]
-        if "organization_export_ids" in config:
-            streams.append(OrganizationExports(organization_export_ids=config.get("organization_export_ids"), **args))
-        return streams
+# Declarative Source
+class SourceAsana(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})

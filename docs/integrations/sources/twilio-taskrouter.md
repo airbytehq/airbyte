@@ -56,9 +56,29 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                             |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------- |
-| 0.1.3 | 2024-04-19 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
-| 0.1.2 | 2024-04-15 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Base image migration: remove Dockerfile and use the python-connector-base image |
-| 0.1.1 | 2024-04-12 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | schema descriptions |
-| 0.1.0 | 2022-11-18 | [18685](https://github.com/airbytehq/airbyte/pull/18685) | 🎉 New Source: Twilio Taskrouter API [low-code cdk] |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.0 | 2024-08-26 | [44776](https://github.com/airbytehq/airbyte/pull/44776) | Refactor connector to manifest-only format |
+| 0.1.17 | 2024-08-24 | [44727](https://github.com/airbytehq/airbyte/pull/44727) | Update dependencies |
+| 0.1.16 | 2024-08-17 | [44294](https://github.com/airbytehq/airbyte/pull/44294) | Update dependencies |
+| 0.1.15 | 2024-08-10 | [43626](https://github.com/airbytehq/airbyte/pull/43626) | Update dependencies |
+| 0.1.14 | 2024-08-03 | [43255](https://github.com/airbytehq/airbyte/pull/43255) | Update dependencies |
+| 0.1.13 | 2024-07-27 | [42718](https://github.com/airbytehq/airbyte/pull/42718) | Update dependencies |
+| 0.1.12 | 2024-07-20 | [42282](https://github.com/airbytehq/airbyte/pull/42282) | Update dependencies |
+| 0.1.11 | 2024-07-13 | [41858](https://github.com/airbytehq/airbyte/pull/41858) | Update dependencies |
+| 0.1.10 | 2024-07-10 | [41585](https://github.com/airbytehq/airbyte/pull/41585) | Update dependencies |
+| 0.1.9 | 2024-07-09 | [41125](https://github.com/airbytehq/airbyte/pull/41125) | Update dependencies |
+| 0.1.8 | 2024-07-06 | [40827](https://github.com/airbytehq/airbyte/pull/40827) | Update dependencies |
+| 0.1.7 | 2024-06-25 | [40295](https://github.com/airbytehq/airbyte/pull/40295) | Update dependencies |
+| 0.1.6 | 2024-06-22 | [39965](https://github.com/airbytehq/airbyte/pull/39965) | Update dependencies |
+| 0.1.5 | 2024-06-10 | [38788](https://github.com/airbytehq/airbyte/pull/38788) | Make compatible with the builder |
+| 0.1.4 | 2024-06-04 | [39067](https://github.com/airbytehq/airbyte/pull/39067) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.3.  | 2024-04-19 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry.                      |
+| 0.1.2   | 2024-04-15 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.1.1   | 2024-04-12 | [37278](https://github.com/airbytehq/airbyte/pull/37278) | schema descriptions                                                             |
+| 0.1.0   | 2022-11-18 | [18685](https://github.com/airbytehq/airbyte/pull/18685) | 🎉 New Source: Twilio Taskrouter API [low-code cdk]                             |
+
+</details>

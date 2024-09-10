@@ -63,10 +63,10 @@ internal class LazyAutoCloseableIteratorTest {
     }
 
     private fun mockInternalIteratorWith(iterator: Iterator<String>) {
-        Mockito.`when`(internalIterator!!.hasNext()).then { a: InvocationOnMock? ->
+        Mockito.`when`(internalIterator!!.hasNext()).then { a: InvocationOnMock ->
             iterator.hasNext()
         }
-        Mockito.`when`(internalIterator!!.next()).then { a: InvocationOnMock? -> iterator.next() }
+        Mockito.`when`(internalIterator!!.next()).then { a: InvocationOnMock -> iterator.next() }
     }
 
     private fun assertNext(iterator: Iterator<String>, value: String) {

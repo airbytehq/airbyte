@@ -3,13 +3,15 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from typing import Any, List, Mapping, Optional, Union
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import (
+    ErrorResolution,
+    ResponseAction,
+    create_fallback_error_resolution,
+)
 
 
 @dataclass
@@ -45,19 +47,30 @@ class CompositeErrorHandler(ErrorHandler):
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
     @property
-    def max_retries(self) -> Union[int, None]:
+    def max_retries(self) -> Optional[int]:
         return self.error_handlers[0].max_retries
 
     @property
-    def max_time(self) -> Union[int, None]:
+    def max_time(self) -> Optional[int]:
         return max([error_handler.max_time or 0 for error_handler in self.error_handlers])
 
-    def interpret_response(self, response: requests.Response) -> ResponseStatus:
-        should_retry = ResponseStatus(ResponseAction.FAIL)
-        for retrier in self.error_handlers:
-            should_retry = retrier.interpret_response(response)
-            if should_retry.action == ResponseAction.SUCCESS:
-                return response_status.SUCCESS
-            if should_retry == response_status.IGNORE or should_retry.action == ResponseAction.RETRY:
-                return should_retry
-        return should_retry
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
+        matched_error_resolution = None
+        for error_handler in self.error_handlers:
+            matched_error_resolution = error_handler.interpret_response(response_or_exception)
+
+            if not isinstance(matched_error_resolution, ErrorResolution):
+                continue
+
+            if matched_error_resolution.response_action == ResponseAction.SUCCESS:
+                return matched_error_resolution
+
+            if (
+                matched_error_resolution.response_action == ResponseAction.RETRY
+                or matched_error_resolution.response_action == ResponseAction.IGNORE
+            ):
+                return matched_error_resolution
+        if matched_error_resolution:
+            return matched_error_resolution
+
+        return create_fallback_error_resolution(response_or_exception)

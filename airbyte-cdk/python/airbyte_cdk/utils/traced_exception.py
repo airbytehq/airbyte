@@ -1,15 +1,15 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import time
 import traceback
-from datetime import datetime
 from typing import Optional
 
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteErrorTraceMessage,
     AirbyteMessage,
+    AirbyteMessageSerializer,
     AirbyteTraceMessage,
     FailureType,
     Status,
@@ -18,6 +18,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
+from orjson import orjson
 
 
 class AirbyteTracedException(Exception):
@@ -54,7 +55,7 @@ class AirbyteTracedException(Exception):
         :param stream_descriptor is deprecated, please use the stream_description in `__init__ or `from_exception`. If many
           stream_descriptors are defined, the one from `as_airbyte_message` will be discarded.
         """
-        now_millis = datetime.now().timestamp() * 1000.0
+        now_millis = time.time_ns() // 1_000_000
 
         trace_exc = self._exception or self
         stack_trace_str = "".join(traceback.TracebackException.from_exception(trace_exc).format())
@@ -85,7 +86,7 @@ class AirbyteTracedException(Exception):
         Prints the exception as an AirbyteTraceMessage.
         Note that this will be called automatically on uncaught exceptions when using the airbyte_cdk entrypoint.
         """
-        message = self.as_airbyte_message().json(exclude_unset=True)
+        message = orjson.dumps(AirbyteMessageSerializer.dump(self.as_airbyte_message())).decode()
         filtered_message = filter_secrets(message)
         print(filtered_message)
 
@@ -106,10 +107,10 @@ class AirbyteTracedException(Exception):
           stream_descriptors are defined, the one from `as_sanitized_airbyte_message` will be discarded.
         """
         error_message = self.as_airbyte_message(stream_descriptor=stream_descriptor)
-        if error_message.trace.error.message:
-            error_message.trace.error.message = filter_secrets(error_message.trace.error.message)
-        if error_message.trace.error.internal_message:
-            error_message.trace.error.internal_message = filter_secrets(error_message.trace.error.internal_message)
-        if error_message.trace.error.stack_trace:
-            error_message.trace.error.stack_trace = filter_secrets(error_message.trace.error.stack_trace)
+        if error_message.trace.error.message:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+            error_message.trace.error.message = filter_secrets(error_message.trace.error.message)  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+        if error_message.trace.error.internal_message:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+            error_message.trace.error.internal_message = filter_secrets(error_message.trace.error.internal_message)  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+        if error_message.trace.error.stack_trace:  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
+            error_message.trace.error.stack_trace = filter_secrets(error_message.trace.error.stack_trace)  # type: ignore[union-attr] # AirbyteMessage with MessageType.TRACE has AirbyteTraceMessage
         return error_message

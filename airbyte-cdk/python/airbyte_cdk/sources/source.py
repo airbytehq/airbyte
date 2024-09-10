@@ -5,14 +5,24 @@
 
 import logging
 from abc import ABC, abstractmethod
-from collections import defaultdict
-from typing import Any, Dict, Generic, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
+from typing import Any, Generic, Iterable, List, Mapping, Optional, TypeVar
 
 from airbyte_cdk.connector import BaseConnector, DefaultConnectorMixin, TConfig
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteMessage,
+    AirbyteStateMessage,
+    AirbyteStateMessageSerializer,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+)
 
 TState = TypeVar("TState")
 TCatalog = TypeVar("TCatalog")
+
+
+class ExperimentalClassWarning(DeprecationWarning):
+    pass
 
 
 class BaseSource(BaseConnector[TConfig], ABC, Generic[TConfig, TState, TCatalog]):
@@ -40,12 +50,12 @@ class BaseSource(BaseConnector[TConfig], ABC, Generic[TConfig, TState, TCatalog]
 
 class Source(
     DefaultConnectorMixin,
-    BaseSource[Mapping[str, Any], Union[List[AirbyteStateMessage], MutableMapping[str, Any]], ConfiguredAirbyteCatalog],
+    BaseSource[Mapping[str, Any], List[AirbyteStateMessage], ConfiguredAirbyteCatalog],
     ABC,
 ):
     # can be overridden to change an input state.
     @classmethod
-    def read_state(cls, state_path: str) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
+    def read_state(cls, state_path: str) -> List[AirbyteStateMessage]:
         """
         Retrieves the input state of a sync by reading from the specified JSON file. Incoming state can be deserialized into either
         a JSON object for legacy state input or as a list of AirbyteStateMessages for the per-stream state format. Regardless of the
@@ -53,39 +63,23 @@ class Source(
         :param state_path: The filepath to where the stream states are located
         :return: The complete stream state based on the connector's previous sync
         """
+        parsed_state_messages = []
         if state_path:
             state_obj = BaseConnector._read_json_file(state_path)
-            if not state_obj:
-                return cls._emit_legacy_state_format({})
-            if isinstance(state_obj, List):
-                parsed_state_messages = []
+            if state_obj:
                 for state in state_obj:  # type: ignore  # `isinstance(state_obj, List)` ensures that this is a list
-                    parsed_message = AirbyteStateMessage.parse_obj(state)
+                    parsed_message = AirbyteStateMessageSerializer.load(state)
                     if not parsed_message.stream and not parsed_message.data and not parsed_message.global_:
                         raise ValueError("AirbyteStateMessage should contain either a stream, global, or state field")
                     parsed_state_messages.append(parsed_message)
-                return parsed_state_messages
-            else:
-                return cls._emit_legacy_state_format(state_obj)  # type: ignore  # assuming it is a dict
-        return cls._emit_legacy_state_format({})
-
-    @classmethod
-    def _emit_legacy_state_format(cls, state_obj: Dict[str, Any]) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
-        """
-        Existing connectors that override read() might not be able to interpret the new state format. We temporarily
-        send state in the old format for these connectors, but once all have been upgraded, this method can be removed,
-        and we can then emit state in the list format.
-        """
-        # vars(self.__class__) checks if the current class directly overrides the read() function
-        if "read" in vars(cls):
-            return defaultdict(dict, state_obj)
-        else:
-            if state_obj:
-                return [AirbyteStateMessage(type=AirbyteStateType.LEGACY, data=state_obj)]
-            else:
-                return []
+        return parsed_state_messages
 
     # can be overridden to change an input catalog
     @classmethod
     def read_catalog(cls, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(cls._read_json_file(catalog_path))
+        return ConfiguredAirbyteCatalogSerializer.load(cls._read_json_file(catalog_path))
+
+    @property
+    def name(self) -> str:
+        """Source name"""
+        return self.__class__.__name__

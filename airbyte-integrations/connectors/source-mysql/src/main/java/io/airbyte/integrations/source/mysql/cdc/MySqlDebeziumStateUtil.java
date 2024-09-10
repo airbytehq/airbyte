@@ -23,11 +23,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
-import io.debezium.connector.mysql.GtidSet;
 import io.debezium.connector.mysql.MySqlConnectorConfig;
 import io.debezium.connector.mysql.MySqlOffsetContext;
 import io.debezium.connector.mysql.MySqlOffsetContext.Loader;
 import io.debezium.connector.mysql.MySqlPartition;
+import io.debezium.connector.mysql.gtid.MySqlGtidSet;
 import io.debezium.engine.ChangeEvent;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
@@ -35,6 +35,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,18 +64,18 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
         LOGGER.info("Connector used GTIDs previously, but MySQL server does not know of any GTIDs or they are not enabled");
         return false;
       }
-      final GtidSet gtidSetFromSavedState = new GtidSet(savedState.gtidSet().get());
+      final MySqlGtidSet gtidSetFromSavedState = new MySqlGtidSet(savedState.gtidSet().get());
       // Get the GTID set that is available in the server
-      final GtidSet availableGtidSet = new GtidSet(availableGtidStr.get());
+      final MySqlGtidSet availableGtidSet = new MySqlGtidSet(availableGtidStr.get());
       if (gtidSetFromSavedState.isContainedWithin(availableGtidSet)) {
         LOGGER.info("MySQL server current GTID set {} does contain the GTID set required by the connector {}", availableGtidSet,
             gtidSetFromSavedState);
-        final Optional<GtidSet> gtidSetToReplicate = subtractGtidSet(availableGtidSet, gtidSetFromSavedState, database);
+        final Optional<MySqlGtidSet> gtidSetToReplicate = subtractGtidSet(availableGtidSet, gtidSetFromSavedState, database);
         if (gtidSetToReplicate.isPresent()) {
-          final Optional<GtidSet> purgedGtidSet = purgedGtidSet(database);
+          final Optional<MySqlGtidSet> purgedGtidSet = purgedGtidSet(database);
           if (purgedGtidSet.isPresent()) {
             LOGGER.info("MySQL server has already purged {} GTIDs", purgedGtidSet.get());
-            final Optional<GtidSet> nonPurgedGtidSetToReplicate = subtractGtidSet(gtidSetToReplicate.get(), purgedGtidSet.get(), database);
+            final Optional<MySqlGtidSet> nonPurgedGtidSetToReplicate = subtractGtidSet(gtidSetToReplicate.get(), purgedGtidSet.get(), database);
             if (nonPurgedGtidSetToReplicate.isPresent()) {
               LOGGER.info("GTIDs known by the MySQL server but not processed yet {}, for replication are available only {}", gtidSetToReplicate,
                   nonPurgedGtidSetToReplicate);
@@ -114,16 +115,16 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     }
   }
 
-  private Optional<GtidSet> subtractGtidSet(final GtidSet set1, final GtidSet set2, final JdbcDatabase database) {
-    try (final Stream<GtidSet> stream = database.unsafeResultSetQuery(
+  private Optional<MySqlGtidSet> subtractGtidSet(final MySqlGtidSet set1, final MySqlGtidSet set2, final JdbcDatabase database) {
+    try (final Stream<MySqlGtidSet> stream = database.unsafeResultSetQuery(
         connection -> {
           final PreparedStatement ps = connection.prepareStatement("SELECT GTID_SUBTRACT(?, ?)");
           ps.setString(1, set1.toString());
           ps.setString(2, set2.toString());
           return ps.executeQuery();
         },
-        resultSet -> new GtidSet(resultSet.getString(1)))) {
-      final List<GtidSet> gtidSets = stream.toList();
+        resultSet -> new MySqlGtidSet(resultSet.getString(1)))) {
+      final List<MySqlGtidSet> gtidSets = stream.toList();
       if (gtidSets.isEmpty()) {
         return Optional.empty();
       } else if (gtidSets.size() == 1) {
@@ -136,19 +137,19 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     }
   }
 
-  private Optional<GtidSet> purgedGtidSet(final JdbcDatabase database) {
-    try (final Stream<Optional<GtidSet>> stream = database.unsafeResultSetQuery(
+  private Optional<MySqlGtidSet> purgedGtidSet(final JdbcDatabase database) {
+    try (final Stream<Optional<MySqlGtidSet>> stream = database.unsafeResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT @@global.gtid_purged"),
         resultSet -> {
           if (resultSet.getMetaData().getColumnCount() > 0) {
             String string = resultSet.getString(1);
             if (string != null && !string.isEmpty()) {
-              return Optional.of(new GtidSet(string));
+              return Optional.of(new MySqlGtidSet(string));
             }
           }
           return Optional.empty();
         })) {
-      final List<Optional<GtidSet>> gtidSet = stream.toList();
+      final List<Optional<MySqlGtidSet>> gtidSet = stream.toList();
       if (gtidSet.isEmpty()) {
         return Optional.empty();
       } else if (gtidSet.size() == 1) {
@@ -170,7 +171,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     }
 
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcOffset, Optional.empty());
-    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog);
+    final DebeziumPropertiesManager debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(baseProperties, config, catalog,
+        new ArrayList<String>());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     return parseSavedOffset(debeziumProperties);
   }
@@ -234,9 +236,10 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
                                                 final ConfiguredAirbyteCatalog catalog,
                                                 final JdbcDatabase database) {
     // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-snapshot-mode
-    // We use the schema_only_recovery property cause using this mode will instruct Debezium to
+    // We use the recovery property cause using this mode will instruct Debezium to
     // construct the db schema history.
-    properties.setProperty("snapshot.mode", "schema_only_recovery");
+    // Note that we used to use schema_only_recovery mode, but this mode has been deprecated.
+    properties.setProperty("snapshot.mode", "recovery");
     final String dbName = database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText();
     // Topic.prefix is sanitized version of database name. At this stage properties does not have this
     // value - it's set in RelationalDbDebeziumPropertiesManager.
@@ -246,7 +249,8 @@ public class MySqlDebeziumStateUtil implements DebeziumStateUtil {
     final AirbyteSchemaHistoryStorage schemaHistoryStorage =
         AirbyteSchemaHistoryStorage.initializeDBHistory(new SchemaHistory<>(Optional.empty(), false), COMPRESSION_ENABLED);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>();
-    final var debeziumPropertiesManager = new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog);
+    final var debeziumPropertiesManager =
+        new RelationalDbDebeziumPropertiesManager(properties, database.getSourceConfig(), catalog, new ArrayList<String>());
 
     try (final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(debeziumPropertiesManager)) {
       publisher.start(queue, offsetManager, Optional.of(schemaHistoryStorage));

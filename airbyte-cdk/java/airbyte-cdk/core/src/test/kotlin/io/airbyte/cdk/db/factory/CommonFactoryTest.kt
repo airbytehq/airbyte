@@ -20,13 +20,13 @@ internal open class CommonFactoryTest {
         @BeforeAll
         fun dbSetup(): Unit {
             container.withDatabaseName(DATABASE_NAME).withUsername("docker").withPassword("docker")
-            container!!.start()
+            container.start()
         }
 
         @JvmStatic
         @AfterAll
         fun dbDown(): Unit {
-            container!!.close()
+            container.close()
         }
     }
 }
