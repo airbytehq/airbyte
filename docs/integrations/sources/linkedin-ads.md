@@ -191,7 +191,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 5.0.0   | 2024-09-09 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix PK for `Account Users` stream                                                                               |
+| 5.0.0   | 2024-09-09 | [45353](https://github.com/airbytehq/airbyte/pull/45353) | Fix PK for `Account Users` stream                                                                               |
 | 4.1.0   | 2024-09-09 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code                                                                                             |
 | 4.0.3   | 2024-08-24 | [44682](https://github.com/airbytehq/airbyte/pull/44682) | Update dependencies                                                                                             |
 | 4.0.2   | 2024-08-17 | [44220](https://github.com/airbytehq/airbyte/pull/44220) | Update dependencies                                                                                             |
