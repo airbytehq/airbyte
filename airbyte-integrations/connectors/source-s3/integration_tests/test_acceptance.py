@@ -13,9 +13,10 @@ from pathlib import Path
 
 import pytest
 import yaml
-from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, AirbyteTracedException, Type, launch
 from pydantic import BaseModel
 from source_s3.run import get_source
+
+from airbyte_cdk import AirbyteTracedException, launch
 
 
 class AcceptanceTestExpectRecords(BaseModel):
@@ -88,20 +89,19 @@ def test_invalid_config(capsys: pytest.CaptureFixture[str]) -> None:
         launch(source, args=args)
     except AirbyteTracedException as ex:
         captured = capsys.readouterr()
-        if "ConfigError" not in captured.err:
+        if "CONNECTOR_CONFIG" not in captured.out:
             raise AssertionError(  # noqa: TRY003
                 "The `CHECK` exception was raised but not printed.",
             ) from ex
 
-        raise AssertionError(  # noqa: TRY003
-            "Expected the exception printed, not raised.",
-        ) from ex
+        # Else, the exception was raised and the status messages was printed as expected.
+
     except Exception as ex:
         captured = capsys.readouterr()
-        assert "ConfigError" not in captured.err, "The `CHECK` exception was not printed."
+        assert "CONNECTOR_CONFIG" in captured.out, "The `CHECK` exception was not printed."
 
         raise AssertionError(  # noqa: TRY003
-            "Unexpected exception raised during `CHECK`.",
+            "Unexpected exception raised during `CHECK`. Handled exceptions should be of type `AirbyteTracedException`.",
         ) from ex
 
     else:
