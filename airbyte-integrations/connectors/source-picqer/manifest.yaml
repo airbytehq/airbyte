@@ -3,12 +3,12 @@ version: 4.6.2
 type: DeclarativeSource
 
 description: >-
-    Website: https://picqer.com/
+  Website: https://picqer.com/
 
-    Authentication Docs:
-    https://picqer.com/en/api#h-authentication
+  Authentication Docs:
+  https://picqer.com/en/api#h-authentication
 
-    API Docs: https://picqer.com/en/api
+  API Docs: https://picqer.com/en/api
 
 check:
   type: CheckStream
@@ -107,7 +107,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -213,7 +213,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -270,7 +270,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -327,7 +327,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -384,7 +384,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -527,7 +527,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -755,8 +755,8 @@ definitions:
     url_base: https://{{ config.organization_name }}.picqer.com/api/v1/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
-      password: "{{ config[\"password\"] }}"
+      username: '{{ config["username"] }}'
+      password: '{{ config["password"] }}'
 
 streams:
   - $ref: "#/definitions/streams/customers"
