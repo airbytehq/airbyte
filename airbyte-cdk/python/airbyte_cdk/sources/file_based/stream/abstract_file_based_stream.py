@@ -9,7 +9,6 @@ import sys
 from abc import abstractmethod
 from collections.abc import MutableMapping
 from functools import cache, cached_property, lru_cache
-from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, Optional, TextIO, Type
 
 import polars as pl

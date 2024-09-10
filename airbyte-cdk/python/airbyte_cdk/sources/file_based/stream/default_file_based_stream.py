@@ -13,7 +13,7 @@ import polars as pl
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.exceptions import (
     FileBasedSourceError,
     InvalidSchemaError,
