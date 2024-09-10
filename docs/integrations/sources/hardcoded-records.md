@@ -149,6 +149,9 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.11 | 2024-09-07 | [45280](https://github.com/airbytehq/airbyte/pull/45280) | Update dependencies |
+| 0.0.10 | 2024-09-03 | [45097](https://github.com/airbytehq/airbyte/pull/45097) | Update CDK version to ^5 |
+| 0.0.9 | 2024-08-31 | [45003](https://github.com/airbytehq/airbyte/pull/45003) | Update dependencies |
 | 0.0.8 | 2024-08-24 | [44630](https://github.com/airbytehq/airbyte/pull/44630) | Update dependencies |
 | 0.0.7 | 2024-08-17 | [44331](https://github.com/airbytehq/airbyte/pull/44331) | Update dependencies |
 | 0.0.6 | 2024-08-12 | [43823](https://github.com/airbytehq/airbyte/pull/43823) | Update dependencies |

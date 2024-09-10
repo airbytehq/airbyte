@@ -129,6 +129,9 @@ The Stripe source connector supports the following streams:
 - [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Data type map
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
@@ -236,6 +239,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                                                                       |
 |:--------|:-----------| :-------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.3   | 2024-09-03 | [45101](https://github.com/airbytehq/airbyte/pull/45101) | Fix regression followoing pagination issue fix                                                                                                                                                                                |
 | 5.5.2   | 2024-08-28 | [44862](https://github.com/airbytehq/airbyte/pull/44862) | Fix RFR pagination issue                                                                                                                                                                                                      |
 | 5.5.1   | 2024-08-10 | [43105](https://github.com/airbytehq/airbyte/pull/43105) | Update dependencies                                                                                                                                                                                                           |
 | 5.5.0   | 2024-08-08 | [43302](https://github.com/airbytehq/airbyte/pull/43302) | Fix problem with state not updating and upgrade cdk 4                                                                                                                                                                         

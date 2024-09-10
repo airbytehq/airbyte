@@ -460,6 +460,7 @@ def test_set_language_from_tags():
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["language"] == "manifest-only"
@@ -481,6 +482,6 @@ def test_language_from_tags_does_not_override_top_level_language():
 
     mock_metadata_entry = mock.Mock()
     mock_metadata_entry.metadata_definition.dict.return_value = metadata
-
+    mock_metadata_entry.dependency_file_url = "test-dependency-file-url"
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
     assert result["language"] == "python"
