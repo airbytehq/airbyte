@@ -87,7 +87,7 @@ class FileBasedStreamConfig(BaseModel):
     bulk_mode: BulkMode = Field(
         title="Bulk Processing Optimizations",
         description="The bulk processing mode for this stream.",
-        default=BulkMode.INMEM,  # TODO: Consider defaulting to DISABLED if unstable
+        default=BulkMode.LAZY,  # TODO: Consider defaulting to DISABLED if unstable
     )
 
     @validator("input_schema", pre=True)
