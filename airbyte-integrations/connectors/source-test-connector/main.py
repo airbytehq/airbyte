@@ -11,7 +11,7 @@ from source_test_connector import SourceTestConnector
 if __name__ == "__main__":
     source = SourceTestConnector()
     # make catalog not required for testing
-    if sys.argv[1] != "discover" and sys.argv.count("--catalog") == 0:
+    if sys.argv[1] == "read" and sys.argv.count("--catalog") == 0:
         sys.argv.append('--catalog')
         sys.argv.append('dummy.json')
     launch(source, sys.argv[1:])
