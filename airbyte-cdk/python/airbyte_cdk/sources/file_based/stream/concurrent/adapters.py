@@ -17,7 +17,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import (
     AbstractFileBasedAvailabilityStrategy,
     AbstractFileBasedAvailabilityStrategyWrapper,
 )
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, PrimaryKeyType
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -226,6 +226,14 @@ class FileBasedStreamPartition(Partition):
         self._is_closed = False
 
     def read(self) -> Iterable[Record]:
+        if self._stream.config.bulk_mode != BulkMode.DISABLED:
+            for df in self._stream.read_records_as_dataframes(
+                sync_mode=self._sync_mode,
+                cursor_field=self._cursor_field,
+                stream_slice=self._slice,
+                stream_state=self._state,
+            ):
+                yield from self._records_df_to_record_messages(df)
         try:
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
@@ -248,6 +256,25 @@ class FileBasedStreamPartition(Partition):
                 raise ExceptionWithDisplayMessage(display_message) from e
             else:
                 raise e
+
+    def _records_df_to_record_messages(
+        self,
+        dataframe: pl.DataFrame | pl.LazyFrame,
+    ) -> Iterable[Record]:
+        if isinstance(dataframe, pl.LazyFrame):
+            # Stream from the LazyFrame in chunks
+            # TODO: This is cheating for now. We just put it in a single dataframe.
+            # Note that this will fail if there is not enough memory.
+            dataframes = [dataframe.collect()]
+        else:
+            dataframes = [dataframe]
+
+        for chunk in dataframes:
+            # Recursively process each chunk as a DataFrame
+            yield from self._records_df_to_record_messages(
+                dataframe=chunk,
+            )
+        return
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         if self._slice is None:
