@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.models import FailureType
 
 from .utils import update_specific_key
 
