@@ -36,6 +36,10 @@ properties:
         format: uuid
       connectorBuildOptions:
         "$ref": ConnectorBuildOptions.yaml
+      connectorTestSuitesOptions:
+        type: array
+        items:
+          "$ref": ConnectorTestSuiteOptions.yaml
       connectorType:
         type: string
         enum:
@@ -66,6 +70,9 @@ properties:
       protocolVersion:
         type: string
         description: the Airbyte Protocol version supported by the connector
+      erdUrl:
+        type: string
+        description: The URL where you can visualize the ERD
       connectorSubtype:
         type: string
         enum:
@@ -87,7 +94,7 @@ properties:
         items:
           type: string
         default: []
-      registries:
+      registryOverrides:
         anyOf:
           - type: object
             additionalProperties: false
@@ -113,3 +120,8 @@ properties:
         "$ref": AirbyteInternal.yaml
       remoteRegistries:
         "$ref": RemoteRegistries.yaml
+      supportsRefreshes:
+        type: boolean
+        default: false
+      generated:
+        "$ref": GeneratedFields.yaml

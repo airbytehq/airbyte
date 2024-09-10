@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import itertools
 import json
 import logging
@@ -22,7 +23,6 @@ ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
 )
-FILE_FORMAT = "csv"  # TODO: Change if other file formats are implemented
 
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
@@ -70,14 +70,17 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs or [])
             globs = globs or [None]
 
+            if not prefixes:
+                prefixes = [""]
+
             for prefix, glob in itertools.product(prefixes, globs):
                 bucket = self.gcs_client.get_bucket(self.config.bucket)
                 blobs = bucket.list_blobs(prefix=prefix, match_glob=glob)
                 for blob in blobs:
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
-                    if FILE_FORMAT in blob.name.lower() and (not start_date or last_modified >= start_date):
-                        uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
+                    if not start_date or last_modified >= start_date:
+                        uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
 

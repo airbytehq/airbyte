@@ -53,6 +53,16 @@ class BulkTools:
             )
 
     @staticmethod
+    def shop_name_from_url(url: str) -> str:
+        match = re.search(r"https://(.*?)(\.myshopify)", url)
+        if match:
+            return match.group(1)
+        else:
+            # safety net, if there is an error parsing url,
+            # on no match is found
+            return url
+
+    @staticmethod
     def from_iso8601_to_rfc3339(record: Mapping[str, Any], field: str) -> Mapping[str, Any]:
         """
         Converts date-time as follows:

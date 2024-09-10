@@ -6,16 +6,59 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "~3.10"
+jsonschema = "^4.22.0"
 
 [tool.poetry.group.dev.dependencies]
 isort = "5.6.4"
 black = "~22.3.0"
 ruff = "^0.4"
+poethepoet = "^0.26.1"
+
+[tool.poe.tasks]
+isort = { cmd = "poetry run isort --settings-file pyproject.toml ." }
+black = { cmd = "poetry run black --config pyproject.toml ." }
+format = { sequence = [
+    "isort",
+    "black",
+], help = "Format Python code in the repository. This command is invoked in airbyte-ci format." }
 
 [tool.black]
 line-length = 140
 target-version = ["py310"]
-extend-exclude = "(build|integration_tests|unit_tests|generated)"
+extend-exclude = """
+/(
+    build
+    | integration_tests
+    | unit_tests
+    | generated
+    | airbyte-cdk/python/airbyte_cdk/sources/declarative/models
+    | invalid
+    | non_formatted_code
+    | airbyte-integrations/connectors/destination-duckdb
+    | airbyte-integrations/connectors/destination-snowflake-cortex
+)/
+"""
+
+[tool.flake8]
+extend-exclude = [
+    "*/lib/*/site-packages",
+    ".venv",
+    "build",
+    "models",
+    ".eggs",
+    "**/__init__.py",
+    "**/generated/*",
+    "**/declarative/models/*",
+]
+max-complexity = 20
+max-line-length = 140
+extend-ignore = [
+    "E203", # whitespace before ':' (conflicts with Black)
+    "E231", # Bad trailing comma (conflicts with Black)
+    "E501", # line too long (conflicts with Black)
+    "W503", # line break before binary operator (conflicts with Black)
+    "F811", # TODO: ella fix after pflake8 version update
+]
 
 [tool.coverage.report]
 fail_under = 0
@@ -30,30 +73,6 @@ omit = [
     "**/generated/*",
 ]
 
-[tool.flake8]
-extend-exclude = [
-    "*/lib/*/site-packages",
-    ".venv",
-    "build",
-    "models",
-    ".eggs",
-    "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
-    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
-    ".tox",
-    "airbyte_api_client",
-    "**/generated/*",
-]
-max-complexity = 20
-max-line-length = 140
-
-extend-ignore = [
-    "E203", # whitespace before ':' (conflicts with Black)
-    "E231", # Bad trailing comma (conflicts with Black)
-    "E501", # line too long (conflicts with Black)
-    "W503", # line break before binary operator (conflicts with Black)
-    "F811", # TODO: ella fix after pflake8 version update
-]
-
 # TODO: This will be removed in favor of the section below.
 [tool.isort]
 profile = "black"
@@ -65,9 +84,16 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 skip_glob = [
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/**",
+    "**/invalid/**",
+    "**/non_formatted_code/**",
     "**/connector_builder/generated/**",
     # TODO: Remove this after we move to Ruff. Ruff is mono-repo-aware and
     # correctly handles first-party imports in subdirectories.
+
+    # Migrated to Ruff:
+    "airbyte-integrations/connectors/destination-duckdb/**",
+    "airbyte-integrations/connectors/destination-snowflake-cortex/**"
 ]
 
 [tool.ruff.pylint]

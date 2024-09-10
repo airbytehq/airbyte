@@ -12,7 +12,7 @@ from typing import Any, Mapping, Tuple
 import docker
 import paramiko
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 from .utils import get_docker_ip, load_config
 
@@ -100,6 +100,16 @@ def config_fixture_password_all_csv(config) -> Mapping[str, Any]:
 @pytest.fixture(name="config_password_all_jsonl", scope="session")
 def config_fixture_password_all_jsonl(config) -> Mapping[str, Any]:
     yield config | load_config("stream_jsonl.json")
+
+
+@pytest.fixture(name="config_password_all_excel_xlsx", scope="session")
+def config_fixture_password_all_excel_xlsx(config) -> Mapping[str, Any]:
+    yield config | load_config("stream_excel_xlsx.json")
+
+
+@pytest.fixture(name="config_password_all_excel_xls", scope="session")
+def config_fixture_password_all_excel_xls(config) -> Mapping[str, Any]:
+    yield config | load_config("stream_excel_xls.json")
 
 
 @pytest.fixture(name="configured_catalog")

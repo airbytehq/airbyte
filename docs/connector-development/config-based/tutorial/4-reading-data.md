@@ -10,9 +10,7 @@ Let's first add the stream to the configured catalog in `source-exchange-rates-t
       "stream": {
         "name": "rates",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -29,7 +27,7 @@ Let's define the stream schema in `source-exchange-rates-tutorial/source_exchang
 You can download the JSON file describing the output schema with all currencies [here](./exchange_rates_schema.json) for convenience and place it in `schemas/`.
 
 ```bash
-curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docs/connector-development/tutorials/cdk-tutorial-python-http/exchange_rates_schema.json > source_exchange_rates_tutorial/schemas/rates.json
+curl https://raw.githubusercontent.com/airbytehq/airbyte/master/docs/connector-development/config-based/tutorial/exchange_rates_schema.json > source_exchange_rates_tutorial/schemas/rates.json
 ```
 
 We can also delete the boilerplate schema files

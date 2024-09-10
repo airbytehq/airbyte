@@ -14,7 +14,7 @@ object HostPortResolver {
 
     @JvmStatic
     fun resolvePort(container: GenericContainer<*>): Int {
-        return container.exposedPorts.stream().findFirst().get()
+        return container.exposedPorts.first()
     }
 
     fun resolveIpAddress(container: GenericContainer<*>): String {
@@ -24,12 +24,7 @@ object HostPortResolver {
     private fun getIpAddress(container: GenericContainer<*>): String {
         // Weird double bang here. If I remove the Object.requireNotNull, there's a type error...
         return Objects.requireNonNull(
-            container.containerInfo.networkSettings.networks.entries
-                .stream()
-                .findFirst()
-                .get()
-                .value
-                .ipAddress
+            container.containerInfo.networkSettings.networks.entries.first().value.ipAddress
         )!!
     }
 }

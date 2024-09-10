@@ -5,25 +5,29 @@ package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.transactionally
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Timestamp
 import java.time.Instant
-import java.util.*
-import java.util.stream.Collectors
-import java.util.stream.Stream
-import kotlin.Any
-import kotlin.Boolean
-import kotlin.IllegalArgumentException
+import java.util.Locale
+import java.util.Optional
 import kotlin.Int
-import kotlin.String
-import kotlin.plus
-import org.jooq.*
+import org.jooq.Condition
+import org.jooq.CreateTableColumnStep
+import org.jooq.DSLContext
+import org.jooq.DataType
+import org.jooq.Field
+import org.jooq.InsertValuesStepN
+import org.jooq.Name
+import org.jooq.Record
+import org.jooq.SQLDialect
+import org.jooq.SelectConditionStep
+import org.jooq.SelectFieldOrAsterisk
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -32,7 +36,9 @@ abstract class JdbcSqlGenerator
 @JvmOverloads
 constructor(
     protected val namingTransformer: NamingConventionTransformer,
-    private val cascadeDrop: Boolean = false
+    private val cascadeDrop: Boolean = false,
+    @VisibleForTesting
+    internal val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
 ) : SqlGenerator {
     protected val cdcDeletedAtColumn: ColumnId = buildColumnId("_ab_cdc_deleted_at")
 
@@ -47,7 +53,7 @@ constructor(
             namingTransformer.getNamespace(rawNamespaceOverride),
             namingTransformer.convertStreamName(concatenateRawTableName(namespace, name)),
             namespace,
-            name
+            name,
         )
     }
 
@@ -56,7 +62,7 @@ constructor(
         return ColumnId(
             namingTransformer.getIdentifier(nameWithSuffix),
             name,
-            namingTransformer.getIdentifier(nameWithSuffix)
+            namingTransformer.getIdentifier(nameWithSuffix),
         )
     }
 
@@ -67,7 +73,7 @@ constructor(
         return when (type.typeName) {
             Struct.TYPE,
             UnsupportedOneOf.TYPE -> structType
-            Array.TYPE -> arrayType!!
+            Array.TYPE -> arrayType
             Union.TYPE -> toDialectType((type as Union).chooseType())
             else -> throw IllegalArgumentException("Unsupported AirbyteType: $type")
         }
@@ -85,21 +91,21 @@ constructor(
             AirbyteProtocolType.TIME_WITH_TIMEZONE -> SQLDataType.TIMEWITHTIMEZONE
             AirbyteProtocolType.TIME_WITHOUT_TIMEZONE -> SQLDataType.TIME
             AirbyteProtocolType.DATE -> SQLDataType.DATE
-            AirbyteProtocolType.UNKNOWN -> widestType!!
+            AirbyteProtocolType.UNKNOWN -> widestType
         }
     }
 
     protected abstract val structType: DataType<*>
 
-    protected abstract val arrayType: DataType<*>?
+    protected abstract val arrayType: DataType<*>
 
     @get:VisibleForTesting
     val timestampWithTimeZoneType: DataType<*>
         get() = toDialectType(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE)
 
-    protected abstract val widestType: DataType<*>?
+    protected abstract val widestType: DataType<*>
 
-    protected abstract val dialect: SQLDialect?
+    protected abstract val dialect: SQLDialect
 
     /**
      * @param columns from the schema to be extracted from _airbyte_data column. Use the destination
@@ -120,7 +126,7 @@ constructor(
      */
     protected abstract fun buildAirbyteMetaColumn(
         columns: LinkedHashMap<ColumnId, AirbyteType>
-    ): Field<*>?
+    ): Field<*>
 
     /**
      * Get the cdc_deleted_at column condition for append_dedup mode by extracting it from
@@ -128,7 +134,7 @@ constructor(
      *
      * @return
      */
-    protected abstract fun cdcDeletedAtNotNullCondition(): Condition?
+    protected abstract fun cdcDeletedAtNotNullCondition(): Condition
 
     /**
      * Get the window step function row_number() over (partition by primary_key order by
@@ -139,7 +145,7 @@ constructor(
      * @return
      */
     protected abstract fun getRowNumber(
-        primaryKey: List<ColumnId?>?,
+        primaryKey: List<ColumnId>,
         cursorField: Optional<ColumnId>
     ): Field<Int>
 
@@ -156,23 +162,19 @@ constructor(
     @VisibleForTesting
     fun buildFinalTableFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaColumns: Map<String?, DataType<*>?>
+        metaColumns: Map<String, DataType<*>>
     ): List<Field<*>> {
         val fields =
-            metaColumns.entries
-                .stream()
-                .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
-                    DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
-                }
-                .collect(Collectors.toList())
+            metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
+                DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
+            }
+
         val dataFields =
             columns.entries
-                .stream()
-                .map { column: Map.Entry<ColumnId?, AirbyteType> ->
-                    DSL.field(DSL.quotedName(column.key!!.name), toDialectType(column.value))
+                .map { column: Map.Entry<ColumnId, AirbyteType> ->
+                    DSL.field(DSL.quotedName(column.key.name), toDialectType(column.value))
                 }
-                .collect(Collectors.toList())
-        dataFields.addAll(fields)
+                .toList() + fields
         return dataFields
     }
 
@@ -182,12 +184,17 @@ constructor(
      * @param includeMetaColumn
      * @return
      */
-    fun getFinalTableMetaColumns(includeMetaColumn: Boolean): LinkedHashMap<String?, DataType<*>?> {
-        val metaColumns = LinkedHashMap<String?, DataType<*>?>()
+    open fun getFinalTableMetaColumns(
+        includeMetaColumn: Boolean
+    ): LinkedHashMap<String, DataType<*>> {
+        val metaColumns = LinkedHashMap<String, DataType<*>>()
         metaColumns[JavaBaseConstants.COLUMN_NAME_AB_RAW_ID] =
             SQLDataType.VARCHAR(36).nullable(false)
         metaColumns[JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT] =
             timestampWithTimeZoneType.nullable(false)
+        if (columns == DestinationColumns.V2_WITH_GENERATION) {
+            metaColumns[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID] = SQLDataType.BIGINT
+        }
         if (includeMetaColumn)
             metaColumns[JavaBaseConstants.COLUMN_NAME_AB_META] = structType.nullable(false)
         return metaColumns
@@ -204,16 +211,14 @@ constructor(
     @VisibleForTesting
     fun buildRawTableSelectFields(
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaColumns: Map<String?, DataType<*>?>,
+        metaColumns: Map<String, DataType<*>>,
         useExpensiveSaferCasting: Boolean
     ): List<Field<*>> {
         val fields =
-            metaColumns.entries
-                .stream()
-                .map { metaColumn: Map.Entry<String?, DataType<*>?> ->
-                    DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
-                }
-                .collect(Collectors.toList())
+            metaColumns.entries.map { metaColumn: Map.Entry<String?, DataType<*>?> ->
+                DSL.field(DSL.quotedName(metaColumn.key), metaColumn.value)
+            }
+
         // Use originalName with non-sanitized characters when extracting data from _airbyte_data
         val dataFields = extractRawDataFields(columns, useExpensiveSaferCasting)
         dataFields.addAll(fields)
@@ -222,13 +227,13 @@ constructor(
 
     @VisibleForTesting
     fun rawTableCondition(
-        syncMode: DestinationSyncMode,
+        postImportAction: ImportType,
         isCdcDeletedAtPresent: Boolean,
         minRawTimestamp: Optional<Instant>
     ): Condition {
         var condition: Condition =
             DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)).isNull()
-        if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
+        if (postImportAction == ImportType.DEDUPE) {
             if (isCdcDeletedAtPresent) {
                 condition = condition.or(cdcDeletedAtNotNullCondition())
             }
@@ -237,13 +242,13 @@ constructor(
             condition =
                 condition.and(
                     DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-                        .gt(minRawTimestamp.get().toString())
+                        .gt(formatTimestampLiteral(minRawTimestamp.get())),
                 )
         }
         return condition
     }
 
-    override fun createSchema(schema: String?): Sql {
+    override fun createSchema(schema: String): Sql {
         return of(createSchemaSql(schema))
     }
 
@@ -251,40 +256,26 @@ constructor(
         // TODO: Use Naming transformer to sanitize these strings with redshift restrictions.
         val finalTableIdentifier = stream.id.finalName + suffix.lowercase(Locale.getDefault())
         if (!force) {
-            return transactionally(
-                Stream.concat(
-                        Stream.of(
-                            createTableSql(
-                                stream.id.finalNamespace,
-                                finalTableIdentifier,
-                                stream.columns!!
-                            )
-                        ),
-                        createIndexSql(stream, suffix).stream()
-                    )
-                    .toList()
+            return of(
+                createTableSql(stream.id.finalNamespace, finalTableIdentifier, stream.columns)
             )
         }
 
         val dropTableStep =
-            DSL.dropTableIfExists(DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier))
+            dslContext.dropTableIfExists(
+                DSL.quotedName(stream.id.finalNamespace, finalTableIdentifier)
+            )
         if (cascadeDrop) {
             dropTableStep.cascade()
         }
 
         return transactionally(
-            Stream.concat(
-                    Stream.of(
-                        dropTableStep.getSQL(ParamType.INLINED),
-                        createTableSql(
-                            stream.id.finalNamespace,
-                            finalTableIdentifier,
-                            stream.columns!!
-                        )
-                    ),
-                    createIndexSql(stream, suffix).stream()
-                )
-                .toList()
+            dropTableStep.getSQL(ParamType.INLINED),
+            createTableSql(
+                stream.id.finalNamespace,
+                finalTableIdentifier,
+                stream.columns,
+            ),
         )
     }
 
@@ -300,84 +291,107 @@ constructor(
             stream,
             finalSuffix,
             minRawTimestamp,
-            useExpensiveSaferCasting
+            useExpensiveSaferCasting,
         )
     }
 
+    protected open fun renameTable(schema: String, originalName: String, newName: String): String =
+        dslContext.alterTable(DSL.name(schema, originalName)).renameTo(DSL.name(newName)).sql
+
     override fun overwriteFinalTable(stream: StreamId, finalSuffix: String): Sql {
-        val dropTableStep = DSL.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
+        val dropTableStep =
+            dslContext.dropTableIfExists(DSL.name(stream.finalNamespace, stream.finalName))
         if (cascadeDrop) {
             dropTableStep.cascade()
         }
         return transactionally(
             dropTableStep.getSQL(ParamType.INLINED),
-            DSL.alterTable(DSL.name(stream.finalNamespace, stream.finalName + finalSuffix))
-                .renameTo(DSL.name(stream.finalName))
-                .sql
+            renameTable(stream.finalNamespace, stream.finalName + finalSuffix, stream.finalName)
         )
     }
 
     override fun migrateFromV1toV2(
         streamId: StreamId,
-        namespace: String?,
-        tableName: String?
+        namespace: String,
+        tableName: String,
     ): Sql {
         val rawTableName = DSL.name(streamId.rawNamespace, streamId.rawName)
         val dsl = dslContext
         return transactionally(
             dsl.createSchemaIfNotExists(streamId.rawNamespace).sql,
             dsl.dropTableIfExists(rawTableName).sql,
-            DSL.createTable(rawTableName)
+            createV2RawTableFromV1Table(rawTableName, namespace, tableName),
+        )
+    }
+
+    protected open fun createV2RawTableFromV1Table(
+        rawTableName: Name,
+        namespace: String,
+        tableName: String
+    ): String {
+        val hasGenerationId = columns == DestinationColumns.V2_WITH_GENERATION
+
+        val createTable: CreateTableColumnStep =
+            dslContext
+                .createTable(rawTableName)
                 .column(
                     JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-                    SQLDataType.VARCHAR(36).nullable(false)
+                    SQLDataType.VARCHAR(36).nullable(false),
                 )
                 .column(
                     JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                    timestampWithTimeZoneType.nullable(false)
+                    timestampWithTimeZoneType.nullable(false),
                 )
                 .column(
                     JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                    timestampWithTimeZoneType.nullable(true)
+                    timestampWithTimeZoneType.nullable(true),
                 )
                 .column(JavaBaseConstants.COLUMN_NAME_DATA, structType.nullable(false))
                 .column(JavaBaseConstants.COLUMN_NAME_AB_META, structType.nullable(true))
-                .`as`(
-                    DSL.select(
-                            DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
-                            DSL.field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
-                            DSL.cast(null, timestampWithTimeZoneType)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
-                            DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
-                                .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
-                            DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META)
-                        )
-                        .from(DSL.table(DSL.name(namespace, tableName)))
-                )
-                .getSQL(ParamType.INLINED)
-        )
+        if (hasGenerationId) {
+            createTable.column(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, SQLDataType.BIGINT)
+        }
+
+        val selectColumns: MutableList<SelectFieldOrAsterisk> =
+            mutableListOf(
+                DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
+                DSL.field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
+                DSL.cast(null, timestampWithTimeZoneType)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+                DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
+                DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
+            )
+        if (hasGenerationId) {
+            selectColumns += DSL.value(0).`as`(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+        }
+
+        return createTable
+            .`as`(DSL.select(selectColumns).from(DSL.table(DSL.name(namespace, tableName))))
+            .getSQL(ParamType.INLINED)
     }
 
     override fun clearLoadedAt(streamId: StreamId): Sql {
         return of(
-            DSL.update<Record>(DSL.table(DSL.name(streamId.rawNamespace, streamId.rawName)))
-                .set<Any>(
+            dslContext
+                .update(DSL.table(DSL.name(streamId.rawNamespace, streamId.rawName)))
+                .set(
                     DSL.field(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
-                    DSL.inline(null as String?)
+                    DSL.inline(null as String?),
                 )
-                .sql
+                .sql,
         )
     }
 
     @VisibleForTesting
     fun selectFromRawTable(
-        schemaName: String?,
-        tableName: String?,
+        schemaName: String,
+        tableName: String,
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaColumns: Map<String?, DataType<*>?>,
-        condition: Condition?,
+        metaColumns: Map<String, DataType<*>>,
+        condition: Condition,
         useExpensiveSaferCasting: Boolean
     ): SelectConditionStep<Record> {
         val dsl = dslContext
@@ -389,10 +403,10 @@ constructor(
 
     @VisibleForTesting
     fun insertIntoFinalTable(
-        schemaName: String?,
-        tableName: String?,
+        schemaName: String,
+        tableName: String,
         columns: LinkedHashMap<ColumnId, AirbyteType>,
-        metaFields: Map<String?, DataType<*>?>
+        metaFields: Map<String, DataType<*>>
     ): InsertValuesStepN<Record> {
         val dsl = dslContext
         return dsl.insertInto(DSL.table(DSL.quotedName(schemaName, tableName)))
@@ -420,19 +434,19 @@ constructor(
                     selectFromRawTable(
                         rawSchema,
                         rawTable,
-                        streamConfig.columns!!,
+                        streamConfig.columns,
                         getFinalTableMetaColumns(false),
                         rawTableCondition(
-                            streamConfig.destinationSyncMode!!,
-                            streamConfig.columns!!.containsKey(cdcDeletedAtColumn),
-                            minRawTimestamp
+                            streamConfig.postImportAction,
+                            streamConfig.columns.containsKey(cdcDeletedAtColumn),
+                            minRawTimestamp,
                         ),
-                        useExpensiveSaferCasting
-                    )
+                        useExpensiveSaferCasting,
+                    ),
                 )
         val finalTableFields =
-            buildFinalTableFields(streamConfig.columns!!, getFinalTableMetaColumns(true))
-        val rowNumber = getRowNumber(streamConfig.primaryKey, streamConfig.cursor!!)
+            buildFinalTableFields(streamConfig.columns, getFinalTableMetaColumns(true))
+        val rowNumber = getRowNumber(streamConfig.primaryKey, streamConfig.cursor)
         val filteredRows =
             DSL.name(NUMBERED_ROWS_CTE_ALIAS)
                 .`as`(DSL.select(DSL.asterisk(), rowNumber).from(rawTableRowsWithCast))
@@ -442,8 +456,8 @@ constructor(
             insertIntoFinalTable(
                     finalSchema,
                     finalTable,
-                    streamConfig.columns!!,
-                    getFinalTableMetaColumns(true)
+                    streamConfig.columns,
+                    getFinalTableMetaColumns(true),
                 )
                 .select(
                     DSL.with(rawTableRowsWithCast)
@@ -451,8 +465,8 @@ constructor(
                         .select(finalTableFields)
                         .from(filteredRows)
                         .where(
-                            DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME), Int::class.java).eq(1)
-                        ) // Can refer by CTE.field but no use since we don't strongly type
+                            DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME), Int::class.java).eq(1),
+                        ), // Can refer by CTE.field but no use since we don't strongly type
                     // them.
                     )
                 .getSQL(ParamType.INLINED)
@@ -462,29 +476,29 @@ constructor(
             insertIntoFinalTable(
                     finalSchema,
                     finalTable,
-                    streamConfig.columns!!,
-                    getFinalTableMetaColumns(true)
+                    streamConfig.columns,
+                    getFinalTableMetaColumns(true),
                 )
                 .select(
                     DSL.with(rawTableRowsWithCast)
                         .select(finalTableFields)
-                        .from(rawTableRowsWithCast)
+                        .from(rawTableRowsWithCast),
                 )
                 .getSQL(ParamType.INLINED)
         val deleteStmt =
             deleteFromFinalTable(
                 finalSchema,
                 finalTable,
-                streamConfig.primaryKey!!,
-                streamConfig.cursor!!
+                streamConfig.primaryKey,
+                streamConfig.cursor,
             )
         val deleteCdcDeletesStmt =
-            if (streamConfig.columns!!.containsKey(cdcDeletedAtColumn))
+            if (streamConfig.columns.containsKey(cdcDeletedAtColumn))
                 deleteFromFinalTableCdcDeletes(finalSchema, finalTable)
             else ""
         val checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp)
 
-        if (streamConfig.destinationSyncMode != DestinationSyncMode.APPEND_DEDUP) {
+        if (streamConfig.postImportAction == ImportType.APPEND) {
             return transactionally(insertStmt, checkpointStmt)
         }
 
@@ -493,19 +507,19 @@ constructor(
             insertStmtWithDedupe,
             deleteStmt,
             deleteCdcDeletesStmt,
-            checkpointStmt
+            checkpointStmt,
         )
     }
 
-    protected fun createSchemaSql(namespace: String?): String {
+    protected fun createSchemaSql(namespace: String): String {
         val dsl = dslContext
         val createSchemaSql = dsl.createSchemaIfNotExists(DSL.quotedName(namespace))
         return createSchemaSql.sql
     }
 
     protected fun createTableSql(
-        namespace: String?,
-        tableName: String?,
+        namespace: String,
+        tableName: String,
         columns: LinkedHashMap<ColumnId, AirbyteType>
     ): String {
         val dsl = dslContext
@@ -513,15 +527,6 @@ constructor(
             dsl.createTable(DSL.quotedName(namespace, tableName))
                 .columns(buildFinalTableFields(columns, getFinalTableMetaColumns(true)))
         return createTableSql.sql
-    }
-
-    /**
-     * Subclasses may override this method to add additional indexes after their CREATE TABLE
-     * statement. This is useful if the destination's CREATE TABLE statement does not accept an
-     * index definition.
-     */
-    protected open fun createIndexSql(stream: StreamConfig?, suffix: String?): List<String> {
-        return emptyList()
     }
 
     protected fun beginTransaction(): String {
@@ -537,9 +542,9 @@ constructor(
     }
 
     private fun deleteFromFinalTable(
-        schemaName: String?,
+        schemaName: String,
         tableName: String,
-        primaryKeys: List<ColumnId?>,
+        primaryKeys: List<ColumnId>,
         cursor: Optional<ColumnId>
     ): String {
         val dsl = dslContext
@@ -554,15 +559,15 @@ constructor(
                         .from(
                             DSL.select(airbyteRawId, rowNumber)
                                 .from(DSL.table(DSL.quotedName(schemaName, tableName)))
-                                .asTable("airbyte_ids")
+                                .asTable("airbyte_ids"),
                         )
-                        .where(DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME)).ne(1))
-                )
+                        .where(DSL.field(DSL.name(ROW_NUMBER_COLUMN_NAME)).ne(1)),
+                ),
             )
             .getSQL(ParamType.INLINED)
     }
 
-    private fun deleteFromFinalTableCdcDeletes(schema: String?, tableName: String): String {
+    private fun deleteFromFinalTableCdcDeletes(schema: String, tableName: String): String {
         val dsl = dslContext
         return dsl.deleteFrom(DSL.table(DSL.quotedName(schema, tableName)))
             .where(DSL.field(DSL.quotedName(cdcDeletedAtColumn.name)).isNotNull())
@@ -570,8 +575,8 @@ constructor(
     }
 
     private fun checkpointRawTable(
-        schemaName: String?,
-        tableName: String?,
+        schemaName: String,
+        tableName: String,
         minRawTimestamp: Optional<Instant>
     ): String {
         val dsl = dslContext
@@ -580,13 +585,13 @@ constructor(
             extractedAtCondition =
                 extractedAtCondition.and(
                     DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT))
-                        .gt(minRawTimestamp.get().toString())
+                        .gt(formatTimestampLiteral(minRawTimestamp.get())),
                 )
         }
         return dsl.update<Record>(DSL.table(DSL.quotedName(schemaName, tableName)))
             .set<Any>(
                 DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)),
-                currentTimestamp()
+                currentTimestamp(),
             )
             .where(DSL.field(DSL.quotedName(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)).isNull())
             .and(extractedAtCondition)
@@ -594,28 +599,26 @@ constructor(
     }
 
     protected open fun castedField(
-        field: Field<*>?,
+        field: Field<*>,
         type: AirbyteType,
-        alias: String?,
         useExpensiveSaferCasting: Boolean
     ): Field<*> {
         if (type is AirbyteProtocolType) {
-            return castedField(field, type, useExpensiveSaferCasting).`as`(DSL.quotedName(alias))
+            return castedField(field, type, useExpensiveSaferCasting)
         }
 
         // Redshift SUPER can silently cast an array type to struct and vice versa.
         return when (type.typeName) {
             Struct.TYPE,
-            UnsupportedOneOf.TYPE -> DSL.cast(field, structType).`as`(DSL.quotedName(alias))
-            Array.TYPE -> DSL.cast(field, arrayType).`as`(DSL.quotedName(alias))
-            Union.TYPE ->
-                castedField(field, (type as Union).chooseType(), alias, useExpensiveSaferCasting)
+            UnsupportedOneOf.TYPE -> DSL.cast(field, structType)
+            Array.TYPE -> DSL.cast(field, arrayType)
+            Union.TYPE -> castedField(field, (type as Union).chooseType(), useExpensiveSaferCasting)
             else -> throw IllegalArgumentException("Unsupported AirbyteType: $type")
         }
     }
 
     protected open fun castedField(
-        field: Field<*>?,
+        field: Field<*>,
         type: AirbyteProtocolType,
         useExpensiveSaferCasting: Boolean
     ): Field<*> {
@@ -626,8 +629,16 @@ constructor(
         return DSL.currentTimestamp()
     }
 
+    /**
+     * Some destinations (mysql) can't handle timestamps in ISO8601 format with 'Z' suffix. This
+     * method allows subclasses to format timestamps according to destination-specific needs.
+     */
+    protected open fun formatTimestampLiteral(instant: Instant): String {
+        return instant.toString()
+    }
+
     companion object {
-        protected const val ROW_NUMBER_COLUMN_NAME: String = "row_number"
+        const val ROW_NUMBER_COLUMN_NAME: String = "row_number"
         private const val TYPING_CTE_ALIAS = "intermediate_data"
         private const val NUMBERED_ROWS_CTE_ALIAS = "numbered_rows"
     }

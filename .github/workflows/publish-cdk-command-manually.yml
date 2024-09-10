@@ -224,7 +224,9 @@ jobs:
         uses: ./.github/actions/run-airbyte-ci
         with:
           context: "master" # TODO: figure out why changing this yells with `The ci_gcs_credentials was not set on this PipelineContext.`
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
+          # Disable the dagger_cloud_token to disable remote cache access.
+          # See https://github.com/airbytehq/airbyte-internal-issues/issues/6439#issuecomment-2109503985 for context
+          #dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -237,7 +239,7 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           # There is no pull request number as we do this manually, so will just reference when we started doing it manually for now
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump_version ${{ github.event.inputs.release-type }} '36501' 'Bump CDK version to ${{needs.bump-version.outputs.new_cdk_version}}'"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --name=source-declarative-manifest bump-version version:${{needs.bump-version.outputs.new_cdk_version}} 'Bump CDK version to ${{needs.bump-version.outputs.new_cdk_version}}' --pr-number=36501"
           python_registry_token: ${{ secrets.PYPI_TOKEN }}
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -290,7 +292,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Checkout Airbyte Platform Internal
         uses: actions/checkout@v3
         with:
@@ -311,8 +313,8 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          commit-message: Updating CDK version following release
-          title: Updating CDK version following release
+          commit-message: "chore: update CDK version following release"
+          title: "chore: update CDK version following release"
           body: This is an automatically generated PR triggered by a CDK release
           branch: automatic-cdk-release
           base: master

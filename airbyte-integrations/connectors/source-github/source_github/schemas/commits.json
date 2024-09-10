@@ -3,96 +3,124 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "The repository where the commit was made.",
       "type": "string"
     },
     "branch": {
+      "description": "The branch name where the commit was made.",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The creation date and time of the commit.",
       "type": "string",
       "format": "date-time"
     },
     "url": {
+      "description": "URL for accessing the commit data.",
       "type": ["null", "string"]
     },
     "sha": {
+      "description": "The SHA of the commit.",
       "type": ["null", "string"]
     },
     "node_id": {
+      "description": "The unique identifier of the commit node.",
       "type": ["null", "string"]
     },
     "html_url": {
+      "description": "URL for viewing the commit on GitHub.",
       "type": ["null", "string"]
     },
     "comments_url": {
+      "description": "URL for accessing comments on the commit.",
       "type": ["null", "string"]
     },
     "commit": {
+      "description": "Information about the commit including author, committer, tree, and verification details.",
       "type": ["null", "object"],
       "properties": {
         "author": {
+          "description": "Information about the author of the commit.",
           "type": ["null", "object"],
           "properties": {
             "name": {
+              "description": "Name of the author of the commit.",
               "type": ["null", "string"]
             },
             "email": {
+              "description": "Email of the author of the commit.",
               "type": ["null", "string"]
             },
             "date": {
+              "description": "The date and time of the commit authored.",
               "type": "string",
               "format": "date-time"
             }
           }
         },
         "committer": {
+          "description": "Information about the committer who applied the commit.",
           "type": ["null", "object"],
           "properties": {
             "name": {
+              "description": "Name of the committer of the commit.",
               "type": ["null", "string"]
             },
             "email": {
+              "description": "Email of the committer of the commit.",
               "type": ["null", "string"]
             },
             "date": {
+              "description": "The date and time of the commit committed.",
               "type": "string",
               "format": "date-time"
             }
           }
         },
         "message": {
+          "description": "The commit message.",
           "type": ["null", "string"]
         },
         "tree": {
+          "description": "Details about the tree object associated with the commit.",
           "type": ["null", "object"],
           "properties": {
             "sha": {
+              "description": "SHA of the commit tree.",
               "type": ["null", "string"]
             },
             "url": {
+              "description": "URL for accessing the commit tree.",
               "type": ["null", "string"]
             }
           }
         },
         "url": {
+          "description": "URL for accessing the commit details.",
           "type": ["null", "string"]
         },
         "comment_count": {
+          "description": "Number of comments on the commit.",
           "type": ["null", "integer"]
         },
         "verification": {
+          "description": "Verification status of the commit.",
           "type": ["null", "object"],
           "properties": {
             "verified": {
+              "description": "Indicates if the commit is verified.",
               "type": ["null", "boolean"]
             },
             "reason": {
+              "description": "Reason for the verification result.",
               "type": ["null", "string"]
             },
             "signature": {
+              "description": "The signature used for verification.",
               "type": ["null", "string"]
             },
             "payload": {
+              "description": "The payload used for verification.",
               "type": ["null", "string"]
             }
           }
@@ -100,23 +128,30 @@
       }
     },
     "author": {
+      "description": "The author of the commit.",
       "$ref": "user.json"
     },
     "committer": {
+      "description": "The committer of the commit.",
       "$ref": "user.json"
     },
     "parents": {
+      "description": "List of parent commits of the current commit.",
       "type": ["null", "array"],
       "items": {
+        "description": "Details about each parent commit.",
         "type": ["null", "object"],
         "properties": {
           "sha": {
+            "description": "SHA of the parent commit.",
             "type": ["null", "string"]
           },
           "url": {
+            "description": "URL for accessing the parent commit details.",
             "type": ["null", "string"]
           },
           "html_url": {
+            "description": "URL for viewing the parent commit on GitHub.",
             "type": ["null", "string"]
           }
         }

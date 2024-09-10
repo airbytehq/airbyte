@@ -58,11 +58,33 @@ The Confluence connector should not run into Confluence API limitations under no
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                        |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
-| 0.2.1   | 2024-03-20 | [36339](https://github.com/airbytehq/airbyte/pull/36339) | 🐛 Source Confluence: 'expand' request parameter converted to comma separated string   
-| 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
-| 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
-| 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec           |
-| 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831)   | Fix: Spec was not pushed to cache                              |
-| 0.1.0   | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241)   | 🎉 New Source: Confluence                                      |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.0 | 2024-08-15 | [44162](https://github.com/airbytehq/airbyte/pull/44162) | Refactor connector to manifest-only format |
+| 0.2.16 | 2024-08-10 | [43573](https://github.com/airbytehq/airbyte/pull/43573) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43053](https://github.com/airbytehq/airbyte/pull/43053) | Update dependencies |
+| 0.2.14 | 2024-07-27 | [42699](https://github.com/airbytehq/airbyte/pull/42699) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42333](https://github.com/airbytehq/airbyte/pull/42333) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41857](https://github.com/airbytehq/airbyte/pull/41857) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41398](https://github.com/airbytehq/airbyte/pull/41398) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41270](https://github.com/airbytehq/airbyte/pull/41270) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [41013](https://github.com/airbytehq/airbyte/pull/41013) | Update dependencies |
+| 0.2.8 | 2024-06-25 | [40436](https://github.com/airbytehq/airbyte/pull/40436) | Update dependencies |
+| 0.2.7 | 2024-06-22 | [40115](https://github.com/airbytehq/airbyte/pull/40115) | Update dependencies |
+| 0.2.6 | 2024-06-15 | [39495](https://github.com/airbytehq/airbyte/pull/39495) | Fix parameters as comma seperated single string |
+| 0.2.5 | 2024-06-06 | [39261](https://github.com/airbytehq/airbyte/pull/39261) | [autopull] Upgrade base image to v1.2.2 |
+| 0.2.4 | 2024-05-14 | [38137](https://github.com/airbytehq/airbyte/pull/38137) | Make connector compatible with the builder |
+| 0.2.3 | 2024-04-19 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Upgrade to CDK 0.80.0 and manage dependencies with Poetry. |
+| 0.2.2 | 2024-04-15 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 0.2.1 | 2024-04-12 | [37143](https://github.com/airbytehq/airbyte/pull/37143) | schema descriptions |
+| 0.2.0 | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code |
+| 0.1.3 | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
+| 0.1.2 | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec |
+| 0.1.1 | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831) | Fix: Spec was not pushed to cache |
+| 0.1.0 | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241) | 🎉 New Source: Confluence |
+
+</details>

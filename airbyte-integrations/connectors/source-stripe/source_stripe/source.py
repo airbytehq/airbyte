@@ -9,7 +9,6 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -22,7 +21,7 @@ from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudg
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
@@ -45,10 +44,6 @@ logger = logging.getLogger("airbyte")
 _MAX_CONCURRENCY = 20
 _DEFAULT_CONCURRENCY = 10
 _CACHE_DISABLED = os.environ.get("CACHE_DISABLED")
-_REFUND_STREAM_NAME = "refunds"
-_INCREMENTAL_CONCURRENCY_EXCLUSION = {
-    _REFUND_STREAM_NAME,  # excluded because of the upcoming changes in terms of cursor https://github.com/airbytehq/airbyte/issues/34332
-}
 USE_CACHE = not _CACHE_DISABLED
 STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
@@ -111,7 +106,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             )
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
         self.validate_and_fill_with_defaults(config)
         stripe.api_key = config["client_secret"]
         try:
@@ -235,11 +230,14 @@ class SourceStripe(ConcurrentSourceAdapter):
             name="invoices",
             path="invoices",
             use_cache=USE_CACHE,
+            expand_items=["data.discounts", "data.total_tax_amounts.tax_rate"],
             event_types=[
                 "invoice.created",
+                "invoice.deleted",
                 "invoice.finalization_failed",
                 "invoice.finalized",
                 "invoice.marked_uncollectible",
+                "invoice.overdue",
                 "invoice.paid",
                 "invoice.payment_action_required",
                 "invoice.payment_failed",
@@ -247,7 +245,10 @@ class SourceStripe(ConcurrentSourceAdapter):
                 "invoice.sent",
                 "invoice.updated",
                 "invoice.voided",
-                "invoice.deleted",
+                "invoice.will_be_due",
+                # the event type = "invoice.upcoming" doesn't contain the `primary_key = `id` field,
+                # thus isn't used, see the doc: https://docs.stripe.com/api/invoices/object#invoice_object-id
+                # reference issue: https://github.com/airbytehq/oncall/issues/5560
             ],
             **args,
         )
@@ -294,10 +295,17 @@ class SourceStripe(ConcurrentSourceAdapter):
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
-            # The Refunds stream does not utilize the Events API as it created issues with data loss during the incremental syncs.
-            # Therefore, we're using the regular API with the `created` cursor field. A bug has been filed with Stripe.
-            # See more at https://github.com/airbytehq/oncall/issues/3090, https://github.com/airbytehq/oncall/issues/3428
-            CreatedCursorIncrementalStripeStream(name=_REFUND_STREAM_NAME, path="refunds", **incremental_args),
+            IncrementalStripeStream(
+                name="refunds",
+                path="refunds",
+                event_types=[
+                    "refund.created",
+                    "refund.updated",
+                    # this is the only event that could track the refund updates
+                    "charge.refund.updated",
+                ],
+                **args,
+            ),
             UpdatedCursorIncrementalStripeStream(
                 name="payment_methods",
                 path="payment_methods",
@@ -344,6 +352,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "charge.failed",
                     "charge.pending",
                     "charge.refunded",
+                    "charge.refund.updated",
                     "charge.succeeded",
                     "charge.updated",
                 ],
@@ -370,7 +379,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 name="invoice_items",
                 path="invoiceitems",
                 legacy_cursor_field="date",
-                event_types=["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"],
+                event_types=[
+                    "invoiceitem.created",
+                    "invoiceitem.updated",
+                    "invoiceitem.deleted",
+                ],
                 **args,
             ),
             IncrementalStripeStream(
@@ -544,7 +557,7 @@ class SourceStripe(ConcurrentSourceAdapter):
 
         state = state_manager.get_stream_state(stream.name, stream.namespace)
         slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))
-        if slice_boundary_fields and stream.name not in _INCREMENTAL_CONCURRENCY_EXCLUSION:
+        if slice_boundary_fields:
             cursor_field = CursorField(stream.cursor_field) if isinstance(stream.cursor_field, str) else CursorField(stream.cursor_field[0])
             converter = EpochValueConcurrentStreamStateConverter()
             cursor = ConcurrentCursor(

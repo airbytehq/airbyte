@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-
 import os
 from datetime import datetime, timedelta
 
@@ -18,25 +17,8 @@ class MetadataCheck(Check):
 class ValidateMetadata(MetadataCheck):
     name = f"Connectors must have valid {consts.METADATA_FILE_NAME} file"
     description = f"Connectors must have a `{consts.METADATA_FILE_NAME}` file at the root of their directory. This file is used to build our connector registry. Its structure must follow our metadata schema. Field values are also validated. This is to ensure that all connectors have the required metadata fields and that the metadata is valid. More details in this [documentation]({consts.METADATA_DOCUMENTATION_URL})."
-    # Metadata lib required the following env var to be set
-    # to check if the base image is on DockerHub
-    required_env_vars = {
-        consts.DOCKER_HUB_USERNAME_ENV_VAR_NAME,
-        consts.DOCKER_HUB_PASSWORD_ENV_VAR_NAME,
-    }
-
-    def __init__(self) -> None:
-        for env_var in self.required_env_vars:
-            if env_var not in os.environ:
-                raise ValueError(f"Environment variable {env_var} is required for this check")
-        super().__init__()
 
     def _run(self, connector: Connector) -> CheckResult:
-        if not connector.documentation_file_path or not connector.documentation_file_path.exists():
-            return self.fail(
-                connector=connector,
-                message="User facing documentation file is missing. Please create it",
-            )
         deserialized_metadata, error = validate_and_load(
             connector.metadata_file_path,
             PRE_UPLOAD_VALIDATORS,
@@ -57,8 +39,11 @@ class CheckConnectorLanguageTag(MetadataCheck):
 
     PYTHON_LANGUAGE_TAG = "language:python"
     JAVA_LANGUAGE_TAG = "language:java"
+    MANIFEST_ONLY_LANGUAGE_TAG = "language:manifest-only"
 
     def get_expected_language_tag(self, connector: Connector) -> str:
+        if (connector.code_directory / "manifest.yaml").exists():
+            return self.MANIFEST_ONLY_LANGUAGE_TAG
         if (connector.code_directory / consts.SETUP_PY_FILE_NAME).exists() or (
             connector.code_directory / consts.PYPROJECT_FILE_NAME
         ).exists():
@@ -152,7 +137,7 @@ class CheckConnectorCDKTag(MetadataCheck):
 
 class ValidateBreakingChangesDeadlines(MetadataCheck):
     """
-    Verify that _if_ the the most recent connector version has a breaking change,
+    Verify that _if_ the most recent connector version has a breaking change,
     it's deadline is at least a week in the future.
     """
 
@@ -162,7 +147,6 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
     minimum_days_until_deadline = 7
 
     def _run(self, connector: Connector) -> CheckResult:
-
         # fetch the current branch version of the connector first.
         # we'll try and see if there are any breaking changes associated
         # with it next.
@@ -209,9 +193,29 @@ class ValidateBreakingChangesDeadlines(MetadataCheck):
         return self.pass_(connector=connector, message="The upgrade deadline is set to at least a week in the future")
 
 
+class CheckConnectorMaxSecondsBetweenMessagesValue(MetadataCheck):
+    name = "Certified source connector must have a value filled out for maxSecondsBetweenMessages in metadata"
+    description = "Certified source connectors must have a value filled out for `maxSecondsBetweenMessages` in metadata. This value represents the maximum number of seconds we could expect between messages for API connectors. And it's used by platform to tune connectors heartbeat timeout. The value must be set in the 'data' field in connector's `metadata.yaml` file."
+    applies_to_connector_types = ["source"]
+    applies_to_connector_support_levels = ["certified"]
+
+    def _run(self, connector: Connector) -> CheckResult:
+        max_seconds_between_messages = connector.metadata.get("maxSecondsBetweenMessages")
+        if not max_seconds_between_messages:
+            return self.fail(
+                connector=connector,
+                message="Missing required for certified connectors field 'maxSecondsBetweenMessages'",
+            )
+        return self.pass_(
+            connector=connector,
+            message="Value for maxSecondsBetweenMessages is set",
+        )
+
+
 ENABLED_CHECKS = [
     ValidateMetadata(),
     CheckConnectorLanguageTag(),
     CheckConnectorCDKTag(),
     ValidateBreakingChangesDeadlines(),
+    CheckConnectorMaxSecondsBetweenMessagesValue(),
 ]

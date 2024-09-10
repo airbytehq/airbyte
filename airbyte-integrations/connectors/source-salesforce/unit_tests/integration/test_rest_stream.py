@@ -3,7 +3,7 @@
 import json
 import urllib.parse
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
@@ -26,6 +26,22 @@ _LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
 _STREAM_NAME = UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS[0]
+
+
+def create_http_request(stream_name: str, field_names: List[str], access_token: Optional[str] = None) -> HttpRequest:
+    return HttpRequest(
+        f"{_BASE_URL}/queryAll?q=SELECT+{','.join(field_names)}+FROM+{stream_name}+",
+        headers={"Authorization": f"Bearer {access_token}"} if access_token else None
+    )
+
+
+def create_http_response(field_names: List[str], record_count: int = 1) -> HttpResponse:
+    """
+    This method does not handle field types for now which may cause some test failures on change if we start considering using some
+    fields for calculation. One example of that would be cursor field parsing to datetime.
+    """
+    records = [{field_name: f"{field_name}_{i}" for field_name in field_names} for i in range(record_count)]
+    return HttpResponse(json.dumps({"records": records}))
 
 
 def _create_field(name: str, _type: Optional[str] = None) -> Dict[str, Any]:
@@ -53,14 +69,14 @@ class FullRefreshTest(TestCase):
         self._config = ConfigBuilder().client_id(_CLIENT_ID).client_secret(_CLIENT_SECRET).refresh_token(_REFRESH_TOKEN)
 
     @HttpMocker()
-    def test_given_error_on_fetch_chunk_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
+    def test_given_error_on_fetch_chunk_of_properties_when_read_then_retry(self, http_mocker: HttpMocker) -> None:
         given_authentication(http_mocker, _CLIENT_ID, _CLIENT_SECRET, _REFRESH_TOKEN, _INSTANCE_URL)
         given_stream(http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         http_mocker.get(
-            HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME}+FROM+{_STREAM_NAME}+"),
+            create_http_request(_STREAM_NAME, [_A_FIELD_NAME]),
             [
                 HttpResponse("", status_code=406),
-                HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
+                create_http_response([_A_FIELD_NAME], record_count=1),
             ]
         )
 
@@ -91,7 +107,7 @@ class IncrementalTest(TestCase):
 
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{start_format_url}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
-            HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
+            create_http_response([_A_FIELD_NAME], record_count=1),
         )
 
         read(_STREAM_NAME, SyncMode.incremental, self._config, StateBuilder().with_stream_state(_STREAM_NAME, {}))
@@ -104,7 +120,7 @@ class IncrementalTest(TestCase):
         self._config.stream_slice_step("P30D").start_date(start)
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(cursor_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
-            HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
+            create_http_response([_A_FIELD_NAME], record_count=1),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, StateBuilder().with_stream_state(_STREAM_NAME, {_CURSOR_FIELD: cursor_value.isoformat(timespec="milliseconds")}))
@@ -129,11 +145,11 @@ class IncrementalTest(TestCase):
 
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(missing_chunk[0])}+AND+SystemModstamp+%3C+{_to_url(missing_chunk[1])}"),
-            HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
+            create_http_response([_A_FIELD_NAME], record_count=1),
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/queryAll?q=SELECT+{_A_FIELD_NAME},{_CURSOR_FIELD}+FROM+{_STREAM_NAME}+WHERE+SystemModstamp+%3E%3D+{_to_url(most_recent_state_value - _LOOKBACK_WINDOW)}+AND+SystemModstamp+%3C+{_to_url(_NOW)}"),
-            HttpResponse(json.dumps({"records": [{"a_field": "a_value"}]})),
+            create_http_response([_A_FIELD_NAME], record_count=1),
         )
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config, state)

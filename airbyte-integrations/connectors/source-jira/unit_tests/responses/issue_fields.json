@@ -64,5 +64,19 @@
       "type": "option",
       "system": "issuetype"
     }
+  },
+  {
+    "id": "PrIssueId",
+    "key": "PrIssueKey",
+    "name": "Development",
+    "custom": false,
+    "orderable": true,
+    "navigable": true,
+    "searchable": true,
+    "clauseNames": ["issuetype", "type"],
+    "schema": {
+      "type": "option",
+      "system": "issuetype"
+    }
   }
 ]

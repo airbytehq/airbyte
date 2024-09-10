@@ -9,15 +9,14 @@ import io.airbyte.commons.stream.StreamStatusUtils
 import io.airbyte.commons.util.AutoCloseableIterator
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy
 import java.util.function.Consumer
-import java.util.stream.Collectors
 import kotlin.math.min
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
+private val LOGGER = KotlinLogging.logger {}
 /**
  * [Consumer] implementation that consumes [AirbyteMessage] records from each provided stream
  * concurrently.
@@ -78,22 +77,20 @@ class ConcurrentStreamConsumer(
          */
         val futures: Collection<CompletableFuture<Void>> =
             streams
-                .stream()
                 .map { stream: AutoCloseableIterator<AirbyteMessage> ->
                     ConcurrentStreamRunnable(stream, this)
                 }
                 .map { runnable: ConcurrentStreamRunnable ->
                     CompletableFuture.runAsync(runnable, executorService)
                 }
-                .collect(Collectors.toList())
 
         /*
          * Wait for the submitted streams to complete before returning. This uses the join() method to allow
          * all streams to complete even if one or more encounters an exception.
          */
-        LOGGER.debug("Waiting for all streams to complete....")
+        LOGGER.debug { "Waiting for all streams to complete...." }
         CompletableFuture.allOf(*futures.toTypedArray<CompletableFuture<*>>()).join()
-        LOGGER.debug("Completed consuming from all streams.")
+        LOGGER.debug { "Completed consuming from all streams." }
     }
 
     val exception: Optional<Exception>
@@ -104,7 +101,7 @@ class ConcurrentStreamConsumer(
          * captured during execution.
          */
         get() =
-            if (!exceptions.isEmpty()) {
+            if (exceptions.isNotEmpty()) {
                 Optional.of(exceptions[0])
             } else {
                 Optional.empty()
@@ -139,18 +136,16 @@ class ConcurrentStreamConsumer(
             Optional.ofNullable(System.getenv("DEFAULT_CONCURRENT_STREAM_CONSUMER_THREADS"))
                 .map { s: String -> s.toInt() }
                 .orElseGet { Runtime.getRuntime().availableProcessors() }
-        LOGGER.debug(
-            "Default parallelism: {}, Requested parallelism: {}",
-            defaultPoolSize,
-            requestedParallelism
-        )
+        LOGGER.debug {
+            "Default parallelism: $defaultPoolSize, Requested parallelism: $requestedParallelism"
+        }
         val parallelism =
             min(
                     defaultPoolSize.toDouble(),
                     (if (requestedParallelism > 0) requestedParallelism else 1).toDouble()
                 )
                 .toInt()
-        LOGGER.debug("Computed concurrent stream consumer parallelism: {}", parallelism)
+        LOGGER.debug { "Computed concurrent stream consumer parallelism: $parallelism" }
         return parallelism
     }
 
@@ -181,19 +176,19 @@ class ConcurrentStreamConsumer(
     private fun executeStream(stream: AutoCloseableIterator<AirbyteMessage>) {
         try {
             stream.use {
-                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-                    LOGGER.debug("Consuming from stream {}...", s)
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
+                    LOGGER.debug { "Consuming from stream $s..." }
                 }
                 StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter)
                 streamConsumer.accept(stream)
                 StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter)
-                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-                    LOGGER.debug("Consumption from stream {} complete.", s)
+                stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
+                    LOGGER.debug { "Consumption from stream $s complete." }
                 }
             }
         } catch (e: Exception) {
-            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair? ->
-                LOGGER.error("Unable to consume from stream {}.", s, e)
+            stream.airbyteStream.ifPresent { s: AirbyteStreamNameNamespacePair ->
+                LOGGER.error(e) { "Unable to consume from stream $s." }
             }
             StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter)
             exceptions.add(e)
@@ -216,12 +211,7 @@ class ConcurrentStreamConsumer(
                 if (stream.airbyteStream.isPresent) {
                     val airbyteStream = stream.airbyteStream.get()
                     thread.name =
-                        String.format(
-                            "%s-%s-%s",
-                            CONCURRENT_STREAM_THREAD_NAME,
-                            airbyteStream.namespace,
-                            airbyteStream.name
-                        )
+                        "$CONCURRENT_STREAM_THREAD_NAME-${airbyteStream.namespace}-${airbyteStream.name}"
                 } else {
                     thread.name = CONCURRENT_STREAM_THREAD_NAME
                 }
@@ -248,7 +238,6 @@ class ConcurrentStreamConsumer(
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(ConcurrentStreamConsumer::class.java)
 
         /** Name of threads spawned by the [ConcurrentStreamConsumer]. */
         const val CONCURRENT_STREAM_THREAD_NAME: String = "concurrent-stream-thread"

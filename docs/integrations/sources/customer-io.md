@@ -2,38 +2,33 @@
 
 ## Overview
 
-The Customer.io source is maintained by [Faros
-AI](https://github.com/faros-ai/airbyte-connectors/tree/main/sources/customer-io-source).
-Please file any support requests on that repo to minimize response time from the
-maintainers. The source supports both Full Refresh and Incremental syncs. You
-can choose if this source will copy only the new or updated data, or all rows
-in the tables and columns you set up for replication, every time a sync is run.
+This source provides access to the Customer.io API data.
 
 ### Output schema
 
 Several output streams are available from this source:
 
-* [Campaigns](https://customer.io/docs/api/#operation/listCampaigns) \(Incremental\)
-* [Campaign Actions](https://customer.io/docs/api/#operation/listCampaignActions) \(Incremental\)
-* [Newsletters](https://customer.io/docs/api/#operation/listNewsletters) \(Incremental\)
+- [Campaigns](https://customer.io/docs/api/#operation/listCampaigns) \(Incremental\)
+- [Campaign Actions](https://customer.io/docs/api/#operation/listCampaignActions) \(Incremental\)
+- [Newsletters](https://customer.io/docs/api/#operation/listNewsletters) \(Incremental\)
 
 If there are more endpoints you'd like Faros AI to support, please [create an
 issue.](https://github.com/faros-ai/airbyte-connectors/issues/new)
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| SSL connection | Yes |
-| Namespaces | No |
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | Yes        |
+| SSL connection    | Yes        |
+| Namespaces        | No         |
 
 ### Performance considerations
 
 The Customer.io API is divided into three different hosts, each serving a
 different component of Customer.io. This source only uses the Beta API host,
-which enforces a rate limit of 10 requests per second.  Please [create an
+which enforces a rate limit of 10 requests per second. Please [create an
 issue](https://github.com/faros-ai/airbyte-connectors/issues/new) if you see any
 rate limit issues.
 
@@ -41,13 +36,35 @@ rate limit issues.
 
 ### Requirements
 
-* Customer.io App API Key
+- Customer.io App API Key
 
 Please follow the [their documentation for generating an App API Key](https://customer.io/docs/managing-credentials/).
 
 ## Changelog
 
-| Version   | Date         | Pull Request                                                   | Subject                                       |
-| :-------- | :----------- | :------------------------------------------------------------- | :-------------------------------------------- |
-| 0.2.0     | 2021-11-09   | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code                    |
-| 0.1.23    | 2021-11-09   | [126](https://github.com/faros-ai/airbyte-connectors/pull/126) | Add Customer.io source                        |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                                   | Subject                    |
+| :------ | :--------- | :------------------------------------------------------------- | :------------------------- |
+| 0.3.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.3.0 | 2024-08-15 | [44158](https://github.com/airbytehq/airbyte/pull/44158) | Refactor connector to manifest-only format |
+| 0.2.15 | 2024-08-12 | [43889](https://github.com/airbytehq/airbyte/pull/43889) | Update dependencies |
+| 0.2.14 | 2024-08-10 | [43513](https://github.com/airbytehq/airbyte/pull/43513) | Update dependencies |
+| 0.2.13 | 2024-08-03 | [43185](https://github.com/airbytehq/airbyte/pull/43185) | Update dependencies |
+| 0.2.12 | 2024-07-27 | [42631](https://github.com/airbytehq/airbyte/pull/42631) | Update dependencies |
+| 0.2.11 | 2024-07-20 | [42219](https://github.com/airbytehq/airbyte/pull/42219) | Update dependencies |
+| 0.2.10 | 2024-07-13 | [41808](https://github.com/airbytehq/airbyte/pull/41808) | Update dependencies |
+| 0.2.9 | 2024-07-10 | [41389](https://github.com/airbytehq/airbyte/pull/41389) | Update dependencies |
+| 0.2.8 | 2024-07-09 | [41225](https://github.com/airbytehq/airbyte/pull/41225) | Update dependencies |
+| 0.2.7 | 2024-07-06 | [40883](https://github.com/airbytehq/airbyte/pull/40883) | Update dependencies |
+| 0.2.6 | 2024-06-29 | [40624](https://github.com/airbytehq/airbyte/pull/40624) | Update dependencies |
+| 0.2.5 | 2024-06-27 | [38318](https://github.com/airbytehq/airbyte/pull/38318) | Make compatability with builder |
+| 0.2.4 | 2024-06-25 | [40369](https://github.com/airbytehq/airbyte/pull/40369) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [39953](https://github.com/airbytehq/airbyte/pull/39953) | Update dependencies |
+| 0.2.2 | 2024-06-04 | [38980](https://github.com/airbytehq/airbyte/pull/38980) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.1 | 2024-05-31 | [38812](https://github.com/airbytehq/airbyte/pull/38812) | [autopull] Migrate to base image and poetry |
+| 0.2.0 | 2021-11-09 | [29385](https://github.com/airbytehq/airbyte/pull/29385) | Migrate TS CDK to Low code |
+| 0.1.23  | 2021-11-09 | [126](https://github.com/faros-ai/airbyte-connectors/pull/126) | Add Customer.io source     |
+
+</details>

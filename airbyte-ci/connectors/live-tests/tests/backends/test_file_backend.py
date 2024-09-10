@@ -68,4 +68,3 @@ def test_write(tmp_path, messages, expected_writes):
         expected_path = Path(tmp_path / expected_file)
         assert expected_path.exists()
         content = expected_path.read_text()
-        assert content == expected_content

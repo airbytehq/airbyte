@@ -3,45 +3,59 @@
   "type": "object",
   "properties": {
     "organization": {
+      "description": "The organization to which the team belongs.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier of the team.",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The node identifier of the team.",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "The API URL of the team.",
       "type": ["null", "string"]
     },
     "html_url": {
+      "description": "The URL of the team on GitHub.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "The name of the team.",
       "type": ["null", "string"]
     },
     "slug": {
+      "description": "The unique URL-friendly name of the team.",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "The description of the team.",
       "type": ["null", "string"]
     },
     "privacy": {
+      "description": "The privacy setting of the team.",
       "type": ["null", "string"]
     },
     "notification_setting": {
+      "description": "The notification setting of the team.",
       "type": ["null", "string"]
     },
     "permission": {
+      "description": "The permission level of the team.",
       "type": ["null", "string"]
     },
     "members_url": {
+      "description": "The URL to fetch members of the team.",
       "type": ["null", "string"]
     },
     "repositories_url": {
+      "description": "The URL to fetch repositories of the team.",
       "type": ["null", "string"]
     },
     "parent": {
+      "description": "The parent team of the team.",
       "type": ["null", "object"],
       "properties": {},
       "additionalProperties": true

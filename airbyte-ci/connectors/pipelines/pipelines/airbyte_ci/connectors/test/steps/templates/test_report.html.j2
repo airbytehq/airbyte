@@ -162,7 +162,11 @@ function copyToClipBoard(htmlElement) {
     {% if step_result.status == StepStatus.SUCCESS %}
       <label for="{{ step_result.step.title }}" class="lbl-toggle success">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% elif step_result.status == StepStatus.FAILURE %}
+      {% if not step_result.consider_in_overall_status %}
+      <label for="{{ step_result.step.title }}" class="lbl-toggle failure">{{ step_result.step.title }} | Ignored (Failed) | {{ format_duration(step_result.step.run_duration) }}</label>
+      {% else %}
       <label for="{{ step_result.step.title }}" class="lbl-toggle failure">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
+      {% endif %}
     {% else %}
       <label for="{{ step_result.step.title }}" class="lbl-toggle">{{ step_result.step.title }} | {{ format_duration(step_result.step.run_duration) }}</label>
     {% endif %}
@@ -176,6 +180,9 @@ function copyToClipBoard(htmlElement) {
       </ul>
       {% endif %}
       <div class="content-inner">
+        {% if step_result.report %}
+        <div>{{ step_result.report }}</div>
+        {% else %}
         {% if step_result.stdout %}
         <span class="std">Standard output(<button onclick="copyToClipBoard(this)">Copy to clipboard</button>):</span>
         <pre>{{ step_result.stdout|e }}</pre>
@@ -183,6 +190,7 @@ function copyToClipBoard(htmlElement) {
         {% if step_result.stderr %}
         <span class="std">Standard error(<button onclick="copyToClipBoard(this)">Copy to clipboard</button>):</span>
         <pre>{{ step_result.stderr|e }}</pre>
+        {% endif %}
         {% endif %}
       </div>
     </div>

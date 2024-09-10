@@ -1,26 +1,24 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-
-from unittest import mock
+import logging
 
 from source_adjust.source import SourceAdjust
 
-API_KEY = "API KEY"
-CONFIG = {
-    "api_token": API_KEY,
-}
+
+def mock_response():
+    return {"rows": [{"mock1": "value1", "mock2": "value2"}]}
 
 
-def test_check_connection():
+def test_check_connection(requests_mock, config_pass, report_url, auth_token):
+    requests_mock.get(url=report_url, status_code=200, json=mock_response())
     source = SourceAdjust()
-    with mock.patch("requests.get") as http_get:
-        assert source.check_connection(mock.MagicMock(), CONFIG) == (True, None)
-        assert http_get.call_count == 1
+    status, message = source.check_connection(logging.getLogger(), config_pass)
+    assert (status, message) == (True, None)
 
 
-def test_streams():
+def test_streams(config_pass):
     source = SourceAdjust()
-    streams = source.streams(CONFIG)
+    streams = source.streams(config_pass)
     expected_streams_number = 1
     assert len(streams) == expected_streams_number

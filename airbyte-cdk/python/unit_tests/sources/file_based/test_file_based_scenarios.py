@@ -62,6 +62,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_multi_stream_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_newline_in_values_quoted_value_scenario,
+    csv_no_files_scenario,
     csv_no_records_scenario,
     csv_single_stream_scenario,
     csv_skip_after_header_scenario,
@@ -76,6 +77,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     invalid_csv_multi_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
+    multi_csv_stream_n_file_exceeds_config_limit_for_inference,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
@@ -83,6 +85,12 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
+)
+from unit_tests.sources.file_based.scenarios.excel_scenarios import (
+    excel_all_types_scenario,
+    multiple_excel_combine_schema_scenario,
+    multiple_streams_excel_scenario,
+    single_excel_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
@@ -154,7 +162,6 @@ from unit_tests.sources.file_based.scenarios.validation_policy_scenarios import 
 from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read, verify_spec
 
 discover_failure_scenarios = [
-    earlier_csv_scenario,
     empty_schema_inference_scenario,
 ]
 
@@ -167,6 +174,7 @@ discover_success_scenarios = [
     single_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_csv_stream_n_file_exceeds_config_limit_for_inference,
     single_csv_input_state_is_earlier_scenario,
     single_csv_no_input_state_scenario,
     single_csv_input_state_is_later_scenario,
@@ -230,6 +238,10 @@ discover_success_scenarios = [
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     avro_file_with_double_as_number_scenario,
+    excel_all_types_scenario,
+    multiple_excel_combine_schema_scenario,
+    multiple_streams_excel_scenario,
+    single_excel_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
     parquet_with_invalid_config_scenario,
@@ -263,6 +275,8 @@ discover_success_scenarios = [
     single_csv_input_state_is_earlier_scenario_concurrent,
     single_csv_input_state_is_later_scenario_concurrent,
     single_csv_no_input_state_scenario_concurrent,
+    earlier_csv_scenario,
+    csv_no_files_scenario,
 ]
 
 discover_scenarios = discover_failure_scenarios + discover_success_scenarios
@@ -295,7 +309,9 @@ check_scenarios = [
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     valid_single_stream_user_input_schema_scenario,
     single_avro_scenario,
+    single_excel_scenario,
     earlier_csv_scenario,
+    csv_no_files_scenario,
 ]
 
 
