@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector_ops"
-version = "0.4.0"
+version = "0.9.0"
 description = "Packaged maintained by the connector operations team to perform CI for connectors"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -15,7 +15,7 @@ requests = "^2.31"
 PyYAML = "^6.0"
 GitPython = "^3.1.29"
 pydantic = "^1.9"
-PyGithub = "^1.58.0"
+PyGithub = "^2"
 rich = "^13.0.0"
 pydash = "^6.0.2"
 google-cloud-storage = "^2.8.0"
@@ -36,5 +36,6 @@ print-mandatory-reviewers = "connector_ops.required_reviewer_checks:print_mandat
 test = "pytest tests"
 
 [tool.airbyte_ci]
+python_versions = ["3.10"]
 optional_poetry_groups = ["dev"]
 poe_tasks = ["test"]

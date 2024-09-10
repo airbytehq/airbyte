@@ -1,12 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 import os
 from unittest.mock import MagicMock
 
 import pytest
-import responses
 from source_pinterest import SourcePinterest
 from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.reports.reports import (
@@ -23,11 +23,10 @@ from source_pinterest.reports.reports import (
     ProductItemReport,
 )
 from source_pinterest.utils import get_analytics_columns
-from unit_tests.test_source import setup_responses
 
 os.environ["REQUEST_CACHE_PATH"] = '/tmp'
 
-@responses.activate
+
 def test_request_body_json(analytics_report_stream, date_range):
     granularity = "DAY"
     columns = get_analytics_columns()
@@ -44,8 +43,7 @@ def test_request_body_json(analytics_report_stream, date_range):
     assert body == expected_body
 
 
-@responses.activate
-def test_read_records(analytics_report_stream, date_range):
+def test_read_records(requests_mock, analytics_report_stream, date_range):
     report_download_url = "https://download.report"
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
 
@@ -55,9 +53,9 @@ def test_read_records(analytics_report_stream, date_range):
 
     final_response = {"campaign_id": [{"metric": 1}]}
 
-    responses.add(responses.POST, report_request_url, json=initial_response)
-    responses.add(responses.GET, report_request_url, json=final_report_status, status=200)
-    responses.add(responses.GET, report_download_url, json=final_response, status=200)
+    requests_mock.post(report_request_url, json=initial_response)
+    requests_mock.get(report_request_url, json=final_report_status, status_code=200)
+    requests_mock.get(report_download_url, json=final_response, status_code=200)
 
     sync_mode = "full_refresh"
     cursor_field = ["last_updated"]
@@ -70,19 +68,15 @@ def test_read_records(analytics_report_stream, date_range):
     expected_record = {"metric": 1}
 
     assert next(records) == expected_record
-    assert len(responses.calls) == 3
-    assert responses.calls[0].request.url == report_request_url
 
 
-@responses.activate
 def test_streams(test_config):
-    setup_responses()
     source = SourcePinterest()
     streams = source.streams(test_config)
     expected_streams_number = 32
     assert len(streams) == expected_streams_number
 
-@responses.activate
+
 def test_custom_streams(test_config):
     config = copy.deepcopy(test_config)
     config['custom_reports'] = [{
@@ -97,15 +91,15 @@ def test_custom_streams(test_config):
         "columns": ["ADVERTISER_ID", "AD_ACCOUNT_ID", "AD_GROUP_ID", "CTR", "IMPRESSION_2"],
         "start_date": "2023-01-08"
     }]
-    setup_responses()
     source = SourcePinterest()
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
 
+
 @pytest.mark.parametrize(
-    "report_name, expected_level",
-    [
+    ("report_name", "expected_level"),
+    (
         [CampaignAnalyticsReport, 'CAMPAIGN'],
         [CampaignTargetingReport, 'CAMPAIGN_TARGETING'],
         [AdvertiserReport, 'ADVERTISER'],
@@ -118,8 +112,7 @@ def test_custom_streams(test_config):
         [ProductGroupTargetingReport, 'PRODUCT_GROUP_TARGETING'],
         [ProductItemReport, 'PRODUCT_ITEM'],
         [KeywordReport, 'KEYWORD']
-    ],
+    ),
 )
 def test_level(test_config, report_name, expected_level):
     assert report_name(parent=None, config=MagicMock()).level == expected_level
-

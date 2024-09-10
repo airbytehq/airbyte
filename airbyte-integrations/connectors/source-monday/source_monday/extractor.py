@@ -105,9 +105,14 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
         if not result and self.field_path_incremental:
             result = self.try_extract_records(response, self.field_path_incremental)
 
-        for item_index in range(len(result)):
-            if "updated_at" in result[item_index]:
-                result[item_index]["updated_at_int"] = int(
-                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
-                )
+        for record in result:
+            if "updated_at" in record:
+                record["updated_at_int"] = int(datetime.strptime(record["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp())
+
+            column_values = record.get("column_values", [])
+            for values in column_values:
+                display_value, text = values.get("display_value"), values.get("text")
+                if display_value and not text:
+                    values["text"] = display_value
+
         return result

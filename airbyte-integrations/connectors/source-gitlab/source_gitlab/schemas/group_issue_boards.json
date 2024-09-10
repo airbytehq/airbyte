@@ -3,70 +3,91 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the board.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the board.",
       "type": ["null", "string"]
     },
     "hide_backlog_list": {
+      "description": "Flag indicating whether the backlog list is hidden.",
       "type": ["null", "boolean"]
     },
     "hide_closed_list": {
+      "description": "Flag indicating whether the closed list is hidden.",
       "type": ["null", "boolean"]
     },
     "project": {
+      "description": "Additional information or settings related to the project.",
       "type": ["null", "integer"]
     },
     "lists": {
+      "description": "A collection of lists on the issue board.",
       "type": ["null", "array"],
       "items": {
+        "description": "Information about a specific list in the issue board.",
         "type": ["null", "object"],
         "properties": {
           "id": {
+            "description": "The ID of the list in the board.",
             "type": ["null", "integer"]
           },
           "label": {
+            "description": "The label or title of the list.",
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "The unique identifier of the list label.",
                 "type": ["null", "integer"]
               },
               "name": {
+                "description": "The name of the list label.",
                 "type": ["null", "string"]
               },
               "description": {
+                "description": "The description of the list label.",
                 "type": ["null", "string"]
               },
               "description_html": {
+                "description": "The HTML formatted description of the list label.",
                 "type": ["null", "string"]
               },
               "text_color": {
+                "description": "The text color of the list label.",
                 "type": ["null", "string"]
               },
               "color": {
+                "description": "The color associated with the list label.",
                 "type": ["null", "string"]
               }
             }
           },
           "position": {
+            "description": "The position of the list in the board.",
             "type": ["null", "integer"]
           }
         }
       }
     },
     "group_id": {
+      "description": "The ID of the group to which the board belongs.",
       "type": ["null", "integer"]
     },
     "group": {
+      "description": "Details of the group to which the issue board belongs.",
       "type": ["null", "object"],
       "properties": {
         "id": {
+          "description": "The ID of the group to which the board belongs.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the group to which the board belongs.",
           "type": ["null", "string"]
         },
         "web_url": {
+          "description": "The URL of the group's web interface.",
           "type": ["null", "string"]
         }
       }

@@ -3,160 +3,211 @@
   "type": "object",
   "properties": {
     "customer.id": {
+      "description": "The ID of the customer associated with the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign.id": {
+      "description": "The ID of the campaign associated with the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.aligned_bidding_strategy_id": {
+      "description": "The ID of the bidding strategy aligned with the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.amount_micros": {
+      "description": "The amount in micros (millionths of the currency unit) for the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.delivery_method": {
+      "description": "The delivery method of the campaign budget (ACCELERATED or STANDARD).",
       "type": ["null", "string"]
     },
     "campaign_budget.explicitly_shared": {
+      "description": "Indicates whether the budget is explicitly shared among multiple campaigns.",
       "type": ["null", "boolean"]
     },
     "campaign_budget.has_recommended_budget": {
+      "description": "Indicates if there is a recommended budget for the campaign budget.",
       "type": ["null", "boolean"]
     },
     "campaign_budget.id": {
+      "description": "The ID of the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.name": {
+      "description": "The name of the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.period": {
+      "description": "The time period covered by the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.recommended_budget_amount_micros": {
+      "description": "The recommended amount in micros for the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_clicks": {
+      "description": "Estimated change in weekly clicks if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_cost_micros": {
+      "description": "Estimated change in weekly cost in micros if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_interactions": {
+      "description": "Estimated change in weekly interactions if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.recommended_budget_estimated_change_weekly_views": {
+      "description": "Estimated change in weekly views if recommended budget is applied.",
       "type": ["null", "integer"]
     },
     "campaign_budget.reference_count": {
+      "description": "The count of references to the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.resource_name": {
+      "description": "The resource name of the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.status": {
+      "description": "The status of the campaign budget.",
       "type": ["null", "string"]
     },
     "campaign_budget.total_amount_micros": {
+      "description": "The total amount in micros of the campaign budget.",
       "type": ["null", "integer"]
     },
     "campaign_budget.type": {
+      "description": "The type of the campaign budget.",
       "type": ["null", "string"]
     },
     "segments.date": {
+      "description": "Date segment used for filtering data.",
       "type": ["null", "string"],
       "format": "date"
     },
     "segments.budget_campaign_association_status.campaign": {
+      "description": "The campaign associated with the budget and its status.",
       "type": ["null", "string"]
     },
     "segments.budget_campaign_association_status.status": {
+      "description": "The status of the budget association with the campaign.",
       "type": ["null", "string"]
     },
     "metrics.all_conversions": {
+      "description": "The total number of conversions for all conversion actions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_from_interactions_rate": {
+      "description": "The rate of conversions from interactions out of all interactions.",
       "type": ["null", "number"]
     },
     "metrics.all_conversions_value": {
+      "description": "The total value of all conversions.",
       "type": ["null", "number"]
     },
     "metrics.average_cost": {
+      "description": "The average cost of interactions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.average_cpc": {
+      "description": "The average cost per click for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.average_cpe": {
+      "description": "The average cost per engagement for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.average_cpm": {
+      "description": "The average cost per thousand impressions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.average_cpv": {
+      "description": "The average cost per view for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.clicks": {
+      "description": "The total number of clicks on the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.conversions": {
+      "description": "The total number of conversions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.conversions_from_interactions_rate": {
+      "description": "The rate of conversions out of all interactions.",
       "type": ["null", "number"]
     },
     "metrics.conversions_value": {
+      "description": "The total value of conversions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
+      "description": "The total cost in micros for the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
+      "description": "The cost per all conversions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.cost_per_conversion": {
+      "description": "The cost per conversion for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.cross_device_conversions": {
+      "description": "The total number of cross-device conversions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.ctr": {
+      "description": "The click-through rate for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.engagement_rate": {
+      "description": "The engagement rate for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.engagements": {
+      "description": "The total number of engagements for the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
+      "description": "The total number of impressions for the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
+      "description": "Types of interactions tracked for the campaign.",
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
     },
     "metrics.interaction_rate": {
+      "description": "The interaction rate for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.interactions": {
+      "description": "The total number of interactions for the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.value_per_all_conversions": {
+      "description": "The value per all conversions for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.value_per_conversion": {
+      "description": "The value per conversion for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.video_view_rate": {
+      "description": "The view rate for video ads in the campaign.",
       "type": ["null", "number"]
     },
     "metrics.video_views": {
+      "description": "The total number of video views for the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
+      "description": "The total number of view-through conversions for the campaign.",
       "type": ["null", "integer"]
     }
   }

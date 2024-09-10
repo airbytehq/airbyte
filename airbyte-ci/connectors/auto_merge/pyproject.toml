@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "auto-merge"
+version = "0.1.2"
+description = ""
+authors = ["Airbyte <contact@airbyte.io>"]
+readme = "README.md"
+packages = [
+    { include = "auto_merge", from = "src" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pygithub = "^2.3.0"
+anyio = "^4.3.0"
+
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.10.0"
+ruff = "^0.4.3"
+pytest = "^8.2.0"
+pyinstrument = "^4.6.2"
+
+[tool.ruff.lint]
+select = [
+    "I" # isort
+]
+
+[tool.poetry.scripts]
+auto-merge = "auto_merge.main:auto_merge"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poe.tasks]
+test = "pytest tests"
+type_check = "mypy src --disallow-untyped-defs"
+lint = "ruff check src"
+
+[tool.airbyte_ci]
+python_versions = ["3.10"]
+optional_poetry_groups = ["dev"]
+poe_tasks = ["type_check", "lint",]

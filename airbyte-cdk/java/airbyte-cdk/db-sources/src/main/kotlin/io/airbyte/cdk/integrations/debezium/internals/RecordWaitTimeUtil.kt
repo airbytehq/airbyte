@@ -4,13 +4,13 @@
 package io.airbyte.cdk.integrations.debezium.internals
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.util.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 object RecordWaitTimeUtil {
-    private val LOGGER: Logger = LoggerFactory.getLogger(RecordWaitTimeUtil::class.java)
 
     val MIN_FIRST_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(2)
     val MAX_FIRST_RECORD_WAIT_TIME: Duration = Duration.ofMinutes(60)
@@ -51,21 +51,21 @@ object RecordWaitTimeUtil {
         if (firstRecordWaitSeconds.isPresent) {
             firstRecordWaitTime = Duration.ofSeconds(firstRecordWaitSeconds.get().toLong())
             if (!isTest && firstRecordWaitTime.compareTo(MIN_FIRST_RECORD_WAIT_TIME) < 0) {
-                LOGGER.warn(
-                    "First record waiting time is overridden to {} minutes, which is the min time allowed for safety.",
-                    MIN_FIRST_RECORD_WAIT_TIME.toMinutes()
-                )
+                LOGGER.warn {
+                    "First record waiting time is overridden to ${MIN_FIRST_RECORD_WAIT_TIME.toMinutes()} minutes, " +
+                        "which is the min time allowed for safety."
+                }
                 firstRecordWaitTime = MIN_FIRST_RECORD_WAIT_TIME
             } else if (!isTest && firstRecordWaitTime.compareTo(MAX_FIRST_RECORD_WAIT_TIME) > 0) {
-                LOGGER.warn(
-                    "First record waiting time is overridden to {} minutes, which is the max time allowed for safety.",
-                    MAX_FIRST_RECORD_WAIT_TIME.toMinutes()
-                )
+                LOGGER.warn {
+                    "First record waiting time is overridden to ${MAX_FIRST_RECORD_WAIT_TIME.toMinutes()} minutes, " +
+                        "which is the max time allowed for safety."
+                }
                 firstRecordWaitTime = MAX_FIRST_RECORD_WAIT_TIME
             }
         }
 
-        LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.seconds)
+        LOGGER.info { "First record waiting time: ${firstRecordWaitTime.seconds} seconds" }
         return firstRecordWaitTime
     }
 
@@ -78,7 +78,9 @@ object RecordWaitTimeUtil {
             // In tests, reuse the initial_waiting_seconds property to speed things up.
             subsequentRecordWaitTime = Duration.ofSeconds(firstRecordWaitSeconds.get().toLong())
         }
-        LOGGER.info("Subsequent record waiting time: {} seconds", subsequentRecordWaitTime.seconds)
+        LOGGER.info {
+            "Subsequent record waiting time: ${subsequentRecordWaitTime.seconds} seconds"
+        }
         return subsequentRecordWaitTime
     }
 

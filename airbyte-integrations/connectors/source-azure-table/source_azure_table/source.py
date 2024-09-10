@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -27,7 +27,7 @@ from .streams import AzureTableStream
 class SourceAzureTable(AbstractSource):
     """This source helps to sync data from one azure data table a time"""
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         pass
 
     def _as_airbyte_record(self, stream_name: str, data: Mapping[str, Any]):
@@ -43,7 +43,7 @@ class SourceAzureTable(AbstractSource):
             "properties": {"PartitionKey": {"type": "string"}},
         }
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         try:
             reader = AzureTableReader(logger, config)
             client = reader.get_table_service_client()
@@ -56,7 +56,7 @@ class SourceAzureTable(AbstractSource):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         reader = AzureTableReader(logger, config)
         tables = reader.get_tables()
 
@@ -74,7 +74,7 @@ class SourceAzureTable(AbstractSource):
         logger.info(f"Total {len(streams)} streams found.")
         return AirbyteCatalog(streams=streams)
 
-    def streams(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> List[Stream]:
+    def streams(self, logger: logging.Logger, config: Mapping[str, Any]) -> List[Stream]:
         """
         :param config: The user-provided configuration as specified by the source's spec.
         Any stream construction related operation should happen here.
@@ -95,7 +95,7 @@ class SourceAzureTable(AbstractSource):
             raise Exception(f"An exception occurred: {str(e)}")
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         """
         This method is overridden to check whether the stream `quotes` exists in the source, if not skip reading that stream.

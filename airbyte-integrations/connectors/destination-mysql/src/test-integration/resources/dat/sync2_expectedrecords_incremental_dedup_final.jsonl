@@ -1,0 +1,4 @@
+{"_airbyte_extracted_at": "1970-01-01T00:00:02", "_airbyte_meta": {"changes":[]}, "id1": 1, "id2": 200, "updated_at": "2000-01-02T00:00:00Z", "name": "Alice", "address": {"city": "Seattle", "state": "WA"}}
+// Delete Bob, keep Charlie
+{"_airbyte_extracted_at": "1970-01-01T00:00:01", "_airbyte_meta": {"changes":[{"field":"address","change":"NULLED","reason":"SOURCE_RETRIEVAL_ERROR"}]}, "id1": 2, "id2": 200, "updated_at": "2000-01-01T00:03:00Z", "name": "Charlie", "age": 42, "registration_date": "2023-12-23"}
+{"_airbyte_extracted_at": "1970-01-01T00:00:01", "_airbyte_meta": {"changes":[]}, "id1": 3, "id2": 200, "updated_at": "2000-01-01T00:04:00Z", "name": "a\bb\fc\nd\re\tf`~!@#$%^&*()_+-=[]\\{}|'\",./<>?"}

@@ -2,7 +2,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "float_ts": 7270247822 },
+      "stream_state": { "float_ts": 7270247822.0 },
       "stream_descriptor": { "name": "threads" }
     }
   },
@@ -20,7 +20,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "float_ts": "2534945416"
+              "float_ts": 2534945416.0
             }
           },
           {
@@ -29,7 +29,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "float_ts": "2534945416"
+              "float_ts": 2534945416.0
             }
           },
           {
@@ -38,7 +38,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "float_ts": "2534945416"
+              "float_ts": 2534945416.0
             }
           },
           {
@@ -47,7 +47,7 @@
               "parent_slice": {}
             },
             "cursor": {
-              "float_ts": "2534945416"
+              "float_ts": 2534945416.0
             }
           }
         ]

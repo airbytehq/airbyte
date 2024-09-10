@@ -1,12 +1,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import pytest
 from airbyte_protocol.models import Type  # type: ignore
 from live_tests.commons.models import ExecutionResult
-
-from .utils import fail_test_on_failing_execution_results
+from live_tests.utils import fail_test_on_failing_execution_results
 
 pytestmark = [
     pytest.mark.anyio,

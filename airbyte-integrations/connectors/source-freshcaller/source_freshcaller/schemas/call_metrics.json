@@ -104,6 +104,9 @@
         "type": "object"
       },
       "type": ["array", "null"]
+    },
+    "life_cycle": {
+      "type": ["array", "null"]
     }
   }
 }

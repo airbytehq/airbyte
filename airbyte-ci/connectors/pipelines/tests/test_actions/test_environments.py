@@ -5,6 +5,7 @@
 import pytest
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.python import common
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 
 pytestmark = [
     pytest.mark.anyio,
@@ -15,12 +16,13 @@ pytestmark = [
 def connector_context(dagger_client):
     context = ConnectorContext(
         pipeline_name="test",
-        connector="source-faker",
+        connector=ConnectorWithModifiedFiles("source-faker", modified_files={}),
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
-        use_remote_secrets=True,
     )
     context.dagger_client = dagger_client
     return context
@@ -29,7 +31,7 @@ def connector_context(dagger_client):
 @pytest.mark.parametrize("use_local_cdk", [True, False])
 async def test_apply_python_development_overrides(connector_context, use_local_cdk):
     connector_context.use_local_cdk = use_local_cdk
-    fake_connector_container = connector_context.dagger_client.container().from_("airbyte/python-connector-base:1.0.0")
+    fake_connector_container = connector_context.dagger_client.container().from_("airbyte/python-connector-base:2.0.0")
     before_override_pip_freeze = await fake_connector_container.with_exec(["pip", "freeze"]).stdout()
 
     assert "airbyte-cdk" not in before_override_pip_freeze.splitlines(), "The base image should not have the airbyte-cdk installed."

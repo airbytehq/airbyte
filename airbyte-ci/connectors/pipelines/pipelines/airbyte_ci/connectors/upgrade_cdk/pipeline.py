@@ -7,10 +7,12 @@ import os
 import re
 from typing import TYPE_CHECKING
 
+import toml
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Directory
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.reports import ConnectorReport, Report
+from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.helpers import git
 from pipelines.helpers.connectors import cdk_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -19,6 +21,11 @@ if TYPE_CHECKING:
     from typing import Optional
 
     from anyio import Semaphore
+
+# GLOBALS
+
+POETRY_LOCK_FILENAME = "poetry.lock"
+PYPROJECT_FILENAME = "pyproject.toml"
 
 
 class SetCDKVersion(Step):
@@ -45,12 +52,16 @@ class SetCDKVersion(Step):
             else:
                 return StepResult(
                     step=self,
-                    status=StepStatus.FAILURE,
-                    stderr=f"No CDK for connector {self.context.connector.technical_name} of written in {self.context.connector.language}",
+                    status=StepStatus.SKIPPED,
+                    stdout=f"The upgrade-cdk command does not support {self.context.connector.language} connectors.",
                 )
 
             if updated_connector_dir is None:
-                return self.skip(self.skip_reason)
+                return StepResult(
+                    step=self,
+                    status=StepStatus.FAILURE,
+                    stderr=f"No changes were made to the CDK version for connector {self.context.connector.technical_name}",
+                )
             diff = og_connector_dir.diff(updated_connector_dir)
             exported_successfully = await diff.export(os.path.join(git.get_git_repo_path(), context.connector.code_directory))
             if not exported_successfully:
@@ -96,35 +107,53 @@ class SetCDKVersion(Step):
     async def upgrade_cdk_version_for_python_connector(self, og_connector_dir: Directory) -> Optional[Directory]:
         context = self.context
         og_connector_dir = await context.get_connector_dir()
-        if "setup.py" not in await og_connector_dir.entries():
-            self.skip_reason = f"Python connector {self.context.connector.technical_name} does not have a setup.py file."
-            return None
-        setup_py = og_connector_dir.file("setup.py")
-        setup_py_content = await setup_py.contents()
 
-        airbyte_cdk_dependency = re.search(
-            r"airbyte-cdk(?P<extra>\[[a-zA-Z0-9-]*\])?(?P<version>[<>=!~]+[0-9]*(?:\.[0-9]*)?(?:\.[0-9]*)?)?", setup_py_content
-        )
-        # If there is no airbyte-cdk dependency, add the version
-        if airbyte_cdk_dependency is None:
-            raise ValueError("Could not find airbyte-cdk dependency in setup.py")
+        # Check for existing pyproject file and load contents
+        pyproject_toml = og_connector_dir.file(PYPROJECT_FILENAME)
+        if not pyproject_toml:
+            raise ValueError(f"Could not find 'pyproject.toml' for {context.connector.technical_name}")
+        pyproject_content = await pyproject_toml.contents()
+        pyproject_data = toml.loads(pyproject_content)
 
+        # Grab the airbyte-cdk dependency from pyproject
+        dependencies = pyproject_data.get("tool", {}).get("poetry", {}).get("dependencies", {})
+        airbyte_cdk_dependency = dependencies.get("airbyte-cdk")
+        if not airbyte_cdk_dependency:
+            raise ValueError("Could not find a valid airbyte-cdk dependency in 'pyproject.toml'")
+
+        # Set the new version. If not explicitly provided, set it to the latest version and allow non-breaking changes
         if self.new_version == "latest":
-            new_version = cdk_helpers.get_latest_python_cdk_version()
+            new_version = f"^{cdk_helpers.get_latest_python_cdk_version()}"
         else:
             new_version = self.new_version
+        self.logger.info(f"Setting CDK version to {new_version}")
+        dependencies["airbyte-cdk"] = new_version
 
-        new_version_str = f"airbyte-cdk{airbyte_cdk_dependency.group('extra') or ''}>={new_version}"
-        updated_setup_py = setup_py_content.replace(airbyte_cdk_dependency.group(), new_version_str)
+        updated_pyproject_toml_content = toml.dumps(pyproject_data)
+        updated_connector_dir = og_connector_dir.with_new_file(PYPROJECT_FILENAME, updated_pyproject_toml_content)
 
-        return og_connector_dir.with_new_file("setup.py", updated_setup_py)
+        # Create a new container to run poetry lock
+        base_image = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
+        base_container = self.dagger_client.container(platform=LOCAL_BUILD_PLATFORM).from_(base_image)
+        connector_container = base_container.with_mounted_directory("/connector", updated_connector_dir).with_workdir("/connector")
+
+        poetry_lock_file = await connector_container.file(POETRY_LOCK_FILENAME).contents()
+        updated_container = await connector_container.with_exec(["poetry", "lock", "--no-update"])
+        updated_poetry_lock_file = await updated_container.file(POETRY_LOCK_FILENAME).contents()
+
+        if poetry_lock_file != updated_poetry_lock_file:
+            updated_connector_dir = updated_connector_dir.with_new_file(POETRY_LOCK_FILENAME, updated_poetry_lock_file)
+        else:
+            raise ValueError("Lockfile did not change after running poetry lock")
+
+        return updated_connector_dir
 
 
 async def run_connector_cdk_upgrade_pipeline(
     context: ConnectorContext,
     semaphore: Semaphore,
     target_version: str,
-) -> Report:
+) -> ConnectorReport:
     """Run a pipeline to upgrade the CDK version for a single connector.
 
     Args:

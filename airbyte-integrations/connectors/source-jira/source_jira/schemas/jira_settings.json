@@ -3,39 +3,40 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
-      "description": "The ID of the application property. The ID and key are the same."
+      "description": "The unique ID of the application property. The ID is the same as the key.",
+      "type": "string"
     },
     "key": {
-      "type": "string",
-      "description": "The key of the application property. The ID and key are the same."
+      "description": "The key identifier of the application property. The key is the same as the ID.",
+      "type": "string"
     },
     "value": {
-      "type": "string",
-      "description": "The new value."
+      "description": "The new value assigned to the application property.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the application property."
+      "description": "The name or title of the application property.",
+      "type": "string"
     },
     "desc": {
-      "type": "string",
-      "description": "The description of the application property."
+      "description": "The description of the application property.",
+      "type": "string"
     },
     "type": {
-      "type": "string",
-      "description": "The data type of the application property."
+      "description": "The data type (e.g., string, number) of the application property.",
+      "type": "string"
     },
     "defaultValue": {
-      "type": "string",
-      "description": "The default value of the application property."
+      "description": "The default value of the application property.",
+      "type": "string"
     },
     "example": {
+      "description": "An example or sample value for the application property.",
       "type": "string"
     },
     "allowedValues": {
+      "description": "The allowed values for the application property, if applicable.",
       "type": "array",
-      "description": "The allowed values, if applicable.",
       "items": {
         "type": "string"
       }

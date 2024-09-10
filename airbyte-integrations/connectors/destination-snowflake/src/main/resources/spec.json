@@ -19,7 +19,7 @@
         ],
         "type": "string",
         "title": "Host",
-        "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.snowflakecomputing\\.com)$",
+        "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
         "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com",
         "order": 0
       },
@@ -31,7 +31,7 @@
         "order": 1
       },
       "warehouse": {
-        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to sync data into",
+        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to use as a compute cluster",
         "examples": ["AIRBYTE_WAREHOUSE"],
         "type": "string",
         "title": "Warehouse",
@@ -175,19 +175,19 @@
         "title": "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
         "order": 11
       },
-      "enable_incremental_final_table_updates": {
-        "type": "boolean",
-        "default": false,
-        "description": "When enabled your data will load into your final tables incrementally while your data is still being synced. When Disabled (the default), your data loads into your final tables once at the end of a sync. Note that this option only applies if you elect to create Final tables",
-        "title": "Enable Loading Data Incrementally to Final Tables",
-        "order": 12
-      },
       "retention_period_days": {
         "type": "integer",
         "default": 1,
         "description": "The number of days of Snowflake Time Travel to enable on the tables. See <a href=\"https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period\">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.",
         "title": "Data Retention Period (days)",
         "order": 13
+      },
+      "use_merge_for_upsert": {
+        "type": "boolean",
+        "default": false,
+        "description": "Use MERGE for de-duplication of final tables. This option no effect if Final tables are disabled or Sync mode is not DEDUPE",
+        "title": "Use MERGE for De-duplication of final tables",
+        "order": 14
       }
     }
   },

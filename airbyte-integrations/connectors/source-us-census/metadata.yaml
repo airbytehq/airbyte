@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-us-census
   githubIssueLabel: source-us-census
   icon: uscensus.svg
@@ -12,7 +12,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-us-census
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,9 +21,31 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/us-census
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: us-census_config_dev_null
+          id: b313e43c-2807-4105-b662-10ed1c830743
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-US-CENSUS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-US-CENSUS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
 metadataSpecVersion: "1.0"

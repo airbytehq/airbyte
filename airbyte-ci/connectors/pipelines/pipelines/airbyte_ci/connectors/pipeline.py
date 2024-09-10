@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional
 
 import anyio
 import dagger
@@ -15,6 +15,7 @@ from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Config
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
+from pipelines.airbyte_ci.connectors.test.context import ConnectorTestContext
 from pipelines.airbyte_ci.steps.no_op import NoOpStep
 from pipelines.consts import ContextState
 from pipelines.dagger.actions.system import docker
@@ -51,7 +52,8 @@ async def context_to_step_result(context: PipelineContext) -> StepResult:
 # HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
 # TODO (ben): Refactor run_connectors_pipelines to wrap the whole pipeline in a dagger pipeline once Steps are refactored
 async def run_report_complete_pipeline(
-    dagger_client: dagger.Client, contexts: List[ConnectorContext] | List[PublishConnectorContext] | List[PipelineContext]
+    dagger_client: dagger.Client,
+    contexts: List[ConnectorContext] | List[PublishConnectorContext] | List[PipelineContext] | List[ConnectorTestContext],
 ) -> None:
     """Create and Save a report representing the run of the encompassing pipeline.
 
@@ -81,14 +83,14 @@ async def run_report_complete_pipeline(
 
 
 async def run_connectors_pipelines(
-    contexts: Union[List[ConnectorContext], List[PublishConnectorContext]],
+    contexts: List[ConnectorContext] | List[PublishConnectorContext] | List[ConnectorTestContext],
     connector_pipeline: Callable,
     pipeline_name: str,
     concurrency: int,
     dagger_logs_path: Optional[Path],
     execute_timeout: Optional[int],
     *args: Any,
-) -> List[ConnectorContext] | List[PublishConnectorContext]:
+) -> List[ConnectorContext] | List[PublishConnectorContext] | List[ConnectorTestContext]:
     """Run a connector pipeline for all the connector contexts."""
 
     default_connectors_semaphore = anyio.Semaphore(concurrency)
@@ -98,9 +100,7 @@ async def run_connectors_pipelines(
         docker_hub_password = contexts[0].docker_hub_password
 
         if docker_hub_username and docker_hub_password:
-            docker_hub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", docker_hub_username)
-            docker_hub_password_secret = dagger_client.set_secret("DOCKER_HUB_PASSWORD", docker_hub_password)
-            dockerd_service = docker.with_global_dockerd_service(dagger_client, docker_hub_username_secret, docker_hub_password_secret)
+            dockerd_service = docker.with_global_dockerd_service(dagger_client, docker_hub_username, docker_hub_password)
         else:
             dockerd_service = docker.with_global_dockerd_service(dagger_client)
 

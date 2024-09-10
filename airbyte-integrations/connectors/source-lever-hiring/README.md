@@ -1,97 +1,65 @@
-# Lever Hiring Source
+# Lever Hiring source connector
 
-This is the repository for the Lever Hiring source connector, written in Python.
+This directory contains the manifest-only connector for `source-lever-hiring`.
+This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
+
+For information about how to configure and use this connector within Airbyte, see [the connector's full documentation](https://docs.airbyte.com/integrations/sources/lever-hiring).
 
 ## Local development
 
-### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
+We recommend using the Connector Builder to edit this connector.
+Using either Airbyte Cloud or your local Airbyte OSS instance, navigate to the **Builder** tab and select **Import a YAML**.
+Then select the connector's `manifest.yaml` file to load the connector into the Builder. You're now ready to make changes to the connector!
 
-#### Minimum Python version required `= 3.7.0`
+If you prefer to develop locally, you can follow the instructions below.
 
-#### Build & Activate Virtual Environment and install dependencies
-From this connector directory, create a virtual environment:
-```
-python -m venv .venv
-```
+### Building the docker image
 
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
+You can build any manifest-only connector with `airbyte-ci`:
 
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
+1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
+2. Run the following command to build the docker image:
 
-#### Create credentials
-**If you are a community contributor**, get the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_lever_hiring/spec.json` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
-
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source lever-hiring test creds`
-and place them into `secrets/config.json`.
-
-### Locally running the connector
-```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
-```
-
-### Locally running the connector docker image
-
-
-#### Build
-**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
 ```bash
 airbyte-ci connectors --name=source-lever-hiring build
 ```
 
-An image will be built with the tag `airbyte/source-lever-hiring:dev`.
+An image will be available on your host with the tag `airbyte/source-lever-hiring:dev`.
 
-**Via `docker build`:**
+### Creating credentials
+
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/lever-hiring)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` object in the connector's `manifest.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
+
+### Running as a docker container
+
+Then run any of the standard source connector commands:
+
 ```bash
-docker build -t airbyte/source-lever-hiring:dev .
-```
-
-#### Run
-Then run any of the connector commands as follows:
-```
 docker run --rm airbyte/source-lever-hiring:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-lever-hiring:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-lever-hiring:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-lever-hiring:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-## Testing
+### Running the CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-lever-hiring test
 ```
 
-### Customizing acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
-If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+## Publishing a new version of the connector
 
-## Dependency Management
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-We split dependencies between two groups, dependencies that are:
-* required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-* required for the testing need to go to `TEST_REQUIREMENTS` list
-
-### Publishing a new version of the connector
-You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-lever-hiring test`
-2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
-3. Make sure the `metadata.yaml` content is up to date.
-4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/lever-hiring.md`).
+If you want to contribute changes to `source-lever-hiring`, here's how you can do that:
+1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
+2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-lever-hiring test`
+3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/lever-hiring.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
