@@ -4,7 +4,8 @@
 
 import logging
 from abc import ABC
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
+from datetime import timedelta
+from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
@@ -14,7 +15,10 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, CursorField, CursorValueType, FinalStateCursor, GapType
+from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
+
+DEFAULT_LOOKBACK_SECONDS = 0
 
 
 class ConcurrentSourceAdapter(AbstractSource, ABC):
@@ -62,27 +66,59 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
 
-    def _convert_to_concurrent_stream(
-        self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None
-    ) -> Stream:
+    def _convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
         managing the stream's state, and returning an updated Stream instance.
         """
+        state = {}
 
-        if cursor:
+        if isinstance(cursor, ConcurrentCursor):
             state = cursor.state
 
             stream.cursor = cursor
-
             if hasattr(stream, "parent"):
                 stream.parent.cursor = cursor
-        else:
-            state = {}
-            cursor = FinalStateCursor(
-                stream_name=stream.name,
-                stream_namespace=stream.namespace,
-                message_repository=self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
-            )
 
         return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
+
+    def initialize_cursor(
+        self,
+        stream: Stream,
+        state_manager: ConnectorStateManager,
+        converter: AbstractStreamStateConverter,
+        slice_boundary_fields: Optional[Tuple[str, str]],
+        start: Optional[CursorValueType],
+        end_provider: Optional[Callable[[], CursorValueType]] = None,
+        lookback_window: Optional[GapType] = None,
+        slice_range: Optional[GapType] = None,
+    ) -> Optional[ConcurrentCursor]:
+        end_provider = converter.get_end_provider() if end_provider is None else end_provider
+        lookback_window = timedelta(seconds=DEFAULT_LOOKBACK_SECONDS) if lookback_window is None else lookback_window
+
+        cursor_field = stream.cursor_field
+
+        if cursor_field:
+            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+            cursor_field = CursorField(cursor_field) if isinstance(cursor_field, str) else CursorField(cursor_field[0])
+
+            return ConcurrentCursor(
+                stream.name,
+                stream.namespace,
+                stream_state,
+                self.message_repository,
+                state_manager,
+                converter,
+                cursor_field,
+                slice_boundary_fields,
+                start,
+                end_provider,
+                lookback_window,
+                slice_range,
+            )
+
+        return FinalStateCursor(
+            stream_name=stream.name,
+            stream_namespace=stream.namespace,
+            message_repository=self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
+        )

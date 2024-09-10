@@ -18,8 +18,6 @@ from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -533,41 +531,25 @@ class SourceStripe(ConcurrentSourceAdapter):
         ]
 
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        converter = EpochValueConcurrentStreamStateConverter()
+        start = datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc)
+        slice_range = timedelta(days=config["slice_range"])
 
         return [
-            self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager))
+            self._convert_to_concurrent_stream(
+                logger,
+                stream,
+                cursor=self.initialize_cursor(
+                    stream,
+                    state_manager,
+                    converter,
+                    self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream)),
+                    start,
+                    slice_range=slice_range,
+                ),
+            )
             for stream in streams
         ]
-
-    def _initialize_cursor(
-        self,
-        config: Mapping[str, Any],
-        stream: Stream,
-        state_manager: ConnectorStateManager,
-    ) -> Optional[ConcurrentCursor]:
-        if stream.cursor_field:
-            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-            cursor_field = CursorField(stream.cursor_field) if isinstance(stream.cursor_field, str) else CursorField(stream.cursor_field[0])
-            converter = EpochValueConcurrentStreamStateConverter()
-            slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))
-            start = datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc)
-            lookback_window = timedelta(seconds=0)
-            slice_range = timedelta(days=config["slice_range"])
-
-            return ConcurrentCursor(
-                stream.name,
-                stream.namespace,
-                stream_state,
-                self.message_repository,
-                state_manager,
-                converter,
-                cursor_field,
-                slice_boundary_fields,
-                start,
-                converter.get_end_provider(),
-                lookback_window,
-                slice_range,
-            )
 
     @staticmethod
     def _start_date_to_timestamp(config: Mapping[str, Any]) -> int:

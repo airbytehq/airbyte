@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import isodate
 import pendulum
@@ -15,9 +15,9 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType, FinalStateCursor, GapType
+from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
+from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -170,7 +170,23 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
+
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
+        start = datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc)
+        lookback_window = timedelta(seconds=LOOKBACK_SECONDS)
+        slice_range = isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30)
+
+        describe_stream = Describe(sf_api=sf_object, catalog=self.catalog)
+        describe_stream_cursor = self._initialize_cursor(
+            describe_stream,
+            state_manager,
+            describe_stream.state_converter,
+            self._get_slice_boundary_fields(describe_stream, state_manager),
+            start,
+            lookback_window=lookback_window,
+            slice_range=slice_range,
+        )
+
         for stream_name, sobject_options in stream_objects.items():
             json_schema = schemas.get(stream_name, {})
 
@@ -193,52 +209,47 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 )
                 continue
 
-            streams.append(
-                self._convert_to_concurrent_stream(config, stream, state_manager, self._initialize_cursor(config, stream, state_manager))
-            )
-        streams.append(
-            self._convert_to_concurrent_stream(
-                config,
-                Describe(sf_api=sf_object, catalog=self.catalog),
+            cursor = self.initialize_cursor(
+                stream,
                 state_manager,
-                self._initialize_cursor(config, stream, state_manager),
+                stream.state_converter,
+                self._get_slice_boundary_fields(stream, state_manager),
+                start,
+                lookback_window=lookback_window,
+                slice_range=slice_range,
             )
-        )
+
+            streams.append(self._convert_to_concurrent_stream(logger, stream, cursor=cursor))
+
+        streams.append(self._convert_to_concurrent_stream(logger, describe_stream, cursor=describe_stream_cursor))
         return streams
 
-    def _initialize_cursor(
+    def initialize_cursor(
         self,
-        config: Mapping[str, Any],
         stream: Stream,
         state_manager: ConnectorStateManager,
+        converter: AbstractStreamStateConverter,
+        slice_boundary_fields: Optional[Tuple[str, str]],
+        start: Optional[CursorValueType],
+        end_provider: Optional[Callable[[], CursorValueType]] = None,
+        lookback_window: Optional[GapType] = None,
+        slice_range: Optional[GapType] = None,
     ) -> Optional[ConcurrentCursor]:
-        if stream.cursor_field:
-            cursor_field_key = stream.cursor_field or ""
-            if not isinstance(cursor_field_key, str):
-                raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
+        cursor_field = stream.cursor_field
 
-            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-            cursor_field = CursorField(cursor_field_key)
-            converter = stream.state_converter
-            slice_boundary_fields = self._get_slice_boundary_fields(stream, state_manager)
-            start = datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc)
-            lookback_window = timedelta(seconds=LOOKBACK_SECONDS)
-            slice_range = isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30)
+        if cursor_field and not isinstance(cursor_field, str):
+            raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field}.")
 
-            return ConcurrentCursor(
-                stream.name,
-                stream.namespace,
-                stream_state,
-                self.message_repository,
-                state_manager,
-                converter,
-                cursor_field,
-                slice_boundary_fields,
-                start,
-                converter.get_end_provider(),
-                lookback_window,
-                slice_range,
-            )
+        return super().initialize_cursor(
+            stream,
+            state_manager,
+            converter,
+            slice_boundary_fields,
+            start,
+            end_provider=end_provider,
+            lookback_window=lookback_window,
+            slice_range=slice_range,
+        )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
