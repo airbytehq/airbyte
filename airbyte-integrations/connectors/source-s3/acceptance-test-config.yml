@@ -369,5 +369,11 @@ acceptance_tests:
           disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - spec_path: integration_tests/cloud_spec.json
         deployment_mode: "cloud"
+
+  performance:
+    tests:
+      - config_path: secrets/bulk_jsonl_perf_test_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
+
 connector_image: airbyte/source-s3:dev
 test_strictness_level: high

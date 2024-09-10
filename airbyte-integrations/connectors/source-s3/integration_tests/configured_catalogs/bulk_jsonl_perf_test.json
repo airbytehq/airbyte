@@ -1,0 +1,34 @@
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "test",
+                "json_schema": {
+                    "type": "object",
+                    "properties": {
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
+                        "data": {
+                            "type": "object"
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh",
+                    "incremental"
+                ],
+                "source_defined_cursor": true,
+                "default_cursor_field": [
+                    "_ab_source_file_last_modified"
+                ],
+                "is_resumable": true
+            },
+            "destination_sync_mode": "overwrite",
+            "sync_mode": "full_refresh"
+        }
+    ]
+}

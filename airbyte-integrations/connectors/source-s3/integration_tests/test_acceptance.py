@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import os
 from pathlib import Path
 
 import pytest
@@ -24,7 +26,7 @@ class AcceptanceTestFileTypes(BaseModel):
 
 class AcceptanceTestInstance(BaseModel):
     config_path: str
-    timeout_seconds: int
+    timeout_seconds: int | None = None
     expect_records: AcceptanceTestExpectRecords | None = None
     file_types: AcceptanceTestFileTypes | None = None
 
@@ -34,6 +36,11 @@ class AcceptanceTestFullRefreshInstance(AcceptanceTestInstance):
     timeout_seconds: int
     expect_records: AcceptanceTestExpectRecords | None = None
     file_types: AcceptanceTestFileTypes | None = None
+    configured_catalog_path: str
+
+
+class AcceptanceTestPerformanceInstance(AcceptanceTestInstance):
+    config_path: str
     configured_catalog_path: str
 
 
@@ -49,6 +56,9 @@ def get_tests(category: str) -> list[AcceptanceTestInstance]:
             )
             for test in all_tests_config["acceptance_tests"][category]["tests"]
         ]
+
+    if category == "performance" and category in all_tests_config["acceptance_tests"]:
+        return [AcceptanceTestPerformanceInstance.model_validate(test) for test in all_tests_config["acceptance_tests"][category]["tests"]]
 
     return []
 
@@ -66,3 +76,21 @@ def test_full_refresh(instance: AcceptanceTestFullRefreshInstance) -> None:
     source = get_source(args=args)
     assert source
     launch(source, args=args)
+
+
+@pytest.mark.parametrize("instance", get_tests("performance"), ids=lambda instance: instance.config_path.split("/")[-1])
+def test_performance(instance: AcceptanceTestPerformanceInstance, capsys: pytest.CaptureFixture[str]) -> None:
+    """Run performance tests."""
+    args = [
+        "read",
+        "--config",
+        instance.config_path,
+        "--catalog",
+        instance.configured_catalog_path,
+    ]
+
+    with capsys.disabled():  # noqa: SIM117
+        with contextlib.redirect_stdout(open(os.devnull, "w")), contextlib.redirect_stderr(open(os.devnull, "w")):  # noqa: PTH123
+            source = get_source(args=args)
+            assert source
+            launch(source, args=args)
