@@ -5,7 +5,7 @@
 import json
 import logging
 import logging.config
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, Callable, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteMessageSerializer, Level, Type
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
@@ -38,6 +38,14 @@ def init_logger(name: Optional[str] = None) -> logging.Logger:
     return logger
 
 
+def lazy_log(logger: logging.Logger, level: int, lazy_log_provider: Callable[[], str]) -> None:
+    """
+    This method ensure that the processing of the log message is only done if the logger is enabled for the log level.
+    """
+    if logger.isEnabledFor(level):
+        logger.log(level, lazy_log_provider())
+
+
 class AirbyteLogFormatter(logging.Formatter):
     """Output log records using AirbyteMessage"""
 
@@ -53,7 +61,7 @@ class AirbyteLogFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Return a JSON representation of the log message"""
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
-        if airbyte_level == "DEBUG":
+        if airbyte_level == Level.DEBUG:
             extras = self.extract_extra_args_from_record(record)
             debug_dict = {"type": "DEBUG", "message": record.getMessage(), "data": extras}
             return filter_secrets(json.dumps(debug_dict))

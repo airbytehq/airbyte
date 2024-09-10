@@ -9,6 +9,7 @@ import { PyAirbyteExample } from "@site/src/components/PyAirbyteExample";
 import { SpecSchema } from "@site/src/components/SpecSchema";
 import MDXComponents from "@theme-original/MDXComponents";
 import { Details } from "../../components/Details";
+import { EntityRelationshipDiagram } from "../../components/EntityRelationshipDiagram";
 
 export default {
   // Re-use the default mapping
@@ -22,4 +23,5 @@ export default {
   PyAirbyteExample,
   ProductInformation,
   Details,
+  EntityRelationshipDiagram,
 };

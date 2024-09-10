@@ -151,6 +151,7 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.6.6 | 2024-09-07 | [45232](https://github.com/airbytehq/airbyte/pull/45232) | Update dependencies |
 | 0.6.5 | 2024-08-31 | [45010](https://github.com/airbytehq/airbyte/pull/45010) | Update dependencies |
 | 0.6.4 | 2024-08-27 | [44796](https://github.com/airbytehq/airbyte/pull/44796) | Fix empty list of globs when prefix empty |
 | 0.6.3 | 2024-08-26 | [44781](https://github.com/airbytehq/airbyte/pull/44781) | Set file signature URL expiration limit default to max |
