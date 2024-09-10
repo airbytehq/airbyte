@@ -43,8 +43,6 @@ data:
         scopedImpact:
           - scopeType: stream
             impactedScopes: ["refunds"]
-      6.0.0:
-        message: Version 6.0.0 adds supports for OAuth2 authentication. The connector now requires a credentials object with `client_id`, `client_secret`, `refresh_token` and `credentials_title` fields. or `client_secret` and `credentials_title` fields."
   suggestedStreams:
     streams:
       - customers
