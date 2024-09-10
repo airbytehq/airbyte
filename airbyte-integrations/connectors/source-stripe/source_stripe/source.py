@@ -8,7 +8,6 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
-import stripe
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -107,13 +106,28 @@ class SourceStripe(ConcurrentSourceAdapter):
         return config
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        self.validate_and_fill_with_defaults(config)
-        stripe.api_key = config["client_secret"]
+        args = self._get_stream_base_args(config)
+        account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         try:
-            stripe.Account.retrieve(config["account_id"])
-        except (stripe.error.AuthenticationError, stripe.error.PermissionError) as e:
-            return False, str(e)
+            next(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+        except AirbyteTracedException as error:
+            if error.failure_type == FailureType.config_error:
+                return False, error.message
+            raise error
         return True, None
+
+    def _get_stream_base_args(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config = self.validate_and_fill_with_defaults(config)
+        authenticator = TokenAuthenticator(config["client_secret"])
+        start_timestamp = self._start_date_to_timestamp(config)
+        args = {
+            "authenticator": authenticator,
+            "account_id": config["account_id"],
+            "start_date": start_timestamp,
+            "slice_range": config["slice_range"],
+            "api_budget": self.get_api_call_budget(config),
+        }
+        return args
 
     @staticmethod
     def customers(**args):
@@ -174,17 +188,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         return HttpAPIBudget(policies=policies)
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
-        config = self.validate_and_fill_with_defaults(config)
-        authenticator = TokenAuthenticator(config["client_secret"])
-
-        start_timestamp = self._start_date_to_timestamp(config)
-        args = {
-            "authenticator": authenticator,
-            "account_id": config["account_id"],
-            "start_date": start_timestamp,
-            "slice_range": config["slice_range"],
-            "api_budget": self.get_api_call_budget(config),
-        }
+        args = self._get_stream_base_args(config)
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
@@ -532,7 +536,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        state_manager = ConnectorStateManager(state=self._state)
         return [
             self._to_concurrent(
                 stream,

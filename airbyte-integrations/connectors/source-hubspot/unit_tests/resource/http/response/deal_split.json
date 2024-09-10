@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "id": "1234569",
+      "properties": {
+        "hs_createdate": "2024-01-26T02:42:31.339Z",
+        "hs_deal_id": "312929580",
+        "hs_deal_split_amount": "640.0",
+        "hs_deal_split_percentage": "0.2",
+        "hs_lastmodifieddate": "2024-01-27T18:58:47.514Z",
+        "hs_object_id": "12334595",
+        "hubspot_owner_id": "1883747"
+      },
+      "createdAt": "2024-01-26T02:42:31.339Z",
+      "updatedAt": "2024-01-27T18:58:47.514Z",
+      "archived": false
+    }
+  ]
+}

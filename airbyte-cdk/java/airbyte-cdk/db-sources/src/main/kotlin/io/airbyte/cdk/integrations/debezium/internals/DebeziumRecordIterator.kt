@@ -181,7 +181,7 @@ class DebeziumRecordIterator<T>(
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
 
             if (isEventLogged) {
-                val source: JsonNode? = changeEventWithMetadata.eventValueAsJson()["source"]
+                val source: JsonNode? = changeEventWithMetadata.eventValueAsJson?.get("source")
                 LOGGER.info {
                     "CDC events queue poll(): " +
                         "returned a change event with \"source\": $source."
@@ -340,8 +340,8 @@ class DebeziumRecordIterator<T>(
          * snapshots) t: truncate, m: message
          */
         fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
-            event.eventValueAsJson()["op"]?.asText()?.let {
-                return it in listOf("c", "u", "d", "r", "t")
+            event.eventValueAsJson?.get("op")?.asText()?.let {
+                return it in listOf("c", "u", "d", "t")
             }
                 ?: return false
         }

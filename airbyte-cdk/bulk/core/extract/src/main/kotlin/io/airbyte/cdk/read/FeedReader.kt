@@ -41,6 +41,9 @@ class FeedReader(
                 log.info {
                     "no more partitions to read for '${feed.label}' in round $partitionsCreatorID"
                 }
+                // Publish a checkpoint if applicable.
+                maybeCheckpoint()
+                // Publish stream completion.
                 emitStreamStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
                 break
             }
@@ -279,17 +282,24 @@ class FeedReader(
                 }
             } finally {
                 // Publish a checkpoint if applicable.
-                val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
-                if (stateMessages.isNotEmpty()) {
-                    log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-                    stateMessages.forEach(root.outputConsumer::accept)
-                }
+                maybeCheckpoint()
             }
         }
     }
 
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
+
+    private fun maybeCheckpoint() {
+        val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
+        if (stateMessages.isEmpty()) {
+            return
+        }
+        log.info { "checkpoint of ${stateMessages.size} state message(s)" }
+        for (stateMessage in stateMessages) {
+            root.outputConsumer.accept(stateMessage)
+        }
+    }
 
     private fun emitStreamStatus(status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) {
         if (feed is Stream) {

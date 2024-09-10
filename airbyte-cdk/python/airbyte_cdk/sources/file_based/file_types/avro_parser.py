@@ -166,7 +166,9 @@ class AvroParser(FileTypeParser):
 
     @staticmethod
     def _to_output_value(avro_format: AvroFormat, record_type: Mapping[str, Any], record_value: Any) -> Any:
-        if not isinstance(record_type, Mapping):
+        if isinstance(record_value, bytes):
+            return record_value.decode()
+        elif not isinstance(record_type, Mapping):
             if record_type == "double" and avro_format.double_as_string:
                 return str(record_value)
             return record_value
