@@ -1,0 +1,997 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: Testing
+
+check:
+  type: CheckStream
+  stream_names:
+    - customers
+
+definitions:
+  streams:
+    customers:
+      type: DeclarativeStream
+      name: customers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/customers"
+    credits_ledger_entries:
+      type: DeclarativeStream
+      name: credits_ledger_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers/{{ stream_partition['customer_id'] }}/credits/ledger
+          http_method: GET
+          request_parameters:
+            created_at[gte]: "{{ config['start_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/credits_ledger_entries"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/search
+          http_method: POST
+          request_body_json:
+            event_ids: "{{ config['event_ids'] }}"
+            timeframe_end: "{{ config['timeframe_end'] }}"
+            timeframe_start: "{{ config['timeframe_start'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    balances:
+      type: DeclarativeStream
+      name: balances
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customers/{{ stream_partition['customer_id'] }}/credits
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/balances"
+    plans:
+      type: DeclarativeStream
+      name: plans
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /plans
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/plans"
+    subscriptions:
+      type: DeclarativeStream
+      name: subscriptions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /subscriptions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/subscriptions"
+    credits_ledger_entries_decrements:
+      type: DeclarativeStream
+      name: credits_ledger_entries_decrements
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /customers/{{ stream_partition['customer_id']
+            }}/credits/ledger?entry_type=decrement
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: customer_id
+              stream:
+                $ref: "#/definitions/streams/customers"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - event_ timeframe_end_date
+              value: "{{ record['created_at'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/credits_ledger_entries_decrements"
+    event_history:
+      type: DeclarativeStream
+      name: event_history
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events/search
+          http_method: POST
+          request_body_json:
+            event_ids: "[ '{{ stream_partition['event_id'] }} ']"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: >-
+              {{ response.get("pagination_metadata", {}).get("next_cursor", {})
+              }}
+            stop_condition: >-
+              {{ not response.get("pagination_metadata", {}).get("next_cursor",
+              {}) }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: event_id
+              partition_field: event_id
+              stream:
+                $ref: "#/definitions/streams/credits_ledger_entries_decrements"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event_history"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.withorb.com/v1
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/customers"
+  - $ref: "#/definitions/streams/credits_ledger_entries"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/balances"
+  - $ref: "#/definitions/streams/plans"
+  - $ref: "#/definitions/streams/subscriptions"
+  - $ref: "#/definitions/streams/credits_ledger_entries_decrements"
+  - $ref: "#/definitions/streams/event_history"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - start_date
+      - api_key
+    properties:
+      start_date:
+        type: string
+        order: 0
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      event_ids:
+        type: array
+        description: "['event_id1','event_id2','event_id3']"
+        order: 2
+        title: event_ids
+      timeframe_end:
+        type: string
+        order: 3
+        title: timeframe_end
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      timeframe_start:
+        type: string
+        order: 4
+        title: timeframe_start
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    customers: true
+    credits_ledger_entries: true
+    events: true
+    balances: true
+    plans: true
+    subscriptions: true
+    credits_ledger_entries_decrements: true
+    event_history: true
+  testedStreams:
+    customers:
+      hasRecords: true
+      streamHash: eadd7c21776384d27fe6e8aca48c3d7f8a0b17ec
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    credits_ledger_entries:
+      streamHash: 8637cfba94aa5ad012c5172f11c91cd04649450f
+    events:
+      streamHash: 2df06a6c46695e3d96b3f16208a4d98b53ffb90b
+    balances:
+      streamHash: a74dac7d0da1288cb41af6b079cc6b2629405884
+    plans:
+      streamHash: 8c02c90736a7d8113576425c1c58c73c02f4d8a9
+    subscriptions:
+      streamHash: 5934d81c7f2ff6ccdd704f100022b1c3c019c24f
+    credits_ledger_entries_decrements:
+      streamHash: 48c5ccd5cb5f78ffe8856238a6774409b83d0daa
+    event_history:
+      streamHash: 71dd9816d854f538b7c8d7a4d98afae80ec13a3a
+  assist: {}
+
+schemas:
+  customers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type:
+          - object
+          - "null"
+      accounting_sync_configuration:
+        type:
+          - object
+          - "null"
+        properties:
+          accounting_providers:
+            type:
+              - array
+              - "null"
+          excluded:
+            type:
+              - boolean
+              - "null"
+      additional_emails:
+        type:
+          - array
+          - "null"
+      auto_collection:
+        type:
+          - boolean
+          - "null"
+      balance:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      email_delivery:
+        type:
+          - boolean
+          - "null"
+      external_customer_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      portal_url:
+        type:
+          - string
+          - "null"
+      reporting_configuration:
+        type:
+          - object
+          - "null"
+        properties:
+          exempt:
+            type:
+              - boolean
+              - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  credits_ledger_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          workspace_id:
+            type:
+              - string
+              - "null"
+      amount:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      credit_block:
+        type:
+          - object
+          - "null"
+        properties:
+          expiry_date:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          per_unit_cost_basis:
+            type:
+              - string
+              - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      customer:
+        type:
+          - object
+          - "null"
+        properties:
+          external_customer_id:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+      ending_balance:
+        type:
+          - number
+          - "null"
+      entry_status:
+        type:
+          - string
+          - "null"
+      entry_type:
+        type:
+          - string
+          - "null"
+      event_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      ledger_sequence_number:
+        type:
+          - number
+          - "null"
+      new_block_expiry_date:
+        type:
+          - string
+          - "null"
+      price_id:
+        type:
+          - string
+          - "null"
+      starting_balance:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  events:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      customer_id:
+        type: string
+      event_name:
+        type: string
+      external_customer_id:
+        type: string
+      id:
+        type: string
+      properties:
+        type: object
+        properties:
+          attempt_id:
+            type: number
+          attempt_status:
+            type: string
+          bytes_synced:
+            type: number
+          compute_time_ms:
+            type: number
+          connection_id:
+            type: string
+          destination_id:
+            type: string
+          free_usage:
+            type: boolean
+          job_id:
+            type: number
+          job_status:
+            type: string
+          rows_synced:
+            type: number
+          source_id:
+            type: string
+          source_type:
+            type: string
+          usage_type:
+            type: string
+      timestamp:
+        type: string
+  balances:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      balance:
+        type: number
+      expiry_date:
+        type:
+          - "null"
+          - string
+      id:
+        type: string
+      per_unit_cost_basis:
+        type: string
+  plans:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type: number
+      description:
+        type: string
+      metadata:
+        type: object
+      created_at:
+        type: string
+      currency:
+        type: string
+      default_invoice_memo:
+        type:
+          - "null"
+          - string
+      external_plan_id:
+        type:
+          - "null"
+          - string
+      id:
+        type: string
+      invoicing_currency:
+        type: string
+      name:
+        type: string
+      net_terms:
+        type: number
+      plan_phases:
+        type: array
+      prices:
+        type: array
+        items:
+          type: object
+          properties:
+            billable_metric:
+              type: object
+              properties:
+                id:
+                  type: string
+            cadence:
+              type: string
+            created_at:
+              type: string
+            currency:
+              type: string
+            id:
+              type: string
+            item:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+            model_type:
+              type: string
+            name:
+              type: string
+            price_type:
+              type: string
+            unit_config:
+              type: object
+              properties:
+                scaling_factor:
+                  type:
+                    - "null"
+                    - number
+                unit_amount:
+                  type: string
+      product:
+        type: object
+        properties:
+          created_at:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+      status:
+        type: string
+      trial_config:
+        type: object
+        properties:
+          trial_period_unit:
+            type: string
+  subscriptions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      metadata:
+        type: object
+      auto_collection:
+        type: boolean
+      billing_cycle_day:
+        type: number
+      created_at:
+        type: string
+      current_billing_period_end_date:
+        type: string
+      current_billing_period_start_date:
+        type: string
+      customer:
+        type: object
+        properties:
+          metadata:
+            type: object
+          accounting_sync_configuration:
+            type: object
+            properties:
+              accounting_providers:
+                type: array
+              excluded:
+                type: boolean
+          additional_emails:
+            type: array
+          auto_collection:
+            type: boolean
+          balance:
+            type: string
+          created_at:
+            type: string
+          currency:
+            type: string
+          email:
+            type: string
+          email_delivery:
+            type: boolean
+          external_customer_id:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+          portal_url:
+            type: string
+          reporting_configuration:
+            type: object
+            properties:
+              exempt:
+                type: boolean
+          timezone:
+            type: string
+      default_invoice_memo:
+        type:
+          - "null"
+          - string
+      discount_intervals:
+        type: array
+      fixed_fee_quantity_schedule:
+        type: array
+      id:
+        type: string
+      maximum_intervals:
+        type: array
+      minimum_intervals:
+        type: array
+      net_terms:
+        type: number
+      plan:
+        type: object
+        properties:
+          version:
+            type: number
+          description:
+            type: string
+          metadata:
+            type: object
+          created_at:
+            type: string
+          currency:
+            type: string
+          default_invoice_memo:
+            type:
+              - "null"
+              - string
+          external_plan_id:
+            type: string
+          id:
+            type: string
+          invoicing_currency:
+            type: string
+          name:
+            type: string
+          net_terms:
+            type: number
+          plan_phases:
+            type: array
+          prices:
+            type: array
+            items:
+              type: object
+              properties:
+                billable_metric:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                cadence:
+                  type: string
+                created_at:
+                  type: string
+                currency:
+                  type: string
+                id:
+                  type: string
+                item:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                model_type:
+                  type: string
+                name:
+                  type: string
+                price_type:
+                  type: string
+                unit_config:
+                  type: object
+                  properties:
+                    unit_amount:
+                      type: string
+          product:
+            type: object
+            properties:
+              created_at:
+                type: string
+              id:
+                type: string
+              name:
+                type: string
+          status:
+            type: string
+          trial_config:
+            type: object
+            properties:
+              trial_period_unit:
+                type: string
+      price_intervals:
+        type: array
+        items:
+          type: object
+          properties:
+            billing_cycle_day:
+              type: number
+            current_billing_period_end_date:
+              type: string
+            current_billing_period_start_date:
+              type: string
+            id:
+              type: string
+            price:
+              type: object
+              properties:
+                billable_metric:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                cadence:
+                  type: string
+                created_at:
+                  type: string
+                currency:
+                  type: string
+                id:
+                  type: string
+                item:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                model_type:
+                  type: string
+                name:
+                  type: string
+                price_type:
+                  type: string
+                unit_config:
+                  type: object
+                  properties:
+                    unit_amount:
+                      type: string
+            start_date:
+              type: string
+      start_date:
+        type: string
+      status:
+        type: string
+      trial_info:
+        type: object
+  credits_ledger_entries_decrements:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  event_history:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
