@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Tuple, Union
+
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 
 class StripeOauth2Authenticator(Oauth2Authenticator):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

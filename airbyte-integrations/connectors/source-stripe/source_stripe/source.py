@@ -4,11 +4,11 @@
 
 import logging
 import os
-import requests
 from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -37,6 +37,7 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
     UpdatedCursorIncrementalStripeSubStream,
 )
+
 from .authenticator import StripeOauth2Authenticator
 
 logger = logging.getLogger("airbyte")
@@ -49,7 +50,7 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(ConcurrentSourceAdapter):
-    _authenticator: StripeOauth2Authenticator|TokenAuthenticator = None
+    _authenticator: StripeOauth2Authenticator | TokenAuthenticator = None
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
@@ -148,11 +149,11 @@ class SourceStripe(ConcurrentSourceAdapter):
                 refresh_token=credentials["refresh_token"],
             )
         elif self.has_client_secret_auth(config):
-            self._authenticator =  TokenAuthenticator(credentials["client_secret"])
+            self._authenticator = TokenAuthenticator(credentials["client_secret"])
         else:
             raise ValueError(f"Unknown credentials_title: {credentials_title}")
 
-    def get_authenticator(self, config: Mapping[str, Any]) -> StripeOauth2Authenticator|TokenAuthenticator:
+    def get_authenticator(self, config: Mapping[str, Any]) -> StripeOauth2Authenticator | TokenAuthenticator:
         """
         Get the authenticator for the source connector.
 

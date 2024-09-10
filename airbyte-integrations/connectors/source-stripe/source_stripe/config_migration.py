@@ -35,10 +35,7 @@ class StripeConfigMigration:
 
     @classmethod
     def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        config["credentials"] = {
-            "credentials_title": "Client Secret Credentials",
-            "client_secret": config["client_secret"]
-        }
+        config["credentials"] = {"credentials_title": "Client Secret Credentials", "client_secret": config["client_secret"]}
 
         del config["client_secret"]
 

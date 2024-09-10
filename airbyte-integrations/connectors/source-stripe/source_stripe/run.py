@@ -13,6 +13,7 @@ from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, Airbyte
 from orjson import orjson
 from source_stripe.config_migration import StripeConfigMigration
 from source_stripe import SourceStripe
+from source_stripe.config_migration import StripeConfigMigration
 
 
 def _get_source(args: List[str]):
