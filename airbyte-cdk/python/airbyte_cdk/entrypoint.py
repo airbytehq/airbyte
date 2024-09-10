@@ -6,16 +6,19 @@ import argparse
 import importlib
 import ipaddress
 import logging
+import os
 import os.path
 import socket
 import sys
 import tempfile
 from collections import defaultdict
 from functools import wraps
-from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
+from typing import Any, DefaultDict, Iterable, List, Literal, Mapping, Optional, TextIO
 from urllib.parse import urlparse
 
 import requests
+from requests import PreparedRequest, Response, Session
+
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -28,7 +31,6 @@ from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
 
@@ -82,7 +84,7 @@ class AirbyteEntrypoint(object):
 
         return main_parser.parse_args(args)
 
-    def run(self, parsed_args: argparse.Namespace) -> Iterable[str]:
+    def run(self, parsed_args: argparse.Namespace, out: TextIO | None = None) -> Iterable[str]:
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command passed")
@@ -227,14 +229,21 @@ class AirbyteEntrypoint(object):
         return
 
 
-def launch(source: Source, args: List[str]) -> None:
+def launch(source: Source, args: List[str], out: Literal[os.devnull] | None = None) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
-    with PrintBuffer():
-        for message in source_entrypoint.run(parsed_args):
-            # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
-            # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-            print(f"{message}\n", end="", flush=True)
+    record_iterator = source_entrypoint.run(parsed_args)
+
+    if out is os.devnull:
+        for _ in record_iterator:
+            pass
+
+    else:
+        with PrintBuffer():
+            for message in record_iterator:
+                # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
+                # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
+                print(f"{message}\n", end="", flush=True)
 
 
 def _init_internal_request_filter() -> None:
