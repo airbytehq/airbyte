@@ -20,6 +20,7 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
+    AirbyteErrorTraceMessage,
     AirbyteMessage,
     AirbyteMessageSerializer,
     AirbyteRecordMessage,
@@ -231,14 +232,6 @@ def test_run_check_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mo
 
     with pytest.raises(ValueError):
         messages = list(entrypoint.run(parsed_args))
-        expected_trace = AirbyteTracedException.from_exception(exception).as_airbyte_message()
-        expected_trace.emitted_at = 1
-        expected_trace.trace.emitted_at = 1
-        expected_messages = [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode(),  
-        orjson.dumps(AirbyteMessageSerializer.dump(expected_trace)).decode(),
-        _wrap_message(AirbyteConnectionStatus(status=Status.FAILED, message=AirbyteTracedException.from_exception(exception).message))
-        ]
-        assert messages == expected_messages
 
 @freezegun.freeze_time("1970-01-01T00:00:00.001Z")
 def test_run_check_with_traced_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -248,13 +241,6 @@ def test_run_check_with_traced_exception(entrypoint: AirbyteEntrypoint, mocker, 
 
     with pytest.raises(AirbyteTracedException):
         messages = list(entrypoint.run(parsed_args))
-        expected_trace = exception.as_airbyte_message()
-        expected_trace.emitted_at = 1
-        expected_trace.trace.emitted_at = 1
-        expected_messages = [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode(),
-        orjson.dumps(AirbyteMessageSerializer.dump(expected_trace)).decode(),
-        ]
-        assert messages == expected_messages
 
 @freezegun.freeze_time("1970-01-01T00:00:00.001Z")
 def test_run_check_with_config_error(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
