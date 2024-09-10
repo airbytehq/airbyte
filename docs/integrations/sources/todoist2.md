@@ -20,6 +20,6 @@ its new
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
-| 0.0.1 | 2024-09-09 | Initial release by [@erohmensing](https://github.com/erohmensing) via Connector Builder|
+| 0.0.1 | 2024-09-10 | Initial release by [@erohmensing](https://github.com/erohmensing) via Connector Builder|
 
 </details>

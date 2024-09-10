@@ -13,17 +13,17 @@ data:
       enabled: false
       packageName: airbyte-source-todoist2
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:4.6.2@sha256:f5fcd3d4703b7590b6166a7853c5ed1686731607cd30a159a8c24e2fe2c1ee98
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.3.0@sha256:538af3f6237799f10458b2b7bb5d69889c4ebae2b7d82b84b7b887fde9c53aa4
   connectorSubtype: api
   connectorType: source
-  definitionId: 42be8c82-1325-4e34-a138-0e6bea92e8ea
+  definitionId: 01f754b2-ca80-43a9-8213-6d3b2f61c50e
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-todoist2
   githubIssueLabel: source-todoist2
   icon: icon.svg
   license: MIT
   name: Todoist
-  releaseDate: 2024-09-09
+  releaseDate: 2024-09-10
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/todoist2
