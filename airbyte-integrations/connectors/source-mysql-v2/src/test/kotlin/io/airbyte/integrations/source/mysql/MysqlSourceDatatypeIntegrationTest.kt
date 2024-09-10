@@ -2,7 +2,7 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteType
 import io.airbyte.cdk.data.LeafAirbyteType
@@ -83,7 +83,7 @@ class MysqlSourceDatatypeIntegrationTest {
         val actualReads: Map<String, BufferingOutputConsumer> by lazy {
             val result: Map<String, BufferingOutputConsumer> =
                 allStreamNamesAndRecordData.keys.associateWith {
-                    BufferingOutputConsumer(TestClockFactory().fixed())
+                    BufferingOutputConsumer(ClockFactory().fixed())
                 }
             for (msg in allReadMessages) {
                 result[streamName(msg) ?: continue]?.accept(msg)
