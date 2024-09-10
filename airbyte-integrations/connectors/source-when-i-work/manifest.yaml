@@ -546,7 +546,7 @@ definitions:
     url_base: https://api.wheniwork.com/
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
 
 streams:
   - $ref: "#/definitions/streams/account"
