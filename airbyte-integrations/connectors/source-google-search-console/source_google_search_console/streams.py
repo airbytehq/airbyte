@@ -374,6 +374,9 @@ class SearchByKeyword(SearchAnalytics):
     """
     Adds searchAppearance value to dimensionFilterGroups in json body
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
+
+    groupType: "and" - Whether all filters in this group must return true ("and"), or one or more must return true (not yet supported).
+    filters: {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
     """
 
     def stream_slices(
