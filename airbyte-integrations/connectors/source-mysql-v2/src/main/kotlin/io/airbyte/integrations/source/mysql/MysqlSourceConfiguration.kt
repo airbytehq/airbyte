@@ -5,7 +5,6 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
-import io.airbyte.cdk.jdbc.JdbcEncryption
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -65,8 +64,7 @@ class MysqlSourceConfigurationFactory :
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
         val sslMode = pojo.encryption.encryptionMethod
-        val jdbcEncryptionBuilder = JdbcEncryption.Builder()
-            .setSslMode(sslMode);
+        val jdbcEncryptionBuilder = MysqlJdbcEncryption.Builder().setSslMode(sslMode)
 
         when (encryption) {
             is EncryptionPreferred,
@@ -75,16 +73,20 @@ class MysqlSourceConfigurationFactory :
                 jdbcEncryptionBuilder.apply {
                     setCaCertificate(encryption.sslCertificate)
                     if (encryption.sslClientKey != null) setClientKey(encryption.sslClientKey!!)
-                    if (encryption.sslClientCertificate != null) setClientCertificate(encryption.sslClientCertificate!!)
-                    if (encryption.sslClientPassword != null) setClientKeyPassword(encryption.sslClientPassword!!)
+                    if (encryption.sslClientCertificate != null)
+                        setClientCertificate(encryption.sslClientCertificate!!)
+                    if (encryption.sslClientPassword != null)
+                        setClientKeyPassword(encryption.sslClientPassword!!)
                 }
             }
-            is SslVerifyIdentity-> {
+            is SslVerifyIdentity -> {
                 jdbcEncryptionBuilder.apply {
                     setCaCertificate(encryption.sslCertificate)
                     if (encryption.sslClientKey != null) setClientKey(encryption.sslClientKey!!)
-                    if (encryption.sslClientCertificate != null) setClientCertificate(encryption.sslClientCertificate!!)
-                    if (encryption.sslClientPassword != null) setClientKeyPassword(encryption.sslClientPassword!!)
+                    if (encryption.sslClientCertificate != null)
+                        setClientCertificate(encryption.sslClientCertificate!!)
+                    if (encryption.sslClientPassword != null)
+                        setClientKeyPassword(encryption.sslClientPassword!!)
                 }
             }
         }

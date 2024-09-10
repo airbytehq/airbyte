@@ -307,8 +307,7 @@ class MicronautPropertiesFriendlyEncryption {
             "preferred" -> EncryptionPreferred
             "required" -> EncryptionRequired
             "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
-            "verify_identity" ->
-                SslVerifyIdentity().also { it.sslCertificate = sslCertificate!! }
+            "verify_identity" -> SslVerifyIdentity().also { it.sslCertificate = sslCertificate!! }
             else -> throw ConfigErrorException("invalid value $encryptionMethod")
         }
 }

@@ -1,7 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-    implementation 'org.apache.commons:commons-lang3:3.14.0'
     implementation 'org.apache.httpcomponents:httpcore:4.4'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
