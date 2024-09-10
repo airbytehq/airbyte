@@ -82,6 +82,14 @@ def test_full_refresh(instance: AcceptanceTestFullRefreshInstance) -> None:
 def test_performance(instance: AcceptanceTestPerformanceInstance, capsys: pytest.CaptureFixture[str]) -> None:
     """Run performance tests."""
     args = [
+        "check",
+        "--config",
+        instance.config_path,
+    ]
+    source = get_source(args=args)
+    launch(source, args=args)
+
+    args = [
         "read",
         "--config",
         instance.config_path,
@@ -89,8 +97,6 @@ def test_performance(instance: AcceptanceTestPerformanceInstance, capsys: pytest
         instance.configured_catalog_path,
     ]
 
-    with capsys.disabled():  # noqa: SIM117
-        with contextlib.redirect_stdout(open(os.devnull, "w")), contextlib.redirect_stderr(open(os.devnull, "w")):  # noqa: PTH123
-            source = get_source(args=args)
-            assert source
-            launch(source, args=args)
+    source = get_source(args=args)
+    assert source
+    launch(source, args=args, out=os.devnull)
