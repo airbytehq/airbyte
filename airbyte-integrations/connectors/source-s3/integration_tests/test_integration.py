@@ -1,10 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+"""Runs a set of integration tests in PyTest, reusing acceptance test resources.
 
-"""Run a subset of acceptance tests in PyTest.
-
-This test file provides a means to easily step through a subset of acceptance tests, debugging
-and verifying the behavior of the source-s3 connector. The tests are redundant with CAT, but
-are much faster to run and easier to debug.
+This test file provides a means to easily step through a subset of acceptance tests as if they
+were native pytest integration tests, debugging and verifying the behavior of the connector. Some of
+these tests are redundant with CAT, while being much faster to run and easier to debug.
 """
 
 from __future__ import annotations
