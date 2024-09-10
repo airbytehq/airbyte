@@ -54,7 +54,7 @@ class MigrateCredentials(ABC):
         Args:
         - migrated_config (Mapping[str, Any]): The migrated configuration.
         """
-        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
+        print(create_connector_config_control_message(migrated_config))
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
