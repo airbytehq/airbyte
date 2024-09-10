@@ -1,0 +1,232 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: Testing flow
+
+check:
+  type: CheckStream
+  stream_names:
+    - User
+
+definitions:
+  streams:
+    User:
+      type: DeclarativeStream
+      name: User
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /user/current
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/User"
+    collection:
+      type: DeclarativeStream
+      name: collection
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /collection
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/collection"
+  base_requester:
+    type: HttpRequester
+    url_base: https://airbyte.metabaseapp.com/api
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://airbyte.metabaseapp.com/api/session
+        path: /
+        authenticator:
+          type: NoAuth
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_json:
+          password: "{{ config['password'] }}"
+          username: "{{ config['username'] }}"
+      session_token_path:
+        - id
+      expiration_duration: P2W
+      request_authentication:
+        type: ApiKey
+        inject_into:
+          type: RequestOption
+          field_name: X-Metabase-Session
+          inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/User"
+  - $ref: "#/definitions/streams/collection"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - password
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    User: true
+    collection: false
+  testedStreams:
+    User:
+      streamHash: cf5043ec14d2fe1e7826f8b88a352a334a286d94
+    collection:
+      streamHash: cab12fa2daec965b778acecfa016e0941d2e247e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  User:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      common_name:
+        type:
+          - string
+          - "null"
+      date_joined:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_login:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      group_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      has_invited_second_user:
+        type:
+          - boolean
+          - "null"
+      has_question_and_dashboard:
+        type:
+          - boolean
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_installer:
+        type:
+          - boolean
+          - "null"
+      is_qbnewb:
+        type:
+          - boolean
+          - "null"
+      is_superuser:
+        type:
+          - boolean
+          - "null"
+      last_login:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      login_attributes:
+        type:
+          - object
+          - "null"
+      permissions:
+        type:
+          - object
+          - "null"
+        properties:
+          can_access_data_model:
+            type:
+              - boolean
+              - "null"
+          can_access_db_details:
+            type:
+              - boolean
+              - "null"
+          can_access_monitoring:
+            type:
+              - boolean
+              - "null"
+          can_access_setting:
+            type:
+              - boolean
+              - "null"
+          can_access_subscription:
+            type:
+              - boolean
+              - "null"
+          is_group_manager:
+            type:
+              - boolean
+              - "null"
+      personal_collection_id:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+  collection:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
