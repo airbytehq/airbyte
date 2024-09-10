@@ -5397,11 +5397,11 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 type = ["pytest-mypy"]
 
 [extras]
-file-based = ["avro", "fastavro", "markdown", "pandas", "pdf2image", "pdfminer.six", "pyarrow", "pytesseract", "python-calamine", "unstructured", "unstructured.pytesseract"]
+file-based = ["avro", "fastavro", "markdown", "pdf2image", "pdfminer.six", "pyarrow", "pytesseract", "python-calamine", "unstructured", "unstructured.pytesseract"]
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["cohere", "langchain", "openai", "tiktoken"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1df63da7ed8c114e2732cbe566cf45b102edfbcf4aba88aa1be5fd505addd54b"
+content-hash = "6e5a25dc4116b4e6e574f5170b23ab6eedf07255a139a6aaa9416e147aee716e"
