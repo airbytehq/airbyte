@@ -44,16 +44,22 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
     """
 
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter, stream_cursor: DatetimeBasedCursor):
+        self._partition_router = partition_router
         self._per_partition_cursor = PerPartitionCursor(cursor_factory, partition_router)
         self._global_cursor = GlobalSubstreamCursor(stream_cursor, partition_router)
         self._use_global_cursor = False
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        if self._use_global_cursor:
-            yield from self._global_cursor.stream_slices()
-        else:
-            slice_generator = (slice for slice in self._per_partition_cursor.stream_slices())
-            yield from self._global_cursor.generate_slices_from_generator(slice_generator)
+        partitions = (partition for partition in self._partition_router.stream_slices())
+
+        for partition in partitions:
+            self._global_cursor._timer.start()
+            if self._use_global_cursor:
+                yield from self._global_cursor.generate_slices_from_partition(partition=partition)
+            else:
+                for slice in self._per_partition_cursor.generate_slices_from_partition(partition=partition):
+                    self._global_cursor.add_slice(slice)
+                    yield slice
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """

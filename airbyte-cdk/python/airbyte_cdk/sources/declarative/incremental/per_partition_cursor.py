@@ -73,6 +73,19 @@ class PerPartitionCursor(DeclarativeCursor):
             for cursor_slice in cursor.stream_slices():
                 yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
 
+    def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
+        # Ensure the maximum number of partitions is not exceeded
+        self._ensure_partition_limit()
+
+        cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
+        if not cursor:
+            cursor = self._create_cursor(self._NO_CURSOR_STATE)
+            self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
+
+        for cursor_slice in cursor.stream_slices():
+            yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
+
+
     def _ensure_partition_limit(self) -> None:
         """
         Ensure the maximum number of partitions is not exceeded. If so, the oldest added partition will be dropped.
