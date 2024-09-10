@@ -10,19 +10,21 @@ The Google Drive source connector pulls data from a single folder in Google Driv
 
 - Drive folder link - The link to the Google Drive folder you want to sync files from (includes files located in subfolders)
 <!-- env:cloud -->
-- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
-<!-- /env:cloud -->
-<!-- env:oss -->
-- **For Airbyte Open Source:** 
+- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
+  <!-- /env:cloud -->
+  <!-- env:oss -->
+- **For Airbyte Open Source:**
   - A GCP project
   - Enable the Google Drive API in your GCP project
   - Service Account Key with access to the Spreadsheet you want to replicate
-<!-- /env:oss -->
+  <!-- /env:oss -->
 
 ## Setup guide
 
 The Google Drive source connector supports authentication via either OAuth or Service Account Key Authentication.
+
 <!-- env:cloud -->
+
 For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-drive-source-connector-in-airbyte).
 
 <!-- /env:cloud -->
@@ -85,9 +87,9 @@ To set up Google Drive as a source in Airbyte Cloud:
 
 - **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
-    ```js
-    { "type": "service_account", "project_id": "YOUR_PROJECT_ID", "private_key_id": "YOUR_PRIVATE_KEY", ... }
-    ```
+  ```js
+  { "type": "service_account", "project_id": "YOUR_PROJECT_ID", "private_key_id": "YOUR_PRIVATE_KEY", ... }
+  ```
 
 - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
 
@@ -203,7 +205,7 @@ Product,Description,Price
 Jeans,"Navy Blue, Bootcut, 34\"",49.99
 ```
 
-The backslash (`\`) is used directly before the second double quote (`"`) to indicate that it is _not_ the closing quote for the field, but rather a literal double quote character that should be included in the value (in this example, denoting the size of the jeans in inches: `34"` ). 
+The backslash (`\`) is used directly before the second double quote (`"`) to indicate that it is _not_ the closing quote for the field, but rather a literal double quote character that should be included in the value (in this example, denoting the size of the jeans in inches: `34"` ).
 
 Leaving this field blank (default option) will disallow escaping.
 
@@ -215,7 +217,6 @@ Leaving this field blank (default option) will disallow escaping.
 - **Strings Can Be Null**: Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.
 - **True Values**: A set of case-sensitive strings that should be interpreted as true values.
 
-
 ### Parquet
 
 Apache Parquet is a column-oriented data storage format of the Apache Hadoop ecosystem. It provides efficient data compression and encoding schemes with enhanced performance to handle complex data in bulk. At the moment, partitioned parquet datasets are unsupported. The following settings are available:
@@ -225,6 +226,7 @@ Apache Parquet is a column-oriented data storage format of the Apache Hadoop eco
 ### Avro
 
 The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/latest/). The following settings are available:
+
 - **Convert Double Fields to Strings**: Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.
 
 ### JSONL
@@ -249,15 +251,22 @@ This connector utilizes the open source [Unstructured](https://unstructured-io.g
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.0.10  | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry                                                              |
-| 0.0.9   | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors                                            |
-| 0.0.8   | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK                                 |
-| 0.0.7   | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK                      |
-| 0.0.6   | 2023-12-16 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib                                                                      |
-| 0.0.5   | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
-| 0.0.4   | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key                                          |
-| 0.0.3   | 2023-11-16 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Improve folder id input and update document file type parser                                 |
-| 0.0.2   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Allow syncs on shared drives                                                                 |
-| 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Initial Google Drive source                                                                  |
+| 0.0.12 | 2024-06-06 | [39291](https://github.com/airbytehq/airbyte/pull/39291) | [autopull] Upgrade base image to v1.2.2 |
+| 0.0.11 | 2024-05-29 | [38698](https://github.com/airbytehq/airbyte/pull/38698) | Avoid error on empty stream when running discover |
+| 0.0.10 | 2024-03-28 | [36581](https://github.com/airbytehq/airbyte/pull/36581) | Manage dependencies with Poetry |
+| 0.0.9 | 2024-02-06 | [34936](https://github.com/airbytehq/airbyte/pull/34936) | Bump CDK version to avoid missing SyncMode errors |
+| 0.0.8 | 2024-01-30 | [34681](https://github.com/airbytehq/airbyte/pull/34681) | Unpin CDK version to make compatible with the Concurrent CDK |
+| 0.0.7 | 2024-01-30 | [34661](https://github.com/airbytehq/airbyte/pull/34661) | Pin CDK version until upgrade for compatibility with the Concurrent CDK |
+| 0.0.6 | 2023-12-16 | [33414](https://github.com/airbytehq/airbyte/pull/33414) | Prepare for airbyte-lib |
+| 0.0.5 | 2023-12-14 | [33411](https://github.com/airbytehq/airbyte/pull/33411) | Bump CDK version to auto-set primary key for document file streams and support raw txt files |
+| 0.0.4 | 2023-12-06 | [33187](https://github.com/airbytehq/airbyte/pull/33187) | Bump CDK version to hide source-defined primary key |
+| 0.0.3 | 2023-11-16 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Improve folder id input and update document file type parser |
+| 0.0.2 | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Allow syncs on shared drives |
+| 0.0.1 | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458) | Initial Google Drive source |
+
+</details>

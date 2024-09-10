@@ -4,39 +4,40 @@ products: cloud
 
 # Manage credits
 
-Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. You can purchase credits on Airbyte Cloud to keep your data flowing without interruption. 
+Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resources when you run a sync. You can purchase credits on Airbyte Cloud to keep your data flowing without interruption.
 
 ## Buy credits
 
-1. To purchase credits directly through the UI, click **Billing** in the left-hand sidebar. The billing page displays the available credits, total credit usage, and the credit usage per connection. 
+1. To purchase credits directly through the UI, click **Billing** in the left-hand sidebar. The billing page displays the available credits, total credit usage, and the credit usage per connection.
 
-    :::tip
+   :::tip
 
-    If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
+   If you are unsure of how many credits you need, use our [Cost Estimator](https://www.airbyte.com/pricing) or click **Talk to Sales** to find the right amount for your team.
 
-    :::
+   :::
 
 2. Click **Buy credits**. Enter the quantity of credits you intend to purchase and adjust the **credit quantity** accordingly. When you're ready, click **Checkout**.
 
-    :::note 
+   :::note
 
-    Purchase limits:
-    * Minimum: 20 credits
-    * Maximum: 6,000 credits
+   Purchase limits:
 
-    :::
+   - Minimum: 20 credits
+   - Maximum: 6,000 credits
 
-    To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
+   :::
 
-5. You'll be renavigated to a Stripe payment page. If this is your first time purchasing, you'll be asked for payment details. After you enter your billing address, sales tax (if applicable) is calculated and added to the total.
+   To buy more credits or discuss a custom plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
 
-6. Click **Pay** to process your payment. A receipt for your purchase is automatically sent to your email. 
+3. You'll be renavigated to a Stripe payment page. If this is your first time purchasing, you'll be asked for payment details. After you enter your billing address, sales tax (if applicable) is calculated and added to the total.
 
-    :::note 
+4. Click **Pay** to process your payment. A receipt for your purchase is automatically sent to your email.
 
-    Credits expire after one year if they are not used.
+   :::note
 
-    :::
+   Credits expire after one year if they are not used.
+
+   :::
 
 ## Automatic reload of credits
 
@@ -51,11 +52,12 @@ To enroll, [email us](mailto:billing@airbyte.io) with:
 As an example, if the recharge threshold is 10 credits and recharge balance is 30 credits, anytime your credit balance dips below 10 credits, Airbyte will automatically add enough credits to bring the balance back to 30 credits by charging the difference between your credit balance and 30 credits.
 
 To take a real example, if:
+
 1. The credit balance reached 3 credits.
 2. 27 credits are automatically charged to the card on file and added to the balance.
 3. The ending credit balance is 30 credits.
 
-Note that the difference between the recharge credit amount and recharge threshold must be at least 20 as our minimum purchase is 20 credits. 
+Note that the difference between the recharge credit amount and recharge threshold must be at least 20 as our minimum purchase is 20 credits.
 
 If you are enrolled and want to change your limits or cancel your enrollment, [email us](mailto:billing@airbyte.io).
 

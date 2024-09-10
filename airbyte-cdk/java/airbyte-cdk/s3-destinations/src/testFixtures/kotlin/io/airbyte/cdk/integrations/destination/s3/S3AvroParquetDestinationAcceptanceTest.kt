@@ -14,8 +14,6 @@ import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import java.io.IOException
 import java.util.*
-import java.util.function.Function
-import java.util.stream.Collectors
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericData
 import org.junit.jupiter.api.Assertions
@@ -23,8 +21,17 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource
 
 abstract class S3AvroParquetDestinationAcceptanceTest
-protected constructor(fileUploadFormat: FileUploadFormat) :
-    S3DestinationAcceptanceTest(fileUploadFormat) {
+protected constructor(
+    fileUploadFormat: FileUploadFormat,
+    expectUnionsPromotedToDisjointRecords: Boolean = false,
+) :
+    S3DestinationAcceptanceTest(
+        fileUploadFormat,
+        supportsChangeCapture = true,
+        expectNumericTimestamps = true,
+        expectSchemalessObjectsCoercedToStrings = true,
+        expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
+    ) {
     @ParameterizedTest
     @ArgumentsSource(NumberDataTypeTestArgumentProvider::class)
     @Throws(Exception::class)
@@ -35,6 +42,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
         val config = this.getConfig()
         val defaultSchema = getDefaultSchema(config)
         val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
+        configuredCatalog.streams.forEach {
+            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
+        }
         runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
 
         for (stream in catalog.streams) {
@@ -53,16 +63,7 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
         val nameToNode: Map<String, JsonNode> =
             iterableNames.associateWith { name: String -> getJsonNode(stream, name) }
 
-        return nameToNode.entries
-            .stream()
-            .collect(
-                Collectors.toMap(
-                    Function { obj: Map.Entry<String, JsonNode> -> obj.key },
-                    Function { entry: Map.Entry<String, JsonNode> ->
-                        getExpectedSchemaType(entry.value)
-                    }
-                )
-            )
+        return nameToNode.entries.associate { it.key to getExpectedSchemaType(it.value) }
     }
 
     private fun getJsonNode(stream: AirbyteStream, name: String): JsonNode {
@@ -79,13 +80,14 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
             else fieldDefinition["type"]
         val airbyteTypeProperty = fieldDefinition["airbyte_type"]
         val airbyteTypePropertyText = airbyteTypeProperty?.asText()
-        return Arrays.stream(JsonSchemaType.entries.toTypedArray())
+        return JsonSchemaType.entries
+            .toTypedArray()
             .filter { value: JsonSchemaType ->
                 value.jsonSchemaType == typeProperty.asText() &&
                     compareAirbyteTypes(airbyteTypePropertyText, value)
             }
             .map { obj: JsonSchemaType -> obj.avroType }
-            .collect(Collectors.toSet())
+            .toSet()
     }
 
     private fun compareAirbyteTypes(
@@ -108,11 +110,9 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
 
     @Throws(IOException::class)
     private fun readMessagesFromFile(messagesFilename: String): List<AirbyteMessage> {
-        return MoreResources.readResource(messagesFilename)
-            .trim()
-            .lines()
-            .map { record -> Jsons.deserialize(record, AirbyteMessage::class.java) }
-            .toList()
+        return MoreResources.readResource(messagesFilename).trim().lines().map { record ->
+            Jsons.deserialize(record, AirbyteMessage::class.java)
+        }
     }
 
     @Throws(Exception::class)
@@ -123,47 +123,30 @@ protected constructor(fileUploadFormat: FileUploadFormat) :
 
     protected fun getTypes(record: GenericData.Record): Map<String, Set<Schema.Type>> {
         val fieldList =
-            record.schema.fields
-                .stream()
-                .filter { field: Schema.Field -> !field.name().startsWith("_airbyte") }
-                .toList()
+            record.schema.fields.filter { field: Schema.Field ->
+                !field.name().startsWith("_airbyte")
+            }
 
         return if (fieldList.size == 1) {
-            fieldList
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { obj: Schema.Field -> obj.name() },
-                        Function { field: Schema.Field ->
-                            field
-                                .schema()
-                                .types
-                                .stream()
-                                .map { obj: Schema -> obj.type }
-                                .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
-                        }
-                    )
-                )
+            fieldList.associate {
+                it.name() to
+                    it.schema()
+                        .types
+                        .map { obj: Schema -> obj.type }
+                        .filter { type: Schema.Type -> type != Schema.Type.NULL }
+                        .toSet()
+            }
         } else {
-            fieldList
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        Function { obj: Schema.Field -> obj.name() },
-                        Function { field: Schema.Field ->
-                            field
-                                .schema()
-                                .types
-                                .stream()
-                                .filter { type: Schema -> type.type != Schema.Type.NULL }
-                                .flatMap { type: Schema -> type.elementType.types.stream() }
-                                .map { obj: Schema -> obj.type }
-                                .filter { type: Schema.Type -> type != Schema.Type.NULL }
-                                .collect(Collectors.toSet())
-                        }
-                    )
-                )
+            fieldList.associate {
+                it.name() to
+                    it.schema()
+                        .types
+                        .filter { type: Schema -> type.type != Schema.Type.NULL }
+                        .flatMap { type: Schema -> type.elementType.types }
+                        .map { obj: Schema -> obj.type }
+                        .filter { type: Schema.Type -> type != Schema.Type.NULL }
+                        .toSet()
+            }
         }
     }
 }

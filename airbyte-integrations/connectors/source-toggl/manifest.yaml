@@ -1,0 +1,1379 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - time_entries
+definitions:
+  streams:
+    time_entries:
+      type: DeclarativeStream
+      name: time_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/me/time_entries
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            at:
+              type: string
+            billable:
+              type: boolean
+            description:
+              type:
+                - "null"
+                - string
+            duration:
+              type: integer
+            duronly:
+              type: boolean
+            id:
+              type: integer
+            pid:
+              type: integer
+            project_id:
+              type:
+                - "null"
+                - integer
+            server_deleted_at:
+              type:
+                - "null"
+                - string
+            start:
+              type: string
+            stop:
+              type: string
+            tag_ids:
+              type:
+                - "null"
+                - array
+            tags:
+              type:
+                - "null"
+                - array
+            task_id:
+              type:
+                - "null"
+                - integer
+            tid:
+              type: integer
+            uid:
+              type: integer
+            user_id:
+              type: integer
+            wid:
+              type: integer
+            workspace_id:
+              type: integer
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/organizations/{{ config['organization_id'] }}
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            admin:
+              type: boolean
+            at:
+              type: string
+            created_at:
+              type: string
+            id:
+              type: integer
+            is_chargify:
+              type: boolean
+            is_multi_workspace_enabled:
+              type: boolean
+            is_unified:
+              type: boolean
+            max_workspaces:
+              type: integer
+            name:
+              type: string
+            owner:
+              type: boolean
+            payment_methods:
+              type: string
+            pricing_plan_id:
+              type: integer
+            server_deleted_at:
+              type:
+                - "null"
+                - string
+            suspended_at:
+              type:
+                - "null"
+                - string
+            trial_info:
+              type: object
+            user_count:
+              type: integer
+    organizations_users:
+      type: DeclarativeStream
+      name: organizations_users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/organizations/{{ config['organization_id'] }}/users
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            admin:
+              type: boolean
+            avatar_url:
+              type: string
+            can_edit_email:
+              type: boolean
+            email:
+              type: string
+            groups:
+              type:
+                - "null"
+                - array
+            id:
+              type: integer
+            inactive:
+              type: boolean
+            invitation_code:
+              type:
+                - "null"
+                - string
+            joined:
+              type: boolean
+            name:
+              type: string
+            owner:
+              type: boolean
+            user_id:
+              type: integer
+            workspaces:
+              type: array
+    organizations_groups:
+      type: DeclarativeStream
+      name: organizations_groups
+      primary_key:
+        - group_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/organizations/{{ config['organization_id'] }}/groups
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            at:
+              type: string
+            group_id:
+              type: integer
+            name:
+              type: string
+            users:
+              type:
+                - "null"
+                - array
+            workspaces:
+              type: array
+    workspace:
+      type: DeclarativeStream
+      name: workspace
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/workspaces/{{ config['workspace_id'] }}/statistics
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            admins:
+              type: array
+            groups_count:
+              type: integer
+            members_count:
+              type: integer
+    workspace_clients:
+      type: DeclarativeStream
+      name: workspace_clients
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/workspaces/{{ config['workspace_id'] }}/clients
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            archived:
+              type: boolean
+            at:
+              type: string
+            id:
+              type: integer
+            name:
+              type: string
+            server_deleted_at:
+              type: string
+            wid:
+              type: integer
+    workspace_projects:
+      type: DeclarativeStream
+      name: workspace_projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/workspaces/{{ config['workspace_id'] }}/projects
+          http_method: GET
+          request_parameters:
+            start_date: "{{ config['start_date'] }}"
+            end_date: "{{ config['end_date'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            active:
+              type: boolean
+            actual_hours:
+              type:
+                - "null"
+                - integer
+            at:
+              type: string
+            auto_estimates:
+              type:
+                - "null"
+                - boolean
+            billable:
+              type:
+                - "null"
+                - boolean
+            cid:
+              type:
+                - "null"
+                - integer
+            client_id:
+              type:
+                - "null"
+                - integer
+            color:
+              type: string
+            created_at:
+              type: string
+            currency:
+              type:
+                - "null"
+                - string
+            current_period:
+              type:
+                - "null"
+                - object
+            estimated_hours:
+              type:
+                - "null"
+                - integer
+            first_time_entry:
+              type: string
+            fixed_fee:
+              type:
+                - "null"
+                - number
+            id:
+              type: integer
+            is_private:
+              type: boolean
+            name:
+              type: string
+            rate:
+              type:
+                - "null"
+                - number
+            rate_last_updated:
+              type:
+                - "null"
+                - string
+            recurring:
+              type: boolean
+            recurring_parameters:
+              type:
+                - "null"
+                - array
+            server_deleted_at:
+              type:
+                - "null"
+                - string
+            template:
+              type:
+                - "null"
+                - boolean
+            wid:
+              type: integer
+            workspace_id:
+              type: integer
+    workspace_tasks:
+      type: DeclarativeStream
+      name: workspace_tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.track.toggl.com
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['api_token'] }}"
+            password: "api_token"
+          path: /api/v9/workspaces/{{ config['workspace_id'] }}/tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: per_page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 50
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            active:
+              type: boolean
+            at:
+              type: string
+            estimated_seconds:
+              type:
+                - "null"
+                - integer
+            id:
+              type: integer
+            name:
+              type: string
+            project_id:
+              type: integer
+            recurring:
+              type: boolean
+            server_deleted_at:
+              type:
+                - "null"
+                - string
+            tracked_seconds:
+              type: integer
+            user_id:
+              type:
+                - "null"
+                - integer
+            workspace_id:
+              type: integer
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.track.toggl.com
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_token'] }}"
+      password: "api_token"
+streams:
+  - type: DeclarativeStream
+    name: time_entries
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/me/time_entries
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          at:
+            type: string
+          billable:
+            type: boolean
+          description:
+            type:
+              - "null"
+              - string
+          duration:
+            type: integer
+          duronly:
+            type: boolean
+          id:
+            type: integer
+          pid:
+            type: integer
+          project_id:
+            type:
+              - "null"
+              - integer
+          server_deleted_at:
+            type:
+              - "null"
+              - string
+          start:
+            type: string
+          stop:
+            type: string
+          tag_ids:
+            type:
+              - "null"
+              - array
+          tags:
+            type:
+              - "null"
+              - array
+          task_id:
+            type:
+              - "null"
+              - integer
+          tid:
+            type: integer
+          uid:
+            type: integer
+          user_id:
+            type: integer
+          wid:
+            type: integer
+          workspace_id:
+            type: integer
+  - type: DeclarativeStream
+    name: organizations
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/organizations/{{ config['organization_id'] }}
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          admin:
+            type: boolean
+          at:
+            type: string
+          created_at:
+            type: string
+          id:
+            type: integer
+          is_chargify:
+            type: boolean
+          is_multi_workspace_enabled:
+            type: boolean
+          is_unified:
+            type: boolean
+          max_workspaces:
+            type: integer
+          name:
+            type: string
+          owner:
+            type: boolean
+          payment_methods:
+            type: string
+          pricing_plan_id:
+            type: integer
+          server_deleted_at:
+            type:
+              - "null"
+              - string
+          suspended_at:
+            type:
+              - "null"
+              - string
+          trial_info:
+            type: object
+          user_count:
+            type: integer
+  - type: DeclarativeStream
+    name: organizations_users
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/organizations/{{ config['organization_id'] }}/users
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          admin:
+            type: boolean
+          avatar_url:
+            type: string
+          can_edit_email:
+            type: boolean
+          email:
+            type: string
+          groups:
+            type:
+              - "null"
+              - array
+          id:
+            type: integer
+          inactive:
+            type: boolean
+          invitation_code:
+            type:
+              - "null"
+              - string
+          joined:
+            type: boolean
+          name:
+            type: string
+          owner:
+            type: boolean
+          user_id:
+            type: integer
+          workspaces:
+            type: array
+  - type: DeclarativeStream
+    name: organizations_groups
+    primary_key:
+      - group_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/organizations/{{ config['organization_id'] }}/groups
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          at:
+            type: string
+          group_id:
+            type: integer
+          name:
+            type: string
+          users:
+            type:
+              - "null"
+              - array
+          workspaces:
+            type: array
+  - type: DeclarativeStream
+    name: workspace
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/workspaces/{{ config['workspace_id'] }}/statistics
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          admins:
+            type: array
+          groups_count:
+            type: integer
+          members_count:
+            type: integer
+  - type: DeclarativeStream
+    name: workspace_clients
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/workspaces/{{ config['workspace_id'] }}/clients
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          archived:
+            type: boolean
+          at:
+            type: string
+          id:
+            type: integer
+          name:
+            type: string
+          server_deleted_at:
+            type: string
+          wid:
+            type: integer
+  - type: DeclarativeStream
+    name: workspace_projects
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/workspaces/{{ config['workspace_id'] }}/projects
+        http_method: GET
+        request_parameters:
+          start_date: "{{ config['start_date'] }}"
+          end_date: "{{ config['end_date'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          active:
+            type: boolean
+          actual_hours:
+            type:
+              - "null"
+              - integer
+          at:
+            type: string
+          auto_estimates:
+            type:
+              - "null"
+              - boolean
+          billable:
+            type:
+              - "null"
+              - boolean
+          cid:
+            type:
+              - "null"
+              - integer
+          client_id:
+            type:
+              - "null"
+              - integer
+          color:
+            type: string
+          created_at:
+            type: string
+          currency:
+            type:
+              - "null"
+              - string
+          current_period:
+            type:
+              - "null"
+              - object
+          estimated_hours:
+            type:
+              - "null"
+              - integer
+          first_time_entry:
+            type: string
+          fixed_fee:
+            type:
+              - "null"
+              - number
+          id:
+            type: integer
+          is_private:
+            type: boolean
+          name:
+            type: string
+          rate:
+            type:
+              - "null"
+              - number
+          rate_last_updated:
+            type:
+              - "null"
+              - string
+          recurring:
+            type: boolean
+          recurring_parameters:
+            type:
+              - "null"
+              - array
+          server_deleted_at:
+            type:
+              - "null"
+              - string
+          template:
+            type:
+              - "null"
+              - boolean
+          wid:
+            type: integer
+          workspace_id:
+            type: integer
+  - type: DeclarativeStream
+    name: workspace_tasks
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.track.toggl.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_token'] }}"
+          password: "api_token"
+        path: /api/v9/workspaces/{{ config['workspace_id'] }}/tasks
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: per_page
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 50
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          active:
+            type: boolean
+          at:
+            type: string
+          estimated_seconds:
+            type:
+              - "null"
+              - integer
+          id:
+            type: integer
+          name:
+            type: string
+          project_id:
+            type: integer
+          recurring:
+            type: boolean
+          server_deleted_at:
+            type:
+              - "null"
+              - string
+          tracked_seconds:
+            type: integer
+          user_id:
+            type:
+              - "null"
+              - integer
+          workspace_id:
+            type: integer
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/toggl
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Toggl Spec
+    type: object
+    required:
+      - api_token
+      - organization_id
+      - workspace_id
+      - start_date
+      - end_date
+    additionalProperties: true
+    properties:
+      api_token:
+        title: API token
+        type: string
+        description: >-
+          Your API Token. See <a
+          href="https://developers.track.toggl.com/docs/authentication">here</a>.
+          The token is
+          case sensitive.
+        airbyte_secret: true
+      organization_id:
+        title: Organization ID
+        type: integer
+        description: >-
+          Your organization id. See <a
+          href="https://developers.track.toggl.com/docs/organization">here</a>.
+      workspace_id:
+        title: Workspace ID
+        type: integer
+        description: >-
+          Your workspace id. See <a
+          href="https://developers.track.toggl.com/docs/workspaces">here</a>.
+      start_date:
+        title: Start date
+        type: string
+        description: To retrieve time entries created after the given date (inclusive).
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+      end_date:
+        title: End date
+        type: string
+        description: To retrieve time entries created before the given date (inclusive).
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+metadata:
+  autoImportSchema:
+    time_entries: false
+    organizations: false
+    organizations_users: false
+    organizations_groups: false
+    workspace: false
+    workspace_clients: false
+    workspace_projects: false
+    workspace_tasks: false
+schemas:
+  time_entries:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      at:
+        type: string
+      billable:
+        type: boolean
+      description:
+        type:
+          - "null"
+          - string
+      duration:
+        type: integer
+      duronly:
+        type: boolean
+      id:
+        type: integer
+      pid:
+        type: integer
+      project_id:
+        type:
+          - "null"
+          - integer
+      server_deleted_at:
+        type:
+          - "null"
+          - string
+      start:
+        type: string
+      stop:
+        type: string
+      tag_ids:
+        type:
+          - "null"
+          - array
+      tags:
+        type:
+          - "null"
+          - array
+      task_id:
+        type:
+          - "null"
+          - integer
+      tid:
+        type: integer
+      uid:
+        type: integer
+      user_id:
+        type: integer
+      wid:
+        type: integer
+      workspace_id:
+        type: integer
+  organizations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      admin:
+        type: boolean
+      at:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_chargify:
+        type: boolean
+      is_multi_workspace_enabled:
+        type: boolean
+      is_unified:
+        type: boolean
+      max_workspaces:
+        type: integer
+      name:
+        type: string
+      owner:
+        type: boolean
+      payment_methods:
+        type: string
+      pricing_plan_id:
+        type: integer
+      server_deleted_at:
+        type:
+          - "null"
+          - string
+      suspended_at:
+        type:
+          - "null"
+          - string
+      trial_info:
+        type: object
+      user_count:
+        type: integer
+  organizations_users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      admin:
+        type: boolean
+      avatar_url:
+        type: string
+      can_edit_email:
+        type: boolean
+      email:
+        type: string
+      groups:
+        type:
+          - "null"
+          - array
+      id:
+        type: integer
+      inactive:
+        type: boolean
+      invitation_code:
+        type:
+          - "null"
+          - string
+      joined:
+        type: boolean
+      name:
+        type: string
+      owner:
+        type: boolean
+      user_id:
+        type: integer
+      workspaces:
+        type: array
+  organizations_groups:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      at:
+        type: string
+      group_id:
+        type: integer
+      name:
+        type: string
+      users:
+        type:
+          - "null"
+          - array
+      workspaces:
+        type: array
+  workspace:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      admins:
+        type: array
+      groups_count:
+        type: integer
+      members_count:
+        type: integer
+  workspace_clients:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type: boolean
+      at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      server_deleted_at:
+        type: string
+      wid:
+        type: integer
+  workspace_projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type: boolean
+      actual_hours:
+        type:
+          - "null"
+          - integer
+      at:
+        type: string
+      auto_estimates:
+        type:
+          - "null"
+          - boolean
+      billable:
+        type:
+          - "null"
+          - boolean
+      cid:
+        type:
+          - "null"
+          - integer
+      client_id:
+        type:
+          - "null"
+          - integer
+      color:
+        type: string
+      created_at:
+        type: string
+      currency:
+        type:
+          - "null"
+          - string
+      current_period:
+        type:
+          - "null"
+          - object
+      estimated_hours:
+        type:
+          - "null"
+          - integer
+      first_time_entry:
+        type: string
+      fixed_fee:
+        type:
+          - "null"
+          - number
+      id:
+        type: integer
+      is_private:
+        type: boolean
+      name:
+        type: string
+      rate:
+        type:
+          - "null"
+          - number
+      rate_last_updated:
+        type:
+          - "null"
+          - string
+      recurring:
+        type: boolean
+      recurring_parameters:
+        type:
+          - "null"
+          - array
+      server_deleted_at:
+        type:
+          - "null"
+          - string
+      template:
+        type:
+          - "null"
+          - boolean
+      wid:
+        type: integer
+      workspace_id:
+        type: integer
+  workspace_tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type: boolean
+      at:
+        type: string
+      estimated_seconds:
+        type:
+          - "null"
+          - integer
+      id:
+        type: integer
+      name:
+        type: string
+      project_id:
+        type: integer
+      recurring:
+        type: boolean
+      server_deleted_at:
+        type:
+          - "null"
+          - string
+      tracked_seconds:
+        type: integer
+      user_id:
+        type:
+          - "null"
+          - integer
+      workspace_id:
+        type: integer

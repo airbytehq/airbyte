@@ -44,9 +44,29 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
-| 0.3.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                   |
-| 0.3.0   | 2022-11-02 | [18936](https://github.com/airbytehq/airbyte/pull/18936) | Migrate to low code + certify to Beta + migrate to API v4 |
-| 0.2.6   | 2022-09-08 | [16361](https://github.com/airbytehq/airbyte/pull/16361) | Avoid infinite loop for non-paginated APIs                |
-| 0.2.4   | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649)   | Migrate to the CDK                                        |
+| 0.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.4.0 | 2024-08-14 | [44058](https://github.com/airbytehq/airbyte/pull/44058) | Refactor connector to manifest-only format |
+| 0.3.14 | 2024-08-12 | [43843](https://github.com/airbytehq/airbyte/pull/43843) | Update dependencies |
+| 0.3.13 | 2024-08-10 | [43466](https://github.com/airbytehq/airbyte/pull/43466) | Update dependencies |
+| 0.3.12 | 2024-08-03 | [43152](https://github.com/airbytehq/airbyte/pull/43152) | Update dependencies |
+| 0.3.11 | 2024-07-27 | [42778](https://github.com/airbytehq/airbyte/pull/42778) | Update dependencies |
+| 0.3.10 | 2024-07-20 | [42178](https://github.com/airbytehq/airbyte/pull/42178) | Update dependencies |
+| 0.3.9 | 2024-07-15 | [38790](https://github.com/airbytehq/airbyte/pull/38790) | Make compatible with the builder |
+| 0.3.8 | 2024-07-13 | [41687](https://github.com/airbytehq/airbyte/pull/41687) | Update dependencies |
+| 0.3.7 | 2024-07-10 | [41357](https://github.com/airbytehq/airbyte/pull/41357) | Update dependencies |
+| 0.3.6 | 2024-07-09 | [41307](https://github.com/airbytehq/airbyte/pull/41307) | Update dependencies |
+| 0.3.5 | 2024-07-06 | [40862](https://github.com/airbytehq/airbyte/pull/40862) | Update dependencies |
+| 0.3.4 | 2024-06-25 | [40336](https://github.com/airbytehq/airbyte/pull/40336) | Update dependencies |
+| 0.3.3 | 2024-06-22 | [40022](https://github.com/airbytehq/airbyte/pull/40022) | Update dependencies |
+| 0.3.2 | 2024-05-21 | [38488](https://github.com/airbytehq/airbyte/pull/38488) | [autopull] base image + poetry + up_to_date |
+| 0.3.1 | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version |
+| 0.3.0 | 2022-11-02 | [18936](https://github.com/airbytehq/airbyte/pull/18936) | Migrate to low code + certify to Beta + migrate to API v4 |
+| 0.2.6 | 2022-09-08 | [16361](https://github.com/airbytehq/airbyte/pull/16361) | Avoid infinite loop for non-paginated APIs |
+| 0.2.4 | 2021-11-08 | [7649](https://github.com/airbytehq/airbyte/pull/7649) | Migrate to the CDK |
+
+</details>

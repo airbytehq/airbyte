@@ -3,7 +3,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.27.7'
+    cdkVersionRequired = '0.44.19'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
     useLocalCdk = false
 }
@@ -16,7 +16,7 @@ java {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
+    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationKt'
 // enable when profiling
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',

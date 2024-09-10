@@ -16,7 +16,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-amazon-sqs
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -26,4 +26,17 @@ data:
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amazon-sqs_config_dev_null
+          id: 549c80d0-eb61-458e-bc60-45105ba3f89a
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMAZON-SQS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

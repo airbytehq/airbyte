@@ -35,7 +35,6 @@ You may want to customize this by setting `JOB_MAIN_CONTAINER_MEMORY_REQUEST` an
 
 Note that all Source database connectors are Java connectors. This means that users currently need to over-specify memory resource for Java connectors.
 
-
 ### Disk Space
 
 Airbyte uses backpressure to try to read the minimal amount of logs required. In the past, disk space was a large concern, but we've since deprecated the expensive on-disk queue approach.

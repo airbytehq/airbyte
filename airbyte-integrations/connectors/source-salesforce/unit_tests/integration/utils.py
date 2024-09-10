@@ -43,14 +43,14 @@ def read(
     return entrypoint_read(_source(catalog, config, state), config, catalog, state, expecting_exception)
 
 
-def given_authentication(http_mocker: HttpMocker, client_id: str, client_secret: str, refresh_token: str, instance_url: str) -> None:
+def given_authentication(http_mocker: HttpMocker, client_id: str, client_secret: str, refresh_token: str, instance_url: str, access_token: str = "any_access_token") -> None:
     http_mocker.post(
         HttpRequest(
             "https://login.salesforce.com/services/oauth2/token",
             query_params=ANY_QUERY_PARAMS,
             body=f"grant_type=refresh_token&client_id={client_id}&client_secret={client_secret}&refresh_token={refresh_token}"
         ),
-        HttpResponse(json.dumps({"access_token": "any_access_token", "instance_url": instance_url})),
+        HttpResponse(json.dumps({"access_token": access_token, "instance_url": instance_url})),
     )
 
 

@@ -2,45 +2,42 @@
 products: all
 ---
 
-# Getting Started
+# Airbyte Overview
 
-Getting started with Airbyte takes only a few steps! This page guides you through the initial steps to get started and you'll learn how to setup your first connection on the following pages.
+Airbyte is an open-source data integration platform designed to help you consolidate data from various sources into your data warehouses, lakes, and databases.
 
-You have two options to run Airbyte: Use **Airbyte Cloud** (recommended) or **self-manage Airbyte** in your infrastructure.
+Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data for a personal project, Airbyte can work for you! We offer flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise-grade solutions. 
+
+There are two options to consider to run Airbyte: 
+- **Airbyte Cloud** (recommended): allows you to focus on moving data while we take care of managing the infrastructure. 
+- **Self-Managed Airbyte**: can be deployed either locally or in an infrastructure you've set up. Our Self-Managed solution can be used as a free Community product or implemented with support of Enterprise operations. 
 
 :::tip
-If you are have already deployed Airbyte or signed up for Airbyte Cloud, jump ahead to [set up a source](./add-a-source.md).
+If you have already deployed Airbyte or you've signed up to use Airbyte Cloud, and you're familiar with [Airbyte's core concepts](../../using-airbyte/core-concepts/), jump ahead to [Building Connections](../../cloud/managing-airbyte-cloud/configuring-connections.md).
 :::
 
-## Sign Up for Airbyte Cloud
+## Airbyte Cloud
 
-To use Airbyte Cloud, [sign up](https://cloud.airbyte.io/signup) with your email address, Google login, or GitHub login. Upon signing up, you'll be taken to your workspace, which lets you collaborate with team members and share resources across your team under a shared billing account.
+To use Airbyte Cloud, [sign up](https://cloud.airbyte.io/signup) with your email address, Google login, or GitHub login. Upon signing up, you'll be taken to your workspace. There, you can collaborate with team members and share resources across your team under a single billing account.
 
-Airbyte Cloud offers a 14-day free trial that begins after your first successful sync. For more details on our pricing model, see our [pricing page](https://www.airbyte.com/pricing).
+Airbyte Cloud offers a 14-day free trial that begins after your first successful sync. You can find more details about Airbyte Cloud for practitioners and teams, as well as a tool for evaluating costs on our [pricing page](https://www.airbyte.com/pricing).
 
 To start setting up a data pipeline, see how to [set up a source](./add-a-source.md).
 
+## Self-Managed Community (OSS) 
 
-## Deploy Airbyte (Self-Managed)
+When self-managing Airbyte, your data never leaves your premises. You can use our [OSS Quickstart](oss-quickstart.md) to get started immediately by deploying locally using abctl. 
 
-When self-managing Airbyte, your data never leaves your premises. Get started immediately by deploying locally using Docker.
+:::tip
+If you're trying Airbyte out for the first time, we'd recommend you sign up for the [Airbyte Cloud trial](https://cloud.airbyte.io/signup) or deploy OSS locally.
+:::
 
-### Self-Managed Community (Open Source)
+To deploy Airbyte in production, Airbyte recommends deploying on [Kubernetes via Helm](../../deploying-airbyte/on-kubernetes-via-helm.md). 
 
-With Airbyte Self-Managed Community (Open Source), you can use one of the following options in your infrastructure:
+## Self-Managed Enterprise
 
-- [Local Deployment](/deploying-airbyte/local-deployment.md) (recommended when trying out Airbyte)
-- [On AWS](/deploying-airbyte/on-aws-ec2.md)
-- [On Azure VM Cloud Shell](/deploying-airbyte/on-azure-vm-cloud-shell.md)
-- [On Digital Ocean Droplet](/deploying-airbyte/on-digitalocean-droplet.md)
-- [On GCP](/deploying-airbyte/on-gcp-compute-engine.md)
-- [On Kubernetes](/deploying-airbyte/on-kubernetes-via-helm.md)
-- [On OCI VM](/deploying-airbyte/on-oci-vm.md)
-- [On Restack](/deploying-airbyte/on-restack.md)
-- [On Plural](/deploying-airbyte/on-plural.md)
-- [On AWS ECS](/deploying-airbyte/on-aws-ecs.md) (Spoiler alert: it doesn't work)
+Airbyte Self-Managed Enterprise is the most robust way to run Airbyte yourself. With this option, you'll have access to all 300+ pre-built connectors and data will never  need to leave your environment. Enterprise setup means that Airbyte becomes self-serve in your organization with new tools to manage multiple users, and the ability to set up multiple teams using Airbyte all in one place.
 
-### Self-Managed Enterprise
-Airbyte Self-Managed Enterprise is the best way to run Airbyte yourself. You get all 300+ pre-built connectors, data never leaves your environment, and Airbyte becomes self-serve in your organization with new tools to manage multiple users, and multiple teams using Airbyte all in one place.
-
-To start with Self-Managed Enterprise, navigate to our [Enterprise setup guide](/enterprise-setup/README.md).
+:::tip
+To start with Self-Managed Enterprise, you'll need a license key. [Talk to sales](https://airbyte.com/company/talk-to-sales) to get started with Enterprise. For more details, review our [Enterprise setup guide](/enterprise-setup/README.md).
+:::

@@ -1,0 +1,99 @@
+{
+  "properties": {
+    "account_currency": {
+      "description": "Currency used for the account",
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "description": "ID of the account",
+      "type": ["null", "string"]
+    },
+    "account_name": {
+      "description": "Name of the account",
+      "type": ["null", "string"]
+    },
+    "action_values": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "1d_click": {
+            "type": ["null", "number"]
+          },
+          "7d_click": {
+            "type": ["null", "number"]
+          },
+          "28d_click": {
+            "type": ["null", "number"]
+          },
+          "1d_view": {
+            "type": ["null", "number"]
+          },
+          "7d_view": {
+            "type": ["null", "number"]
+          },
+          "28d_view": {
+            "type": ["null", "number"]
+          },
+          "action_destination": {
+            "type": ["null", "string"]
+          },
+          "action_target_id": {
+            "type": ["null", "string"]
+          },
+          "action_type": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "number"]
+          },
+          "lead": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "actions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "1d_click": {
+            "type": ["null", "number"]
+          },
+          "7d_click": {
+            "type": ["null", "number"]
+          },
+          "28d_click": {
+            "type": ["null", "number"]
+          },
+          "1d_view": {
+            "type": ["null", "number"]
+          },
+          "7d_view": {
+            "type": ["null", "number"]
+          },
+          "28d_view": {
+            "type": ["null", "number"]
+          },
+          "action_destination": {
+            "type": ["null", "string"]
+          },
+          "action_target_id": {
+            "type": ["null", "string"]
+          },
+          "action_type": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "number"]
+          },
+          "lead": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    }
+  },
+  "type": ["null", "object"]
+}

@@ -1,0 +1,85 @@
+{
+  "streams": [
+    {
+      "name": "EVENTS",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "MSG": {
+            "type": "string"
+          },
+          "_ROWID_": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
+          "ID": {
+            "type": "string",
+            "contentEncoding": "base64"
+          },
+          "TS": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "_ab_cdc_lsn": {
+            "type": "string"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ab_cdc_lsn"],
+      "source_defined_primary_key": [["ID"]],
+      "is_resumable": true,
+      "namespace": "PUBLIC"
+    },
+    {
+      "name": "KV",
+      "json_schema": {
+        "type": "object",
+        "properties": {
+          "_ROWID_": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
+          "V": {
+            "type": "string"
+          },
+          "K": {
+            "type": "number",
+            "airbyte_type": "integer"
+          },
+          "_ab_cdc_lsn": {
+            "type": "string"
+          },
+          "_ab_cdc_updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "_ab_cdc_deleted_at": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_ab_cdc_lsn"],
+      "source_defined_primary_key": [["K"]],
+      "is_resumable": true,
+      "namespace": "PUBLIC"
+    }
+  ]
+}

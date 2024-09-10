@@ -55,12 +55,32 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| 0.6.0 | 2024-08-23 | [44590](https://github.com/airbytehq/airbyte/pull/44590) | Refactor connector to manifest-only format |
+| 0.5.16 | 2024-08-17 | [44211](https://github.com/airbytehq/airbyte/pull/44211) | Update dependencies |
+| 0.5.15 | 2024-08-12 | [43746](https://github.com/airbytehq/airbyte/pull/43746) | Update dependencies |
+| 0.5.14 | 2024-08-10 | [43490](https://github.com/airbytehq/airbyte/pull/43490) | Update dependencies |
+| 0.5.13 | 2024-08-03 | [43250](https://github.com/airbytehq/airbyte/pull/43250) | Update dependencies |
+| 0.5.12 | 2024-07-27 | [42794](https://github.com/airbytehq/airbyte/pull/42794) | Update dependencies |
+| 0.5.11 | 2024-07-20 | [42171](https://github.com/airbytehq/airbyte/pull/42171) | Update dependencies |
+| 0.5.10 | 2024-07-13 | [41899](https://github.com/airbytehq/airbyte/pull/41899) | Update dependencies |
+| 0.5.9 | 2024-07-10 | [41417](https://github.com/airbytehq/airbyte/pull/41417) | Update dependencies |
+| 0.5.8 | 2024-07-09 | [41320](https://github.com/airbytehq/airbyte/pull/41320) | Update dependencies |
+| 0.5.7 | 2024-07-06 | [40840](https://github.com/airbytehq/airbyte/pull/40840) | Update dependencies |
+| 0.5.6 | 2024-06-25 | [40344](https://github.com/airbytehq/airbyte/pull/40344) | Update dependencies |
+| 0.5.5 | 2024-06-21 | [39933](https://github.com/airbytehq/airbyte/pull/39933) | Update dependencies |
+| 0.5.4 | 2024-06-06 | [39194](https://github.com/airbytehq/airbyte/pull/39194) | [autopull] Upgrade base image to v1.2.2 |
+| 0.5.2 | 2024-05-02 | [37770](https://github.com/airbytehq/airbyte/pull/37770) | Add Selective Authenticator. Migrate to poetry |
 | 0.5.1 | 2023-10-20 | [31643](https://github.com/airbytehq/airbyte/pull/31643) | Upgrade base image to airbyte/python-connector-base:1.1.0 |
-| 0.5.0   | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image                                                   |
-| 0.4.1   | 2023-08-24 | [29804](https://github.com/airbytehq/airbyte/pull/29804) | Fix low code migration bugs                                             |
-| 0.4.0   | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK                                                 |
-| 0.3.0   | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams |
-| 0.2.0   | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream                                                      |
-| 0.1.0   | 2022-10-21 | [18338](https://github.com/airbytehq/airbyte/pull/18338) | Add Auth0 and Users stream                                              |
+| 0.5.0 | 2023-10-11 | [30467](https://github.com/airbytehq/airbyte/pull/30467) | Use Python base image |
+| 0.4.1 | 2023-08-24 | [29804](https://github.com/airbytehq/airbyte/pull/29804) | Fix low code migration bugs |
+| 0.4.0 | 2023-08-03 | [28972](https://github.com/airbytehq/airbyte/pull/28972) | Migrate to Low-Code CDK |
+| 0.3.0 | 2023-06-20 | [29001](https://github.com/airbytehq/airbyte/pull/29001) | Add Organizations, OrganizationMembers, OrganizationMemberRoles streams |
+| 0.2.0 | 2023-05-23 | [26445](https://github.com/airbytehq/airbyte/pull/26445) | Add Clients stream |
+| 0.1.0 | 2022-10-21 | [18338](https://github.com/airbytehq/airbyte/pull/18338) | Add Auth0 and Users stream |
+
+</details>

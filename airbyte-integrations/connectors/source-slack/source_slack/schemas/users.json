@@ -4,163 +4,215 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "Unique identifier for the user.",
       "type": "string"
     },
     "profile": {
+      "description": "User's profile information containing detailed details.",
       "type": "object",
       "additionalProperties": true,
       "properties": {
         "always_active": {
+          "description": "Indicates if the user is always active.",
           "type": ["null", "boolean"]
         },
         "avatar_hash": {
+          "description": "Hash value representing the user's avatar.",
           "type": "string"
         },
         "status_text": {
+          "description": "Text representing the user's status.",
           "type": "string"
         },
         "status_emoji": {
+          "description": "Emoji representing the user's status.",
           "type": "string"
         },
         "real_name": {
+          "description": "Full real name of the user.",
           "type": "string"
         },
         "display_name": {
+          "description": "The display name of the user.",
           "type": "string"
         },
         "real_name_normalized": {
+          "description": "Normalized full real name of the user.",
           "type": "string"
         },
         "display_name_normalized": {
+          "description": "Normalized display name of the user.",
           "type": "string"
         },
         "email": {
+          "description": "Email address of the user.",
           "type": "string"
         },
         "fields": {
+          "description": "Custom fields associated with the user.",
           "type": ["null", "object"],
           "additionalProperties": true
         },
         "huddle_state": {
+          "description": "State of the user's huddle.",
           "type": "string"
         },
         "image_24": {
+          "description": "URL of the user's 24px image.",
           "type": "string"
         },
         "image_32": {
+          "description": "URL of the user's 32px image.",
           "type": "string"
         },
         "image_48": {
+          "description": "URL of the user's 48px image.",
           "type": "string"
         },
         "image_72": {
+          "description": "URL of the user's 72px image.",
           "type": "string"
         },
         "image_192": {
+          "description": "URL of the user's 192px image.",
           "type": "string"
         },
         "image_512": {
+          "description": "URL of the user's 512px image.",
           "type": "string"
         },
         "team": {
+          "description": "Team associated with the user.",
           "type": "string"
         },
         "image_1024": {
+          "description": "URL of the user's 1024px image.",
           "type": "string"
         },
         "image_original": {
+          "description": "URL of the user's original image.",
           "type": "string"
         },
         "first_name": {
+          "description": "First name of the user.",
           "type": "string"
         },
         "last_name": {
+          "description": "Last name of the user.",
           "type": "string"
         },
         "title": {
+          "description": "Job title of the user.",
           "type": "string"
         },
         "phone": {
+          "description": "Phone number of the user.",
           "type": "string"
         },
         "skype": {
+          "description": "Skype ID of the user.",
           "type": "string"
         },
         "status_emoji_display_info": {
+          "description": "Information related to the display of status emoji.",
           "type": ["null", "array"],
           "items": {
+            "description": "Individual items for status emoji display info.",
             "type": ["null", "string"]
           }
         },
         "status_expiration": {
+          "description": "Expiration date for the user's status.",
           "type": ["null", "integer"]
         },
         "status_text_canonical": {
+          "description": "Canonical text representing the user's status.",
           "type": ["null", "string"]
         }
       }
     },
     "team_id": {
+      "description": "Unique identifier for the team the user belongs to.",
       "type": "string"
     },
     "name": {
+      "description": "The username of the user.",
       "type": "string"
     },
     "deleted": {
+      "description": "Indicates if the user is deleted or not.",
       "type": "boolean"
     },
     "color": {
+      "description": "The color assigned to the user for visual purposes.",
       "type": "string"
     },
     "real_name": {
+      "description": "The real name of the user.",
       "type": "string"
     },
     "tz": {
+      "description": "Timezone of the user.",
       "type": "string"
     },
     "tz_label": {
+      "description": "Label representing the timezone of the user.",
       "type": "string"
     },
     "tz_offset": {
+      "description": "Offset of the user's timezone.",
       "type": "integer"
     },
     "is_admin": {
+      "description": "Flag specifying if the user is an admin or not.",
       "type": "boolean"
     },
     "is_owner": {
+      "description": "Flag indicating if the user is an owner.",
       "type": "boolean"
     },
     "is_primary_owner": {
+      "description": "Specifies if the user is the primary owner.",
       "type": "boolean"
     },
     "is_restricted": {
+      "description": "Flag specifying if the user is restricted.",
       "type": "boolean"
     },
     "is_ultra_restricted": {
+      "description": "Indicates if the user has ultra-restricted access.",
       "type": "boolean"
     },
     "is_bot": {
+      "description": "Indicates if the user is a bot account.",
       "type": "boolean"
     },
     "is_forgotten": {
+      "description": "Specifies if the user is marked as forgotten.",
       "type": "boolean"
     },
     "is_invited_user": {
+      "description": "Indicates if the user is invited or not.",
       "type": "boolean"
     },
     "is_email_confirmed": {
+      "description": "Flag indicating if the user's email is confirmed.",
       "type": "boolean"
     },
     "updated": {
+      "description": "Timestamp of when the user's information was last updated.",
       "type": "integer"
     },
     "who_can_share_contact_card": {
+      "description": "Specifies who can share the user's contact card.",
       "type": "string"
     },
     "is_app_user": {
+      "description": "Specifies if the user is an app user.",
       "type": "boolean"
     },
     "has_2fa": {
+      "description": "Flag indicating if the user has two-factor authentication enabled.",
       "type": "boolean"
     }
   }

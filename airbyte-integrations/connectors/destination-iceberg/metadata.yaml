@@ -2,12 +2,12 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: df65a8f3-9908-451b-aa9b-445462803560
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   dockerRepository: airbyte/destination-iceberg
   githubIssueLabel: destination-iceberg
   license: MIT
   name: Apache Iceberg
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -20,4 +20,7 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

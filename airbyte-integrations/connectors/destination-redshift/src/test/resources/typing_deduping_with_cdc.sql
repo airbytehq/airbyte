@@ -18,6 +18,7 @@ insert into "test_schema"."users_finalunittest" (
     "_ab_cdc_deleted_at",
     "_airbyte_raw_id",
     "_airbyte_extracted_at",
+    "_airbyte_generation_id",
     "_airbyte_meta"
 )
 with
@@ -44,6 +45,7 @@ with
             cast("_airbyte_data"."_ab_cdc_deleted_at" as timestamp with time zone) as "_ab_cdc_deleted_at",
             "_airbyte_raw_id",
             "_airbyte_extracted_at",
+            "_airbyte_generation_id",
             OBJECT(
                 'changes',
                     ARRAY_CONCAT(
@@ -147,7 +149,9 @@ with
                                     and "_airbyte_meta"."changes" is not null
                                     and IS_ARRAY("_airbyte_meta"."changes")
                                 ) THEN "_airbyte_meta"."changes" ELSE ARRAY() END
-                    )
+                    ),
+                'sync_id',
+                "_airbyte_meta"."sync_id"
             ) as "_airbyte_meta"
         from "test_schema"."users_raw"
         where (
@@ -191,6 +195,7 @@ select
     "_ab_cdc_deleted_at",
     "_airbyte_raw_id",
     "_airbyte_extracted_at",
+    "_airbyte_generation_id",
     "_airbyte_meta"
 from "numbered_rows"
 where "row_number" = 1;

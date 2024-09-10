@@ -31,9 +31,9 @@
             },
             "globs": {
               "title": "Globs",
+              "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "default": ["**"],
               "order": 1,
-              "description": "The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href=\"https://en.wikipedia.org/wiki/Glob_(programming)\">here</a>.",
               "type": "array",
               "items": {
                 "type": "string"
@@ -59,8 +59,8 @@
             "primary_key": {
               "title": "Primary Key",
               "description": "The column or columns (for a composite key) that serves as the unique identifier of a record. If empty, the primary key will default to the parser's default primary key.",
-              "type": "string",
-              "airbyte_hidden": true
+              "airbyte_hidden": true,
+              "type": "string"
             },
             "days_to_sync_if_history_is_full": {
               "title": "Days To Sync If History Is Full",
@@ -285,7 +285,7 @@
                   "required": ["filetype"]
                 },
                 {
-                  "title": "Document File Type Format (Experimental)",
+                  "title": "Unstructured Document Format",
                   "type": "object",
                   "properties": {
                     "filetype": {
@@ -295,20 +295,20 @@
                       "type": "string"
                     },
                     "skip_unprocessable_files": {
-                      "type": "boolean",
-                      "default": true,
                       "title": "Skip Unprocessable Files",
                       "description": "If true, skip files that cannot be parsed and pass the error message along as the _ab_source_file_parse_error field. If false, fail the sync.",
-                      "always_show": true
+                      "default": true,
+                      "always_show": true,
+                      "type": "boolean"
                     },
                     "strategy": {
-                      "type": "string",
+                      "title": "Parsing Strategy",
+                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf",
+                      "default": "auto",
                       "always_show": true,
                       "order": 0,
-                      "default": "auto",
-                      "title": "Parsing Strategy",
                       "enum": ["auto", "fast", "ocr_only", "hi_res"],
-                      "description": "The strategy used to parse documents. `fast` extracts text directly from the document which doesn't work for all files. `ocr_only` is more reliable, but slower. `hi_res` is the most reliable, but requires an API key and a hosted instance of unstructured and can't be used with local mode. See the unstructured.io documentation for more details: https://unstructured-io.github.io/unstructured/core/partition.html#partition-pdf"
+                      "type": "string"
                     },
                     "processing": {
                       "title": "Processing",
@@ -346,6 +346,12 @@
               "description": "When enabled, syncs will not validate or structure records against the stream's schema.",
               "default": false,
               "type": "boolean"
+            },
+            "recent_n_files_to_read_for_schema_discovery": {
+              "title": "Files To Read For Schema Discover",
+              "description": "The number of resent files which will be used to discover the schema for this stream.",
+              "exclusiveMinimum": 0,
+              "type": "integer"
             }
           },
           "required": ["name", "format"]
@@ -364,17 +370,17 @@
         "order": 2,
         "type": "string"
       },
+      "role_arn": {
+        "title": "AWS Role ARN",
+        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
+        "order": 6,
+        "type": "string"
+      },
       "aws_secret_access_key": {
         "title": "AWS Secret Access Key",
         "description": "In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
         "airbyte_secret": true,
         "order": 3,
-        "type": "string"
-      },
-      "role_arn": {
-        "title": "AWS Role ARN",
-        "description": "Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. Set the External ID to the Airbyte workspace ID, which can be found in the URL of this page.",
-        "order": 6,
         "type": "string"
       },
       "endpoint": {

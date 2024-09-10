@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
 
 import asyncclick as click
 from pipelines import main_logger
@@ -11,8 +13,27 @@ from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, r
 from pipelines.cli.click_decorators import click_ci_requirements_option
 from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
+from pipelines.models.secrets import Secret
+
+if TYPE_CHECKING:
+    from typing import Iterable, List
+
+    from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+
+
+def filter_out_third_party_connectors(
+    selected_connectors_with_modified_files: Iterable[ConnectorWithModifiedFiles],
+) -> List[ConnectorWithModifiedFiles]:
+    filtered_connectors = []
+    for connector in selected_connectors_with_modified_files:
+        if connector.is_third_party:
+            main_logger.info(f"Skipping third party connector {connector.technical_name} from the list of connectors")
+        else:
+            filtered_connectors.append(connector)
+    return filtered_connectors
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
@@ -24,6 +45,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=click.STRING,
     required=True,
     envvar="SPEC_CACHE_GCS_CREDENTIALS",
+    callback=wrap_gcp_credentials_in_secret,
 )
 @click.option(
     "--spec-cache-bucket-name",
@@ -38,6 +60,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=click.STRING,
     required=True,
     envvar="METADATA_SERVICE_GCS_CREDENTIALS",
+    callback=wrap_gcp_credentials_in_secret,
 )
 @click.option(
     "--metadata-service-bucket-name",
@@ -53,17 +76,11 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     envvar="SLACK_WEBHOOK",
 )
 @click.option(
-    "--slack-channel",
-    help="The Slack webhook URL to send notifications to.",
-    type=click.STRING,
-    envvar="SLACK_CHANNEL",
-    default="#connector-publish-updates",
-)
-@click.option(
     "--python-registry-token",
     help="Access token for python registry",
     type=click.STRING,
     envvar="PYTHON_REGISTRY_TOKEN",
+    callback=wrap_in_secret,
 )
 @click.option(
     "--python-registry-url",
@@ -83,20 +100,22 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 async def publish(
     ctx: click.Context,
     pre_release: bool,
-    spec_cache_gcs_credentials: str,
+    spec_cache_gcs_credentials: Secret,
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
-    metadata_service_gcs_credentials: str,
+    metadata_service_gcs_credentials: Secret,
     slack_webhook: str,
-    slack_channel: str,
-    python_registry_token: str,
+    python_registry_token: Secret,
     python_registry_url: str,
     python_registry_check_url: str,
 ) -> bool:
-    ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
-    ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
-    ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
-    ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
+
+    ctx.obj["selected_connectors_with_modified_files"] = filter_out_third_party_connectors(
+        ctx.obj["selected_connectors_with_modified_files"]
+    )
+    if not ctx.obj["selected_connectors_with_modified_files"]:
+        return True
+
     if ctx.obj["is_local"]:
         confirm(
             "Publishing from a local environment is not recommended and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
@@ -114,20 +133,21 @@ async def publish(
                 spec_cache_bucket_name=spec_cache_bucket_name,
                 metadata_service_gcs_credentials=metadata_service_gcs_credentials,
                 metadata_bucket_name=metadata_service_bucket_name,
-                docker_hub_username=ctx.obj["docker_hub_username"],
-                docker_hub_password=ctx.obj["docker_hub_password"],
+                docker_hub_username=Secret("docker_hub_username", ctx.obj["secret_stores"]["in_memory"]),
+                docker_hub_password=Secret("docker_hub_password", ctx.obj["secret_stores"]["in_memory"]),
                 slack_webhook=slack_webhook,
-                reporting_slack_channel=slack_channel,
                 ci_report_bucket=ctx.obj["ci_report_bucket_name"],
                 report_output_prefix=ctx.obj["report_output_prefix"],
                 is_local=ctx.obj["is_local"],
                 git_branch=ctx.obj["git_branch"],
                 git_revision=ctx.obj["git_revision"],
+                diffed_branch=ctx.obj["diffed_branch"],
+                git_repo_url=ctx.obj["git_repo_url"],
                 gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
                 dagger_logs_url=ctx.obj.get("dagger_logs_url"),
                 pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
                 ci_context=ctx.obj.get("ci_context"),
-                ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+                ci_gcp_credentials=ctx.obj["ci_gcp_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
                 s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
                 s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),

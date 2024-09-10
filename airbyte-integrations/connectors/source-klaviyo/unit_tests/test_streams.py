@@ -5,18 +5,20 @@
 
 from typing import Any, List, Mapping, Optional
 from unittest import mock
+from unittest.mock import patch
 
 import pendulum
 import pytest
 import requests
+from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
-from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.source import SourceKlaviyo
 from source_klaviyo.streams import Campaigns, CampaignsDetailed, IncrementalKlaviyoStream, KlaviyoStream
 
+_ANY_ATTEMPT_COUNT = 123
 API_KEY = "some_key"
 START_DATE = pendulum.datetime(2020, 10, 10)
 CONFIG = {"api_key": API_KEY, "start_date": START_DATE}
@@ -134,26 +136,25 @@ class TestKlaviyoStream:
 
     @pytest.mark.parametrize(
         ("status_code", "retry_after", "expected_time"),
-        ((429, 30, 30.0), (429, None, None), (200, 30, None), (200, None, None)),
+        ((429, 30, 30.0), (429, None, None)),
     )
     def test_backoff_time(self, status_code, retry_after, expected_time):
         stream = SomeStream(api_key=API_KEY)
-        response_mock = mock.MagicMock()
+        response_mock = mock.MagicMock(spec=requests.Response)
         response_mock.status_code = status_code
         response_mock.headers = {"Retry-After": retry_after}
-        assert stream.backoff_time(response_mock) == expected_time
+        assert stream.get_backoff_strategy().backoff_time(response_mock, _ANY_ATTEMPT_COUNT) == expected_time
 
     def test_backoff_time_large_retry_after(self):
         stream = SomeStream(api_key=API_KEY)
-        response_mock = mock.MagicMock()
+        response_mock = mock.MagicMock(spec=requests.Response)
         response_mock.status_code = 429
         retry_after = stream.max_time + 5
         response_mock.headers = {"Retry-After": retry_after}
-        with pytest.raises(KlaviyoBackoffError) as e:
-            stream.backoff_time(response_mock)
+        with pytest.raises(AirbyteTracedException) as e:
+            stream.get_backoff_strategy().backoff_time(response_mock, _ANY_ATTEMPT_COUNT)
         error_message = (
-            f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, "
-            "exit from stream."
+            "Rate limit wait time 605.0 is greater than max waiting time of 600 seconds. Stopping the stream..."
         )
         assert str(e.value) == error_message
 
@@ -232,7 +233,7 @@ class TestIncrementalKlaviyoStream:
     )
     def test_get_updated_state(self, config_start_date, current_cursor, latest_cursor, expected_cursor):
         stream = SomeIncrementalStream(api_key=API_KEY, start_date=config_start_date)
-        assert stream.get_updated_state(
+        assert stream._get_updated_state(
             current_stream_state={stream.cursor_field: current_cursor} if current_cursor else {},
             latest_record={stream.cursor_field: latest_cursor},
         ) == {stream.cursor_field: expected_cursor}
@@ -282,9 +283,21 @@ class TestSemiIncrementalKlaviyoStream:
 
 
 class TestProfilesStream:
-    def test_request_params(self):
-        stream = get_stream_by_name("profiles", CONFIG)
-        assert stream.retriever.requester.get_request_params() == {"additional-fields[profile]": "predictive_analytics"}
+
+    @pytest.mark.parametrize(
+        "disable_predictive_analytics, expected_additional_fields",
+        [
+            pytest.param(False, {"additional-fields[profile]": "predictive_analytics"}, id="test_config_with_disable_fetching_predictive_analytics"),
+            pytest.param(True, {}, id="test_config_with_disable_fetching_predictive_analytics_turned_on")
+        ]
+    )
+    def test_request_params(self, disable_predictive_analytics, expected_additional_fields):
+        if disable_predictive_analytics:
+            config = {"disable_fetching_predictive_analytics": True} | CONFIG
+        else:
+            config = CONFIG
+        stream = get_stream_by_name("profiles", config)
+        assert stream.retriever.requester.get_request_params() == expected_additional_fields
 
     def test_read_records(self, requests_mock):
         stream = get_stream_by_name("profiles", CONFIG)
@@ -446,7 +459,7 @@ class TestCampaignsStream:
     )
     def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
         stream = Campaigns(api_key=API_KEY)
-        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
+        assert stream._get_updated_state(current_stream_state, latest_record) == expected_state
 
     def test_stream_slices(self):
         stream = Campaigns(api_key=API_KEY)
@@ -549,13 +562,12 @@ class TestCampaignsDetailedStream:
         campaign_id = "1"
         record = {"id": campaign_id, "attributes": {"name": "Campaign"}}
 
-        requests_mock.register_uri(
-            "GET",
-            f"https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}",
-            status_code=404,
-            json={},
-        )
-        stream._set_recipient_count(record)
+        mocked_response = mock.MagicMock(spec=requests.Response)
+        mocked_response.ok = False
+        mocked_response.status_code = 404
+        mocked_response.json.return_value = {}
+        with patch.object(stream._http_client, "send_request", return_value=(mock.MagicMock(spec=requests.PreparedRequest), mocked_response)):
+            stream._set_recipient_count(record)
         assert record["estimated_recipient_count"] == 0
 
     def test_set_campaign_message(self, requests_mock):

@@ -5,14 +5,14 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 2.0.9
+  dockerImageTag: 2.3.2
   dockerRepository: airbyte/destination-postgres
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
   icon: postgresql.svg
   license: ELv2
   name: Postgres
-  registries:
+  registryOverrides:
     cloud:
       dockerRepository: airbyte/destination-postgres-strict-encrypt
       enabled: true
@@ -30,6 +30,16 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   supportsDbt: true
+  supportsRefreshes: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-POSTGRES_CREDENTIALS__CREDS
+          fileName: credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -29,15 +29,15 @@ No prerequisites, but a dummy api_key is required as it enhances security in fut
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
 3. Enter your `api_key`.
-5. Enter your `id` if needed. (Optional)
-6. Click **Set up source**.
+4. Enter your `id` if needed. (Optional)
+5. Click **Set up source**.
 
 ## Supported sync modes
 
 The SpaceX-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
-| :---------------------------- | :--------- |
+|:------------------------------|:-----------|
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | No         |
 | Replicate Incremental Deletes | No         |
@@ -70,7 +70,26 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject        |
-| :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.1   | 2023-11-08 | [32202](https://github.com/airbytehq/airbyte/pull/32202) | Adjust schemas to cover all fields in the records |
-| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311) | Initial commit |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                           |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 0.2.0 | 2024-08-09 | [43431](https://github.com/airbytehq/airbyte/pull/43431) | Refactor connector to manifest-only format |
+| 0.1.13 | 2024-08-03 | [43176](https://github.com/airbytehq/airbyte/pull/43176) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42792](https://github.com/airbytehq/airbyte/pull/42792) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42261](https://github.com/airbytehq/airbyte/pull/42261) | Update dependencies |
+| 0.1.10 | 2024-07-13 | [41909](https://github.com/airbytehq/airbyte/pull/41909) | Update dependencies |
+| 0.1.9 | 2024-07-10 | [41569](https://github.com/airbytehq/airbyte/pull/41569) | Update dependencies |
+| 0.1.8 | 2024-07-09 | [41089](https://github.com/airbytehq/airbyte/pull/41089) | Update dependencies |
+| 0.1.7 | 2024-07-06 | [40771](https://github.com/airbytehq/airbyte/pull/40771) | Update dependencies |
+| 0.1.6 | 2024-06-25 | [40463](https://github.com/airbytehq/airbyte/pull/40463) | Update dependencies |
+| 0.1.5 | 2024-06-22 | [40165](https://github.com/airbytehq/airbyte/pull/40165) | Update dependencies |
+| 0.1.4 | 2024-06-04 | [38976](https://github.com/airbytehq/airbyte/pull/38976) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.3 | 2024-05-30 | [38504](https://github.com/airbytehq/airbyte/pull/38504) | [autopull] base image + poetry + up_to_date |
+| 0.1.2 | 2024-05-28 | [38603](https://github.com/airbytehq/airbyte/pull/38603) | Make connector compatible with builder |
+| 0.1.1 | 2023-11-08 | [32202](https://github.com/airbytehq/airbyte/pull/32202) | Adjust schemas to cover all fields in the records |
+| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311)  | Initial commit                                    |
+
+</details>
