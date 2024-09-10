@@ -20,7 +20,6 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
-    AirbyteErrorTraceMessage,
     AirbyteMessage,
     AirbyteMessageSerializer,
     AirbyteRecordMessage,
