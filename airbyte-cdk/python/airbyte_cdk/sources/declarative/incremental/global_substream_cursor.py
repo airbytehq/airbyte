@@ -107,7 +107,16 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         if previous_slice is not None:
             yield previous_slice
 
-    def add_slice(self, slice: StreamSlice, last: bool) -> None:
+    def register_slice(self, last: bool) -> None:
+        """
+        Tracks the processing of a stream slice.
+
+        Releases the semaphore for each slice. If it's the last slice (`last=True`),
+        sets `_all_slices_yielded` to `True` to indicate no more slices will be processed.
+
+        Args:
+            last (bool): True if the current slice is the last in the sequence.
+        """
         self._slice_semaphore.release()
         if last:
             self._all_slices_yielded = True

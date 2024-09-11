@@ -61,17 +61,7 @@ class PerPartitionCursor(DeclarativeCursor):
     def stream_slices(self) -> Iterable[StreamSlice]:
         slices = self._partition_router.stream_slices()
         for partition in slices:
-            # Ensure the maximum number of partitions is not exceeded
-            self._ensure_partition_limit()
-
-            cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
-            if not cursor:
-                partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
-                cursor = self._create_cursor(partition_state)
-                self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
-
-            for cursor_slice in cursor.stream_slices():
-                yield StreamSlice(partition=partition, cursor_slice=cursor_slice)
+            yield from self.generate_slices_from_partition(partition)
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         # Ensure the maximum number of partitions is not exceeded
@@ -79,7 +69,8 @@ class PerPartitionCursor(DeclarativeCursor):
 
         cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
         if not cursor:
-            cursor = self._create_cursor(self._NO_CURSOR_STATE)
+            partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
+            cursor = self._create_cursor(partition_state)
             self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
         for cursor_slice in cursor.stream_slices():
@@ -140,6 +131,10 @@ class PerPartitionCursor(DeclarativeCursor):
         else:
             for state in stream_state["states"]:
                 self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
+            # set default state for missing partitions if it is per partition with fallback to global
+            if "state" in stream_state:
+                self._state_to_migrate_from = stream_state["state"]
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)

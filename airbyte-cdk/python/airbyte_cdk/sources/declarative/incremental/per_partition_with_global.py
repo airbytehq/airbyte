@@ -78,7 +78,8 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
                 yield from self._global_cursor.generate_slices_from_partition(partition=partition)
             else:
                 for slice, flag in iterate_with_last_flag(self._per_partition_cursor.generate_slices_from_partition(partition=partition)):
-                    self._global_cursor.add_slice(slice, flag)
+                    # we need to know if this is the last slice to close the global cursor
+                    self._global_cursor.register_slice(flag)
                     yield slice
 
     def set_initial_state(self, stream_state: StreamState) -> None:
