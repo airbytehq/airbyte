@@ -66,7 +66,6 @@ class EmbeddingConfig(Protocol):
 
     This is necessary because embedding configs do not have a shared base class.
 
-    TODO: Confirm if this class is needed.
     """
 
     mode: str
@@ -123,31 +122,6 @@ class PGVectorProcessor(SqlProcessorBase):
             DOCUMENT_CONTENT_COLUMN: self.type_converter_class.get_string_type(),
             EMBEDDING_COLUMN: Vector(self.embedding_dimensions),
         }
-
-    # TODO: Delete if not needed.
-    # @overrides
-    # def _write_files_to_new_table(
-    #     self,
-    #     files: list[Path],
-    #     stream_name: str,
-    #     batch_id: str,
-    # ) -> str:
-    #     """Write files to a new table and return the name of the created table.
-
-    #     This is the same as PyAirbyte's SqlProcessor implementation, migrated here for
-    #     stability. The main differences lie within `_get_sql_column_definitions()`, whose logic is
-    #     abstracted out of this method.
-    #     """
-    #     ...
-
-    #     # Everything above is same. Unchanged.
-
-    #     # following block is different from SqlProcessor (TODO: Keep?)
-    #     vector_suffix = f"::Vector(Float, {self.embedding_dimensions})"
-    #     variant_cols_str: str = ("\n" + " " * 21 + ", ").join([
-    #         f"$1:{col}{vector_suffix if 'embedding' in col else ''}" for col in columns_list
-    #     ])
-    #     ...
 
 
     def _emulated_merge_temp_table_to_final_table(
@@ -241,36 +215,6 @@ class PGVectorProcessor(SqlProcessorBase):
                 },
             )
 
-    def _get_table_by_name(
-        self,
-        table_name: str,
-        *,
-        force_refresh: bool = False,
-        shallow_okay: bool = False,
-    ) -> sqlalchemy.Table:
-        """Return a table object from a table name.
-
-        Workaround: Until `VECTOR` type is supported by the SQLAlchemy dialect, we will
-        return a table with fixed columns. This is a temporary solution until the dialect is updated.
-
-        TODO: Confirm if this is still needed. Specifically, if deleting this method doesn't break
-        anything, that means SQLAlchemy understands the VECTOR type and we don't need to hardcode
-        the detection process.
-        """
-        _ = force_refresh, shallow_okay  # unused
-        table = sqlalchemy.Table(
-            table_name,
-            sqlalchemy.MetaData(),
-        )
-        for column_name, column_type in self._get_sql_column_definitions(table_name).items():
-            table.append_column(
-                sqlalchemy.Column(
-                    column_name,
-                    column_type,
-                    primary_key=column_name in [DOCUMENT_ID_COLUMN, CHUNK_ID_COLUMN],
-                )
-            )
-        return table
 
     def _add_missing_columns_to_table(
         self,
