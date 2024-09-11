@@ -74,7 +74,7 @@ class AsyncPartition:
     def __repr__(self) -> str:
         return f"AsyncPartition(stream_slice={self._stream_slice}, attempt_per_job={self._attempts_per_job})"
 
-    def __json_serializable__(self):
+    def __json_serializable__(self) -> Any:
         return self._stream_slice
 
 
