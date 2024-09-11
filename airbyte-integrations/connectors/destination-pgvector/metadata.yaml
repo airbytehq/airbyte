@@ -14,10 +14,8 @@ data:
   definitionId: d9e5418d-f0f4-4d19-a8b1-5630543638e2
   dockerImageTag: 0.2.16
   dockerRepository: airbyte/destination-pgvector
-  # todo: create this documentation
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pgvector
   githubIssueLabel: destination-pgvector
-  # todo: make this png
   icon: pgvector.svg
   license: MIT
   name: PGVector
@@ -30,8 +28,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  # todo: update this date
-  releaseDate: 2024-05-14
+  releaseDate: 2024-09-25
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
@@ -48,7 +45,6 @@ data:
     # - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        # todo: create these credentials
         - name: SECRET_DESTINATION-PGVECTOR__CREDS
           fileName: config.json
           secretStore:
