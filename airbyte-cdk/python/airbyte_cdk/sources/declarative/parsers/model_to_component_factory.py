@@ -1267,7 +1267,9 @@ class ModelToComponentFactory:
         )
 
         return AsyncRetriever(
-            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices, JobTracker(5)),  # FIXME eventually make this configurable
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                job_repository, stream_slices, JobTracker(5)
+            ),  # FIXME eventually make the number of concurrent jobs in the API configurable
             record_selector=record_selector,
             stream_slicer=stream_slicer,
             config=config,
