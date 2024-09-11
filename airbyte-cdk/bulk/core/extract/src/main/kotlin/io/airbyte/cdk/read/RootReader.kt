@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeoutOrNull
@@ -61,7 +62,9 @@ class RootReader(
                 feeds.associateWith { feed: Feed ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, exceptions)
-                    launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
+                    runBlocking { // TEMP
+                        launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
+                    }
                 }
             // Call listener hook.
             listener(feedJobs)
