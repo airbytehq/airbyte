@@ -169,10 +169,30 @@ class MysqlSourceDatatypeIntegrationTest {
                 "'OXBEEF'" to """"OXBEEF"""",
             )
 
+        val decimalValues =
+            mapOf(
+                "0.2" to """0.2""",
+            )
+
+        val intValues =
+            mapOf(
+                "10" to """10""",
+                "100000000" to """100000000""",
+                "200000000" to """200000000""",
+            )
+
+        val binaryValues =
+            mapOf(
+                "X'89504E470D0A1A0A0000000D49484452'" to """"89504e470d0a1a0a0000000d49484452"""",
+            )
+
         val testCases: List<TestCase> =
             listOf(
                 TestCase("VARCHAR(10)", stringValues),
-            )
+                TestCase("DECIMAL(10,2)", decimalValues),
+                TestCase("INT UNSIGNED", intValues),
+
+                )
 
         val allStreamNamesAndRecordData: Map<String, List<JsonNode>> =
             testCases.flatMap { it.streamNamesToRecordData.toList() }.toMap()
