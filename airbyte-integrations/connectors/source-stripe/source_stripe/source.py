@@ -108,7 +108,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         args = self._get_stream_base_args(config)
         account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         try:
-            next(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+            next(account_stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except AirbyteTracedException as error:
             if error.failure_type == FailureType.config_error:
                 return False, error.message
