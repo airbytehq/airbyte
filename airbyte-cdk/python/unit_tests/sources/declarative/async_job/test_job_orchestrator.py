@@ -118,7 +118,7 @@ class AsyncJobOrchestratorTest(TestCase):
 
         with pytest.raises(AirbyteTracedException):
             list(orchestrator.create_and_get_completed_partitions())
-        assert self._job_repository.start.call_args_list == [call(_A_STREAM_SLICE)] * 4
+        assert self._job_repository.start.call_args_list == [call(_A_STREAM_SLICE)] * _MAX_NUMBER_OF_ATTEMPTS
 
     @mock.patch(sleep_mock_target)
     def test_given_failure_when_create_and_get_completed_partitions_then_raise_exception(self, mock_sleep: MagicMock) -> None:
@@ -132,7 +132,7 @@ class AsyncJobOrchestratorTest(TestCase):
 
         with pytest.raises(AirbyteTracedException):
             list(orchestrator.create_and_get_completed_partitions())
-        assert self._job_repository.start.call_args_list == [call(_A_STREAM_SLICE)] * 4
+        assert self._job_repository.start.call_args_list == [call(_A_STREAM_SLICE)] * _MAX_NUMBER_OF_ATTEMPTS
 
     def test_when_fetch_records_then_yield_records_from_each_job(self) -> None:
         self._job_repository.fetch_records.return_value = [_ANY_RECORD]
@@ -181,7 +181,7 @@ class AsyncJobOrchestratorTest(TestCase):
 
         assert job_tracker.try_to_get_intent()
 
-    def test_given_budget_already_taken_before_start_when_create_and_get_completed_partitions_then_wait_for_budget_to_be_freed(self) -> None:
+    def given_budget_already_taken_before_start_when_create_and_get_completed_partitions_then_wait_for_budget_to_be_freed(self) -> None:
         job_tracker = JobTracker(1)
         intent_to_free = job_tracker.try_to_get_intent()
         def wait_and_free_intent(_job_tracker: JobTracker, _intent_to_free: str) -> None:
@@ -201,6 +201,17 @@ class AsyncJobOrchestratorTest(TestCase):
         partitions = list(orchestrator.create_and_get_completed_partitions())
 
         assert len(partitions) == 1
+
+    def test_given_start_job_raise_when_create_and_get_completed_partitions_then_free_budget(self) -> None:
+        job_tracker = JobTracker(1)
+        self._job_repository.start.side_effect = ValueError("Can't create job")
+
+        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker)
+
+        with pytest.raises(Exception):
+            list(orchestrator.create_and_get_completed_partitions())
+
+        assert job_tracker.try_to_get_intent()
 
     def _mock_repository(self):
         self._job_repository = Mock(spec=AsyncJobRepository)

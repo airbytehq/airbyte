@@ -139,8 +139,12 @@ class AsyncJobOrchestrator:
             id_to_replace = previous_job_id
         else:
             id_to_replace = self._job_tracker.try_to_get_intent()
-        job = self._job_repository.start(_slice)
-        self._job_tracker.add_job(id_to_replace, job.api_job_id())
+        try:
+            job = self._job_repository.start(_slice)
+            self._job_tracker.add_job(id_to_replace, job.api_job_id())
+        except Exception as exception:
+            self._job_tracker.remove_job(id_to_replace)
+            raise exception
         return job
 
     def _get_running_jobs(self) -> Set[AsyncJob]:

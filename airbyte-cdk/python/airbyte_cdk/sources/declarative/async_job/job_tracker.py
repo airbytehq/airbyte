@@ -27,6 +27,12 @@ class JobTracker:
         if intent_or_job_id not in self._jobs:
             raise ValueError(f"Can't add job: Unknown intent or job id, known values are {self._jobs}")
 
+        if intent_or_job_id == job_id:
+            # Nothing to do here as the ID to replace is the same
+            return
+
+        # It is important here that we add the job before removing the other. Given the opposite, `_has_reached_limit` could return `False`
+        # for a very brief moment while we don't want to allocate for more jobs.
         self._jobs.add(job_id)
         self._jobs.remove(intent_or_job_id)
 
