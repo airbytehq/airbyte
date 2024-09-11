@@ -210,6 +210,28 @@ definitions:
       path: "automations"
       primary_key: "id"
 
+  categories_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "categories"
+      path: "help_center/categories"
+      primary_key: "id"
+
+  sections_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/links_next_paginator"
+    $parameters:
+      name: "sections"
+      path: "help_center/sections"
+      primary_key: "id"
+    
   # Incremental cursor-based streams
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -601,6 +623,8 @@ streams:
   - $ref: "#/definitions/topics_stream"
   - $ref: "#/definitions/user_fields_stream"
   - $ref: "#/definitions/automations_stream"
+  - $ref: "#/definitions/categories_stream"
+  - $ref: "#/definitions/sections_stream"
   # Incremental streams
   - $ref: "#/definitions/audit_logs_stream"
   - $ref: "#/definitions/groups_stream"
