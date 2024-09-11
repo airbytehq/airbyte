@@ -1,10 +1,12 @@
 # Height
 This directory contains the manifest-only connector for `source-height`.
 
-New source: Height
-API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de9232e5971cb4afda
-Website: https://height.app
-Access key docs: https://height.notion.site/OAuth-Apps-on-Height-a8ebeab3f3f047e3857bd8ce60c2f640
+## Documentation reference:
+Visit `https://height.notion.site/API-documentation-643aea5bf01742de9232e5971cb4afda` for API documentation
+
+## Authentication setup
+To set up the Height source connector, you'll need the Height API key that you could see once you login and navigate to `https://height.app/xxxxx/settings/api`, and copy your secret key
+Website: `https://height.app`
 
 ## Usage
 There are multiple ways to use this connector:

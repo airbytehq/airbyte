@@ -18,6 +18,7 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 | `search_query` | `string` | search_query. Search query to be used with search stream | task |
 
 ## Streams
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | workspace | id | No pagination | ✅ |  ✅  |
