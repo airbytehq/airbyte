@@ -1,7 +1,12 @@
 # Front
-Website: https://app.frontapp.com/
-Auth page: https://dev.frontapp.com/docs/create-and-revoke-api-tokens
-API Docs: https://dev.frontapp.com/reference/introduction
+This page contains the setup guide and reference information for the [Front](https://app.frontapp.com) source connector.
+
+## Documentation reference:
+Visit `https://dev.frontapp.com/reference/introduction` for API documentation
+
+## Authentication setup
+`Source-front` uses bearer token authentication,
+Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting your API token.
 
 ## Configuration
 
@@ -55,8 +60,8 @@ API Docs: https://dev.frontapp.com/reference/introduction
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-11 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-11 |[45387](https://github.com/airbytehq/airbyte/pull/45387)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

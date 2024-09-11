@@ -1,9 +1,12 @@
 # Front
 This directory contains the manifest-only connector for `source-front`.
 
-Website: https://app.frontapp.com/
-Auth page: https://dev.frontapp.com/docs/create-and-revoke-api-tokens
-API Docs: https://dev.frontapp.com/reference/introduction
+## Documentation reference:
+Visit `https://dev.frontapp.com/reference/introduction` for API documentation
+
+## Authentication setup
+`Source-front` uses bearer token authentication,
+Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting your API token.
 
 ## Usage
 There are multiple ways to use this connector:
