@@ -5,10 +5,8 @@ This directory contains the manifest-only connector for `source-picqer`.
 Visit `https://picqer.com/en/api` for API documentation
 
 ## Authentication setup
-
-Teamwork uses basic http auth that uses username and password
-Your default login username and password could be used as secrets, ref: `https://picqer.com/en/api#h-authentication`
-
+Picqer user basic http for its authentication, follow the [API documentation](https://picqer.com/en/api/) and visit settings page to get your api key.
+Configure the API key as your username and leave password field as blank
 
 ## Usage
 There are multiple ways to use this connector:
