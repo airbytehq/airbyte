@@ -2,9 +2,6 @@
 
 This page contains the setup guide and reference information for the [Guru](https://app.getguru.com/) source connector. 
 
-
-## Setup guide
-
 ## Prerequisites
 
 To set up the Guru source connector, you'll need the [Guru Auth keys](https://developer.getguru.com/reference/authentication) with permissions to the resources Airbyte should be able to access.

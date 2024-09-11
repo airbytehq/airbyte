@@ -1,8 +1,11 @@
 # Guru
 This directory contains the manifest-only connector for `source-guru`.
 
-API Documentation: https://developer.getguru.com/reference/authentication
-Website: https://app.getguru.com/
+## Documentation reference:
+Visit `https://developer.getguru.com/reference` for API documentation
+
+## Authentication
+To set up the Guru source connector, you'll need the [Guru Auth keys](https://developer.getguru.com/reference/authentication) with permissions to the resources Airbyte should be able to access.
 
 ## Usage
 There are multiple ways to use this connector:
