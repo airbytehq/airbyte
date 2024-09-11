@@ -1,7 +1,13 @@
 # Brevo
-Website: https://www.brevo.com/
-Auth page: https://app.brevo.com/settings/keys/api
-API Docs: https://developers.brevo.com/reference/getting-started-1
+This page contains the setup guide and reference information for the [Brevo](https://www.brevo.com/) source connector.
+Website: 
+
+## Documentation reference:
+Visit `https://developers.brevo.com/reference/getting-started-1` for API documentation
+
+## Authentication setup
+Brevo uses api key authentication,
+Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 ## Configuration
 
@@ -42,8 +48,8 @@ API Docs: https://developers.brevo.com/reference/getting-started-1
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-11 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-11 |[45367](https://github.com/airbytehq/airbyte/pull/45367)|Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

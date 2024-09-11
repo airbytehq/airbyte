@@ -1,9 +1,12 @@
 # Brevo
 This directory contains the manifest-only connector for `source-brevo`.
 
-Website: https://www.brevo.com/
-Auth page: https://app.brevo.com/settings/keys/api
-API Docs: https://developers.brevo.com/reference/getting-started-1
+## Documentation reference:
+Visit `https://developers.brevo.com/reference/getting-started-1` for API documentation
+
+## Authentication setup
+Brevo uses api key authentication,
+Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 ## Usage
 There are multiple ways to use this connector:
