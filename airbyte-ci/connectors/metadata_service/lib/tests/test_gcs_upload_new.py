@@ -17,6 +17,7 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
+from metadata_service.helpers import files
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
@@ -98,12 +99,13 @@ def setup_upload_mocks(
     version_blob_exists = version_blob_md5_hash is not None
     doc_version_blob_exists = doc_version_blob_md5_hash is not None
     doc_latest_blob_exists = doc_latest_blob_md5_hash is not None
+    release_candidate_blob_exists = False
 
     mock_version_blob = mocker.Mock(exists=mocker.Mock(return_value=version_blob_exists), md5_hash=version_blob_md5_hash)
     mock_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=latest_blob_exists), md5_hash=latest_blob_md5_hash)
     mock_doc_version_blob = mocker.Mock(exists=mocker.Mock(return_value=doc_version_blob_exists), md5_hash=doc_version_blob_md5_hash)
     mock_doc_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=doc_latest_blob_exists), md5_hash=doc_latest_blob_md5_hash)
-
+    mock_release_candidate_blob = mocker.Mock(exists=mocker.Mock(return_value=release_candidate_blob_exists), md5_hash="rc_hash")
     mock_todo_blob = mocker.Mock(exists=mocker.Mock(return_value=False), md5_hash=None)
 
     mock_bucket = mock_storage_client.bucket.return_value
@@ -112,18 +114,20 @@ def setup_upload_mocks(
     mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
 
     # Mock bucket blob
-    # mock_bucket.blob.side_effect = [mock_version_blob, mock_doc_version_blob, mock_latest_blob, mock_doc_latest_blob]
+
     def side_effect_bucket_blob(file_path):
         # if file path ends in latest/metadata.yaml, return mock_latest_blob
         if str(file_path).endswith(f"{LATEST_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"):
             return mock_latest_blob
 
         if str(file_path).endswith(f"{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"):
-            # TODO: add rc blob mock
-            return mock_version_blob
+            return mock_release_candidate_blob
 
         if str(file_path).endswith(f"{METADATA_FILE_NAME}"):
             return mock_version_blob
+
+        if str(file_path).endswith(f"{LATEST_GCS_FOLDER_NAME}/{DOC_FILE_NAME}"):
+            return mock_doc_latest_blob
 
         if str(file_path).endswith(f"{DOC_FILE_NAME}"):
             return mock_doc_version_blob
@@ -162,10 +166,21 @@ def setup_upload_mocks(
         "mock_bucket": mock_bucket,
         "mock_version_blob": mock_version_blob,
         "mock_latest_blob": mock_latest_blob,
+        "mock_release_candidate_blob": mock_release_candidate_blob,
         "mock_doc_version_blob": mock_doc_version_blob,
         "mock_doc_latest_blob": mock_doc_latest_blob,
         "service_account_json": service_account_json,
     }
+
+
+def assert_blob_upload(upload_info, upload_info_file_key, blob_mock, should_upload, file_path, failure_message):
+    file_uploaded = next((file.uploaded for file in upload_info.uploaded_files if file.id == upload_info_file_key), False)
+    if should_upload:
+        blob_mock.upload_from_filename.assert_called_with(file_path)
+        assert file_uploaded, failure_message
+    else:
+        blob_mock.upload_from_filename.assert_not_called()
+        assert not file_uploaded, failure_message
 
 
 @pytest.mark.parametrize(
@@ -315,6 +330,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
         version_blob_exists = version_blob_md5_hash is not None
         doc_version_blob_exists = doc_version_blob_md5_hash is not None
         doc_latest_blob_exists = doc_latest_blob_md5_hash is not None
+        is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
 
         # Call function under tests
 
@@ -322,16 +338,105 @@ def test_upload_metadata_to_gcs_valid_metadata(
             "my_bucket", metadata_file_path, validator_opts=ValidatorOptions(docs_path=DOCS_PATH)
         )
 
-        # Assertions
+        # Assert correct file upload attempts were made
 
-        import pdb
+        expected_calls = []
 
-        pdb.set_trace()
-        assert gcs_upload.upload_file_if_changed.has_calls(
-            [
-                mocker.call(metadata_file_path, mocks["mock_bucket"], expected_latest_key, disable_cache=True),
-            ]
+        if latest_blob_exists:
+            if is_release_candidate:
+                expected_calls.append(
+                    mocker.call(
+                        local_file_path=metadata_file_path,
+                        bucket=mocks["mock_bucket"],
+                        blob_path=expected_release_candidate_key,
+                        disable_cache=True,
+                    )
+                )
+            else:
+                expected_calls.append(
+                    mocker.call(
+                        local_file_path=metadata_file_path, bucket=mocks["mock_bucket"], blob_path=expected_latest_key, disable_cache=True
+                    )
+                )
+
+        if doc_latest_blob_exists and not is_release_candidate:
+            expected_calls.append(
+                mocker.call(
+                    local_file_path=VALID_DOC_FILE_PATH, bucket=mocks["mock_bucket"], blob_path=expected_latest_doc_key, disable_cache=False
+                )
+            )
+
+        if version_blob_exists:
+            expected_calls.append(
+                mocker.call(
+                    local_file_path=metadata_file_path, bucket=mocks["mock_bucket"], blob_path=expected_version_key, disable_cache=True
+                )
+            )
+
+        if doc_version_blob_exists:
+            expected_calls.append(
+                mocker.call(
+                    local_file_path=VALID_DOC_FILE_PATH,
+                    bucket=mocks["mock_bucket"],
+                    blob_path=expected_version_doc_key,
+                    disable_cache=False,
+                )
+            )
+
+        gcs_upload.upload_file_if_changed.assert_has_calls(expected_calls, any_order=True)
+
+        # Assert correct files were uploaded
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="latest_metadata",
+            blob_mock=mocks["mock_latest_blob"],
+            should_upload=latest_blob_md5_hash != local_file_md5_hash and not is_release_candidate,
+            file_path=metadata_file_path,
+            failure_message="Latest blob should be uploaded.",
         )
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="versioned_release_candidate",
+            blob_mock=mocks["mock_release_candidate_blob"],
+            should_upload=is_release_candidate,
+            file_path=metadata_file_path,
+            failure_message="Release candidate blob should be uploaded.",
+        )
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="versioned_metadata",
+            blob_mock=mocks["mock_version_blob"],
+            should_upload=version_blob_md5_hash != local_file_md5_hash,
+            file_path=metadata_file_path,
+            failure_message="Version blob should be uploaded.",
+        )
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="versioned_doc",
+            blob_mock=mocks["mock_doc_version_blob"],
+            should_upload=doc_version_blob_md5_hash != local_doc_file_md5_hash,
+            file_path=VALID_DOC_FILE_PATH,
+            failure_message="Doc version blob should be uploaded.",
+        )
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="latest_doc",
+            blob_mock=mocks["mock_doc_latest_blob"],
+            should_upload=doc_latest_blob_md5_hash != local_doc_file_md5_hash and not is_release_candidate,
+            file_path=VALID_DOC_FILE_PATH,
+            failure_message="Doc latest blob should be uploaded.",
+        )
+
+        # clear the call count
+        gcs_upload.upload_file_if_changed.reset_mock()
+
+        # TODO: Add zip support
+        # TODO: Add icon support
 
         # assert gcs_upload._metadata_upload.call_count == 2
         # is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
@@ -419,8 +524,8 @@ def test_upload_metadata_to_gcs_valid_metadata(
         #     assert doc_latest_uploaded_file.uploaded
 
         # clear the call count
-        gcs_upload._metadata_upload.reset_mock()
-        gcs_upload._doc_upload.reset_mock()
+        # gcs_upload._metadata_upload.reset_mock()
+        # gcs_upload._doc_upload.reset_mock()
 
 
 # def test_upload_metadata_to_gcs_non_existent_metadata_file():

@@ -216,6 +216,7 @@ def _file_upload(
     upload_as_latest: bool,
     skip_if_not_exists: bool = True,
     disable_cache: bool = False,
+    override_destination_file_name: str | None = None,
 ) -> tuple[UploadedFile, UploadedFile]:
     """Upload a file to GCS.
 
@@ -236,6 +237,7 @@ def _file_upload(
         uploaded, the blob id, and the description. The first tuple is for the versioned file, the second for the
         latest file.
     """
+    file_name = local_path.name if override_destination_file_name is None else override_destination_file_name
     latest_file_key = f"latest_{file_key}"
     versioned_file_key = f"versioned_{file_key}"
 
@@ -255,7 +257,7 @@ def _file_upload(
         versioned_uploaded, versioned_blob_id = upload_file_if_changed(
             local_file_path=local_path,
             bucket=bucket,
-            blob_path=f"{remote_upload_path}/{local_path.name}",
+            blob_path=f"{remote_upload_path}/{file_name}",
             disable_cache=disable_cache,
         )
         versioned_file_info = UploadedFile(id=versioned_file_key, uploaded=versioned_uploaded, blob_id=versioned_blob_id)
@@ -265,7 +267,7 @@ def _file_upload(
         latest_uploaded, latest_blob_id = upload_file_if_changed(
             local_file_path=local_path,
             bucket=bucket,
-            blob_path=f"{remote_upload_path}/{local_path.name}",
+            blob_path=f"{remote_upload_path}/{file_name}",
             disable_cache=disable_cache,
         )
         latest_file_info = UploadedFile(id=latest_file_key, uploaded=latest_uploaded, blob_id=latest_blob_id)
@@ -422,6 +424,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
         disable_cache=True,
+        override_destination_file_name=METADATA_FILE_NAME,
     )
     uploaded_files.extend(metadata_files_uploaded)
 
@@ -437,6 +440,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             upload_as_version=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
             upload_as_latest=False,
             disable_cache=True,
+            override_destination_file_name=METADATA_FILE_NAME,
         )
         uploaded_files.extend(release_candidate_files_uploaded)
 
@@ -462,6 +466,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
+        override_destination_file_name=DOC_FILE_NAME,
     )
     uploaded_files.extend(doc_files_uploaded)
 
@@ -473,6 +478,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
+        override_destination_file_name=DOC_INAPP_FILE_NAME,
     )
     uploaded_files.extend(inapp_doc_files_uploaded)
 
@@ -485,6 +491,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
+        override_destination_file_name=MANIFEST_FILE_NAME,
     )
     uploaded_files.extend(manifest_files_uploaded)
 
