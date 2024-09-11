@@ -1,9 +1,12 @@
 # Buildkite
 This directory contains the manifest-only connector for `source-buildkite`.
 
-Website: https://buildkite.com/
-Auth page: https://buildkite.com/user/api-access-tokens
-API Docs: https://buildkite.com/docs/apis/rest-api
+## Documentation reference:
+Visit `https://buildkite.com/docs/apis/rest-api` for API documentation
+
+## Authentication setup
+Buildkite uses bearer token authentication,
+Visit `https://buildkite.com/user/api-access-tokens` for getting your bearer token.
 
 ## Usage
 There are multiple ways to use this connector:
