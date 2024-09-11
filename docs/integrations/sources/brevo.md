@@ -50,6 +50,6 @@ Visit `https://app.brevo.com/settings/keys/api` for getting your api key.
 
 | Version          | Date       |PR| Subject        |
 |------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-11 |[45367](https://github.com/airbytehq/airbyte/pull/45367)|Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| 0.0.1 | 2024-09-11 |[45382](https://github.com/airbytehq/airbyte/pull/45382)|Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
