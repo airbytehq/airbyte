@@ -6,7 +6,7 @@ Website:
 Visit `https://apidocs.wheniwork.com/external/index.html` for API documentation
 
 ## Authentication setup
-Appfigures uses personal access token as bearer token authentication,
+`When I work` uses bearer token authentication,
 Refer `https://apidocs.wheniwork.com/external/index.html?repo=login` for more details.
 
 ## Getting token via postman
