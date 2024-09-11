@@ -29,6 +29,7 @@ DOCS_PATH = "/docs"
 MOCK_DOC_URL_PATH = "integrations/sources/existingsource.md"
 VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
 
+# Helpers
 
 def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None, retries: int = 0, wait_sec: int = 30) -> bool:
     image_repo_exists = "exists" in image_name
@@ -37,6 +38,7 @@ def stub_is_image_on_docker_hub(image_name: str, version: str, digest: Optional[
     image_exists = all([image_repo_exists, version_exists, sha_is_valid])
     return image_exists
 
+# Fixtures
 
 @pytest.fixture(autouse=True)
 def mock_local_doc_path_exists(monkeypatch):
@@ -50,6 +52,7 @@ def mock_local_doc_path_exists(monkeypatch):
 
     monkeypatch.setattr(Path, "exists", fake_exists)
 
+# Custom Assertions
 
 def assert_upload_invalid_metadata_fails_correctly(metadata_file_path: Path, expected_error_match: str, validate_success_error_match: str):
     """
@@ -74,6 +77,16 @@ def assert_upload_invalid_metadata_fails_correctly(metadata_file_path: Path, exp
         else:
             raise e
 
+def assert_blob_upload(upload_info, upload_info_file_key, blob_mock, should_upload, file_path, failure_message):
+    file_uploaded = next((file.uploaded for file in upload_info.uploaded_files if file.id == upload_info_file_key), False)
+    if should_upload:
+        blob_mock.upload_from_filename.assert_called_with(file_path)
+        assert file_uploaded, failure_message
+    else:
+        blob_mock.upload_from_filename.assert_not_called()
+        assert not file_uploaded, failure_message
+
+# Mocks
 
 def setup_upload_mocks(
     mocker,
@@ -106,8 +119,11 @@ def setup_upload_mocks(
     mock_doc_version_blob = mocker.Mock(exists=mocker.Mock(return_value=doc_version_blob_exists), md5_hash=doc_version_blob_md5_hash)
     mock_doc_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=doc_latest_blob_exists), md5_hash=doc_latest_blob_md5_hash)
     mock_release_candidate_blob = mocker.Mock(exists=mocker.Mock(return_value=release_candidate_blob_exists), md5_hash="rc_hash")
-    mock_todo_blob = mocker.Mock(exists=mocker.Mock(return_value=False), md5_hash=None)
-
+    mock_zip_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="zip_hash")
+    mock_sha_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="sha_hash")
+    mock_components_py_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="components_py_hash")
+    mock_manifest_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="manifest_hash")
+    mock_other_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="other_hash")
     mock_bucket = mock_storage_client.bucket.return_value
 
     mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_info", mocker.Mock(return_value=mock_credentials))
@@ -133,19 +149,19 @@ def setup_upload_mocks(
             return mock_doc_version_blob
 
         if str(file_path).endswith(f"{MANIFEST_FILE_NAME}"):
-            return mock_todo_blob
+            return mock_manifest_file_blob
 
         if str(file_path).endswith(f"{COMPONENTS_PY_FILE_NAME}"):
-            return mock_todo_blob
+            return mock_components_py_file_blob
 
         if str(file_path).endswith(".sha256"):
-            return mock_todo_blob
+            return mock_sha_file_blob
 
         if str(file_path).endswith(f".zip"):
-            return mock_todo_blob
+            return mock_zip_file_blob
 
         else:
-            return mock_todo_blob
+            return mock_other_file_blob
 
     mock_bucket.blob.side_effect = side_effect_bucket_blob
 
@@ -169,18 +185,13 @@ def setup_upload_mocks(
         "mock_release_candidate_blob": mock_release_candidate_blob,
         "mock_doc_version_blob": mock_doc_version_blob,
         "mock_doc_latest_blob": mock_doc_latest_blob,
+        "mock_manifest_file_blob": mock_manifest_file_blob,
+        "mock_components_py_file_blob": mock_components_py_file_blob,
+        "mock_sha_file_blob": mock_sha_file_blob,
+        "mock_zip_file_blob": mock_zip_file_blob,
+        "mock_other_file_blob": mock_other_file_blob,
         "service_account_json": service_account_json,
     }
-
-
-def assert_blob_upload(upload_info, upload_info_file_key, blob_mock, should_upload, file_path, failure_message):
-    file_uploaded = next((file.uploaded for file in upload_info.uploaded_files if file.id == upload_info_file_key), False)
-    if should_upload:
-        blob_mock.upload_from_filename.assert_called_with(file_path)
-        assert file_uploaded, failure_message
-    else:
-        blob_mock.upload_from_filename.assert_not_called()
-        assert not file_uploaded, failure_message
 
 
 @pytest.mark.parametrize(
@@ -297,8 +308,6 @@ def test_upload_metadata_to_gcs_valid_metadata(
     doc_version_blob_md5_hash,
     doc_latest_blob_md5_hash,
 ):
-    # mocker.spy(gcs_upload, "_metadata_upload")
-    # mocker.spy(gcs_upload, "_doc_upload")
     mocker.spy(gcs_upload, "_file_upload")
     mocker.spy(gcs_upload, "upload_file_if_changed")
     for valid_metadata_upload_file in valid_metadata_upload_files:
@@ -436,204 +445,152 @@ def test_upload_metadata_to_gcs_valid_metadata(
         gcs_upload.upload_file_if_changed.reset_mock()
 
         # TODO: Add zip support
+        # TODO: Add components.py support
+        # TODO: Add manifest support
         # TODO: Add icon support
 
-        # assert gcs_upload._metadata_upload.call_count == 2
-        # is_release_candidate = getattr(metadata.data.releases, "isReleaseCandidate", False)
-        # if is_release_candidate:
-        #     gcs_upload._metadata_upload.assert_has_calls(
-        #         [
-        #             mocker.call(metadata, mocks["mock_bucket"], metadata_file_path, metadata.data.dockerImageTag),
-        #             mocker.call(metadata, mocks["mock_bucket"], metadata_file_path, RELEASE_CANDIDATE_GCS_FOLDER_NAME),
-        #         ]
-        #     )
-        # else:
-        #     gcs_upload._metadata_upload.assert_has_calls(
-        #         [
-        #             mocker.call(metadata, mocks["mock_bucket"], metadata_file_path, metadata.data.dockerImageTag),
-        #             mocker.call(metadata, mocks["mock_bucket"], metadata_file_path, LATEST_GCS_FOLDER_NAME),
-        #         ]
-        #     )
-        # gcs_upload._doc_upload.assert_called()
 
-        # gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
-        # mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
-        # if is_release_candidate:
-        #     mocks["mock_bucket"].blob.assert_has_calls(
-        #         [
-        #             mocker.call(expected_version_key),
-        #             mocker.call(expected_version_doc_key),
-        #             mocker.call(expected_release_candidate_key),
-        #         ]
-        #     )
-        # else:
-        #     mocks["mock_bucket"].blob.assert_has_calls(
-        #         [
-        #             mocker.call(expected_version_key),
-        #             mocker.call(expected_version_doc_key),
-        #             mocker.call(expected_latest_key),
-        #             mocker.call(expected_latest_doc_key),
-        #         ]
-        #     )
+def test_upload_metadata_to_gcs_non_existent_metadata_file():
+    metadata_file_path = Path("./i_dont_exist.yaml")
+    with pytest.raises(ValueError, match="No such file or directory"):
+        gcs_upload.upload_metadata_to_gcs(
+            "my_bucket",
+            metadata_file_path,
+            validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
+        )
 
-        # version_metadata_uploaded_file = next((file for file in upload_info.uploaded_files if file.id == "version_metadata"), None)
-        # assert version_metadata_uploaded_file, "version_metadata not found in uploaded files."
-        # assert version_metadata_uploaded_file.blob_id == mocks["mock_version_blob"].id
 
-        # doc_version_uploaded_file = next((file for file in upload_info.uploaded_files if file.id == "doc_version"), None)
-        # assert doc_version_uploaded_file, "doc_version not found in uploaded files."
-        # assert doc_version_uploaded_file.blob_id == mocks["mock_doc_version_blob"].id
+def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
+    # Mock dockerhub
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
-        # doc_latest_uploaded_file = next((file for file in upload_info.uploaded_files if file.id == "doc_latest"), None)
-        # if not is_release_candidate:
-        #     assert doc_latest_uploaded_file, "doc_latest not found in uploaded files."
-        #     assert doc_latest_uploaded_file.blob_id == mocks["mock_doc_latest_blob"].id
-        # else:
-        #     assert not doc_latest_uploaded_file.uploaded
+    # Test that all invalid metadata files throw a ValueError
+    for invalid_metadata_file in invalid_metadata_yaml_files:
+        print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
+        metadata_file_path = Path(invalid_metadata_file)
 
-        # if not version_blob_exists:
-        #     mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-        #     assert upload_info.metadata_uploaded
+        error_match_if_validation_fails_as_expected = "Validation error"
 
-        # if not latest_blob_exists:
-        #     mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-        #     assert upload_info.metadata_uploaded
+        # If validation succeeds, it goes on to upload any new/changed files.
+        # We don't mock the gcs stuff in this test, so it fails trying to
+        # mock compute the md5 hash.
+        error_match_if_validation_succeeds = "Please set the GCS_CREDENTIALS env var."
 
-        # if not doc_version_blob_exists:
-        #     mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(VALID_DOC_FILE_PATH)
-        #     assert doc_version_uploaded_file.uploaded
+        assert_upload_invalid_metadata_fails_correctly(
+            metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds
+        )
 
-        # if not doc_latest_blob_exists and not is_release_candidate:
-        #     mocks["mock_doc_latest_blob"].upload_from_filename.assert_called_with(VALID_DOC_FILE_PATH)
-        #     assert doc_latest_uploaded_file.uploaded
 
-        # if version_blob_md5_hash != local_file_md5_hash:
-        #     mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-        #     assert upload_info.metadata_uploaded
+def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
+    setup_upload_mocks(mocker, None, None, "new_md5_hash", None, None, None, None, None)
 
-        # if latest_blob_md5_hash != local_file_md5_hash:
-        #     mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
-        #     assert upload_info.metadata_uploaded
+    # Test that valid metadata files that reference invalid docker images throw a ValueError
+    for invalid_metadata_file in invalid_metadata_upload_files:
+        print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
+        metadata_file_path = Path(invalid_metadata_file)
 
-        # if doc_version_blob_md5_hash != local_doc_file_md5_hash:
-        #     mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(VALID_DOC_FILE_PATH)
-        #     assert doc_version_uploaded_file.uploaded
+        error_match_if_validation_fails_as_expected = "does not exist in DockerHub"
 
-        # if (doc_latest_blob_md5_hash != local_doc_file_md5_hash) and not is_release_candidate:
-        #     mocks["mock_doc_latest_blob"].upload_from_filename.assert_called_with(VALID_DOC_FILE_PATH)
-        #     assert doc_latest_uploaded_file.uploaded
+        # If validation succeeds, it goes on to upload any new/changed files.
+        # We mock gcs stuff in this test, so it fails trying to compare the md5 hashes.
+        error_match_if_validation_succeeds = "Unexpected path"
+
+        assert_upload_invalid_metadata_fails_correctly(
+            metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds
+        )
+
+
+def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files, tmp_path):
+    mocker.spy(gcs_upload, "_file_upload")
+    mocker.spy(gcs_upload, "upload_file_if_changed")
+    prerelease_image_tag = "1.5.6-dev.f80318f754"
+
+    for valid_metadata_upload_file in valid_metadata_upload_files:
+        tmp_metadata_file_path = tmp_path / "metadata.yaml"
+        if tmp_metadata_file_path.exists():
+            tmp_metadata_file_path.unlink()
+
+        print(f"\nTesting prerelease upload of valid metadata file: " + valid_metadata_upload_file)
+        metadata_file_path = Path(valid_metadata_upload_file)
+        metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
+        expected_version_key = f"metadata/{metadata.data.dockerRepository}/{prerelease_image_tag}/{METADATA_FILE_NAME}"
+
+        mocks = setup_upload_mocks(mocker, "new_md5_hash1", "new_md5_hash2", "new_md5_hash3", None, None, None, metadata_file_path, None)
+
+        # Mock tempfile to have a deterministic path
+        mocker.patch.object(
+            gcs_upload.tempfile,
+            "NamedTemporaryFile",
+            mocker.Mock(
+                return_value=mocker.Mock(__enter__=mocker.Mock(return_value=tmp_metadata_file_path.open("w")), __exit__=mocker.Mock())
+            ),
+        )
+
+        upload_info = gcs_upload.upload_metadata_to_gcs(
+            "my_bucket",
+            metadata_file_path,
+            ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_image_tag),
+        )
+
+        # Assert that the metadata is overrode
+        tmp_metadata, error = gcs_upload.validate_and_load(tmp_metadata_file_path, [], validator_opts=ValidatorOptions(docs_path=DOCS_PATH))
+        tmp_metadata_dict = to_json_sanitized_dict(tmp_metadata, exclude_none=True)
+        assert tmp_metadata_dict["data"]["dockerImageTag"] == prerelease_image_tag
+        for registry in get(tmp_metadata_dict, "data.registryOverrides", {}).values():
+            if "dockerImageTag" in registry:
+                assert registry["dockerImageTag"] == prerelease_image_tag
+
+        # Assert uploads attempted
+
+        expected_calls = [
+            mocker.call(
+                local_file_path=tmp_metadata_file_path, bucket=mocks["mock_bucket"], blob_path=expected_version_key, disable_cache=True
+            ),
+        ]
+
+        gcs_upload.upload_file_if_changed.assert_has_calls(expected_calls, any_order=True)
+
+        # Assert versioned uploads happened
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="versioned_metadata",
+            blob_mock=mocks["mock_version_blob"],
+            should_upload=True,
+            file_path=tmp_metadata_file_path,
+            failure_message="Latest blob should be uploaded.",
+        )
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="versioned_doc",
+            blob_mock=mocks["mock_doc_version_blob"],
+            should_upload=True,
+            file_path=VALID_DOC_FILE_PATH,
+            failure_message="Latest blob should be uploaded.",
+        )
+
+        # Assert latest uploads did not happen
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="latest_metadata",
+            blob_mock=mocks["mock_latest_blob"],
+            should_upload=False,
+            file_path=metadata_file_path,
+            failure_message="Latest blob should be uploaded.",
+        )
+
+        assert_blob_upload(
+            upload_info=upload_info,
+            upload_info_file_key="latest_doc",
+            blob_mock=mocks["mock_doc_latest_blob"],
+            should_upload=False,
+            file_path=VALID_DOC_FILE_PATH,
+            failure_message="Latest blob should be uploaded.",
+        )
 
         # clear the call count
-        # gcs_upload._metadata_upload.reset_mock()
-        # gcs_upload._doc_upload.reset_mock()
+        gcs_upload._file_upload.reset_mock()
+        gcs_upload.upload_file_if_changed.reset_mock()
 
-
-# def test_upload_metadata_to_gcs_non_existent_metadata_file():
-#     metadata_file_path = Path("./i_dont_exist.yaml")
-#     with pytest.raises(ValueError, match="No such file or directory"):
-#         gcs_upload.upload_metadata_to_gcs(
-#             "my_bucket",
-#             metadata_file_path,
-#             validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
-#         )
-
-
-# def test_upload_invalid_metadata_to_gcs(mocker, invalid_metadata_yaml_files):
-#     # Mock dockerhub
-#     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
-
-#     # Test that all invalid metadata files throw a ValueError
-#     for invalid_metadata_file in invalid_metadata_yaml_files:
-#         print(f"\nTesting upload of invalid metadata file: " + invalid_metadata_file)
-#         metadata_file_path = Path(invalid_metadata_file)
-
-#         error_match_if_validation_fails_as_expected = "Validation error"
-
-#         # If validation succeeds, it goes on to upload any new/changed files.
-#         # We don't mock the gcs stuff in this test, so it fails trying to
-#         # mock compute the md5 hash.
-#         error_match_if_validation_succeeds = "Please set the GCS_CREDENTIALS env var."
-
-#         assert_upload_invalid_metadata_fails_correctly(
-#             metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds
-#         )
-
-
-# def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
-#     setup_upload_mocks(mocker, None, None, "new_md5_hash", None, None, None, None, None)
-
-#     # Test that valid metadata files that reference invalid docker images throw a ValueError
-#     for invalid_metadata_file in invalid_metadata_upload_files:
-#         print(f"\nTesting upload of valid metadata file with invalid docker image: " + invalid_metadata_file)
-#         metadata_file_path = Path(invalid_metadata_file)
-
-#         error_match_if_validation_fails_as_expected = "does not exist in DockerHub"
-
-#         # If validation succeeds, it goes on to upload any new/changed files.
-#         # We mock gcs stuff in this test, so it fails trying to compare the md5 hashes.
-#         error_match_if_validation_succeeds = "Unexpected path"
-
-#         assert_upload_invalid_metadata_fails_correctly(
-#             metadata_file_path, error_match_if_validation_fails_as_expected, error_match_if_validation_succeeds
-#         )
-
-
-# def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_files, tmp_path):
-#     # Arrange
-#     mocker.patch("metadata_service.gcs_upload._metadata_upload", return_value=(True, "someid"))
-#     mocker.patch("metadata_service.gcs_upload.upload_file_if_changed", return_value=(True, "someid"))
-#     mocker.spy(gcs_upload, "_metadata_upload")
-#     doc_upload_spy = mocker.spy(gcs_upload, "_doc_upload")
-
-#     for valid_metadata_upload_file in valid_metadata_upload_files:
-#         tmp_metadata_file_path = tmp_path / "metadata.yaml"
-#         if tmp_metadata_file_path.exists():
-#             tmp_metadata_file_path.unlink()
-
-#         print(f"\nTesting prerelease upload of valid metadata file: " + valid_metadata_upload_file)
-#         # Assuming there is a valid metadata file in the list, if not, you might need to create one
-#         metadata_file_path = Path(valid_metadata_upload_file)
-#         mocks = setup_upload_mocks(mocker, "new_md5_hash1", "new_md5_hash2", "new_md5_hash3", None, None, None, metadata_file_path, None)
-#         # Mock tempfile to have a deterministic path
-#         mocker.patch.object(
-#             gcs_upload.tempfile,
-#             "NamedTemporaryFile",
-#             mocker.Mock(
-#                 return_value=mocker.Mock(__enter__=mocker.Mock(return_value=tmp_metadata_file_path.open("w")), __exit__=mocker.Mock())
-#             ),
-#         )
-
-#         prerelease_image_tag = "1.5.6-dev.f80318f754"
-
-#         gcs_upload.upload_metadata_to_gcs(
-#             "my_bucket",
-#             metadata_file_path,
-#             ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_image_tag),
-#         )
-
-#         assert gcs_upload._metadata_upload.call_count == 1
-#         overridden_metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(tmp_metadata_file_path.read_text()))
-#         gcs_upload._metadata_upload.assert_called_with(
-#             overridden_metadata, mocks["mock_bucket"], tmp_metadata_file_path, prerelease_image_tag
-#         )
-
-#         # Assert that _doc_upload is only called twice, both with latest set to False
-#         assert doc_upload_spy.call_count == 2
-#         assert doc_upload_spy.call_args_list[0].args[-2] == False
-#         assert doc_upload_spy.call_args_list[1].args[-2] == False
-#         doc_upload_spy.reset_mock()
-
-#         # Verify the tmp metadata is overridden
-#         assert tmp_metadata_file_path.exists(), f"{tmp_metadata_file_path} does not exist"
-
-#         # verify that the metadata is overrode
-#         tmp_metadata, error = gcs_upload.validate_and_load(tmp_metadata_file_path, [], validator_opts=ValidatorOptions(docs_path=DOCS_PATH))
-#         tmp_metadata_dict = to_json_sanitized_dict(tmp_metadata, exclude_none=True)
-#         assert tmp_metadata_dict["data"]["dockerImageTag"] == prerelease_image_tag
-#         for registry in get(tmp_metadata_dict, "data.registryOverrides", {}).values():
-#             if "dockerImageTag" in registry:
-#                 assert registry["dockerImageTag"] == prerelease_image_tag
-
-#         # clear the call count
-#         gcs_upload._metadata_upload.reset_mock()
-#         gcs_upload._doc_upload.reset_mock()
