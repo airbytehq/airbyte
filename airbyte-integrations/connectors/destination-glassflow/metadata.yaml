@@ -11,6 +11,9 @@ data:
   tags:
     - language:python
     - cdk:python
+  allowedHosts:
+    hosts:
+      - api.glassflow.dev
   remoteRegistries:
     pypi:
       enabled: true
