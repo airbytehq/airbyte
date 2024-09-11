@@ -202,6 +202,8 @@ def test_given_record_for_partition_when_read_then_update_state():
         )
 
     assert stream_instance.state == {
+        "state": {},
+        'use_global_cursor': False,
         "states": [
             {
                 "partition": {"partition_field": "1"},
@@ -359,6 +361,9 @@ def test_partition_limitation():
     # assert output_data == expected_records
     final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
     assert final_state[-1] == {
+        'lookback_window': 0,
+        'state': {'cursor_field': '2022-02-17'},
+        "use_global_cursor": False,
         "states": [
             {
                 "partition": {"partition_field": "2"},
