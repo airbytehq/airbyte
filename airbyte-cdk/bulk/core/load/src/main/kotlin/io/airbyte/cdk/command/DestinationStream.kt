@@ -15,6 +15,8 @@ import jakarta.inject.Singleton
  *
  * TODO: Add dedicated schema type, converted from json-schema.
  */
+// This looks very much like it should be a data class.
+// This way, you don't need to override hashCode and friends.
 class DestinationStream(val descriptor: Descriptor) {
     data class Descriptor(val namespace: String, val name: String)
 

@@ -11,6 +11,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+// Can we lift this to the base package to make it available for sources?
 /**
  * Manages memory usage for the destination.
  *
@@ -60,6 +61,10 @@ interface AvailableMemoryProvider {
     val availableMemoryBytes: Long
 }
 
+// Since this is obviously the default implementation outside of unit tests
+// consider using @DefaultImplementation instead of @Secondary.
+// The @Primary and @Secondary annotations should really be considered only as a last resort.
+// This comment also applies elsewhere.
 @Singleton
 @Secondary
 class JavaRuntimeAvailableMemoryProvider : AvailableMemoryProvider {

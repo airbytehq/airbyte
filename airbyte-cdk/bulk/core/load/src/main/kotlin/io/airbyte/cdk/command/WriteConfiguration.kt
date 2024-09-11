@@ -11,6 +11,9 @@ import jakarta.inject.Singleton
  * General configuration for the write operation. The implementor can override this to tweak runtime
  * behavior.
  */
+// The word "Configuration" is overloaded.
+// Consider either making this part of the DestinationConfiguration itself
+// or renaming it to something less confusing.
 interface WriteConfiguration {
     /** Batch accumulation settings. */
     val recordBatchSizeBytes: Long
@@ -23,6 +26,9 @@ interface WriteConfiguration {
 
 @Singleton
 @Secondary
+// Groups of quasi-constants like these should be injected using @ConfigurationProperties,
+// it's so much more convenient!
+// See DefaultJdbcConstants for an example of what I mean.
 open class DefaultWriteConfiguration : WriteConfiguration {
     override val recordBatchSizeBytes: Long = 200L * 1024L * 1024L
     override val firstStageTmpFilePrefix = "airbyte-cdk-load-staged-raw-records"

@@ -16,6 +16,9 @@ interface Deserializer<T : Any> {
  * Converts the internal @[AirbyteMessage] to the internal @[DestinationMessage] Ideally, this would
  * not use protocol messages at all, but rather a specialized deserializer for routing.
  */
+// Does this _need_ to be injected?
+// Non-rethorical question: are we going to have different deserialization schemes?
+// This comment applies to a number of similar definitions and so I won't repeat it.
 @Singleton
 class DefaultDestinationMessageDeserializer(private val messageFactory: DestinationMessageFactory) :
     Deserializer<DestinationMessage> {

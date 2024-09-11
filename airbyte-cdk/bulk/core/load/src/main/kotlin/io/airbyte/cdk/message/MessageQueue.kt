@@ -76,6 +76,8 @@ class DefaultQueueChannel(override val messageQueue: MessageQueue<*, Destination
 }
 
 @Singleton
+// Why inject this factory? Why not inject DefaultQueueChannel directly instead?
+// This comment also applies elsewhere.
 class DefaultQueueChannelFactory : QueueChannelFactory<DestinationRecordWrapped> {
     override fun make(
         messageQueue: MessageQueue<*, DestinationRecordWrapped>

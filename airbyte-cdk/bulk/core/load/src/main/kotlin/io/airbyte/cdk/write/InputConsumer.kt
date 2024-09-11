@@ -16,6 +16,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /** Runnable input consumer. */
+// What does the type parameter mean here?
+// Why isn't this a Flow instead?
+// It looks like you could have a root Flow<String> representing each line in the InputStream
+// to which you chain some mapper which deserializes, etc.
 interface InputConsumer<T> {
     suspend fun run()
 }

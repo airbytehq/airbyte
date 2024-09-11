@@ -185,6 +185,9 @@ class DefaultStreamManager(
     }
 }
 
+// The purpose of a @Factory is to instantiate beans for interfaces or classes we don't control
+// and which were defined in libraries which didn't care to annotate them in a useful way.
+// This is not the case here.
 @Factory
 class StreamsManagerFactory(
     private val catalog: DestinationCatalog,

@@ -45,6 +45,9 @@ import java.nio.file.Path
  * // etc...
  * ```
  */
+// Consider a sealed interface here, if you haven't already.
+// Making things sealed makes for so much nicer pattern matching
+// and compile-time checks. It's not always possible to seal things, of course.
 interface Batch {
     enum class State {
         SPOOLED,
@@ -60,6 +63,8 @@ interface Batch {
 data class SimpleBatch(override val state: Batch.State) : Batch
 
 /** Represents a file of records locally staged. */
+// In Kotlin, abstract classes really are only around for java backwards compatibility.
+// Instead you want either an interface or a sealed class here.
 abstract class StagedLocalFile() : Batch {
     override val state: Batch.State = Batch.State.LOCAL
     abstract val localPath: Path

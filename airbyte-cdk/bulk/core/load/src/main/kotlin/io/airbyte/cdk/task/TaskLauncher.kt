@@ -6,6 +6,7 @@ package io.airbyte.cdk.task
 
 import jakarta.inject.Singleton
 
+// This looks very much like it should be sealed.
 interface Task {
     suspend fun execute()
 }

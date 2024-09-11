@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStre
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import jakarta.inject.Singleton
 
+// This is a very good idea!!
 /**
  * Internal representation of destination messages. These are intended to be specialized for
  * usability. Data should be marshalled to these from frontline deserialized objects.
