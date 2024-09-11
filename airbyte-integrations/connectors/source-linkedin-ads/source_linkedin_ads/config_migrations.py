@@ -73,4 +73,4 @@ class MigrateCredentials(ABC):
         if config_path:
             config = source.read_config(config_path)
             if cls.should_migrate(config):
-                cls.emit_control_message(cls.modify_and_save(config_path, source, config))
+                emit_configuration_as_airbyte_control_message(cls.modify_and_save(config_path, source, config))
