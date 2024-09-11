@@ -7,6 +7,9 @@ package io.airbyte.cdk.message
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.data.AirbyteValue
+import io.airbyte.cdk.data.AirbyteValueToJson
+import io.airbyte.cdk.data.JsonToAirbyteValue
 import io.airbyte.cdk.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.message.CheckpointMessage.Stats
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
@@ -37,7 +40,7 @@ sealed interface DestinationStreamAffinedMessage : DestinationMessage {
 
 data class DestinationRecord(
     override val stream: DestinationStream,
-    val data: JsonNode? = null,
+    val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
     val serialized: String,
@@ -70,7 +73,7 @@ data class DestinationRecord(
                     .withStream(stream.descriptor.name)
                     .withNamespace(stream.descriptor.namespace)
                     .withEmittedAt(emittedAtMs)
-                    .withData(data)
+                    .withData(AirbyteValueToJson().convert(data))
                     .also {
                         if (meta != null) {
                             it.meta = meta.asProtocolObject()
@@ -206,14 +209,15 @@ data object Undefined : DestinationMessage {
 class DestinationMessageFactory(private val catalog: DestinationCatalog) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         return when (message.type) {
-            AirbyteMessage.Type.RECORD ->
+            AirbyteMessage.Type.RECORD -> {
+                val stream =
+                    catalog.getStream(
+                        namespace = message.record.namespace,
+                        name = message.record.stream,
+                    )
                 DestinationRecord(
-                    stream =
-                        catalog.getStream(
-                            namespace = message.record.namespace,
-                            name = message.record.stream,
-                        ),
-                    data = message.record.data,
+                    stream = stream,
+                    data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
                     emittedAtMs = message.record.emittedAt,
                     meta =
                         message.record.meta?.let { meta ->
@@ -229,6 +233,7 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         },
                     serialized = serialized
                 )
+            }
             AirbyteMessage.Type.TRACE -> {
                 val status = message.trace.streamStatus
                 val stream =
