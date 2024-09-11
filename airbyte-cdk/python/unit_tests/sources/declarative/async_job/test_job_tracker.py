@@ -8,6 +8,7 @@ from airbyte_cdk.sources.declarative.async_job.job_tracker import ConcurrentJobL
 
 _LIMIT = 3
 
+
 class JobTrackerTest(TestCase):
     def setUp(self) -> None:
         self._tracker = JobTracker(_LIMIT)
@@ -31,8 +32,6 @@ class JobTrackerTest(TestCase):
         self._tracker.add_job(intents[0], "a created job")
         with pytest.raises(ConcurrentJobLimitReached):
             self._tracker.try_to_get_intent()
-
-
 
     def _reach_limit(self) -> List[str]:
         return [self._tracker.try_to_get_intent() for i in range(_LIMIT)]

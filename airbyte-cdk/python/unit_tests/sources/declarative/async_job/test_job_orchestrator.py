@@ -63,6 +63,7 @@ def _status_update_per_jobs(status_update_per_jobs: Mapping[AsyncJob, List[Async
 sleep_mock_target = "airbyte_cdk.sources.declarative.async_job.job_orchestrator.time.sleep"
 _MAX_NUMBER_OF_ATTEMPTS = 3
 
+
 class AsyncJobOrchestratorTest(TestCase):
     def setUp(self) -> None:
         self._job_repository = Mock(spec=AsyncJobRepository)
@@ -159,7 +160,6 @@ class AsyncJobOrchestratorTest(TestCase):
             }
         )
 
-
         orchestrator = AsyncJobOrchestrator(self._job_repository, [self._job_for_a_slice.job_parameters(), self._job_for_another_slice.job_parameters()], job_tracker)
 
         partitions = list(orchestrator.create_and_get_completed_partitions())
@@ -184,6 +184,7 @@ class AsyncJobOrchestratorTest(TestCase):
     def given_budget_already_taken_before_start_when_create_and_get_completed_partitions_then_wait_for_budget_to_be_freed(self) -> None:
         job_tracker = JobTracker(1)
         intent_to_free = job_tracker.try_to_get_intent()
+
         def wait_and_free_intent(_job_tracker: JobTracker, _intent_to_free: str) -> None:
             print("Waiting before freeing budget...")
             time.sleep(1)
