@@ -11,8 +11,8 @@ from typing import List
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from orjson import orjson
-from source_stripe.config_migration import StripeConfigMigration
 from source_stripe import SourceStripe
+from source_stripe.config_migration import StripeConfigMigration
 
 
 def _get_source(args: List[str]):
