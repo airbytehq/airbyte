@@ -2980,7 +2980,7 @@ definitions:
     url_base: https://api.productive.io/api/v2/
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
       inject_into:
         type: RequestOption
         field_name: X-Auth-Token
