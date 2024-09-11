@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 200
-    sl: 100
+    sl: 0
   allowedHosts:
     hosts:
       - ${host}
@@ -9,9 +9,9 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 196a42fc-39f2-473f-88ff-d68b2ea702e9
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.0.23
   dockerRepository: airbyte/source-firetruck
-  documentationUrl: https://docs.airbyte.com/integrations/sources/firetruck
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-oracle
   githubIssueLabel: source-firetruck
   icon: oracle.svg
   license: Airbyte Enterprise

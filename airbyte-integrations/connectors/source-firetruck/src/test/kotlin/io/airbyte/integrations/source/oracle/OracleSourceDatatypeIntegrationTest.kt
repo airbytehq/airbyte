@@ -61,7 +61,7 @@ class OracleSourceDatatypeIntegrationTest {
 
     object LazyValues {
         val actualStreams: Map<String, AirbyteStream> by lazy {
-            val output: BufferingOutputConsumer = CliRunner.runSource("discover", config())
+            val output: BufferingOutputConsumer = CliRunner.source("discover", config()).run()
             output.catalogs().firstOrNull()?.streams?.filterNotNull()?.associateBy { it.name }
                 ?: mapOf()
         }
@@ -80,7 +80,7 @@ class OracleSourceDatatypeIntegrationTest {
         }
 
         val allReadMessages: List<AirbyteMessage> by lazy {
-            CliRunner.runSource("read", config(), configuredCatalog).messages()
+            CliRunner.source("read", config(), configuredCatalog).run().messages()
         }
 
         val actualReads: Map<String, BufferingOutputConsumer> by lazy {
