@@ -1,6 +1,5 @@
 # Brevo
 This page contains the setup guide and reference information for the [Brevo](https://www.brevo.com/) source connector.
-Website: 
 
 ## Documentation reference:
 Visit `https://developers.brevo.com/reference/getting-started-1` for API documentation
