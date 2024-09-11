@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.command
 
+import io.airbyte.cdk.message.ObjectType
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
@@ -13,7 +14,7 @@ import jakarta.inject.Singleton
  * for usability.
  */
 data class DestinationCatalog(
-    val streams: List<DestinationStream> = emptyList(),
+    val streams: List<DestinationStream> = emptyList()
 ) {
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
         streams.associateBy { it.descriptor }
@@ -36,6 +37,8 @@ class DefaultDestinationCatalogFactory(
 ) {
     @Singleton
     fun make(): DestinationCatalog {
-        return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
+        return DestinationCatalog(
+            streams = catalog.streams.map { streamFactory.make(it) }
+        )
     }
 }

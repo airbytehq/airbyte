@@ -27,7 +27,7 @@ sealed class DestinationRecordMessage : DestinationMessage() {
 
 data class DestinationRecord(
     override val stream: DestinationStream,
-    val data: JsonNode? = null,
+    val data: ObjectValue,
     val emittedAtMs: Long,
     val serialized: String
 ) : DestinationRecordMessage()
@@ -77,18 +77,19 @@ data object Undefined : DestinationMessage()
 class DestinationMessageFactory(private val catalog: DestinationCatalog) {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         return when (message.type) {
-            AirbyteMessage.Type.RECORD ->
+            AirbyteMessage.Type.RECORD -> {
+                val stream = catalog.getStream(
+                    namespace = message.record.namespace,
+                    name = message.record.stream,
+                )
                 DestinationRecord(
-                    stream =
-                        catalog.getStream(
-                            namespace = message.record.namespace,
-                            name = message.record.stream,
-                        ),
+                    stream = stream,
                     // TODO: Map to AirbyteType
-                    data = message.record.data,
-                    emittedAtMs = message.record.emittedAt,
+                    data = AirbyteValue.fromAirbyteJson(message.record.data, stream.schema),
+                    emittedAtMs = message . record . emittedAt,
                     serialized = serialized
                 )
+            }
             AirbyteMessage.Type.TRACE -> {
                 val status = message.trace.streamStatus
                 val stream =

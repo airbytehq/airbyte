@@ -4,6 +4,9 @@
 
 package io.airbyte.cdk.command
 
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.message.ObjectType
+import io.airbyte.cdk.message.AirbyteType
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import jakarta.inject.Singleton
 
@@ -15,7 +18,10 @@ import jakarta.inject.Singleton
  *
  * TODO: Add dedicated schema type, converted from json-schema.
  */
-class DestinationStream(val descriptor: Descriptor) {
+class DestinationStream(
+    val descriptor: Descriptor,
+    val schema: ObjectType
+) {
     data class Descriptor(val namespace: String, val name: String)
 
     override fun hashCode(): Int {
@@ -33,13 +39,18 @@ class DestinationStream(val descriptor: Descriptor) {
 
 @Singleton
 class DestinationStreamFactory {
-    fun make(stream: ConfiguredAirbyteStream): DestinationStream {
+    fun make(
+        stream: ConfiguredAirbyteStream
+        ): DestinationStream {
         return DestinationStream(
             descriptor =
                 DestinationStream.Descriptor(
                     namespace = stream.stream.namespace,
                     name = stream.stream.name
-                )
+                ),
+            schema = AirbyteType.fromAirbyteJsonSchema(
+                stream.stream.jsonSchema as ObjectNode
+            )
         )
     }
 }
