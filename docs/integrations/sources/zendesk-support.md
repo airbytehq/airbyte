@@ -143,6 +143,8 @@ The Zendesk Support source connector supports the following streams:
 - [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
+- [Categories](https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories)
+- [Sections](https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections)
 
 ### Deleted Records Support
 
@@ -184,6 +186,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.5.0   | 2024-12-02 | [45392](https://github.com/airbytehq/airbyte/pull/45392) | Add `Categories` and `Sections` stream |
 | 4.4.0   | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent                                                                                                                                                                                          |
 | 4.3.3   | 2024-10-28 | [47663](https://github.com/airbytehq/airbyte/pull/47663) | Update dependencies                                                                                                                                                                                                                |
 | 4.3.2   | 2024-10-21 | [47202](https://github.com/airbytehq/airbyte/pull/47202) | Update dependencies and expected records                                                                                                                                                                                           |
