@@ -26,18 +26,17 @@ This page contains the setup guide and reference information for the [Microsoft 
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Microsoft SharePoint from the Source type dropdown.
 4. Enter a name for the Microsoft SharePoint connector.
-5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
-7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-8. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
-9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-10. Add a stream:
+5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
+7. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Microsoft SharePoint account**. Log in and authorize your Microsoft account.
+8. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+9. Add a stream:
    1. Write the **File Type**
    2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format.  For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
    3. Give a **Name** to the stream
    4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
    5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-11. Click **Set up source**
+10. Click **Set up source**
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -91,20 +90,19 @@ This source requires **Application permissions**. Follow these [instructions](ht
 2. Click **Sources** and then click **+ New source**.
 3. On the **Set up** the source page, select **Microsoft SharePoint** from the Source type dropdown.
 4. Enter the name for the Microsoft SharePoint connector.
-5. Enter **Drive Name**. To find your drive name go to settings and at the top of setting menu you can find the name of your drive.
-6. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
-7. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
-8. Switch to **Service Key Authentication**
-9. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
-10. Enter **Tenant ID**, **Client ID** and **Client secret**.
-11. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
-12. Add a stream:
+5. Select **Search Scope**. Specifies the location(s) to search for files. Valid options are 'ACCESSIBLE_DRIVES' for all SharePoint drives the user can access, 'SHARED_ITEMS' for shared items the user has access to, and 'ALL' to search both. Default value is 'ALL'.
+6. Enter **Folder Path**. Leave empty to search all folders of the drives. This does not apply to shared items.
+7. Switch to **Service Key Authentication**
+8. For **User Practical Name**, enter the [UPN](https://learn.microsoft.com/en-us/sharepoint/list-onedrive-urls) for your user.
+9. Enter **Tenant ID**, **Client ID** and **Client secret**.
+10. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+11. Add a stream:
     1. Write the **File Type**
     2. In the **Format** box, use the dropdown menu to select the format of the files you'd like to replicate. The supported formats are **CSV**, **Parquet**, **Avro** and **JSONL**. Toggling the **Optional fields** button within the **Format** box will allow you to enter additional configurations based on the selected format. For a detailed breakdown of these settings, refer to the [File Format section](#file-format-settings) below.
     3. Give a **Name** to the stream
     4. (Optional) - If you want to enforce a specific schema, you can enter a **Input schema**. By default, this value is set to `{}` and will automatically infer the schema from the file\(s\) you are replicating. For details on providing a custom schema, refer to the [User Schema section](#user-schema).
     5. Optionally, enter the **Globs** which dictates which files to be synced. This is a regular expression that allows Airbyte to pattern match the specific files to replicate. If you are replicating all the files within your bucket, use `**` as the pattern. For more precise pattern matching options, refer to the [Path Patterns section](#path-patterns) below.
-13. Click **Set up source**
+12. Click **Set up source**
 
 <!-- /env:oss -->
 
@@ -115,7 +113,7 @@ This source requires **Application permissions**. Follow these [instructions](ht
 The Microsoft SharePoint source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 | Feature           | Supported?\(Yes/No\) |
-| :---------------- | :------------------- |
+|:------------------|:---------------------|
 | Full Refresh Sync | Yes                  |
 | Incremental Sync  | Yes                  |
 
@@ -143,6 +141,9 @@ The connector is restricted by normal Microsoft Graph [requests limitation](http
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
+| 0.5.1 | 2024-08-24 | [44660](https://github.com/airbytehq/airbyte/pull/44660) | Update dependencies |
+| 0.5.0 | 2024-08-19 | [42983](https://github.com/airbytehq/airbyte/pull/42983) | Migrate to CDK v4.5.1 |
+| 0.4.5 | 2024-08-19 | [44382](https://github.com/airbytehq/airbyte/pull/44382) | Update dependencies |
 | 0.4.4 | 2024-08-12 | [43743](https://github.com/airbytehq/airbyte/pull/43743) | Update dependencies |
 | 0.4.3 | 2024-08-10 | [43565](https://github.com/airbytehq/airbyte/pull/43565) | Update dependencies |
 | 0.4.2 | 2024-08-03 | [43235](https://github.com/airbytehq/airbyte/pull/43235) | Update dependencies |

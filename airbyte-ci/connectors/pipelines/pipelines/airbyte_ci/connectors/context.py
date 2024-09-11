@@ -66,6 +66,8 @@ class ConnectorContext(PipelineContext):
         docker_hub_password: Optional[Secret] = None,
         s3_build_cache_access_key_id: Optional[Secret] = None,
         s3_build_cache_secret_key: Optional[Secret] = None,
+        genai_api_key: Optional[Secret] = None,
+        dbdocs_token: Optional[Secret] = None,
         concurrent_cat: Optional[bool] = False,
         run_step_options: RunStepOptions = RunStepOptions(),
         targeted_platforms: Sequence[Platform] = BUILD_PLATFORMS,
@@ -114,6 +116,8 @@ class ConnectorContext(PipelineContext):
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
+        self.genai_api_key = genai_api_key
+        self.dbdocs_token = dbdocs_token
         self.concurrent_cat = concurrent_cat
         self.targeted_platforms = targeted_platforms
         super().__init__(
@@ -166,6 +170,10 @@ class ConnectorContext(PipelineContext):
     @property
     def live_tests_dir(self) -> Directory:
         return self.get_repo_dir("airbyte-ci/connectors/live-tests")
+
+    @property
+    def erd_package_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-ci/connectors/erd")
 
     @property
     def should_save_updated_secrets(self) -> bool:
