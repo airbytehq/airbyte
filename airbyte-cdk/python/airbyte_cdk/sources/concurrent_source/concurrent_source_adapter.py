@@ -69,20 +69,25 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
 
-    def _convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Cursor) -> Stream:
+    def _convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
         managing the stream's state, and returning an updated Stream instance.
         """
         state: MutableMapping[str, Any] = {}
 
-        if isinstance(cursor, ConcurrentCursor):
+        if cursor:
             state = cursor.state
 
             stream.cursor = cursor  # type: ignore[assignment]  # cursor is of type ConcurrentCursor, which inherits from Cursor
             if hasattr(stream, "parent"):
                 stream.parent.cursor = cursor
-
+        else:
+            cursor = FinalStateCursor(
+                stream_name=stream.name,
+                stream_namespace=stream.namespace,
+                message_repository=self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
+            )
         return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
 
     def initialize_cursor(
@@ -95,7 +100,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         end_provider: Callable[[], CursorValueType],
         lookback_window: Optional[GapType] = None,
         slice_range: Optional[GapType] = None,
-    ) -> Optional[Union[ConcurrentCursor, FinalStateCursor]]:
+    ) -> Optional[ConcurrentCursor]:
         lookback_window = timedelta(seconds=DEFAULT_LOOKBACK_SECONDS) if lookback_window is None else lookback_window
 
         cursor_field_name = stream.cursor_field
@@ -119,8 +124,4 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                 slice_range,
             )
 
-        return FinalStateCursor(
-            stream_name=stream.name,
-            stream_namespace=stream.namespace,
-            message_repository=self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
-        )
+        return None
