@@ -1,9 +1,13 @@
 # Productive
 This directory contains the manifest-only connector for `source-productive`.
 
-Website: https://app.productive.io/
-Auth page: https://app.productive.io/ORG_ID-UUID/settings/api-integrations
-API Docs: https://developer.productive.io/index.html#top
+## Documentation reference:
+Visit `https://developer.productive.io/index.html#top` for API documentation
+
+## Authentication setup
+`Source-productive` uses api key authentication,
+Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for getting your API Key and organization ID
+
 
 ## Usage
 There are multiple ways to use this connector:

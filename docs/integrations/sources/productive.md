@@ -1,7 +1,12 @@
 # Productive
-Website: https://app.productive.io/
-Auth page: https://app.productive.io/ORG_ID-UUID/settings/api-integrations
-API Docs: https://developer.productive.io/index.html#top
+This page contains the setup guide and reference information for the [Productive](https://app.productive.io/) source connector.
+
+## Documentation reference:
+Visit `https://developer.productive.io/index.html#top` for API documentation
+
+## Authentication setup
+`Source-productive` uses api key authentication,
+Visit `https://app.productive.io/ORG_ID-UUID/settings/api-integrations` for getting your API Key and organization ID
 
 ## Configuration
 
@@ -76,8 +81,8 @@ API Docs: https://developer.productive.io/index.html#top
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-11 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|--|----------------|
+| 0.0.1 | 2024-09-11 |[45401](https://github.com/airbytehq/airbyte/pull/45401)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
