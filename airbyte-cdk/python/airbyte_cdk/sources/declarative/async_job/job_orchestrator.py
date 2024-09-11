@@ -2,12 +2,14 @@
 
 import logging
 import time
+from itertools import chain
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.logger import lazy_log
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
+from airbyte_cdk.sources.declarative.async_job.job_tracker import ConcurrentJobLimitReached, JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -23,7 +25,7 @@ class AsyncPartition:
     _MAX_NUMBER_OF_ATTEMPTS = 3
 
     def __init__(self, jobs: List[AsyncJob], stream_slice: StreamSlice) -> None:
-        self._attempts_per_job = {job: 0 for job in jobs}
+        self._attempts_per_job = {job: 1 for job in jobs}
         self._stream_slice = stream_slice
 
     def has_reached_max_attempt(self) -> bool:
@@ -78,22 +80,31 @@ class AsyncPartition:
 
 class AsyncJobOrchestrator:
     _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 5
+    _KNOWN_JOB_STATUSES = {AsyncJobStatus.COMPLETED, AsyncJobStatus.FAILED, AsyncJobStatus.RUNNING, AsyncJobStatus.TIMED_OUT}
 
     def __init__(
         self,
         job_repository: AsyncJobRepository,
         slices: Iterable[StreamSlice],
-        number_of_retries: Optional[int] = None,
+        job_tracker: JobTracker,
     ) -> None:
+        if {*AsyncJobStatus} != self._KNOWN_JOB_STATUSES:
+            # this is to prevent developers updating the possible statuses without updating the logic of this class
+            raise ValueError(
+                "An AsyncJobStatus has been either removed or added which means the logic of this class needs to be reviewed. Once the logic has been updated, please update _KNOWN_JOB_STATUSES"
+            )
+
         self._job_repository: AsyncJobRepository = job_repository
         self._slice_iterator = iter(slices)
         self._running_partitions: List[AsyncPartition] = []
+        self._job_tracker = job_tracker
+        self._has_started_a_job = False
 
     def _replace_failed_jobs(self, partition: AsyncPartition) -> None:
         failed_status_jobs = (AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT)
         jobs_to_replace = [job for job in partition.jobs if job.status() in failed_status_jobs]
         for job in jobs_to_replace:
-            new_job = self._job_repository.start(job.job_parameters())
+            new_job = self._start_job(job.job_parameters(), job.api_job_id())
             partition.replace_job(job, [new_job])
 
     def _start_jobs(self) -> None:
@@ -104,15 +115,33 @@ class AsyncJobOrchestrator:
         Returns:
             None
 
-        TODO Eventually, we need to cap the number of concurrent jobs.
         However, the first iteration is for sendgrid which only has one job.
         """
-        for partition in self._running_partitions:
-            self._replace_failed_jobs(partition)
+        at_least_one_slice_consumed_from_slice_iterator_during_current_iteration = False
+        _slice = None
+        try:
+            for partition in self._running_partitions:
+                self._replace_failed_jobs(partition)
 
-        for _slice in self._slice_iterator:
-            job = self._job_repository.start(_slice)
-            self._running_partitions.append(AsyncPartition([job], _slice))
+            for _slice in self._slice_iterator:
+                at_least_one_slice_consumed_from_slice_iterator_during_current_iteration = True
+                job = self._start_job(_slice)
+                self._has_started_a_job = True
+                self._running_partitions.append(AsyncPartition([job], _slice))
+        except ConcurrentJobLimitReached:
+            if at_least_one_slice_consumed_from_slice_iterator_during_current_iteration:
+                # this means a slice has been consumed and we need to put it back at the beginning of the _slice_iterator
+                self._slice_iterator = chain([_slice], self._slice_iterator)  # type: ignore  # we know the slice comes from the _slice_iterator so it will not be None at this point
+            LOGGER.debug("Waiting before creating more jobs as the limit of concurrent jobs has been reached. Will try again later...")
+
+    def _start_job(self, _slice: StreamSlice, previous_job_id: Optional[str] = None) -> AsyncJob:
+        if previous_job_id:
+            id_to_replace = previous_job_id
+        else:
+            id_to_replace = self._job_tracker.try_to_get_intent()
+        job = self._job_repository.start(_slice)
+        self._job_tracker.add_job(id_to_replace, job.api_job_id())
+        return job
 
     def _get_running_jobs(self) -> Set[AsyncJob]:
         """
@@ -186,10 +215,20 @@ class AsyncJobOrchestrator:
                 case AsyncJobStatus.RUNNING:
                     current_running_partitions.append(partition)
                 case _ if partition.has_reached_max_attempt():
+                    for job in partition.jobs:
+                        # FIXME this assumes that timed out jobs are aborted (see https://github.com/airbytehq/airbyte-internal-issues/issues/9737)
+                        #  if not aborted, those jobs would continue to take a part of the limit in the API hence we need to stop them
+                        self._job_tracker.remove_job(job.api_job_id())
                     self._process_partitions_with_errors(partition)
                 case _:
                     # job will be restarted in `_start_job`
                     current_running_partitions.insert(0, partition)
+
+            for job in partition.jobs:
+                # We only remove completed jobs as we want failed/timed out jobs to be re-allocated in priority
+                if job.status() == AsyncJobStatus.COMPLETED:
+                    self._job_tracker.remove_job(job.api_job_id())
+
         # update the referenced list with running partitions
         self._running_partitions = current_running_partitions
 
@@ -223,7 +262,7 @@ class AsyncJobOrchestrator:
         """
         while True:
             self._start_jobs()
-            if not self._running_partitions:
+            if self._has_started_a_job and not self._running_partitions:
                 break
 
             self._update_jobs_status()

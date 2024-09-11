@@ -13,6 +13,7 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAi
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
@@ -66,6 +67,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         super().__init__(concurrent_source)
         self.catalog = catalog
         self.state = state
+        self._job_tracker = JobTracker(limit=5)
 
     @staticmethod
     def _get_sf_object(config: Mapping[str, Any]) -> Salesforce:
@@ -134,8 +136,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             raise Exception(f"Stream {stream_name} cannot be processed by REST or BULK API.")
         return full_refresh, incremental
 
-    @classmethod
-    def prepare_stream(cls, stream_name: str, json_schema, sobject_options, sf_object, authenticator, config):
+    def prepare_stream(self, stream_name: str, json_schema, sobject_options, sf_object, authenticator, config):
         """Choose proper stream class: syncMode(full_refresh/incremental), API type(Rest/Bulk), SubStream"""
         pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
         stream_kwargs = {
@@ -146,10 +147,11 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             "sf_api": sf_object,
             "authenticator": authenticator,
             "start_date": config.get("start_date"),
+            "job_tracker": self._job_tracker,
         }
 
-        api_type = cls._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
-        full_refresh, incremental = cls._get_stream_type(stream_name, api_type)
+        api_type = self._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))
+        full_refresh, incremental = self._get_stream_type(stream_name, api_type)
         if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
             stream_class = incremental
             stream_kwargs["replication_key"] = replication_key

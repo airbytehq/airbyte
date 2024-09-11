@@ -9,9 +9,9 @@ from typing import Any, Mapping, Optional, Union
 
 import backoff
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from airbyte_cdk.models import FailureType
 from requests import codes, exceptions  # type: ignore[import]
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
