@@ -30,8 +30,8 @@ import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 
 @MicronautTest(environments = ["StateManagerTest"])
-class StateManagerTest {
-    @Inject lateinit var stateManager: TestStateManager
+class CheckpointManagerTest {
+    @Inject lateinit var checkpointManager: TestCheckpointManager
 
     /**
      * Test state messages.
@@ -39,35 +39,36 @@ class StateManagerTest {
      * StateIn: What is passed to the manager. StateOut: What is sent from the manager to the output
      * consumer.
      */
-    sealed class MockStateIn
-    data class MockStreamStateIn(val stream: DestinationStream, val payload: Int) : MockStateIn()
-    data class MockGlobalStateIn(val payload: Int) : MockStateIn()
+    sealed class MockCheckpointIn
+    data class MockStreamCheckpointIn(val stream: DestinationStream, val payload: Int) :
+        MockCheckpointIn()
+    data class MockGlobalCheckpointIn(val payload: Int) : MockCheckpointIn()
 
-    sealed class MockStateOut
-    data class MockStreamStateOut(val stream: DestinationStream, val payload: String) :
-        MockStateOut()
-    data class MockGlobalStateOut(val payload: String) : MockStateOut()
+    sealed class MockCheckpointOut
+    data class MockStreamCheckpointOut(val stream: DestinationStream, val payload: String) :
+        MockCheckpointOut()
+    data class MockGlobalCheckpointOut(val payload: String) : MockCheckpointOut()
 
     @Singleton
-    class MockStateMessageFactory : MessageConverter<MockStateIn, MockStateOut> {
-        override fun from(message: MockStateIn): MockStateOut {
+    class MockStateMessageFactory : MessageConverter<MockCheckpointIn, MockCheckpointOut> {
+        override fun from(message: MockCheckpointIn): MockCheckpointOut {
             return when (message) {
-                is MockStreamStateIn ->
-                    MockStreamStateOut(message.stream, message.payload.toString())
-                is MockGlobalStateIn -> MockGlobalStateOut(message.payload.toString())
+                is MockStreamCheckpointIn ->
+                    MockStreamCheckpointOut(message.stream, message.payload.toString())
+                is MockGlobalCheckpointIn -> MockGlobalCheckpointOut(message.payload.toString())
             }
         }
     }
 
     @Prototype
-    class MockOutputConsumer : Consumer<MockStateOut> {
+    class MockOutputConsumer : Consumer<MockCheckpointOut> {
         val collectedStreamOutput = mutableMapOf<DestinationStream, MutableList<String>>()
         val collectedGlobalOutput = mutableListOf<String>()
-        override fun accept(t: MockStateOut) {
+        override fun accept(t: MockCheckpointOut) {
             when (t) {
-                is MockStreamStateOut ->
+                is MockStreamCheckpointOut ->
                     collectedStreamOutput.getOrPut(t.stream) { mutableListOf() }.add(t.payload)
-                is MockGlobalStateOut -> collectedGlobalOutput.add(t.payload)
+                is MockGlobalCheckpointOut -> collectedGlobalOutput.add(t.payload)
             }
         }
     }
@@ -137,23 +138,23 @@ class StateManagerTest {
     }
 
     @Prototype
-    class TestStateManager(
+    class TestCheckpointManager(
         @Named("mockCatalog") override val catalog: DestinationCatalog,
         override val streamsManager: MockStreamsManager,
-        override val outputFactory: MessageConverter<MockStateIn, MockStateOut>,
+        override val outputFactory: MessageConverter<MockCheckpointIn, MockCheckpointOut>,
         override val outputConsumer: MockOutputConsumer
-    ) : StreamsStateManager<MockStateIn, MockStateOut>()
+    ) : StreamsCheckpointManager<MockCheckpointIn, MockCheckpointOut>()
 
     sealed class TestEvent
     data class TestStreamMessage(val stream: DestinationStream, val index: Long, val message: Int) :
         TestEvent() {
-        fun toMockStateIn() = MockStreamStateIn(stream, message)
+        fun toMockCheckpointIn() = MockStreamCheckpointIn(stream, message)
     }
     data class TestGlobalMessage(
         val streamIndexes: List<Pair<DestinationStream, Long>>,
         val message: Int
     ) : TestEvent() {
-        fun toMockStateIn() = MockGlobalStateIn(message)
+        fun toMockCheckpointIn() = MockGlobalCheckpointIn(message)
     }
     data class FlushPoint(
         val persistedRanges: Map<DestinationStream, List<Range<Long>>> = mapOf()
@@ -168,7 +169,7 @@ class StateManagerTest {
         val expectedException: Class<out Throwable>? = null
     )
 
-    class StateManagerTestArgumentsProvider : ArgumentsProvider {
+    class CheckpointManagerTestArgumentsProvider : ArgumentsProvider {
         override fun provideArguments(context: ExtensionContext?): Stream<out Arguments> {
             return listOf(
                     TestCase(
@@ -244,7 +245,7 @@ class StateManagerTest {
                         expectedException = IllegalStateException::class.java
                     ),
                     TestCase(
-                        name = "Global state, two messages, flush all",
+                        name = "Global checkpoint, two messages, flush all",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
@@ -260,7 +261,7 @@ class StateManagerTest {
                         expectedGlobalOutput = listOf("1", "2")
                     ),
                     TestCase(
-                        name = "Global state, two messages, range only covers the first",
+                        name = "Global checkpoint, two messages, range only covers the first",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
@@ -277,7 +278,7 @@ class StateManagerTest {
                     ),
                     TestCase(
                         name =
-                            "Global state, two messages, where the range only covers *one stream*",
+                            "Global checkpoint, two messages, where the range only covers *one stream*",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
@@ -292,7 +293,7 @@ class StateManagerTest {
                         expectedGlobalOutput = listOf("1")
                     ),
                     TestCase(
-                        name = "Global state, out of order (should fail)",
+                        name = "Global checkpoint, out of order (should fail)",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
@@ -307,7 +308,7 @@ class StateManagerTest {
                         expectedException = IllegalStateException::class.java
                     ),
                     TestCase(
-                        name = "Mixed: first stream state, then global (should fail)",
+                        name = "Mixed: first stream checkpoint, then global (should fail)",
                         events =
                             listOf(
                                 TestStreamMessage(stream1, 10L, 1),
@@ -322,7 +323,7 @@ class StateManagerTest {
                         expectedException = IllegalStateException::class.java
                     ),
                     TestCase(
-                        name = "Mixed: first global, then stream state (should fail)",
+                        name = "Mixed: first global, then stream checkpoint (should fail)",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
@@ -354,7 +355,7 @@ class StateManagerTest {
                         expectedStreamOutput = mapOf()
                     ),
                     TestCase(
-                        name = "Stream state, multiple flush points",
+                        name = "Stream checkpoint, multiple flush points",
                         events =
                             listOf(
                                 TestStreamMessage(stream1, 10L, 1),
@@ -367,7 +368,7 @@ class StateManagerTest {
                         expectedStreamOutput = mapOf(stream1 to listOf("1", "2", "3"))
                     ),
                     TestCase(
-                        name = "Global state, multiple flush points, no output",
+                        name = "Global checkpoint, multiple flush points, no output",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
@@ -384,7 +385,7 @@ class StateManagerTest {
                         expectedGlobalOutput = listOf()
                     ),
                     TestCase(
-                        name = "Global state, multiple flush points, no output until end",
+                        name = "Global checkpoint, multiple flush points, no output until end",
                         events =
                             listOf(
                                 TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
@@ -412,20 +413,20 @@ class StateManagerTest {
     }
 
     @ParameterizedTest
-    @ArgumentsSource(StateManagerTestArgumentsProvider::class)
-    fun testAddingAndFlushingState(testCase: TestCase) {
+    @ArgumentsSource(CheckpointManagerTestArgumentsProvider::class)
+    fun testAddingAndFlushingCheckpoints(testCase: TestCase) {
         if (testCase.expectedException != null) {
             Assertions.assertThrows(testCase.expectedException) { runTestCase(testCase) }
         } else {
             runTestCase(testCase)
             Assertions.assertEquals(
                 testCase.expectedStreamOutput,
-                stateManager.outputConsumer.collectedStreamOutput,
+                checkpointManager.outputConsumer.collectedStreamOutput,
                 testCase.name
             )
             Assertions.assertEquals(
                 testCase.expectedGlobalOutput,
-                stateManager.outputConsumer.collectedGlobalOutput,
+                checkpointManager.outputConsumer.collectedGlobalOutput,
                 testCase.name
             )
         }
@@ -435,16 +436,20 @@ class StateManagerTest {
         testCase.events.forEach {
             when (it) {
                 is TestStreamMessage -> {
-                    stateManager.addStreamState(it.stream, it.index, it.toMockStateIn())
+                    checkpointManager.addStreamCheckpoint(
+                        it.stream,
+                        it.index,
+                        it.toMockCheckpointIn()
+                    )
                 }
                 is TestGlobalMessage -> {
-                    stateManager.addGlobalState(it.streamIndexes, it.toMockStateIn())
+                    checkpointManager.addGlobalCheckpoint(it.streamIndexes, it.toMockCheckpointIn())
                 }
                 is FlushPoint -> {
                     it.persistedRanges.forEach { (stream, ranges) ->
-                        stateManager.streamsManager.addPersistedRanges(stream, ranges)
+                        checkpointManager.streamsManager.addPersistedRanges(stream, ranges)
                     }
-                    stateManager.flushStates()
+                    checkpointManager.flushReadyCheckpointMessages()
                 }
             }
         }
