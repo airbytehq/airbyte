@@ -33,9 +33,9 @@ data:
   tags:
     - language:java
   ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: community
+    sl: 100
+    ql: 100
+  supportLevel: certified
   supportsRefreshes: true
   connectorTestSuitesOptions:
     - suite: unitTests
