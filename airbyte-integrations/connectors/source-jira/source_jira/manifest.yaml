@@ -1089,7 +1089,6 @@ definitions:
     $ref: "#/definitions/incremental_stream"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-      global_parent_cursor: true
       is_client_side_incremental: true
 
   # https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
@@ -1262,9 +1261,6 @@ definitions:
           - path: ["issueId"]
             value_type: string
             value: "{{ stream_slice.issue_id }}"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: "source_jira.components.issues_child_streams_state_migration.IssuesChildStreamsStateMigration"
     $parameters:
       path: "issue/{{ stream_slice.issue_id }}/comment"
       extract_field: "comments"
@@ -1290,9 +1286,6 @@ definitions:
           - path: ["issueId"]
             value_type: string
             value: "{{ stream_slice.issue_id }}"
-    state_migrations:
-      - type: CustomStateMigration
-        class_name: "source_jira.components.issues_child_streams_state_migration.IssuesChildStreamsStateMigration"
     $parameters:
       path: "issue/{{ stream_slice.issue_id }}/worklog"
       extract_field: "worklogs"
