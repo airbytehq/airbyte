@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Mapping, Optional
@@ -19,26 +20,46 @@ class PartitionRouter(StreamSlicer):
         get_parent_state(): Get the state of the parent streams.
     """
 
-    @abstractmethod
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
-        Set the state of the parent streams.
+        Set the initial state for the cursors.
 
-        This method should only be implemented if the slicer is based on some parent stream and needs to read this stream
-        incrementally using the state.
+        This method initializes the state for the global cursor using the provided stream state.
+
+        Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
+        does not have parent streams, this step will be skipped due to the default PartitionRouter implementation.
 
         Args:
-            stream_state (StreamState): The state of the streams to be set. The expected format is a dictionary that includes
-                                        'parent_state' which is a dictionary of parent state names to their corresponding state.
-                Example:
+            stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
                 {
+                    "state": {
+                        "last_updated": "2023-05-27T00:00:00Z"
+                    },
                     "parent_state": {
-                        "parent_stream_name_1": { ... },
-                        "parent_stream_name_2": { ... },
-                        ...
-                    }
+                        "parent_stream_name": {
+                            "last_updated": "2023-05-27T00:00:00Z"
+                        }
+                    },
+                    "lookback_window": 132
                 }
         """
+        if not stream_state:
+            return
+
+        lookback_window, state, parent_state = (
+            stream_state.get("lookback_window"),
+            stream_state.get("state"),
+            stream_state.get("parent_state"),
+        )
+        if lookback_window is not None:
+            self._lookback_window = lookback_window
+            self._inject_lookback_into_stream_cursor(lookback_window)
+
+        if state:
+            self._stream_cursor.set_initial_state(state)
+
+        if parent_state:
+            self._partition_router.set_initial_state({"parent_state": parent_state})
 
     @abstractmethod
     def get_stream_state(self) -> Optional[Mapping[str, StreamState]]:
