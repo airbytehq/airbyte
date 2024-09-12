@@ -69,7 +69,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams
 
-    def _convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None) -> Stream:
+    def convert_to_concurrent_stream(self, logger: logging.Logger, stream: Stream, cursor: Optional[Cursor] = None) -> Stream:
         """
         Prepares a stream for concurrent processing by initializing or assigning a cursor,
         managing the stream's state, and returning an updated Stream instance.
@@ -101,13 +101,18 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         lookback_window: Optional[GapType] = None,
         slice_range: Optional[GapType] = None,
     ) -> Optional[ConcurrentCursor]:
-        lookback_window = timedelta(seconds=DEFAULT_LOOKBACK_SECONDS) if lookback_window is None else lookback_window
+        lookback_window = lookback_window or timedelta(seconds=DEFAULT_LOOKBACK_SECONDS)
 
         cursor_field_name = stream.cursor_field
 
         if cursor_field_name:
+            if not isinstance(cursor_field_name, str):
+                raise ValueError(
+                    f"Cursor field type must be a string, but received {type(cursor_field_name).__name__}."
+                )
+
             stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-            cursor_field = CursorField(cursor_field_name) if isinstance(cursor_field_name, str) else CursorField(cursor_field_name[0])
+            cursor_field = CursorField(cursor_field_name)
 
             return ConcurrentCursor(
                 stream.name,

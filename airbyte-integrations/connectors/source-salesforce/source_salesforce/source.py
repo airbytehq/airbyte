@@ -223,37 +223,10 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 slice_range=slice_range,
             )
 
-            streams.append(self._convert_to_concurrent_stream(logger, stream, cursor=cursor))
+            streams.append(self.convert_to_concurrent_stream(logger, stream, cursor=cursor))
 
-        streams.append(self._convert_to_concurrent_stream(logger, describe_stream, cursor=describe_stream_cursor))
+        streams.append(self.convert_to_concurrent_stream(logger, describe_stream, cursor=describe_stream_cursor))
         return streams
-
-    def initialize_cursor(
-        self,
-        stream: Stream,
-        state_manager: ConnectorStateManager,
-        converter: AbstractStreamStateConverter,
-        slice_boundary_fields: Optional[Tuple[str, str]],
-        start: Optional[CursorValueType],
-        end_provider: Optional[Callable[[], CursorValueType]] = None,
-        lookback_window: Optional[GapType] = None,
-        slice_range: Optional[GapType] = None,
-    ) -> Optional[ConcurrentCursor]:
-        cursor_field = stream.cursor_field
-
-        if cursor_field and not isinstance(cursor_field, str):
-            raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field}.")
-
-        return super().initialize_cursor(
-            stream,
-            state_manager,
-            converter,
-            slice_boundary_fields,
-            start,
-            end_provider=end_provider,
-            lookback_window=lookback_window,
-            slice_range=slice_range,
-        )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):

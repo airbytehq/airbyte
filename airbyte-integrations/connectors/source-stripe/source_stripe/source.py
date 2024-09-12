@@ -540,7 +540,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         slice_range = timedelta(days=config["slice_range"])
 
         return [
-            self._convert_to_concurrent_stream(
+            self.convert_to_concurrent_stream(
                 logger,
                 stream,
                 cursor=self.initialize_cursor(
