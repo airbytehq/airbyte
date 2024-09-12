@@ -33,6 +33,7 @@ from source_zendesk_support.streams import (
     BaseZendeskSupportStream,
     Brands,
     CustomRoles,
+    Categories,
     GroupMemberships,
     Groups,
     Macros,
@@ -43,6 +44,7 @@ from source_zendesk_support.streams import (
     PostVotes,
     SatisfactionRatings,
     Schedules,
+    Sections,
     SlaPolicies,
     SourceZendeskIncrementalExportStream,
     StatefulTicketMetrics,
@@ -179,11 +181,11 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings, reason",
     [
-        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 37, [], None),
+        ('{"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}', 200, 39, [], None),
         (
             '{"error": "Not sufficient permissions"}',
             403,
-            34,
+            36,
             [
                 "An exception occurred while trying to access TicketForms stream: Forbidden. You don't have permission to access this resource.. Skipping this stream."
             ],
@@ -192,7 +194,7 @@ def test_check(response, start_date, check_passed):
         (
             "",
             404,
-            34,
+            36,
             [
                 "An exception occurred while trying to access TicketForms stream: Not found. The requested resource was not found on the server.. Skipping this stream."
             ],
@@ -310,6 +312,8 @@ class TestAllStreams:
             (AccountAttributes, "routing/attributes"),
             (AttributeDefinitions, "routing/attributes/definitions"),
             (UserFields, "user_fields"),
+            (Categories, "categories"),
+            (Sections, "sections"),
         ],
         ids=[
             "AuditLogs",
@@ -339,6 +343,8 @@ class TestAllStreams:
             "AccountAttributes",
             "AttributeDefinitions",
             "UserFields",
+            "Categories",
+            "Sections",
         ],
     )
     def test_path(self, stream_cls, expected):
@@ -476,7 +482,7 @@ class TestSourceZendeskSupportStream:
 class TestSourceZendeskSupportFullRefreshStream:
     @pytest.mark.parametrize(
         "stream_cls",
-        [(Tags), (SlaPolicies), (Brands), (CustomRoles), (Schedules), (UserSettingsStream), (AccountAttributes), (AttributeDefinitions)],
+        [(Tags), (SlaPolicies), (Brands), (CustomRoles), (Schedules), (UserSettingsStream), (AccountAttributes), (AttributeDefinitions), (Categories), (Sections)],
         ids=[
             "Tags",
             "SlaPolicies",
@@ -486,6 +492,8 @@ class TestSourceZendeskSupportFullRefreshStream:
             "UserSettingsStream",
             "AccountAttributes",
             "AttributeDefinitions",
+            "Categories",
+            "Sections",
         ],
     )
     def test_url_base(self, stream_cls):
