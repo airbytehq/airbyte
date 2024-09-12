@@ -12,6 +12,34 @@ from airbyte_cdk.sources.declarative.partition_routers.partition_router import P
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
 
+def iterate_with_last_flag(generator):
+    """
+    Iterates over the given generator and returns a tuple containing the element and a flag
+    indicating whether it's the last element in the generator. If the generator is empty,
+    yields (None, True).
+
+    Args:
+        generator (Generator): The generator to iterate through.
+
+    Yields:
+        tuple: A tuple containing (element, is_last) where is_last is a boolean indicating
+        if the element is the last one. Returns (None, True) if the generator is empty.
+    """
+    iterator = iter(generator)
+    try:
+        prev = next(iterator)  # Attempt to get the first element
+    except StopIteration:
+        # If there is no element, yield (None, True) and return
+        yield None, True
+        return
+
+    # If there are more elements, proceed as before
+    for item in iterator:
+        yield prev, False  # This is not the last element
+        prev = item
+    yield prev, True  # The last element
+
+
 class Timer:
     """
     A simple timer class that measures elapsed time in seconds using a high-resolution performance counter.
@@ -53,6 +81,9 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._all_slices_yielded = False
         self._lookback_window: Optional[int] = None
 
+    def start_slices_generation(self):
+        self._timer.start()
+
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Generates stream slices, ensuring the last slice is properly flagged and processed.
@@ -74,7 +105,12 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             for cursor_slice in self._stream_cursor.stream_slices()
         )
 
-        yield from self.generate_slices_from_generator(slice_generator)
+        self.start_slices_generation()
+        for slice, last in iterate_with_last_flag(slice_generator):
+            self.register_slice(last)
+
+            if slice is not None:
+                yield slice
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         slice_generator = (
@@ -82,30 +118,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
             for cursor_slice in self._stream_cursor.stream_slices()
         )
 
-        yield from self.generate_slices_from_generator(slice_generator)
-
-    def generate_slices_from_generator(self, slice_generator: Iterable[StreamSlice]) -> Iterable[StreamSlice]:
-        previous_slice = None
-
-        self._timer.start()
-
-        for slice in slice_generator:
-            if previous_slice is not None:
-                # Release the semaphore to indicate that a slice has been yielded
-                self._slice_semaphore.release()
-                yield previous_slice
-
-            # Store the current slice as the previous slice for the next iteration
-            previous_slice = slice
-
-        # After all slices have been generated, release the semaphore one final time
-        # and flag that all slices have been yielded
-        self._slice_semaphore.release()
-        self._all_slices_yielded = True
-
-        # Yield the last slice
-        if previous_slice is not None:
-            yield previous_slice
+        yield from slice_generator
 
     def register_slice(self, last: bool) -> None:
         """
