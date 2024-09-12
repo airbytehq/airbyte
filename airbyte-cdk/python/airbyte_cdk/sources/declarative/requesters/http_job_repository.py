@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
-
 from airbyte_cdk import AirbyteMessage
 from airbyte_cdk.logger import lazy_log
 from airbyte_cdk.models import FailureType, Type
@@ -16,7 +15,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.response_to_file_extractor import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.types import StreamSlice, Record
+from airbyte_cdk.sources.types import Record, StreamSlice
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import Response
 

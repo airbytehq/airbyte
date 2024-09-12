@@ -16,8 +16,22 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk import DeclarativeStream, JsonDecoder, DpathExtractor, HttpMethod, BearerAuthenticator, HttpRequester, RecordSelector, \
-    SinglePartitionRouter, StreamSlice, SimpleRetriever, DefaultPaginator, RequestOption, RequestOptionType, CursorPaginationStrategy
+from airbyte_cdk import (
+    BearerAuthenticator,
+    CursorPaginationStrategy,
+    DeclarativeStream,
+    DefaultPaginator,
+    DpathExtractor,
+    HttpMethod,
+    HttpRequester,
+    JsonDecoder,
+    RecordSelector,
+    RequestOption,
+    RequestOptionType,
+    SimpleRetriever,
+    SinglePartitionRouter,
+    StreamSlice,
+)
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
@@ -31,7 +45,7 @@ from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
@@ -374,20 +388,40 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
     def __init__(self, cursor: Optional[ConcurrentCursor]) -> None:
         self._cursor = cursor
 
-    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                           next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_headers(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                            next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_body_data(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], str]:
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
         return {}
 
-    def get_request_body_json(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -401,7 +435,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
                 cursor_slice={
                     "start_date": slice_start.isoformat(timespec="milliseconds"),
                     "end_date": slice_end.isoformat(timespec="milliseconds"),
-                }
+                },
             )
 
 
@@ -443,9 +477,13 @@ class BulkSalesforceStream(SalesforceStream):
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
             where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
-            lower_boundary_interpolation = '{{ "'f'{self.cursor_field}'' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            lower_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            )
             and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
-            upper_boundary_interpolation = '{{ "'f'{self.cursor_field}'' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            upper_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            )
             query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
         creation_requester = HttpRequester(
             name=f"{self.name} - creation requester",
@@ -461,7 +499,7 @@ class BulkSalesforceStream(SalesforceStream):
                     "query": query,
                     "contentType": "CSV",
                     "columnDelimiter": "COMMA",
-                    "lineEnding": "LF"
+                    "lineEnding": "LF",
                 },
                 request_headers=None,
                 request_parameters=None,

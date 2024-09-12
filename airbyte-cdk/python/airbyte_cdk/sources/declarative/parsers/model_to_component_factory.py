@@ -29,7 +29,7 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder, NoopDecoder
+from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
@@ -153,7 +153,7 @@ from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformatio
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
@@ -1261,15 +1261,17 @@ class ModelToComponentFactory:
             ),
             primary_key=None,
             name=job_download_components_name,
-            paginator=self._create_component_from_model(
-                model=model.download_paginator, decoder=decoder, config=config, url_base=""
-            ) if model.download_paginator else NoPagination(parameters={}),
+            paginator=self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
+            if model.download_paginator
+            else NoPagination(parameters={}),
             config=config,
             parameters={},
         )
-        abort_requester = self._create_component_from_model(
-            model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}"
-        ) if model.abort_requester else None
+        abort_requester = (
+            self._create_component_from_model(model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}")
+            if model.abort_requester
+            else None
+        )
         status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
         urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(
