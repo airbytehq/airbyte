@@ -111,12 +111,8 @@ class AsyncJobOrchestrator:
             self._replace_failed_jobs(partition)
 
         for _slice in self._slice_iterator:
-            try:
-                job = self._job_repository.start(_slice)
-                self._running_partitions.append(AsyncPartition([job], _slice))
-            except AirbyteTracedException as e:
-                LOGGER.error(f"Failed to start the Job: {e.message} , {e.internal_message}")
-
+            job = self._job_repository.start(_slice)
+            self._running_partitions.append(AsyncPartition([job], _slice))
 
     def _get_running_jobs(self) -> Set[AsyncJob]:
         """
@@ -226,7 +222,10 @@ class AsyncJobOrchestrator:
             Each partition is wrapped in an Optional, allowing for None values.
         """
         while True:
-            self._start_jobs()
+            try:
+                self._start_jobs()
+            except AirbyteTracedException as e:
+                LOGGER.error(f"Failed to start the Job: {e.message} , {e.internal_message}")
             if not self._running_partitions:
                 break
 
