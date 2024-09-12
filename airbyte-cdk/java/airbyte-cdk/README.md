@@ -173,7 +173,8 @@ corresponds to that version.
 ### Java CDK
 
 | Version    | Date       | Pull Request                                                 | Subject                                                                                                                                                        |
-| :--------- | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:-----------|:-----------| :----------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.44.22    | 2024-09-10 | [\#45368](https://github.com/airbytehq/airbyte/pull/45368)   | Remove excessive debezium logging                                                                                                                              |
 | 0.44.21    | 2024-09-04 | [\#45143](https://github.com/airbytehq/airbyte/pull/45143)  | S3-destination: don't overwrite existing files, skip those file indexes instead                                                                                |
 | 0.44.20    | 2024-08-30 | [\#44933](https://github.com/airbytehq/airbyte/pull/44933)   | Avro/Parquet destinations: handle `{}` schemas inside objects/arrays                                                                                           |
 | 0.44.19    | 2024-08-20 | [\#44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase Jackson message length limit to 100mb                                                                                                                 |
