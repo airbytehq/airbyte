@@ -6,5 +6,10 @@ import sys
 
 from destination_pgvector import DestinationPGVector
 
-if __name__ == "__main__":
+
+def run() -> None:
     DestinationPGVector().run(sys.argv[1:])
+
+
+if __name__ == "__main__":
+    run()
