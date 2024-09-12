@@ -361,7 +361,7 @@ def test_partition_limitation():
     # assert output_data == expected_records
     final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
     assert final_state[-1] == {
-        'lookback_window': 0,
+        'lookback_window': 1,
         'state': {'cursor_field': '2022-02-17'},
         "use_global_cursor": False,
         "states": [
@@ -375,3 +375,92 @@ def test_partition_limitation():
             },
         ]
     }
+
+
+
+def test_perpartition_with_fallback():
+    source = ManifestDeclarativeSource(
+        source_config=ManifestBuilder()
+        .with_list_partition_router("Rates", "partition_field", ["1", "2", "3", "4", "5", "6"])
+        .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-02-28",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .build()
+    )
+
+    partition_slices = [
+        StreamSlice(partition={"partition_field": "1"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "2"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "3"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "4"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "5"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "6"}, cursor_slice={}),
+    ]
+
+    records_list = [
+        [
+            Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, partition_slices[0]),
+            Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[0]),
+        ],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-15"}, partition_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[1])],
+        [],
+        [],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-17"}, partition_slices[2])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-17"}, partition_slices[3])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-19"}, partition_slices[3])],
+        [],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-18"}, partition_slices[4])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-13"}, partition_slices[3])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-18"}, partition_slices[3])],
+    ]
+
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="Rates", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    catalog = ConfiguredAirbyteCatalog(streams=[configured_stream])
+
+    initial_state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
+                stream_state=AirbyteStateBlob(
+                    {
+                        "states": [
+                            {
+                                "partition": {"partition_field": "1"},
+                                "cursor": {CURSOR_FIELD: "2022-01-01"},
+                            },
+                            {
+                                "partition": {"partition_field": "2"},
+                                "cursor": {CURSOR_FIELD: "2022-01-02"},
+                            },
+                            {
+                                "partition": {"partition_field": "3"},
+                                "cursor": {CURSOR_FIELD: "2022-01-03"},
+                            },
+                        ]
+                    }
+                ),
+            ),
+        )
+    ]
+    logger = MagicMock()
+
+    # with patch.object(PerPartitionCursor, "stream_slices", return_value=partition_slices):
+    with patch.object(SimpleRetriever, "_read_pages", side_effect=records_list):
+        with patch.object(PerPartitionCursor, "DEFAULT_MAX_PARTITIONS_NUMBER", 2):
+            output = list(source.read(logger, {}, catalog, initial_state))
+
+    # assert output_data == expected_records
+    final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
+    assert final_state[-1] == {'use_global_cursor': True, 'state': {'cursor_field': '2022-02-19'}, 'lookback_window': 1}
