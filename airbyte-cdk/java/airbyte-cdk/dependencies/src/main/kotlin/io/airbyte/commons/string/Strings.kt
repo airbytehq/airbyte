@@ -16,6 +16,7 @@ object Strings {
     fun addRandomSuffix(base: String, separator: String, suffixLength: Int): String {
         return base +
             separator +
+            @Suppress("DEPRECATION")
             RandomStringUtils.randomAlphabetic(suffixLength).lowercase(Locale.getDefault())
     }
 

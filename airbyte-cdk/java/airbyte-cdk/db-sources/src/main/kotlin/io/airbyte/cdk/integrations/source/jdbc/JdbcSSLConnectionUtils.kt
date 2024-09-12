@@ -195,7 +195,7 @@ class JdbcSSLConnectionUtils {
                 ) {
                     sslModeConfig[PARAM_CLIENT_KEY_PASSWORD].asText()
                 } else {
-                    RandomStringUtils.randomAlphanumeric(10)
+                    @Suppress("DEPRECATION") RandomStringUtils.randomAlphanumeric(10)
                 }
             return clientKeyPassword
         }
