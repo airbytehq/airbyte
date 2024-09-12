@@ -171,7 +171,8 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
                 jsonSchemaFactory,
                 null
             )
-        val schema = JsonSchema(context, baseUri, schemaJson)
+
+        val schema = jsonSchemaFactory.create(context, null, schemaJson, jsonSchemaFactory.getSchema(baseUri))
         return schema
     }
 
