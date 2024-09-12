@@ -219,12 +219,11 @@ class AsyncJobOrchestrator:
                 case AsyncJobStatus.RUNNING:
                     current_running_partitions.append(partition)
                 case _ if partition.has_reached_max_attempt():
-                    for job in partition.jobs:
-                        # FIXME this assumes that timed out jobs are aborted (see https://github.com/airbytehq/airbyte-internal-issues/issues/9737)
-                        #  if not aborted, those jobs would continue to take a part of the limit in the API hence we need to stop them
-                        self._job_tracker.remove_job(job.api_job_id())
+                    self._stop_partition(partition)
                     self._process_partitions_with_errors(partition)
                 case _:
+                    self._stop_timed_out_jobs(partition)
+
                     # job will be restarted in `_start_job`
                     current_running_partitions.insert(0, partition)
 
@@ -235,6 +234,27 @@ class AsyncJobOrchestrator:
 
         # update the referenced list with running partitions
         self._running_partitions = current_running_partitions
+
+    def _stop_partition(self, partition: AsyncPartition) -> None:
+        for job in partition.jobs:
+            if job.status() in {AsyncJobStatus.RUNNING, AsyncJobStatus.TIMED_OUT}:
+                self._abort_job(job)
+            else:
+                self._job_tracker.remove_job(job.api_job_id())
+
+    def _stop_timed_out_jobs(self, partition: AsyncPartition) -> None:
+        for job in partition.jobs:
+            if job.status() == AsyncJobStatus.TIMED_OUT:
+                # we don't free allocation here because it is expected to retry the job
+                self._abort_job(job, free_job_allocation=False)
+
+    def _abort_job(self, job: AsyncJob, free_job_allocation: bool = True) -> None:
+        try:
+            self._job_repository.abort(job)
+            if free_job_allocation:
+                self._job_tracker.remove_job(job.api_job_id())
+        except Exception as exception:
+            LOGGER.warning(f"Could not free budget for job {job.api_job_id()}: {exception}")
 
     def _process_partitions_with_errors(self, partition: AsyncPartition) -> None:
         """

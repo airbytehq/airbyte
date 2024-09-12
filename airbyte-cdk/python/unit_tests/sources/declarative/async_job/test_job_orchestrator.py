@@ -4,7 +4,7 @@ import logging
 import sys
 import threading
 import time
-from typing import Callable, List, Mapping, Set
+from typing import Callable, List, Mapping, Optional, Set
 from unittest import TestCase, mock
 from unittest.mock import MagicMock, Mock, call
 
@@ -108,17 +108,19 @@ class AsyncJobOrchestratorTest(TestCase):
         ]
 
     @mock.patch(sleep_mock_target)
-    def test_given_timeout_when_create_and_get_completed_partitions_then_raise_exception(self, mock_sleep: MagicMock) -> None:
+    def test_given_timeout_when_create_and_get_completed_partitions_then_free_budget_and_raise_exception(self, mock_sleep: MagicMock) -> None:
+        job_tracker = JobTracker(1)
         self._job_repository.start.return_value = self._job_for_a_slice
         self._job_repository.update_jobs_status.side_effect = _status_update_per_jobs(
             {
                 self._job_for_a_slice: [AsyncJobStatus.TIMED_OUT]
             }
         )
-        orchestrator = self._orchestrator([_A_STREAM_SLICE])
+        orchestrator = self._orchestrator([_A_STREAM_SLICE], job_tracker)
 
         with pytest.raises(AirbyteTracedException):
             list(orchestrator.create_and_get_completed_partitions())
+        assert job_tracker.try_to_get_intent()
         assert self._job_repository.start.call_args_list == [call(_A_STREAM_SLICE)] * _MAX_NUMBER_OF_ATTEMPTS
 
     @mock.patch(sleep_mock_target)
@@ -147,8 +149,9 @@ class AsyncJobOrchestratorTest(TestCase):
         assert len(records) == 2
         assert self._job_repository.fetch_records.mock_calls == [call(first_job), call(second_job)]
 
-    def _orchestrator(self, slices: List[StreamSlice]) -> AsyncJobOrchestrator:
-        return AsyncJobOrchestrator(self._job_repository, slices, JobTracker(_NO_JOB_LIMIT))
+    def _orchestrator(self, slices: List[StreamSlice], job_tracker: Optional[JobTracker] = None) -> AsyncJobOrchestrator:
+        job_tracker = job_tracker if job_tracker else JobTracker(_NO_JOB_LIMIT)
+        return AsyncJobOrchestrator(self._job_repository, slices, job_tracker)
 
     def test_given_more_jobs_than_limit_when_create_and_get_completed_partitions_then_still_return_all_slices_and_free_job_budget(self) -> None:
         job_tracker = JobTracker(1)

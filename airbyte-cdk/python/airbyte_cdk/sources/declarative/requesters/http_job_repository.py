@@ -2,6 +2,7 @@
 import logging
 import uuid
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
@@ -30,6 +31,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
 
+    job_timeout: Optional[timedelta] = None
     record_extractor: RecordExtractor = field(init=False, repr=False, default_factory=lambda: ResponseToFileExtractor())
 
     def __post_init__(self) -> None:
@@ -119,7 +121,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         job_id: str = str(uuid.uuid4())
         self._create_job_response_by_id[job_id] = response
 
-        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice)
+        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice, timeout=self.job_timeout)
 
     def update_jobs_status(self, jobs: Iterable[AsyncJob]) -> None:
         """

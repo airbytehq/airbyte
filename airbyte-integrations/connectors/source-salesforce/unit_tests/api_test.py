@@ -204,7 +204,7 @@ def test_bulk_sync_successful_long_response(stream_config, stream_api):
 @pytest.mark.timeout(17)
 def test_bulk_sync_successful_retry(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT = timedelta(seconds=6)
 
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
@@ -219,7 +219,7 @@ def test_bulk_sync_successful_retry(stream_config, stream_api):
 @pytest.mark.timeout(30)
 def test_bulk_sync_failed_retry(stream_config, stream_api):
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT = timedelta(seconds=6)
     with requests_mock.Mocker() as m:
         job_id = _prepare_mock(m, stream)
         m.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "InProgress", "id": job_id})
@@ -366,7 +366,7 @@ def configure_request_params_mock(stream_1, stream_2):
 def test_pagination_rest(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
     stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
-    stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
+    stream.DEFAULT_WAIT_TIMEOUT = timedelta(seconds=6)
     next_page_url = "/services/data/v57.0/query/012345"
     with requests_mock.Mocker() as m:
         resp_1 = {

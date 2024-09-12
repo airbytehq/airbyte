@@ -18,6 +18,7 @@ class HttpMethod(Enum):
     """
 
     GET = "GET"
+    PATCH = "PATCH"
     POST = "POST"
 
 

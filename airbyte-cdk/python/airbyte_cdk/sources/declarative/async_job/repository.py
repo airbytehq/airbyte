@@ -22,4 +22,8 @@ class AsyncJobRepository:
 
     @abstractmethod
     def abort(self, job: AsyncJob) -> None:
-        pass
+        """
+        Called when we need to stop on the API side. This method can raise NotImplementedError as not all the APIs will support aborting
+        jobs.
+        """
+        raise NotImplementedError("Either the API or the AsyncJobRepository implementation do not support aborting jobs")
