@@ -165,8 +165,6 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
 
         val context =
             ValidationContext(
-                jsonSchemaFactory.uriFactory,
-                null,
                 metaschema,
                 jsonSchemaFactory,
                 null
