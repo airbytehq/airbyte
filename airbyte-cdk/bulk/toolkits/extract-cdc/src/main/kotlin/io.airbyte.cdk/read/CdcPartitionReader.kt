@@ -4,13 +4,16 @@
 
 package io.airbyte.cdk.cdc
 
+import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.read.CdcPartition
 import io.airbyte.cdk.read.DebeziumRecord
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.JdbcPartitionReader.AcquiredResources
+import io.airbyte.cdk.read.JdbcSharedState
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
+import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
 import io.airbyte.cdk.read.cdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
 import io.airbyte.commons.json.Jsons
@@ -23,38 +26,40 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
-class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
-    cdcContext: io.airbyte.cdk.read.CdcContext,
+class CdcPartitionReader<P : CdcPartition<JdbcSharedState>>(
+//    cdcContext: io.airbyte.cdk.read.CdcContext,
     val partition: P
 ) : PartitionReader, cdcAware, cdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
-    private val outputConsumer = cdcContext.outputConsumer
-    private val propertyManager = cdcContext.propertyManager
+//    private val outputConsumer = cdcContext.outputConsumer
+//    private val propertyManager = cdcContext.propertyManager
     private val acquiredResources = AtomicReference<AcquiredResources>()
 
-    override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
+    override fun tryAcquireResources(): TryAcquireResourcesStatus {
         if (!cdcResourceAcquire()) {
-            return TryAcquireResourcesStatus.RETRY_LATER
+            return RETRY_LATER
         }
 
         val acquiredResources: AcquiredResources =
-            partition.tryAcquireResourcesForReader() ?: return TryAcquireResourcesStatus.RETRY_LATER
+            partition.tryAcquireResourcesForReader() ?: return RETRY_LATER
         this.acquiredResources.set(acquiredResources)
-        return TryAcquireResourcesStatus.READY_TO_RUN
+        return READY_TO_RUN
     }
 
     override suspend fun run() {
+/*
         engine = createDebeziumEngine()
         // TODO: Determine if debezium engine should be run asynchronously or engine stop should be
         // run asynchronously
         engine?.run()
+*/
         cdcAware.cdcRan.set(true)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
-        TODO("Not yet implemented")
+        return PartitionReadCheckpoint(NullNode.instance, 0)
     }
 
     override fun releaseResources() {
@@ -73,6 +78,7 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
         return AirbyteRecordMessage()
     }
 
+/*
     fun createDebeziumEngine(): DebeziumEngine<ChangeEvent<String?, String?>>? {
         return DebeziumEngine.create(Json::class.java)
             .using(propertyManager.get())
@@ -136,6 +142,7 @@ class CdcPartitionReader<P : CdcPartition<DefaultJdbcSharedState>>(
             )
             .build()
     }
+*/
 
     fun reachedTargetPosition(record: DebeziumRecord): Boolean {
         // TODO : Implement this

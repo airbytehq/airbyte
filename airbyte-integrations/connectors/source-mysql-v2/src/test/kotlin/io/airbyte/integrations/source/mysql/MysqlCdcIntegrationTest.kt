@@ -36,7 +36,7 @@ const val CDC_CONFIG_JSON =
   "host": "34.106.250.115",
   "port": 3306,
   "username": "root",
-  "password": "***",
+  "password": "t4]d^K\":DDL}}Y)m",
   "schemas": [
     "1gb"
   ],
@@ -50,7 +50,7 @@ const val CDC_CONFIG_JSON =
     "cursor_method": "cdc"
   },
   "checkpoint_target_interval_seconds": 300,
-  "concurrency": 1
+  "concurrency": 2
 }
 """
 
