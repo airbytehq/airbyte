@@ -63,34 +63,29 @@ class MysqlSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        val sslMode = pojo.encryption.encryptionMethod
-        val jdbcEncryptionBuilder = MysqlJdbcEncryption.Builder().setSslMode(sslMode)
-
-        when (encryption) {
-            is EncryptionPreferred,
-            is EncryptionRequired -> Unit
-            is SslVerifyCertificate -> {
-                jdbcEncryptionBuilder.apply {
-                    setCaCertificate(encryption.sslCertificate)
-                    if (encryption.sslClientKey != null) setClientKey(encryption.sslClientKey!!)
-                    if (encryption.sslClientCertificate != null)
-                        setClientCertificate(encryption.sslClientCertificate!!)
-                    if (encryption.sslClientPassword != null)
-                        setClientKeyPassword(encryption.sslClientPassword!!)
-                }
+        val sslMode = SSLMode.fromJdbcPropertyName(pojo.encryption.encryptionMethod)
+        val jdbcEncryption =
+            when (encryption) {
+                is EncryptionPreferred,
+                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = sslMode)
+                is SslVerifyCertificate ->
+                    MysqlJdbcEncryption(
+                        sslMode = sslMode,
+                        caCertificate = encryption.sslCertificate,
+                        clientCertificate = encryption.sslClientCertificate,
+                        clientKey = encryption.sslClientKey,
+                        clientKeyPassword = encryption.sslClientPassword
+                    )
+                is SslVerifyIdentity ->
+                    MysqlJdbcEncryption(
+                        sslMode = sslMode,
+                        caCertificate = encryption.sslCertificate,
+                        clientCertificate = encryption.sslClientCertificate,
+                        clientKey = encryption.sslClientKey,
+                        clientKeyPassword = encryption.sslClientPassword
+                    )
             }
-            is SslVerifyIdentity -> {
-                jdbcEncryptionBuilder.apply {
-                    setCaCertificate(encryption.sslCertificate)
-                    if (encryption.sslClientKey != null) setClientKey(encryption.sslClientKey!!)
-                    if (encryption.sslClientCertificate != null)
-                        setClientCertificate(encryption.sslClientCertificate!!)
-                    if (encryption.sslClientPassword != null)
-                        setClientKeyPassword(encryption.sslClientPassword!!)
-                }
-            }
-        }
-        val sslJdbcParameters = jdbcEncryptionBuilder.build().parseSSLConfig()
+        val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
         jdbcProperties.putAll(sslJdbcParameters)
 
         // Build JDBC URL

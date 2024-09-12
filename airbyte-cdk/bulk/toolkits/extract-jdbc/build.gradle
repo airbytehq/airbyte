@@ -1,7 +1,12 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-    implementation 'org.apache.httpcomponents:httpcore:4.4'
+    api 'org.bouncycastle:bcpkix-jdk18on:1.77'
+    api 'org.bouncycastle:bcprov-jdk18on:1.77'
+    api 'org.bouncycastle:bctls-jdk18on:1.77'
+    api 'org.bouncycastle:bcpkix-jdk18on:1.77'
+    api 'org.apache.commons:commons-lang3:3.14.0'
+    api 'org.apache.httpcomponents:httpcore:4.4'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))

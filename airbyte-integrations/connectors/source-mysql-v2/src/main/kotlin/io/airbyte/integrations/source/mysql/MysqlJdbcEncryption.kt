@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mysql
 
+import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
@@ -19,21 +21,22 @@ import org.apache.commons.lang3.RandomStringUtils
 private val log = KotlinLogging.logger {}
 
 class MysqlJdbcEncryption(
-    val sslMode: String? = null,
+    val sslMode: SSLMode = SSLMode.PREFERRED,
     val caCertificate: String? = null,
     val clientCertificate: String? = null,
     val clientKey: String? = null,
     val clientKeyPassword: String? = null,
 ) {
-
-    val TRUST_KEY_STORE_URL: String = "trustCertificateKeyStoreUrl"
-    val TRUST_KEY_STORE_PASS: String = "trustCertificateKeyStorePassword"
-    val CLIENT_KEY_STORE_URL: String = "clientCertificateKeyStoreUrl"
-    val CLIENT_KEY_STORE_PASS: String = "clientCertificateKeyStorePassword"
-    val CLIENT_KEY_STORE_TYPE: String = "clientCertificateKeyStoreType"
-    val TRUST_KEY_STORE_TYPE: String = "trustCertificateKeyStoreType"
-    val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
-    val SSL_MODE: String = "sslMode"
+    companion object {
+        const val TRUST_KEY_STORE_URL: String = "trustCertificateKeyStoreUrl"
+        const val TRUST_KEY_STORE_PASS: String = "trustCertificateKeyStorePassword"
+        const val CLIENT_KEY_STORE_URL: String = "clientCertificateKeyStoreUrl"
+        const val CLIENT_KEY_STORE_PASS: String = "clientCertificateKeyStorePassword"
+        const val CLIENT_KEY_STORE_TYPE: String = "clientCertificateKeyStoreType"
+        const val TRUST_KEY_STORE_TYPE: String = "trustCertificateKeyStoreType"
+        const val KEY_STORE_TYPE_PKCS12: String = "PKCS12"
+        const val SSL_MODE: String = "sslMode"
+    }
 
     private fun getOrGeneratePassword(): String {
         if (!clientKeyPassword.isNullOrEmpty()) {
@@ -117,27 +120,22 @@ class MysqlJdbcEncryption(
         var clientCertKeyStorePair: Pair<URI, String>?
         val additionalParameters: MutableMap<String, String> = HashMap()
 
-        if (!sslMode.isNullOrEmpty()) {
-            additionalParameters[SSL_MODE] = sslMode
+        additionalParameters[SSL_MODE] = sslMode.jdbcPropertyName
 
-            caCertKeyStorePair = prepareCACertificateKeyStore()
+        caCertKeyStorePair = prepareCACertificateKeyStore()
 
-            if (null != caCertKeyStorePair) {
-                log.debug { "uri for ca cert keystore: ${caCertKeyStorePair.first}" }
-                try {
-                    additionalParameters.putAll(
-                        java.util.Map.of(
-                            TRUST_KEY_STORE_URL,
-                            caCertKeyStorePair.first.toURL().toString(),
-                            TRUST_KEY_STORE_PASS,
-                            caCertKeyStorePair.second,
-                            TRUST_KEY_STORE_TYPE,
-                            KEY_STORE_TYPE_PKCS12
-                        )
+        if (null != caCertKeyStorePair) {
+            log.debug { "uri for ca cert keystore: ${caCertKeyStorePair.first}" }
+            try {
+                additionalParameters.putAll(
+                    mapOf(
+                        TRUST_KEY_STORE_URL to caCertKeyStorePair.first.toURL().toString(),
+                        TRUST_KEY_STORE_PASS to caCertKeyStorePair.second,
+                        TRUST_KEY_STORE_TYPE to KEY_STORE_TYPE_PKCS12
                     )
-                } catch (e: MalformedURLException) {
-                    throw RuntimeException("Unable to get a URL for trust key store")
-                }
+                )
+            } catch (e: MalformedURLException) {
+                throw ConfigErrorException("Unable to get a URL for trust key store")
             }
 
             clientCertKeyStorePair = prepareClientCertificateKeyStore()
@@ -155,39 +153,25 @@ class MysqlJdbcEncryption(
                         )
                     )
                 } catch (e: MalformedURLException) {
-                    throw RuntimeException("Unable to get a URL for client key store")
+                    throw ConfigErrorException("Unable to get a URL for client key store")
                 }
             }
         }
-
-        log.debug { "additional params: $additionalParameters" }
         return additionalParameters
     }
+}
 
-    class Builder {
-        var sslMode: String = ""
-        var caCertificate: String = ""
-        var clientCertificate: String = ""
-        var clientKey: String = ""
-        var clientKeyPassword: String = ""
+enum class SSLMode(val jdbcPropertyName: String) {
+    PREFERRED("preferred"),
+    REQUIRED("required"),
+    VERIFY_CA("verify_ca"),
+    VERIFY_IDENTITY("verify_identity");
 
-        fun setSslMode(sslMode: String) = apply { this.sslMode = sslMode }
-        fun setCaCertificate(caCertificate: String) = apply { this.caCertificate = caCertificate }
-        fun setClientCertificate(clientCertificate: String) = apply {
-            this.clientCertificate = clientCertificate
+    companion object {
+
+        fun fromJdbcPropertyName(jdbcPropertyName: String): SSLMode {
+            return SSLMode.values().find { it.jdbcPropertyName == jdbcPropertyName }
+                ?: throw SystemErrorException("Unknown SSL mode: $jdbcPropertyName")
         }
-        fun setClientKey(clientKey: String) = apply { this.clientKey = clientKey }
-        fun setClientKeyPassword(clientKeyPassword: String) = apply {
-            this.clientKeyPassword = clientKeyPassword
-        }
-
-        fun build() =
-            MysqlJdbcEncryption(
-                sslMode,
-                caCertificate,
-                clientCertificate,
-                clientKey,
-                clientKeyPassword,
-            )
     }
 }

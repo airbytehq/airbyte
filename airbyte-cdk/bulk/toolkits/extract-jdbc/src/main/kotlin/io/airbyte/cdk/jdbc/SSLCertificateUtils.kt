@@ -7,26 +7,35 @@ package io.airbyte.cdk.jdbc
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
+import java.io.FileReader
 import java.io.IOException
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.nio.file.FileSystem
 import java.nio.file.FileSystems
 import java.nio.file.Files
+import java.nio.file.Path
 import java.security.KeyFactory
 import java.security.KeyStore
 import java.security.KeyStoreException
 import java.security.NoSuchAlgorithmException
 import java.security.PrivateKey
 import java.security.SecureRandom
+import java.security.Security
 import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
 import java.security.spec.InvalidKeySpecException
 import java.security.spec.PKCS8EncodedKeySpec
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.openssl.PEMEncryptedKeyPair
+import org.bouncycastle.openssl.PEMKeyPair
+import org.bouncycastle.openssl.PEMParser
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
 
 private val LOGGER = KotlinLogging.logger {}
 
@@ -49,7 +58,7 @@ object SSLCertificateUtils {
         IOException::class,
         CertificateException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     private fun saveKeyStoreToFile(
         keyStore: KeyStore,
@@ -67,16 +76,6 @@ object SSLCertificateUtils {
         return pathToFile.toUri()
     }
 
-    @Throws(IOException::class, InterruptedException::class)
-    private fun runProcess(cmd: String, run: Runtime) {
-        LOGGER.debug { "running [$cmd]" }
-        @Suppress("deprecation") val p = run.exec(cmd)
-        if (!p.waitFor(30, TimeUnit.SECONDS)) {
-            p.destroy()
-            throw RuntimeException("Timeout while executing: $cmd")
-        }
-    }
-
     @Throws(CertificateException::class)
     private fun fromPEMString(certString: String): Certificate {
         val cf = CertificateFactory.getInstance(X509)
@@ -90,7 +89,7 @@ object SSLCertificateUtils {
         KeyStoreException::class,
         CertificateException::class,
         IOException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(
         cert: Certificate?,
@@ -109,7 +108,7 @@ object SSLCertificateUtils {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(
         certString: String,
@@ -121,7 +120,7 @@ object SSLCertificateUtils {
             fromPEMString(certString),
             keyStorePassword,
             filesystem,
-            directory
+            directory,
         )
     }
 
@@ -129,7 +128,7 @@ object SSLCertificateUtils {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(certString: String, keyStorePassword: String): URI {
         return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, null, null)
@@ -139,7 +138,7 @@ object SSLCertificateUtils {
         CertificateException::class,
         IOException::class,
         KeyStoreException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromCertificate(
         certString: String,
@@ -150,7 +149,7 @@ object SSLCertificateUtils {
             certString,
             keyStorePassword,
             FileSystems.getDefault(),
-            directory
+            directory,
         )
     }
 
@@ -158,7 +157,7 @@ object SSLCertificateUtils {
         KeyStoreException::class,
         CertificateException::class,
         IOException::class,
-        NoSuchAlgorithmException::class
+        NoSuchAlgorithmException::class,
     )
     fun keyStoreFromClientCertificate(
         cert: Certificate,
@@ -173,9 +172,72 @@ object SSLCertificateUtils {
             KEYSTORE_ENTRY_PREFIX,
             key,
             keyStorePassword.toCharArray(),
-            arrayOf(cert)
+            arrayOf(cert),
         )
         return saveKeyStoreToFile(keyStore, keyStorePassword, filesystem, directory)
+    }
+
+    // Utility function to detect the key algorithm (RSA, DSA, EC) from the key bytes
+    fun detectKeyAlgorithm(keyBytes: ByteArray): KeyFactory {
+        return when {
+            isRsaKey(keyBytes) -> KeyFactory.getInstance("RSA", "BC")
+            isDsaKey(keyBytes) -> KeyFactory.getInstance("DSA", "BC")
+            isEcKey(keyBytes) -> KeyFactory.getInstance("EC", "BC")
+            else -> throw IllegalArgumentException("Unknown or unsupported key type")
+        }
+    }
+
+    // Example heuristics for detecting the key type (you can adjust as needed)
+    fun isRsaKey(keyBytes: ByteArray): Boolean {
+        return keyBytes.size > 100 && keyBytes[0].toInt() == 0x30 // ASN.1 structure for RSA keys
+    }
+
+    fun isDsaKey(keyBytes: ByteArray): Boolean {
+        return keyBytes.size > 50 &&
+            keyBytes[0].toInt() == 0x30 // Adjust based on DSA key specifics
+    }
+
+    fun isEcKey(keyBytes: ByteArray): Boolean {
+        return keyBytes.size > 50 && keyBytes[0].toInt() == 0x30 // ASN.1 structure for EC keys
+    }
+
+    @JvmStatic
+    fun convertPKCS1ToPKCS8(pkcs1KeyPath: Path, pkcs8KeyPath: Path, keyStorePassword: String?) {
+        Security.addProvider(BouncyCastleProvider())
+        FileReader(pkcs1KeyPath.toFile()).use { reader ->
+            val pemParser = PEMParser(reader)
+            val pemObject = pemParser.readObject()
+            // Convert PEM to a PrivateKey (JcaPEMKeyConverter handles different types like RSA,
+            // DSA, EC)
+            val converter = JcaPEMKeyConverter().setProvider("BC")
+            val privateKey =
+                when (pemObject) {
+                    is PEMEncryptedKeyPair -> {
+                        // Handle encrypted key (if it was encrypted with a password)
+                        val decryptorProvider =
+                            JcePEMDecryptorProviderBuilder().build(keyStorePassword?.toCharArray())
+                        val keyPair = pemObject.decryptKeyPair(decryptorProvider)
+                        converter.getPrivateKey(keyPair.privateKeyInfo)
+                    }
+                    is PEMKeyPair -> {
+                        // Handle non-encrypted key
+                        converter.getPrivateKey(pemObject.privateKeyInfo)
+                    }
+                    else -> throw IllegalArgumentException("Unsupported key format")
+                }
+
+            // Convert the private key to PKCS#8 format
+            val pkcs8EncodedKey = convertToPkcs8(privateKey)
+
+            // Write the PKCS#8 encoded key in DER format to the output path
+            Files.write(pkcs8KeyPath, pkcs8EncodedKey)
+        }
+    }
+
+    fun convertToPkcs8(privateKey: PrivateKey): ByteArray {
+        // Convert the private key to PKCS#8 format using PrivateKeyInfo
+        val privateKeyInfo = PrivateKeyInfo.getInstance(privateKey.encoded)
+        return privateKeyInfo.encoded
     }
 
     @Throws(
@@ -184,7 +246,7 @@ object SSLCertificateUtils {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         CertificateException::class,
-        KeyStoreException::class
+        KeyStoreException::class,
     )
     fun keyStoreFromClientCertificate(
         certString: String,
@@ -207,16 +269,7 @@ object SSLCertificateUtils {
         pkcs8Key.toFile().deleteOnExit()
 
         Files.write(pkcs1Key, keyString.toByteArray(StandardCharsets.UTF_8))
-        runProcess(
-            "openssl pkcs8 -topk8 -inform PEM -outform DER -in " +
-                pkcs1Key.toAbsolutePath() +
-                " -out " +
-                pkcs8Key.toAbsolutePath() +
-                " -nocrypt -passout pass:" +
-                keyStorePassword,
-            Runtime.getRuntime()
-        )
-
+        convertPKCS1ToPKCS8(pkcs1Key.toAbsolutePath(), pkcs8Key.toAbsolutePath(), keyStorePassword)
         val spec = PKCS8EncodedKeySpec(Files.readAllBytes(pkcs8Key))
         var privateKey =
             try {
@@ -234,7 +287,7 @@ object SSLCertificateUtils {
             privateKey,
             keyStorePassword,
             filesystem,
-            directory
+            directory,
         )
     }
 
@@ -245,7 +298,7 @@ object SSLCertificateUtils {
         NoSuchAlgorithmException::class,
         InvalidKeySpecException::class,
         KeyStoreException::class,
-        InterruptedException::class
+        InterruptedException::class,
     )
     fun keyStoreFromClientCertificate(
         certString: String,
@@ -258,7 +311,7 @@ object SSLCertificateUtils {
             keyString,
             keyStorePassword,
             FileSystems.getDefault(),
-            directory
+            directory,
         )
     }
 
@@ -267,7 +320,7 @@ object SSLCertificateUtils {
             val factory = CertificateFactory.getInstance(X509)
             val trustedCa =
                 factory.generateCertificate(
-                    ByteArrayInputStream(caCertificate.toByteArray(StandardCharsets.UTF_8))
+                    ByteArrayInputStream(caCertificate.toByteArray(StandardCharsets.UTF_8)),
                 )
             val trustStore = KeyStore.getInstance(PKCS_12)
             trustStore.load(null, null)
