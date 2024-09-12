@@ -29,8 +29,8 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
-from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder, NoopDecoder
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
@@ -153,7 +153,7 @@ from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformatio
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
@@ -1245,8 +1245,27 @@ class ModelToComponentFactory:
         polling_requester = self._create_component_from_model(
             model=model.polling_requester, decoder=decoder, config=config, name=f"job polling - {name}"
         )
+        job_download_components_name = f"job download - {name}"
         download_requester = self._create_component_from_model(
-            model=model.download_requester, decoder=decoder, config=config, name=f"job download - {name}"
+            model=model.download_requester, decoder=decoder, config=config, name=job_download_components_name
+        )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=self._create_component_from_model(
+                model=model.download_paginator, decoder=decoder, config=config, url_base=""
+            ) if model.download_paginator else NoPagination(parameters={}),
+            config=config,
+            parameters={},
         )
         abort_requester = self._create_component_from_model(
             model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}"
@@ -1256,7 +1275,7 @@ class ModelToComponentFactory:
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
-            download_requester=download_requester,
+            download_retriever=download_retriever,
             abort_requester=abort_requester,
             status_extractor=status_extractor,
             status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),

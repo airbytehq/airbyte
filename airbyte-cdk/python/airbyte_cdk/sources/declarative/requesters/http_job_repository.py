@@ -5,15 +5,18 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
+
+from airbyte_cdk import AirbyteMessage
 from airbyte_cdk.logger import lazy_log
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.models import FailureType, Type
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor, RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.response_to_file_extractor import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.types import StreamSlice, Record
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import Response
 
@@ -24,7 +27,7 @@ LOGGER = logging.getLogger("airbyte")
 class AsyncHttpJobRepository(AsyncJobRepository):
     creation_requester: Requester
     polling_requester: Requester
-    download_requester: Requester
+    download_retriever: SimpleRetriever
     abort_requester: Optional[Requester]
     status_extractor: DpathExtractor
     status_mapping: Mapping[str, AsyncJobStatus]
@@ -161,10 +164,16 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):
             stream_slice: StreamSlice = StreamSlice(partition={"url": url}, cursor_slice={})
-            # FIXME salesforce will require pagination here
-            response = self.download_requester.send_request(stream_slice=stream_slice)
-            if response:
-                yield from self.record_extractor.extract_records(response)
+            for message in self.download_retriever.read_records({}, stream_slice):
+                if isinstance(message, AirbyteMessage):
+                    if message.type == Type.RECORD:
+                        yield message.record.data  # type: ignore  # message.record won't be None here as the message is a record
+                elif isinstance(message, Record):
+                    yield message.data
+                elif isinstance(message, (dict, Mapping)):
+                    yield message
+                else:
+                    raise TypeError(f"Unknown type `{type(message)}` for message")
 
         yield from []
 

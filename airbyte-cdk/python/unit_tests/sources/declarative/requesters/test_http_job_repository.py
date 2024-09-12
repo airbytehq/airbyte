@@ -6,15 +6,23 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 import pytest
+
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector, ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
+
 
 _ANY_CONFIG = {}
 _ANY_SLICE = StreamSlice(partition={}, cursor_slice={})
@@ -28,6 +36,7 @@ _JOB_SECOND_URL = "https://job.result.api.com/2"
 _A_CSV_WITH_ONE_RECORD = """id,value
 a_record_id,a_value
 """
+_A_CURSOR_FOR_PAGINATION = "a-cursor-for-pagination"
 
 
 class HttpJobRepositoryTest(TestCase):
@@ -63,24 +72,57 @@ class HttpJobRepositoryTest(TestCase):
             stream_response=False,
         )
 
-        self._download_job_requester = HttpRequester(
-            name="stream <name>: fetch_result",
-            url_base="",
-            path="{{stream_slice['url']}}",
-            error_handler=error_handler,
-            http_method=HttpMethod.GET,
-            config=_ANY_CONFIG,
-            disable_retries=False,
-            parameters={},
-            message_repository=message_repository,
-            use_cache=False,
-            stream_response=True,
+        self._download_retriever = SimpleRetriever(
+            requester=HttpRequester(
+                name="stream <name>: fetch_result",
+                url_base="",
+                path="{{stream_slice['url']}}",
+                error_handler=error_handler,
+                http_method=HttpMethod.GET,
+                config=_ANY_CONFIG,
+                disable_retries=False,
+                parameters={},
+                message_repository=message_repository,
+                use_cache=False,
+                stream_response=True,
+            ),
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=_ANY_CONFIG,
+                parameters={},
+            ),
+            primary_key=None,
+            name="any name",
+            paginator=DefaultPaginator(
+                decoder=NoopDecoder(),
+                page_size_option=None,
+                page_token_option=RequestOption(
+                    field_name="locator",
+                    inject_into=RequestOptionType.request_parameter,
+                    parameters={},
+                ),
+                pagination_strategy=CursorPaginationStrategy(
+                    cursor_value="{{ headers['Sforce-Locator'] }}",
+                    decoder=NoopDecoder(),
+                    config=_ANY_CONFIG,
+                    parameters={},
+                ),
+                url_base=_URL_BASE,
+                config=_ANY_CONFIG,
+                parameters={},
+            ),
+            config = _ANY_CONFIG,
+            parameters = {},
         )
 
         self._repository = AsyncHttpJobRepository(
             creation_requester=self._create_job_requester,
             polling_requester=self._polling_job_requester,
-            download_requester=self._download_job_requester,
+            download_retriever=self._download_retriever,
+            abort_requester=None,
             status_extractor=DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["status"], config={}, parameters={} or {}),
             status_mapping={
                 "ready": AsyncJobStatus.COMPLETED,
@@ -144,6 +186,31 @@ class HttpJobRepositoryTest(TestCase):
 
         assert a_job.status() == AsyncJobStatus.COMPLETED
         assert another_job.status() == AsyncJobStatus.COMPLETED
+
+    def test_given_pagination_when_fetch_records_then_yield_records_from_all_pages(self) -> None:
+        self._mock_create_response(_A_JOB_ID)
+        self._http_mocker.get(
+            HttpRequest(url=f"{_EXPORT_URL}/{_A_JOB_ID}"),
+            HttpResponse(body=json.dumps({
+                "id": _A_JOB_ID,
+                "status": "ready",
+                "urls": [_JOB_FIRST_URL]
+            }))
+        )
+        self._http_mocker.get(
+            HttpRequest(url=_JOB_FIRST_URL),
+            HttpResponse(body=_A_CSV_WITH_ONE_RECORD, headers={"Sforce-Locator": _A_CURSOR_FOR_PAGINATION}),
+        )
+        self._http_mocker.get(
+            HttpRequest(url=_JOB_FIRST_URL, query_params={"locator": _A_CURSOR_FOR_PAGINATION}),
+            HttpResponse(body=_A_CSV_WITH_ONE_RECORD),
+        )
+
+        job = self._repository.start(_ANY_SLICE)
+        self._repository.update_jobs_status([job])
+        records = list(self._repository.fetch_records(job))
+
+        assert len(records) == 2
 
     def test_given_multiple_urls_when_fetch_records_then_fetch_from_multiple_urls(self) -> None:
         self._mock_create_response(_A_JOB_ID)
