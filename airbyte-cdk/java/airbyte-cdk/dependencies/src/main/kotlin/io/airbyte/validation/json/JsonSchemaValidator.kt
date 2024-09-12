@@ -92,14 +92,14 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
             .toSet()
     }
 
-    fun getValidationMessageArgs(schemaJson: JsonNode, objectJson: JsonNode): List<Array<String>> {
+    fun getValidationMessageArgs(schemaJson: JsonNode, objectJson: JsonNode): List<Array<Any>> {
         return validateInternal(schemaJson, objectJson).map { obj: ValidationMessage ->
             obj.arguments
         }
     }
 
-    fun getValidationMessagePaths(schemaJson: JsonNode, objectJson: JsonNode): List<String> {
-        return validateInternal(schemaJson, objectJson).map { obj: ValidationMessage -> obj.path }
+    fun getValidationMessagePaths(schemaJson: JsonNode, objectJson: JsonNode): List<Any> {
+        return validateInternal(schemaJson, objectJson).map { obj: ValidationMessage -> obj.evaluationPath }
     }
 
     @Throws(JsonValidationException::class)
@@ -172,7 +172,7 @@ class JsonSchemaValidator @VisibleForTesting constructor(private val baseUri: UR
                 null
             )
 
-        val schema = jsonSchemaFactory.create(context, null, schemaJson, jsonSchemaFactory.getSchema(baseUri))
+        val schema = jsonSchemaFactory.create(context, null, JsonNodePath(context.config.pathType), schemaJson, jsonSchemaFactory.getSchema(baseUri))
         return schema
     }
 
