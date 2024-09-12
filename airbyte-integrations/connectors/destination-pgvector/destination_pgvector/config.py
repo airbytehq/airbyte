@@ -34,7 +34,7 @@ class PGVectorIndexingModel(BaseModel):
         ...,
         title="Port",
         order=2,
-        description= "Enter the port you want to use to access the database",
+        description="Enter the port you want to use to access the database",
         examples=["5432"],
     )
     database: str = Field(
