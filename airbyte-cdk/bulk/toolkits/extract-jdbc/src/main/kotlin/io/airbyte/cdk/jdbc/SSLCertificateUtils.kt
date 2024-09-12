@@ -256,11 +256,8 @@ object SSLCertificateUtils {
         directory: String?
     ): URI {
         // Convert RSA key (PKCS#1) to PKCS#8 key
-        // Note: java.security doesn't have a built-in support of PKCS#1 format. A conversion using
-        // openssl
-        // is necessary.
-        // Since this is a single operation it's better than adding an external lib (e.g
-        // BouncyCastle)
+        // Note: java.security doesn't have a built-in support of PKCS#1 format. Hence we need a
+        // conversion using BouncyCastle.
 
         val tmpDir = Files.createTempDirectory(null)
         val pkcs1Key = Files.createTempFile(tmpDir, null, null)

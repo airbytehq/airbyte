@@ -8,14 +8,8 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
-import java.security.KeyStoreException
-import java.security.NoSuchAlgorithmException
-import java.security.cert.CertificateException
-import java.security.spec.InvalidKeySpecException
-import java.util.HashMap
 import org.apache.commons.lang3.RandomStringUtils
 
 private val log = KotlinLogging.logger {}
@@ -47,39 +41,27 @@ class MysqlJdbcEncryption(
     }
 
     private fun prepareCACertificateKeyStore(): Pair<URI, String>? {
-        // if config available
-        // if has CA cert - make keystore
-        // if has client cert
-        // if has client password - make keystore using password
-        // if no client password - make keystore using random password
+        // if config is not available - done
+        // if has CA cert - make keystore with given password or generate a new password.
         var caCertKeyStorePair: Pair<URI, String>? = null
 
-        if (!caCertificate.isNullOrEmpty()) {
-            val clientKeyPassword = getOrGeneratePassword()
-            try {
-                val caCertKeyStoreUri =
-                    SSLCertificateUtils.keyStoreFromCertificate(
-                        caCertificate,
-                        clientKeyPassword,
-                        null,
-                        null
-                    )
-                caCertKeyStorePair = Pair(caCertKeyStoreUri, clientKeyPassword)
-            } catch (ex: Exception) {
-                when (ex) {
-                    is CertificateException,
-                    is IOException,
-                    is KeyStoreException,
-                    is NoSuchAlgorithmException,
-                    is InvalidKeySpecException,
-                    is InterruptedException -> {
-                        throw RuntimeException("Failed to create keystore for CA certificate", ex)
-                    }
-                }
-            }
+        if (caCertificate.isNullOrEmpty()) {
+            return caCertKeyStorePair
         }
-
-        return caCertKeyStorePair
+        val clientKeyPassword = getOrGeneratePassword()
+        try {
+            val caCertKeyStoreUri =
+                SSLCertificateUtils.keyStoreFromCertificate(
+                    caCertificate,
+                    clientKeyPassword,
+                    null,
+                    null
+                )
+            return Pair(caCertKeyStoreUri, clientKeyPassword)
+        } catch (ex: Exception) {
+            throw ConfigErrorException("Failed to create keystore for CA certificate.", ex)
+        }
+        throw ConfigErrorException("Failed to create keystore for CA certificate.")
     }
 
     private fun prepareClientCertificateKeyStore(): Pair<URI, String>? {
@@ -97,19 +79,7 @@ class MysqlJdbcEncryption(
                     )
                 clientCertKeyStorePair = Pair(clientCertKeyStoreUri, clientKeyPassword)
             } catch (ex: Exception) {
-                when (ex) {
-                    is CertificateException,
-                    is IOException,
-                    is KeyStoreException,
-                    is NoSuchAlgorithmException,
-                    is InvalidKeySpecException,
-                    is InterruptedException -> {
-                        throw RuntimeException(
-                            "Failed to create keystore for Client certificate",
-                            ex
-                        )
-                    }
-                }
+                throw RuntimeException("Failed to create keystore for Client certificate", ex)
             }
         }
         return clientCertKeyStorePair
@@ -118,7 +88,7 @@ class MysqlJdbcEncryption(
     fun parseSSLConfig(): Map<String, String> {
         var caCertKeyStorePair: Pair<URI, String>?
         var clientCertKeyStorePair: Pair<URI, String>?
-        val additionalParameters: MutableMap<String, String> = HashMap()
+        val additionalParameters: MutableMap<String, String> = mutableMapOf()
 
         additionalParameters[SSL_MODE] = sslMode.jdbcPropertyName
 
