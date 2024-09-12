@@ -28,13 +28,3 @@ class SourceGCSSpec(BaseModel):
         description="GCS path to data",
         order=1,
     )
-
-    service_account: str = Field(
-        title="Service Account Information.",
-        airbyte_secret=True,
-        description=(
-            'Enter your Google Cloud <a href="https://cloud.google.com/iam/docs/'
-            'creating-managing-service-account-keys#creating_service_account_keys">'
-            "service account key</a> in JSON format"
-        ),
-    )

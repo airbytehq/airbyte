@@ -16,7 +16,7 @@ from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBas
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.cloud import storage
-from google.oauth2 import service_account
+from google.oauth2 import credentials, service_account
 from source_gcs.config import Config
 
 ERROR_MESSAGE_ACCESS = (
@@ -53,7 +53,17 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         return self._gcs_client
 
     def _get_credentials(self):
-        return service_account.Credentials.from_service_account_info(json.loads(self.config.service_account))
+        if self.config.credentials.auth_type == "Service":
+            # Service Account authorization
+            return service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account))
+        # Google OAuth
+        return credentials.Credentials(
+            self.config.credentials.access_token,
+            refresh_token=self.config.credentials.refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=self.config.credentials.client_id,
+            client_secret=self.config.credentials.client_secret,
+        )
 
     @property
     def gcs_client(self) -> storage.Client:
