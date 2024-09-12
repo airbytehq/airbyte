@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -16,7 +16,6 @@ class DefaultRequestOptionsProvider(RequestOptionsProvider):
     outbound request being made
     """
 
-    config: Config
     parameters: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:

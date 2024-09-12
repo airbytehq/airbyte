@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -28,12 +28,6 @@ class DatetimeBasedRequestOptionsProvider(RequestOptionsProvider):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._partition_field_start = InterpolatedString.create(self.partition_field_start or "start_time", parameters=parameters)
         self._partition_field_end = InterpolatedString.create(self.partition_field_end or "end_time", parameters=parameters)
-
-    def stream_slices(self) -> Iterable[StreamSlice]:
-        # When all processing is managed by ConcurrentCursor and concurrent read processing, this method shouldn't end up being used
-        # It kinda sucks we have to implement this given that partition generation should really just be a responsibility of the
-        # cursor but making this class implement StreamSlicer makes it easier in the model_to_component_factory
-        yield from [{}]
 
     def get_request_params(
         self,

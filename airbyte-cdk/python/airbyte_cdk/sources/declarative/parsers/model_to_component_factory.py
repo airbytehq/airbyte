@@ -1185,12 +1185,14 @@ class ModelToComponentFactory:
         # Define cursor only if per partition or common incremental support is needed
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
 
-        if not stream_slicer or not isinstance(stream_slicer, DatetimeBasedCursor) or type(stream_slicer) is not DatetimeBasedCursor:
+        if not isinstance(stream_slicer, DatetimeBasedCursor) or type(stream_slicer) is not DatetimeBasedCursor:
             # Many of the custom component implementations of DatetimeBasedCursor override get_request_params() (or other methods).
             # Because we're decoupling RequestOptionsProvider from the Cursor, custom components will eventually need to reimplement
             # their own RequestOptionsProvider. However, right now the existing StreamSlicer/Cursor still can act as the SimpleRetriever's
             # request_options_provider
-            request_options_provider = stream_slicer or DefaultRequestOptionsProvider(config=config, parameters={})
+            request_options_provider = stream_slicer or DefaultRequestOptionsProvider(parameters={})
+        elif not request_options_provider:
+            request_options_provider = DefaultRequestOptionsProvider(parameters={})
 
         stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 

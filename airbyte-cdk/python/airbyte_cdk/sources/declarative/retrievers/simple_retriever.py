@@ -63,7 +63,7 @@ class SimpleRetriever(Retriever):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
-    request_option_provider: Optional[RequestOptionsProvider] = None
+    request_option_provider: RequestOptionsProvider = field(default_factory=lambda: DefaultRequestOptionsProvider(parameters={}))
     cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
@@ -74,7 +74,6 @@ class SimpleRetriever(Retriever):
         self._last_record: Optional[Record] = None
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
-        self.request_option_provider = self.request_option_provider or DefaultRequestOptionsProvider(config=self.config, parameters={})
 
         # This mapping is used during a resumable full refresh syncs to indicate whether a partition has started syncing
         # records. Partitions serve as the key and map to True if they already began processing records
@@ -235,21 +234,21 @@ class SimpleRetriever(Retriever):
     ) -> Iterable[Record]:
         if not response:
             self._last_response = None
-            return []
-
-        self._last_response = response
-        record_generator = self.record_selector.select_records(
-            response=response,
-            stream_state=stream_state,
-            records_schema=records_schema,
-            stream_slice=stream_slice,
-            next_page_token=next_page_token,
-        )
-        self._last_page_size = 0
-        for record in record_generator:
-            self._last_page_size += 1
-            self._last_record = record
-            yield record
+            yield from []
+        else:
+            self._last_response = response
+            record_generator = self.record_selector.select_records(
+                response=response,
+                stream_state=stream_state,
+                records_schema=records_schema,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+            )
+            self._last_page_size = 0
+            for record in record_generator:
+                self._last_page_size += 1
+                self._last_record = record
+                yield record
 
     @property  # type: ignore
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
