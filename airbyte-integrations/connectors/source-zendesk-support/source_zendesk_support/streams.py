@@ -1163,8 +1163,10 @@ class ArticleCommentVotes(AbstractVotes, HttpSubStream):
         comment_id = stream_slice.get("parent").get("id")
         return f"help_center/articles/{article_id}/comments/{comment_id}/votes"
 
+
 class Categories(FullRefreshZendeskSupportStream):
     """Categories stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/categories/#list-categories"""
+
 
 class Sections(FullRefreshZendeskSupportStream):
     """Sections stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/sections/#list-sections"""
