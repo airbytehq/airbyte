@@ -21,7 +21,7 @@ data:
   name: PGVector
   remoteRegistries:
     pypi:
-      enabled: false
+      enabled: true
       packageName: airbyte-destination-pgvector
   registryOverrides:
     cloud:
