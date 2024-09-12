@@ -18,6 +18,8 @@ from google.cloud import storage
 from google.oauth2 import service_account
 from metadata_service.constants import (
     COMPONENTS_PY_FILE_NAME,
+    COMPONENTS_ZIP_FILE_NAME,
+    COMPONENTS_ZIP_SHA256_FILE_NAME,
     DOC_FILE_NAME,
     DOC_INAPP_FILE_NAME,
     ICON_FILE_NAME,
@@ -452,7 +454,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
 
     icon_files_uploaded = _file_upload(
         file_key="icon",
-        local_path=metadata_file_path.parent / ICON_FILE_NAME,
+        local_path=working_directory / ICON_FILE_NAME,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
         upload_as_version=False,
@@ -506,6 +508,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
+        override_destination_file_name=COMPONENTS_ZIP_SHA256_FILE_NAME,
     )
     uploaded_files.extend(components_zip_sha256_files_uploaded)
 
@@ -516,6 +519,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         bucket=bucket,
         upload_as_version=upload_as_version,
         upload_as_latest=should_upload_latest,
+        override_destination_file_name=COMPONENTS_ZIP_FILE_NAME,
     )
     uploaded_files.extend(components_zip_files_uploaded)
 
