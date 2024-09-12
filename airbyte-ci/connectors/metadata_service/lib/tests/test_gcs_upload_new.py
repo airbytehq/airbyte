@@ -124,13 +124,24 @@ def setup_upload_mocks(
 
     mock_version_blob = mocker.Mock(exists=mocker.Mock(return_value=version_blob_exists), md5_hash=version_blob_md5_hash)
     mock_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=latest_blob_exists), md5_hash=latest_blob_md5_hash)
+
     mock_doc_version_blob = mocker.Mock(exists=mocker.Mock(return_value=doc_version_blob_exists), md5_hash=doc_version_blob_md5_hash)
     mock_doc_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=doc_latest_blob_exists), md5_hash=doc_latest_blob_md5_hash)
+
     mock_release_candidate_blob = mocker.Mock(exists=mocker.Mock(return_value=release_candidate_blob_exists), md5_hash="rc_hash")
+
     mock_zip_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="zip_hash")
+    mock_zip_version_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="zip_hash")
+
     mock_sha_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="sha_hash")
+    mock_sha_version_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="sha_hash")
+
     mock_components_py_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="components_py_hash")
+    mock_components_py_version_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="components_py_hash")
+
     mock_manifest_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="manifest_hash")
+    mock_manifest_version_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="manifest_hash")
+
     mock_other_file_blob = mocker.Mock(exists=mocker.Mock(return_value=True), md5_hash="other_hash")
     mock_bucket = mock_storage_client.bucket.return_value
 
@@ -141,32 +152,47 @@ def setup_upload_mocks(
 
     def side_effect_bucket_blob(file_path):
         # if file path ends in latest/metadata.yaml, return mock_latest_blob
-        if str(file_path).endswith(f"{LATEST_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"):
-            return mock_latest_blob
+        file_path_str = str(file_path)
+        is_latest = f"{LATEST_GCS_FOLDER_NAME}/" in file_path_str
+        if file_path_str.endswith(METADATA_FILE_NAME):
+            if is_latest:
+                return mock_latest_blob
+            else:
+                return mock_version_blob
 
-        if str(file_path).endswith(f"{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"):
+        if file_path_str.endswith(f"{RELEASE_CANDIDATE_GCS_FOLDER_NAME}/{METADATA_FILE_NAME}"):
             return mock_release_candidate_blob
 
-        if str(file_path).endswith(f"{METADATA_FILE_NAME}"):
-            return mock_version_blob
+        if file_path_str.endswith(DOC_FILE_NAME):
+            if is_latest:
+                return mock_doc_latest_blob
+            else:
+                return mock_doc_version_blob
 
-        if str(file_path).endswith(f"{LATEST_GCS_FOLDER_NAME}/{DOC_FILE_NAME}"):
-            return mock_doc_latest_blob
 
-        if str(file_path).endswith(f"{DOC_FILE_NAME}"):
-            return mock_doc_version_blob
+        if file_path_str.endswith(f"{MANIFEST_FILE_NAME}"):
+            if is_latest:
+                return mock_manifest_latest_blob
+            else:
+                return mock_manifest_version_blob
 
-        if str(file_path).endswith(f"{MANIFEST_FILE_NAME}"):
-            return mock_manifest_latest_blob
+        if file_path_str.endswith(f"{COMPONENTS_PY_FILE_NAME}"):
+            if is_latest:
+                return mock_components_py_latest_blob
+            else:
+                return mock_components_py_version_blob
 
-        if str(file_path).endswith(f"{COMPONENTS_PY_FILE_NAME}"):
-            return mock_components_py_latest_blob
+        if file_path_str.endswith(".sha256"):
+            if is_latest:
+                return mock_sha_latest_blob
+            else:
+                return mock_sha_version_blob
 
-        if str(file_path).endswith(".sha256"):
-            return mock_sha_latest_blob
-
-        if str(file_path).endswith(f".zip"):
-            return mock_zip_latest_blob
+        if file_path_str.endswith(f".zip"):
+            if is_latest:
+                return mock_zip_latest_blob
+            else:
+                return mock_zip_version_blob
 
         else:
             return mock_other_file_blob
@@ -195,8 +221,12 @@ def setup_upload_mocks(
         "mock_doc_latest_blob": mock_doc_latest_blob,
         "mock_manifest_latest_blob": mock_manifest_latest_blob,
         "mock_components_py_latest_blob": mock_components_py_latest_blob,
+        "mock_manifest_version_blob": mock_manifest_version_blob,
+        "mock_components_py_version_blob": mock_components_py_version_blob,
         "mock_sha_latest_blob": mock_sha_latest_blob,
+        "mock_sha_version_blob": mock_sha_version_blob,
         "mock_zip_latest_blob": mock_zip_latest_blob,
+        "mock_zip_version_blob": mock_zip_version_blob,
         "mock_other_file_blob": mock_other_file_blob,
         "service_account_json": service_account_json,
     }
@@ -440,11 +470,6 @@ def test_upload_metadata_to_gcs_valid_metadata(
         # clear the call count
         gcs_upload.upload_file_if_changed.reset_mock()
 
-        # TODO: Add zip support
-        # TODO: Add components.py support
-        # TODO: Add manifest support
-        # TODO: Add icon support
-
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
     metadata_file_path = Path("./i_dont_exist.yaml")
@@ -628,7 +653,7 @@ def test_upload_metadata_to_gcs_with_manifest_files(
 
     tmp_metadata_file_path = tmp_path / "metadata.yaml"
     tmp_zip_file_path = tmp_path / "components.zip"
-    tmp_sha256_file_path = tmp_path / "components.zip.sha256"
+    tmp_sha256_file_path = tmp_path / "components.sha256"
 
     files_to_return = [
         tmp_metadata_file_path.open("w"),
@@ -651,6 +676,8 @@ def test_upload_metadata_to_gcs_with_manifest_files(
         validator_opts=ValidatorOptions(docs_path=DOCS_PATH),
     )
 
+    # Latest Uploads
+
     assert_blob_upload(
         upload_info=upload_info,
         upload_info_file_key="latest_manifest",
@@ -667,6 +694,26 @@ def test_upload_metadata_to_gcs_with_manifest_files(
         should_upload=components_py_exists,
         file_path=tmp_zip_file_path,
         failure_message="Latest components.py should be uploaded.",
+    )
+
+    # Versioned Uploads
+
+    assert_blob_upload(
+        upload_info=upload_info,
+        upload_info_file_key="versioned_manifest",
+        blob_mock=mocks["mock_manifest_version_blob"],
+        should_upload=manifest_exists,
+        file_path=expected_manifest_file_path,
+        failure_message="Versioned manifest should be uploaded.",
+    )
+
+    assert_blob_upload(
+        upload_info=upload_info,
+        upload_info_file_key="versioned_components_zip",
+        blob_mock=mocks["mock_zip_version_blob"],
+        should_upload=components_py_exists,
+        file_path=tmp_zip_file_path,
+        failure_message="Versioned components.py should be uploaded.",
     )
 
     # clear the call count
