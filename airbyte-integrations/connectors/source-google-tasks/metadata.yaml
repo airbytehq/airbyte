@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "tasks.googleapis.com"
   registryOverrides:
     oss:
       enabled: true
