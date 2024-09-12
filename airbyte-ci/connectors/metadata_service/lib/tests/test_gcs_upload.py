@@ -84,6 +84,9 @@ def assert_upload_invalid_metadata_fails_correctly(metadata_file_path: Path, exp
 
 
 def assert_blob_upload(upload_info, upload_info_file_key, blob_mock, should_upload, file_path, failure_message):
+    """
+    Assert that the blob upload occurred (or not) as expected.
+    """
     file_uploaded = next((file.uploaded for file in upload_info.uploaded_files if file.id == upload_info_file_key), False)
     if should_upload:
         blob_mock.upload_from_filename.assert_called_with(file_path)

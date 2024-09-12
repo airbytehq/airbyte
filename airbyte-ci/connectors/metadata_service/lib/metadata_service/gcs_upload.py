@@ -132,6 +132,7 @@ def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
 
 
 def _any_uploaded(uploaded_files: List[UploadedFile], keys: List[str]) -> bool:
+    """Check if any of the uploaded files have been uploaded."""
     for uploaded_file in uploaded_files:
         if uploaded_file.id in keys:
             return True
@@ -194,6 +195,7 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
 def upload_file_if_changed(
     local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False
 ) -> MaybeUpload:
+    """Upload a file to GCS if it has changed."""
     local_file_md5_hash = compute_gcs_md5(local_file_path)
     remote_blob = bucket.blob(blob_path)
 
