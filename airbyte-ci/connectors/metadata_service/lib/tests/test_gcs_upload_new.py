@@ -169,7 +169,6 @@ def setup_upload_mocks(
             else:
                 return mock_doc_version_blob
 
-
         if file_path_str.endswith(f"{MANIFEST_FILE_NAME}"):
             if is_latest:
                 return mock_manifest_latest_blob

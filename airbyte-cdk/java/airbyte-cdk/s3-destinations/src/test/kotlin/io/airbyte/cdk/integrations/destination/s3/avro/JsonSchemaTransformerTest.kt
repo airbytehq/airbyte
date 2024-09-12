@@ -9,6 +9,8 @@ import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaIdentityM
 import io.airbyte.cdk.integrations.destination.s3.jsonschema.JsonSchemaUnionMerger
 import io.airbyte.cdk.integrations.destination.s3.parquet.JsonSchemaParquetPreprocessor
 import io.airbyte.commons.jackson.MoreMappers
+import io.airbyte.commons.json.Jsons
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -138,5 +140,43 @@ class JsonSchemaTransformerTest {
         Assertions.assertEquals(nullType, properties["null_type"])
         Assertions.assertEquals(nullType, properties["redundant_null"])
         Assertions.assertEquals(stringType, properties["combined_null_string"])
+    }
+
+    @Test
+    fun testJsonType() {
+        val inputSchema =
+            Jsons.deserialize(
+                """
+            {
+              "type": "object",
+              "properties": {
+                "foo": {},
+                "bar": {
+                  "type": "array",
+                  "items": {}
+                }
+              }
+            }
+            """.trimIndent()
+            ) as ObjectNode
+        val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
+
+        assertEquals(
+            Jsons.deserialize(
+                """
+                {
+                  "type": "object",
+                  "properties": {
+                    "foo": {"type": "string"},
+                    "bar": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    }
+                  }
+                }
+                """.trimIndent()
+            ),
+            mapped
+        )
     }
 }
