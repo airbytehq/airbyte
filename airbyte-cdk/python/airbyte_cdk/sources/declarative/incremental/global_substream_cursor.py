@@ -52,10 +52,10 @@ class Timer:
         self._start = time.perf_counter_ns()
 
     def finish(self) -> int:
-        if self._start:
-            return ((time.perf_counter_ns() - self._start) / 1e9).__ceil__()
+        if self._start is not None:
+            return (time.perf_counter_ns() - self._start + 999_999_999) // 1_000_000_000
         else:
-            raise RuntimeError("Global substream cursor timer not started")
+            raise RuntimeError("Timer not started")
 
 
 class GlobalSubstreamCursor(DeclarativeCursor):
@@ -114,8 +114,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         slice_generator = (
-            StreamSlice(partition=partition, cursor_slice=cursor_slice)
-            for cursor_slice in self._stream_cursor.stream_slices()
+            StreamSlice(partition=partition, cursor_slice=cursor_slice) for cursor_slice in self._stream_cursor.stream_slices()
         )
 
         yield from slice_generator
