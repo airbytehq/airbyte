@@ -9,6 +9,7 @@ from airbyte_cdk import AbstractSource, DeclarativeStream, SinglePartitionRouter
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -22,6 +23,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 
 _A_STREAM_NAME = "a_stream_name"
 _EXTRACTOR_NOT_USED: RecordExtractor = None  # type: ignore  # the extractor should not be used. If it is the case, there is an issue that needs fixing
+_NO_LIMIT = 10000
 
 
 class MockAsyncJobRepository(AsyncJobRepository):
@@ -65,7 +67,7 @@ class MockSource(AbstractSource):
                     record_selector=noop_record_selector,
                     stream_slicer=self._stream_slicer,
                     job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                        MockAsyncJobRepository(), stream_slices,
+                        MockAsyncJobRepository(), stream_slices, JobTracker(_NO_LIMIT),
                     ),
                 ),
                 config={},
