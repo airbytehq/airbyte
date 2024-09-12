@@ -107,9 +107,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
 
         if cursor_field_name:
             if not isinstance(cursor_field_name, str):
-                raise ValueError(
-                    f"Cursor field type must be a string, but received {type(cursor_field_name).__name__}."
-                )
+                raise ValueError(f"Cursor field type must be a string, but received {type(cursor_field_name).__name__}.")
 
             stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
             cursor_field = CursorField(cursor_field_name)
