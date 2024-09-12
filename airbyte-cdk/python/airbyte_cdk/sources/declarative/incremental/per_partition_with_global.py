@@ -80,7 +80,8 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._global_cursor.observe(stream_slice, record)
 
     def close_slice(self, stream_slice: StreamSlice, *args: Any) -> None:
-        self._per_partition_cursor.close_slice(stream_slice, *args)
+        if not self._use_global_cursor:
+            self._per_partition_cursor.close_slice(stream_slice, *args)
         self._global_cursor.close_slice(stream_slice, *args)
 
     def get_stream_state(self) -> StreamState:
