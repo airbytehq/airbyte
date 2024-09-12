@@ -231,7 +231,7 @@ definitions:
       name: "sections"
       path: "help_center/sections"
       primary_key: "id"
-    
+
   # Incremental cursor-based streams
   audit_logs_stream:
     $ref: "#/definitions/base_incremental_stream"
