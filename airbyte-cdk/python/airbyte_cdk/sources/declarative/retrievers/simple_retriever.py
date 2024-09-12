@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
 from dataclasses import InitVar, dataclass, field
 from functools import partial
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.requesters.request_options import DefaultRequestOptionsProvider, RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -61,6 +63,7 @@ class SimpleRetriever(Retriever):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: StreamSlicer = field(default_factory=lambda: SinglePartitionRouter(parameters={}))
+    request_option_provider: Optional[RequestOptionsProvider] = None
     cursor: Optional[DeclarativeCursor] = None
     ignore_stream_slicer_parameters_on_paginated_requests: bool = False
 
@@ -71,6 +74,7 @@ class SimpleRetriever(Retriever):
         self._last_record: Optional[Record] = None
         self._parameters = parameters
         self._name = InterpolatedString(self._name, parameters=parameters) if isinstance(self._name, str) else self._name
+        self.request_option_provider = self.request_option_provider or DefaultRequestOptionsProvider(config=self.config, parameters={})
 
         # This mapping is used during a resumable full refresh syncs to indicate whether a partition has started syncing
         # records. Partitions serve as the key and map to True if they already began processing records
@@ -158,7 +162,7 @@ class SimpleRetriever(Retriever):
             stream_slice,
             next_page_token,
             self._paginator.get_request_params,
-            self.stream_slicer.get_request_params,
+            self.request_option_provider.get_request_params,
         )
         if isinstance(params, str):
             raise ValueError("Request params cannot be a string")
@@ -184,7 +188,7 @@ class SimpleRetriever(Retriever):
             stream_slice,
             next_page_token,
             self._paginator.get_request_body_data,
-            self.stream_slicer.get_request_body_data,
+            self.request_option_provider.get_request_body_data,
         )
 
     def _request_body_json(
@@ -203,7 +207,7 @@ class SimpleRetriever(Retriever):
             stream_slice,
             next_page_token,
             self._paginator.get_request_body_json,
-            self.stream_slicer.get_request_body_json,
+            self.request_option_provider.get_request_body_json,
         )
         if isinstance(body_json, str):
             raise ValueError("Request body json cannot be a string")

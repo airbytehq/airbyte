@@ -6,11 +6,13 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import NO_CURSOR_STATE_KEY
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
+from airbyte_cdk.sources.types import Config
 
 
 def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
@@ -53,6 +55,23 @@ class CursorField:
 
     def extract_value(self, record: Record) -> CursorValueType:
         cursor_value = record.data.get(self.cursor_field_key)
+        if cursor_value is None:
+            raise ValueError(f"Could not find cursor field {self.cursor_field_key} in record")
+        return cursor_value  # type: ignore  # we assume that the value the path points at is a comparable
+
+
+class InterpolatedCursorField(CursorField):
+    def __init__(self, cursor_field_key: InterpolatedString, config: Config):
+        self._cursor_field_key = cursor_field_key
+        self.config = config
+
+    @property
+    def cursor_field_key(self) -> str:
+        return self._cursor_field_key.eval(config=self.config)
+
+    def extract_value(self, record: Record) -> CursorValueType:
+        resolved_cursor_field_key = self._cursor_field_key.eval(config=self.config)
+        cursor_value = record.data.get(resolved_cursor_field_key)
         if cursor_value is None:
             raise ValueError(f"Could not find cursor field {self.cursor_field_key} in record")
         return cursor_value  # type: ignore  # we assume that the value the path points at is a comparable
@@ -143,6 +162,7 @@ class ConcurrentCursor(Cursor):
         end_provider: Callable[[], CursorValueType],
         lookback_window: Optional[GapType] = None,
         slice_range: Optional[GapType] = None,
+        cursor_granularity: Optional[GapType] = None,
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -159,6 +179,7 @@ class ConcurrentCursor(Cursor):
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
         self._lookback_window = lookback_window
         self._slice_range = slice_range
+        self._cursor_granularity = cursor_granularity
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -312,7 +333,10 @@ class ConcurrentCursor(Cursor):
             current_lower_boundary = lower
             while not stop_processing:
                 current_upper_boundary = min(current_lower_boundary + self._slice_range, upper)
-                yield current_lower_boundary, current_upper_boundary
+                if self._cursor_granularity:
+                    yield current_lower_boundary, current_upper_boundary - self._cursor_granularity
+                else:
+                    yield current_lower_boundary, current_upper_boundary
                 current_lower_boundary = current_upper_boundary
                 if current_upper_boundary >= upper:
                     stop_processing = True

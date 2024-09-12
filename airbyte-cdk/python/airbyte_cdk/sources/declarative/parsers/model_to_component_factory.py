@@ -140,7 +140,12 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    DatetimeBasedRequestOptionsProvider,
+    DefaultRequestOptionsProvider,
+    InterpolatedRequestOptionsProvider,
+    RequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRetriever, SimpleRetrieverTestReadDecorator
@@ -653,6 +658,40 @@ class ModelToComponentFactory:
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
                 "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
+
+        if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
+            cursor_model = model.incremental_sync
+
+            end_time_option = (
+                RequestOption(
+                    inject_into=RequestOptionType(cursor_model.end_time_option.inject_into.value),
+                    field_name=cursor_model.end_time_option.field_name,
+                    parameters=cursor_model.parameters or {},
+                )
+                if cursor_model.end_time_option
+                else None
+            )
+            start_time_option = (
+                RequestOption(
+                    inject_into=RequestOptionType(cursor_model.start_time_option.inject_into.value),
+                    field_name=cursor_model.start_time_option.field_name,
+                    parameters=cursor_model.parameters or {},
+                )
+                if cursor_model.start_time_option
+                else None
+            )
+
+            request_options_provider = DatetimeBasedRequestOptionsProvider(
+                start_time_option=start_time_option,
+                end_time_option=end_time_option,
+                partition_field_start=cursor_model.partition_field_end,
+                partition_field_end=cursor_model.partition_field_end,
+                config=config,
+                parameters=model.parameters or {},
+            )
+        else:
+            request_options_provider = None
+
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -663,6 +702,7 @@ class ModelToComponentFactory:
             name=model.name,
             primary_key=primary_key,
             stream_slicer=combined_slicers,
+            request_options_provider=request_options_provider,
             stop_condition_on_cursor=stop_condition_on_cursor,
             client_side_incremental_sync=client_side_incremental_sync,
             transformations=transformations,
@@ -1126,6 +1166,7 @@ class ModelToComponentFactory:
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
+        request_options_provider: Optional[RequestOptionsProvider] = None,
         stop_condition_on_cursor: bool = False,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
@@ -1140,10 +1181,18 @@ class ModelToComponentFactory:
             client_side_incremental_sync=client_side_incremental_sync,
         )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
-        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 
         # Define cursor only if per partition or common incremental support is needed
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
+
+        if not stream_slicer or not isinstance(stream_slicer, DatetimeBasedCursor) or type(stream_slicer) is not DatetimeBasedCursor:
+            # Many of the custom component implementations of DatetimeBasedCursor override get_request_params() (or other methods).
+            # Because we're decoupling RequestOptionsProvider from the Cursor, custom components will eventually need to reimplement
+            # their own RequestOptionsProvider. However, right now the existing StreamSlicer/Cursor still can act as the SimpleRetriever's
+            # request_options_provider
+            request_options_provider = stream_slicer or DefaultRequestOptionsProvider(config=config, parameters={})
+
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
@@ -1168,6 +1217,7 @@ class ModelToComponentFactory:
                 requester=requester,
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
+                request_option_provider=request_options_provider,
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
@@ -1181,6 +1231,7 @@ class ModelToComponentFactory:
             requester=requester,
             record_selector=record_selector,
             stream_slicer=stream_slicer,
+            request_option_provider=request_options_provider,
             cursor=cursor,
             config=config,
             ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
