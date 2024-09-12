@@ -82,19 +82,24 @@ def maybe_create_components_zip(working_directory: Path) -> ManifestOnlyFilePath
     yaml_manifest_file_path = working_directory / MANIFEST_FILE_NAME
     components_py_file_path = working_directory / COMPONENTS_PY_FILE_NAME
 
+    if not components_py_file_path.exists():
+        return ManifestOnlyFilePaths(
+            zip_file_path=None,
+            sha256_file_path=None,
+            sha256=None,
+            manifest_file_path=yaml_manifest_file_path,
+        )
+
     with (
         tempfile.NamedTemporaryFile(mode="wb", suffix=".zip", delete=False) as zip_tmp_file,
         tempfile.NamedTemporaryFile(mode="w", suffix=".sha256", delete=False) as sha256_tmp_file,
     ):
-
         python_components_zip_file_path = Path(zip_tmp_file.name)
         python_components_zip_sha256_file_path = Path(sha256_tmp_file.name)
 
-        components_zip_sha256 = None
-        if components_py_file_path.exists():
-            files_to_zip: List[Path] = [components_py_file_path, yaml_manifest_file_path]
-            components_zip_sha256 = create_zip_and_get_sha256(files_to_zip, python_components_zip_file_path)
-            sha256_tmp_file.write(components_zip_sha256)
+        files_to_zip: List[Path] = [components_py_file_path, yaml_manifest_file_path]
+        components_zip_sha256 = create_zip_and_get_sha256(files_to_zip, python_components_zip_file_path)
+        sha256_tmp_file.write(components_zip_sha256)
 
         return ManifestOnlyFilePaths(
             zip_file_path=python_components_zip_file_path,
@@ -207,7 +212,7 @@ def upload_file_if_changed(
 
 
 def _file_upload(
-    local_path: Path,
+    local_path: Path | None,
     gcp_connector_dir: str,
     bucket: storage.bucket.Bucket,
     file_key: str,
@@ -237,20 +242,19 @@ def _file_upload(
         uploaded, the blob id, and the description. The first tuple is for the versioned file, the second for the
         latest file.
     """
-    file_name = local_path.name if override_destination_file_name is None else override_destination_file_name
     latest_file_key = f"latest_{file_key}"
     versioned_file_key = f"versioned_{file_key}"
-
     versioned_file_info = UploadedFile(id=versioned_file_key, uploaded=False, blob_id=None)
     latest_file_info = UploadedFile(id=latest_file_key, uploaded=False, blob_id=None)
-
-    if not local_path.exists():
+    if not local_path or not local_path.exists():
         msg = f"Expected to find file at {local_path}, but none was found."
         if skip_if_not_exists:
             logging.warning(msg)
             return versioned_file_info, latest_file_info
 
         raise FileNotFoundError(msg)
+
+    file_name = local_path.name if override_destination_file_name is None else override_destination_file_name
 
     if upload_as_version:
         remote_upload_path = f"{gcp_connector_dir}/{upload_as_version}"
