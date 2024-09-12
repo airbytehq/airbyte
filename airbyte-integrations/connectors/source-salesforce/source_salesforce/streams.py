@@ -558,6 +558,7 @@ class BulkSalesforceStream(SalesforceStream):
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
                     job_repository,
                     stream_slices,
+                    exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
