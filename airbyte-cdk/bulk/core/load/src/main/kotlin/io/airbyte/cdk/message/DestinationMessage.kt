@@ -38,9 +38,9 @@ data class DestinationStreamComplete(
 ) : DestinationRecordMessage()
 
 /** State. */
-sealed class DestinationStateMessage : DestinationMessage() {
+sealed class CheckpointMessage : DestinationMessage() {
     data class Stats(val recordCount: Long)
-    data class StreamState(
+    data class StreamCheckpoint(
         val stream: DestinationStream,
         val state: JsonNode,
     )
@@ -48,26 +48,26 @@ sealed class DestinationStateMessage : DestinationMessage() {
     abstract val sourceStats: Stats
     abstract val destinationStats: Stats?
 
-    abstract fun withDestinationStats(stats: Stats): DestinationStateMessage
+    abstract fun withDestinationStats(stats: Stats): CheckpointMessage
 }
 
-data class DestinationStreamState(
-    val streamState: StreamState,
+data class StreamCheckpoint(
+    val streamCheckpoint: StreamCheckpoint,
     override val sourceStats: Stats,
     override val destinationStats: Stats? = null
-) : DestinationStateMessage() {
+) : CheckpointMessage() {
     override fun withDestinationStats(stats: Stats) =
-        DestinationStreamState(streamState, sourceStats, stats)
+        StreamCheckpoint(streamCheckpoint, sourceStats, stats)
 }
 
-data class DestinationGlobalState(
+data class GlobalCheckpoint(
     val state: JsonNode,
     override val sourceStats: Stats,
     override val destinationStats: Stats? = null,
-    val streamStates: List<StreamState> = emptyList()
-) : DestinationStateMessage() {
+    val streamCheckpoints: List<StreamCheckpoint> = emptyList()
+) : CheckpointMessage() {
     override fun withDestinationStats(stats: Stats) =
-        DestinationGlobalState(state, sourceStats, stats, streamStates)
+        GlobalCheckpoint(state, sourceStats, stats, streamCheckpoints)
 }
 
 /** Catchall for anything unimplemented. */
@@ -108,21 +108,21 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
             AirbyteMessage.Type.STATE -> {
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM ->
-                        DestinationStreamState(
-                            streamState = fromAirbyteStreamState(message.state.stream),
+                        StreamCheckpoint(
+                            streamCheckpoint = fromAirbyteStreamState(message.state.stream),
                             sourceStats =
-                                DestinationStateMessage.Stats(
+                                CheckpointMessage.Stats(
                                     recordCount = message.state.sourceStats.recordCount.toLong()
                                 )
                         )
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
-                        DestinationGlobalState(
+                        GlobalCheckpoint(
                             sourceStats =
-                                DestinationStateMessage.Stats(
+                                CheckpointMessage.Stats(
                                     recordCount = message.state.sourceStats.recordCount.toLong()
                                 ),
                             state = message.state.global.sharedState,
-                            streamStates =
+                            streamCheckpoints =
                                 message.state.global.streamStates.map { fromAirbyteStreamState(it) }
                         )
                     else -> // TODO: Do we still need to handle LEGACY?
@@ -135,9 +135,9 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
 
     private fun fromAirbyteStreamState(
         streamState: AirbyteStreamState
-    ): DestinationStateMessage.StreamState {
+    ): CheckpointMessage.StreamCheckpoint {
         val descriptor = streamState.streamDescriptor
-        return DestinationStateMessage.StreamState(
+        return CheckpointMessage.StreamCheckpoint(
             stream = catalog.getStream(namespace = descriptor.namespace, name = descriptor.name),
             state = streamState.streamState
         )

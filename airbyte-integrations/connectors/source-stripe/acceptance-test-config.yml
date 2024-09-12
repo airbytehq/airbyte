@@ -39,8 +39,6 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_cards"
             bypass_reason: "This stream can't be seeded in our sandbox account"
-          - name: "payment_methods"
-            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "persons"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "reviews"
