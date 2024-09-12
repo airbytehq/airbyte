@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
 import threading
 import time
 from typing import Any, Iterable, Mapping, Optional, Union
@@ -114,8 +115,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         slice_generator = (
-            StreamSlice(partition=partition, cursor_slice=cursor_slice)
-            for cursor_slice in self._stream_cursor.stream_slices()
+            StreamSlice(partition=partition, cursor_slice=cursor_slice) for cursor_slice in self._stream_cursor.stream_slices()
         )
 
         yield from slice_generator
@@ -137,49 +137,43 @@ class GlobalSubstreamCursor(DeclarativeCursor):
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
         Set the initial state for the cursors.
-
-        This method initializes the state for the global cursor using the provided stream state.
-
-        Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
-        does not have parent streams, this step will be skipped due to the default PartitionRouter implementation.
-
         Args:
-            stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
-                {
-                    "state": {
-                        "last_updated": "2023-05-27T00:00:00Z"
-                    },
-                    "parent_state": {
-                        "parent_stream_name": {
-                            "last_updated": "2023-05-27T00:00:00Z"
-                        }
-                    },
-                    "lookback_window": 132
+            stream_state (StreamState): The state of the streams to be set.
+        Format of the stream state should be:
+        {
+            "state": {
+                "last_updated": "2023-05-27T00:00:00Z"
+            },
+            "parent_state": {
+                "parent_stream_name": {
+                    "last_updated": "2023-05-27T00:00:00Z"
                 }
+            },
+            "lookback_window": 132
+        }
         """
         if not stream_state:
             return
 
-        if "lookback_window" in stream_state:
-            self._lookback_window = stream_state["lookback_window"]
-            self._inject_lookback_into_stream_cursor(stream_state["lookback_window"])
+        lookback_window = stream_state.get("lookback_window")
+        if lookback_window is not None:
+            self._lookback_window = lookback_window
+            self._inject_lookback_into_stream_cursor(lookback_window)
 
-        if "state" in stream_state:
-            self._stream_cursor.set_initial_state(stream_state["state"])
+        state = stream_state.get("state")
+        if state:
+            self._stream_cursor.set_initial_state(state)
 
         # Set parent state for partition routers based on parent streams
-        self._partition_router.set_initial_state(stream_state)
+        parent_state = stream_state.get("parent_state")
+        if parent_state:
+            self._partition_router.set_initial_state(parent_state)
 
     def _inject_lookback_into_stream_cursor(self, lookback_window: int) -> None:
         """
         Modifies the stream cursor's lookback window based on the duration of the previous sync.
-        This adjustment ensures the cursor is set to the minimal lookback window necessary for
-        avoiding missing data.
-
         Parameters:
-            lookback_window (int): The lookback duration in seconds to be set, derived from
-                                   the previous sync.
-
+            lookback_window (int): The lookback duration in seconds to be set, derived from the previous sync.
         Raises:
             ValueError: If the cursor does not support dynamic lookback window adjustments.
         """
