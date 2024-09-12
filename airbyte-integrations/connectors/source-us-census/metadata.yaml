@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-us-census
   githubIssueLabel: source-us-census
   icon: uscensus.svg
