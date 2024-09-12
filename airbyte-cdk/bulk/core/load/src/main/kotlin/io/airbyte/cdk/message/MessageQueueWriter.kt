@@ -71,7 +71,7 @@ class DestinationMessageQueueWriter(
                      * stats.
                      */
                     is StreamCheckpoint -> {
-                        val stream = message.streamCheckpoint.stream
+                        val stream = message.checkpoint.stream
                         val manager = streamsManager.getManager(stream)
                         val (currentIndex, countSinceLast) = manager.markCheckpoint()
                         val messageWithCount =

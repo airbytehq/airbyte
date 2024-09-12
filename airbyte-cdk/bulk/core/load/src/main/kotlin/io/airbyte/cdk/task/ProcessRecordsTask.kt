@@ -53,7 +53,9 @@ class ProcessRecordsTask(
                                     )
                             }
                         }
-                        .takeWhile { it !is DestinationStreamComplete && it !is DestinationStreamIncomplete }
+                        .takeWhile {
+                            it !is DestinationStreamComplete && it !is DestinationStreamIncomplete
+                        }
                         .map { it as DestinationRecord }
                         .iterator()
                 streamLoader.processRecords(records, fileEnvelope.batch.totalSizeBytes)

@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.state
 
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.Range
+import io.airbyte.cdk.command.Append
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
@@ -12,6 +14,7 @@ import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SimpleBatch
+import io.airbyte.protocol.models.Jsons
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Named
@@ -70,7 +73,16 @@ class StreamsManagerTest {
         val streamsManager = StreamsManagerFactory(catalog).make()
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             streamsManager.getManager(
-                DestinationStream(DestinationStream.Descriptor("test", "non-existent"))
+                DestinationStream(
+                    DestinationStream.Descriptor("test", "non-existent"),
+                    Append,
+                    Jsons.deserialize(
+                        """{"type": "object", "properties": {"id": {"type": "integer"}}}"""
+                    ) as ObjectNode,
+                    generationId = 42,
+                    minimumGenerationId = 0,
+                    syncId = 42,
+                )
             )
         }
     }

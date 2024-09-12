@@ -7,16 +7,19 @@ package io.airbyte.cdk.message
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.message.CheckpointMessage.Checkpoint
+import io.airbyte.cdk.message.CheckpointMessage.Stats
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import jakarta.inject.Singleton
 
 /**
@@ -36,8 +39,29 @@ data class DestinationRecord(
     override val stream: DestinationStream,
     val data: JsonNode? = null,
     val emittedAtMs: Long,
-    val serialized: String
+    val meta: Meta?,
+    val serialized: String,
 ) : DestinationStreamAffinedMessage {
+    data class Meta(val changes: List<Change>?) {
+        fun asProtocolObject(): AirbyteRecordMessageMeta =
+            AirbyteRecordMessageMeta().also {
+                if (changes != null) {
+                    it.changes = changes.map { change -> change.asProtocolObject() }
+                }
+            }
+    }
+
+    data class Change(
+        val field: String,
+        // Using the raw protocol enums here.
+        // By definition, we just want to pass these through directly.
+        val change: AirbyteRecordMessageMetaChange.Change,
+        val reason: AirbyteRecordMessageMetaChange.Reason,
+    ) {
+        fun asProtocolObject(): AirbyteRecordMessageMetaChange =
+            AirbyteRecordMessageMetaChange().withField(field).withChange(change).withReason(reason)
+    }
+
     override fun asProtocolMessage(): AirbyteMessage =
         AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
@@ -47,6 +71,11 @@ data class DestinationRecord(
                     .withNamespace(stream.descriptor.namespace)
                     .withEmittedAt(emittedAtMs)
                     .withData(data)
+                    .also {
+                        if (meta != null) {
+                            it.meta = meta.asProtocolObject()
+                        }
+                    }
             )
 }
 
@@ -63,11 +92,7 @@ private fun statusToProtocolMessage(
                 .withEmittedAt(emittedAtMs.toDouble())
                 .withStreamStatus(
                     AirbyteStreamStatusTraceMessage()
-                        .withStreamDescriptor(
-                            StreamDescriptor()
-                                .withName(stream.descriptor.name)
-                                .withNamespace(stream.descriptor.namespace)
-                        )
+                        .withStreamDescriptor(stream.descriptor.asProtocolObject())
                         .withStatus(status)
                 )
         )
@@ -75,7 +100,7 @@ private fun statusToProtocolMessage(
 data class DestinationStreamComplete(
     override val stream: DestinationStream,
     val emittedAtMs: Long,
-): DestinationStreamAffinedMessage {
+) : DestinationStreamAffinedMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.COMPLETE)
 }
@@ -83,54 +108,51 @@ data class DestinationStreamComplete(
 data class DestinationStreamIncomplete(
     override val stream: DestinationStream,
     val emittedAtMs: Long,
-): DestinationStreamAffinedMessage {
+) : DestinationStreamAffinedMessage {
     override fun asProtocolMessage(): AirbyteMessage =
         statusToProtocolMessage(stream, emittedAtMs, AirbyteStreamStatus.INCOMPLETE)
 }
 
 /** State. */
-sealed class CheckpointMessage : DestinationMessage {
+sealed interface CheckpointMessage : DestinationMessage {
     data class Stats(val recordCount: Long)
-    data class StreamCheckpoint(
+    data class Checkpoint(
         val stream: DestinationStream,
         val state: JsonNode,
-    )
+    ) {
+        fun asProtocolObject(): AirbyteStreamState =
+            AirbyteStreamState()
+                .withStreamDescriptor(stream.descriptor.asProtocolObject())
+                .withStreamState(state)
+    }
 
-    abstract val sourceStats: Stats
-    abstract val destinationStats: Stats?
+    val sourceStats: Stats
+    val destinationStats: Stats?
 
-    abstract fun withDestinationStats(stats: Stats): CheckpointMessage
+    fun withDestinationStats(stats: Stats): CheckpointMessage
 }
 
-private fun streamCheckpointToProtocolObject(
-    streamCheckpoint: CheckpointMessage.StreamCheckpoint
-): AirbyteStreamState =
-    AirbyteStreamState()
-        .withStreamDescriptor(
-            StreamDescriptor()
-                .withName(streamCheckpoint.stream.descriptor.name)
-                .withNamespace(streamCheckpoint.stream.descriptor.namespace),
-        )
-        .withStreamState(streamCheckpoint.state)
-
 data class StreamCheckpoint(
-    val streamCheckpoint: StreamCheckpoint,
+    val checkpoint: Checkpoint,
     override val sourceStats: Stats,
     override val destinationStats: Stats? = null
-) : CheckpointMessage() {
+) : CheckpointMessage {
     override fun withDestinationStats(stats: Stats) =
-        StreamCheckpoint(streamCheckpoint, sourceStats, stats)
+        StreamCheckpoint(checkpoint, sourceStats, stats)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
             AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                .withStream(streamCheckpointToProtocolObject(streamCheckpoint))
-                .withSourceStats(AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble()))
-                .apply {
+                .withStream(checkpoint.asProtocolObject())
+                .withSourceStats(
+                    AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
+                )
+                .also {
                     if (destinationStats != null) {
-                        destinationStats =
-                            AirbyteStateStats().withRecordCount(destinationStats.recordCount.toDouble())
+                        it.destinationStats =
+                            AirbyteStateStats()
+                                .withRecordCount(destinationStats.recordCount.toDouble())
                     }
                 }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
@@ -141,10 +163,10 @@ data class GlobalCheckpoint(
     val state: JsonNode,
     override val sourceStats: Stats,
     override val destinationStats: Stats? = null,
-    val streamCheckpoints: List<StreamCheckpoint> = emptyList()
-) : CheckpointMessage() {
+    val checkpoints: List<Checkpoint> = emptyList()
+) : CheckpointMessage {
     override fun withDestinationStats(stats: Stats) =
-        GlobalCheckpoint(state, sourceStats, stats, streamCheckpoints)
+        GlobalCheckpoint(state, sourceStats, stats, checkpoints)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -153,13 +175,16 @@ data class GlobalCheckpoint(
                 .withGlobal(
                     AirbyteGlobalState()
                         .withSharedState(state)
-                        .withStreamStates(streamCheckpoints.map { streamCheckpointToProtocolObject(it) })
+                        .withStreamStates(checkpoints.map { it.asProtocolObject() })
                 )
-                .withSourceStats(AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble()))
-                .apply {
+                .withSourceStats(
+                    AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
+                )
+                .also {
                     if (destinationStats != null) {
-                        destinationStats =
-                            AirbyteStateStats().withRecordCount(destinationStats.recordCount.toDouble())
+                        it.destinationStats =
+                            AirbyteStateStats()
+                                .withRecordCount(destinationStats.recordCount.toDouble())
                     }
                 }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
@@ -171,7 +196,9 @@ data object Undefined : DestinationMessage {
     override fun asProtocolMessage(): AirbyteMessage {
         // Arguably we could accept the raw message in the constructor?
         // But that seems weird - when would we ever want to reemit that message?
-        throw NotImplementedError("Unrecognized messages cannot be safely converted back to a protocol object.")
+        throw NotImplementedError(
+            "Unrecognized messages cannot be safely converted back to a protocol object."
+        )
     }
 }
 
@@ -186,9 +213,20 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                             namespace = message.record.namespace,
                             name = message.record.stream,
                         ),
-                    // TODO: Map to AirbyteType
                     data = message.record.data,
                     emittedAtMs = message.record.emittedAt,
+                    meta =
+                        message.record.meta?.let { meta ->
+                            DestinationRecord.Meta(
+                                meta.changes?.map {
+                                    DestinationRecord.Change(
+                                        field = it.field,
+                                        change = it.change,
+                                        reason = it.reason,
+                                    )
+                                }
+                            )
+                        },
                     serialized = serialized
                 )
             AirbyteMessage.Type.TRACE -> {
@@ -200,11 +238,11 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                     )
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
                     when (status.status) {
-                      AirbyteStreamStatus.COMPLETE ->
-                          DestinationStreamComplete(stream, message.trace.emittedAt.toLong())
-                      AirbyteStreamStatus.INCOMPLETE ->
-                          DestinationStreamIncomplete(stream, message.trace.emittedAt.toLong())
-                      else -> Undefined
+                        AirbyteStreamStatus.COMPLETE ->
+                            DestinationStreamComplete(stream, message.trace.emittedAt.toLong())
+                        AirbyteStreamStatus.INCOMPLETE ->
+                            DestinationStreamIncomplete(stream, message.trace.emittedAt.toLong())
+                        else -> Undefined
                     }
                 } else {
                     Undefined
@@ -214,20 +252,16 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                 when (message.state.type) {
                     AirbyteStateMessage.AirbyteStateType.STREAM ->
                         StreamCheckpoint(
-                            streamCheckpoint = fromAirbyteStreamState(message.state.stream),
+                            checkpoint = fromAirbyteStreamState(message.state.stream),
                             sourceStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = message.state.sourceStats.recordCount.toLong()
-                                )
+                                Stats(recordCount = message.state.sourceStats.recordCount.toLong())
                         )
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                         GlobalCheckpoint(
                             sourceStats =
-                                CheckpointMessage.Stats(
-                                    recordCount = message.state.sourceStats.recordCount.toLong()
-                                ),
+                                Stats(recordCount = message.state.sourceStats.recordCount.toLong()),
                             state = message.state.global.sharedState,
-                            streamCheckpoints =
+                            checkpoints =
                                 message.state.global.streamStates.map { fromAirbyteStreamState(it) }
                         )
                     else -> // TODO: Do we still need to handle LEGACY?
@@ -238,11 +272,9 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
         }
     }
 
-    private fun fromAirbyteStreamState(
-        streamState: AirbyteStreamState
-    ): CheckpointMessage.StreamCheckpoint {
+    private fun fromAirbyteStreamState(streamState: AirbyteStreamState): Checkpoint {
         val descriptor = streamState.streamDescriptor
-        return CheckpointMessage.StreamCheckpoint(
+        return Checkpoint(
             stream = catalog.getStream(namespace = descriptor.namespace, name = descriptor.name),
             state = streamState.streamState
         )
