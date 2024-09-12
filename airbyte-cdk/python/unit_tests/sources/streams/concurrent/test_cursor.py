@@ -116,7 +116,7 @@ class ConcurrentCursorStateTest(TestCase):
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            {_A_CURSOR_FIELD_KEY: 30},  # State message is updated to the legacy format before being emitted
+            {_A_CURSOR_FIELD_KEY: 0},  # State message is updated to the legacy format before being emitted
         )
 
     def test_given_boundary_fields_and_record_observed_when_close_partition_then_ignore_records(self) -> None:

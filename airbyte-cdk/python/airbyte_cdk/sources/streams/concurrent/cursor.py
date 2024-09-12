@@ -227,7 +227,7 @@ class ConcurrentCursor(Cursor):
             self.state["slices"].append(
                 {
                     self._connector_state_converter.START_KEY: self.start,
-                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_cursor_value_per_partition[partition]),
+                    self._connector_state_converter.END_KEY: most_recent_cursor_value,
                     "most_recent_cursor_value": most_recent_cursor_value,
                 }
             )

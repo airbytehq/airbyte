@@ -54,7 +54,8 @@ class AbstractStreamStateConverter(ABC):
             raise RuntimeError("Expected at least one slice but there were none. This is unexpected; please contact Support.")
         merged_intervals = self.merge_intervals(slices)
         first_interval = merged_intervals[0]
-        return first_interval["most_recent_cursor_value"]
+
+        return first_interval.get("most_recent_cursor_value") or first_interval[self.START_KEY]
 
     def deserialize(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
