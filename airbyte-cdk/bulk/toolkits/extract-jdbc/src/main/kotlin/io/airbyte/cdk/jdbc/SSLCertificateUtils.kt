@@ -68,7 +68,6 @@ object SSLCertificateUtils {
         return pathToFile.toUri()
     }
 
-    @Throws(CertificateException::class)
     private fun fromPEMString(certString: String): Certificate {
         val cf = CertificateFactory.getInstance(X509)
         val byteArrayInputStream =
@@ -78,7 +77,7 @@ object SSLCertificateUtils {
     }
 
     fun keyStoreFromCertificate(
-        cert: Certificate?,
+        cert: Certificate,
         keyStorePassword: String,
         filesystem: FileSystem,
         directory: String
@@ -127,7 +126,7 @@ object SSLCertificateUtils {
 
     fun keyStoreFromClientCertificate(
         cert: Certificate,
-        key: PrivateKey?,
+        key: PrivateKey,
         keyStorePassword: String,
         filesystem: FileSystem,
         directory: String
