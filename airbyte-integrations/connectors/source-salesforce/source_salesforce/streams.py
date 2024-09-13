@@ -11,6 +11,7 @@ import urllib.parse
 import uuid
 from abc import ABC
 from contextlib import closing
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pandas as pd
@@ -560,13 +561,51 @@ class BulkSalesforceStream(SalesforceStream):
             use_cache=False,
             stream_response=True,
         )
+        abort_requester = HttpRequester(
+            name=f"{self.name} - abort requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.PATCH,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json={"state": "Aborted"},
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
+        delete_requester = HttpRequester(
+            name=f"{self.name} - delete requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.DELETE,
+            request_options_provider=None,
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
         urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
             download_requester=download_requester,
-            abort_requester=None,
+            abort_requester=abort_requester,
+            delete_requester=delete_requester,
             status_extractor=status_extractor,
             status_mapping={
                 "InProgress": AsyncJobStatus.RUNNING,
@@ -576,6 +615,7 @@ class BulkSalesforceStream(SalesforceStream):
                 "Failed": AsyncJobStatus.FAILED,
             },
             urls_extractor=urls_extractor,
+            job_timeout=self.DEFAULT_WAIT_TIMEOUT,
         )
         record_selector = RecordSelector(
             extractor=None,  # FIXME typing won't like that
@@ -607,7 +647,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_cursor_field="",
         )
 
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
+    DEFAULT_WAIT_TIMEOUT = timedelta(hours=24)
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 

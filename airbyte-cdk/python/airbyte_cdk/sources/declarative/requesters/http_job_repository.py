@@ -2,6 +2,7 @@
 import logging
 import uuid
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any, Dict, Iterable, Mapping, Optional
 
 import requests
@@ -26,10 +27,12 @@ class AsyncHttpJobRepository(AsyncJobRepository):
     polling_requester: Requester
     download_requester: Requester
     abort_requester: Optional[Requester]
+    delete_requester: Optional[Requester]
     status_extractor: DpathExtractor
     status_mapping: Mapping[str, AsyncJobStatus]
     urls_extractor: DpathExtractor
 
+    job_timeout: Optional[timedelta] = None
     record_extractor: RecordExtractor = field(init=False, repr=False, default_factory=lambda: ResponseToFileExtractor())
 
     def __post_init__(self) -> None:
@@ -119,7 +122,7 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         job_id: str = str(uuid.uuid4())
         self._create_job_response_by_id[job_id] = response
 
-        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice)
+        return AsyncJob(api_job_id=job_id, job_parameters=stream_slice, timeout=self.job_timeout)
 
     def update_jobs_status(self, jobs: Iterable[AsyncJob]) -> None:
         """
@@ -168,17 +171,22 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
         yield from []
 
-        self._clean_up_job(job.api_job_id())
-
-    def _clean_up_job(self, job_id: str) -> None:
-        del self._create_job_response_by_id[job_id]
-        del self._polling_job_response_by_id[job_id]
-
     def abort(self, job: AsyncJob) -> None:
         if not self.abort_requester:
             return
 
         self.abort_requester.send_request(stream_slice=self._get_create_job_stream_slice(job))
+
+    def delete(self, job: AsyncJob) -> None:
+        if not self.delete_requester:
+            return
+
+        self.delete_requester.send_request(stream_slice=self._get_create_job_stream_slice(job))
+        self._clean_up_job(job.api_job_id())
+
+    def _clean_up_job(self, job_id: str) -> None:
+        del self._create_job_response_by_id[job_id]
+        del self._polling_job_response_by_id[job_id]
 
     def _get_create_job_stream_slice(self, job: AsyncJob) -> StreamSlice:
         stream_slice = StreamSlice(
