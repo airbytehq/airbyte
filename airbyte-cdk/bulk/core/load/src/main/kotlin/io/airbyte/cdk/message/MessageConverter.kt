@@ -13,19 +13,19 @@ import io.airbyte.protocol.models.v0.StreamDescriptor
 import jakarta.inject.Singleton
 
 /**
- * Converts the internal @[DestinationStateMessage] case class to the Protocol state messages
- * required by @[io.airbyte.cdk.output.OutputConsumer]
+ * Converts the internal @[CheckpointMessage] case class to the Protocol state messages required by
+ * @[io.airbyte.cdk.output.OutputConsumer]
  */
 interface MessageConverter<T, U> {
     fun from(message: T): U
 }
 
 @Singleton
-class DefaultMessageConverter : MessageConverter<DestinationStateMessage, AirbyteMessage> {
-    override fun from(message: DestinationStateMessage): AirbyteMessage {
+class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessage> {
+    override fun from(message: CheckpointMessage): AirbyteMessage {
         val state =
             when (message) {
-                is DestinationStreamState ->
+                is StreamCheckpoint ->
                     AirbyteStateMessage()
                         .withSourceStats(
                             AirbyteStateStats()
@@ -40,8 +40,8 @@ class DefaultMessageConverter : MessageConverter<DestinationStateMessage, Airbyt
                                 )
                         )
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(fromStreamState(message.streamState))
-                is DestinationGlobalState ->
+                        .withStream(fromStreamState(message.streamCheckpoint))
+                is GlobalCheckpoint ->
                     AirbyteStateMessage()
                         .withSourceStats(
                             AirbyteStateStats()
@@ -56,21 +56,23 @@ class DefaultMessageConverter : MessageConverter<DestinationStateMessage, Airbyt
                         .withGlobal(
                             AirbyteGlobalState()
                                 .withSharedState(message.state)
-                                .withStreamStates(message.streamStates.map { fromStreamState(it) })
+                                .withStreamStates(
+                                    message.streamCheckpoints.map { fromStreamState(it) }
+                                )
                         )
             }
-        return AirbyteMessage().withState(state)
+        return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(state)
     }
 
     private fun fromStreamState(
-        streamState: DestinationStateMessage.StreamState
+        streamCheckpoint: CheckpointMessage.StreamCheckpoint
     ): AirbyteStreamState {
         return AirbyteStreamState()
             .withStreamDescriptor(
                 StreamDescriptor()
-                    .withNamespace(streamState.stream.descriptor.namespace)
-                    .withName(streamState.stream.descriptor.name)
+                    .withNamespace(streamCheckpoint.stream.descriptor.namespace)
+                    .withName(streamCheckpoint.stream.descriptor.name)
             )
-            .withStreamState(streamState.state)
+            .withStreamState(streamCheckpoint.state)
     }
 }
