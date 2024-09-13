@@ -2,19 +2,55 @@
 
 In this page you're going to find common errors users reported trying to use `abctl`.
 
-## Errors
+## Common Errors
 
-### `pod airbyte-abctl-airbyte-bootloader failed`
+### Airbyte Bootloader failed to start
+
+- Error: `pod airbyte-abctl-airbyte-bootloader failed`
+- Github Discussion [#45458](https://github.com/airbytehq/airbyte/discussions/45458)
+- Status: Investigating
 
 The `airbyte-bootloader` is the first to start during the installation.
 Version `>0.15.0` of `abctl` prints the service logs to make simpler to understand what is causing the issue.
-You're facing this problem feel free to jump into the [discussion](https://github.com/airbytehq/airbyte/discussions/45458) to get help.
+Failures reasons are generally related to problem of `airbyte-bootloader` not able to connect to the `airbyte-db` service.
 
-### `unable to create kind cluster: command "docker run --name airbyte-abctl-control-plane ..." failed with error: exit status 126`
+___
 
-Nothing here yet.
+### Error Running Docker Command
 
-### `failed to init node with kubeadm`
+- Error: `unable to create kind cluster: command "docker run --name airbyte-abctl-control-plane ..." failed with error: exit status 125`
+- Github Issue [#45462](https://github.com/airbytehq/airbyte/issues/45462)
+- Status: Investigating
+
+We recommend that you copy and run the `docker run` command manually.
+This may provide more meaningful error messages explaining why it is failing.
+Additionally, verify that you can run Docker containers in general by starting with `docker run hello-world`.
+
+```shell
+unable to create kind cluster: command "docker run --name airbyte-abctl-control-plane 
+--hostname airbyte-abctl-control-plane --label io.x-k8s.kind.role=control-plane --privileged
+--security-opt seccomp=unconfined --security-opt apparmor=unconfined --tmpfs /tmp --tmpfs /run
+--volume /var --volume /lib/modules:/lib/modules:ro -e KIND_EXPERIMENTAL_CONTAINERD_SNAPSHOTTER
+--detach --tty --label io.x-k8s.kind.cluster=airbyte-abctl --net kind --restart=on-failure:1 
+--init=false --cgroupns=private --volume /dev/mapper:/dev/mapper 
+--volume=/home/chang.kim/.airbyte/abctl/data:/var/local-path-provisioner --publish=0.0.0.0:8000:80/TCP 
+--publish=127.0.0.1:44776:6443/TCP -e KUBECONFIG=/etc/kubernetes/admin.conf kindest/node:v1.29.
+4@sha256:3abb816a5b1061fb15c6e9e60856ec40d56b7b52bcea5f5f1350bc6e2320b6f8" 
+failed with error: exit status 125
+```
+
+___
+
+### Failed to Init Node with `kubeadm`
+
+- Error: `failed to init node with kubeadm`
+- Github Issue [#44914](https://github.com/airbytehq/airbyte/issues/44914)
+- Status: Investigating
+
+We recommend that you copy and run the `docker run` command manually.
+This may provide more meaningful error messages explaining why it is failing.
+Running manually the sucessful output says kubeadm was able to join worker nodes.
+Additionally, verify that you can run Docker containers in general by starting with `docker run hello-world`.
 
 ```shell
  unable to create kind cluster: failed to init node with kubeadm: 
@@ -23,23 +59,43 @@ Nothing here yet.
   failed with error: exit status 1
  ```
 
-### `timed out waiting for the condition`
+___
+
+### Time Out Waiting for the Condition
+
+- Error: `timed out waiting for the condition`
 
 ```shell
 unable to install airbyte chart: unable to install helm: failed pre-install:
  1 error occurred: * timed out waiting for the condition
 ```
 
-### `must be a DNS name, not an IP address`
+___
+
+### Not able to ingress direct IP addresses
+
+- Error: `must be a DNS name, not an IP address`
+- Github Issue: [#110](https://github.com/airbytehq/abctl/pull/110)
+- Status: **Solved**
+
+:::tip
+Upgrade to `abctl` version `>=0.15.0` default support exposing IP.
+:::
 
 ```shell
 unable to create ingress: Ingress.networking.k8s.io "ingress-abctl" is invalid: 
 spec.rules[2].host: Invalid value: "0.0.0.0": must be a DNS name, not an IP address
 ```
 
-### `unable to read values from yaml file`
+___
 
+### Unable to Read Values from YAML file
+
+- Error: `unable to read values from yaml file`
+
+:::tip
 Check if you're in the right directory or informing the path to the file correctly.
+:::
 
 ```shell
 unable to merge values with values file './values.yaml': unable to read values 
@@ -47,7 +103,13 @@ from yaml file './values.yaml': failed to read file ./values.yaml: open ./values
  no such file or directory
 ```
 
-### `could not create rest config`
+___
+
+### Could not Create REST Config
+
+- Error: `could not create rest config`
+
+This error can happen in cases `abctl` doesn't have permission to create file and folders in your system.
 
 ```shell
 unable to initialize local command: error communicating with kubernetes: 
@@ -55,10 +117,15 @@ could not create rest config: stat /root/.airbyte/abctl/abctl.kubeconfig:
 no such file or directory
 ```
 
-### `failed to create patch: The order in patch list`
+___
+
+### Failed to Create Patch Order in Patch List
+
+- Error: `failed to create patch: The order in patch list`
+- Github [#114](https://github.com/airbytehq/abctl/pull/114)
+- Status: Fixing
 
 This error happens sometimes when user had installed `abctl local install` and after run `abctl local install --low-resource-mode`.
-The team is [working on a fix](https://github.com/airbytehq/abctl/pull/114)
 
 ```shell
 unable to install airbyte chart: unable to install helm: failed to create patch: 
@@ -71,13 +138,33 @@ map[key:JOB_MAIN_CONTAINER_CPU_REQUEST name:airbyte-abctl-airbyte-env]]]
  value:0] map[name:JOB_MAIN_CONTAINER_MEMORY_REQUEST 
  ```
 
-### `connection refused`
+___
+
+### Connection Refused
+
+- Error: `connection refused`
 
 ```shell
 nable to initialize local command: error communicating with kubernetes:
  unable to fetch kubernetes server version: Get "https://127.0.0.1:50124/version":
   dial tcp 127.0.0.1:[PORT]: connect: connection refused
 ```
+
+___
+
+### Resource Name May Not Be Empty
+
+- Error: `unexpected error while handling the secret : resource name may not be empty`
+- Github [#113](https://github.com/airbytehq/abctl/pull/113)
+- Status: Solved
+
+:::tip
+Upgrade to version `>0.15.1`
+:::
+
+Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade your `abctl` to fix this issue.
+
+___
 
 ## FAQ
 
