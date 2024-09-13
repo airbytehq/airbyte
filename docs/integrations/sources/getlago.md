@@ -13,6 +13,8 @@ This source can sync data from the [Lago API](https://doc.getlago.com/docs/guide
 - invoices
 - customers
 - subscriptions
+- customer_usage
+- customer_usage_past
 
 ### Features
 
