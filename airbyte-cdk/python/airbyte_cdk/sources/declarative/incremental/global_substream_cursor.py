@@ -114,8 +114,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
 
     def generate_slices_from_partition(self, partition: StreamSlice) -> Iterable[StreamSlice]:
         slice_generator = (
-            StreamSlice(partition=partition, cursor_slice=cursor_slice)
-            for cursor_slice in self._stream_cursor.stream_slices()
+            StreamSlice(partition=partition, cursor_slice=cursor_slice) for cursor_slice in self._stream_cursor.stream_slices()
         )
 
         yield from slice_generator

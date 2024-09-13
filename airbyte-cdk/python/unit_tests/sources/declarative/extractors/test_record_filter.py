@@ -6,7 +6,12 @@ from typing import List, Mapping, Optional
 import pytest
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator, RecordFilter
-from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionWithGlobalCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    CursorFactory,
+    DatetimeBasedCursor,
+    GlobalSubstreamCursor,
+    PerPartitionWithGlobalCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CustomRetriever, DeclarativeStream, ParentStreamConfig
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter

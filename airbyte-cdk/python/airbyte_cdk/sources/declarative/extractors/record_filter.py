@@ -3,7 +3,7 @@
 #
 import datetime
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Union, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionWithGlobalCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -56,6 +56,7 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
         super().__init__(**kwargs)
         self._date_time_based_cursor = date_time_based_cursor
         self._substream_cursor = substream_cursor
+
     @property
     def _cursor_field(self) -> str:
         return self._date_time_based_cursor.cursor_field.eval(self._date_time_based_cursor.config)  # type: ignore # eval returns a string in this context

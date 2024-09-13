@@ -5,10 +5,9 @@
 from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor, iterate_with_last_flag
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, CursorFactory
-
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
+from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor, iterate_with_last_flag
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
@@ -78,7 +77,8 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         for partition, is_last_partition in iterate_with_last_flag(self._partition_router.stream_slices()):
             # Generate slices for the current cursor and handle the last slice using the flag
             for slice, is_last_slice in iterate_with_last_flag(
-                    self._get_active_cursor().generate_slices_from_partition(partition=partition)):
+                self._get_active_cursor().generate_slices_from_partition(partition=partition)
+            ):
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
 
@@ -154,7 +154,6 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
             stream_slice=stream_slice,
             next_page_token=next_page_token,
         )
-
 
     def get_request_body_json(
         self,

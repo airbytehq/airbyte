@@ -26,9 +26,9 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFil
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.incremental import (
     DatetimeBasedCursor,
+    PerPartitionCursor,
     PerPartitionWithGlobalCursor,
     ResumableFullRefreshCursor,
-    PerPartitionCursor,
 )
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
