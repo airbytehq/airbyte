@@ -9,7 +9,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -22,20 +22,19 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
     ParentIncrementalStipeSubStream,
-    Persons,
     SetupAttempts,
     StripeLazySubStream,
     StripeStream,
     StripeSubStream,
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
+    UpdatedCursorIncrementalStripeSubStream,
 )
 
 logger = logging.getLogger("airbyte")
@@ -109,7 +108,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         args = self._get_stream_base_args(config)
         account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         try:
-            next(account_stream.read_records(sync_mode=SyncMode.full_refresh))
+            next(account_stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except AirbyteTracedException as error:
             if error.failure_type == FailureType.config_error:
                 return False, error.message
@@ -292,7 +291,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
-            Persons(**args),
+            UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **args,
+            ),
             SetupAttempts(**incremental_args),
             StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
@@ -307,17 +312,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "refund.updated",
                     # this is the only event that could track the refund updates
                     "charge.refund.updated",
-                ],
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeStream(
-                name="payment_methods",
-                path="payment_methods",
-                event_types=[
-                    "payment_method.attached",
-                    "payment_method.automatically_updated",
-                    "payment_method.detached",
-                    "payment_method.updated",
                 ],
                 **args,
             ),
@@ -485,6 +479,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 parent=application_fees,
                 event_types=["application_fee.refund.updated"],
                 sub_items_attr="refunds",
+                **args,
+            ),
+            UpdatedCursorIncrementalStripeSubStream(
+                name="payment_methods",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
+                parent=self.customers(**args),
+                event_types=["payment_method.*"],
                 **args,
             ),
             UpdatedCursorIncrementalStripeLazySubStream(

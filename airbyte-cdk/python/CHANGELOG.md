@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.5.2
+Fix pandas missing dependency
+
 ## 5.5.1
 Bug fix: Return a connection status failure on an expected check failure
 

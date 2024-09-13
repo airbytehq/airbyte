@@ -8,8 +8,10 @@ from typing import Any, List, Mapping, Optional
 import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.models import AirbyteMessageSerializer
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
+from orjson import orjson
 
 logger = logging.getLogger("airbyte_logger")
 
@@ -68,7 +70,8 @@ class MigrateToLowcodeConfig:
 
     @classmethod
     def emit_control_message(cls, migrated_config: Mapping[str, Any]) -> None:
-        print(create_connector_config_control_message(migrated_config).json(exclude_unset=True))
+        message = create_connector_config_control_message(migrated_config)
+        print(orjson.dumps(AirbyteMessageSerializer.dump(message)).decode())
 
     @classmethod
     def migrate(cls, args: List[str], source: Source) -> None:
