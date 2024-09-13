@@ -181,34 +181,75 @@ class MysqlSourceDatatypeIntegrationTest {
                 "200000000" to "200000000",
             )
 
-        val dateValues = mapOf(
-            "'2022-01-01'" to """"2022-01-01"""",
-        )
+        val dateValues =
+            mapOf(
+                "'2022-01-01'" to """"2022-01-01"""",
+            )
 
-        val timestampValues = mapOf(
-            "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
-            "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to """"2024-09-12T21:30:00.000000Z"""",
-        )
+        val timeValues =
+            mapOf(
+                "'14:30:00'" to """"14:30:00.000000"""",
+            )
+
+        val dateTimeValues =
+            mapOf(
+                "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
+                "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000""""
+            )
+
+        val timestampValues =
+            mapOf(
+                "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
+                "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
+                    """"2024-09-12T21:30:00.000000Z"""",
+            )
+
+        val booleanValues =
+            mapOf(
+                "TRUE" to "true",
+                "FALSE" to "false",
+            )
 
         // Encoded into base64
         val binaryValues =
             mapOf(
-                "X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="""",
+                "X'89504E470D0A1A0A0000000D49484452'" to
+                    """"iVBORw0KGgoAAAANSUhEUgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="""",
             )
 
         val testCases: List<TestCase> =
             listOf(
-                TestCase("VARCHAR(10)", stringValues, airbyteType=LeafAirbyteType.STRING),
-                TestCase("DECIMAL(10,2)", decimalValues, airbyteType=LeafAirbyteType.NUMBER),
-                TestCase("INT", intValues, airbyteType=LeafAirbyteType.INTEGER),
-                TestCase("DATE", dateValues, airbyteType=LeafAirbyteType.DATE),
-
-                // Big number are represented as string
-                TestCase("INT UNSIGNED", intValues, airbyteType=LeafAirbyteType.INTEGER),
-                TestCase("TIMESTAMP", timestampValues, airbyteType=LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE),
-                TestCase("BINARY(100)", binaryValues, airbyteType=LeafAirbyteType.BINARY),
-
-                )
+                TestCase(
+                    "BOOLEAN",
+                    booleanValues,
+                    airbyteType = LeafAirbyteType.BOOLEAN,
+                    cursor = false
+                ),
+                TestCase("VARCHAR(10)", stringValues, airbyteType = LeafAirbyteType.STRING),
+                TestCase("DECIMAL(10,2)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("FLOAT", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("DOUBLE", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("INT", intValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("INT UNSIGNED", intValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("DATE", dateValues, airbyteType = LeafAirbyteType.DATE),
+                TestCase(
+                    "TIMESTAMP",
+                    timestampValues,
+                    airbyteType = LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                TestCase(
+                    "DATETIME",
+                    dateTimeValues,
+                    airbyteType = LeafAirbyteType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
+                TestCase("TIME", timeValues, airbyteType = LeafAirbyteType.TIME_WITHOUT_TIMEZONE),
+                TestCase(
+                    "BINARY(100)",
+                    binaryValues,
+                    airbyteType = LeafAirbyteType.BINARY,
+                    cursor = false
+                ),
+            )
 
         val allStreamNamesAndRecordData: Map<String, List<JsonNode>> =
             testCases.flatMap { it.streamNamesToRecordData.toList() }.toMap()
