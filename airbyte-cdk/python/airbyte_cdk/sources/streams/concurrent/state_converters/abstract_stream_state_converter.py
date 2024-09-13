@@ -121,10 +121,13 @@ class AbstractStreamStateConverter(ABC):
             return []
 
         sorted_intervals = sorted(intervals, key=lambda x: (x[self.START_KEY], x[self.END_KEY]))
+        sorted_intervals = [interval for interval in sorted_intervals if interval.get("most_recent_record") is not None]
+        if not sorted_intervals:
+            return intervals
         merged_intervals = [sorted_intervals[0]]
 
         for interval in sorted_intervals[1:]:
-            last_end_time = merged_intervals[-1][self.END_KEY]
+            last_end_time = min(merged_intervals[-1][self.END_KEY], merged_intervals[-1].get("most_recent_record"))
             current_start_time = interval[self.START_KEY]
             if bool(self.increment(last_end_time) >= current_start_time):
                 merged_end_time = max(last_end_time, interval[self.END_KEY])

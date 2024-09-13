@@ -255,9 +255,9 @@ class StreamPartition(Partition):
                 if isinstance(record_data, Mapping):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
-                    record = Record(data_to_return, self._stream.name)
+                    record = Record(data_to_return, self)
                     self._cursor.observe(record)
-                    yield Record(data_to_return, self._stream.name)
+                    yield Record(data_to_return, self)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:

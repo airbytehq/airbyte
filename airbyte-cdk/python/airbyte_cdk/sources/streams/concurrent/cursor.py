@@ -154,11 +154,11 @@ class ConcurrentCursor(Cursor):
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._start = start
         self._end_provider = end_provider
-        self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
         self._lookback_window = lookback_window
         self._slice_range = slice_range
+        self._most_recent_record_per_partition: MutableMapping[str, Record] = {}
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -170,16 +170,14 @@ class ConcurrentCursor(Cursor):
         return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
 
     def observe(self, record: Record) -> None:
-        if self._slice_boundary_fields:
-            # Given that slicing is done using the cursor field, we don't need to observe the record as we assume slices will describe what
-            # has been emitted. Assuming there is a chance that records might not be yet populated for the most recent slice, use a lookback
-            # window
-            return
-
-        if not self._most_recent_record or self._extract_cursor_value(self._most_recent_record) < self._extract_cursor_value(record):
-            self._most_recent_record = record
+        if record.partition.stream_name() not in self._most_recent_record_per_partition:
+            self._most_recent_record_per_partition[record.partition.stream_name()] = record
+        elif self._extract_cursor_value(self._most_recent_record_per_partition.get(record.partition.stream_name())) < self._extract_cursor_value(record):
+            self._most_recent_record_per_partition[record.partition.stream_name()] = record
 
     def _extract_cursor_value(self, record: Record) -> Any:
+        if record is None:
+            return None
         return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:
@@ -200,9 +198,10 @@ class ConcurrentCursor(Cursor):
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
                     "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
+                    "most_recent_record": self._extract_cursor_value(self._most_recent_record_per_partition.get(partition.stream_name())),
                 }
             )
-        elif self._most_recent_record:
+        elif self._most_recent_record.get(partition.stream_name()):
             if self._has_closed_at_least_one_slice:
                 # If we track state value using records cursor field, we can only do that if there is one partition. This is because we save
                 # the state every time we close a partition. We assume that if there are multiple slices, they need to be providing
@@ -222,7 +221,8 @@ class ConcurrentCursor(Cursor):
             self.state["slices"].append(
                 {
                     self._connector_state_converter.START_KEY: self.start,
-                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record),
+                    self._connector_state_converter.END_KEY: self._extract_cursor_value(self._most_recent_record_per_partition[partition.stream_name()]),
+                    "most_recent_record": self._most_recent_record_per_partition.get(partition.stream_name()),
                 }
             )
 
