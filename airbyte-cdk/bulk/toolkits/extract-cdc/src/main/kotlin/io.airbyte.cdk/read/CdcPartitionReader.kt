@@ -6,27 +6,22 @@ package io.airbyte.cdk.cdc
 
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.read.CdcPartition
+import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
-import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.JdbcPartitionReader.AcquiredResources
-import io.airbyte.cdk.read.JdbcSharedState
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
 import io.airbyte.cdk.read.cdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
-import io.airbyte.commons.json.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
-import io.debezium.engine.format.Json
-import io.debezium.engine.spi.OffsetCommitPolicy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
-class CdcPartitionReader<P : CdcPartition<JdbcSharedState>>(
+class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
 //    cdcContext: io.airbyte.cdk.read.CdcContext,
     val partition: P
 ) : PartitionReader, cdcAware, cdcResourceTaker {
@@ -36,6 +31,9 @@ class CdcPartitionReader<P : CdcPartition<JdbcSharedState>>(
 //    private val outputConsumer = cdcContext.outputConsumer
 //    private val propertyManager = cdcContext.propertyManager
     private val acquiredResources = AtomicReference<AcquiredResources>()
+
+    /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
+    fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): TryAcquireResourcesStatus {
         if (!cdcResourceAcquire()) {

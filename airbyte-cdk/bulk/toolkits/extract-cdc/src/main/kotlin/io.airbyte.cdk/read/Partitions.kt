@@ -18,15 +18,3 @@ interface cdcAware {
 }
 
 interface cdcResourceTaker {}
-
-class CdcAwareJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
-    partition: P,
-) : JdbcNonResumablePartitionReader<P>(partition), cdcAware {
-
-    override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        if (!cdcResourceAcquire()) {
-            return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
-        }
-        return super.tryAcquireResources()
-    }
-}

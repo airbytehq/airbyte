@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.read.cdc.CdcAwareJdbcNonResumablePartitionReader
+import io.airbyte.cdk.read.cdc.CdcAwareJdbcResumablePartitionReader
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
@@ -155,11 +157,17 @@ class JdbcSequentialPartitionsCreator<
             log.warn {
                 "Table cannot be read by sequential partition reader because it cannot be split."
             }
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(when (partitionFactory.sharedState.configuration.global) {
+                true -> CdcAwareJdbcNonResumablePartitionReader(partition)
+                false -> JdbcNonResumablePartitionReader(partition)
+            })
         }
         // Happy path.
         log.info { "Table will be read by sequential partition reader(s)." }
-        return listOf(JdbcResumablePartitionReader(partition))
+        return listOf(when (partitionFactory.sharedState.configuration.global) {
+            true -> CdcAwareJdbcResumablePartitionReader(partition)
+            false -> JdbcResumablePartitionReader(partition)
+        })
     }
 }
 
@@ -189,7 +197,10 @@ class JdbcConcurrentPartitionsCreator<
                 "Table cannot be read by concurrent partition readers because it cannot be sampled."
             }
             // TODO: adaptive fetchSize computation?
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(when (partitionFactory.sharedState.configuration.global) {
+                true -> CdcAwareJdbcNonResumablePartitionReader(partition)
+                false -> JdbcNonResumablePartitionReader(partition)
+            })
         }
         // Sample the table for partition split boundaries and for record byte sizes.
         val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
@@ -211,7 +222,10 @@ class JdbcConcurrentPartitionsCreator<
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(when (partitionFactory.sharedState.configuration.global) {
+                true -> CdcAwareJdbcNonResumablePartitionReader(partition)
+                false -> JdbcNonResumablePartitionReader(partition)
+            })
         }
         // Happy path.
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
@@ -235,6 +249,10 @@ class JdbcConcurrentPartitionsCreator<
                 .distinct()
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
-        return partitions.map { JdbcNonResumablePartitionReader(it) }
+        val isGlobal = partitionFactory.sharedState.configuration.global
+        return partitions.map { when (isGlobal) {
+            true -> CdcAwareJdbcNonResumablePartitionReader(it)
+            false -> JdbcNonResumablePartitionReader(it)
+        } }
     }
 }

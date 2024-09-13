@@ -9,6 +9,9 @@ import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
+fun JdbcSharedState.toCdcShared(): CdcSharedState {
+    return DefaultCdcSharedState(this.configuration)
+}
 /** Base class for JDBC implementations of [PartitionsCreatorFactory]. */
 sealed class JdbcPartitionsCreatorFactory<
     A : JdbcSharedState,
@@ -24,8 +27,12 @@ sealed class JdbcPartitionsCreatorFactory<
         feed: Feed,
     ): PartitionsCreator {
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
+        val isGlobal = partitionFactory.sharedState.configuration.global
         return when (feed) {
-            is Global -> CreateNoPartitions // TODO : Return the CdcPartitionCreator
+            is Global -> when (isGlobal) {
+                    true -> CdcPartitionCreator(partitionFactory.sharedState.toCdcShared())
+                    false -> CreateNoPartitions
+            }
             is Stream -> {
                 val partition: P? = partitionFactory.create(feed, opaqueStateValue)
                 if (partition == null) {

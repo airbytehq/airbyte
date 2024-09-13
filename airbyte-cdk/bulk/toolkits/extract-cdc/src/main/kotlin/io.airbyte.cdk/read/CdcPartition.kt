@@ -4,11 +4,13 @@
 
 package io.airbyte.cdk.read
 
-interface CdcPartition<S : JdbcSharedState> {
+import io.airbyte.cdk.cdc.CdcPartitionReader
+
+interface CdcPartition<S : CdcSharedState> {
     val sharedState: S
 
-    /** Tries to acquire resources for [JdbcPartitionReader]. */
-    fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? =
+    /** Tries to acquire resources for [CdcPartitionReader]. */
+    fun tryAcquireResourcesForReader(): CdcPartitionReader.AcquiredResources? =
         // Acquire global resources by default.
         sharedState.tryAcquireResourcesForReader()
 }

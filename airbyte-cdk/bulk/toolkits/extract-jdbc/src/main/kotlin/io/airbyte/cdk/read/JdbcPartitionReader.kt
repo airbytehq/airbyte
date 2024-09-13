@@ -99,7 +99,7 @@ open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
+open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 

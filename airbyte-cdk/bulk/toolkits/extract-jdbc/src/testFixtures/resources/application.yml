@@ -8,7 +8,7 @@ airbyte:
 
     extract:
       jdbc:
-        mode: cdc
+        mode: sequential
 
     exception-classifiers:
       jdbc:
