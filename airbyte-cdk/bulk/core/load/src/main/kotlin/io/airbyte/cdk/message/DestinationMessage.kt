@@ -138,10 +138,11 @@ sealed interface CheckpointMessage : DestinationMessage {
 data class StreamCheckpoint(
     val checkpoint: Checkpoint,
     override val sourceStats: Stats,
-    override val destinationStats: Stats? = null
+    override val destinationStats: Stats? = null,
+    val additionalProperties: Map<String, Any>
 ) : CheckpointMessage {
     override fun withDestinationStats(stats: Stats) =
-        StreamCheckpoint(checkpoint, sourceStats, stats)
+        StreamCheckpoint(checkpoint, sourceStats, stats, additionalProperties)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -166,10 +167,11 @@ data class GlobalCheckpoint(
     val state: JsonNode,
     override val sourceStats: Stats,
     override val destinationStats: Stats? = null,
-    val checkpoints: List<Checkpoint> = emptyList()
+    val checkpoints: List<Checkpoint> = emptyList(),
+    val additionalProperties: MutableMap<String, Any> = mutableMapOf()
 ) : CheckpointMessage {
     override fun withDestinationStats(stats: Stats) =
-        GlobalCheckpoint(state, sourceStats, stats, checkpoints)
+        GlobalCheckpoint(state, sourceStats, stats, checkpoints, additionalProperties)
 
     override fun asProtocolMessage(): AirbyteMessage {
         val stateMessage =
@@ -259,7 +261,8 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         StreamCheckpoint(
                             checkpoint = fromAirbyteStreamState(message.state.stream),
                             sourceStats =
-                                Stats(recordCount = message.state.sourceStats.recordCount.toLong())
+                                Stats(recordCount = message.state.sourceStats.recordCount.toLong()),
+                            additionalProperties = message.state.additionalProperties
                         )
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                         GlobalCheckpoint(
@@ -267,7 +270,10 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                                 Stats(recordCount = message.state.sourceStats.recordCount.toLong()),
                             state = message.state.global.sharedState,
                             checkpoints =
-                                message.state.global.streamStates.map { fromAirbyteStreamState(it) }
+                                message.state.global.streamStates.map {
+                                    fromAirbyteStreamState(it)
+                                },
+                            additionalProperties = message.state.additionalProperties
                         )
                     else -> // TODO: Do we still need to handle LEGACY?
                     Undefined

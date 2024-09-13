@@ -5,8 +5,8 @@
 package io.airbyte.cdk.task
 
 import com.google.common.collect.Range
+import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.WriteConfiguration
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.DestinationRecordWrapped
 import io.airbyte.cdk.message.MessageQueueReader
@@ -38,7 +38,7 @@ import kotlinx.coroutines.yield
  * spilled.
  */
 class SpillToDiskTask(
-    private val config: WriteConfiguration,
+    private val config: DestinationConfiguration,
     private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>,
     private val streamLoader: StreamLoader,
     private val launcher: DestinationTaskLauncher
@@ -117,7 +117,7 @@ class SpillToDiskTask(
 
 @Singleton
 class SpillToDiskTaskFactory(
-    private val config: WriteConfiguration,
+    private val config: DestinationConfiguration,
     private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>
 ) {
     fun make(

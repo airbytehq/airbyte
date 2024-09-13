@@ -28,8 +28,8 @@ class CheckOperation<T : ConfigurationJsonObjectBase, C : DestinationConfigurati
 ) : Operation {
     override fun execute() {
         try {
-            val pojo: T = configJsonObjectSupplier.get()
-            val config: C = configFactory.make(pojo)
+            val pojo = configJsonObjectSupplier.get()
+            val config = configFactory.make(pojo)
             destinationCheckOperation.check(config)
             val successMessage =
                 AirbyteMessage()

@@ -16,7 +16,7 @@ data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
         streams.associateBy { it.descriptor }
 
-    fun getStream(name: String, namespace: String): DestinationStream {
+    fun getStream(name: String, namespace: String?): DestinationStream {
         val descriptor = DestinationStream.Descriptor(namespace = namespace, name = name)
         return byDescriptor[descriptor]
             ?: throw IllegalArgumentException("Stream not found: namespace=$namespace, name=$name")

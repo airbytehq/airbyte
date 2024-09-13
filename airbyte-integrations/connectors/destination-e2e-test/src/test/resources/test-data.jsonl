@@ -1,0 +1,5 @@
+{ "type": "RECORD", "record": { "emitted_at": 0, "stream": "users", "namespace": "johnny", "data": { "id": 1, "name": "Alice" } } }
+{ "type": "RECORD", "record": { "emitted_at": 1, "stream": "users", "namespace": "johnny", "data": { "id": 2, "name": "Bob" } } }
+{ "type": "RECORD", "record": { "emitted_at": 2, "stream": "users", "namespace": "johnny", "data": { "id": 3, "name": "Some Other Guy" } } }
+{ "type": "STATE", "state": { "type": "STREAM", "stream": { "stream_descriptor": { "namespace": "johnny", "name": "users" }, "stream_state": { "foo": "bar" } }, "sourceStats": { "recordCount": 3 } } }
+{ "type": "TRACE", "trace": { "emitted_at": 3, "type": "STREAM_STATUS", "stream_status": { "stream_descriptor": { "namespace": "johnny", "name": "users" }, "status": "COMPLETE" } } }
