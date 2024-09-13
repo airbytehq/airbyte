@@ -94,7 +94,7 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, you must connect to primary/master databases. Pointing the connector configuration to replica database hosts for CDC will lead to failures.
+For CDC, the required minimum version for Postgres is 16
 
 #### Step 2: Provide additional permissions to read-only user
 
@@ -311,6 +311,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.19 | 2024-09-13 | [45397](https://github.com/airbytehq/airbyte/pull/45397) | Fix CDC replication from standby read-replicas | 
 | 3.6.18 | 2024-08-28 | [44878](https://github.com/airbytehq/airbyte/pull/44878) | Enable tcpKeepAlive for jdbc connection. | 
 | 3.6.17  | 2024-08-27 | [44841](https://github.com/airbytehq/airbyte/pull/44841) | Adopt latest CDK. |
 | 3.6.16  | 2024-08-15 | [44119](https://github.com/airbytehq/airbyte/pull/44119) | Fix incorrect final state on initial read in CDC mode.                                                                                                                    |
