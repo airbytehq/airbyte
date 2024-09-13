@@ -16,12 +16,27 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk import DeclarativeStream, JsonDecoder, DpathExtractor, HttpMethod, BearerAuthenticator, HttpRequester, RecordSelector, \
-    SinglePartitionRouter, StreamSlice
+from airbyte_cdk import (
+    BearerAuthenticator,
+    CursorPaginationStrategy,
+    DeclarativeStream,
+    DefaultPaginator,
+    DpathExtractor,
+    HttpMethod,
+    HttpRequester,
+    JsonDecoder,
+    RecordSelector,
+    RequestOption,
+    RequestOptionType,
+    SimpleRetriever,
+    SinglePartitionRouter,
+    StreamSlice,
+)
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
@@ -30,7 +45,7 @@ from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
@@ -373,20 +388,40 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
     def __init__(self, cursor: Optional[ConcurrentCursor]) -> None:
         self._cursor = cursor
 
-    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                           next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_headers(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                            next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_body_data(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], str]:
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
         return {}
 
-    def get_request_body_json(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -400,7 +435,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
                 cursor_slice={
                     "start_date": slice_start.isoformat(timespec="milliseconds"),
                     "end_date": slice_end.isoformat(timespec="milliseconds"),
-                }
+                },
             )
 
 
@@ -442,9 +477,13 @@ class BulkSalesforceStream(SalesforceStream):
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
             where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
-            lower_boundary_interpolation = '{{ "'f'{self.cursor_field}'' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            lower_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            )
             and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
-            upper_boundary_interpolation = '{{ "'f'{self.cursor_field}'' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            upper_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            )
             query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
         creation_requester = HttpRequester(
             name=f"{self.name} - creation requester",
@@ -460,7 +499,7 @@ class BulkSalesforceStream(SalesforceStream):
                     "query": query,
                     "contentType": "CSV",
                     "columnDelimiter": "COMMA",
-                    "lineEnding": "LF"
+                    "lineEnding": "LF",
                 },
                 request_headers=None,
                 request_parameters=None,
@@ -501,9 +540,9 @@ class BulkSalesforceStream(SalesforceStream):
         )
         # "GET", url, headers = {"Accept-Encoding": "gzip"}, request_kwargs = {"stream": True}
         download_id_interpolation = "{{stream_slice['url']}}"
-        ResponseToFileExtractor()
+        job_download_components_name = f"{self.name} - download requester"
         download_requester = HttpRequester(
-            name=f"{self.name} - download requester",
+            name=job_download_components_name,
             url_base=url_base,
             path=f"{job_query_path}/{download_id_interpolation}/results",
             authenticator=authenticator,
@@ -524,12 +563,45 @@ class BulkSalesforceStream(SalesforceStream):
             use_cache=False,
             stream_response=True,
         )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=DefaultPaginator(
+                decoder=NoopDecoder(),
+                page_size_option=None,
+                page_token_option=RequestOption(
+                    field_name="locator",
+                    inject_into=RequestOptionType.request_parameter,
+                    parameters={},
+                ),
+                pagination_strategy=CursorPaginationStrategy(
+                    cursor_value="{{ headers['Sforce-Locator'] }}",
+                    decoder=NoopDecoder(),
+                    config=config,
+                    parameters={},
+                ),
+                url_base=url_base,
+                config=config,
+                parameters={},
+            ),
+            config=config,
+            parameters={},
+        )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
         urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
-            download_requester=download_requester,
+            download_retriever=download_retriever,
             abort_requester=None,
             status_extractor=status_extractor,
             status_mapping={
