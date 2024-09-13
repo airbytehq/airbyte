@@ -403,6 +403,37 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
                 }
             )
 
+class BulkParentStreamStreamSlicer(StreamSlicer):
+    def __init__(self, batched_substream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_state: Optional[Mapping[str, Any]], parend_id_field: str) -> None:
+        self._batched_substream = batched_substream
+        self._sync_mode = sync_mode
+        self._cursor_field = cursor_field
+        self._stream_state = stream_state
+        self._parend_id_field = parend_id_field
+
+    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
+                           next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_headers(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
+                            next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
+                              next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], str]:
+        return {}
+
+    def get_request_body_json(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
+                              next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+        return {}
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for batched_parents in self._batched_substream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state):
+            yield StreamSlice(
+                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]},
+                cursor_slice={}
+            )
+
 
 class BulkSalesforceStream(SalesforceStream):
     def __init__(self, **kwargs) -> None:
@@ -421,7 +452,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         pass
 
-    def _instantiate_declarative_stream(self):
+    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer) -> None:
         """
         For streams with a replication key and where filtering is supported, we need to have the cursor in order to instantiate the
         DeclarativeStream hence why this isn't called in the __init__
@@ -446,6 +477,11 @@ class BulkSalesforceStream(SalesforceStream):
             and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
             upper_boundary_interpolation = '{{ "'f'{self.cursor_field}'' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
             query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
+        elif isinstance(stream_slicer, BulkParentStreamStreamSlicer):
+            where_in_query = " WHERE ContentDocumentId IN ('"
+            parents_interpolation = '{{ "\', \'".join(stream_slice["parents"]) }}'
+            closing_parenthesis = "')"
+            query = query + where_in_query + parents_interpolation + closing_parenthesis
         creation_requester = HttpRequester(
             name=f"{self.name} - creation requester",
             url_base=url_base,
@@ -554,7 +590,7 @@ class BulkSalesforceStream(SalesforceStream):
                 config={},
                 parameters={},
                 record_selector=record_selector,
-                stream_slicer=BulkDatetimeStreamSlicer(self._stream_slicer_cursor),
+                stream_slicer=stream_slicer,
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
                     job_repository,
                     stream_slices,
@@ -622,7 +658,7 @@ class BulkSalesforceStream(SalesforceStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._instantiate_declarative_stream()
+        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor))
         yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:
@@ -647,7 +683,11 @@ class BulkSalesforceStream(SalesforceStream):
 
 
 class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
-    pass
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream(BulkParentStreamStreamSlicer(super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]))
+        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform
