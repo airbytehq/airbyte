@@ -34,8 +34,8 @@ A manifest only source for Productboard. https://www.productboard.com/
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-13 | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder|
+| Version | Date       | Pull Request                                             | Subject                                                                                   |
+|---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.1   | 2024-09-13 | [45449](https://github.com/airbytehq/airbyte/pull/45449) | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder |
 
 </details>
