@@ -137,8 +137,8 @@ class SourceFacebookMarketing(AbstractSource):
         else:
             api = API(access_token=config.access_token, page_size=config.page_size)
 
-        # if start_date not specified then set default start_date for report streams to 2 years ago
-        report_start_date = config.start_date or pendulum.now().add(years=-2)
+        # if start_date not specified then set default start_date for report streams to 3 years ago
+        report_start_date = config.start_date or pendulum.now().add(years=-3)
 
         insights_args = dict(
             api=api,
@@ -311,7 +311,7 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 action_report_time=insight.action_report_time,
                 time_increment=insight.time_increment,
-                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
+                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-3),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
