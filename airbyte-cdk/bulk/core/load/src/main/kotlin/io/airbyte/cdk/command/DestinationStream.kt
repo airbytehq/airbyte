@@ -29,9 +29,13 @@ data class DestinationStream(
     val minimumGenerationId: Long,
     val syncId: Long,
 ) {
-    data class Descriptor(val namespace: String, val name: String) {
+    data class Descriptor(val namespace: String?, val name: String) {
         fun asProtocolObject(): StreamDescriptor =
-            StreamDescriptor().withNamespace(namespace).withName(name)
+            StreamDescriptor().withName(name).also {
+                if (namespace != null) {
+                    it.namespace = namespace
+                }
+            }
     }
 
     /**

@@ -70,13 +70,13 @@ class MockStreamManager : StreamManager {
 @Prototype
 @Requires(env = ["MockStreamsManager"])
 class MockStreamsManager(@Named("mockCatalog") catalog: DestinationCatalog) : StreamsManager {
-    private val mockManagers = catalog.streams.associateWith { MockStreamManager() }
+    private val mockManagers = catalog.streams.associate { it.descriptor to MockStreamManager() }
 
     fun addPersistedRanges(stream: DestinationStream, ranges: List<Range<Long>>) {
-        mockManagers[stream]!!.persistedRanges.addAll(ranges)
+        mockManagers[stream.descriptor]!!.persistedRanges.addAll(ranges)
     }
 
-    override fun getManager(stream: DestinationStream): StreamManager {
+    override fun getManager(stream: DestinationStream.Descriptor): StreamManager {
         return mockManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
     }
 

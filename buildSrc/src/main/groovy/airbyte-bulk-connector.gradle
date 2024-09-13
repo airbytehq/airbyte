@@ -130,7 +130,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
-        // The name integrationTestJava is required by airbyte-ci.
         project.sourceSets {
             integrationTestJava {
                 kotlin {
@@ -177,7 +176,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
 
             integrationTestJavaImplementation.extendsFrom testImplementation
-            integrationTesJavaRuntimeOnly.extendsFrom testRuntimeOnly
+            integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
