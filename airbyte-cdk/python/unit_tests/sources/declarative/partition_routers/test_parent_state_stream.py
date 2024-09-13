@@ -385,7 +385,7 @@ def _run_read(
                         "use_global_cursor": False,
                         "state": {"updated_at": "2024-01-25T00:00:00Z"},
                         "parent_state": {"posts": {"updated_at": "2024-01-30T00:00:00Z"}},
-                        "lookback_window": 0,
+                        "lookback_window": 1,
                         "states": [
                             {"partition": {"id": 1, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-25T00:00:00Z"}},
                             {"partition": {"id": 2, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-22T00:00:00Z"}},
@@ -393,7 +393,7 @@ def _run_read(
                         ],
                     }
                 },
-                "lookback_window": 0,
+                "lookback_window": 1,
                 "states": [
                     {
                         "partition": {"id": 10, "parent_slice": {"id": 1, "parent_slice": {}}},
@@ -573,7 +573,7 @@ def test_incremental_parent_state(test_name, manifest, mock_requests, expected_r
             {
                 "use_global_cursor": False,
                 "state": {"created_at": "2024-01-15T00:00:00Z"},
-                "lookback_window": 0,
+                "lookback_window": 1,
                 "states": [
                     {
                         "partition": {"id": 10, "parent_slice": {"id": 1, "parent_slice": {}}},
@@ -985,7 +985,7 @@ SUBSTREAM_MANIFEST_GLOBAL_PARENT_CURSOR_NO_DEPENDENCY["definitions"]["post_comme
                         "use_global_cursor": False,
                         "state": {"updated_at": "2024-01-25T00:00:00Z"},
                         "parent_state": {"posts": {"updated_at": "2024-01-30T00:00:00Z"}},
-                        "lookback_window": 0,
+                        "lookback_window": 1,
                         "states": [
                             {"partition": {"id": 1, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-25T00:00:00Z"}},
                             {"partition": {"id": 2, "parent_slice": {}}, "cursor": {"updated_at": "2024-01-22T00:00:00Z"}},
