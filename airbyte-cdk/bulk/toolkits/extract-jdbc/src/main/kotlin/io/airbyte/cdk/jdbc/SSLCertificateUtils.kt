@@ -37,7 +37,7 @@ import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
 
-private val LOGGER = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 /**
  * General SSL utilities used for certificate and keystore operations related to secured db
@@ -54,25 +54,17 @@ object SSLCertificateUtils {
     const val KEYSTORE_FILE_NAME: String = KEYSTORE_ENTRY_PREFIX + "keystore_"
     const val KEYSTORE_FILE_TYPE: String = ".p12"
 
-    @Throws(
-        IOException::class,
-        CertificateException::class,
-        KeyStoreException::class,
-        NoSuchAlgorithmException::class,
-    )
     private fun saveKeyStoreToFile(
         keyStore: KeyStore,
         keyStorePassword: String,
-        filesystem: FileSystem?,
-        directory: String?
+        filesystem: FileSystem,
+        directory: String
     ): URI {
-        val fs = Objects.requireNonNullElse(filesystem, FileSystems.getDefault())
-        val pathToStore = fs!!.getPath(Objects.toString(directory, ""))
+        val pathToStore: Path = filesystem.getPath(directory)
         val pathToFile =
             pathToStore.resolve(KEYSTORE_FILE_NAME + RANDOM.nextInt() + KEYSTORE_FILE_TYPE)
         val os = Files.newOutputStream(pathToFile)
         keyStore.store(os, keyStorePassword.toCharArray())
-        assert(Files.exists(pathToFile) == true)
         return pathToFile.toUri()
     }
 
@@ -85,17 +77,11 @@ object SSLCertificateUtils {
         return cf.generateCertificate(bufferedInputStream)
     }
 
-    @Throws(
-        KeyStoreException::class,
-        CertificateException::class,
-        IOException::class,
-        NoSuchAlgorithmException::class,
-    )
     fun keyStoreFromCertificate(
         cert: Certificate?,
         keyStorePassword: String,
-        filesystem: FileSystem?,
-        directory: String?
+        filesystem: FileSystem,
+        directory: String
     ): URI {
         val keyStore = KeyStore.getInstance(PKCS_12)
         keyStore.load(null)
@@ -103,18 +89,11 @@ object SSLCertificateUtils {
         return saveKeyStoreToFile(keyStore, keyStorePassword, filesystem, directory)
     }
 
-    @JvmStatic
-    @Throws(
-        CertificateException::class,
-        IOException::class,
-        KeyStoreException::class,
-        NoSuchAlgorithmException::class,
-    )
     fun keyStoreFromCertificate(
         certString: String,
         keyStorePassword: String,
-        filesystem: FileSystem?,
-        directory: String?
+        filesystem: FileSystem,
+        directory: String
     ): URI {
         return keyStoreFromCertificate(
             fromPEMString(certString),
@@ -124,26 +103,19 @@ object SSLCertificateUtils {
         )
     }
 
-    @Throws(
-        CertificateException::class,
-        IOException::class,
-        KeyStoreException::class,
-        NoSuchAlgorithmException::class,
-    )
     fun keyStoreFromCertificate(certString: String, keyStorePassword: String): URI {
-        return keyStoreFromCertificate(fromPEMString(certString), keyStorePassword, null, null)
+        return keyStoreFromCertificate(
+            fromPEMString(certString),
+            keyStorePassword,
+            FileSystems.getDefault(),
+            ""
+        )
     }
 
-    @Throws(
-        CertificateException::class,
-        IOException::class,
-        KeyStoreException::class,
-        NoSuchAlgorithmException::class,
-    )
     fun keyStoreFromCertificate(
         certString: String,
         keyStorePassword: String,
-        directory: String?
+        directory: String
     ): URI {
         return keyStoreFromCertificate(
             certString,
@@ -153,18 +125,12 @@ object SSLCertificateUtils {
         )
     }
 
-    @Throws(
-        KeyStoreException::class,
-        CertificateException::class,
-        IOException::class,
-        NoSuchAlgorithmException::class,
-    )
     fun keyStoreFromClientCertificate(
         cert: Certificate,
         key: PrivateKey?,
         keyStorePassword: String,
-        filesystem: FileSystem?,
-        directory: String?
+        filesystem: FileSystem,
+        directory: String
     ): URI {
         val keyStore = KeyStore.getInstance(PKCS_12)
         keyStore.load(null)
@@ -252,8 +218,8 @@ object SSLCertificateUtils {
         certString: String,
         keyString: String,
         keyStorePassword: String,
-        filesystem: FileSystem?,
-        directory: String?
+        filesystem: FileSystem,
+        directory: String
     ): URI {
         // Convert RSA key (PKCS#1) to PKCS#8 key
         // Note: java.security doesn't have a built-in support of PKCS#1 format. Hence we need a
@@ -288,20 +254,11 @@ object SSLCertificateUtils {
         )
     }
 
-    @JvmStatic
-    @Throws(
-        CertificateException::class,
-        IOException::class,
-        NoSuchAlgorithmException::class,
-        InvalidKeySpecException::class,
-        KeyStoreException::class,
-        InterruptedException::class,
-    )
     fun keyStoreFromClientCertificate(
         certString: String,
         keyString: String,
         keyStorePassword: String,
-        directory: String?
+        directory: String
     ): URI {
         return keyStoreFromClientCertificate(
             certString,

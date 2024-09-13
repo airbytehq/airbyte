@@ -6,6 +6,7 @@ package io.airbyte.cdk.jdbc
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.IOException
 import java.nio.file.FileSystem
+import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.KeyStore
@@ -26,8 +27,8 @@ internal class SSLCertificateUtilsTest {
     fun testkeyStoreFromCertificateInternal(
         certString: String,
         pwd: String,
-        fs: FileSystem?,
-        directory: String?
+        fs: FileSystem,
+        directory: String
     ) {
         val ksUri = SSLCertificateUtils.keyStoreFromCertificate(certString, pwd, fs, directory)
 
@@ -46,11 +47,21 @@ internal class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class
     )
     fun testkeyStoreFromCertificate() {
-        testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD, null, SLASH_TMP)
+        testkeyStoreFromCertificateInternal(
+            caPem,
+            KEY_STORE_PASSWORD,
+            FileSystems.getDefault(),
+            SLASH_TMP
+        )
 
         val exception: Exception =
             Assertions.assertThrows(CertificateException::class.java) {
-                testkeyStoreFromCertificateInternal(caPem_Bad, KEY_STORE_PASSWORD, null, SLASH_TMP)
+                testkeyStoreFromCertificateInternal(
+                    caPem_Bad,
+                    KEY_STORE_PASSWORD,
+                    FileSystems.getDefault(),
+                    SLASH_TMP
+                )
             }
         Assertions.assertNotNull(exception)
     }
@@ -63,11 +74,16 @@ internal class SSLCertificateUtilsTest {
         NoSuchAlgorithmException::class
     )
     fun testkeyStoreFromCertificateInMemory() {
-        testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD2, null, null)
+        testkeyStoreFromCertificateInternal(caPem, KEY_STORE_PASSWORD, FileSystems.getDefault(), "")
 
         val exception: Exception =
             Assertions.assertThrows(CertificateException::class.java) {
-                testkeyStoreFromCertificateInternal(caPem_Bad, KEY_STORE_PASSWORD, null, null)
+                testkeyStoreFromCertificateInternal(
+                    caPem_Bad,
+                    KEY_STORE_PASSWORD,
+                    FileSystems.getDefault(),
+                    ""
+                )
             }
         Assertions.assertNotNull(exception)
     }
@@ -85,8 +101,8 @@ internal class SSLCertificateUtilsTest {
         certString: String,
         keyString: String,
         keyStorePassword: String,
-        filesystem: FileSystem?,
-        directory: String?
+        filesystem: FileSystem,
+        directory: String
     ) {
         val ksUri =
             SSLCertificateUtils.keyStoreFromClientCertificate(
@@ -119,7 +135,7 @@ internal class SSLCertificateUtilsTest {
             clientPem,
             clientKey,
             KEY_STORE_PASSWORD,
-            null,
+            FileSystems.getDefault(),
             SLASH_TMP
         )
 
@@ -129,7 +145,7 @@ internal class SSLCertificateUtilsTest {
                     clientPem,
                     clientKey_wrong_format,
                     KEY_STORE_PASSWORD,
-                    null,
+                    FileSystems.getDefault(),
                     SLASH_TMP
                 )
             }
@@ -141,7 +157,7 @@ internal class SSLCertificateUtilsTest {
                     caPem_Bad,
                     clientKey,
                     KEY_STORE_PASSWORD,
-                    null,
+                    FileSystems.getDefault(),
                     SLASH_TMP
                 )
             }
@@ -162,8 +178,8 @@ internal class SSLCertificateUtilsTest {
             clientPem,
             clientKey,
             KEY_STORE_PASSWORD,
-            null,
-            null
+            FileSystems.getDefault(),
+            ""
         )
 
         val exceptionKey: Exception =
@@ -172,8 +188,8 @@ internal class SSLCertificateUtilsTest {
                     clientPem,
                     clientKey_wrong_format,
                     KEY_STORE_PASSWORD,
-                    null,
-                    null
+                    FileSystems.getDefault(),
+                    ""
                 )
             }
         Assertions.assertNotNull(exceptionKey)
@@ -184,8 +200,8 @@ internal class SSLCertificateUtilsTest {
                     caPem_Bad,
                     clientKey,
                     KEY_STORE_PASSWORD,
-                    null,
-                    null
+                    FileSystems.getDefault(),
+                    ""
                 )
             }
         Assertions.assertNotNull(exceptionCert)

@@ -10,7 +10,8 @@ import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.net.MalformedURLException
 import java.net.URI
-import org.apache.commons.lang3.RandomStringUtils
+import java.nio.file.FileSystems
+import java.util.*
 
 private val log = KotlinLogging.logger {}
 
@@ -36,7 +37,7 @@ class MysqlJdbcEncryption(
         if (!clientKeyPassword.isNullOrEmpty()) {
             return clientKeyPassword
         } else {
-            return RandomStringUtils.randomAlphanumeric(10)
+            return UUID.randomUUID().toString()
         }
     }
 
@@ -54,8 +55,8 @@ class MysqlJdbcEncryption(
                 SSLCertificateUtils.keyStoreFromCertificate(
                     caCertificate,
                     clientKeyPassword,
-                    null,
-                    null
+                    FileSystems.getDefault(),
+                    ""
                 )
             return Pair(caCertKeyStoreUri, clientKeyPassword)
         } catch (ex: Exception) {
@@ -75,7 +76,7 @@ class MysqlJdbcEncryption(
                         clientCertificate,
                         clientKey,
                         clientKeyPassword,
-                        null
+                        ""
                     )
                 clientCertKeyStorePair = Pair(clientCertKeyStoreUri, clientKeyPassword)
             } catch (ex: Exception) {
@@ -90,7 +91,7 @@ class MysqlJdbcEncryption(
         var clientCertKeyStorePair: Pair<URI, String>?
         val additionalParameters: MutableMap<String, String> = mutableMapOf()
 
-        additionalParameters[SSL_MODE] = sslMode.jdbcPropertyName
+        additionalParameters[SSL_MODE] = sslMode.name.lowercase()
 
         caCertKeyStorePair = prepareCACertificateKeyStore()
 
@@ -131,16 +132,20 @@ class MysqlJdbcEncryption(
     }
 }
 
-enum class SSLMode(val jdbcPropertyName: String) {
-    PREFERRED("preferred"),
-    REQUIRED("required"),
-    VERIFY_CA("verify_ca"),
-    VERIFY_IDENTITY("verify_identity");
+/**
+ * Enum representing the SSL mode for MySQL connections. The actual jdbc property name is the lower
+ * case of the enum name.
+ */
+enum class SSLMode() {
+    PREFERRED,
+    REQUIRED,
+    VERIFY_CA,
+    VERIFY_IDENTITY;
 
     companion object {
 
         fun fromJdbcPropertyName(jdbcPropertyName: String): SSLMode {
-            return SSLMode.values().find { it.jdbcPropertyName == jdbcPropertyName }
+            return SSLMode.values().find { it.name.equals(jdbcPropertyName, ignoreCase = true) }
                 ?: throw SystemErrorException("Unknown SSL mode: $jdbcPropertyName")
         }
     }
