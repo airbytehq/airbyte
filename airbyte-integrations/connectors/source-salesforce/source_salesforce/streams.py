@@ -581,7 +581,22 @@ class BulkSalesforceStream(SalesforceStream):
             disable_retries=False,
             message_repository=message_repository,
             use_cache=False,
-            stream_response=True,
+            stream_response=False,
+        )
+        delete_requester = HttpRequester(
+            name=f"{self.name} - delete requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.DELETE,
+            request_options_provider=None,
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=message_repository,
+            use_cache=False,
+            stream_response=False,
         )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
         urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
@@ -590,6 +605,7 @@ class BulkSalesforceStream(SalesforceStream):
             polling_requester=polling_requester,
             download_requester=download_requester,
             abort_requester=abort_requester,
+            delete_requester=delete_requester,
             status_extractor=status_extractor,
             status_mapping={
                 "InProgress": AsyncJobStatus.RUNNING,

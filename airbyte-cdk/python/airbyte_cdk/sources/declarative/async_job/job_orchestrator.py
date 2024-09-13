@@ -305,3 +305,4 @@ class AsyncJobOrchestrator:
         """
         for job in partition.jobs:
             yield from self._job_repository.fetch_records(job)
+            self._job_repository.delete(job)

@@ -117,11 +117,12 @@ class BulkStreamTest(TestCase):
             HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
             HttpResponse(f"{_A_FIELD_NAME}\nfield_value"),
         )
-        self._mock_delete_job(_JOB_ID)
+        delete_request = self._mock_delete_job(_JOB_ID)
 
         output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
 
         assert len(output.records) == 1
+        self._http_mocker.assert_number_of_calls(delete_request, 1)
 
     @freezegun.freeze_time(_NOW.isoformat())
     def test_given_locator_when_read_then_extract_records_from_both_pages(self):
@@ -393,8 +394,10 @@ class BulkStreamTest(TestCase):
         )
         self._mock_delete_job(job_id)
 
-    def _mock_delete_job(self, job_id: str) -> None:
+    def _mock_delete_job(self, job_id: str) -> HttpRequest:
+        request = HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}")
         self._http_mocker.delete(
-            HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}"),
+            request,
             HttpResponse(""),
         )
+        return request

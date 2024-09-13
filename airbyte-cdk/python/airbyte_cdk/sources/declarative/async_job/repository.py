@@ -27,3 +27,7 @@ class AsyncJobRepository:
         jobs.
         """
         raise NotImplementedError("Either the API or the AsyncJobRepository implementation do not support aborting jobs")
+
+    @abstractmethod
+    def delete(self, job: AsyncJob) -> None:
+        pass

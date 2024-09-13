@@ -148,6 +148,7 @@ class AsyncJobOrchestratorTest(TestCase):
 
         assert len(records) == 2
         assert self._job_repository.fetch_records.mock_calls == [call(first_job), call(second_job)]
+        assert self._job_repository.delete.mock_calls == [call(first_job), call(second_job)]
 
     def _orchestrator(self, slices: List[StreamSlice], job_tracker: Optional[JobTracker] = None) -> AsyncJobOrchestrator:
         job_tracker = job_tracker if job_tracker else JobTracker(_NO_JOB_LIMIT)
