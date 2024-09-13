@@ -349,6 +349,17 @@ definitions:
                 partition_field: external_subscription_id
                 stream:
                   $ref: "#/definitions/streams/subscriptions"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - customer_id
+              value: "{{stream_slice.customer_external_id}}"
+        - type: AddFields
+          fields:
+            - path:
+                - subscription_id
+              value: "{{stream_slice.external_subscription_id}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1379,6 +1390,44 @@ schemas:
               type:
                 - "null"
                 - integer
+            filters:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  amount_cents:
+                    type:
+                      - number
+                      - "null"
+                  events_count:
+                    type:
+                      - number
+                      - "null"
+                  units:
+                    type:
+                      - string
+                      - "null"
+                  values:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      card_type:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - string
+                            - "null"
+            grouped_usage:
+              type:
+                - array
+                - "null"
             groups:
               type:
                 - "null"
@@ -1420,6 +1469,10 @@ schemas:
         type:
           - "null"
           - string
+      customer_id:
+        type:
+          - string
+          - "null"
       from_datetime:
         type:
           - "null"
@@ -1432,6 +1485,10 @@ schemas:
         type:
           - "null"
           - string
+      subscription_id:
+        type:
+          - string
+          - "null"
       taxes_amount_cents:
         type:
           - "null"
