@@ -6,12 +6,10 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
+import io.airbyte.cdk.read.cdc.toCdcSharedState
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
-fun JdbcSharedState.toCdcShared(): CdcSharedState {
-    return DefaultCdcSharedState(this.configuration)
-}
 /** Base class for JDBC implementations of [PartitionsCreatorFactory]. */
 sealed class JdbcPartitionsCreatorFactory<
     A : JdbcSharedState,
@@ -30,7 +28,7 @@ sealed class JdbcPartitionsCreatorFactory<
         val isGlobal = partitionFactory.sharedState.configuration.global
         return when (feed) {
             is Global -> when (isGlobal) {
-                    true -> CdcPartitionCreator(partitionFactory.sharedState.toCdcShared())
+                    true -> CdcPartitionCreator(partitionFactory.sharedState.toCdcSharedState())
                     false -> CreateNoPartitions
             }
             is Stream -> {
