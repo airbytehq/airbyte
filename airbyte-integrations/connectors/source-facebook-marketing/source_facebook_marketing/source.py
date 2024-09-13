@@ -137,8 +137,8 @@ class SourceFacebookMarketing(AbstractSource):
         else:
             api = API(access_token=config.access_token, page_size=config.page_size)
 
-        # if start_date not specified then set default start_date for report streams to 3 years ago
-        report_start_date = config.start_date or pendulum.now().add(years=-3)
+        # if start_date not specified then set default start_date for report streams to 37 months ago
+        report_start_date = config.start_date or pendulum.now().add(months=-37)
 
         insights_args = dict(
             api=api,
