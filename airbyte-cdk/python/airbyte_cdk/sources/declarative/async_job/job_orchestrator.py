@@ -126,6 +126,15 @@ class AsyncJobOrchestrator:
         """
         return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.RUNNING}
 
+    def _get_timeout_jobs(self) -> Set[AsyncJob]:
+        """
+        Returns a set of timeouted AsyncJob objects.
+
+        Returns:
+            Set[AsyncJob]: A set of AsyncJob objects that are currently running.
+        """
+        return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.TIMED_OUT}
+
     def _update_jobs_status(self) -> None:
         """
         Update the status of all running jobs in the repository.
@@ -240,7 +249,8 @@ class AsyncJobOrchestrator:
             self._wait_on_status_update()
 
     def _abort_all_running_jobs(self):
-        [self._job_repository.abort(job) for job in self._get_running_jobs()]
+        [self._job_repository.abort(job) for job in self._get_running_jobs() | self._get_timeout_jobs()]
+
         self._running_partitions = []
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:
