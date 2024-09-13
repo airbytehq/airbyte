@@ -451,6 +451,12 @@ const deployAirbyte = {
       label: "Creating a Secret",
       id: "deploying-airbyte/creating-secrets",
     },
+
+    {
+      type: "doc",
+      label: "Scaling Airbyte",
+      id: "deploying-airbyte/scaling-airbyte",
+    },
   ],
 };
 
