@@ -227,6 +227,7 @@ class AsyncJobOrchestrator:
             try:
                 self._start_jobs()
             except self._exceptions_to_break_on as e:
+                self._abort_all_running_jobs()
                 raise e
             except AirbyteTracedException as e:
                 LOGGER.error(f"Failed to start the Job: {e.message} , {e.internal_message}")
@@ -236,6 +237,10 @@ class AsyncJobOrchestrator:
             self._update_jobs_status()
             yield from self._process_running_partitions_and_yield_completed_ones()
             self._wait_on_status_update()
+
+    def _abort_all_running_jobs(self):
+        [self._job_repository.abort(job) for job in self._get_running_jobs()]
+        self._running_partitions = []
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:
         """

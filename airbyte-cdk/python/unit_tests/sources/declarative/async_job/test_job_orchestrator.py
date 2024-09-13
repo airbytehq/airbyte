@@ -157,7 +157,6 @@ class AsyncJobOrchestratorTest(TestCase):
         with pytest.raises(ValueError):
             # assert that orchestrator exits on expected error
             list(orchestrator.create_and_get_completed_partitions())
-        # TODO: should we ensure (force) stop running partitions?
         assert len(orchestrator._running_partitions) == 0
 
     def _orchestrator(self, slices: List[StreamSlice]) -> AsyncJobOrchestrator:
