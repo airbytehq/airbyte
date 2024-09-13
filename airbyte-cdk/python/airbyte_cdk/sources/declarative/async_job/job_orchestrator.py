@@ -2,6 +2,7 @@
 
 import logging
 import time
+import traceback
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
 from airbyte_cdk import StreamSlice
@@ -229,8 +230,8 @@ class AsyncJobOrchestrator:
             except self._exceptions_to_break_on as e:
                 self._abort_all_running_jobs()
                 raise e
-            except AirbyteTracedException as e:
-                LOGGER.error(f"Failed to start the Job: {e.message} , {e.internal_message}")
+            except Exception as e:
+                LOGGER.error(f"Failed to start the Job: {e}, traceback: {traceback.format_exc()}")
             if not self._running_partitions:
                 break
 
