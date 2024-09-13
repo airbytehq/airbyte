@@ -17,7 +17,7 @@ import java.security.spec.InvalidKeySpecException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-internal class SSLCertificateUtilsTest {
+class SSLCertificateUtilsTest {
     @Throws(
         CertificateException::class,
         IOException::class,
