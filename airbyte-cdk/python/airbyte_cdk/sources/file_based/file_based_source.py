@@ -97,7 +97,10 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         return self._message_repository
 
     def discover_error_handler(self) -> AbstractDiscoverErrorHandler:
-        return FileBasedDiscoverErrorHandler(exceptions_to_log=[ConfigValidationError, InvalidSchemaError, SchemaInferenceError])
+        return FileBasedDiscoverErrorHandler(
+            exceptions_to_log=[ConfigValidationError, InvalidSchemaError, SchemaInferenceError],
+            underlying_exceptions_to_log=[FileBasedSourceError.INVALID_SCHEMA_ERROR, FileBasedSourceError.SCHEMA_INFERENCE_ERROR, FileBasedSourceError.CONFIG_VALIDATION_ERROR],
+        )
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
