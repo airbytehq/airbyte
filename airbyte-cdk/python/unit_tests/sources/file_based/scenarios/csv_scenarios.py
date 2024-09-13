@@ -2032,7 +2032,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: 
     .set_expected_check_status("FAILED")
     .set_expected_check_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
-    .set_expected_read_error(AirbyteTracedException, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
+    .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
 csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSource] = (
@@ -3437,7 +3437,7 @@ multi_stream_csv_and_jsonl_scenario: TestScenario[InMemoryFilesSource] = (
 multi_stream_csv_with_one_invalid_file_scenario: TestScenario[InMemoryFilesSource] = (
     # Tests that the source will generate a ConfiguredAirbyteCatalog with one stream even if the other stream fails discovery due to invalid format
     TestScenarioBuilder[InMemoryFilesSource]()
-    .set_name("multi_stream_csv_with_one_invalid_file")
+    .set_name("multi_stream_csv_with_one_invalid_file_scenario")
     .set_config(
         {
             "streams": [
@@ -3597,6 +3597,6 @@ multi_stream_csv_with_two_invalid_streams_scenario: TestScenario[InMemoryFilesSo
     .set_expected_records(
         []
     )
-    .set_expected_discover_error(AirbyteTracedException, "An error occurred while discovering the source schema. Please check the logged errors for more information:")
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_read_error(AirbyteTracedException, "An error occurred while attempting to read from the source. Please check the logged errors for more information.")
 ).build()
