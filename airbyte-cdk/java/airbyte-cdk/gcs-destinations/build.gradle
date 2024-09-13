@@ -1,20 +1,17 @@
-java {
-    // TODO: rewrite code to avoid javac wornings in the first place
-    compileJava {
-        options.compilerArgs += "-Xlint:-deprecation"
-    }
-    compileTestFixturesJava {
-        options.compilerArgs += "-Xlint:-deprecation"
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
     }
 }
 
 dependencies {
-    implementation project(':airbyte-cdk:java:airbyte-cdk:dependencies')
-    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
-    api project(':airbyte-cdk:java:airbyte-cdk:s3-destinations')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    api project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations')
 
     api 'com.google.cloud:google-cloud-storage:2.32.1'
 
-    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:s3-destinations')
-    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:s3-destinations'))
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations'))
 }

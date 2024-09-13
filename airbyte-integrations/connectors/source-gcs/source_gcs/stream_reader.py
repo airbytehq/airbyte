@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 import itertools
 import json
 import logging
@@ -22,7 +23,6 @@ ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
 )
-FILE_FORMAT = "csv"  # TODO: Change if other file formats are implemented
 
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
@@ -70,16 +70,21 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs or [])
             globs = globs or [None]
 
+            if not prefixes:
+                prefixes = [""]
+
             for prefix, glob in itertools.product(prefixes, globs):
                 bucket = self.gcs_client.get_bucket(self.config.bucket)
                 blobs = bucket.list_blobs(prefix=prefix, match_glob=glob)
                 for blob in blobs:
                     last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
 
-                    if FILE_FORMAT in blob.name.lower() and (not start_date or last_modified >= start_date):
-                        uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
+                    if not start_date or last_modified >= start_date:
+                        uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
-                        yield RemoteFile(uri=uri, last_modified=last_modified)
+                        file_extension = ".".join(blob.name.split(".")[1:])
+
+                        yield RemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
 
         except Exception as exc:
             self._handle_file_listing_error(exc, prefix, logger)
@@ -98,8 +103,16 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         Open and yield a remote file from GCS for reading.
         """
         logger.debug(f"Trying to open {file.uri}")
+
+        # choose correct compression mode
+        file_extension = file.mime_type.split(".")[-1]
+        if file_extension in ["gz", "bz2"]:
+            compression = "." + file_extension
+        else:
+            compression = "disable"
+
         try:
-            result = smart_open.open(file.uri, mode=mode.value, encoding=encoding)
+            result = smart_open.open(file.uri, mode=mode.value, compression=compression, encoding=encoding)
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)

@@ -11,6 +11,7 @@ from unittest import mock
 
 import pendulum
 import pytest
+import requests_mock
 import responses
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
@@ -708,30 +709,6 @@ def test_read_incremental_with_records_start_date(config):
     [
         (
             ["enabled", "archived", "paused"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            None,
-            SponsoredBrandsCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled"],
-            SponsoredProductCampaigns,
-        ),
-        (
-            None,
-            SponsoredProductCampaigns,
-        ),
-        (
-            ["enabled", "archived", "paused"],
             SponsoredDisplayCampaigns,
         ),
         (
@@ -752,6 +729,46 @@ def test_streams_state_filter(mocker, config, state_filter, stream_class):
     params = stream.request_params(stream_state=None, stream_slice=None, next_page_token=None)
     if "stateFilter" in params:
         assert params["stateFilter"] == ",".join(state_filter)
+    else:
+        assert state_filter is None
+
+@pytest.mark.parametrize(
+    "state_filter, stream_class",
+    [
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            None,
+            SponsoredBrandsCampaigns,
+        ),
+        (
+            ["enabled", "archived", "paused"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            ["enabled"],
+            SponsoredProductCampaigns,
+        ),
+        (
+            None,
+            SponsoredProductCampaigns,
+        ),
+    ],
+)
+def test_sponsored_brand_and_products_streams_state_filter(mocker, config, state_filter, stream_class):
+    profiles = make_profiles()
+    mocker.patch.object(stream_class, "state_filter", new_callable=mocker.PropertyMock, return_value=state_filter)
+
+    stream = stream_class(config, profiles)
+    request_body = stream.request_body_json(stream_state=None, stream_slice=None, next_page_token=None)
+    if "stateFilter" in request_body:
+        assert request_body["stateFilter"]["include"] == state_filter
     else:
         assert state_filter is None
 
@@ -860,3 +877,17 @@ def test_get_record_id_by_report_type(config, metric_object, record_type):
     profiles = make_profiles(profile_type="vendor")
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_record_id(metric_object, record_type), "recordId must be non-empty value"
+
+
+def test_sponsored_products_report_stream_send_http_request_on_download_not_use_headers(config):
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredProductsReportStream(config,profiles, authenticator=mock.MagicMock())
+    download_url = "https://download/url"
+
+    with requests_mock.Mocker() as m:
+        request_mock = m.get(download_url, status_code=200)
+        stream._send_http_request(download_url, None, None, True)
+
+    assert request_mock.called is True
+    assert "Authorization" not in request_mock.request_history[0].matcher.last_request._request.headers.keys()
+

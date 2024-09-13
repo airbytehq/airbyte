@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "connectors-insights"
+version = "0.3.3"
+description = ""
+authors = ["Airbyte <contact@airbyte.io>"]
+readme = "README.md"
+packages = [{ include = "connectors_insights", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+dagger-io = "0.9.6"
+click = "^8.1.7"
+pydantic = "^1.9"
+asyncer = "^0.0.7"
+asyncclick = "^8.1.7.2"
+connector-ops = { path = "../connector_ops", develop = false }
+beautifulsoup4 = "^4.12.3"
+requests = "^2.32.3"
+google-cloud-storage = "^2.17.0"
+ruff = "^0.4.8"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+connectors-insights = "connectors_insights.cli:connectors_insights"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.8.0"
+types-requests = "^2.32.0.20240602"
+types-beautifulsoup4 = "^4.12.0.20240511"
+
+[tool.ruff]
+line-length = 140
+
+[tool.ruff.lint]
+select = ["F"]
+
+[tool.poe.tasks]
+type_check = "mypy src --disallow-untyped-defs"
+lint = "ruff check src --fix"
+ci = ["type_check", "lint"]
+
+[tool.airbyte_ci]
+python_versions = ["3.10"]
+optional_poetry_groups = ["dev"]
+poe_tasks = ["ci"]

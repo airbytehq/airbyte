@@ -17,6 +17,7 @@ class CheckConnectorUsesHTTPSOnly(SecurityCheck):
     name = "Connectors must use HTTPS only"
     description = "Connectors must use HTTPS only when making requests to external services."
     requires_metadata = False
+    runs_on_released_connectors = False
 
     ignore_comment = "# ignore-https-check"  # Define the ignore comment pattern
 
@@ -31,6 +32,7 @@ class CheckConnectorUsesHTTPSOnly(SecurityCheck):
         "acceptance_tests_logs",
         ".hypothesis",
         ".ruff_cache",
+        "htmlcov",
     }
 
     ignored_file_name_pattern_for_https_checks = {
@@ -120,6 +122,7 @@ class CheckConnectorUsesPythonBaseImage(SecurityCheck):
     applies_to_connector_languages = [
         ConnectorLanguage.PYTHON,
         ConnectorLanguage.LOW_CODE,
+        ConnectorLanguage.MANIFEST_ONLY,
     ]
 
     def _run(self, connector: Connector) -> CheckResult:

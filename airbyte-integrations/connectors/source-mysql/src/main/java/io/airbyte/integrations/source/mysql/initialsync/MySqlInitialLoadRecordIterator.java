@@ -4,15 +4,16 @@
 
 package io.airbyte.integrations.source.mysql.initialsync;
 
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
@@ -21,7 +22,10 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
@@ -40,8 +44,8 @@ import org.slf4j.LoggerFactory;
  * records processed here.
  */
 @SuppressWarnings("try")
-public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
-    implements AutoCloseableIterator<JsonNode> {
+public class MySqlInitialLoadRecordIterator extends AbstractIterator<AirbyteRecordData>
+    implements AutoCloseableIterator<AirbyteRecordData> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
 
@@ -56,8 +60,13 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   private final long chunkSize;
   private final PrimaryKeyInfo pkInfo;
   private final boolean isCompositeKeyLoad;
+
+  private final Instant startInstant;
   private int numSubqueries = 0;
-  private AutoCloseableIterator<JsonNode> currentIterator;
+  private AutoCloseableIterator<AirbyteRecordData> currentIterator;
+
+  private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
 
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
@@ -67,7 +76,9 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
                                  final List<String> columnNames,
                                  final AirbyteStreamNameNamespacePair pair,
                                  final long chunkSize,
-                                 final boolean isCompositeKeyLoad) {
+                                 final boolean isCompositeKeyLoad,
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -77,11 +88,23 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
     this.chunkSize = chunkSize;
     this.pkInfo = initialLoadStateManager.getPrimaryKeyInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(initialLoadStateManager);
   }
 
   @CheckForNull
   @Override
-  protected JsonNode computeNext() {
+  protected AirbyteRecordData computeNext() {
+    if (isCdcSync && cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load for table %s has taken longer than %s hours, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          getAirbyteStream().get(), cdcInitialLoadTimeout.get().toHours());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     if (shouldBuildNextSubquery()) {
       try {
         // We will only issue one query for a composite key load. If we have already processed all the data
@@ -96,8 +119,8 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         }
 
         LOGGER.info("Subquery number : {}", numSubqueries);
-        final Stream<JsonNode> stream = database.unsafeQuery(
-            this::getPkPreparedStatement, sourceOperations::rowToJson);
+        final Stream<AirbyteRecordData> stream = database.unsafeQuery(
+            this::getPkPreparedStatement, sourceOperations::convertDatabaseRowToAirbyteRecordData);
 
         currentIterator = AutoCloseableIterators.fromStream(stream, pair);
         numSubqueries++;
@@ -123,7 +146,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
       final String tableName = pair.getName();
       final String schemaName = pair.getNamespace();
       LOGGER.info("Preparing query for table: {}", tableName);
-      final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
+      final String fullTableName = RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
@@ -132,7 +155,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
       if (pkLoadStatus == null) {
         LOGGER.info("pkLoadStatus is null");
-        final String quotedCursorField = enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
+        final String quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(pkInfo.pkFieldName(), quoteString);
         final String sql;
         // We cannot load in chunks for a composite key load, since each field might not have distinct
         // values.
@@ -148,7 +171,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
         return preparedStatement;
       } else {
         LOGGER.info("pkLoadStatus value is : {}", pkLoadStatus.getPkVal());
-        final String quotedCursorField = enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
+        final String quotedCursorField = RelationalDbQueryUtils.enquoteIdentifier(pkLoadStatus.getPkName(), quoteString);
         final String sql;
         // We cannot load in chunks for a composite key load, since each field might not have distinct
         // values. Furthermore, we have to issue a >=
@@ -187,6 +210,21 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    return Optional.of(pair);
+  }
+
+  private boolean isCdcSync(MySqlInitialLoadStateManager initialLoadStateManager) {
+    if (initialLoadStateManager instanceof MySqlInitialLoadGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 

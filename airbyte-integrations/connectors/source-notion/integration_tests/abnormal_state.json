@@ -31,5 +31,57 @@
         "name": "blocks"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "comments", "namespace": null },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "id": "9cca331a-1edb-4120-9a86-cf40214fac37",
+              "parent_slice": {}
+            },
+            "cursor": { "last_edited_time": "2099-10-10T13:51:00.000Z" }
+          },
+          {
+            "partition": {
+              "id": "8fbb79d0-f858-4fe7-9e88-6b4019c72365",
+              "parent_slice": {}
+            },
+            "cursor": { "last_edited_time": "2099-10-10T13:53:00.000Z" }
+          },
+          {
+            "partition": {
+              "id": "18fe94d2-60ec-4a7e-be86-b43e5c9198af",
+              "parent_slice": {}
+            },
+            "cursor": { "last_edited_time": "2099-10-10T13:47:00.000Z" }
+          },
+          {
+            "partition": {
+              "id": "249f3796-7e81-47b0-9075-00ed2d06439d",
+              "parent_slice": {}
+            },
+            "cursor": { "last_edited_time": "2099-09-12T20:55:00.000Z" }
+          },
+          {
+            "partition": {
+              "id": "29299296-ef3f-4aff-aef5-02d651a59be3",
+              "parent_slice": {}
+            },
+            "cursor": { "last_edited_time": "2099-09-12T20:56:00.000Z" }
+          },
+          {
+            "partition": {
+              "id": "a55d276e-4bc2-4fcc-9fb3-e60b867c86e7",
+              "parent_slice": {}
+            },
+            "cursor": { "last_edited_time": "2099-10-10T13:52:00.000Z" }
+          }
+        ]
+      }
+    }
   }
 ]

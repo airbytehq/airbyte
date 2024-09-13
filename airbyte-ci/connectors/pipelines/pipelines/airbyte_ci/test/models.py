@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import os
-from typing import Dict, Set
+from typing import Dict, List, Set
 
 from pydantic import BaseModel, Field, validator
 
@@ -11,7 +11,8 @@ class AirbyteCiPackageConfiguration(BaseModel):
     required_environment_variables: Set[str] = Field(
         set(), description="List of unique required environment variables to pass to the container running the poe task"
     )
-    extra_poetry_groups: Set[str] = Field(set(), description="List of unique extra poetry groups to install")
+    poetry_extras: Set[str] = Field(set(), description="List of unique poetry extras to install")
+    optional_poetry_groups: Set[str] = Field(set(), description="List of unique poetry groups to install")
     side_car_docker_engine: bool = Field(
         False, description="Flag indicating the use of a sidecar Docker engine during the poe task executions"
     )
@@ -19,6 +20,7 @@ class AirbyteCiPackageConfiguration(BaseModel):
         False,
         description="Flag indicating the mount of the host docker socket to the container running the poe task, useful when the package under test is using dagger",
     )
+    python_versions: List[str] = Field(description="List of unique python versions to run the poe tasks on")
 
     @validator("required_environment_variables")
     def check_required_environment_variables_are_set(cls, value: Set) -> Set:

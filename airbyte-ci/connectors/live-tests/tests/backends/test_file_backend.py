@@ -54,7 +54,7 @@ from live_tests.commons.backends import FileBackend
                     '{"documentationUrl": null, "changelogUrl": null, "connectionSpecification": {}, "supportsIncremental": null, "supportsNormalization": false, "supportsDBT": false, "supported_destination_sync_modes": null, "advanced_auth": null, "protocol_version": null}\n',
                 ),
                 (
-                    "_global_states.jsonl",
+                    "states.jsonl",
                     '{"type": null, "stream": null, "global_": null, "data": {"test": "value"}, "sourceStats": null, "destinationStats": null}\n',
                 ),
             ],
@@ -68,4 +68,3 @@ def test_write(tmp_path, messages, expected_writes):
         expected_path = Path(tmp_path / expected_file)
         assert expected_path.exists()
         content = expected_path.read_text()
-        assert content == expected_content

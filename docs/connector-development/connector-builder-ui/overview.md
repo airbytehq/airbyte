@@ -1,89 +1,41 @@
 # Connector Builder Intro
 
-The connector builder UI provides an intuitive UI on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and uses built connectors for syncs within the same workspace directly from within the UI. We recommend using it to iterate on your low-code connectors.
+Connector Builder is a no-code tool that’s part of the Airbyte UI.
+It provides an intuitive user interface on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and lets you develop a connector to use in data syncs without ever needing to leave your Airbyte workspace.
+Connector Builder offers the most straightforward method for building, contributing, and maintaining connectors.
 
-:::note
-The connector builder UI is in beta, which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our Slack channel or email us at feedback@airbyte.io
+## When should I use Connector Builder?
 
-Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
-:::
+First, check if the API you want to use has an available connector in the [catalog](../../integrations). If you find it there, you can use it as is. If you need to update an existing connector, see the guide for updates.
 
-
-## When should I use the connector builder?
-
-The connector builder is the right tool if the following points are met:
-* You want to integrate with a JSON-based HTTP API as a source of records
-* The API you want to integrate with doesn't exist yet as a connector in the [connector catalog](/integrations/sources/).
-* The API is suitable for the connector builder as per the
-[compatibility guide](./connector-builder-compatibility.md).
+You can build a connector with the Connector Builder if you want to connect to an HTTP API that returns a collection of records as JSON and has fixed endpoints. For more detailed information on requirements, refer to the [compatibility guide](./connector-builder-compatibility.md).
 
 ## Getting started
 
-The high level flow for using the connector builder is as follows:
+The high-level process for using Connector Builder is as follows:
 
-1. Access the connector builder in the Airbyte web app
-2. Use the connector builder to iterate on your low-code connector
-3. Once the connector is ready, publish it to the local workspace
+1. Access Connector Builder in the Airbyte web app by selecting "Builder" in the left-hand sidebar
+2. Iterate on the connector by providing details for global configuration and user inputs, and streams
+3. Once the connector is ready, publish it to your workspace, or contribute it to Airbyte catalog
 4. Configure a Source based on the released connector
 5. Use the Source in a connection to sync data
 
-Follow [the tutorial](./tutorial.mdx) for an example of this flow. The concept pages in the sidebar to the left go into greater detail of more complex configurations.
+The concept pages in this section of the docs share more details related to the following topics: [authentication](./authentication.md), [record processing](./record-processing.mdx), [pagination](./pagination.md), [incremental sync](./incremental-sync.md), [partitioning](./partitioning.md), and [error handling](./error-handling.md).
 
-## Connector vs. configured source vs. connection
+:::tip
+Do not hardcode things like API keys or passwords while configuring a connector in the builder. They will be used, but not saved, during development when you provide them as Testing Values. For use in production, these should be passed in as user inputs after publishing the connector to the workspace, when you configure a source using your connector.
 
-When building a connector, it's important to differentiate between the connector, the configured source based on a connector, and the connection:
-
-The **connector** defines the functionality of how to access an API or a database, for example protocol, URL paths to access, the way requests need to be structured, and how to extract records from responses.
-
-:::info
-While configuring a connector in the builder, make sure to not hardcode things like API keys or passwords - these should be passed in as user input when configuring a Source based on your connector.
-
-Follow [the tutorial](./tutorial.mdx) for an example of how this looks like in practice.
+Follow [the tutorial](./tutorial.mdx) for an example of what this looks like in practice.
 :::
 
-The **configured source** is configuring a connector to actually extract records. The exact fields of the configuration depend on the connector, but in most cases, it provides authentication information (username and password, API key) and information about which data to extract, for example, the start date to sync records from, a search query records have to match.
+## Contributing the connector
 
-The **connection** links up a configured source and a configured destination to perform syncs. It defines things like the replication frequency (e.g. hourly, daily, manually) and which streams to replicate.
+If you'd like to share your connector with other Airbyte users, you can contribute it to Airbyte's GitHub repository right from the Builder.
 
-## Exporting the connector
+1. Click "Publish" chevron -> "Contribute to Marketplace"
+2. Fill out the form: add the connector description, and provide your GitHub PAT (Personal Access Token) to create a pull request
+3. Click "Contribute" to submit the connector to the Airbyte catalog
 
-:::info
-This section is only relevant if you want to contribute your connector back to the Airbyte connector catalog to make it available outside of your workspace.
-:::
+Reviews typically take under a week.
 
-The connector builder leverages the [low-code CDK](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) under the hood, turning all configurations into the YAML format. While in most cases it's not necessary to interact with the YAML representation, it can be used to export the connector specification into a file and build a docker image containing the connector which can be shared more widely:
-
-1. Use the connector builder to iterate on your low-code connector
-2. Export the YAML into a low-code connector module on your local machine
-3. Build the connector's Docker image
-4. Use the built connector image in Airbyte
-
-Once you're done iterating on your connector in the UI, you'll need to export the low-code YAML representation of the connector to your local filesystem into a connector module. This YAML can be downloaded by clicking the `Download Config` button in the bottom-left.
-
-Create a low-code connector module using the connector generator (see [this YAML tutorial for an example](../config-based/tutorial/1-create-source.md)) using the name you'd like to use for your connector. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-<connector name>/source_<connector name>/manifest.yaml` with the YAML you created in the UI.
-
-Follow the instructions in the connector README to build the Docker image. Typically this will be something like `docker build . -t airbyte/source-<name>:<version>`.
-
-From this point on your connector is a regular low-code CDK connector and can be distributed as a docker image and made part of the regular Airbyte connector catalog - you can find the [publish process on the overview page](/connector-development/#publishing-a-connector).
-
-## Examples
-
-A lot of [Airbyte-managed connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) are based on the low-code CDK. They can be identified by the `manifest.yaml` file in place of python files.
-
-These `manifest.yaml` files can easily be imported and explored in the builder.
-
-To do so, follow these steps:
-* Navigate to a `manifest.yaml` file of a connector on Github
-* Download the raw file
-* Go to the connector builder
-* Create a new connector with the button in the top right
-* Pick the "Import a YAML manifest" option
-* Select the downloaded file
-* Change and test the connector
-
-The following connectors are good showcases for real-world use cases:
-* The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and API-key based authentication
-* The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
-* The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
-
-Note: Not all `manifest.yaml` files can be edited and tested in the connector builder because some are using [custom python classes](https://docs.airbyte.com/connector-development/config-based/advanced-topics#custom-components) which isn't supported yet.
+You can also export the YAML manifest file for your connector and share it with others. The manifest file contains all the information about the connector, including the global configuration, streams, and user inputs.

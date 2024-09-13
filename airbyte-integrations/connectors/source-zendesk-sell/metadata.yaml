@@ -4,9 +4,9 @@ data:
       - api.getbase.com
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-zendesk-sell
-  registries:
+  registryOverrides:
     oss:
       enabled: false
     cloud:
@@ -14,7 +14,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-zendesk-sell
   githubIssueLabel: source-zendesk-sell
   icon: zendesk.svg
@@ -23,10 +23,24 @@ data:
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
   tags:
-    - language:python
     - cdk:low-code
+    - language:manifest-only
   ab_internal:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: zendesk-sell_config_dev_null
+          id: 0f954007-88f7-494e-a8a0-8a12fb659200
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-ZENDESK-SELL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.5.3@sha256:c313c25af0617f5879361e684c956ac25ac1122beaf311c967e5b7a9b45ded79
 metadataSpecVersion: "1.0"

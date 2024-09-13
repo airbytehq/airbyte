@@ -3,7 +3,6 @@
 #
 
 
-import logging
 from enum import Enum
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
@@ -11,13 +10,24 @@ import backoff
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v15.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
-API_VERSION = "v15"
-logger = logging.getLogger("airbyte")
+from .utils import logger
+
+API_VERSION = "v17"
+
+
+def on_give_up(details):
+    error = details["exception"]
+    if isinstance(error, InternalServerError):
+        raise AirbyteTracedException(
+            failure_type=FailureType.transient_error,
+            message=f"{error.message} {error.details}",
+            internal_message=f"{error.message} Unable to fetch data from Google Ads API due to temporal error on the Google Ads server. Please retry again later. ",
+        )
 
 
 class GoogleAds:
@@ -72,13 +82,18 @@ class GoogleAds:
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
+        on_giveup=on_give_up,
         max_tries=5,
     )
-    def send_request(self, query: str, customer_id: str, login_customer_id: str = "default") -> Iterator[SearchGoogleAdsResponse]:
+    def send_request(
+        self,
+        query: str,
+        customer_id: str,
+        login_customer_id: str = "default",
+    ) -> Iterator[SearchGoogleAdsResponse]:
         client = self.get_client(login_customer_id)
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
-        search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
         return [self.ga_service(login_customer_id).search(search_request)]
 

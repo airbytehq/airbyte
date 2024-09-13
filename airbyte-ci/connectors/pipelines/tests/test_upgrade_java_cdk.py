@@ -9,6 +9,7 @@ from typing import List
 from unittest.mock import AsyncMock, MagicMock
 
 import anyio
+import asyncclick as click
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from dagger import Directory
@@ -63,9 +64,10 @@ def connector_context(sample_connector, dagger_client, current_platform):
         connector=sample_connector,
         git_branch="test",
         git_revision="test",
+        diffed_branch="test",
+        git_repo_url="test",
         report_output_prefix="test",
         is_local=True,
-        use_remote_secrets=True,
         targeted_platforms=[current_platform],
     )
     context.dagger_client = dagger_client
@@ -105,7 +107,7 @@ async def test_run_connector_cdk_upgrade_pipeline(
     assert files == ["build.gradle"]
     build_gradle = resulting_directory.file("build.gradle")
     actual_build_gradle_content = await build_gradle.contents()
-    assert expected_build_gradle_content == actual_build_gradle_content
+    assert actual_build_gradle_content == expected_build_gradle_content
 
     # Assert that the diff was exported to the repo
     assert updated_connector_dir.diff.return_value.export.call_count == 1

@@ -5534,7 +5534,7 @@
               "order": 1
             },
             "warehouse": {
-              "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to sync data into",
+              "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to use as a compute cluster",
               "examples": ["AIRBYTE_WAREHOUSE"],
               "type": "string",
               "title": "Warehouse",
@@ -6484,7 +6484,7 @@
                     "initial_waiting_seconds": {
                       "type": "integer",
                       "title": "Initial Waiting Time in Seconds (Advanced)",
-                      "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
+                      "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time\">initial waiting time</a>.",
                       "default": 300,
                       "order": 5,
                       "min": 120,
@@ -9109,6 +9109,7 @@
       "custom": false,
       "releaseStage": "generally_available",
       "protocolVersion": "0.2.0",
+      "erdUrl": "https://dbdocs.io/maximec5e237b90b/source-facebook-marketing",
       "allowedHosts": {
         "hosts": ["graph.facebook.com"]
       }
@@ -15833,7 +15834,7 @@
                     "initial_waiting_seconds": {
                       "type": "integer",
                       "title": "Initial Waiting Time in Seconds (Advanced)",
-                      "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
+                      "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time\">initial waiting time</a>.",
                       "default": 300,
                       "order": 5,
                       "min": 120,

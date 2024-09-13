@@ -6,11 +6,11 @@
 import json
 
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v15 import GoogleAdsFailure
-from google.ads.googleads.v15.errors.types.authentication_error import AuthenticationErrorEnum
-from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v15.errors.types.query_error import QueryErrorEnum
-from google.ads.googleads.v15.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v17 import GoogleAdsFailure
+from google.ads.googleads.v17.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v17.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v17.errors.types.query_error import QueryErrorEnum
+from google.ads.googleads.v17.errors.types.quota_error import QuotaErrorEnum
 
 
 class MockSearchRequest:
@@ -90,6 +90,11 @@ ERROR_MAP = {
     "QUERY_ERROR": {
         "failure_code": QueryErrorEnum.QueryError.UNEXPECTED_END_OF_QUERY,
         "failure_msg": "Error in query: unexpected end of query.",
+        "error_type": "queryError",
+    },
+    "UNRECOGNIZED_FIELD": {
+        "failure_code": QueryErrorEnum.QueryError.UNRECOGNIZED_FIELD,
+        "failure_msg": "unrecognized field in the query.",
         "error_type": "queryError",
     },
     "RESOURCE_EXHAUSTED": {"failure_code": QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED, "failure_msg": "msg4", "error_type": "quotaError"},

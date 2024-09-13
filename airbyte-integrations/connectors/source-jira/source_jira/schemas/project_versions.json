@@ -3,129 +3,136 @@
   "type": "object",
   "properties": {
     "expand": {
+      "description": "Use expand parameter to include additional information about the version in the response. Optional field for creation and update. Expand options include operations and issuesstatus.",
       "type": ["string", "null"],
-      "description": "Use [expand](em>#expansion) to include additional information about version in the response. This parameter accepts a comma-separated list. Expand options include:\n\n *  `operations` Returns the list of operations available for this version.\n *  `issuesstatus` Returns the count of issues in this version for each of the status categories *to do*, *in progress*, *done*, and *unmapped*. The *unmapped* property contains a count of issues with a status other than *to do*, *in progress*, and *done*.\n\nOptional for create and update.",
       "xml": {
         "attribute": true
       }
     },
     "self": {
-      "type": "string",
       "description": "The URL of the version.",
+      "type": "string",
       "readOnly": true
     },
     "id": {
+      "description": "The unique ID of the version.",
       "type": "string",
-      "description": "The ID of the version.",
       "readOnly": true
     },
     "description": {
-      "type": "string",
-      "description": "The description of the version. Optional when creating or updating a version."
+      "description": "The description of the version. Optional field for creating or updating a version.",
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "The unique name of the version. Required when creating a version. Optional when updating a version. The maximum length is 255 characters."
+      "description": "The unique name assigned to the version. Required field for version creation, optional for version update. Maximum length is 255 characters.",
+      "type": "string"
     },
     "archived": {
-      "type": "boolean",
-      "description": "Indicates that the version is archived. Optional when creating or updating a version."
+      "description": "Indicates whether the version is archived. Optional field for creating or updating a version.",
+      "type": "boolean"
     },
     "released": {
-      "type": "boolean",
-      "description": "Indicates that the version is released. If the version is released a request to release again is ignored. Not applicable when creating a version. Optional when updating a version."
+      "description": "Indicates whether the version has been released. A request to release it again will be ignored. Not applicable during version creation. Optional field for version update.",
+      "type": "boolean"
     },
     "startDate": {
+      "description": "The start date of the version in ISO 8601 format (yyyy-mm-dd). Optional field for creating or updating a version.",
       "type": "string",
-      "description": "The start date of the version. Expressed in ISO 8601 format (yyyy-mm-dd). Optional when creating or updating a version.",
       "format": "date"
     },
     "releaseDate": {
+      "description": "The release date of the version in ISO 8601 format (yyyy-mm-dd). Optional field for creating or updating a version.",
       "type": "string",
-      "description": "The release date of the version. Expressed in ISO 8601 format (yyyy-mm-dd). Optional when creating or updating a version.",
       "format": "date"
     },
     "overdue": {
+      "description": "Indicates whether the version is overdue.",
       "type": "boolean",
-      "description": "Indicates that the version is overdue.",
       "readOnly": true
     },
     "userStartDate": {
+      "description": "The date when work on this version is expected to begin, expressed in the instance's Day/Month/Year format.",
       "type": "string",
-      "description": "The date on which work on this version is expected to start, expressed in the instance's *Day/Month/Year Format* date format.",
       "readOnly": true
     },
     "userReleaseDate": {
+      "description": "The date when work on this version is expected to finish, expressed in the instance's Day/Month/Year format.",
       "type": "string",
-      "description": "The date on which work on this version is expected to finish, expressed in the instance's *Day/Month/Year Format* date format.",
       "readOnly": true
     },
     "project": {
-      "type": "string",
-      "description": "Deprecated. Use `projectId`."
+      "description": "Deprecated field. Use projectId instead.",
+      "type": "string"
     },
     "projectId": {
-      "type": "integer",
-      "description": "The ID of the project to which this version is attached. Required when creating a version. Not applicable when updating a version."
+      "description": "The ID of the project to which this version is connected. Required for version creation, not applicable for version update.",
+      "type": "integer"
     },
     "moveUnfixedIssuesTo": {
-      "type": "string",
-      "description": "The URL of the self link to the version to which all unfixed issues are moved when a version is released. Not applicable when creating a version. Optional when updating a version."
+      "description": "The URL of the self link to the version where all unfixed issues are moved when the version gets released. Not used during version creation. Optional field for version update.",
+      "type": "string"
     },
     "operations": {
+      "description": "If 'operations' is expanded, provides a list of available operations for this version.",
       "type": "array",
-      "description": "If the expand option `operations` is used, returns the list of operations available for this version.",
       "readOnly": true,
       "items": {
         "type": "object",
         "properties": {
           "id": {
+            "description": "",
             "type": "string"
           },
           "styleClass": {
+            "description": "",
             "type": "string"
           },
           "iconClass": {
+            "description": "",
             "type": "string"
           },
           "label": {
+            "description": "",
             "type": "string"
           },
           "title": {
+            "description": "",
             "type": "string"
           },
           "href": {
+            "description": "",
             "type": "string"
           },
           "weight": {
+            "description": "",
             "type": "integer"
           }
         }
       }
     },
     "issuesStatusForFixVersion": {
-      "description": "If the expand option `issuesstatus` is used, returns the count of issues in this version for each of the status categories *to do*, *in progress*, *done*, and *unmapped*. The *unmapped* property contains a count of issues with a status other than *to do*, *in progress*, and *done*.",
+      "description": "If 'issuesstatus' is expanded, provides counts of issues in this version for status categories: to do, in progress, done, and unmapped.",
       "readOnly": true,
       "type": "object",
       "properties": {
         "unmapped": {
+          "description": "Count of issues with a status other than to do, in progress, and done.",
           "type": "integer",
-          "description": "Count of issues with a status other than *to do*, *in progress*, and *done*.",
           "readOnly": true
         },
         "toDo": {
+          "description": "Count of issues marked as 'to do'.",
           "type": "integer",
-          "description": "Count of issues with status *to do*.",
           "readOnly": true
         },
         "inProgress": {
+          "description": "Count of issues marked as 'in progress'.",
           "type": "integer",
-          "description": "Count of issues with status *in progress*.",
           "readOnly": true
         },
         "done": {
+          "description": "Count of issues marked as 'done'.",
           "type": "integer",
-          "description": "Count of issues with status *done*.",
           "readOnly": true
         }
       }

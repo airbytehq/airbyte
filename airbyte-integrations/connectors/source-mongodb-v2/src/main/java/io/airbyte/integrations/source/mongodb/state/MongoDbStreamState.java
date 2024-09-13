@@ -4,16 +4,26 @@
 
 package io.airbyte.integrations.source.mongodb.state;
 
-public record MongoDbStreamState(String id, InitialSnapshotStatus status, IdType idType) {
+import java.util.UUID;
 
-  /**
-   * Takes a value converting it to the appropriate MongoDb type based on the IdType of this record.
-   *
-   * @param value the value to convert
-   * @return a converted value.
-   */
-  public Object idTypeAsMongoDbType(final String value) {
-    return idType.convert(value);
+public record MongoDbStreamState(String id, InitialSnapshotStatus status, IdType idType, Byte binarySubType) {
+
+  public MongoDbStreamState(String id, InitialSnapshotStatus status, IdType idType) {
+    this(id, status, idType, getBinarySubType(id, idType));
+  }
+
+  private static byte getBinarySubType(final String id, final IdType idType) {
+    byte binarySubType = 0;
+    if (idType == IdType.BINARY) {
+      try {
+        UUID.fromString(id);
+        binarySubType = (byte) 4;
+        // do something
+      } catch (IllegalArgumentException exception) {
+        // This is not a UUID, so assume it is a regular binary string from old state format
+      }
+    }
+    return binarySubType;
   }
 
 }

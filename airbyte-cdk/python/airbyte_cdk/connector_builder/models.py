@@ -16,7 +16,6 @@ class HttpResponse:
 @dataclass
 class HttpRequest:
     url: str
-    parameters: Optional[Dict[str, Any]]
     headers: Optional[Dict[str, Any]]
     http_method: str
     body: Optional[str] = None
@@ -33,7 +32,7 @@ class StreamReadPages:
 class StreamReadSlices:
     pages: List[StreamReadPages]
     slice_descriptor: Optional[Dict[str, Any]]
-    state: Optional[Dict[str, Any]] = None
+    state: Optional[List[Dict[str, Any]]] = None
 
 
 @dataclass

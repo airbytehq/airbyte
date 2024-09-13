@@ -5,34 +5,17 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoSecurityException;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.ChangeStreamIterable;
-import com.mongodb.client.MongoChangeStreamCursor;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
+import com.mongodb.client.*;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter;
@@ -45,11 +28,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +39,7 @@ class MongoDbSourceTest {
   private static final String DB_NAME = "airbyte_test";
 
   private JsonNode airbyteSourceConfig;
+  private JsonNode airbyteSourceConfigWithoutSchema;
   private MongoDbSourceConfig sourceConfig;
   private MongoClient mongoClient;
   private MongoDbCdcInitializer cdcInitializer;
@@ -68,6 +48,8 @@ class MongoDbSourceTest {
   @BeforeEach
   void setup() {
     airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty(), true);
+    airbyteSourceConfigWithoutSchema = createConfiguration(Optional.empty(), Optional.empty(), false);
+
     sourceConfig = new MongoDbSourceConfig(airbyteSourceConfig);
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
@@ -247,6 +229,7 @@ class MongoDbSourceTest {
     assertEquals(List.of(DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
     assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_PRIMARY_KEY)), stream.get().getSourceDefinedPrimaryKey());
     assertEquals(MongoCatalogHelper.SUPPORTED_SYNC_MODES, stream.get().getSupportedSyncModes());
+    assertEquals(true, stream.get().getIsResumable());
   }
 
   @Test
@@ -302,7 +285,7 @@ class MongoDbSourceTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenReturn(Collections.emptyList());
-    source.read(airbyteSourceConfig, null, null);
+    source.read(airbyteSourceConfigWithoutSchema, new ConfiguredAirbyteCatalog(), null);
     verify(mongoClient, never()).close();
   }
 
@@ -312,7 +295,7 @@ class MongoDbSourceTest {
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
         MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
         MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE,
-        MongoConstants.SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
+        SCHEMA_ENFORCED_CONFIGURATION_KEY, isSchemaEnforced);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));

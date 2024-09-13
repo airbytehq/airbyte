@@ -125,7 +125,7 @@ To contact the stock ticker API, we need two things:
 2. The API key to use when contacting the API \(you can obtain a free API token from
    [Polygon.io](https://polygon.io/dashboard/signup) free plan\)
 
-:::info 
+:::info
 
 For reference, the API docs we'll be using
 [can be found here](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
@@ -1093,7 +1093,7 @@ Airbyte's build system builds and tags your connector's image correctly by defau
 connector's standard `build` process. **From the Airbyte repo root**, run:
 
 ```bash
-./gradlew clean :airbyte-integrations:connectors:source-stock-ticker-api:build
+airbyte-ci connectors --name source-stock-ticker-api build
 ```
 
 This is the equivalent of running `docker build . -t airbyte/source-stock-ticker-api:dev` from the
@@ -1249,5 +1249,5 @@ contributor now ;\)
 
 ## Additional guides
 
-- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/building-a-python-source.md)
+- [Building a Python Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
 - [Building a Java Destination](https://docs.airbyte.com/connector-development/tutorials/building-a-java-destination)

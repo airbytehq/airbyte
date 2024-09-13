@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from abc import ABC
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Union
@@ -52,12 +53,8 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         for configured_stream in configured_catalog.streams:
             stream_instance = stream_name_to_instance.get(configured_stream.stream.name)
             if not stream_instance:
-                if not self.raise_exception_on_missing_stream:
-                    continue
-                raise KeyError(
-                    f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
-                    f"Refresh the schema in replication settings and remove this stream from future sync attempts."
-                )
+                continue
+
             if isinstance(stream_instance, AbstractStreamFacade):
                 abstract_streams.append(stream_instance.get_underlying_stream())
         return abstract_streams

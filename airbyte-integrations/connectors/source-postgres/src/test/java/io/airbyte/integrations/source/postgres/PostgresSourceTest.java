@@ -4,14 +4,14 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,6 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -57,10 +58,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 class PostgresSourceTest {
 
@@ -77,14 +75,16 @@ class PostgresSourceTest {
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
@@ -92,21 +92,24 @@ class PostgresSourceTest {
           Field.of("last_name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+          .withIsResumable(true)));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final ConfiguredAirbyteCatalog CONFIGURED_INCR_CATALOG = toIncrementalConfiguredCatalog(CATALOG);
 
@@ -150,10 +153,20 @@ class PostgresSourceTest {
   @AfterEach
   void tearDown() {
     testdb.close();
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = null;
   }
 
-  public PostgresSource source() {
-    return new PostgresSource();
+  private PostgresSource postgresSource = null;
+
+  protected PostgresSource source() {
+    if (postgresSource != null) {
+      postgresSource.close();
+    }
+    postgresSource = new PostgresSource();
+    return postgresSource;
   }
 
   private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
@@ -189,6 +202,7 @@ class PostgresSourceTest {
         .put(JdbcUtils.USERNAME_KEY, user)
         .put(JdbcUtils.PASSWORD_KEY, password)
         .put(JdbcUtils.SSL_KEY, false)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build());
   }
 
@@ -213,7 +227,8 @@ class PostgresSourceTest {
             CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog),
             null));
     setEmittedAtToNull(actualMessages);
-    assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
+    final var actualRecordMessages = filterRecords(actualMessages);
+    assertEquals(DOUBLE_QUOTED_MESSAGES, actualRecordMessages);
     testdb.query(ctx -> ctx.execute("DROP TABLE \"\"\"test_dq_table\"\"\";"));
   }
 
@@ -227,8 +242,26 @@ class PostgresSourceTest {
       final var config = asciiTestDB.testConfigBuilder().withSchemas(SCHEMA_NAME).withoutSsl().build();
       final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(config, CONFIGURED_CATALOG, null));
       setEmittedAtToNull(actualMessages);
-      assertEquals(UTF8_MESSAGES, actualMessages);
+      final var actualRecordMessages = filterRecords(actualMessages);
+      assertEquals(UTF8_MESSAGES, actualRecordMessages);
     }
+  }
+
+  @Test
+  void testCheckPrivilegesToSelectTable() throws Exception {
+    testdb.query(ctx -> {
+      ctx.execute("DROP TABLE id_and_name;");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
+      ctx.fetch("CREATE USER test_user_0 password '123';");
+      ctx.fetch("CREATE USER test_user_1 password '123';");
+      ctx.fetch("GRANT SELECT ON TABLE id_and_name TO test_user_1;");
+      return null;
+    });
+    final JsonNode configUser1 = getConfig("test_user_1", "123");
+    assertThat(source().check(configUser1).getStatus().equals(AirbyteConnectionStatus.Status.SUCCEEDED.toString()));
+    final JsonNode configUser0 = getConfig("test_user_0", "123");
+    assertThat(source().check(configUser0).getMessage().contains("User lacks privileges to SELECT from any of the tables in schema public"));
   }
 
   @Test
@@ -263,8 +296,10 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    assertEquals(6, actualMessages.size());
-    assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualMessages);
+    // expect 6 records, 4 state messages and 4 stream status messages.
+    assertEquals(14, actualMessages.size());
+    final var actualRecordMessages = filterRecords(actualMessages);
+    assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
 
   @Test
@@ -276,6 +311,17 @@ class PostgresSourceTest {
       assertTrue(expectedStream.isPresent());
       assertEquals(expectedStream.get(), actualStream);
     });
+  }
+
+  @Test
+  void testDiscoverWithViewShouldNotBeResumeable() throws Exception {
+    final ConfiguredAirbyteStream viewStream = createViewWithNullValueCursor(testdb.getDatabase());
+    final AirbyteCatalog actual = source().discover(getConfig());
+
+    final Optional<AirbyteStream> actualStream =
+        actual.getStreams().stream().filter(stream -> stream.getName().equals(viewStream.getStream().getName())).findAny();
+    assertTrue(actualStream.isPresent());
+    assertEquals(actualStream.get().getIsResumable(), false);
   }
 
   @Test
@@ -432,8 +478,9 @@ class PostgresSourceTest {
             Collectors.toList()));
     final Set<AirbyteMessage> actualMessages = MoreIterators.toSet(source().read(getConfig(), configuredCatalog, null));
     setEmittedAtToNull(actualMessages);
+    final var actualRecordMessages = filterRecords(actualMessages);
 
-    assertEquals(ASCII_MESSAGES, actualMessages);
+    assertEquals(ASCII_MESSAGES, actualRecordMessages);
   }
 
   @Test
@@ -466,7 +513,7 @@ class PostgresSourceTest {
         createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
 
     // Assert that the correct number of messages are emitted.
-    assertEquals(actualMessages.size(), expectedOutput.size() + 1);
+    assertEquals(actualMessages.size(), expectedOutput.size() + 3 + 2);
     assertThat(actualMessages.contains(expectedOutput));
     // Assert that the Postgres source is emitting records & state messages in the correct order.
     assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
@@ -484,9 +531,221 @@ class PostgresSourceTest {
         MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
     setEmittedAtToNull(nextSyncMessages);
 
-    // An extra state message is emitted, in addition to the record messages.
-    assertEquals(nextSyncMessages.size(), 2);
+    // An extra state message is emitted, in addition to the record messages, along with 2 stream status
+    // messages.
+    assertEquals(nextSyncMessages.size(), 4);
     assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
+  }
+
+  @Test
+  void testReadFullRefreshEmptyTable() throws Exception {
+    // Delete all data from id_and_name table.
+    testdb.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("DELETE FROM id_and_name WHERE id = '1';");
+      ctx.fetch("DELETE FROM id_and_name WHERE id = '2';");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_CATALOG
+            .withStreams(CONFIGURED_CATALOG.getStreams()
+                .stream()
+                .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+                .toList());
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    // Assert that the correct number of messages are emitted - final state message and 2 stream status
+    // messages
+    assertEquals(3, actualMessages.size());
+    assertEquals(1, stateAfterFirstBatch.size());
+
+    AirbyteStateMessage stateMessage = stateAfterFirstBatch.get(0);
+    assertEquals("ctid", stateMessage.getStream().getStreamState().get("state_type").asText());
+    assertEquals("(0,0)", stateMessage.getStream().getStreamState().get("ctid").asText());
+  }
+
+  @Test
+  void testReadFullRefreshSuccessWithSecondAttempt() throws Exception {
+    // We want to test ordering, so we can delete the NaN entry and add a 3.
+    testdb.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_CATALOG
+            .withStreams(CONFIGURED_CATALOG.getStreams()
+                .stream()
+                .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+                .toList());
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
+
+    // Assert that the correct number of messages are emitted. 3 state messages and 2 trace messages.
+    assertEquals(expectedOutput.size() + 3 + 2, actualMessages.size());
+    assertThat(actualMessages.contains(expectedOutput));
+    // Assert that the Postgres source is emitting records & state messages in the correct order.
+    assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
+        new AirbyteStreamNameNamespacePair("id_and_name", "public"));
+
+    final AirbyteStateMessage lastEmittedState = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
+    final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
+
+    testdb.query(ctx -> {
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
+      return null;
+    });
+    // 2nd sync should reread state checkpoint mark and one new message (where id = '5.0')
+    final Set<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toSet(source.read(getConfig(), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
+
+    // A state message is emitted, in addition to the new record messages, along with 2 stream status
+    // messages.
+    assertEquals(4, nextSyncMessages.size());
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
+  }
+
+  @Test
+  void testReadFullRefreshSuccessWithSecondAttemptWithVacuum() throws Exception {
+    // We want to test ordering, so we can delete the NaN entry and add a 3.
+    testdb.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_CATALOG
+            .withStreams(CONFIGURED_CATALOG.getStreams()
+                .stream()
+                .filter(s -> s.getStream().getName().equals(STREAM_NAME))
+                .toList());
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
+
+    // Assert that the correct number of messages are emitted: 3 record, 3 state and 2 trace
+    assertEquals(expectedOutput.size() + 3 + 2, actualMessages.size());
+    assertThat(actualMessages.contains(expectedOutput));
+    // Assert that the Postgres source is emitting records & state messages in the correct order.
+    assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
+        new AirbyteStreamNameNamespacePair("id_and_name", "public"));
+
+    final AirbyteStateMessage lastEmittedState = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
+    final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
+
+    testdb.query(ctx -> {
+      ctx.fetch("VACUUM full id_and_name");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
+      return null;
+    });
+    // 2nd sync should reread state checkpoint mark and one new message (where id = '5.0')
+    final List<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toList(source().read(getConfig(), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
+
+    // All record messages will be re-read. 4 record, 4 state and 2 trace
+    assertEquals(10, nextSyncMessages.size());
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1))));
+  }
+
+  @Test
+  void testReadIncrementalSuccessWithFullRefresh() throws Exception {
+    // We want to test ordering, so we can delete the NaN entry and add a 3.
+    testdb.query(ctx -> {
+      ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+      ctx.fetch("DELETE FROM id_and_name2 WHERE id = 'NaN';");
+      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (3, 'gohan', 222.1);");
+      return null;
+    });
+
+    final ConfiguredAirbyteCatalog configuredCatalog =
+        CONFIGURED_INCR_CATALOG
+            .withStreams(List.of(CONFIGURED_INCR_CATALOG.getStreams().get(0), CONFIGURED_CATALOG.getStreams().get(1)));
+    final PostgresSource source = source();
+    source.setStateEmissionFrequencyForDebug(1);
+    final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(), configuredCatalog, null));
+    setEmittedAtToNull(actualMessages);
+
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+    setEmittedAtToNull(actualMessages);
+
+    final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+        createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
+
+    // Assert that the correct number of messages are emitted. 6 for incremental streams, 6 for full
+    // refresh streams, and 4 stream status trace messages (for 2 streams).
+    assertEquals(actualMessages.size(), 16);
+    assertThat(actualMessages.contains(expectedOutput));
+
+    // For per stream, platform will collect states for all streams and compose a new state. Thus, in
+    // the test since we want to reset full refresh,
+    // we need to get the last state for the "incremental stream", which is not necessarily the last
+    // state message of the batch.
+    final AirbyteStateMessage lastEmittedState = getLastStateMessageOfStream(stateAfterFirstBatch, STREAM_NAME);
+
+    final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
+
+    testdb.query(ctx -> {
+      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
+      return null;
+    });
+    // Incremental sync should only read one new message (where id = '5.0')
+    final List<AirbyteMessage> nextSyncMessages =
+        MoreIterators.toList(source().read(getConfig(), configuredCatalog, state));
+    setEmittedAtToNull(nextSyncMessages);
+
+    // Incremental stream: An extra state message is emitted, in addition to the record messages.
+    // Full refresh stream: expect 6 messages (3 records and 3 state)
+    // Adding 4 stream status messages (2 for each stream)
+    // Thus, we expect 12 messages.
+    assertEquals(12, nextSyncMessages.size());
+    assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
+  }
+
+  private AirbyteStateMessage getLastStateMessageOfStream(List<AirbyteStateMessage> stateMessages, final String streamName) {
+    for (int i = stateMessages.size() - 1; i >= 0; i--) {
+      if (stateMessages.get(i).getStream().getStreamDescriptor().getName().equals(streamName)) {
+        return stateMessages.get(i);
+      }
+    }
+    throw new RuntimeException("stream not found in state message. stream name: " + streamName);
   }
 
   /*
@@ -588,10 +847,20 @@ class PostgresSourceTest {
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
     final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
-    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?prepareThreshold=0&";
+  @Test
+  void testJdbcUrlWithSchemas() {
+    final JsonNode sourceConfig = buildConfigEscapingNeeded();
+    ((ObjectNode) sourceConfig).set("schemas", Jsons.arrayNode().add("bar").add("baz"));
+    final JsonNode jdbcConfig = source().toDatabaseConfig(sourceConfig);
+    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS + "&currentSchema=bar,baz",
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_DEFAULT_PARAMS = "prepareThreshold=0&tcpKeepAlive=true";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
@@ -665,7 +934,8 @@ class PostgresSourceTest {
             SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+            .withIsResumable(false));
 
   }
 
@@ -728,12 +998,14 @@ class PostgresSourceTest {
             sourceConfig,
             CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog),
             null));
-    setEmittedAtToNull(actualMessages);
+    final var actualRecordMessages = filterRecords(actualMessages);
+
+    setEmittedAtToNull(actualRecordMessages);
 
     // Check that the 'options' JDBC URL parameter was parsed correctly
     // and that the bytea value is not in the default 'hex' format.
-    assertEquals(1, actualMessages.size());
-    final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
+    assertEquals(1, actualRecordMessages.size());
+    final AirbyteMessage actualMessage = actualRecordMessages.stream().findFirst().get();
     assertTrue(actualMessage.getRecord().getData().has("bytes"));
     assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
   }

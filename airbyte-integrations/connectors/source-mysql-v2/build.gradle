@@ -1,0 +1,23 @@
+plugins {
+    id 'airbyte-bulk-connector'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.mysql.MysqlSource'
+}
+
+airbyteBulkConnector {
+    core = 'extract'
+    toolkits = ['extract-jdbc']
+    cdk = 'local'
+}
+
+dependencies {
+    implementation 'mysql:mysql-connector-java:8.0.30'
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.77'
+    implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
+    implementation 'org.bouncycastle:bctls-jdk18on:1.77'
+
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.19.8')
+    testImplementation 'org.testcontainers:mysql'
+}
