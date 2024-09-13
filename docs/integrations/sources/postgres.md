@@ -94,7 +94,7 @@ These are the additional steps required (after following the [quick start](#quic
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
-For CDC, the required minimum version for Postgres is 16.
+For CDC from stand-by read-replicas, the required minimum version of Postgres is 16.
 
 #### Step 2: Provide additional permissions to read-only user
 
