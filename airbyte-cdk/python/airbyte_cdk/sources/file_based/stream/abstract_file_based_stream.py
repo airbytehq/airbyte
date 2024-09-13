@@ -4,9 +4,9 @@
 
 from abc import abstractmethod
 from functools import cache, cached_property, lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Type, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, AirbyteMessage
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
@@ -90,7 +90,7 @@ class AbstractFileBasedStream(Stream):
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Union[Iterable[AirbyteMessage], Iterable[Mapping[str, Any]]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         This method acts as an adapter between the generic Stream interface and the file-based's
@@ -101,7 +101,7 @@ class AbstractFileBasedStream(Stream):
         return self.read_records_from_slice(stream_slice)
 
     @abstractmethod
-    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Union[Iterable[AirbyteMessage], Iterable[Mapping[str, Any]]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         """

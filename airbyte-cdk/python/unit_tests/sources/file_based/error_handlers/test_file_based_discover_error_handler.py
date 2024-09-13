@@ -9,7 +9,7 @@ import pytest
 from airbyte_cdk.sources.file_based.error_handlers.file_based_discover_error_handler import FileBasedDiscoverErrorHandler
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
 
-file_based_discover_error_handler = FileBasedDiscoverErrorHandler()
+file_based_discover_error_handler = FileBasedDiscoverErrorHandler(exceptions_to_log=[InvalidSchemaError, SchemaInferenceError, ConfigValidationError])
 
 
 @pytest.mark.parametrize(
@@ -26,7 +26,8 @@ def test_handle_discover_error(exception, exception_expected):
     mocked_logger = MagicMock(spec=logging.Logger)
 
     if exception_expected:
-        assert file_based_discover_error_handler.handle_discover_error(mocked_logger, exception) == exception
+        with pytest.raises(type(exception)):
+            file_based_discover_error_handler.handle_discover_error(mocked_logger, exception)
     else:
         assert file_based_discover_error_handler.handle_discover_error(mocked_logger, exception) is None
-        mocked_logger.error.assert_called_with(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}", exc_info=True)
+        mocked_logger.error.assert_called_with(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}")

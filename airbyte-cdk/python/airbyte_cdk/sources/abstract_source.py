@@ -75,26 +75,24 @@ class AbstractSource(Source, ABC):
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
-        airbyte_streams = []
+        streams = []
         errors = []
 
         for stream in self.streams(config=config):
             try:
-                airbyte_streams.append(stream.as_airbyte_stream())
+                streams.append(stream.as_airbyte_stream())
             except Exception as exception:
                 errors.append(exception)
-                error = self.discover_error_handler().handle_discover_error(logger=logger, exception=exception)
-                if error:
-                    raise error
+                self.discover_error_handler().handle_discover_error(logger=logger, exception=exception)
 
-        if not airbyte_streams:
+        if not streams:
             raise AirbyteTracedException(
                 internal_message=f"No streams were discovered in the source. Please check the logged errors for more information: {errors}",
                 message="No streams were discovered in the source. Please check the source configuration.",
                 failure_type=FailureType.config_error,
             )
 
-        return AirbyteCatalog(streams=airbyte_streams)
+        return AirbyteCatalog(streams=streams)
 
     def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """Implements the Check Connection operation from the Airbyte Specification.

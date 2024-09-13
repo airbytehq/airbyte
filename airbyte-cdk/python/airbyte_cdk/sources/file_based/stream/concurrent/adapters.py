@@ -146,7 +146,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
     def get_files(self) -> Iterable[RemoteFile]:
         return self._legacy_stream.get_files()
 
-    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Union[Iterable[AirbyteMessage], Iterable[Mapping[str, Any]]]:
         yield from self._legacy_stream.read_records_from_slice(stream_slice)
 
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
@@ -175,7 +175,7 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
+    ) -> Union[Iterable[AirbyteMessage], Iterable[Mapping[str, Any]]]:
         try:
             yield from self._read_records()
         except Exception as exc:
@@ -229,7 +229,7 @@ class FileBasedStreamPartition(Partition):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
                     yield Record(data_to_return, self.stream_name())
-                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD:
+                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD and record_data.record is not None:
                     # `AirbyteMessage`s of type `Record` should also be yielded so they are enqueued
                     yield Record(record_data.record.data, self.stream_name())
                 else:
