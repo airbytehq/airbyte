@@ -6,7 +6,7 @@ from abc import abstractmethod
 from functools import cache, cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Type, Union
 
-from airbyte_cdk.models import SyncMode, AirbyteMessage
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy

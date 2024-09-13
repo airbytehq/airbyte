@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 
 class AbstractDiscoverErrorHandler(ABC):
     """Abstract class for handling exceptions that occur during the discover process."""
+
     @abstractmethod
     def handle_discover_error(self, logger: logging.Logger, exception: Exception) -> None:
         """
@@ -17,5 +18,6 @@ class AbstractDiscoverErrorHandler(ABC):
 
 class DefaultDiscoverErrorHandler(AbstractDiscoverErrorHandler):
     """Default implementation of the discover error handler. Raises all exceptions."""
+
     def handle_discover_error(self, logger: logging.Logger, exception: Exception) -> None:
         raise exception
