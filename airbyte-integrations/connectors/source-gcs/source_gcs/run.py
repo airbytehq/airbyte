@@ -10,6 +10,7 @@ from datetime import datetime
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
+from source_gcs.config_migrations import MigrateServiceAccount
 
 
 def run():
@@ -26,6 +27,7 @@ def run():
             SourceGCS.read_state(state_path) if state_path else None,
             cursor_cls=Cursor,
         )
+        MigrateServiceAccount.migrate(_args, source)
     except Exception:
         print(
             AirbyteMessage(
