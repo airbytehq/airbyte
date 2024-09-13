@@ -15,12 +15,11 @@ import pendulum
 import pytest
 import requests_mock
 from airbyte_cdk.models import (
-    AirbyteStateBlob,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    StreamDescriptor,
     SyncMode,
     Type,
 )
@@ -52,7 +51,7 @@ _A_STREAM_NAME = "a_stream_name"
 _NUMBER_OF_DOWNLOAD_TRIES = 5
 _FIRST_CALL_FROM_JOB_CREATION = 1
 
-_ANY_CATALOG = ConfiguredAirbyteCatalog.parse_obj({"streams": []})
+_ANY_CATALOG = ConfiguredAirbyteCatalogSerializer.load({"streams": []})
 _ANY_CONFIG = {}
 _ANY_STATE = None
 

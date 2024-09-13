@@ -314,7 +314,7 @@ class BulkStreamTest(TestCase):
         output = read(_STREAM_NAME, SyncMode.incremental, self._config)
 
         assert len(output.records) == 3
-        assert len(output.most_recent_state.stream_state.dict()["slices"]) == 2
+        assert len(output.most_recent_state.stream_state.slices) == 2
 
     def _create_sliced_job(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str], job_id: str, record_count: int) -> None:
         self._http_mocker.post(

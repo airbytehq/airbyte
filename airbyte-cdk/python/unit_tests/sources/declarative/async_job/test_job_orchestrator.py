@@ -140,5 +140,38 @@ class AsyncJobOrchestratorTest(TestCase):
         assert len(records) == 2
         assert self._job_repository.fetch_records.mock_calls == [call(first_job), call(second_job)]
 
+    @mock.patch(sleep_mock_target)
+    def test_given_exception_when_start_job_and_raise_this_exception_and_abort_jobs(self, mock_sleep: MagicMock) -> None:
+        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE],
+                                            exceptions_to_break_on=[ValueError])
+        self._job_repository.start.side_effect = [self._job_for_a_slice, ValueError("Something went wrong")]
+
+        with pytest.raises(ValueError):
+            # assert that orchestrator exits on expected error
+            list(orchestrator.create_and_get_completed_partitions())
+        assert len(orchestrator._running_partitions) == 0
+        self._job_repository.abort.assert_called_once_with(self._job_for_a_slice)
+
+    @mock.patch(sleep_mock_target)
+    def test_given_exception_when_start_job_and_skip_this_exception(self, mock_sleep: MagicMock) -> None:
+        self._job_repository.start.side_effect = [
+            self._job_for_a_slice,
+            AirbyteTracedException("Something went wrong. Expected error"),
+            self._job_for_another_slice,
+        ]
+        self._job_repository.update_jobs_status.side_effect = _status_update_per_jobs(
+            {
+                self._job_for_a_slice: [AsyncJobStatus.COMPLETED],
+                self._job_for_another_slice: [AsyncJobStatus.RUNNING, AsyncJobStatus.COMPLETED],
+            }
+        )
+        orchestrator = AsyncJobOrchestrator(
+            self._job_repository, [_A_STREAM_SLICE, _A_STREAM_SLICE, _ANOTHER_STREAM_SLICE], exceptions_to_break_on=[ValueError]
+        )
+
+        partitions = list(orchestrator.create_and_get_completed_partitions())
+
+        assert len(partitions) == 2
+
     def _orchestrator(self, slices: List[StreamSlice]) -> AsyncJobOrchestrator:
         return AsyncJobOrchestrator(self._job_repository, slices)
