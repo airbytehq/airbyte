@@ -176,21 +176,37 @@ class MysqlSourceDatatypeIntegrationTest {
 
         val intValues =
             mapOf(
-                "10" to """10""",
-                "100000000" to """100000000""",
-                "200000000" to """200000000""",
+                "10" to "10",
+                "100000000" to "100000000",
+                "200000000" to "200000000",
             )
 
+        val dateValues = mapOf(
+            "'2022-01-01'" to """"2022-01-01"""",
+        )
+
+        val timestampValues = mapOf(
+            "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
+            "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to """"2024-09-12T21:30:00.000000Z"""",
+        )
+
+        // Encoded into base64
         val binaryValues =
             mapOf(
-                "X'89504E470D0A1A0A0000000D49484452'" to """"89504e470d0a1a0a0000000d49484452"""",
+                "X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="""",
             )
 
         val testCases: List<TestCase> =
             listOf(
-                TestCase("VARCHAR(10)", stringValues),
-                TestCase("DECIMAL(10,2)", decimalValues),
-                TestCase("INT UNSIGNED", intValues),
+                TestCase("VARCHAR(10)", stringValues, airbyteType=LeafAirbyteType.STRING),
+                TestCase("DECIMAL(10,2)", decimalValues, airbyteType=LeafAirbyteType.NUMBER),
+                TestCase("INT", intValues, airbyteType=LeafAirbyteType.INTEGER),
+                TestCase("DATE", dateValues, airbyteType=LeafAirbyteType.DATE),
+
+                // Big number are represented as string
+                TestCase("INT UNSIGNED", intValues, airbyteType=LeafAirbyteType.INTEGER),
+                TestCase("TIMESTAMP", timestampValues, airbyteType=LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE),
+                TestCase("BINARY(100)", binaryValues, airbyteType=LeafAirbyteType.BINARY),
 
                 )
 
