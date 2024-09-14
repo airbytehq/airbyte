@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, cast, final
 
 from airbyte import exceptions as exc
 from airbyte.strategies import WriteStrategy
-from airbyte_protocol.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, Type
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, Type
 from destination_pgvector.common.state.state_writers import StateWriterBase, StdOutStateWriter
 
 if TYPE_CHECKING:

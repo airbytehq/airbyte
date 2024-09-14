@@ -11,10 +11,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, final
 
 from airbyte import exceptions as exc
-from airbyte_protocol.models import DestinationSyncMode
+from airbyte_cdk.models import DestinationSyncMode
 
 if TYPE_CHECKING:
-    from airbyte_protocol.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
+    from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 
 class CatalogProvider:

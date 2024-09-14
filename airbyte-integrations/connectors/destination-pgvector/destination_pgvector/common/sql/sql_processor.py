@@ -20,7 +20,7 @@ from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_
 from airbyte.progress import progress
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_pgvector.common.destinations.record_processor import RecordProcessorBase
 from destination_pgvector.common.state.state_writers import StdOutStateWriter
 from pandas import Index
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     from airbyte._batch_handles import BatchHandle
     from airbyte._processors.file.base import FileWriterBase
     from airbyte.secrets.base import SecretString
-    from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStateMessage
+    from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
     from destination_pgvector.common.state.state_writers import StateWriterBase
     from sqlalchemy.engine import Connection, Engine
