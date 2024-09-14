@@ -1,7 +1,12 @@
 # Piwik
-Website: https://piwik.pro/
-API Docs: https://developers.piwik.pro/en/latest/platform/getting_started.html
-Auth Page: https://developers.piwik.pro/en/latest/platform/getting_started.html#generate-api-credentials
+This page contains the setup guide and reference information for the [Piwik](https://piwik.pro/) source connector.
+
+## Documentation reference:
+Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html` for API documentation
+
+## Authentication setup
+`Source-piwik` uses OAuth2.0 - Client credentials authentication,
+Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#generate-api-credentials` for getting credentials for OAuth2.0
 
 ## Configuration
 
@@ -34,8 +39,8 @@ Auth Page: https://developers.piwik.pro/en/latest/platform/getting_started.html#
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-14 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-14 |[45586](https://github.com/airbytehq/airbyte/pull/45586)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

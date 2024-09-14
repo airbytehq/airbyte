@@ -1,9 +1,12 @@
 # Piwik
 This directory contains the manifest-only connector for `source-piwik`.
 
-Website: https://piwik.pro/
-API Docs: https://developers.piwik.pro/en/latest/platform/getting_started.html
-Auth Page: https://developers.piwik.pro/en/latest/platform/getting_started.html#generate-api-credentials
+## Documentation reference:
+Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html` for API documentation
+
+## Authentication setup
+`Source-piwik` uses OAuth2.0 - Client credentials authentication,
+Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#generate-api-credentials` for getting credentials for OAuth2.0
 
 ## Usage
 There are multiple ways to use this connector:
