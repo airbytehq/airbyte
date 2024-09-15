@@ -15,7 +15,7 @@ from airbyte.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor as DocumentSplitter
 from airbyte_cdk.destinations.vector_db_based.document_processor import ProcessingConfigModel as DocumentSplitterConfig
-from airbyte_protocol.models import AirbyteRecordMessage
+from airbyte_cdk.models import AirbyteRecordMessage
 from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
 from destination_pgvector.common.sql.sql_processor import SqlConfig, SqlProcessorBase
 from destination_pgvector.globals import CHUNK_ID_COLUMN, DOCUMENT_CONTENT_COLUMN, DOCUMENT_ID_COLUMN, EMBEDDING_COLUMN, METADATA_COLUMN
