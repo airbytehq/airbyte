@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "canny.io"
   registryOverrides:
     oss:
       enabled: true
