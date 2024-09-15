@@ -35,8 +35,8 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-15 | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder|
+| Version | Date       | Pull Request                                             | Subject                                                                                   |
+|---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.1   | 2024-09-15 | [45590](https://github.com/airbytehq/airbyte/pull/45590) | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder |
 
 </details>

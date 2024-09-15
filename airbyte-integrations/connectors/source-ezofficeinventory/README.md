@@ -1,7 +1,14 @@
 # EZOfficeInventory
 This directory contains the manifest-only connector for `source-ezofficeinventory`.
+https://ezo.io/ezofficeinventory/
 
-A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
+## Documentation reference:
+Visit https://ezo.io/ezofficeinventory/developers/ for API documentation
+
+## Authentication setup
+`source-ezofficeinventory` uses API Key authentication. <br />
+API Access is disabled by default. <br /> 
+Enable API Access in Settings > Integrations > API Integration and click on Update to generate a new access token
 
 ## Usage
 There are multiple ways to use this connector:
@@ -17,7 +24,7 @@ We recommend you use the Connector Builder to edit this connector.
 But, if you want to develop this connector locally, you can use the following steps.
 
 ### Environment Setup
-You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
+You will need `airbyte-ci` installed. You can find the documentation [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
 
 ### Build
 This will create a dev image (`source-ezofficeinventory:dev`) that you can use to test the connector locally.
