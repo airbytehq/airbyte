@@ -59,10 +59,11 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                                                    |
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
-| `contact_lists`             | `crm.lists.read`                                                                                     |
+| `contact_lists`             | `crm.lists.read`                                                                                             |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
 | `contacts_form_submissions` | `crm.objects.contacts.read`                                                                                  |
+| `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
 | Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
