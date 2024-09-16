@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the [Algolia](h
 Visit `https://www.algolia.com/doc/rest-api/search/` for API documentation
 
 ## Authentication setup
-`Source-piwik` uses API keys and application id for its authentication,
+`Source-algolia` uses API keys and application id for its authentication,
 Visit `https://dashboard.algolia.com/account/overview` for getting credentials and application id.
 Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for more about authentication.
 
@@ -18,7 +18,6 @@ Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for 
 | `search_query` | `string` | Indexes Search query. Search query to be used with indexes_query stream with format defined in `https://www.algolia.com/doc/rest-api/search/#tag/Search/operation/searchSingleIndex` | hitsPerPage=2&amp;getRankingInfo=1 |
 | `start_date` | `string` | Start date.  |  |
 | `object_id` | `string` | Object ID. Object ID within index for search queries | ecommerce-sample-data-9999996 |
-| `indexes_rules_search_query` | `string` | Indexes Rules Search query. Search query to be used with indexes_rules stream with format defined in `https://www.algolia.com/doc/rest-api/search/#tag/Rules/operation/searchRules` | anchoring=contains |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

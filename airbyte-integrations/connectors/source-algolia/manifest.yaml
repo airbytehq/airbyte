@@ -312,15 +312,6 @@ spec:
         order: 4
         title: Object ID
         default: ecommerce-sample-data-9999996
-      indexes_rules_search_query:
-        type: string
-        description: >-
-          Search query to be used with indexes_rules stream with format defined
-          in
-          `https://www.algolia.com/doc/rest-api/search/#tag/Rules/operation/searchRules`
-        order: 5
-        title: Indexes Rules Search query
-        default: anchoring=contains
     additionalProperties: true
 
 metadata:

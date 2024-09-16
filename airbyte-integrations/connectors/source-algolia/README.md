@@ -5,7 +5,7 @@ This directory contains the manifest-only connector for `source-algolia`.
 Visit `https://www.algolia.com/doc/rest-api/search/` for API documentation
 
 ## Authentication setup
-`Source-piwik` uses API keys and application id for its authentication,
+`Source-algolia` uses API keys and application id for its authentication,
 Visit `https://dashboard.algolia.com/account/overview` for getting credentials and application id.
 Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for more about authentication.
 
