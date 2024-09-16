@@ -1,8 +1,13 @@
 # Algolia
-Website: https://dashboard.algolia.com/
-API Docs: https://www.algolia.com/doc/rest-api/search/
-Auth Docs: https://www.algolia.com/doc/rest-api/search/#section/Authentication 
-API Keys page: https://dashboard.algolia.com/account/overview
+This page contains the setup guide and reference information for the [Algolia](https://dashboard.algolia.com/) source connector.
+
+## Documentation reference:
+Visit `https://www.algolia.com/doc/rest-api/search/` for API documentation
+
+## Authentication setup
+`Source-piwik` uses API keys and application id for its authentication,
+Visit `https://dashboard.algolia.com/account/overview` for getting credentials and application id.
+Visit `https://www.algolia.com/doc/rest-api/search/#section/Authentication` for more about authentication.
 
 ## Configuration
 
@@ -29,8 +34,8 @@ API Keys page: https://dashboard.algolia.com/account/overview
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-16 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-16 |[45605](https://github.com/airbytehq/airbyte/pull/45605)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
