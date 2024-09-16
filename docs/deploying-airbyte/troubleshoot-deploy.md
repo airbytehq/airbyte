@@ -125,7 +125,7 @@ ___
 - Github [#114](https://github.com/airbytehq/abctl/pull/114)
 - Status: Fixing
 
-This error happens sometimes when user had installed `abctl local install` and after run `abctl local install --low-resource-mode`.
+This error can occur when installing using `abctl local install` and subsequently ran `abctl local install --low-resource-mode`.
 
 ```shell
 unable to install airbyte chart: unable to install helm: failed to create patch: 
