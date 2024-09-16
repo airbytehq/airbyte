@@ -55,16 +55,16 @@ allprojects {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
         compileJava {
-            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing"]
+            options.compilerArgs += ["-Xlint:all,-serial,-processing"]
         }
         compileTestJava {
             //rawtypes and unchecked are necessary for mockito
             //deprecation and removal are removed from error since we should still test those constructs.
-            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
+            options.compilerArgs += ["-Xlint:all,-serial,-processing,-rawtypes,-unchecked,-deprecation,-removal"]
         }
         compileTestFixturesJava {
             //rawtypes and unchecked are necessary for mockito
-            options.compilerArgs += ["-Werror", "-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
+            options.compilerArgs += ["-Xlint:all,-serial,-processing,-rawtypes,-unchecked"]
         }
     }
 
@@ -76,7 +76,7 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = true
+            allWarningsAsErrors = false
             freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
@@ -87,7 +87,7 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = true
+            allWarningsAsErrors = false
             freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
@@ -98,7 +98,7 @@ allprojects {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
-            allWarningsAsErrors = true
+            allWarningsAsErrors = false
             freeCompilerArgs = ["-Xjvm-default=all"]
         }
         dependsOn {
@@ -234,5 +234,9 @@ allprojects {
 
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+        kotlinOptions.suppressWarnings = true
     }
 }

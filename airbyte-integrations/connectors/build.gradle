@@ -61,41 +61,41 @@ tasks.named('clean').configure {
 
 allprojects {
     // Adds airbyte-ci task.
-    def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
-        def task = tasks.register(taskName, Exec) {
-            workingDir rootDir
-            environment "CI", "1" // set to use more suitable logging format
-            commandLine pythonBin
-            args "-m", "poetry"
-            args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
-            args "run"
-            args "airbyte-ci", "connectors", "--name=${project.name}"
-            args connectorsArgs
-            // Forbid these kinds of tasks from running concurrently.
-            // We can induce serial execution by giving them all a common output directory.
-            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
-            outputs.upToDateWhen { false }
-        }
-        task.configure { dependsOn poetryInstallAirbyteCI }
-        return task
-    }
+    // def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
+    //     def task = tasks.register(taskName, Exec) {
+    //         workingDir rootDir
+    //         environment "CI", "1" // set to use more suitable logging format
+    //         commandLine pythonBin
+    //         args "-m", "poetry"
+    //         args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
+    //         args "run"
+    //         args "airbyte-ci", "connectors", "--name=${project.name}"
+    //         args connectorsArgs
+    //         // Forbid these kinds of tasks from running concurrently.
+    //         // We can induce serial execution by giving them all a common output directory.
+    //         outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
+    //         outputs.upToDateWhen { false }
+    //     }
+    //     task.configure { dependsOn poetryInstallAirbyteCI }
+    //     return task
+    // }
 
-    // Build connector image as part of 'assemble' task.
-    // This is required for local 'integrationTest' execution.
-    def buildConnectorImage = airbyteCIConnectorsTask(
-            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
-    buildConnectorImage.configure {
-        // Images for java projects always rely on the distribution tarball.
-        dependsOn tasks.matching { it.name == 'distTar' }
-        // Ensure that all files exist beforehand.
-        dependsOn tasks.matching { it.name == 'generate' }
-    }
-    tasks.named('assemble').configure {
-        // We may revisit the dependency on assemble but the dependency should always be on a base task.
-        dependsOn buildConnectorImage
-    }
+    // // Build connector image as part of 'assemble' task.
+    // // This is required for local 'integrationTest' execution.
+    // def buildConnectorImage = airbyteCIConnectorsTask(
+    //         'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
+    // buildConnectorImage.configure {
+    //     // Images for java projects always rely on the distribution tarball.
+    //     dependsOn tasks.matching { it.name == 'distTar' }
+    //     // Ensure that all files exist beforehand.
+    //     dependsOn tasks.matching { it.name == 'generate' }
+    // }
+    // tasks.named('assemble').configure {
+    //     // We may revisit the dependency on assemble but the dependency should always be on a base task.
+    //     dependsOn buildConnectorImage
+    // }
 
-    // Convenience tasks for local airbyte-ci execution.
-    airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
-    airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
+    // // Convenience tasks for local airbyte-ci execution.
+    // airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
+    // airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
 }

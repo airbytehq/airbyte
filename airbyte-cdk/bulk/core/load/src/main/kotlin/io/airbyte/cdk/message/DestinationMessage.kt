@@ -10,8 +10,10 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.data.AirbyteValue
 import io.airbyte.cdk.data.AirbyteValueToJson
 import io.airbyte.cdk.data.JsonToAirbyteValue
+import io.airbyte.cdk.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.message.CheckpointMessage.Checkpoint
 import io.airbyte.cdk.message.CheckpointMessage.Stats
+import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -45,6 +47,21 @@ data class DestinationRecord(
     val meta: Meta?,
     val serialized: String,
 ) : DestinationStreamAffinedMessage {
+    /** Convenience constructor, primarily intended for use in tests. */
+    constructor(
+        namespace: String?,
+        name: String,
+        data: String,
+        emittedAtMs: Long,
+        changes: List<Change>? = null,
+    ) : this(
+        stream = DestinationStream.Descriptor(namespace, name),
+        data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema),
+        emittedAtMs = emittedAtMs,
+        meta = Meta(changes),
+        serialized = "",
+    )
+
     data class Meta(val changes: List<Change>?) {
         fun asProtocolObject(): AirbyteRecordMessageMeta =
             AirbyteRecordMessageMeta().also {
@@ -141,6 +158,23 @@ data class StreamCheckpoint(
     override val destinationStats: Stats? = null,
     val additionalProperties: Map<String, Any>
 ) : CheckpointMessage {
+    /** Convenience constructor, intended for use in tests. */
+    constructor(
+        streamNamespace: String?,
+        streamName: String,
+        blob: String,
+        sourceRecordCount: Long,
+        destinationRecordCount: Long? = null,
+    ) : this(
+        Checkpoint(
+            DestinationStream.Descriptor(streamNamespace, streamName),
+            state = Jsons.deserialize(blob)
+        ),
+        Stats(sourceRecordCount),
+        destinationRecordCount?.let { Stats(it) },
+        additionalProperties = mutableMapOf(),
+    )
+
     override fun withDestinationStats(stats: Stats) =
         StreamCheckpoint(checkpoint, sourceStats, stats, additionalProperties)
 
@@ -170,6 +204,11 @@ data class GlobalCheckpoint(
     val checkpoints: List<Checkpoint> = emptyList(),
     val additionalProperties: MutableMap<String, Any> = mutableMapOf()
 ) : CheckpointMessage {
+    /** Convenience constructor, primarily intended for use in tests. */
+    constructor(
+        blob: String,
+        sourceRecordCount: Long,
+    ) : this(state = Jsons.deserialize(blob), Stats(sourceRecordCount))
     override fun withDestinationStats(stats: Stats) =
         GlobalCheckpoint(state, sourceStats, stats, checkpoints, additionalProperties)
 
