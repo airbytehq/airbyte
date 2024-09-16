@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.models import AirbyteStreamStatus, SyncMode
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from config_builder import ConfigBuilder
 from integration.test_rest_stream import create_http_request as create_standard_http_request
 from integration.test_rest_stream import create_http_response as create_standard_http_response

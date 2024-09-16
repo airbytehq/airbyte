@@ -1,4 +1,4 @@
-version: 0.81.1
+version: 5.5.0
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -874,6 +874,62 @@ streams:
           page_size: 100
           cursor_value: '{{ response.get("_metadata", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("_metadata", {}).get("next", {}) }}'
+
+  - type: DeclarativeStream
+    name: contacts
+    primary_key:
+      - contact_id
+    $parameters:
+      name: contacts
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.json"
+    retriever:
+      type: AsyncRetriever
+      status_mapping:
+        running:
+          - pending
+        completed:
+          - ready
+        failed:
+          - failed
+        timeout:
+          - timeout
+      status_extractor:
+        type: DpathExtractor
+        field_path: ["status"]
+      urls_extractor:
+        type: DpathExtractor
+        field_path: ["urls"]
+      creation_requester:
+        type: HttpRequester
+        http_method: POST
+        url_base: https://api.sendgrid.com
+        path: /v3/marketing/contacts/exports
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      polling_requester:
+        type: HttpRequester
+        http_method: GET
+        url_base: https://api.sendgrid.com
+        path: "/v3/marketing/contacts/exports/{{stream_slice['create_job_response'].json()['id'] }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+      download_requester:
+        type: HttpRequester
+        http_method: GET
+        url_base: ""
+        path: "{{stream_slice['url']}}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    transformations:
+      - type: KeysToLower
+
 spec:
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#

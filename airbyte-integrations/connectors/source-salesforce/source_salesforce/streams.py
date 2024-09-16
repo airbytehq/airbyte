@@ -18,12 +18,17 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk import (
     BearerAuthenticator,
+    CursorPaginationStrategy,
     DeclarativeStream,
+    DefaultPaginator,
     DpathExtractor,
     HttpMethod,
     HttpRequester,
     JsonDecoder,
     RecordSelector,
+    RequestOption,
+    RequestOptionType,
+    SimpleRetriever,
     SinglePartitionRouter,
     StreamSlice,
 )
@@ -31,6 +36,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
@@ -537,9 +543,9 @@ class BulkSalesforceStream(SalesforceStream):
         )
         # "GET", url, headers = {"Accept-Encoding": "gzip"}, request_kwargs = {"stream": True}
         download_id_interpolation = "{{stream_slice['url']}}"
-        ResponseToFileExtractor()
+        job_download_components_name = f"{self.name} - download requester"
         download_requester = HttpRequester(
-            name=f"{self.name} - download requester",
+            name=job_download_components_name,
             url_base=url_base,
             path=f"{job_query_path}/{download_id_interpolation}/results",
             authenticator=authenticator,
@@ -560,12 +566,45 @@ class BulkSalesforceStream(SalesforceStream):
             use_cache=False,
             stream_response=True,
         )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=DefaultPaginator(
+                decoder=NoopDecoder(),
+                page_size_option=None,
+                page_token_option=RequestOption(
+                    field_name="locator",
+                    inject_into=RequestOptionType.request_parameter,
+                    parameters={},
+                ),
+                pagination_strategy=CursorPaginationStrategy(
+                    cursor_value="{{ headers['Sforce-Locator'] }}",
+                    decoder=NoopDecoder(),
+                    config=config,
+                    parameters={},
+                ),
+                url_base=url_base,
+                config=config,
+                parameters={},
+            ),
+            config=config,
+            parameters={},
+        )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
         urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
-            download_requester=download_requester,
+            download_retriever=download_retriever,
             abort_requester=None,
             status_extractor=status_extractor,
             status_mapping={
