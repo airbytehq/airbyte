@@ -8,7 +8,10 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.task.TaskLauncher
 import io.airbyte.cdk.task.TaskRunner
+import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Secondary
+import java.io.InputStream
 import javax.inject.Singleton
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -32,5 +35,16 @@ class WriteOperation(
 
             launch { taskRunner.run() }
         }
+    }
+}
+
+/** Override to provide a custom input stream. */
+@Factory
+class InputStreamFactory {
+    @Singleton
+    @Secondary
+    @Requires(property = Operation.PROPERTY, value = "write")
+    fun make(): InputStream {
+        return System.`in`
     }
 }
