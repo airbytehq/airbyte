@@ -16,8 +16,17 @@ from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optio
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk import DeclarativeStream, JsonDecoder, DpathExtractor, HttpMethod, BearerAuthenticator, HttpRequester, RecordSelector, \
-    SinglePartitionRouter, StreamSlice
+from airbyte_cdk import (
+    BearerAuthenticator,
+    DeclarativeStream,
+    DpathExtractor,
+    HttpMethod,
+    HttpRequester,
+    JsonDecoder,
+    RecordSelector,
+    SinglePartitionRouter,
+    StreamSlice,
+)
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
@@ -30,7 +39,7 @@ from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
@@ -321,6 +330,8 @@ class RestSalesforceStream(SalesforceStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    _read_single_page = _read_pages
+
     @default_backoff_handler(max_tries=5)  # FIXME remove once HttpStream relies on the HttpClient
     def _fetch_next_page_for_chunk(
         self,
@@ -330,8 +341,10 @@ class RestSalesforceStream(SalesforceStream):
         property_chunk: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        request, response = self._http_client.send_request(
+            "GET",
+            url=self.url_base + self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_kwargs=self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             headers=dict(request_headers),
             params=self.request_params(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
@@ -339,8 +352,6 @@ class RestSalesforceStream(SalesforceStream):
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
         return request, response
 
 
@@ -373,20 +384,40 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
     def __init__(self, cursor: Optional[ConcurrentCursor]) -> None:
         self._cursor = cursor
 
-    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                           next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_headers(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                            next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_body_data(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], str]:
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
         return {}
 
-    def get_request_body_json(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
@@ -400,7 +431,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
                 cursor_slice={
                     "start_date": slice_start.isoformat(timespec="milliseconds"),
                     "end_date": slice_end.isoformat(timespec="milliseconds"),
-                }
+                },
             )
 
 
@@ -443,9 +474,13 @@ class BulkSalesforceStream(SalesforceStream):
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
             where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
-            lower_boundary_interpolation = '{{ "'f'{self.cursor_field}'' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            lower_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            )
             and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
-            upper_boundary_interpolation = '{{ "'f'{self.cursor_field}'' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            upper_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            )
             query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
         creation_requester = HttpRequester(
             name=f"{self.name} - creation requester",
@@ -461,7 +496,7 @@ class BulkSalesforceStream(SalesforceStream):
                     "query": query,
                     "contentType": "CSV",
                     "columnDelimiter": "COMMA",
-                    "lineEnding": "LF"
+                    "lineEnding": "LF",
                 },
                 request_headers=None,
                 request_parameters=None,
@@ -557,9 +592,7 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=BulkDatetimeStreamSlicer(self._stream_slicer_cursor),
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository,
-                    stream_slices,
-                    exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
@@ -632,9 +665,7 @@ class BulkSalesforceStream(SalesforceStream):
         except BulkNotSupportedException:
             self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
             self._stream_to_use = standard_instance
-            yield from self._stream_to_use.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
-            )
+            yield from self._stream_to_use.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
