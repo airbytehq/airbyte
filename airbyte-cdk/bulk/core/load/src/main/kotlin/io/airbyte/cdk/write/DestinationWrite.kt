@@ -9,26 +9,30 @@ import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 /**
- * Implementor interface. Extended this only if you need to perform initialization and teardown
- * *across all streams*, or if your per-stream operations need shared global state.
- *
- * If initialization can be done on a per-stream basis, implement @[StreamLoaderFactory] instead.
+ * Implementor interface. Every Destination must extend this and at least provide an implementation
+ * of [getStreamLoader].
  */
-interface Destination {
+interface DestinationWrite {
     // Called once before anything else
     suspend fun setup() {}
 
     // Return a StreamLoader for the given stream
     fun getStreamLoader(stream: DestinationStream): StreamLoader
 
-    // Called once at the end of the job
+    // Called once at the end of the job, unconditionally.
     suspend fun teardown(succeeded: Boolean = true) {}
 }
 
 @Singleton
 @Secondary
-class DefaultDestination(private val streamLoaderFactory: StreamLoaderFactory) : Destination {
+class DefaultDestinationWrite : DestinationWrite {
+    init {
+        throw NotImplementedError(
+            "DestinationWrite not implemented. Please create a custom @Singleton implementation."
+        )
+    }
+
     override fun getStreamLoader(stream: DestinationStream): StreamLoader {
-        return streamLoaderFactory.make(stream)
+        throw NotImplementedError()
     }
 }

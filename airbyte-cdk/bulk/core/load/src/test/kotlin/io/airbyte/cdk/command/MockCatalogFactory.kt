@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.command
 
+import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.protocol.models.Jsons
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
@@ -15,8 +17,28 @@ import jakarta.inject.Singleton
 @Requires(env = ["test"])
 class MockCatalogFactory : DestinationCatalogFactory {
     companion object {
-        val stream1 = DestinationStream(DestinationStream.Descriptor("test", "stream1"))
-        val stream2 = DestinationStream(DestinationStream.Descriptor("test", "stream2"))
+        val stream1 =
+            DestinationStream(
+                DestinationStream.Descriptor("test", "stream1"),
+                Append,
+                Jsons.deserialize(
+                    """{"type": "object", "properties": {"id": {"type": "integer"}}}"""
+                ) as ObjectNode,
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
+        val stream2 =
+            DestinationStream(
+                DestinationStream.Descriptor("test", "stream2"),
+                Append,
+                Jsons.deserialize(
+                    """{"type": "object", "properties": {"id": {"type": "integer"}}}"""
+                ) as ObjectNode,
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
     }
 
     @Singleton
