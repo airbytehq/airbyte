@@ -4,16 +4,56 @@
 
 package io.airbyte.cdk.read
 
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlinx.coroutines.sync.Semaphore
+import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.sync.Mutex
 
-interface cdcAware {
-    fun cdcResourceAcquire(): Boolean =
-        cdcRan.get() || this is cdcResourceTaker && cdcResource.tryAcquire()
+private class LimitedMutex(private val maxCount: Int) {
+    private val mutex = Mutex()
+    private var lockCount = AtomicInteger(0)
+
+    @Synchronized
+    fun canLock(): Boolean {
+        return maxCount > lockCount.get()
+    }
+
+    @Synchronized
+    fun tryLock(): Boolean {
+        if (canLock()) {
+            if (mutex.tryLock()) {
+                lockCount.andIncrement
+                return true
+            }
+        }
+        return false
+    }
+
+    @Synchronized
+    fun unlock() = mutex.unlock()
+
+    val isLocked: Boolean
+        get() = mutex.isLocked
+}
+
+interface CdcAware {
+    fun cdcReadyToRun(): Boolean {
+        return when (this) {
+            is cdcResourceTaker -> {
+                mutex.tryLock()
+            }
+            else -> {
+                mutex.canLock() && mutex.isLocked.not()  // More runs left and not currently running
+            }
+        }
+    }
+
+    fun cdcDoneRunning(): Boolean {
+        return mutex.isLocked.not() && mutex.canLock().not()
+    }
+
+    fun cdcRunEnded() = mutex.unlock()
 
     companion object {
-        val cdcResource: Semaphore = Semaphore(1)
-        var cdcRan: AtomicBoolean = AtomicBoolean(false)
+        private val mutex = LimitedMutex(1)
     }
 }
 

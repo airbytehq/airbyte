@@ -22,3 +22,4 @@ class DefaultCdcSharedState(override val configuration: SourceConfiguration) : C
             null
         }
 }
+

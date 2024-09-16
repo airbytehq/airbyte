@@ -5,14 +5,13 @@
 package io.airbyte.cdk.cdc
 
 import com.fasterxml.jackson.databind.node.NullNode
-import io.airbyte.cdk.read.CdcPartition
 import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
-import io.airbyte.cdk.read.cdcAware
+import io.airbyte.cdk.read.CdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.debezium.engine.ChangeEvent
@@ -20,11 +19,12 @@ import io.debezium.engine.DebeziumEngine
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.delay
 
-class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
+class CdcPartitionReader<S : CdcSharedState>(
 //    cdcContext: io.airbyte.cdk.read.CdcContext,
-    val partition: P
-) : PartitionReader, cdcAware, cdcResourceTaker {
+    val sharedState: S
+) : PartitionReader, CdcAware, cdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
@@ -36,12 +36,12 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
     fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): TryAcquireResourcesStatus {
-        if (!cdcResourceAcquire()) {
+        if (!cdcReadyToRun()) {
             return RETRY_LATER
         }
 
         val acquiredResources: AcquiredResources =
-            partition.tryAcquireResourcesForReader() ?: return RETRY_LATER
+            sharedState.tryAcquireResourcesForReader() ?: return RETRY_LATER
         this.acquiredResources.set(acquiredResources)
         return READY_TO_RUN
     }
@@ -53,7 +53,8 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
         // run asynchronously
         engine?.run()
 */
-        cdcAware.cdcRan.set(true)
+//        cdcAware.cdcRan.set(true)
+        delay(5000)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
@@ -62,6 +63,7 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
 
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
+        cdcRunEnded()
         // Release global CDC lock
     }
 

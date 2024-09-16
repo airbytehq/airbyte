@@ -2,18 +2,17 @@ package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.read.JdbcNonResumablePartitionReader
 import io.airbyte.cdk.read.JdbcPartition
-import io.airbyte.cdk.read.JdbcPartitionReader
 import io.airbyte.cdk.read.JdbcResumablePartitionReader
 import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.cdcAware
+import io.airbyte.cdk.read.CdcAware
 
 class CdcAwareJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
-) : JdbcNonResumablePartitionReader<P>(partition), cdcAware {
+) : JdbcNonResumablePartitionReader<P>(partition), CdcAware {
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        if (!cdcResourceAcquire()) {
+        if (!cdcReadyToRun()) {
             return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         }
         return super.tryAcquireResources()
@@ -22,10 +21,10 @@ class CdcAwareJdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
 
 class CdcAwareJdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     partition: P,
-) : JdbcResumablePartitionReader<P>(partition), cdcAware {
+) : JdbcResumablePartitionReader<P>(partition), CdcAware {
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        if (!cdcResourceAcquire()) {
+        if (cdcDoneRunning().not()) {
             return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
         }
         return super.tryAcquireResources()
