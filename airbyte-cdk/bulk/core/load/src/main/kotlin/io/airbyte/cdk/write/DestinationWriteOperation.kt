@@ -12,7 +12,7 @@ import jakarta.inject.Singleton
  * Implementor interface. Every Destination must extend this and at least provide an implementation
  * of [getStreamLoader].
  */
-interface DestinationWrite {
+interface DestinationWriteOperation {
     // Called once before anything else
     suspend fun setup() {}
 
@@ -25,7 +25,7 @@ interface DestinationWrite {
 
 @Singleton
 @Secondary
-class DefaultDestinationWrite : DestinationWrite {
+class DefaultDestinationWriteOperation : DestinationWriteOperation {
     init {
         throw NotImplementedError(
             "DestinationWrite not implemented. Please create a custom @Singleton implementation."
