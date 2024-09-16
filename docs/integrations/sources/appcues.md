@@ -14,7 +14,7 @@ To set up the Appcues source connector, you'll need your Appcues [`API Key` and 
 3. On the Set up the source page, select **Appcues** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **API Key** and **Secret Key**, enter the Appcues [API key and API secret key](https://studio.appcues.com/settings/keys).
-6. For **Replication Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. For **Replication Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 
 
