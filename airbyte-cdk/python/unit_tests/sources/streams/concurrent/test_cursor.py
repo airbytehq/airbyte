@@ -752,16 +752,17 @@ def test_close_partition_with_slice_range_concurrent_cursor_from_datetime_based_
         stream_state={},
         message_repository=message_repository,
         connector_state_manager=state_manager,
-        connector_state_converter=IsoMillisConcurrentStreamStateConverter(is_sequential_state=False),
+        connector_state_converter=IsoMillisConcurrentStreamStateConverter(is_sequential_state=False, cursor_granularity=None),
         cursor_field=cursor_field,
         slice_boundary_fields=slice_boundary_fields,
         start=start_date,
         slice_range=step_length,
+        cursor_granularity=None,
         end_provider=IsoMillisConcurrentStreamStateConverter.get_end_provider(),
     )
 
     partition_0 = _partition(
-        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-15T00:00:00.000000+0000"},
+        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-16T00:00:00.000000+0000"},
     )
     partition_3 = _partition(
         {"start_time": "2024-08-15T00:00:00.000000+0000", "end_time": "2024-08-30T00:00:00.000000+0000"},
@@ -785,7 +786,7 @@ def test_close_partition_with_slice_range_concurrent_cursor_from_datetime_based_
         _A_STREAM_NAMESPACE,
         {
             "slices": [
-                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-15T00:00:00.000Z", },
+                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-16T00:00:00.000Z"},
                 {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-30T00:00:00.000Z"}
 
             ],
@@ -793,3 +794,95 @@ def test_close_partition_with_slice_range_concurrent_cursor_from_datetime_based_
         },
     )
     assert state_manager.update_state_for_stream.call_count == 2
+
+
+@freezegun.freeze_time(time_to_freeze=datetime(2024, 9, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
+def test_close_partition_with_slice_range_granularity_concurrent_cursor_from_datetime_based_cursor():
+    message_repository = Mock(spec=MessageRepository)
+    state_manager = Mock(spec=ConnectorStateManager)
+
+    config = {
+        "start_time": "2024-07-01T00:00:00.000000+0000",
+        "dynamic_cursor_key": "updated_at"
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        cursor_field="{{ config.dynamic_cursor_key }}",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        step="P15D",
+        cursor_granularity="P1D",
+        config=config,
+        parameters={},
+    )
+
+    interpolated_state_date = datetime_based_cursor._start_datetime
+    start_date = interpolated_state_date.get_datetime(config=config)
+
+    interpolated_cursor_field = datetime_based_cursor.cursor_field
+    cursor_field = CursorField(cursor_field_key=interpolated_cursor_field.eval(config=config))
+
+    lower_slice_boundary = datetime_based_cursor._partition_field_start.eval(config=config)
+    upper_slice_boundary = datetime_based_cursor._partition_field_end.eval(config=config)
+    slice_boundary_fields = (lower_slice_boundary, upper_slice_boundary)
+
+    step_length = datetime_based_cursor._step
+
+    cursor_granularity = parse_duration(datetime_based_cursor.cursor_granularity) if datetime_based_cursor.cursor_granularity else None
+
+    concurrent_cursor = ConcurrentCursor(
+        stream_name="gods",
+        stream_namespace=_A_STREAM_NAMESPACE,
+        stream_state={},
+        message_repository=message_repository,
+        connector_state_manager=state_manager,
+        connector_state_converter=IsoMillisConcurrentStreamStateConverter(is_sequential_state=False, cursor_granularity=cursor_granularity),
+        cursor_field=cursor_field,
+        slice_boundary_fields=slice_boundary_fields,
+        start=start_date,
+        slice_range=step_length,
+        cursor_granularity=cursor_granularity,
+        end_provider=IsoMillisConcurrentStreamStateConverter.get_end_provider(),
+    )
+
+    partition_0 = _partition(
+        {"start_time": "2024-07-01T00:00:00.000000+0000", "end_time": "2024-07-15T00:00:00.000000+0000"},
+    )
+    partition_1 = _partition(
+        {"start_time": "2024-07-16T00:00:00.000000+0000", "end_time": "2024-07-31T00:00:00.000000+0000"},
+    )
+    partition_3 = _partition(
+        {"start_time": "2024-08-15T00:00:00.000000+0000", "end_time": "2024-08-29T00:00:00.000000+0000"},
+    )
+    record_1 = Record(
+        stream_name="gods", data={"id": "1000", "updated_at": "2024-07-05T00:00:00.000000+0000", "name": "loki", "mythology": "norse"},
+    )
+    record_2 = Record(
+        stream_name="gods", data={"id": "2000", "updated_at": "2024-07-25T00:00:00.000000+0000", "name": "freya", "mythology": "norse"},
+    )
+    record_3 = Record(
+        stream_name="gods", data={"id": "999", "updated_at": "2024-08-20T00:00:00.000000+0000", "name": "kratos", "mythology": "greek"},
+    )
+
+    concurrent_cursor.observe(record_1)
+    concurrent_cursor.close_partition(partition_0)
+    concurrent_cursor.observe(record_2)
+    concurrent_cursor.close_partition(partition_1)
+    concurrent_cursor.observe(record_3)
+    concurrent_cursor.close_partition(partition_3)
+
+    message_repository.emit_message.assert_called_with(state_manager.create_state_message.return_value)
+    assert message_repository.emit_message.call_count == 3
+    state_manager.update_state_for_stream.assert_called_with(
+        "gods",
+        _A_STREAM_NAMESPACE,
+        {
+            "slices": [
+                {"start": "2024-07-01T00:00:00.000Z", "end": "2024-07-31T00:00:00.000Z"},
+                {"start": "2024-08-15T00:00:00.000Z", "end": "2024-08-29T00:00:00.000Z"}
+
+            ],
+            "state_type": "date-range"
+        },
+    )
+    assert state_manager.update_state_for_stream.call_count == 3
