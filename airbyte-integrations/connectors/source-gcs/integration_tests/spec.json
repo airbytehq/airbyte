@@ -317,13 +317,6 @@
                         "mode": "local"
                       },
                       "type": "object",
-                      "discriminator": {
-                        "propertyName": "mode",
-                        "mapping": {
-                          "local": "#/definitions/LocalProcessingConfigModel",
-                          "api": "#/definitions/APIProcessingConfigModel"
-                        }
-                      },
                       "oneOf": [
                         {
                           "title": "Local",
@@ -442,13 +435,6 @@
         "description": "Credentials for connecting to the Google Cloud Storage API",
         "type": "object",
         "order": 0,
-        "discriminator": {
-          "propertyName": "auth_type",
-          "mapping": {
-            "Client": "#/definitions/OAuthCredentials",
-            "Service": "#/definitions/ServiceAccountCredentials"
-          }
-        },
         "oneOf": [
           {
             "title": "Authenticate via Google (OAuth)",

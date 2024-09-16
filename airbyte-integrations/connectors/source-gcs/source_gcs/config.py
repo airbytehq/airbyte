@@ -76,7 +76,3 @@ class Config(AbstractFileBasedSpec, BaseModel):
         Returns the documentation URL.
         """
         return AnyUrl("https://docs.airbyte.com/integrations/sources/gcs", scheme="https")
-
-    @staticmethod
-    def remove_discriminator(schema) -> None:
-        pass
