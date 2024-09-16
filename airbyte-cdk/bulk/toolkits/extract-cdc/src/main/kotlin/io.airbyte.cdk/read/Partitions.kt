@@ -7,7 +7,7 @@ package io.airbyte.cdk.read
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.sync.Mutex
 
-private class LimitedMutex(private val maxCount: Int) {
+internal class LimitedMutex(private val maxCount: Int) {
     private val mutex = Mutex()
     private var lockCount = AtomicInteger(0)
 
@@ -32,29 +32,6 @@ private class LimitedMutex(private val maxCount: Int) {
 
     val isLocked: Boolean
         get() = mutex.isLocked
-}
-
-interface CdcAware {
-    fun cdcReadyToRun(): Boolean {
-        return when (this) {
-            is cdcResourceTaker -> {
-                mutex.tryLock()
-            }
-            else -> {
-                mutex.canLock() && mutex.isLocked.not()  // More runs left and not currently running
-            }
-        }
-    }
-
-    fun cdcDoneRunning(): Boolean {
-        return mutex.isLocked.not() && mutex.canLock().not()
-    }
-
-    fun cdcRunEnded() = mutex.unlock()
-
-    companion object {
-        private val mutex = LimitedMutex(1)
-    }
 }
 
 interface cdcResourceTaker {}
