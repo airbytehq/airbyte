@@ -191,7 +191,10 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 4.1.0   | 2024-09-09 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code                                                                                             |
+| 4.1.0   | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code                                                                                             |
+| 4.0.6   | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies                                                                                             |
+| 4.0.5   | 2024-09-07 | [45209](https://github.com/airbytehq/airbyte/pull/45209) | Update dependencies                                                                                             |
+| 4.0.4   | 2024-08-31 | [44950](https://github.com/airbytehq/airbyte/pull/44950) | Update dependencies                                                                                             |
 | 4.0.3   | 2024-08-24 | [44682](https://github.com/airbytehq/airbyte/pull/44682) | Update dependencies                                                                                             |
 | 4.0.2   | 2024-08-17 | [44220](https://github.com/airbytehq/airbyte/pull/44220) | Update dependencies                                                                                             |
 | 4.0.1   | 2024-08-10 | [43629](https://github.com/airbytehq/airbyte/pull/43629) | Update dependencies                                                                                             |
@@ -248,4 +251,5 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                 |
 | 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610)   | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default |
 | 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285)   | Initial release of Native LinkedIn Ads connector for Airbyte                                                    |
+
 </details>

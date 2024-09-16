@@ -19,7 +19,7 @@ import kotlinx.coroutines.sync.withLock
  * TODO: Some degree of logging/monitoring around how accurate we're actually being?
  */
 @Singleton
-class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
+class MemoryManager(private val availableMemoryProvider: AvailableMemoryProvider) {
     private val totalMemoryBytes: Long = availableMemoryProvider.availableMemoryBytes
     private var usedMemoryBytes = AtomicLong(0L)
     private val mutex = Mutex()

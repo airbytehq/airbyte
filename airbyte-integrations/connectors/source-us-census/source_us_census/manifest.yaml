@@ -24,9 +24,8 @@ definitions:
             type: CustomRecordExtractor
             class_name: source_us_census.components.USCensusRecordExtractor
       schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/us_census_stream"
+        type: CustomSchemaLoader
+        class_name: "source_us_census.components.USCensusSchema"
   base_requester:
     type: HttpRequester
     url_base: https://api.census.gov/
@@ -84,14 +83,3 @@ spec:
         order: 2
         airbyte_secret: true
     additionalProperties: true
-
-metadata:
-  autoImportSchema:
-    us_census_stream: true
-
-schemas:
-  us_census_stream:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties: {}
