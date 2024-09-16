@@ -277,7 +277,8 @@ class MicronautPropertiesFriendlyEncryption {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "user_defined"),
-    // TODO: add CDC support
+    JsonSubTypes.Type(value = CdcCursor::class, name = "cdc")
+    // TODO: port over additional Cdc options
     )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
