@@ -3,20 +3,22 @@
 #
 
 import copy
+from dataclasses import dataclass
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 from airbyte_cdk.models import Type as MessageType
-from pydantic import ConfigDict as V2ConfigDict
 
 
-class HashableStreamDescriptor(StreamDescriptor):
+@dataclass(frozen=True)
+class HashableStreamDescriptor:
     """
     Helper class that overrides the existing StreamDescriptor class that is auto generated from the Airbyte Protocol and
     freezes its fields so that it be used as a hash key. This is only marked public because we use it outside for unit tests.
     """
 
-    model_config = V2ConfigDict(extra="allow", frozen=True)
+    name: str
+    namespace: Optional[str] = None
 
 
 class ConnectorStateManager:
@@ -47,9 +49,9 @@ class ConnectorStateManager:
         :param namespace: Namespace of the stream being fetched
         :return: The per-stream state for a stream
         """
-        stream_state = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
+        stream_state: AirbyteStateBlob | None = self.per_stream_states.get(HashableStreamDescriptor(name=stream_name, namespace=namespace))
         if stream_state:
-            return stream_state.dict()  # type: ignore # mypy thinks dict() returns any, but it returns a dict
+            return copy.deepcopy({k: v for k, v in stream_state.__dict__.items()})
         return {}
 
     def update_state_for_stream(self, stream_name: str, namespace: Optional[str], value: Mapping[str, Any]) -> None:
@@ -60,7 +62,7 @@ class ConnectorStateManager:
         :param value: A stream state mapping that is being updated for a stream
         """
         stream_descriptor = HashableStreamDescriptor(name=stream_name, namespace=namespace)
-        self.per_stream_states[stream_descriptor] = AirbyteStateBlob.parse_obj(value)
+        self.per_stream_states[stream_descriptor] = AirbyteStateBlob(value)
 
     def create_state_message(self, stream_name: str, namespace: Optional[str]) -> AirbyteMessage:
         """
@@ -100,19 +102,19 @@ class ConnectorStateManager:
 
         if is_global:
             global_state = state[0].global_  # type: ignore # We verified state is a list in _is_global_state
-            shared_state = copy.deepcopy(global_state.shared_state, {})
+            shared_state = copy.deepcopy(global_state.shared_state, {})  # type: ignore[union-attr] # global_state has shared_state
             streams = {
                 HashableStreamDescriptor(
                     name=per_stream_state.stream_descriptor.name, namespace=per_stream_state.stream_descriptor.namespace
                 ): per_stream_state.stream_state
-                for per_stream_state in global_state.stream_states
+                for per_stream_state in global_state.stream_states  # type: ignore[union-attr] # global_state has shared_state
             }
             return shared_state, streams
         else:
             streams = {
                 HashableStreamDescriptor(
-                    name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace
-                ): per_stream_state.stream.stream_state
+                    name=per_stream_state.stream.stream_descriptor.name, namespace=per_stream_state.stream.stream_descriptor.namespace  # type: ignore[union-attr] # stream has stream_descriptor
+                ): per_stream_state.stream.stream_state  # type: ignore[union-attr] # stream has stream_state
                 for per_stream_state in state
                 if per_stream_state.type == AirbyteStateType.STREAM and hasattr(per_stream_state, "stream")  # type: ignore # state is always a list of AirbyteStateMessage if is_per_stream is True
             }

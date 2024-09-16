@@ -9,6 +9,16 @@ The changelog below is automatically updated by the `bump_version` command as pa
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
+| 5.5.2 | 2024-09-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.5.2 |
+| 5.5.1 | 2024-09-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.5.1 |
+| 5.5.0 | 2024-09-10 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.5.0 |
+| 5.4.0 | 2024-09-09 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.4.0 |
+| 5.3.0 | 2024-09-09 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.3.0 |
+| 5.2.1 | 2024-09-06 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.2.1 |
+| 5.2.0 | 2024-09-06 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.2.0 |
+| 5.1.0 | 2024-09-06 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.1.0 |
+| 5.0.1 | 2024-09-03 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.0.1 |
+| 5.0.0 | 2024-09-02 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 5.0.0 |
 | 4.6.2 | 2024-08-29 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.6.2 |
 | 4.6.1 | 2024-08-28 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.6.1 |
 | 4.6.0 | 2024-08-28 | [36501](https://github.com/airbytehq/airbyte/pull/36501) | Bump CDK version to 4.6.0 |
