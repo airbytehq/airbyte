@@ -2687,7 +2687,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -3194,7 +3194,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -3701,7 +3701,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -4208,7 +4208,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -4715,7 +4715,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -5222,7 +5222,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -5729,7 +5729,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -6236,7 +6236,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -6743,7 +6743,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
@@ -7250,7 +7250,7 @@ schemas:
         type:
           - "null"
           - number
-      _pivot:
+      pivot:
         type:
           - "null"
           - string
