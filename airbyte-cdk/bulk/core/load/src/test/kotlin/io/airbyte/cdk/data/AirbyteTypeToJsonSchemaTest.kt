@@ -109,6 +109,28 @@ class AirbyteTypeToJsonSchemaTest {
             .add(cdObj)
             .add(ofType("null", false))
         Assertions.assertEquals(combinedDenormed, propsOut.get("combined_denormalized"))
+
+        val unionArrayOut = JsonNodeFactory.instance.objectNode()
+        unionArrayOut
+            .put("type", "array")
+            .putObject("items")
+            .putArray("oneOf")
+            .add(ofType("string", false))
+            .add(ofType("integer", false))
+        Assertions.assertEquals(ofNullable(unionArrayOut), propsOut.get("union_array"))
+
+        val timeTypeFieldNames =
+            listOf("time", "timestamp", "time_without_timezone", "timestamp_without_timezone")
+        timeTypeFieldNames.forEach { fieldName ->
+            val expected = props.get(fieldName) as ObjectNode
+            if (listOf("date-time", "time").contains(expected.get("format").asText())) {
+                val formatName = expected.get("format").asText().replace("date-time", "timestamp")
+                if (!expected.has("airbyte_type")) {
+                    expected.put("airbyte_type", "${formatName}_with_timezone")
+                }
+            }
+            Assertions.assertEquals(ofNullable(expected), propsOut.get(fieldName))
+        }
     }
 
     private fun ofType(type: String, nullable: Boolean = true): ObjectNode =
