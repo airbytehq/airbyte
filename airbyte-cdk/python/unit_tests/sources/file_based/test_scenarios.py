@@ -11,14 +11,13 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.entrypoint_wrapper import read as entrypoint_read
 from airbyte_cdk.utils import message_utils
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteCatalog
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
@@ -112,10 +111,10 @@ def _verify_read_output(output: EntrypointOutput, scenario: TestScenario[Abstrac
     if hasattr(scenario.source, "cursor_cls") and issubclass(scenario.source.cursor_cls, AbstractConcurrentFileBasedCursor):
         # Only check the last state emitted because we don't know the order the others will be in.
         # This may be needed for non-file-based concurrent scenarios too.
-        assert states[-1].state.stream.stream_state.dict() == expected_states[-1]
+        assert {k: v for k, v in states[-1].state.stream.stream_state.__dict__.items()} == expected_states[-1]
     else:
         for actual, expected in zip(states, expected_states):  # states should be emitted in sorted order
-            assert actual.state.stream.stream_state.dict() == expected
+            assert {k: v for k, v in actual.state.stream.stream_state.__dict__.items()} == expected
 
     if scenario.expected_logs:
         read_logs = scenario.expected_logs.get("read")
@@ -138,8 +137,7 @@ def _verify_state_record_counts(records: List[AirbyteMessage], states: List[Airb
     for state_message in states:
         stream_descriptor = message_utils.get_stream_descriptor(state_message)
         state_record_count_sums[stream_descriptor] = (
-            state_record_count_sums.get(stream_descriptor, 0)
-            + state_message.state.sourceStats.recordCount
+            state_record_count_sums.get(stream_descriptor, 0) + state_message.state.sourceStats.recordCount
         )
 
     for stream, actual_count in actual_record_counts.items():
@@ -154,8 +152,8 @@ def _verify_state_record_counts(records: List[AirbyteMessage], states: List[Airb
 def _verify_analytics(analytics: List[AirbyteMessage], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
     if expected_analytics:
         assert len(analytics) == len(
-            expected_analytics), \
-            f"Number of actual analytics messages ({len(analytics)}) did not match expected ({len(expected_analytics)})"
+            expected_analytics
+        ), f"Number of actual analytics messages ({len(analytics)}) did not match expected ({len(expected_analytics)})"
         for actual, expected in zip(analytics, expected_analytics):
             actual_type, actual_value = actual.trace.analytics.type, actual.trace.analytics.value
             expected_type = expected.type
@@ -182,12 +180,11 @@ def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Tes
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
-        with pytest.raises(expected_exc):
-            output = check(capsys, tmp_path, scenario)
-            if expected_msg:
-                # expected_msg is a string. what's the expected value field?
-                assert expected_msg in output["message"]  # type: ignore
-                assert output["status"] == scenario.expected_check_status
+        with pytest.raises(expected_exc) as exc:
+            check(capsys, tmp_path, scenario)
+
+        if expected_msg:
+            assert expected_msg in exc.value.message
 
     else:
         output = check(capsys, tmp_path, scenario)
@@ -229,7 +226,7 @@ def read(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.full_refresh)),
+        ConfiguredAirbyteCatalogSerializer.load(scenario.configured_catalog(SyncMode.full_refresh)),
     )
 
 
@@ -237,7 +234,7 @@ def read_with_state(scenario: TestScenario[AbstractSource]) -> EntrypointOutput:
     return entrypoint_read(
         scenario.source,
         scenario.config,
-        ConfiguredAirbyteCatalog.parse_obj(scenario.configured_catalog(SyncMode.incremental)),
+        ConfiguredAirbyteCatalogSerializer.load(scenario.configured_catalog(SyncMode.incremental)),
         scenario.input_state(),
     )
 

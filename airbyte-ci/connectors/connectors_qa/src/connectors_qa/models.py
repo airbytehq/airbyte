@@ -17,6 +17,7 @@ ALL_LANGUAGES = [
     ConnectorLanguage.JAVA,
     ConnectorLanguage.LOW_CODE,
     ConnectorLanguage.PYTHON,
+    ConnectorLanguage.MANIFEST_ONLY,
 ]
 
 ALL_TYPES = ["source", "destination"]
@@ -62,7 +63,6 @@ class CheckResult:
 
 
 class Check(ABC):
-
     requires_metadata: bool = True
     runs_on_released_connectors: bool = True
 
@@ -122,6 +122,15 @@ class Check(ABC):
             List[str]: The connector types that the QA check applies to
         """
         return ALL_TYPES
+
+    @property
+    def applies_to_connector_ab_internal_sl(self) -> int:
+        """The connector ab_internal_s that the QA check applies to
+
+        Returns:
+            int: integer value for connector ab_internal_sl level
+        """
+        return 0
 
     @property
     @abstractmethod
@@ -186,6 +195,11 @@ class Check(ABC):
             return self.skip(
                 connector,
                 f"Check does not apply to {connector.cloud_usage} connectors",
+            )
+        if connector.ab_internal_sl < self.applies_to_connector_ab_internal_sl:
+            return self.skip(
+                connector,
+                f"Check does not apply to connectors with sl < {self.applies_to_connector_ab_internal_sl}",
             )
         return self._run(connector)
 

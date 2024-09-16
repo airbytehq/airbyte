@@ -104,6 +104,15 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 | :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 6.2.14 | 2024-09-14 | [45567](https://github.com/airbytehq/airbyte/pull/45567) | Update dependencies |
+| 6.2.13 | 2024-09-07 | [45327](https://github.com/airbytehq/airbyte/pull/45327) | Update dependencies |
+| 6.2.12 | 2024-09-04 | [45126](https://github.com/airbytehq/airbyte/pull/45126) | Test a release candidate release |
+| 6.2.11 | 2024-08-31 | [45025](https://github.com/airbytehq/airbyte/pull/45025) | Update dependencies |
+| 6.2.10 | 2024-08-24 | [44659](https://github.com/airbytehq/airbyte/pull/44659) | Update dependencies |
+| 6.2.9 | 2024-08-17 | [44221](https://github.com/airbytehq/airbyte/pull/44221) | Update dependencies |
+| 6.2.8 | 2024-08-12 | [43753](https://github.com/airbytehq/airbyte/pull/43753) | Update dependencies |
+| 6.2.7 | 2024-08-10 | [43570](https://github.com/airbytehq/airbyte/pull/43570) | Update dependencies |
+| 6.2.6 | 2024-08-03 | [43102](https://github.com/airbytehq/airbyte/pull/43102) | Update dependencies |
 | 6.2.5 | 2024-07-27 | [42682](https://github.com/airbytehq/airbyte/pull/42682) | Update dependencies |
 | 6.2.4 | 2024-07-20 | [42367](https://github.com/airbytehq/airbyte/pull/42367) | Update dependencies |
 | 6.2.3 | 2024-07-13 | [41848](https://github.com/airbytehq/airbyte/pull/41848) | Update dependencies |

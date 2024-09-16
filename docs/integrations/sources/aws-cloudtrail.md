@@ -54,6 +54,13 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.14 | 2024-09-14 | [45574](https://github.com/airbytehq/airbyte/pull/45574) | Update dependencies |
+| 1.0.13 | 2024-09-07 | [45304](https://github.com/airbytehq/airbyte/pull/45304) | Update dependencies |
+| 1.0.12 | 2024-08-31 | [45000](https://github.com/airbytehq/airbyte/pull/45000) | Update dependencies |
+| 1.0.11 | 2024-08-24 | [44361](https://github.com/airbytehq/airbyte/pull/44361) | Update dependencies |
+| 1.0.10 | 2024-08-12 | [43756](https://github.com/airbytehq/airbyte/pull/43756) | Update dependencies |
+| 1.0.9 | 2024-08-10 | [43627](https://github.com/airbytehq/airbyte/pull/43627) | Update dependencies |
+| 1.0.8 | 2024-08-03 | [43140](https://github.com/airbytehq/airbyte/pull/43140) | Update dependencies |
 | 1.0.7 | 2024-07-27 | [42642](https://github.com/airbytehq/airbyte/pull/42642) | Update dependencies |
 | 1.0.6 | 2024-07-20 | [42286](https://github.com/airbytehq/airbyte/pull/42286) | Update dependencies |
 | 1.0.5 | 2024-07-13 | [41846](https://github.com/airbytehq/airbyte/pull/41846) | Update dependencies |

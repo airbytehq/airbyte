@@ -8,7 +8,7 @@ data:
   icon: scylla.svg
   license: MIT
   name: Scylla
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:

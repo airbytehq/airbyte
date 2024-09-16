@@ -7,7 +7,7 @@ from urllib.parse import urlencode
 import freezegun
 import pendulum
 import pytest
-from source_stripe.streams import CustomerBalanceTransactions, Persons, SetupAttempts
+from source_stripe.streams import CustomerBalanceTransactions, SetupAttempts, StripeStream, UpdatedCursorIncrementalStripeSubStream
 
 
 def read_from_stream(stream, sync_mode, state):
@@ -208,9 +208,9 @@ refunds_api_objects = [
                         "reference": "7901352802291512",
                         "reference_status": "available",
                         "reference_type": "acquirer_reference_number",
-                        "type": "refund"
+                        "type": "refund",
                     },
-                    "type": "card"
+                    "type": "card",
                 },
                 "metadata": {},
                 "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
@@ -218,25 +218,15 @@ refunds_api_objects = [
                 "receipt_number": None,
                 "source_transfer_reversal": None,
                 "status": "succeeded",
-                "transfer_reversal": None
+                "transfer_reversal": None,
             },
-            "previous_attributes": {
-                "destination_details": {
-                    "card": {
-                        "reference": None,
-                        "reference_status": "pending"
-                    }
-                }
-            }
+            "previous_attributes": {"destination_details": {"card": {"reference": None, "reference_status": "pending"}}},
         },
         "livemode": False,
         "pending_webhooks": 0,
-        "request": {
-            "id": None,
-            "idempotency_key": None
-        },
-        "type": "charge.refund.updated"
-    }
+        "request": {"id": None, "idempotency_key": None},
+        "type": "charge.refund.updated",
+    },
 ]
 
 
@@ -350,8 +340,7 @@ refunds_api_objects = [
         ),
         (
             {
-                "/v1/events":
-                [
+                "/v1/events": [
                     {
                         "json": {
                             "data": [refunds_api_objects[2]],
@@ -374,9 +363,9 @@ refunds_api_objects = [
                             "reference": "7901352802291512",
                             "reference_status": "available",
                             "reference_type": "acquirer_reference_number",
-                            "type": "refund"
+                            "type": "refund",
                         },
-                        "type": "card"
+                        "type": "card",
                     },
                     "metadata": {},
                     "payment_intent": "pi_3NRL2GEcXtiJtvvh0OiNTz0f",
@@ -385,7 +374,7 @@ refunds_api_objects = [
                     "source_transfer_reversal": None,
                     "status": "succeeded",
                     "transfer_reversal": None,
-                    "updated": 1666518588
+                    "updated": 1666518588,
                 }
             ],
             [{}],
@@ -613,7 +602,13 @@ def test_setup_attempts(requests_mock, incremental_stream_args):
 
 def test_persons_wo_state(requests_mock, stream_args):
     requests_mock.get("/v1/accounts", json={"data": [{"id": 1, "object": "account", "created": 111}]})
-    stream = Persons(**stream_args)
+    stream = UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **stream_args,
+            )
     slices = list(stream.stream_slices("full_refresh"))
     assert slices == [{"parent": {"id": 1, "object": "account", "created": 111}}]
     requests_mock.get("/v1/accounts/1/persons", json={"data": [{"id": 11, "object": "person", "created": 222}]})
@@ -642,7 +637,13 @@ def test_persons_w_state(requests_mock, stream_args):
             "has_more": False,
         },
     )
-    stream = Persons(**stream_args)
+    stream = UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=False, **stream_args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **stream_args,
+            )
     slices = list(stream.stream_slices("incremental", stream_state={"updated": pendulum.parse("2023-08-20T00:00:00").int_timestamp}))
     assert slices == [{}]
     records = [

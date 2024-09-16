@@ -174,14 +174,13 @@ class DebeziumRecordIterator<T>(
 
             // #41647: discard event type with op code 'm'
             if (!isEventTypeHandled(changeEventWithMetadata)) {
-                LOGGER.info { "WAL event type not handled: $next" }
                 continue
             }
 
             hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent
 
             if (isEventLogged) {
-                val source: JsonNode? = changeEventWithMetadata.eventValueAsJson()["source"]
+                val source: JsonNode? = changeEventWithMetadata.eventValueAsJson?.get("source")
                 LOGGER.info {
                     "CDC events queue poll(): " +
                         "returned a change event with \"source\": $source."
@@ -332,7 +331,7 @@ class DebeziumRecordIterator<T>(
     companion object {
         val pollLogMaxTimeInterval: Duration = Duration.ofSeconds(5)
         const val POLL_LOG_MAX_CALLS_INTERVAL = 1_000
-
+        private val unhandledFoundTypeList: MutableList<String> = mutableListOf()
         /**
          * We are not interested in message events. According to debezium
          * [documentation](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-create-events)
@@ -340,8 +339,14 @@ class DebeziumRecordIterator<T>(
          * snapshots) t: truncate, m: message
          */
         fun isEventTypeHandled(event: ChangeEventWithMetadata): Boolean {
-            event.eventValueAsJson()["op"]?.asText()?.let {
-                return it in listOf("c", "u", "d", "r", "t")
+            event.eventValueAsJson?.get("op")?.asText()?.let {
+                val handled = it in listOf("c", "u", "d", "t")
+                if (!handled && !unhandledFoundTypeList.contains(it)) {
+                    unhandledFoundTypeList.add(it)
+                    LOGGER.info { "WAL event type not handled: $it" }
+                    LOGGER.debug { "event: $event" }
+                }
+                return handled
             }
                 ?: return false
         }
