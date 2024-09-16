@@ -39,7 +39,8 @@ interface CheckpointManager<K, T> {
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationStream, T> {
+abstract class StreamsCheckpointManager<T, U>() :
+    CheckpointManager<DestinationStream.Descriptor, T> {
     private val log = KotlinLogging.logger {}
 
     abstract val catalog: DestinationCatalog
@@ -48,18 +49,22 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
     abstract val outputConsumer: Consumer<U>
 
     data class GlobalCheckpoint<T>(
-        val streamIndexes: List<Pair<DestinationStream, Long>>,
+        val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         val checkpointMessage: T
     )
 
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
-        ConcurrentHashMap<DestinationStream, ConcurrentLinkedHashMap<Long, T>> =
+        ConcurrentHashMap<DestinationStream.Descriptor, ConcurrentLinkedHashMap<Long, T>> =
         ConcurrentHashMap()
     private val globalCheckpoints: ConcurrentLinkedQueue<GlobalCheckpoint<T>> =
         ConcurrentLinkedQueue()
 
-    override fun addStreamCheckpoint(key: DestinationStream, index: Long, checkpointMessage: T) {
+    override fun addStreamCheckpoint(
+        key: DestinationStream.Descriptor,
+        index: Long,
+        checkpointMessage: T
+    ) {
         if (checkpointsAreGlobal.updateAndGet { it == true } != false) {
             throw IllegalStateException(
                 "Global checkpoints cannot be mixed with non-global checkpoints"
@@ -93,7 +98,7 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
 
     // TODO: Is it an error if we don't get all the streams every time?
     override fun addGlobalCheckpoint(
-        keyIndexes: List<Pair<DestinationStream, Long>>,
+        keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         checkpointMessage: T
     ) {
         if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
@@ -149,8 +154,8 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
 
     private fun flushStreamCheckpoints() {
         for (stream in catalog.streams) {
-            val manager = streamsManager.getManager(stream)
-            val streamCheckpoints = streamCheckpoints[stream] ?: return
+            val manager = streamsManager.getManager(stream.descriptor)
+            val streamCheckpoints = streamCheckpoints[stream.descriptor] ?: return
             for (index in streamCheckpoints.keys) {
                 if (manager.areRecordsPersistedUntil(index)) {
                     val checkpointMessage =

@@ -50,7 +50,7 @@ class ProcessBatchTaskFactory(
         return ProcessBatchTask(
             batchEnvelope,
             streamLoader,
-            streamsManager.getManager(streamLoader.stream),
+            streamsManager.getManager(streamLoader.stream.descriptor),
             taskLauncher
         )
     }

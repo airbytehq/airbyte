@@ -47,7 +47,7 @@ class CloseStreamTaskFactory(
     fun make(taskLauncher: DestinationTaskLauncher, streamLoader: StreamLoader): CloseStreamTask {
         return CloseStreamTask(
             streamLoader,
-            streamsManager.getManager(streamLoader.stream),
+            streamsManager.getManager(streamLoader.stream.descriptor),
             taskLauncher
         )
     }

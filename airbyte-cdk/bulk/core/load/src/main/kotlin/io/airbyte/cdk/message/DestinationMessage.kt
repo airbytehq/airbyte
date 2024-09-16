@@ -35,11 +35,11 @@ sealed interface DestinationMessage {
 
 /** Records. */
 sealed interface DestinationStreamAffinedMessage : DestinationMessage {
-    val stream: DestinationStream
+    val stream: DestinationStream.Descriptor
 }
 
 data class DestinationRecord(
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     val data: AirbyteValue,
     val emittedAtMs: Long,
     val meta: Meta?,
@@ -70,8 +70,8 @@ data class DestinationRecord(
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
                 AirbyteRecordMessage()
-                    .withStream(stream.descriptor.name)
-                    .withNamespace(stream.descriptor.namespace)
+                    .withStream(stream.name)
+                    .withNamespace(stream.namespace)
                     .withEmittedAt(emittedAtMs)
                     .withData(AirbyteValueToJson().convert(data))
                     .also {
@@ -83,7 +83,7 @@ data class DestinationRecord(
 }
 
 private fun statusToProtocolMessage(
-    stream: DestinationStream,
+    stream: DestinationStream.Descriptor,
     emittedAtMs: Long,
     status: AirbyteStreamStatus,
 ): AirbyteMessage =
@@ -95,13 +95,13 @@ private fun statusToProtocolMessage(
                 .withEmittedAt(emittedAtMs.toDouble())
                 .withStreamStatus(
                     AirbyteStreamStatusTraceMessage()
-                        .withStreamDescriptor(stream.descriptor.asProtocolObject())
+                        .withStreamDescriptor(stream.asProtocolObject())
                         .withStatus(status)
                 )
         )
 
 data class DestinationStreamComplete(
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     val emittedAtMs: Long,
 ) : DestinationStreamAffinedMessage {
     override fun asProtocolMessage(): AirbyteMessage =
@@ -109,7 +109,7 @@ data class DestinationStreamComplete(
 }
 
 data class DestinationStreamIncomplete(
-    override val stream: DestinationStream,
+    override val stream: DestinationStream.Descriptor,
     val emittedAtMs: Long,
 ) : DestinationStreamAffinedMessage {
     override fun asProtocolMessage(): AirbyteMessage =
@@ -120,12 +120,12 @@ data class DestinationStreamIncomplete(
 sealed interface CheckpointMessage : DestinationMessage {
     data class Stats(val recordCount: Long)
     data class Checkpoint(
-        val stream: DestinationStream,
+        val stream: DestinationStream.Descriptor,
         val state: JsonNode,
     ) {
         fun asProtocolObject(): AirbyteStreamState =
             AirbyteStreamState()
-                .withStreamDescriptor(stream.descriptor.asProtocolObject())
+                .withStreamDescriptor(stream.asProtocolObject())
                 .withStreamState(state)
     }
 
@@ -218,7 +218,7 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         name = message.record.stream,
                     )
                 DestinationRecord(
-                    stream = stream,
+                    stream = stream.descriptor,
                     data = JsonToAirbyteValue().convert(message.record.data, stream.schema),
                     emittedAtMs = message.record.emittedAt,
                     meta =
@@ -246,9 +246,15 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                 if (message.trace.type == AirbyteTraceMessage.Type.STREAM_STATUS) {
                     when (status.status) {
                         AirbyteStreamStatus.COMPLETE ->
-                            DestinationStreamComplete(stream, message.trace.emittedAt.toLong())
+                            DestinationStreamComplete(
+                                stream.descriptor,
+                                message.trace.emittedAt.toLong()
+                            )
                         AirbyteStreamStatus.INCOMPLETE ->
-                            DestinationStreamIncomplete(stream, message.trace.emittedAt.toLong())
+                            DestinationStreamIncomplete(
+                                stream.descriptor,
+                                message.trace.emittedAt.toLong()
+                            )
                         else -> Undefined
                     }
                 } else {
@@ -286,7 +292,7 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
     private fun fromAirbyteStreamState(streamState: AirbyteStreamState): Checkpoint {
         val descriptor = streamState.streamDescriptor
         return Checkpoint(
-            stream = catalog.getStream(namespace = descriptor.namespace, name = descriptor.name),
+            stream = DestinationStream.Descriptor(descriptor.namespace, descriptor.name),
             state = streamState.streamState
         )
     }

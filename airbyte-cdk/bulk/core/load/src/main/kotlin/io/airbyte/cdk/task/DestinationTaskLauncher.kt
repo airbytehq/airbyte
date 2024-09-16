@@ -27,7 +27,8 @@ import jakarta.inject.Singleton
 class DestinationTaskLauncher(
     private val catalog: DestinationCatalog,
     override val taskRunner: TaskRunner,
-    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>,
+    private val checkpointManager:
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
@@ -87,7 +88,8 @@ class DestinationTaskLauncher(
 class DestinationTaskLauncherFactory(
     private val catalog: DestinationCatalog,
     private val taskRunner: TaskRunner,
-    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>,
+    private val checkpointManager:
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,

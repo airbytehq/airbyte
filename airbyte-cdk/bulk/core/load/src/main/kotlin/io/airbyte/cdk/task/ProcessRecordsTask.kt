@@ -86,7 +86,7 @@ class ProcessRecordsTaskFactory(
     ): ProcessRecordsTask {
         return ProcessRecordsTask(
             streamLoader,
-            streamsManager.getManager(streamLoader.stream),
+            streamsManager.getManager(streamLoader.stream.descriptor),
             taskLauncher,
             fileEnvelope,
             deserializer,

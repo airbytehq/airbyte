@@ -76,8 +76,8 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
         return AirbyteStreamState()
             .withStreamDescriptor(
                 StreamDescriptor()
-                    .withNamespace(checkpoint.stream.descriptor.namespace)
-                    .withName(checkpoint.stream.descriptor.name)
+                    .withNamespace(checkpoint.stream.namespace)
+                    .withName(checkpoint.stream.name)
             )
             .withStreamState(checkpoint.state)
     }

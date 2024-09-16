@@ -33,13 +33,13 @@ class DestinationMessageQueueReader(
         var totalBytesRead = 0L
         var recordsRead = 0L
         while (totalBytesRead < maxBytes) {
-            when (val wrapped = messageQueue.getChannel(key).receive()) {
+            when (val wrapped = messageQueue.getChannel(key.descriptor).receive()) {
                 is StreamRecordWrapped -> {
                     totalBytesRead += wrapped.sizeBytes
                     emit(wrapped)
                 }
                 is StreamCompleteWrapped -> {
-                    messageQueue.getChannel(key).close()
+                    messageQueue.getChannel(key.descriptor).close()
                     emit(wrapped)
                     log.info { "Read end-of-stream for $key" }
                     return@flow
