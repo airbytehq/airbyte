@@ -109,7 +109,7 @@ ___
 
 - Error: `could not create rest config`
 
-This error can happen in cases `abctl` doesn't have permission to create file and folders in your system.
+This error can happen when `abctl` does not have permission to create file and folders in your system.
 
 ```shell
 unable to initialize local command: error communicating with kubernetes: 
