@@ -167,6 +167,6 @@ All streams will be indexed/stored into a table with the same name. The table wi
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.0   | 2024-05-13 | [#45428](https://github.com/airbytehq/airbyte/pull/45428) | Add support for PGVector as a Vector destination.
+| 0.1.0   | 2024-09-16 | [#45428](https://github.com/airbytehq/airbyte/pull/45428)     | Add support for PGVector as a Vector destination.
 
 </details>
