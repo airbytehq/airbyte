@@ -4,18 +4,22 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.ColumnDefinition
 import io.airbyte.cdk.integrations.destination.jdbc.TableDefinition
-import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler.Companion.fromIsNullableIsoString
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
+import io.airbyte.integrations.destination.snowflake.SnowflakeDatabaseUtils.changeDataTypeFromShowQuery
 import java.util.*
 import lombok.SneakyThrows
+import net.snowflake.client.jdbc.SnowflakeSQLException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 @SuppressFBWarnings("NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE")
 class SnowflakeV1V2Migrator(
@@ -23,22 +27,30 @@ class SnowflakeV1V2Migrator(
     private val database: JdbcDatabase,
     private val databaseName: String
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
+
+    private val LOGGER: Logger =
+        LoggerFactory.getLogger(SnowflakeV1V2Migrator::class.java)
+
     @SneakyThrows
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
-        return database
-            .queryJsons(
+
+        try {
+            val showSchemaQuery =
                 """
-                SELECT SCHEMA_NAME
-                FROM information_schema.schemata
-                WHERE schema_name = ?
-                AND catalog_name = ?;
-                
-                """.trimIndent(),
-                streamConfig!!.id.rawNamespace,
-                databaseName
-            )
-            .isNotEmpty()
+                SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE "$databaseName";
+                """.trimIndent()
+            val showSchemaResult = database.queryJsons(
+                                    showSchemaQuery,
+                                )
+            return showSchemaResult.isNotEmpty()
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
+                return false
+            } else {
+                throw e
+            }
+        }
     }
 
     override fun schemaMatchesExpectation(
@@ -59,44 +71,44 @@ class SnowflakeV1V2Migrator(
         // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC
         // translates
         // VARIANT as VARCHAR
-        val columns =
-            database
-                .queryJsons(
+
+        try {
+            val showColumnsQuery =
                     """
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_catalog = ?
-              AND table_schema = ?
-              AND table_name = ?
-            ORDER BY ordinal_position;
-            
-            """.trimIndent(),
-                    databaseName,
-                    namespace!!,
-                    tableName!!
-                )
+                       SHOW COLUMNS IN TABLE "$databaseName"."$namespace"."$tableName";
+                    """.trimIndent()
+            val showColumnsResult = database.queryJsons(
+                showColumnsQuery
+            )
+            val columnsFromShowQuery = showColumnsResult
                 .stream()
                 .collect(
                     { LinkedHashMap() },
                     { map: java.util.LinkedHashMap<String, ColumnDefinition>, row: JsonNode ->
-                        map[row["COLUMN_NAME"].asText()] =
+                        map[row["column_name"].asText()] =
                             ColumnDefinition(
-                                row["COLUMN_NAME"].asText(),
-                                row["DATA_TYPE"].asText(),
+                                row["column_name"].asText(),
+                                changeDataTypeFromShowQuery(ObjectMapper().readTree(row["data_type"].asText()).path("type").asText()),
                                 0,
-                                fromIsNullableIsoString(row["IS_NULLABLE"].asText())
+                                row["null?"].asText().toBoolean(),
                             )
                     },
-                    {
-                        obj: java.util.LinkedHashMap<String, ColumnDefinition>,
-                        m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
+                    { obj: java.util.LinkedHashMap<String, ColumnDefinition>,
+                      m: java.util.LinkedHashMap<String, ColumnDefinition>? ->
                         obj.putAll(m!!)
-                    }
+                    },
                 )
-        return if (columns.isEmpty()) {
-            Optional.empty()
-        } else {
-            Optional.of(TableDefinition(columns))
+            return if (columnsFromShowQuery.isEmpty()) {
+                Optional.empty()
+            } else {
+                Optional.of(TableDefinition(columnsFromShowQuery))
+            }
+        } catch (e: SnowflakeSQLException) {
+            if(e.message != null && e.message!!.contains("does not exist")) {
+                return Optional.empty()
+            } else {
+                throw e
+            }
         }
     }
 

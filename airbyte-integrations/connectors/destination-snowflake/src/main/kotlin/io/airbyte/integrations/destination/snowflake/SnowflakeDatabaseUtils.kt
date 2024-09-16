@@ -293,4 +293,16 @@ object SnowflakeDatabaseUtils {
             AirbyteProtocolType.UNKNOWN -> "VARIANT"
         }
     }
+
+    fun changeDataTypeFromShowQuery(dataType: String): String {
+
+        if(dataType.equals("FIXED")) {
+            return "NUMBER"
+        } else if(dataType.equals("REAL")) {
+            return "FLOAT"
+        } else {
+            return dataType
+        }
+    }
+
 }

@@ -5,7 +5,8 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.44.19'
     features = ['db-destinations', 's3-destinations', 'typing-deduping']
-    useLocalCdk = false
+//TODO: Change to false before merging to master
+    useLocalCdk = true
 }
 
 java {
