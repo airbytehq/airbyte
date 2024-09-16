@@ -5,7 +5,7 @@ import json
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
@@ -19,7 +19,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
 
@@ -49,7 +48,16 @@ class ConcurrentCdkSource(ConcurrentSourceAdapter):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [StreamFacade(s, LegacyStream(), FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=self.message_repository), NeverLogSliceLogger(), s._logger) for s in self._streams]
+        return [
+            StreamFacade(
+                s,
+                LegacyStream(),
+                FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=self.message_repository),
+                NeverLogSliceLogger(),
+                s._logger,
+            )
+            for s in self._streams
+        ]
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(connectionSpecification={})
@@ -58,7 +66,13 @@ class ConcurrentCdkSource(ConcurrentSourceAdapter):
         return ConfiguredAirbyteCatalog(
             streams=[
                 ConfiguredAirbyteStream(
-                    stream=StreamFacade(s, LegacyStream(), FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository()), NeverLogSliceLogger(), s._logger).as_airbyte_stream(),
+                    stream=StreamFacade(
+                        s,
+                        LegacyStream(),
+                        FinalStateCursor(stream_name=s.name, stream_namespace=s.namespace, message_repository=InMemoryMessageRepository()),
+                        NeverLogSliceLogger(),
+                        s._logger,
+                    ).as_airbyte_stream(),
                     sync_mode=SyncMode.full_refresh,
                     destination_sync_mode=DestinationSyncMode.overwrite,
                 )
