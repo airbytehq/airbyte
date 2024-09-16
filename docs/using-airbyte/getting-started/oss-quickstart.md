@@ -35,7 +35,7 @@ If setting up an Airbyte server does not fit your use case needs (i.e. you're us
 
 :::tip
 
-Got stuck or faced any error, visit the [deployment troubleshooting page](../../deploying-airbyte/troubleshoot-deploy).
+For troubleshooting assistance, visit our [deployment troubleshooting guide](../../deploying-airbyte/troubleshoot-deploy).
 
 :::
 
