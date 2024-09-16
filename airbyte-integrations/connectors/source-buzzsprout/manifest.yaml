@@ -138,7 +138,7 @@ spec:
         airbyte_secret: true
       podcast_id:
         type: string
-        description: Podcast ID found in `my/profile/api`
+        description: Podcast ID found in `https://www.buzzsprout.com/my/profile/api`
         title: Podcast ID
         order: 1
       start_date:

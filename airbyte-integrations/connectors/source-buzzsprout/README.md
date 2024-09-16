@@ -1,10 +1,13 @@
 # Buzzsprout
 This directory contains the manifest-only connector for `source-buzzsprout`.
 
-Website: https://www.buzzsprout.com/
-API Docs: https://github.com/buzzsprout/buzzsprout-api/tree/master/sections
-Auth Docs: https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-file#authentication
-API Keys page: https://www.buzzsprout.com/my/profile/api
+## Documentation reference:
+Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master/sections` for API documentation
+
+## Authentication setup
+`Source-algolia` uses API keys and podcast id for its authentication,
+Visit `https://www.buzzsprout.com/my/profile/api` for getting api key and podcast id
+Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-file#authentication` for knowing more about authentication.
 
 ## Usage
 There are multiple ways to use this connector:
