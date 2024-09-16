@@ -25,6 +25,7 @@ class CdcPartitionCreator<A : CdcSharedState>(val sharedState: A) : PartitionsCr
         if (cdcReadyToRun().not()) {
             return emptyList()
         }
+
         return listOf(CdcPartitionReader(sharedState))
         // TODO : Add logic to understand when debezium is done
         // TODO : Get schema history, target offset, if offset is invalid
