@@ -94,7 +94,7 @@ ___
 - Error: `unable to read values from yaml file`
 
 :::tip
-Check if you're in the right directory or informing the path to the file correctly.
+Verify that you are in the correct directory or informing the path to the file correctly.
 :::
 
 ```shell
