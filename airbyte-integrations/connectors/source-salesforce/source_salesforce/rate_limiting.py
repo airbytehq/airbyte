@@ -78,6 +78,8 @@ class SalesforceErrorHandler(ErrorHandler):
             )
         elif isinstance(response, requests.Response):
             if response.ok:
+                if self._is_bulk_job_status_check(response) and response.json().get('state') == 'Failed':
+                    raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
@@ -125,6 +127,11 @@ class SalesforceErrorHandler(ErrorHandler):
             FailureType.system_error,
             f"An error occurred: {response.content.decode()}",
         )
+
+    @staticmethod
+    def _is_bulk_job_status_check(response: requests.Response) -> bool:
+        # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
+        return bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
 
     @staticmethod
     def _is_bulk_job_creation(response: requests.Response) -> bool:
