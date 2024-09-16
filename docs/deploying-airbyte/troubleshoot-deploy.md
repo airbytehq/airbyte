@@ -220,4 +220,4 @@ On Udemy, [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/
 **Bug Reports:**<br/>If you find an issue with the `abctl` command, please report it as a github
 issue [here](https://github.com/airbytehq/airbyte/issues) with the type of `🐛 [abctl] Report an issue with the abctl tool`.
 
-**Releases:**<br/>If you'd like to select which release of abctl to run, you can find the list of releases [here](https://github.com/airbytehq/abctl/releases/).
+**Releases:** To install a prior release of `abctl`, you can find the list of releases [here](https://github.com/airbytehq/abctl/releases/).
