@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.job_tracker import ConcurrentJobLimitReached, JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 LOGGER = logging.getLogger("airbyte")
@@ -100,8 +101,11 @@ class AsyncJobOrchestrator:
         self._slice_iterator = iter(slices)
         self._running_partitions: List[AsyncPartition] = []
         self._job_tracker = job_tracker
-        self._has_started_a_job = False
         self._exceptions_to_break_on: Tuple[Type[Exception], ...] = tuple(exceptions_to_break_on)
+
+        self._has_started_a_job = False
+        self._has_consumed_every_slice = True
+        self._non_breaking_exceptions: List[Exception] = []
 
     def _replace_failed_jobs(self, partition: AsyncPartition) -> None:
         failed_status_jobs = (AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT)
@@ -131,6 +135,8 @@ class AsyncJobOrchestrator:
                 job = self._start_job(_slice)
                 self._has_started_a_job = True
                 self._running_partitions.append(AsyncPartition([job], _slice))
+            else:
+                self._has_consumed_every_slice = True
         except ConcurrentJobLimitReached:
             if at_least_one_slice_consumed_from_slice_iterator_during_current_iteration:
                 # this means a slice has been consumed and we need to put it back at the beginning of the _slice_iterator
@@ -302,22 +308,26 @@ class AsyncJobOrchestrator:
             except self._exceptions_to_break_on as e:
                 self._abort_all_running_jobs()
                 raise e
-            except AirbyteTracedException as e:
-                if e.failure_type == FailureType.config_error:
-                    LOGGER.error(f"Failed to start the Job because of a config error. Breaking the stream because of: {e}, traceback: {traceback.format_exc()}")
-                    raise e
-                self._log_non_breaking_error(e)
             except Exception as e:
-                self._log_non_breaking_error(e)
-            if self._has_started_a_job and not self._running_partitions:
+                self._handle_non_breaking_error(e)
+            if (self._has_started_a_job or self._has_consumed_every_slice) and not self._running_partitions:
                 break
 
             self._update_jobs_status()
             yield from self._process_running_partitions_and_yield_completed_ones()
             self._wait_on_status_update()
 
-    def _log_non_breaking_error(self, exception: Exception) -> None:
+        if self._non_breaking_exceptions:
+            # We didn't break on non_breaking_exception, but we still need to raise an exception so that the stream is flagged as incomplete
+            raise AirbyteTracedException(
+                message="",
+                internal_message="\n".join([filter_secrets(exception.__repr__()) for exception in self._non_breaking_exceptions]),
+                failure_type=FailureType.config_error,
+            )
+
+    def _handle_non_breaking_error(self, exception: Exception) -> None:
         LOGGER.error(f"Failed to start the Job: {exception}, traceback: {traceback.format_exc()}")
+        self._non_breaking_exceptions.append(exception)
 
     def _abort_all_running_jobs(self) -> None:
         [self._job_repository.abort(job) for job in self._get_running_jobs() | self._get_timeout_jobs()]

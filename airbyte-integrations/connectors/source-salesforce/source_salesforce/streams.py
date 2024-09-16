@@ -19,7 +19,6 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk import (
     BearerAuthenticator,
-    DeclarativeStream,
     CursorPaginationStrategy,
     DeclarativeStream,
     DefaultPaginator,
@@ -673,10 +672,7 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=BulkDatetimeStreamSlicer(self._stream_slicer_cursor),
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository,
-                    stream_slices,
-                    self._job_tracker,
-                    exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, self._job_tracker, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
