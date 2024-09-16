@@ -308,6 +308,11 @@ class AsyncJobOrchestrator:
             except self._exceptions_to_break_on as e:
                 self._abort_all_running_jobs()
                 raise e
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    LOGGER.error(f"Failed to start the Job because of a config error. Breaking the stream because of: {e}, traceback: {traceback.format_exc()}")
+                    raise e
+                self._handle_non_breaking_error(e)
             except Exception as e:
                 self._handle_non_breaking_error(e)
             if (self._has_started_a_job or self._has_consumed_every_slice) and not self._running_partitions:
