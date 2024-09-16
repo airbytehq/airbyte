@@ -4,12 +4,13 @@
 
 from unittest.mock import MagicMock
 
-import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
+import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, ResponseStatus
-from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 
 SOME_BACKOFF_TIME = 60
 
@@ -19,75 +20,69 @@ SOME_BACKOFF_TIME = 60
     [
         (
             "test_chain_retrier_ok_ok",
-            response_status.SUCCESS,
-            response_status.SUCCESS,
-            response_status.SUCCESS,
+            ErrorResolution(
+                response_action=ResponseAction.SUCCESS,
+                failure_type=None,
+                error_message=None,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.SUCCESS,
+                failure_type=None,
+                error_message=None,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.SUCCESS,
+                failure_type=None,
+                error_message=None,
+            ),
         ),
         (
             "test_chain_retrier_ignore_fail",
-            response_status.IGNORE,
-            response_status.FAIL,
-            response_status.IGNORE,
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.FAIL,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
         ),
         (
             "test_chain_retrier_fail_ignore",
-            response_status.FAIL,
-            response_status.IGNORE,
-            response_status.IGNORE,
+            ErrorResolution(
+                response_action=ResponseAction.FAIL,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
         ),
         (
             "test_chain_retrier_ignore_retry",
-            response_status.IGNORE,
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            response_status.IGNORE,
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.RETRY,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
         ),
         (
-            "test_chain_retrier_retry_ignore",
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            response_status.IGNORE,
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-        ),
-        (
-            "test_chain_retrier_retry_fail",
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            response_status.FAIL,
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-        ),
-        (
-            "test_chain_retrier_fail_retry",
-            response_status.FAIL,
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-        ),
-        (
-            "test_chain_retrier_ignore_ok",
-            response_status.IGNORE,
-            response_status.SUCCESS,
-            response_status.IGNORE,
-        ),
-        (
-            "test_chain_retrier_ok_ignore",
-            response_status.SUCCESS,
-            response_status.IGNORE,
-            response_status.SUCCESS,
-        ),
-        (
-            "test_chain_retrier_ok_retry",
-            response_status.SUCCESS,
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            response_status.SUCCESS,
-        ),
-        (
-            "test_chain_retrier_retry_ok",
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            response_status.SUCCESS,
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-        ),
-        (
-            "test_chain_retrier_return_first_retry",
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.retry(2 * SOME_BACKOFF_TIME),
-            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            "test_chain_retrier_ignore_success",
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.SUCCESS,
+            ),
+            ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+            ),
         ),
     ],
 )
@@ -96,12 +91,29 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
     first_error_handler.interpret_response.return_value = first_handler_behavior
     second_error_handler = MagicMock()
     second_error_handler.interpret_response.return_value = second_handler_behavior
-    second_error_handler.interpret_response.return_value = second_handler_behavior
     retriers = [first_error_handler, second_error_handler]
     retrier = CompositeErrorHandler(error_handlers=retriers, parameters={})
     response_mock = MagicMock()
-    response_mock.ok = first_handler_behavior == response_status.SUCCESS or second_handler_behavior == response_status.SUCCESS
+    response_mock.ok = first_handler_behavior.response_action == ResponseAction.SUCCESS or second_handler_behavior == ResponseAction.SUCCESS
     assert retrier.interpret_response(response_mock) == expected_behavior
+
+
+def test_given_unmatched_response_or_exception_then_return_default_error_resolution():
+    composite_error_handler = CompositeErrorHandler(
+        error_handlers=[
+            DefaultErrorHandler(
+                response_filters=[],
+                parameters={},
+                config={},
+            )
+        ],
+        parameters={},
+    )
+
+    error_resolution = composite_error_handler.interpret_response(ValueError("Any error"))
+
+    assert error_resolution.response_action == ResponseAction.RETRY
+    assert error_resolution.failure_type == FailureType.system_error
 
 
 def test_composite_error_handler_no_handlers():
@@ -131,8 +143,8 @@ def test_error_handler_compatibility_simple():
         ],
         parameters={},
     )
-    assert default_error_handler.interpret_response(response_mock).action == expected_action
-    assert composite_error_handler.interpret_response(response_mock).action == expected_action
+    assert default_error_handler.interpret_response(response_mock).response_action == expected_action
+    assert composite_error_handler.interpret_response(response_mock).response_action == expected_action
 
 
 @pytest.mark.parametrize(
@@ -169,17 +181,18 @@ def test_error_handler_compatibility_multiple_filters(test_name, status_code, ex
         ],
         parameters={},
     )
-    actual_action_multiple_filters = error_handler_with_multiple_filters.interpret_response(response_mock).action
+    actual_action_multiple_filters = error_handler_with_multiple_filters.interpret_response(response_mock).response_action
     assert actual_action_multiple_filters == expected_action
 
-    actual_action_single_filters = composite_error_handler_with_single_filters.interpret_response(response_mock).action
+    actual_action_single_filters = composite_error_handler_with_single_filters.interpret_response(response_mock).response_action
     assert actual_action_single_filters == expected_action
 
 
 def create_response(status_code: int, headers=None, json_body=None):
     url = "https://airbyte.io"
 
-    response_mock = MagicMock()
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.request = MagicMock(spec=requests.PreparedRequest)
     response_mock.status_code = status_code
     response_mock.ok = status_code < 400 or status_code >= 600
     response_mock.url = url

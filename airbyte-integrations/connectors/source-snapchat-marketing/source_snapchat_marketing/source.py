@@ -2,101 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
-from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
-import backoff
-import pendulum
-import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
 
-# https://marketingapi.snapchat.com/docs/#core-metrics
-# https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
-METRICS = [
-    "android_installs",
-    "attachment_avg_view_time_millis",
-    "attachment_impressions",
-    "attachment_quartile_1",
-    "attachment_quartile_2",
-    "attachment_quartile_3",
-    "attachment_total_view_time_millis",
-    "attachment_view_completion",
-    "avg_screen_time_millis",
-    "avg_view_time_millis",
-    "impressions",
-    "ios_installs",
-    "quartile_1",
-    "quartile_2",
-    "quartile_3",
-    "screen_time_millis",
-    "spend",
-    "swipe_up_percent",
-    "swipes",
-    "total_installs",
-    "video_views",
-    "video_views_time_based",
-    "video_views_15s",
-    "view_completion",
-    "view_time_millis",
-    "paid_impressions",
-    "earned_impressions",
-    "total_impressions",
-    "play_time_millis",
-    "shares",
-    "saves",
-    "native_leads",
-    "conversion_purchases",
-    "conversion_purchases_value",
-    "conversion_save",
-    "conversion_start_checkout",
-    "conversion_add_cart",
-    "conversion_view_content",
-    "conversion_add_billing",
-    # 'conversion_signups',  # Invalid query parameters in request URL
-    "conversion_searches",
-    "conversion_level_completes",
-    "conversion_app_opens",
-    "conversion_page_views",
-    "conversion_subscribe",
-    "conversion_ad_click",
-    "conversion_ad_view",
-    "conversion_complete_tutorial",
-    "conversion_invite",
-    "conversion_login",
-    "conversion_share",
-    "conversion_reserve",
-    "conversion_achievement_unlocked",
-    "conversion_add_to_wishlist",
-    "conversion_spend_credits",
-    "conversion_rate",
-    "conversion_start_trial",
-    "conversion_list_view",
-    "custom_event_1",
-    "custom_event_2",
-    "custom_event_3",
-    "custom_event_4",
-    "custom_event_5",
-    "story_opens",
-    "story_completes",
-]
+WARNING: Do not modify this file.
+"""
 
-METRICS_NOT_HOURLY = [
-    "attachment_frequency",
-    "attachment_uniques",
-    "frequency",
-    "uniques",
-    "total_reach",
-    "earned_reach",
-]
 
 logger = logging.getLogger("airbyte")
 

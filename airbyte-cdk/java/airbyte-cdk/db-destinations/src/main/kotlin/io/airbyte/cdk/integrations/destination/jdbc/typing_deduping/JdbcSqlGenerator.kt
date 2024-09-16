@@ -5,30 +5,20 @@ package io.airbyte.cdk.integrations.destination.jdbc.typing_deduping
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
+import io.airbyte.cdk.integrations.base.JavaBaseConstants.DestinationColumns
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType
-import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType
+import io.airbyte.integrations.base.destination.typing_deduping.*
 import io.airbyte.integrations.base.destination.typing_deduping.Array
-import io.airbyte.integrations.base.destination.typing_deduping.ColumnId
-import io.airbyte.integrations.base.destination.typing_deduping.Sql
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.transactionally
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator
-import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.integrations.base.destination.typing_deduping.Struct
-import io.airbyte.integrations.base.destination.typing_deduping.Union
-import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf
-import io.airbyte.protocol.models.v0.DestinationSyncMode
 import java.sql.Timestamp
 import java.time.Instant
-import java.util.*
-import kotlin.Any
-import kotlin.Boolean
-import kotlin.IllegalArgumentException
+import java.util.Locale
+import java.util.Optional
 import kotlin.Int
 import org.jooq.Condition
+import org.jooq.CreateTableColumnStep
 import org.jooq.DSLContext
 import org.jooq.DataType
 import org.jooq.Field
@@ -37,6 +27,7 @@ import org.jooq.Name
 import org.jooq.Record
 import org.jooq.SQLDialect
 import org.jooq.SelectConditionStep
+import org.jooq.SelectFieldOrAsterisk
 import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -45,7 +36,9 @@ abstract class JdbcSqlGenerator
 @JvmOverloads
 constructor(
     protected val namingTransformer: NamingConventionTransformer,
-    private val cascadeDrop: Boolean = false
+    private val cascadeDrop: Boolean = false,
+    @VisibleForTesting
+    internal val columns: DestinationColumns = DestinationColumns.V2_WITH_GENERATION,
 ) : SqlGenerator {
     protected val cdcDeletedAtColumn: ColumnId = buildColumnId("_ab_cdc_deleted_at")
 
@@ -199,6 +192,9 @@ constructor(
             SQLDataType.VARCHAR(36).nullable(false)
         metaColumns[JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT] =
             timestampWithTimeZoneType.nullable(false)
+        if (columns == DestinationColumns.V2_WITH_GENERATION) {
+            metaColumns[JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID] = SQLDataType.BIGINT
+        }
         if (includeMetaColumn)
             metaColumns[JavaBaseConstants.COLUMN_NAME_AB_META] = structType.nullable(false)
         return metaColumns
@@ -231,13 +227,13 @@ constructor(
 
     @VisibleForTesting
     fun rawTableCondition(
-        syncMode: DestinationSyncMode,
+        postImportAction: ImportType,
         isCdcDeletedAtPresent: Boolean,
         minRawTimestamp: Optional<Instant>
     ): Condition {
         var condition: Condition =
             DSL.field(DSL.name(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT)).isNull()
-        if (syncMode == DestinationSyncMode.APPEND_DEDUP) {
+        if (postImportAction == ImportType.DEDUPE) {
             if (isCdcDeletedAtPresent) {
                 condition = condition.or(cdcDeletedAtNotNullCondition())
             }
@@ -332,38 +328,50 @@ constructor(
         rawTableName: Name,
         namespace: String,
         tableName: String
-    ) =
-        dslContext
-            .createTable(rawTableName)
-            .column(
-                JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-                SQLDataType.VARCHAR(36).nullable(false),
+    ): String {
+        val hasGenerationId = columns == DestinationColumns.V2_WITH_GENERATION
+
+        val createTable: CreateTableColumnStep =
+            dslContext
+                .createTable(rawTableName)
+                .column(
+                    JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+                    SQLDataType.VARCHAR(36).nullable(false),
+                )
+                .column(
+                    JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+                    timestampWithTimeZoneType.nullable(false),
+                )
+                .column(
+                    JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+                    timestampWithTimeZoneType.nullable(true),
+                )
+                .column(JavaBaseConstants.COLUMN_NAME_DATA, structType.nullable(false))
+                .column(JavaBaseConstants.COLUMN_NAME_AB_META, structType.nullable(true))
+        if (hasGenerationId) {
+            createTable.column(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID, SQLDataType.BIGINT)
+        }
+
+        val selectColumns: MutableList<SelectFieldOrAsterisk> =
+            mutableListOf(
+                DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
+                DSL.field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
+                DSL.cast(null, timestampWithTimeZoneType)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
+                DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
+                    .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
+                DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
             )
-            .column(
-                JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                timestampWithTimeZoneType.nullable(false),
-            )
-            .column(
-                JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                timestampWithTimeZoneType.nullable(true),
-            )
-            .column(JavaBaseConstants.COLUMN_NAME_DATA, structType.nullable(false))
-            .column(JavaBaseConstants.COLUMN_NAME_AB_META, structType.nullable(true))
-            .`as`(
-                DSL.select(
-                        DSL.field(JavaBaseConstants.COLUMN_NAME_AB_ID)
-                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID),
-                        DSL.field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
-                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT),
-                        DSL.cast(null, timestampWithTimeZoneType)
-                            .`as`(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT),
-                        DSL.field(JavaBaseConstants.COLUMN_NAME_DATA)
-                            .`as`(JavaBaseConstants.COLUMN_NAME_DATA),
-                        DSL.cast(null, structType).`as`(JavaBaseConstants.COLUMN_NAME_AB_META),
-                    )
-                    .from(DSL.table(DSL.name(namespace, tableName))),
-            )
+        if (hasGenerationId) {
+            selectColumns += DSL.value(0).`as`(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID)
+        }
+
+        return createTable
+            .`as`(DSL.select(selectColumns).from(DSL.table(DSL.name(namespace, tableName))))
             .getSQL(ParamType.INLINED)
+    }
 
     override fun clearLoadedAt(streamId: StreamId): Sql {
         return of(
@@ -429,7 +437,7 @@ constructor(
                         streamConfig.columns,
                         getFinalTableMetaColumns(false),
                         rawTableCondition(
-                            streamConfig.destinationSyncMode,
+                            streamConfig.postImportAction,
                             streamConfig.columns.containsKey(cdcDeletedAtColumn),
                             minRawTimestamp,
                         ),
@@ -490,7 +498,7 @@ constructor(
             else ""
         val checkpointStmt = checkpointRawTable(rawSchema, rawTable, minRawTimestamp)
 
-        if (streamConfig.destinationSyncMode != DestinationSyncMode.APPEND_DEDUP) {
+        if (streamConfig.postImportAction == ImportType.APPEND) {
             return transactionally(insertStmt, checkpointStmt)
         }
 

@@ -7,9 +7,11 @@ from .checkpoint_reader import (
     CursorBasedCheckpointReader,
     FullRefreshCheckpointReader,
     IncrementalCheckpointReader,
+    LegacyCursorBasedCheckpointReader,
     ResumableFullRefreshCheckpointReader
 )
 from .cursor import Cursor
+from .resumable_full_refresh_cursor import ResumableFullRefreshCursor
 
 
 __all__ = [
@@ -19,5 +21,7 @@ __all__ = [
     "CursorBasedCheckpointReader",
     "FullRefreshCheckpointReader",
     "IncrementalCheckpointReader",
-    "ResumableFullRefreshCheckpointReader"
+    "LegacyCursorBasedCheckpointReader",
+    "ResumableFullRefreshCheckpointReader",
+    "ResumableFullRefreshCursor"
 ]

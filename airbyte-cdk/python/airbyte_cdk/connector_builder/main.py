@@ -9,10 +9,17 @@ from typing import Any, List, Mapping, Optional, Tuple
 from airbyte_cdk.connector import BaseConnector
 from airbyte_cdk.connector_builder.connector_builder_handler import TestReadLimits, create_source, get_limits, read_stream, resolve_manifest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteMessageSerializer,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteCatalogSerializer,
+)
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 
 
 def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str, Any], Optional[ConfiguredAirbyteCatalog], Any]:
@@ -32,7 +39,7 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
     command = config["__command"]
     if command == "test_read":
-        catalog = ConfiguredAirbyteCatalog.parse_obj(BaseConnector.read_config(catalog_path))
+        catalog = ConfiguredAirbyteCatalogSerializer.load(BaseConnector.read_config(catalog_path))
         state = Source.read_state(state_path)
     else:
         catalog = None
@@ -67,7 +74,7 @@ def handle_request(args: List[str]) -> AirbyteMessage:
     command, config, catalog, state = get_config_and_catalog_from_args(args)
     limits = get_limits(config)
     source = create_source(config, limits)
-    return handle_connector_builder_request(source, command, config, catalog, state, limits).json(exclude_unset=True)
+    return AirbyteMessageSerializer.dump(handle_connector_builder_request(source, command, config, catalog, state, limits))  # type: ignore[no-any-return] # Serializer.dump() always returns AirbyteMessage
 
 
 if __name__ == "__main__":
@@ -76,4 +83,4 @@ if __name__ == "__main__":
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message=f"Error handling request: {str(exc)}")
         m = error.as_airbyte_message()
-        print(error.as_airbyte_message().json(exclude_unset=True))
+        print(orjson.dumps(AirbyteMessageSerializer.dump(m)).decode())

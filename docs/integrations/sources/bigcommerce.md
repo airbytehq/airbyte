@@ -58,6 +58,21 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
+| 0.2.17 | 2024-09-14 | [45539](https://github.com/airbytehq/airbyte/pull/45539) | Update dependencies |
+| 0.2.16 | 2024-09-07 | [45292](https://github.com/airbytehq/airbyte/pull/45292) | Update dependencies |
+| 0.2.15 | 2024-08-31 | [44979](https://github.com/airbytehq/airbyte/pull/44979) | Update dependencies |
+| 0.2.14 | 2024-08-24 | [44693](https://github.com/airbytehq/airbyte/pull/44693) | Update dependencies |
+| 0.2.13 | 2024-08-17 | [43827](https://github.com/airbytehq/airbyte/pull/43827) | Update dependencies |
+| 0.2.12 | 2024-08-10 | [43630](https://github.com/airbytehq/airbyte/pull/43630) | Update dependencies |
+| 0.2.11 | 2024-08-03 | [43124](https://github.com/airbytehq/airbyte/pull/43124) | Update dependencies |
+| 0.2.10 | 2024-07-27 | [42773](https://github.com/airbytehq/airbyte/pull/42773) | Update dependencies |
+| 0.2.9 | 2024-07-20 | [42192](https://github.com/airbytehq/airbyte/pull/42192) | Update dependencies |
+| 0.2.8 | 2024-07-13 | [41883](https://github.com/airbytehq/airbyte/pull/41883) | Update dependencies |
+| 0.2.7 | 2024-07-10 | [41540](https://github.com/airbytehq/airbyte/pull/41540) | Update dependencies |
+| 0.2.6 | 2024-07-09 | [41256](https://github.com/airbytehq/airbyte/pull/41256) | Update dependencies |
+| 0.2.5 | 2024-07-06 | [40997](https://github.com/airbytehq/airbyte/pull/40997) | Update dependencies |
+| 0.2.4 | 2024-06-25 | [40334](https://github.com/airbytehq/airbyte/pull/40334) | Update dependencies |
+| 0.2.3 | 2024-06-22 | [40113](https://github.com/airbytehq/airbyte/pull/40113) | Update dependencies |
 | 0.2.2 | 2024-06-06 | [39251](https://github.com/airbytehq/airbyte/pull/39251) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.1 | 2024-05-21 | [38528](https://github.com/airbytehq/airbyte/pull/38528) | [autopull] base image + poetry + up_to_date |
 | 0.2.0 | 2023-08-16 | [29469](https://github.com/airbytehq/airbyte/pull/29469) | Migrate Python CDK to Low Code |

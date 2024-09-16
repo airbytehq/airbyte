@@ -4,6 +4,7 @@
 
 import datetime
 from dataclasses import InitVar, dataclass, field
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
@@ -15,7 +16,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
-from isodate import Duration, parse_duration
+from isodate import Duration, duration_isoformat, parse_duration
 
 
 @dataclass
@@ -67,6 +68,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
     message_repository: Optional[MessageRepository] = None
+    is_compare_strictly: Optional[bool] = False
     cursor_datetime_formats: List[str] = field(default_factory=lambda: [])
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
@@ -164,8 +166,8 @@ class DatetimeBasedCursor(DeclarativeCursor):
 
         :return:
         """
-        end_datetime = self._select_best_end_datetime()
-        start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
+        end_datetime = self.select_best_end_datetime()
+        start_datetime = self._calculate_earliest_possible_value(self.select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
@@ -179,7 +181,15 @@ class DatetimeBasedCursor(DeclarativeCursor):
         cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
         return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
 
-    def _select_best_end_datetime(self) -> datetime.datetime:
+    def select_best_end_datetime(self) -> datetime.datetime:
+        """
+        Returns the optimal end datetime.
+        This method compares the current datetime with a pre-configured end datetime
+        and returns the earlier of the two. If no pre-configured end datetime is set,
+        the current datetime is returned.
+
+        :return datetime.datetime: The best end datetime, which is either the current datetime or the pre-configured end datetime, whichever is earlier.
+        """
         now = datetime.datetime.now(tz=self._timezone)
         if not self._end_datetime:
             return now
@@ -199,7 +209,8 @@ class DatetimeBasedCursor(DeclarativeCursor):
         start_field = self._partition_field_start.eval(self.config)
         end_field = self._partition_field_end.eval(self.config)
         dates = []
-        while start <= end:
+
+        while self._is_within_date_range(start, end):
             next_start = self._evaluate_next_start_date_safely(start, step)
             end_date = self._get_date(next_start - self._cursor_granularity, end, min)
             dates.append(
@@ -209,6 +220,11 @@ class DatetimeBasedCursor(DeclarativeCursor):
             )
             start = next_start
         return dates
+
+    def _is_within_date_range(self, start: datetime.datetime, end: datetime.datetime) -> bool:
+        if self.is_compare_strictly:
+            return start < end
+        return start <= end
 
     def _evaluate_next_start_date_safely(self, start: datetime.datetime, step: datetime.timedelta) -> datetime.datetime:
         """
@@ -308,7 +324,7 @@ class DatetimeBasedCursor(DeclarativeCursor):
                 f"Could not find cursor field `{cursor_field}` in record. The incremental sync will assume it needs to be synced",
             )
             return True
-        latest_possible_cursor_value = self._select_best_end_datetime()
+        latest_possible_cursor_value = self.select_best_end_datetime()
         earliest_possible_cursor_value = self._calculate_earliest_possible_value(latest_possible_cursor_value)
         return self._is_within_daterange_boundaries(record, earliest_possible_cursor_value, latest_possible_cursor_value)
 
@@ -348,3 +364,17 @@ class DatetimeBasedCursor(DeclarativeCursor):
             return True
         else:
             return False
+
+    def set_runtime_lookback_window(self, lookback_window_in_seconds: int) -> None:
+        """
+        Updates the lookback window based on a given number of seconds if the new duration
+        is greater than the currently configured lookback window.
+
+        :param lookback_window_in_seconds: The lookback duration in seconds to potentially update to.
+        """
+        runtime_lookback_window = duration_isoformat(timedelta(seconds=lookback_window_in_seconds))
+        config_lookback = parse_duration(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
+
+        # Check if the new runtime lookback window is greater than the current config lookback
+        if parse_duration(runtime_lookback_window) > config_lookback:
+            self._lookback_window = InterpolatedString.create(runtime_lookback_window, parameters={})

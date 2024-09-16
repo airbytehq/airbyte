@@ -2,13 +2,14 @@
 
 <HideInUI>
 
-This page contains the setup guide and reference information for the Google Search Console source connector.
+This page contains the setup guide and reference information for the [Google Search Console](https://developers.google.com) source connector.
 
 </HideInUI>
 
 ## Prerequisites
 
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Properties))
+- Google Account
+- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Property))
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -80,16 +81,25 @@ For more information on this topic, please refer to [this Google article](https:
 
 <!-- env:cloud -->
 
-**For Airbyte Cloud:**
+#### For Airbyte Cloud:
 
-1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. Find and select **Google Search Console** from the list of available sources.
-4. For **Source name**, enter a name to help you identify this source.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Search Console from the Source type dropdown.
+4. Enter a name for the Google Search Console connector.
 5. For **Website URL Property**, enter the specific website property in Google Seach Console with data you want to replicate.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 <!-- env:cloud -->
+
+<!-- env:oss -->
+### For Airbyte Open Source:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click Sources and then click + New source.
+3. On the Set up the source page, select Google Search Console from the Source type dropdown.
+4. Enter a name for the Google Search Console connector.
+<!-- /env:oss -->
 
 - **For Airbyte Cloud:**
   - Select **Oauth** from the Authentication dropdown, then click **Sign in with Google** to authorize your account.
@@ -109,7 +119,7 @@ For more information on this topic, please refer to [this Google article](https:
 
 ## Supported sync modes
 
-The Google Search Console Source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Search Console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -120,7 +130,7 @@ The Google Search Console Source connector supports the following [sync modes](h
 The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
 :::
 
-## Supported streams
+## Supported Streams
 
 - [Sites](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites/get)
 - [Sitemaps](https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps/list)
@@ -137,6 +147,9 @@ The granularity for the cursor is 1 day, so Incremental Sync in Append mode may 
 - [Analytics site report by page](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - [Analytics site report by site](https://developers.google.com/webmaster-tools/search-console-api-original/v3/searchanalytics/query)
 - Analytics report by custom dimensions
+
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
 
 ## Connector-specific configurations
 
@@ -217,6 +230,19 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------- |
+| 1.5.3 | 2024-08-03 | [43067](https://github.com/airbytehq/airbyte/pull/43067) | Update dependencies |
+| 1.5.2 | 2024-07-27 | [42786](https://github.com/airbytehq/airbyte/pull/42786) | Update dependencies |
+| 1.5.1 | 2024-07-20 | [42142](https://github.com/airbytehq/airbyte/pull/42142) | Update dependencies |
+| 1.5.0 | 2024-07-17 | [42073](https://github.com/airbytehq/airbyte/pull/42073) | Migrate to CDK v1.8.0 |
+| 1.4.13 | 2024-07-13 | [41734](https://github.com/airbytehq/airbyte/pull/41734) | Update dependencies |
+| 1.4.12 | 2024-07-10 | [41440](https://github.com/airbytehq/airbyte/pull/41440) | Update dependencies |
+| 1.4.11 | 2024-07-09 | [41164](https://github.com/airbytehq/airbyte/pull/41164) | Update dependencies |
+| 1.4.10 | 2024-07-06 | [40981](https://github.com/airbytehq/airbyte/pull/40981) | Update dependencies |
+| 1.4.9 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 1.4.8 | 2024-06-26 | [40532](https://github.com/airbytehq/airbyte/pull/40532) | Update dependencies |
+| 1.4.7 | 2024-06-25 | [40312](https://github.com/airbytehq/airbyte/pull/40312) | Update dependencies |
+| 1.4.6 | 2024-06-22 | [40077](https://github.com/airbytehq/airbyte/pull/40077) | Update dependencies |
+| 1.4.5 | 2024-06-17 | [39516](https://github.com/airbytehq/airbyte/pull/39516) | Update state handling for incremental streams |
 | 1.4.4 | 2024-06-04 | [39059](https://github.com/airbytehq/airbyte/pull/39059) | [autopull] Upgrade base image to v1.2.1 |
 | 1.4.3 | 2024-05-24 | [38649](https://github.com/airbytehq/airbyte/pull/38649) | Update deprecated auth package |
 | 1.4.2 | 2024-04-19 | [36639](https://github.com/airbytehq/airbyte/pull/36639) | Updating to 0.80.0 CDK |

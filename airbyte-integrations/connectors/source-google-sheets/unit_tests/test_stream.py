@@ -187,6 +187,13 @@ def test_discover_could_not_run_discover(mocker, invalid_config):
     assert e.value.args[0] == expected_message
 
 
+def test_discover_invalid_credentials_error_message(mocker, invalid_config):
+    source = SourceGoogleSheets()
+    with pytest.raises(AirbyteTracedException) as e:
+        source.discover(logger=mocker.MagicMock(), config=invalid_config)
+    assert e.value.args[0] == 'Access to the spreadsheet expired or was revoked. Re-authenticate to restore access.'
+
+
 def test_get_credentials(invalid_config):
     expected_config = {
         "auth_type": "Client",
@@ -217,12 +224,12 @@ def test_read_429_error(mocker, invalid_config, catalog, caplog):
     sheet1_columns = frozenset(["arsenal", "chelsea", "manutd", "liverpool"])
     sheet1_schema = {"properties": {c: {"type": "string"} for c in sheet1_columns}}
     catalog = ConfiguredAirbyteCatalog(streams=catalog((sheet1, sheet1_schema),))
-    records = list(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
-    assert [] == records
-    assert (
-        "Stopped syncing process due to rate limits. Rate limit has been reached. Please try later or request a higher quota for your account"
-        in caplog.text
+    with pytest.raises(AirbyteTracedException) as e:
+        next(source.read(logger=logging.getLogger("airbyte"), config=invalid_config, catalog=catalog))
+    expected_message = (
+        "Rate limit has been reached. Please try later or request a higher quota for your account."
     )
+    assert e.value.args[0] == expected_message
 
 
 def test_read_403_error(mocker, invalid_config, catalog, caplog):

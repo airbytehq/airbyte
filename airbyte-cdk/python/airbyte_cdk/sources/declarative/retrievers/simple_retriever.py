@@ -308,7 +308,7 @@ class SimpleRetriever(Retriever):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
-    def _read_page(
+    def _read_single_page(
         self,
         records_generator_fn: Callable[[Optional[requests.Response]], Iterable[StreamData]],
         stream_state: Mapping[str, Any],
@@ -367,7 +367,7 @@ class SimpleRetriever(Retriever):
                 self._partition_started[partition_key] = True
                 self._paginator.reset(reset_value=cursor_value)
 
-            yield from self._read_page(record_generator, stream_state, _slice)
+            yield from self._read_single_page(record_generator, stream_state, _slice)
         else:
             # Fixing paginator types has a long tail of dependencies
             self._paginator.reset()

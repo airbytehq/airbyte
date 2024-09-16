@@ -3,8 +3,8 @@
 from typing import Optional, Union
 
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
-from airbyte_protocol.models import FailureType
 from requests import exceptions
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
@@ -27,6 +27,14 @@ _NO_ERROR_RESOLUTION = ErrorResolution(ResponseAction.SUCCESS, None, None)
 class ShopifyErrorHandler(ErrorHandler):
     def __init__(self, stream_name: str = "<no specified stream>") -> None:
         self._stream_name = stream_name
+
+    @property
+    def max_retries(self) -> Optional[int]:
+        return 5
+
+    @property
+    def max_time(self) -> Optional[int]:
+        return 20
 
     def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         if isinstance(response, TRANSIENT_EXCEPTIONS):

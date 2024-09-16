@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import dpath
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic.v1 import AnyUrl, BaseModel, Field
 
 
 class AbstractFileBasedSpec(BaseModel):

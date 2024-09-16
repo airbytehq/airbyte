@@ -63,7 +63,8 @@ specify the target size of compacted Iceberg data file.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------- |
+|:--------|:-----------| :-------------------------------------------------------- |:-----------------------------------------------------------|
+| 0.1.7   | 2024-05-17 | [38283](https://github.com/airbytehq/airbyte/pull/38283)  | Bump Iceberg library to 1.5.2 and Spark to 3.5.1           |
 | 0.1.6   | 2024-04-04 | [#36846](https://github.com/airbytehq/airbyte/pull/36846) | Remove duplicate S3 Region                                 |
 | 0.1.5   | 2024-01-03 | [#33924](https://github.com/airbytehq/airbyte/pull/33924) | Add new ap-southeast-3 AWS region                          |
 | 0.1.4   | 2023-07-20 | [28506](https://github.com/airbytehq/airbyte/pull/28506)  | Support server-managed storage config                      |

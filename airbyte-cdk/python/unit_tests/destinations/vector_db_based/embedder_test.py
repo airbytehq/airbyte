@@ -24,7 +24,7 @@ from airbyte_cdk.destinations.vector_db_based.embedder import (
     OpenAICompatibleEmbedder,
     OpenAIEmbedder,
 )
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage
+from airbyte_cdk.models import AirbyteRecordMessage
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 

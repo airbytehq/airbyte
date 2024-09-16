@@ -5,6 +5,7 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
+from functools import cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Set
 
 import pendulum
@@ -56,13 +57,16 @@ class FBMarketingStream(ConcurrentStream, ABC):
         self.page_size = page_size if page_size is not None else 100
         self._filter_statuses = filter_statuses or []
         self._fields = None
+        self._saved_fields = None
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
         return 1000
 
     def fields(self, **kwargs) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
+        """
+        List of fields that we want to query, if no json_schema from configured catalog then will get all properties from stream's schema
+        """
         if self._fields:
             return self._fields
         self._saved_fields = list([f for f in self.get_json_schema().get("properties", {}).keys() if (f not in self.fields_exceptions)])
@@ -292,7 +296,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         """Additional filters associated with state if any set"""
 
         state_value = stream_state.get(self.cursor_field)
-        if stream_state:
+        if stream_state and state_value:
             filter_value = pendulum.parse(state_value)
         elif self._start_date:
             filter_value = self._start_date
@@ -352,7 +356,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         for account_id in self._account_ids:
             cursor_value = transformed_state.get(account_id, {}).get(self.cursor_field)
             if cursor_value is not None:
-                self._cursor_values[account_id] = pendulum.parse(cursor_value)
+                self._cursor_values[account_id] = cursor_value
 
     def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Don't have classic cursor filtering"""
@@ -383,7 +387,7 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
 
             max_cursor_value = None
             for record in records_iter:
-                record_cursor_value = pendulum.parse(record[self.cursor_field])
+                record_cursor_value = record[self.cursor_field]
                 if account_cursor and record_cursor_value < account_cursor:
                     break
 

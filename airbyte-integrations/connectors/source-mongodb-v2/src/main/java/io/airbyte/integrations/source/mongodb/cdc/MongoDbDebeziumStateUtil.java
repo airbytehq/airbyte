@@ -146,7 +146,8 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
                                             final JsonNode config) {
     LOGGER.debug("Initializing file offset backing store with state '{}'...", cdcState);
     final var offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty());
-    final DebeziumPropertiesManager debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(baseProperties, config, catalog);
+    final DebeziumPropertiesManager debeziumPropertiesManager =
+        new MongoDbDebeziumPropertiesManager(baseProperties, config, catalog, Collections.emptyList());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
     LOGGER.info("properties: " + debeziumProperties);
     return parseSavedOffset(debeziumProperties);

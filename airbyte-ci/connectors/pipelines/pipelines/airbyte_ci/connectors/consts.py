@@ -25,7 +25,7 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     MIGRATE_POETRY_POETRY_INIT = "migrate_to_poetry.poetry_init"
     MIGRATE_POETRY_DELETE_SETUP_PY = "migrate_to_poetry.delete_setup_py"
     MIGRATE_POETRY_REGRESSION_TEST = "migrate_to_poetry.regression"
-    CONNECTOR_REGRESSION_TESTS = "connector_regression_tests"
+    CONNECTOR_LIVE_TESTS = "connector_live_tests"
     REGRESSION_TEST = "common.regression_test"
     ADD_CHANGELOG_ENTRY = "bump_version.changelog"
     SET_CONNECTOR_VERSION = "bump_version.set"
@@ -34,10 +34,17 @@ class CONNECTOR_TEST_STEP_ID(str, Enum):
     UPDATE_PULL_REQUEST = "up_to_date.pull"
     INLINE_CANDIDATE = "migration_to_inline_schemas.candidate"
     INLINE_MIGRATION = "migration_to_inline_schemas.migration"
+    INLINE_CLEANUP = "migration_to_inline_schemas.cleanup"
     AIRBYTE_LOGGER_CANDIDATE = "migration_to_logging_logger.candidate"
     AIRBYTE_LOGGER_MIGRATION = "migration_to_logging_logger.migration"
+    LLM_RELATIONSHIPS = "llm_relationships"
+    DBML_FILE = "dbml_file"
+    PUBLISH_ERD = "publish_erd"
     PULL_REQUEST_CREATE = "pull_request.create"
     PULL_REQUEST_UPDATE = "pull_request.update"
+    MANIFEST_ONLY_CHECK = "migrate_to_manifest_only.check"
+    MANIFEST_ONLY_STRIP = "migrate_to_manifest_only.strip"
+    MANIFEST_ONLY_UPDATE = "migrate_to_manifest_only.update"
 
     def __str__(self) -> str:
         return self.value

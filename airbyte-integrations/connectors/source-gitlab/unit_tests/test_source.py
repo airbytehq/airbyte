@@ -37,10 +37,7 @@ def test_connection_invalid_projects_and_projects(config_with_project_groups, re
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config_with_project_groups)
     assert status is False
-    assert msg == (
-        "Unable to connect to stream projects - "
-        "Groups and/or projects that you provide are invalid or you don't have permission to view it."
-    )
+    assert "Groups and/or projects that you provide are invalid or you don't have permission to view it." in msg
 
 
 def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
@@ -50,10 +47,7 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
     assert status is False
-    assert msg == (
-        "Unable to connect to stream projects - Unable to refresh the `access_token`, "
-        "please re-authenticate in Sources > Settings."
-    )
+    assert "Unable to refresh the `access_token`" in msg
 
 
 def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_mock):
@@ -70,10 +64,7 @@ def test_connection_fail_due_to_api_error_oauth(oauth_config, mocker, requests_m
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), oauth_config)
     assert status is False
-    assert msg == (
-        "Unable to connect to stream projects - Unable to refresh the `access_token`, "
-        "please re-authenticate in Sources > Settings."
-    )
+    assert "Unable to refresh the `access_token`" in msg
 
 
 @pytest.mark.parametrize(

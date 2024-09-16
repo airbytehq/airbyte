@@ -91,6 +91,23 @@ class TestBaseInsightsStream:
             "test2",
         ]
 
+    def test_init_statuses(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            fields=["account_id", "account_currency"],
+            filter_statuses=["ACTIVE", "ARCHIVED"]
+        )
+
+        assert stream.request_params()["filtering"] == [
+            {'field': 'ad.effective_status',
+             'operator': 'IN',
+             'value': ['ACTIVE', 'ARCHIVED']}
+        ]
+
     def test_read_records_all(self, mocker, api, some_config):
         """1. yield all from mock
         2. if read slice 2, 3 state not changed

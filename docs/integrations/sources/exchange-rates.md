@@ -90,6 +90,17 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.4.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.4.0 | 2024-08-15 | [44150](https://github.com/airbytehq/airbyte/pull/44150) | Refactor connector to manifest-only format |
+| 1.3.11 | 2024-08-12 | [43761](https://github.com/airbytehq/airbyte/pull/43761) | Update dependencies |
+| 1.3.10 | 2024-08-10 | [43639](https://github.com/airbytehq/airbyte/pull/43639) | Update dependencies |
+| 1.3.9 | 2024-08-03 | [42659](https://github.com/airbytehq/airbyte/pull/42659) | Update dependencies |
+| 1.3.8 | 2024-07-20 | [42348](https://github.com/airbytehq/airbyte/pull/42348) | Update dependencies |
+| 1.3.7 | 2024-07-13 | [41157](https://github.com/airbytehq/airbyte/pull/41157) | Update dependencies |
+| 1.3.6 | 2024-07-06 | [40924](https://github.com/airbytehq/airbyte/pull/40924) | Update dependencies |
+| 1.3.5 | 2024-06-26 | [40508](https://github.com/airbytehq/airbyte/pull/40508) | Update dependencies |
+| 1.3.4 | 2024-06-23 | [40125](https://github.com/airbytehq/airbyte/pull/40125) | Update dependencies |
+| 1.3.3 | 2024-05-30 | [38543](https://github.com/airbytehq/airbyte/pull/38543) | [autopull] base image + poetry + up_to_date |
 | 1.3.2 | 2024-06-06 | [39250](https://github.com/airbytehq/airbyte/pull/39250) | [autopull] Upgrade base image to v1.2.2 |
 | 1.3.1 | 2024-05-30 | [38135](https://github.com/airbytehq/airbyte/pull/38135) | Make connector compatable with the builder |
 | 1.3.0 | 2023-08-25 | [29299](https://github.com/airbytehq/airbyte/pull/29299) | Migrate to low-code |

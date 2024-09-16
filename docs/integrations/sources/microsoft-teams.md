@@ -164,6 +164,18 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.2.1   | 2024-08-16 | [44196](https://github.com/airbytehq/airbyte/pull/44196) | Bump source-declarative-manifest version   |
+| 1.2.0 | 2024-08-15 | [44116](https://github.com/airbytehq/airbyte/pull/44116) | Refactor connector to manifest-only format |
+| 1.1.11 | 2024-08-12 | [43772](https://github.com/airbytehq/airbyte/pull/43772) | Update dependencies |
+| 1.1.10 | 2024-08-10 | [43547](https://github.com/airbytehq/airbyte/pull/43547) | Update dependencies |
+| 1.1.9 | 2024-08-03 | [43251](https://github.com/airbytehq/airbyte/pull/43251) | Update dependencies |
+| 1.1.8 | 2024-07-27 | [42691](https://github.com/airbytehq/airbyte/pull/42691) | Update dependencies |
+| 1.1.7 | 2024-07-20 | [41853](https://github.com/airbytehq/airbyte/pull/41853) | Update dependencies |
+| 1.1.6 | 2024-07-10 | [41382](https://github.com/airbytehq/airbyte/pull/41382) | Update dependencies |
+| 1.1.5 | 2024-07-09 | [41318](https://github.com/airbytehq/airbyte/pull/41318) | Update dependencies |
+| 1.1.4 | 2024-07-06 | [40913](https://github.com/airbytehq/airbyte/pull/40913) | Update dependencies |
+| 1.1.3 | 2024-06-25 | [40366](https://github.com/airbytehq/airbyte/pull/40366) | Update dependencies |
+| 1.1.2 | 2024-06-22 | [40026](https://github.com/airbytehq/airbyte/pull/40026) | Update dependencies |
 | 1.1.1 | 2024-06-04 | [39046](https://github.com/airbytehq/airbyte/pull/39046) | [autopull] Upgrade base image to v1.2.1 |
 | 1.1.0 | 2024-03-24 | [36223](https://github.com/airbytehq/airbyte/pull/36223) | Migration to low code |
 | 1.0.0 | 2024-01-04 | [33959](https://github.com/airbytehq/airbyte/pull/33959) | Schema updates |

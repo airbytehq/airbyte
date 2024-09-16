@@ -112,8 +112,12 @@ class Proxy:
             dagger.Container: The container with the proxy service bound and environment variables set.
         """
         cert_path_in_volume = "/mitmproxy_dir/mitmproxy-ca.pem"
-        requests_cert_path = "/usr/local/lib/python3.9/site-packages/certifi/cacert.pem"
         ca_certificate_path = "/usr/local/share/ca-certificates/mitmproxy.crt"
+
+        python_version_output = (await container.with_exec(["python", "--version"], skip_entrypoint=True).stdout()).strip()
+        python_version = python_version_output.split(" ")[-1]
+        python_version_minor_only = ".".join(python_version.split(".")[:-1])
+        requests_cert_path = f"/usr/local/lib/python{python_version_minor_only}/site-packages/certifi/cacert.pem"
         try:
             return await (
                 container.with_service_binding(self.hostname, await self.get_service())

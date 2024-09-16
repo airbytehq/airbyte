@@ -46,8 +46,8 @@
         "order": 4
       },
       "database": {
-        "title": "Databricks Unity Catalog",
-        "description": "The name of the unity catalog",
+        "title": "Databricks Unity Catalog Name",
+        "description": "The name of the unity catalog for the database",
         "type": "string",
         "order": 5
       },
@@ -59,13 +59,6 @@
         "default": "default",
         "order": 6
       },
-      "enable_schema_evolution": {
-        "title": "Support schema evolution for all streams.",
-        "type": "boolean",
-        "description": "Support schema evolution for all streams. If \"false\", the connector might fail when a stream's schema changes.",
-        "default": false,
-        "order": 7
-      },
       "authentication": {
         "title": "Authentication",
         "type": "object",
@@ -73,36 +66,6 @@
         "default": "OAUTH",
         "order": 8,
         "oneOf": [
-          {
-            "title": "Basic Authentication",
-            "required": [
-              "auth_type",
-              "personal_access_token",
-              "username",
-              "password"
-            ],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "BASIC",
-                "order": 0
-              },
-              "personal_access_token": {
-                "type": "string",
-                "airbyte_secret": true,
-                "order": 1
-              },
-              "username": {
-                "type": "string",
-                "order": 2
-              },
-              "password": {
-                "type": "string",
-                "airbyte_secret": true,
-                "order": 3
-              }
-            }
-          },
           {
             "title": "OAuth2 (Recommended)",
             "required": ["auth_type", "client_id", "secret"],
@@ -122,6 +85,22 @@
                 "order": 2
               }
             }
+          },
+          {
+            "title": "Personal Access Token",
+            "required": ["auth_type", "personal_access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "BASIC",
+                "order": 0
+              },
+              "personal_access_token": {
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 1
+              }
+            }
           }
         ]
       },
@@ -131,6 +110,13 @@
         "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
         "default": true,
         "order": 9
+      },
+      "raw_schema_override": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "default": "airbyte_internal",
+        "order": 10
       }
     }
   }

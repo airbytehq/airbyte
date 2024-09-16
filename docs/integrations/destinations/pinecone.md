@@ -79,6 +79,25 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                      |
 | :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.22 | 2024-09-14 | [45490](https://github.com/airbytehq/airbyte/pull/45490) | Update dependencies |
+| 0.1.21 | 2024-09-07 | [45247](https://github.com/airbytehq/airbyte/pull/45247) | Update dependencies |
+| 0.1.20 | 2024-08-31 | [45063](https://github.com/airbytehq/airbyte/pull/45063) | Update dependencies |
+| 0.1.19 | 2024-08-24 | [44669](https://github.com/airbytehq/airbyte/pull/44669) | Update dependencies |
+| 0.1.18 | 2024-08-17 | [44302](https://github.com/airbytehq/airbyte/pull/44302) | Update dependencies |
+| 0.1.17 | 2024-08-12 | [43932](https://github.com/airbytehq/airbyte/pull/43932) | Update dependencies |
+| 0.1.16 | 2024-08-10 | [43701](https://github.com/airbytehq/airbyte/pull/43701) | Update dependencies |
+| 0.1.15 | 2024-08-03 | [43134](https://github.com/airbytehq/airbyte/pull/43134) | Update dependencies |
+| 0.1.14 | 2024-07-27 | [42594](https://github.com/airbytehq/airbyte/pull/42594) | Update dependencies |
+| 0.1.13 | 2024-07-20 | [42243](https://github.com/airbytehq/airbyte/pull/42243) | Update dependencies |
+| 0.1.12 | 2024-07-13 | [41901](https://github.com/airbytehq/airbyte/pull/41901) | Update dependencies |
+| 0.1.11 | 2024-07-10 | [41598](https://github.com/airbytehq/airbyte/pull/41598) | Update dependencies |
+| 0.1.10 | 2024-07-09 | [41194](https://github.com/airbytehq/airbyte/pull/41194) | Update dependencies |
+| 0.1.9 | 2024-07-07 | [40753](https://github.com/airbytehq/airbyte/pull/40753) | Fix a regression with AirbyteLogger |
+| 0.1.8 | 2024-07-06 | [40780](https://github.com/airbytehq/airbyte/pull/40780) | Update dependencies |
+| 0.1.7 | 2024-06-29 | [40627](https://github.com/airbytehq/airbyte/pull/40627) | Update dependencies |
+| 0.1.6 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.1.5 | 2024-06-25 | [40430](https://github.com/airbytehq/airbyte/pull/40430) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40150](https://github.com/airbytehq/airbyte/pull/40150) | Update dependencies |
 | 0.1.3 | 2024-06-06 | [39148](https://github.com/airbytehq/airbyte/pull/39148) | [autopull] Upgrade base image to v1.2.2 |
 | 0.1.2   | 2023-05-17 | [#38336](https://github.com/airbytehq/airbyte/pull/338336) | Fix for regression:Custom namespaces not created automatically
 | 0.1.1   | 2023-05-14 | [#38151](https://github.com/airbytehq/airbyte/pull/38151) | Add airbyte source tag for attribution

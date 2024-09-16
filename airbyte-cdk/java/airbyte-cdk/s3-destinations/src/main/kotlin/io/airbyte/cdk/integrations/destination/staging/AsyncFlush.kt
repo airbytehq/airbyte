@@ -86,14 +86,14 @@ internal class AsyncFlush(
         }
 
         val writeConfig: WriteConfig = streamDescToWriteConfig.getValue(streamDescriptor)
-        val schemaName: String = writeConfig.outputSchemaName
-        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.outputTableName)
+        val schemaName: String = writeConfig.rawNamespace
+        val stageName = stagingOperations!!.getStageName(schemaName, writeConfig.rawTableName)
         val stagingPath =
             stagingOperations.getStagingPath(
                 GeneralStagingFunctions.RANDOM_CONNECTION_ID,
                 schemaName,
                 writeConfig.streamName,
-                writeConfig.outputTableName,
+                writeConfig.rawTableName,
                 writeConfig.writeDatetime
             )
         try {
@@ -110,7 +110,7 @@ internal class AsyncFlush(
                 stageName,
                 stagingPath,
                 listOf(stagedFile),
-                writeConfig.outputTableName,
+                writeConfig.rawTableName,
                 schemaName,
                 stagingOperations,
             )

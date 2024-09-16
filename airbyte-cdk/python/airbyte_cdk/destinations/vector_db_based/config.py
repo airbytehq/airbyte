@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 import dpath
 from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class SeparatorSplitterConfigModel(BaseModel):

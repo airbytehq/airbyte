@@ -142,6 +142,25 @@ class XminPostgresSourceTest {
   }
 
   @Test
+  void testDiscoverDisableIncrementalSyncForView() throws Exception {
+    testdb.query(ctx -> {
+      ctx.fetch("CREATE VIEW id_and_name_view AS SELECT * FROM id_and_name;");
+      return null;
+    });
+    final AirbyteCatalog actual = source().discover(getXminConfig());
+    actual.getStreams().forEach(actualStream -> {
+      if (actualStream.getName().equals("id_and_name_view")) {
+        assertTrue(!actualStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+        assertTrue(actualStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
+      }
+    });
+    testdb.query(ctx -> {
+      ctx.fetch("DROP VIEW id_and_name_view;");
+      return null;
+    });
+  }
+
+  @Test
   void testReadSuccess() throws Exception {
     // Perform an initial sync with the configured catalog, which is set up to use xmin_replication.
     // All of the records in the configured stream should be emitted.

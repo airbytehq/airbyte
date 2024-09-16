@@ -3,6 +3,7 @@
  */
 package io.airbyte.integrations.destination.redshift.typing_deduping
 
+import com.amazon.redshift.util.RedshiftException
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.db.jdbc.JdbcDatabase
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
@@ -22,7 +23,7 @@ import org.jooq.SQLDialect
 private val log = KotlinLogging.logger {}
 
 class RedshiftDestinationHandler(
-    databaseName: String?,
+    databaseName: String,
     jdbcDatabase: JdbcDatabase,
     rawNamespace: String
 ) :
@@ -30,24 +31,80 @@ class RedshiftDestinationHandler(
         databaseName,
         jdbcDatabase,
         rawNamespace,
-        SQLDialect.DEFAULT
+        SQLDialect.DEFAULT,
+        generationHandler = RedshiftGenerationHandler(databaseName)
     ) {
     override fun createNamespaces(schemas: Set<String>) {
-        TODO("Not yet implemented")
+        // SHOW SCHEMAS will fail with a "schema ... does not exist" error
+        // if any schema is deleted while the SHOW SCHEMAS query runs.
+        // Run in a retry loop to mitigate this.
+        // This is mostly useful for tests, where we create+drop many schemas.
+        // Use up to 10 attempts since this is a fairly basic operation.
+        val maxAttempts = 10
+        for (i in 1..maxAttempts) {
+            try {
+                // plain SHOW SCHEMAS doesn't work, we have to specify the database name explicitly
+                val existingSchemas =
+                    jdbcDatabase.queryJsons("""SHOW SCHEMAS FROM DATABASE "$catalogName";""").map {
+                        it["schema_name"].asText()
+                    }
+                schemas.forEach {
+                    if (!existingSchemas.contains(it)) {
+                        log.info { "Schema $it does not exist, proceeding to create it" }
+                        jdbcDatabase.execute("""CREATE SCHEMA IF NOT EXISTS "$it";""")
+                    }
+                }
+                break
+            } catch (e: RedshiftException) {
+                if (e.message == null) {
+                    // No message, assume this is some different error and fail fast
+                    throw e
+                }
+
+                // Can't smart cast, so use !! and temp var
+                val message: String = e.message!!
+                val isConcurrentSchemaDeletionError =
+                    message.startsWith("ERROR: schema") && message.endsWith("does not exist")
+                if (!isConcurrentSchemaDeletionError) {
+                    // The error is not
+                    // `ERROR: schema "sql_generator_test_akqywgsxqs" does not exist`
+                    // so just fail fast
+                    throw e
+                }
+
+                // Swallow the exception and go the next loop iteration.
+                log.info {
+                    "Encountered possibly transient nonexistent schema error during a SHOW SCHEMAS query. Retrying ($i/$maxAttempts attempts)"
+                }
+            }
+        }
     }
 
     @Throws(Exception::class)
     override fun execute(sql: Sql) {
+        execute(sql, logStatements = true)
+    }
+
+    /**
+     * @param forceCaseSensitiveIdentifier Whether to enable `forceCaseSensitiveIdentifier` on all
+     * transactions. This option is most useful for accessing fields within a `SUPER` value; for
+     * accessing schemas/tables/columns, quoting the identifier is sufficient to force
+     * case-sensitivity, so this option is not necessary.
+     */
+    fun execute(
+        sql: Sql,
+        logStatements: Boolean = true,
+        forceCaseSensitiveIdentifier: Boolean = true
+    ) {
         val transactions = sql.transactions
         val queryId = UUID.randomUUID()
         for (transaction in transactions) {
             val transactionId = UUID.randomUUID()
-            log.info(
-                "Executing sql {}-{}: {}",
-                queryId,
-                transactionId,
-                java.lang.String.join("\n", transaction)
-            )
+            if (logStatements) {
+                log.info {
+                    "Executing sql $queryId-$transactionId: ${transaction.joinToString("\n")}"
+                }
+            }
             val startTime = System.currentTimeMillis()
 
             try {
@@ -57,11 +114,22 @@ class RedshiftDestinationHandler(
                 // characters, even after
                 // specifying quotes.
                 // see https://github.com/airbytehq/airbyte/issues/33900
-                modifiedStatements.add("SET enable_case_sensitive_identifier to TRUE;\n")
+                if (forceCaseSensitiveIdentifier) {
+                    modifiedStatements.add("SET enable_case_sensitive_identifier to TRUE;\n")
+                }
                 modifiedStatements.addAll(transaction)
-                jdbcDatabase.executeWithinTransaction(modifiedStatements)
+                if (modifiedStatements.size != 1) {
+                    jdbcDatabase.executeWithinTransaction(
+                        modifiedStatements,
+                        logStatements = logStatements
+                    )
+                } else {
+                    // Redshift doesn't allow some statements to run in a transaction at all,
+                    // so handle the single-statement case specially.
+                    jdbcDatabase.execute(modifiedStatements.first())
+                }
             } catch (e: SQLException) {
-                log.error("Sql {}-{} failed", queryId, transactionId, e)
+                log.error(e) { "Sql $queryId-$transactionId failed" }
                 // This is a big hammer for something that should be much more targetted, only when
                 // executing the
                 // DROP TABLE command.
@@ -77,12 +145,9 @@ class RedshiftDestinationHandler(
                 throw e
             }
 
-            log.info(
-                "Sql {}-{} completed in {} ms",
-                queryId,
-                transactionId,
-                System.currentTimeMillis() - startTime
-            )
+            log.info {
+                "Sql $queryId-$transactionId completed in ${System.currentTimeMillis() - startTime} ms"
+            }
         }
     }
 
@@ -104,9 +169,12 @@ class RedshiftDestinationHandler(
         return RedshiftState(
             json.hasNonNull("needsSoftReset") && json["needsSoftReset"].asBoolean(),
             json.hasNonNull("isAirbyteMetaPresentInRaw") &&
-                json["isAirbyteMetaPresentInRaw"].asBoolean()
+                json["isAirbyteMetaPresentInRaw"].asBoolean(),
+            json.hasNonNull("isGenerationIdPresent") && json["isGenerationIdPresent"].asBoolean(),
         )
     }
+
+    fun query(sql: String): List<JsonNode> = jdbcDatabase.queryJsons(sql)
 
     private fun toJdbcTypeName(airbyteProtocolType: AirbyteProtocolType): String {
         return when (airbyteProtocolType) {

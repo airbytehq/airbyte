@@ -39,11 +39,15 @@ definitions:
         action: FAIL
         error_message: Unable to perform a request. Payment Required.
       - predicate: "{{ 'Retry-After' in headers }}"
-        action: RETRY
+        action: RATE_LIMITED
         error_message: Query rate limit exceeded.
       - error_message_contains: "Query rate limit exceeded"
-        action: RETRY
+        action: RATE_LIMITED
         error_message: Query rate limit exceeded.
+      - http_codes: [500]
+        error_message_contains: "unknown error"
+        action: RETRY
+        error_message: An unknown error occurred
       - error_message_contains: "to_date cannot be later than today"
         action: FAIL
         error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
@@ -150,7 +154,7 @@ definitions:
       type: CustomPaginationStrategy
       class_name: "source_mixpanel.components.EngagePaginationStrategy"
       start_from_page: 1
-      page_size: 1000
+      page_size: '{{ config["page_size"] or 1000 }}'
     page_token_option:
       type: RequestOption
       inject_into: request_parameter
@@ -166,10 +170,17 @@ definitions:
     primary_key: distinct_id
     $parameters:
       name: engage
-      path: 2.0/engage
       field_path: results
     retriever:
-      $ref: "#/definitions/retriever"
+      type: SimpleRetriever
+      requester:
+        type: CustomRequester
+        class_name: "source_mixpanel.components.EngagesHttpRequester"
+        url_base: "https://{{ '' if config.region == 'US' else config.region+'.' }}mixpanel.com/api/"
+        path: 2.0/engage
+        authenticator: "#/definitions/authenticator"
+        error_handler:
+          $ref: "#/definitions/default_error_handler"
       paginator:
         $ref: "#/definitions/paginator"
       record_selector:

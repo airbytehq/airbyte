@@ -296,10 +296,8 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own
-    // state message because it goes
-    // to non resumable full refresh path).
-    assertEquals(13, actualMessages.size());
+    // expect 6 records, 4 state messages and 4 stream status messages.
+    assertEquals(14, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
@@ -849,10 +847,20 @@ class PostgresSourceTest {
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
     final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
-    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?prepareThreshold=0&";
+  @Test
+  void testJdbcUrlWithSchemas() {
+    final JsonNode sourceConfig = buildConfigEscapingNeeded();
+    ((ObjectNode) sourceConfig).set("schemas", Jsons.arrayNode().add("bar").add("baz"));
+    final JsonNode jdbcConfig = source().toDatabaseConfig(sourceConfig);
+    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS + "&currentSchema=bar,baz",
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_DEFAULT_PARAMS = "prepareThreshold=0&tcpKeepAlive=true";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(

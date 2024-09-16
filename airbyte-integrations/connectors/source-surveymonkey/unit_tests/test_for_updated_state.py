@@ -4,7 +4,7 @@
 
 import pendulum
 import pytest
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_surveymonkey.streams import Surveys
 
 

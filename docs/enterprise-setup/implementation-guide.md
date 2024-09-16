@@ -233,7 +233,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -264,7 +265,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```
@@ -351,20 +353,19 @@ Set `authenticationType` to `instanceProfile` if the compute infrastructure runn
 </TabItem>
 <TabItem value="GCS" label="GCS" default>
 
-Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `gcp-cred-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
+Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. Steps to configure these are in the above [prerequisites](#configure-kubernetes-secrets).
 
 ```yaml
 global:
   storage:
     type: "GCS"
-    storageSecretName: gcp-cred-secrets
+    storageSecretName: airbyte-config-secrets
     bucket: ## GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
     gcs:
       projectId: <project-id>
-      credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
 </TabItem>
@@ -460,14 +461,6 @@ spec:
                   number: 8180
             path: /auth
             pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
-            pathType: Prefix
 ```
 
 </TabItem>
@@ -512,14 +505,6 @@ spec:
                 port:
                   number: 8180
             path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte-server-svc
-                name: airbyte-enterprise-airbyte-server-svc
-                port:
-                  number: 8001
-            path: /api/public
             pathType: Prefix
 ```
 
@@ -605,7 +590,7 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
       {
         "Effect": "Allow",
         "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME",
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME"
       },
       {
         "Effect": "Allow",
@@ -615,11 +600,11 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
             "s3:PutObjectAcl",
             "s3:GetObject",
             "s3:GetObjectAcl",
-            "s3:DeleteObject",
+            "s3:DeleteObject"
           ],
-        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*",
-      },
-    ],
+        "Resource": "arn:aws:s3:::YOUR-S3-BUCKET-NAME/*"
+      }
+    ]
 }
 ```
 

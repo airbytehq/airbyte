@@ -61,17 +61,9 @@ from pipelines.helpers.connectors.command import run_connector_pipeline
     required=False,
     default=None,
 )
-@click.option(
-    "--dry-run",
-    help="Don't actually make the pull requests. Just print the files that would be changed.",
-    type=bool,
-    is_flag=True,
-    required=False,
-    default=False,
-)
 @click.pass_context
 async def pull_request(
-    ctx: click.Context, message: str, branch_id: str, report: bool, title: str, body: str, changelog: bool, bump: str | None, dry_run: bool
+    ctx: click.Context, message: str, branch_id: str, report: bool, title: str, body: str, changelog: bool, bump: str | None
 ) -> bool:
     if not ctx.obj["ci_github_access_token"]:
         raise click.ClickException(
@@ -86,7 +78,4 @@ async def pull_request(
         branch_id,
         title,
         body,
-        changelog,
-        bump,
-        dry_run,
     )

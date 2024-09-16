@@ -36,6 +36,21 @@ Depending on the amount of team members and time logs the source provides a prop
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.16 | 2024-09-14 | [45582](https://github.com/airbytehq/airbyte/pull/45582) | Update dependencies |
+| 0.2.15 | 2024-09-07 | [45235](https://github.com/airbytehq/airbyte/pull/45235) | Update dependencies |
+| 0.2.14 | 2024-08-31 | [44948](https://github.com/airbytehq/airbyte/pull/44948) | Update dependencies |
+| 0.2.13 | 2024-08-24 | [44729](https://github.com/airbytehq/airbyte/pull/44729) | Update dependencies |
+| 0.2.12 | 2024-08-17 | [44280](https://github.com/airbytehq/airbyte/pull/44280) | Update dependencies |
+| 0.2.11 | 2024-08-12 | [43833](https://github.com/airbytehq/airbyte/pull/43833) | Update dependencies |
+| 0.2.10 | 2024-08-10 | [43518](https://github.com/airbytehq/airbyte/pull/43518) | Update dependencies |
+| 0.2.9 | 2024-08-03 | [43127](https://github.com/airbytehq/airbyte/pull/43127) | Update dependencies |
+| 0.2.8 | 2024-07-27 | [42809](https://github.com/airbytehq/airbyte/pull/42809) | Update dependencies |
+| 0.2.7 | 2024-07-20 | [42350](https://github.com/airbytehq/airbyte/pull/42350) | Update dependencies |
+| 0.2.6 | 2024-07-13 | [41905](https://github.com/airbytehq/airbyte/pull/41905) | Update dependencies |
+| 0.2.5 | 2024-07-10 | [41297](https://github.com/airbytehq/airbyte/pull/41297) | Update dependencies |
+| 0.2.4 | 2024-07-06 | [40993](https://github.com/airbytehq/airbyte/pull/40993) | Update dependencies |
+| 0.2.3 | 2024-06-25 | [40286](https://github.com/airbytehq/airbyte/pull/40286) | Update dependencies |
+| 0.2.2 | 2024-06-22 | [40020](https://github.com/airbytehq/airbyte/pull/40020) | Update dependencies |
 | 0.2.1 | 2024-06-06 | [39308](https://github.com/airbytehq/airbyte/pull/39308) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.0 | 2024-03-15 | [36063](https://github.com/airbytehq/airbyte/pull/36063) | Migrate to Low Code |
 | 0.1.2 | 2023-11-20 | [32680](https://github.com/airbytehq/airbyte/pull/32680) | Schema and CDK updates |

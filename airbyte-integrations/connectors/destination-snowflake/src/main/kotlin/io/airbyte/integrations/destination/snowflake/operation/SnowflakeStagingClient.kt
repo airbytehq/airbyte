@@ -169,11 +169,12 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         stageName: String,
         stagingPath: String,
         stagedFiles: List<String>,
-        streamId: StreamId
+        streamId: StreamId,
+        suffix: String = ""
     ) {
         try {
             val queryId = UUID.randomUUID()
-            val query = getCopyQuery(stageName, stagingPath, stagedFiles, streamId)
+            val query = getCopyQuery(stageName, stagingPath, stagedFiles, streamId, suffix)
             log.info { "query $queryId, $query" }
             // queryJsons is intentionally used here to get the error message in case of failure
             // instead of execute
@@ -252,12 +253,13 @@ class SnowflakeStagingClient(private val database: JdbcDatabase) {
         stageName: String,
         stagingPath: String,
         stagedFiles: List<String>,
-        streamId: StreamId
+        streamId: StreamId,
+        suffix: String
     ): String {
         return String.format(
             COPY_QUERY_1S1T + generateFilesList(stagedFiles) + ";",
             streamId.rawNamespace,
-            streamId.rawName,
+            streamId.rawName + suffix,
             stageName,
             stagingPath
         )

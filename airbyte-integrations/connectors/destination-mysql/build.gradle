@@ -16,6 +16,8 @@ java {
     }
 }
 
+compileKotlin.compilerOptions.allWarningsAsErrors = false
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {
@@ -25,6 +27,6 @@ application {
 
 dependencies {
     implementation 'mysql:mysql-connector-java:8.0.22'
-    integrationTestJavaImplementation libs.testcontainers.mysql
-    testFixturesApi libs.testcontainers.mysql
+    integrationTestJavaImplementation 'org.testcontainers:mysql:1.19.0'
+    testFixturesApi 'org.testcontainers:mysql:1.19.0'
 }

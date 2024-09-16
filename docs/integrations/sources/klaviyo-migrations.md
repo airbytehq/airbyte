@@ -7,7 +7,7 @@ data using latest API which has a different schema. Users will need to refresh t
 streams after upgrading. See the chart below for the API version change.
 
 | Stream            | Current API version | New API version |
-| ----------------- | ------------------- | --------------- |
+|-------------------|---------------------|-----------------|
 | campaigns         | v1                  | 2023-06-15      |
 | email_templates   | v1                  | 2023-10-15      |
 | events            | v1                  | 2023-10-15      |

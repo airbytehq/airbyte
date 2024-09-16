@@ -32,6 +32,9 @@ properties:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
     additionalProperties: true
+  description:
+    type: string
+    description: A description of the connector. It will be presented on the Source documentation page.
 additionalProperties: false
 definitions:
   AddedFieldDefinition:
@@ -807,6 +810,16 @@ definitions:
         title: Whether the target API does not support filtering and returns all data (the cursor filters records in the client instead of the API side)
         description: If the target API endpoint does not take cursor values to filter records and returns all records anyway, the connector with this cursor will filter out records locally, and only emit new records from the last sync, hence incremental. This means that all records would be read from the API, but only new records will be emitted to the destination.
         type: boolean
+      is_compare_strictly:
+        title: Whether to skip requests if the start time equals the end time
+        description: Set to True if the target API does not accept queries where the start time equal the end time.
+        type: boolean
+        default: False
+      global_substream_cursor:
+        title: Whether to store cursor as one value instead of per partition
+        description: This setting optimizes performance when the parent stream has thousands of partitions by storing the cursor as a single value rather than per partition. Notably, the substream state is updated only at the end of the sync, which helps prevent data loss in case of a sync failure. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/incremental-syncs).
+        type: boolean
+        default: false
       lookback_window:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
@@ -1143,6 +1156,7 @@ definitions:
         title: Retriever
         description: Component used to coordinate how records are extracted across stream slices and request pages.
         anyOf:
+          - "$ref": "#/definitions/AsyncRetriever"
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
       incremental_sync:
@@ -1181,6 +1195,7 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+            - "$ref": "#/definitions/KeysToLower"
       state_migrations:
         title: State Migrations
         description: Array of state migrations to be applied on the input state
@@ -1290,8 +1305,10 @@ definitions:
           - ["data", "*", "record"]
       decoder:
         title: Decoder
-        description: Component decoding the response so records can be extracted.
-        "$ref": "#/definitions/JsonDecoder"
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -1552,7 +1569,6 @@ definitions:
     type: object
     required:
       - type
-      - action
     properties:
       type:
         type: string
@@ -1566,11 +1582,25 @@ definitions:
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
         examples:
           - SUCCESS
           - FAIL
           - RETRY
           - IGNORE
+          - RATE_LIMITED
+      failure_type:
+        title: Failure Type
+        description: Failure type of traced exception if a response matches the filter.
+        type: string
+        enum:
+          - system_error
+          - config_error
+          - transient_error
+        examples:
+          - system_error
+          - config_error
+          - transient_error
       error_message:
         title: Error Message
         description: Error Message to display if the response matches the filter.
@@ -1652,6 +1682,39 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
+  JsonlDecoder:
+    title: JSONL Decoder
+    description: Use this if the response consists of JSON objects separated by new lines (`\n`) in JSONL format.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [JsonlDecoder]
+  KeysToLower:
+    title: Keys to Lower Case
+    description: A transformation that renames all keys to lower case.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [KeysToLower]
+      $parameters:
+        type: object
+        additionalProperties: true
+  IterableDecoder:
+    title: Iterable Decoder
+    description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [IterableDecoder]
   ListPartitionRouter:
     title: List Partition Router
     description: A Partition router that specifies a list of attributes where each attribute describes a portion of the complete data set for a stream. During a sync, each value is iterated over and can be used as input to outbound API requests.
@@ -2012,6 +2075,11 @@ definitions:
         title: Request Option
         description: A request option describing where the parent key value should be injected into and under what field name if applicable.
         "$ref": "#/definitions/RequestOption"
+      incremental_dependency:
+        title: Incremental Dependency
+        description: Indicates whether the parent stream should be read incrementally based on updates in the child stream.
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -2283,6 +2351,111 @@ definitions:
                 - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListPartitionRouter"
                 - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
+      $parameters:
+        type: object
+        additionalProperties: true
+  AsyncJobStatusMap:
+    description: Matches the api job status to Async Job Status.
+    type: object
+    required:
+      - running
+      - completed
+      - failed
+      - timeout
+    properties:
+      type:
+        type: string
+        enum: [AsyncJobStatusMap]
+      running:
+        type: array
+        items:
+          type: string
+      completed:
+        type: array
+        items:
+          type: string
+      failed:
+        type: array
+        items:
+          type: string
+      timeout:
+        type: array
+        items:
+          type: string
+  AsyncRetriever:
+    description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
+    type: object
+    required:
+      - type
+      - record_selector
+      - status_mapping
+      - creation_requester
+      - polling_requester
+      - download_requester
+    properties:
+      type:
+        type: string
+        enum: [AsyncRetriever]
+      record_selector:
+        description: Component that describes how to extract records from a HTTP response.
+        "$ref": "#/definitions/RecordSelector"
+      status_mapping:
+        description: Async Job Status to Airbyte CDK Async Job Status mapping.
+        anyOf:
+          - "$ref": "#/definitions/AsyncJobStatusMap"
+      status_extractor:
+        description: Responsible for fetching the actual status of the async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      urls_extractor:
+        description: Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      creation_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      polling_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      download_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      partition_router:
+        title: Partition Router
+        description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
+        default: []
+        anyOf:
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2366,6 +2539,12 @@ definitions:
         type: string
         examples:
           - "([-+]?\\d+)"
+      max_waiting_time_in_seconds:
+        title: Max Waiting Time in Seconds
+        description: Given the value extracted from the header is greater than this value, stop the stream.
+        type: number
+        examples:
+          - 3600
       $parameters:
         type: object
         additionalProperties: true
@@ -2556,11 +2735,13 @@ interpolation:
       description: Converts a datetime or a datetime-string to the specified format.
       arguments:
         datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601.
-        format: The datetime format
+        format: The datetime format.
+        input_format: (optional) The datetime format in the case it is an string.
       return_type: str
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ', '%a, %d %b %Y %H:%M:%S %z') }}"
   filters:
     - title: Hash
       description: Convert the specified value to a hashed string.
@@ -2591,3 +2772,10 @@ interpolation:
       examples:
         - '{{ 1 | string }} -> "1"'
         - '{{ ["hello", "world" | string }} -> "["hello", "world"]"'
+    - title: Regex Search
+      description: Match the input string against a regular expression and return the first match.
+      arguments:
+        regex: The regular expression to search for. It must include a capture group.
+      return_type: str
+      examples:
+        - '{{ "goodbye, cruel world" | regex_search("goodbye,\s(.*)$") }} -> "cruel world"'

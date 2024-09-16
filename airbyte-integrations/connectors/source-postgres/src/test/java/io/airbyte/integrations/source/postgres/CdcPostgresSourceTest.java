@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,11 +85,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
 
   @Override
   protected void assertExpectedStateMessageCountMatches(final List<? extends AirbyteStateMessage> stateMessages, long totalCount) {
-    // Count has been disabled due to we do not support RFR for non resumeable full refresh.
-    // AtomicLong count = new AtomicLong(0L);
-    // stateMessages.stream().forEach(stateMessage ->
-    // count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
-    // assertEquals(totalCount, count.get());
+    AtomicLong count = new AtomicLong(0L);
+    stateMessages.stream().forEach(stateMessage -> count.addAndGet(stateMessage.getSourceStats().getRecordCount().longValue()));
+    assertEquals(totalCount, count.get());
   }
 
   @Override
@@ -268,19 +267,28 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
   }
 
   @Override
-  @Test
-  protected void testCdcAndNonResumableFullRefreshInSameSync() throws Exception {}
-
-  @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<? extends AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+    // First message emitted in the WASS case is a CDC state message. This should have a different
+    // global state (LSN) as compared to the previous
+    // finishing state. The streams in snapshot phase should be the one that is completed at that point.
     assertEquals(7, stateMessages.size(), stateMessages.toString());
-    for (int i = 0; i <= 4; i++) {
+    final AirbyteStateMessage cdcStateMessage = stateMessages.get(0);
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), cdcStateMessage.getGlobal().getSharedState());
+    Set<StreamDescriptor> streamsInSnapshotState = cdcStateMessage.getGlobal().getStreamStates()
+        .stream()
+        .map(AirbyteStreamState::getStreamDescriptor)
+        .collect(Collectors.toSet());
+    assertEquals(1, streamsInSnapshotState.size());
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
+
+    for (int i = 1; i <= 5; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
-      assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
-      assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-          stateMessage.getGlobal().getSharedState());
-      final Set<StreamDescriptor> streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
+      // Shared state should not be the same as the first (CDC) state message as it should not change in
+      // initial sync.
+      assertEquals(cdcStateMessage.getGlobal().getSharedState(), stateMessage.getGlobal().getSharedState());
+      streamsInSnapshotState.clear();
+      streamsInSnapshotState = stateMessage.getGlobal().getStreamStates()
           .stream()
           .map(AirbyteStreamState::getStreamDescriptor)
           .collect(Collectors.toSet());
@@ -301,11 +309,13 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       });
     }
 
-    final AirbyteStateMessage secondLastSateMessage = stateMessages.get(5);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, secondLastSateMessage.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        secondLastSateMessage.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSnapshotState = secondLastSateMessage.getGlobal().getStreamStates()
+    // The last message emitted should indicate that initial PK load has finished for both streams.
+    final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
+    assertEquals(AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertEquals(cdcStateMessage.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+    streamsInSnapshotState.clear();
+    streamsInSnapshotState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
         .collect(Collectors.toSet());
@@ -313,25 +323,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
     assertTrue(
         streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
     assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
-    secondLastSateMessage.getGlobal().getStreamStates().forEach(s -> {
+    stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates().forEach(s -> {
       final JsonNode streamState = s.getStreamState();
       assertFalse(streamState.has(STATE_TYPE_KEY));
     });
-
-    final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateMessages.get(6);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
-        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
-    final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
-        .stream()
-        .map(AirbyteStreamState::getStreamDescriptor)
-        .collect(Collectors.toSet());
-    assertEquals(2, streamsInSnapshotState.size());
-    assertTrue(
-        streamsInSyncCompletionState.contains(
-            new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(randomSchema())));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(modelsSchema())));
-    assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
   }
 
   @Test
@@ -454,10 +449,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
       assertNotNull(global.getSharedState());
       assertEquals(2, global.getStreamStates().size());
 
-      if (i <= 3) {
+      if (i <= 4) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first
+          // First 5 state messages are ctid state for the stream that didn't complete ctid sync the first
           // time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
@@ -467,7 +462,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
           }
         });
       } else {
-        // last 2 state messages don't contain ctid info cause ctid sync should be complete
+        // last state messages doesn't contain ctid info cause ctid sync should be complete
         global.getStreamStates().forEach(c -> assertFalse(c.getStreamState().has(STATE_TYPE_KEY)));
       }
     }

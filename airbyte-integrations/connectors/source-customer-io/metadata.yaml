@@ -1,43 +1,35 @@
 data:
   allowedHosts:
     hosts:
-      - https://api.customer.io/v1/
+      - api.customer.io
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-customer-io
-  registries:
+  registryOverrides:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/source-declarative-manifest:4.4.3@sha256:8937b693c7e01087f6e86e683826ac20f160f7952b8f0a13cbf4f9bfdd7af570
   connectorSubtype: api
   connectorType: source
   definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-customer-io
   githubIssueLabel: source-customer-io
   icon: customer-io.svg
   license: MIT
-  name: Customer Io
+  name: Customer.io
   releaseDate: 2023-08-20
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/customer-io
   tags:
-    - language:python
     - cdk:low-code
-  # Disabling acceptance tests for now
-  # They are not passing
-  # No Airbyte Cloud usage
-  # connectorTestSuitesOptions:
-  #   - suite: acceptanceTests
-  #     testSecrets:
-  #       - name: SECRET_SOURCE-CUSTOMERIO__CREDS
-  #         fileName: config.json
-  #         secretStore:
-  #           type: GSM
-  #           alias: airbyte-connector-testing-secret-store
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
+    - language:manifest-only
 metadataSpecVersion: "1.0"

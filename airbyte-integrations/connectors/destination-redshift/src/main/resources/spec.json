@@ -180,60 +180,6 @@
                 "description": "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details.",
                 "default": true,
                 "order": 6
-              },
-              "encryption": {
-                "title": "Encryption",
-                "type": "object",
-                "description": "How to encrypt the staging data",
-                "default": { "encryption_type": "none" },
-                "oneOf": [
-                  {
-                    "title": "No encryption",
-                    "description": "Staging data will be stored in plaintext.",
-                    "type": "object",
-                    "required": ["encryption_type"],
-                    "properties": {
-                      "encryption_type": {
-                        "type": "string",
-                        "const": "none",
-                        "enum": ["none"],
-                        "default": "none"
-                      }
-                    }
-                  },
-                  {
-                    "title": "AES-CBC envelope encryption",
-                    "description": "Staging data will be encrypted using AES-CBC envelope encryption.",
-                    "type": "object",
-                    "required": ["encryption_type"],
-                    "properties": {
-                      "encryption_type": {
-                        "type": "string",
-                        "const": "aes_cbc_envelope",
-                        "enum": ["aes_cbc_envelope"],
-                        "default": "aes_cbc_envelope"
-                      },
-                      "key_encrypting_key": {
-                        "type": "string",
-                        "title": "Key",
-                        "description": "The key, base64-encoded. Must be either 128, 192, or 256 bits. Leave blank to have Airbyte generate an ephemeral key for each sync.",
-                        "airbyte_secret": true
-                      }
-                    }
-                  }
-                ],
-                "order": 7
-              }
-            }
-          },
-          {
-            "title": "Standard",
-            "required": ["method"],
-            "description": "<i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use S3 uploading.",
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
               }
             }
           }
@@ -244,7 +190,7 @@
         "description": "The schema to write raw tables into (default: airbyte_internal).",
         "title": "Destinations V2 Raw Table Schema",
         "order": 9,
-        "group": "connection"
+        "group": "tables"
       },
       "disable_type_dedupe": {
         "type": "boolean",
@@ -252,20 +198,25 @@
         "description": "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
         "title": "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
         "order": 11,
-        "group": "connection"
+        "group": "tables"
       },
       "drop_cascade": {
         "type": "boolean",
         "default": false,
         "description": "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
         "title": "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)",
-        "order": 12
+        "order": 12,
+        "group": "tables"
       }
     },
     "groups": [
       {
         "id": "connection",
         "title": "Connection"
+      },
+      {
+        "id": "tables",
+        "title": "Tables"
       }
     ]
   }

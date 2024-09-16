@@ -41,7 +41,7 @@ class SnowflakeCortexIndexingModel(BaseModel):
         ...,
         title="Warehouse",
         order=3,
-        description="Enter the name of the warehouse that you want to sync data into",
+        description="Enter the name of the warehouse that you want to use as a compute cluster",
         examples=["AIRBYTE_WAREHOUSE"],
     )
     database: str = Field(
