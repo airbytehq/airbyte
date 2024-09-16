@@ -1,6 +1,6 @@
 # Troubleshooting abctl
 
-In this page you're going to find common errors users reported trying to use `abctl`.
+This guide will help you navigate any issues with deploying Airbyte. This guide is intended for users of `abctl`.
 
 ## Common Errors
 
