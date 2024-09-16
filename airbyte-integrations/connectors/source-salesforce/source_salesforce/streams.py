@@ -20,12 +20,17 @@ import requests  # type: ignore[import]
 from airbyte_cdk import (
     BearerAuthenticator,
     DeclarativeStream,
+    CursorPaginationStrategy,
+    DeclarativeStream,
+    DefaultPaginator,
     DpathExtractor,
     HttpMethod,
     HttpRequester,
     JsonDecoder,
     RecordSelector,
-    SinglePartitionRouter,
+    RequestOption,
+    RequestOptionType,
+    SimpleRetriever,
     StreamSlice,
 )
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
@@ -33,6 +38,7 @@ from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobO
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.decoders import NoopDecoder
 from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
@@ -538,9 +544,9 @@ class BulkSalesforceStream(SalesforceStream):
         )
         # "GET", url, headers = {"Accept-Encoding": "gzip"}, request_kwargs = {"stream": True}
         download_id_interpolation = "{{stream_slice['url']}}"
-        ResponseToFileExtractor()
+        job_download_components_name = f"{self.name} - download requester"
         download_requester = HttpRequester(
-            name=f"{self.name} - download requester",
+            name=job_download_components_name,
             url_base=url_base,
             path=f"{job_query_path}/{download_id_interpolation}/results",
             authenticator=authenticator,
@@ -561,6 +567,41 @@ class BulkSalesforceStream(SalesforceStream):
             use_cache=False,
             stream_response=True,
         )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=DefaultPaginator(
+                decoder=NoopDecoder(),
+                page_size_option=None,
+                page_token_option=RequestOption(
+                    field_name="locator",
+                    inject_into=RequestOptionType.request_parameter,
+                    parameters={},
+                ),
+                pagination_strategy=CursorPaginationStrategy(
+                    cursor_value="{{ headers['Sforce-Locator'] }}",
+                    stop_condition="{{ headers.get('Sforce-Locator', None) == 'null' or not headers.get('Sforce-Locator', None) }}",
+                    decoder=NoopDecoder(),
+                    config=config,
+                    parameters={},
+                ),
+                url_base=url_base,
+                config=config,
+                parameters={},
+            ),
+            config=config,
+            parameters={},
+        )
+
         abort_requester = HttpRequester(
             name=f"{self.name} - abort requester",
             url_base=url_base,
@@ -603,7 +644,7 @@ class BulkSalesforceStream(SalesforceStream):
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
-            download_requester=download_requester,
+            download_retriever=download_retriever,
             abort_requester=abort_requester,
             delete_requester=delete_requester,
             status_extractor=status_extractor,
@@ -635,6 +676,7 @@ class BulkSalesforceStream(SalesforceStream):
                     job_repository,
                     stream_slices,
                     self._job_tracker,
+                    exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},

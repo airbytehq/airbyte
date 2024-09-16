@@ -44,6 +44,20 @@
             },
             "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
             "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Read Changes using Change Data Capture (CDC)",
+            "required": ["cursor_method"],
+            "properties": {
+              "cursor_method": {
+                "enum": ["cdc"],
+                "type": "string",
+                "default": "cdc"
+              }
+            },
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "additionalProperties": true
           }
         ],
         "order": 10,

@@ -2,8 +2,9 @@
 
 import logging
 import time
+import traceback
 from itertools import chain
-from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
+from typing import Any, Generator, Iterable, List, Mapping, Optional, Set, Tuple, Type
 
 from airbyte_cdk import StreamSlice
 from airbyte_cdk.logger import lazy_log
@@ -87,6 +88,7 @@ class AsyncJobOrchestrator:
         job_repository: AsyncJobRepository,
         slices: Iterable[StreamSlice],
         job_tracker: JobTracker,
+        exceptions_to_break_on: Iterable[Type[Exception]] = tuple(),
     ) -> None:
         if {*AsyncJobStatus} != self._KNOWN_JOB_STATUSES:
             # this is to prevent developers updating the possible statuses without updating the logic of this class
@@ -99,6 +101,7 @@ class AsyncJobOrchestrator:
         self._running_partitions: List[AsyncPartition] = []
         self._job_tracker = job_tracker
         self._has_started_a_job = False
+        self._exceptions_to_break_on: Tuple[Type[Exception], ...] = tuple(exceptions_to_break_on)
 
     def _replace_failed_jobs(self, partition: AsyncPartition) -> None:
         failed_status_jobs = (AsyncJobStatus.FAILED, AsyncJobStatus.TIMED_OUT)
@@ -155,6 +158,15 @@ class AsyncJobOrchestrator:
             Set[AsyncJob]: A set of AsyncJob objects that are currently running.
         """
         return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.RUNNING}
+
+    def _get_timeout_jobs(self) -> Set[AsyncJob]:
+        """
+        Returns a set of timeouted AsyncJob objects.
+
+        Returns:
+            Set[AsyncJob]: A set of AsyncJob objects that are currently running.
+        """
+        return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.TIMED_OUT}
 
     def _update_jobs_status(self) -> None:
         """
@@ -285,13 +297,32 @@ class AsyncJobOrchestrator:
             Each partition is wrapped in an Optional, allowing for None values.
         """
         while True:
-            self._start_jobs()
+            try:
+                self._start_jobs()
+            except self._exceptions_to_break_on as e:
+                self._abort_all_running_jobs()
+                raise e
+            except AirbyteTracedException as e:
+                if e.failure_type == FailureType.config_error:
+                    LOGGER.error(f"Failed to start the Job because of a config error. Breaking the stream because of: {e}, traceback: {traceback.format_exc()}")
+                    raise e
+                self._log_non_breaking_error(e)
+            except Exception as e:
+                self._log_non_breaking_error(e)
             if self._has_started_a_job and not self._running_partitions:
                 break
 
             self._update_jobs_status()
             yield from self._process_running_partitions_and_yield_completed_ones()
             self._wait_on_status_update()
+
+    def _log_non_breaking_error(self, exception: Exception) -> None:
+        LOGGER.error(f"Failed to start the Job: {exception}, traceback: {traceback.format_exc()}")
+
+    def _abort_all_running_jobs(self) -> None:
+        [self._job_repository.abort(job) for job in self._get_running_jobs() | self._get_timeout_jobs()]
+
+        self._running_partitions = []
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:
         """

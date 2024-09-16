@@ -246,6 +246,14 @@ Here's a list of common customizations.
 
 ## Migrating from Docker Compose (Optional)
 
+:::note
+
+If you're using an external database or secret manager you don't need to run `--migrate` flag.
+You must create the `secrets.yaml` and `values.yaml` and then run `abctl local install --values ./values.yaml --secret ./secrets.yaml`.
+Please check [instructions](../../deploying-airbyte/integrations/database.md) to setup the external database as example.
+
+:::
+
 If you have data that you would like to migrate from an existing docker compose instance follow the steps below:
 
 1. Make sure that you have stopped the instance running in docker compose, this may require the following command:

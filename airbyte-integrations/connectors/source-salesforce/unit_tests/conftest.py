@@ -7,7 +7,7 @@ from typing import Any, List, Mapping
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_protocol.models import AirbyteStateMessage
@@ -30,14 +30,14 @@ def time_sleep_mock(mocker):
 def bulk_catalog():
     with (pathlib.Path(__file__).parent / "bulk_catalog.json").open() as f:
         data = json.loads(f.read())
-    return ConfiguredAirbyteCatalog.parse_obj(data)
+    return ConfiguredAirbyteCatalogSerializer.load(data)
 
 
 @pytest.fixture(scope="module")
 def rest_catalog():
     with (pathlib.Path(__file__).parent / "rest_catalog.json").open() as f:
         data = json.loads(f.read())
-    return ConfiguredAirbyteCatalog.parse_obj(data)
+    return ConfiguredAirbyteCatalogSerializer.load(data)
 
 
 @pytest.fixture(scope="module")
