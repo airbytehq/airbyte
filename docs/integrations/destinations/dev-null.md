@@ -8,7 +8,8 @@ The Airbyte `dev-null` Destination. This destination is for testing and debuggin
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------- |
+|:--------|:-----------|:---------------------------------------------------------|:------------------|
+| 0.7.0   | 2024-09-20 | [45704](https://github.com/airbytehq/airbyte/pull/45704)                                                     | Port to Bulk CDK  |
 | 0.3.3   | 2023-05-08 | [38118](https://github.com/airbytehq/airbyte/pull/38118) | Support dedup     |
 | 0.3.2   | 2023-05-08 | [25776](https://github.com/airbytehq/airbyte/pull/25776) | Support Refreshes |
 | 0.3.0   | 2023-05-08 | [25776](https://github.com/airbytehq/airbyte/pull/25776) | Change Schema     |
