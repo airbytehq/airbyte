@@ -10,13 +10,13 @@ import backoff
 import pendulum
 from datetime import datetime, timedelta
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import CheckpointMixin, Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v17.services.services.google_ads_service.pagers import SearchPager
-from google.ads.googleads.v17.services.types.google_ads_service import SearchGoogleAdsResponse
+from google.ads.googleads.v15.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v15.services.types.google_ads_service import SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, ServiceUnavailable, TooManyRequests, Unauthenticated
 from grpc import StatusCode
 
@@ -98,7 +98,7 @@ class GoogleAdsStream(Stream, ABC):
             yield from self.parse_response(response, stream_slice)
 
 
-class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
+class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     primary_key = None
     days_of_data_storage = None
     cursor_field = "segments.date"
@@ -132,12 +132,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, CheckpointMixin, ABC):
 
     def get_current_state(self, customer_id, default=None):
         default = default or self.state.get(self.cursor_field)
-        if self.state is not None:
-            customer = self.state.get(customer_id, {})
-            if isinstance(customer, MutableMapping):
-                return customer.get(self.cursor_field)
-        else:
-            return default
+        return self.state.get(customer_id, {}).get(self.cursor_field) or default
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
@@ -665,7 +660,7 @@ class ChangeStatus(IncrementalGoogleAdsStream):
         return query
 
 
-class IncrementalEventsStream(GoogleAdsStream, CheckpointMixin, ABC):
+class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
     """
     Abstract class used for getting incremental updates based on events returned from ChangeStatus stream.
     Only Ad Group Criterion and Campaign Criterion streams are fetched using this class, for other resources
