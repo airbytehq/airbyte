@@ -3,6 +3,8 @@
 import logging
 import time
 import traceback
+import uuid
+from datetime import timedelta
 from itertools import chain
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set, Tuple, Type
 
@@ -17,6 +19,7 @@ from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 LOGGER = logging.getLogger("airbyte")
+_NO_TIMEOUT = timedelta.max
 
 
 class AsyncPartition:
@@ -104,7 +107,6 @@ class AsyncJobOrchestrator:
         self._exceptions_to_break_on: Tuple[Type[Exception], ...] = tuple(exceptions_to_break_on)
 
         self._has_started_a_job = False
-        self._has_consumed_every_slice = True
         self._non_breaking_exceptions: List[Exception] = []
 
     def _replace_failed_jobs(self, partition: AsyncPartition) -> None:
@@ -135,8 +137,6 @@ class AsyncJobOrchestrator:
                 job = self._start_job(_slice)
                 self._has_started_a_job = True
                 self._running_partitions.append(AsyncPartition([job], _slice))
-            else:
-                self._has_consumed_every_slice = True
         except ConcurrentJobLimitReached:
             if at_least_one_slice_consumed_from_slice_iterator_during_current_iteration:
                 # this means a slice has been consumed and we need to put it back at the beginning of the _slice_iterator
@@ -148,12 +148,47 @@ class AsyncJobOrchestrator:
             id_to_replace = previous_job_id
         else:
             id_to_replace = self._job_tracker.try_to_get_intent()
+
         try:
             job = self._job_repository.start(_slice)
             self._job_tracker.add_job(id_to_replace, job.api_job_id())
-        except Exception as exception:
-            self._job_tracker.remove_job(id_to_replace)
+            return job
+        except self._exceptions_to_break_on as exception:
+            LOGGER.warning(f"Caught exception that stops the processing of the jobs: {exception}")
+            self._stop_orchestrator(id_to_replace)
             raise exception
+        except AirbyteTracedException as exception:
+            if exception.failure_type == FailureType.config_error:
+                LOGGER.error(
+                    f"Failed to start the Job because of a config error. Breaking the stream because of: {exception}, traceback: {traceback.format_exc()}"
+                )
+                self._stop_orchestrator(id_to_replace)
+                raise exception
+
+            return self._swap_real_job_by_failed_job(_slice, exception, id_to_replace)
+        except Exception as exception:
+            return self._swap_real_job_by_failed_job(_slice, exception, id_to_replace)
+
+    def _stop_orchestrator(self, id_to_release_budget: str) -> None:
+        self._abort_all_running_jobs()
+        self._job_tracker.remove_job(id_to_release_budget)
+
+    def _swap_real_job_by_failed_job(self, _slice: StreamSlice, exception: Exception, intent: str) -> AsyncJob:
+        """
+        We have a mechanist to retry job. It is used when a job status is FAILED or TIMED_OUt. The easiest way to retry is to have this job
+        as created in a failed state and leverage the retry for failed/timed out jobs. This way, we don't have to have another process for
+        retrying jobs that couldn't be started.
+        """
+        LOGGER.warning(
+            f"Could not start job for slice {_slice}. Job will be flagged as failed and retried if max number of attempts not reached: {exception}"
+        )
+        job = self._create_failed_job(_slice)
+        self._job_tracker.add_job(intent, job.api_job_id())
+        return job
+
+    def _create_failed_job(self, stream_slice: StreamSlice) -> AsyncJob:
+        job = AsyncJob(f"{uuid.uuid4()} - Job that could not start", stream_slice, _NO_TIMEOUT)
+        job.update_status(AsyncJobStatus.FAILED)
         return job
 
     def _get_running_jobs(self) -> Set[AsyncJob]:
@@ -286,9 +321,11 @@ class AsyncJobOrchestrator:
             AirbyteTracedException: If at least one job could not be completed.
         """
         status_by_job_id = {job.api_job_id(): job.status() for job in partition.jobs}
-        raise AirbyteTracedException(
-            message=f"At least one job could not be completed. Job statuses were: {status_by_job_id}",
-            failure_type=FailureType.system_error,
+        self._non_breaking_exceptions.append(
+            AirbyteTracedException(
+                message=f"At least one job could not be completed for slice {partition.stream_slice}. Job statuses were: {status_by_job_id}. See warning logs for more information.",
+                failure_type=FailureType.config_error,
+            )
         )
 
     def create_and_get_completed_partitions(self) -> Iterable[AsyncPartition]:
@@ -303,19 +340,8 @@ class AsyncJobOrchestrator:
             Each partition is wrapped in an Optional, allowing for None values.
         """
         while True:
-            try:
-                self._start_jobs()
-            except self._exceptions_to_break_on as e:
-                self._abort_all_running_jobs()
-                raise e
-            except AirbyteTracedException as e:
-                if e.failure_type == FailureType.config_error:
-                    LOGGER.error(f"Failed to start the Job because of a config error. Breaking the stream because of: {e}, traceback: {traceback.format_exc()}")
-                    raise e
-                self._handle_non_breaking_error(e)
-            except Exception as e:
-                self._handle_non_breaking_error(e)
-            if (self._has_started_a_job or self._has_consumed_every_slice) and not self._running_partitions:
+            self._start_jobs()
+            if self._has_started_a_job and not self._running_partitions:
                 break
 
             self._update_jobs_status()
@@ -335,7 +361,9 @@ class AsyncJobOrchestrator:
         self._non_breaking_exceptions.append(exception)
 
     def _abort_all_running_jobs(self) -> None:
-        [self._job_repository.abort(job) for job in self._get_running_jobs() | self._get_timeout_jobs()]
+        for job in self._get_running_jobs() | self._get_timeout_jobs():
+            self._job_repository.abort(job)
+            self._job_tracker.remove_job(job.api_job_id())
 
         self._running_partitions = []
 

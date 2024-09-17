@@ -217,9 +217,10 @@ class AsyncJobOrchestratorTest(TestCase):
     @mock.patch(sleep_mock_target)
     def test_given_exception_when_start_job_and_skip_this_exception(self, mock_sleep: MagicMock) -> None:
         self._job_repository.start.side_effect = [
-            self._job_for_a_slice,
             AirbyteTracedException("Something went wrong. Expected error"),
             self._job_for_another_slice,
+            AirbyteTracedException("Something went wrong. Expected error"),
+            AirbyteTracedException("Something went wrong. Expected error"),
         ]
         self._job_repository.update_jobs_status.side_effect = _status_update_per_jobs(
             {
@@ -229,14 +230,13 @@ class AsyncJobOrchestratorTest(TestCase):
         )
         orchestrator = AsyncJobOrchestrator(
             self._job_repository,
-            [_A_STREAM_SLICE, _A_STREAM_SLICE,
-             _ANOTHER_STREAM_SLICE],
+            [_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE],
             JobTracker(_NO_JOB_LIMIT),
         )
 
         partitions, exception = self._accumulate_create_and_get_completed_partitions(orchestrator)
 
-        assert len(partitions) == 2
+        assert len(partitions) == 1  # only _job_for_another_slice has succeeded
         assert exception.failure_type == FailureType.config_error  # type: ignore  # exception should be of type AirbyteTracedException
 
     @mock.patch(sleep_mock_target)
