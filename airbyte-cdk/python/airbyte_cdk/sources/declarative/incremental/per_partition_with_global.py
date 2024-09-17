@@ -4,11 +4,10 @@
 
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor, iterate_with_last_flag
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, CursorFactory
-
+from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
+from airbyte_cdk.sources.declarative.incremental.global_substream_cursor import GlobalSubstreamCursor, iterate_with_last_flag
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
@@ -17,31 +16,49 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
     """
     Manages state for streams with multiple partitions, with an optional fallback to a global cursor when specific conditions are met.
 
-    This cursor is designed to handle cases where a stream is partitioned, allowing state management per partition. However, if a certain condition is met (e.g., the number of records in a partition exceeds 5 times a defined limit), the cursor will fallback to a global state.
+    This cursor handles partitioned streams by maintaining individual state per partition using `PerPartitionCursor`. If the number of partitions exceeds a defined limit, it switches to a global cursor (`GlobalSubstreamCursor`) to manage state more efficiently.
 
-    ## Overview
+    **Overview**
 
-    Given a stream with many partitions, it is crucial to maintain a state per partition to avoid data loss or duplication. This class provides a mechanism to handle such cases and ensures that the stream's state is accurately maintained.
+    - **Partition-Based State**: Initially manages state per partition to ensure accurate processing of each partition's data.
+    - **Global Fallback**: Switches to a global cursor when the partition limit is exceeded to handle state management more effectively.
 
-    ## State Management
+    **Switching Logic**
 
-    - **Partition-Based State**: Manages state individually for each partition, ensuring that each partition's data is processed correctly and independently.
-    - **Global Fallback**: Switches to a global cursor when a predefined condition is met (e.g., the number of records in a partition exceeds a certain threshold). This ensures that the system can handle cases where partition-based state management is no longer efficient or viable.
+    - Monitors the number of partitions.
+    - If `PerPartitionCursor.limit_reached()` returns `True`, sets `_use_global_cursor` to `True`, activating the global cursor.
 
-    ## Example State Structure
+    **Active Cursor Selection**
+
+    - Uses the `_get_active_cursor()` helper method to select the active cursor based on the `_use_global_cursor` flag.
+    - This simplifies the logic and ensures consistent cursor usage across methods.
+
+    **State Structure Example**
 
     ```json
     {
         "states": [
-            {"partition_key": "partition_1": "cursor_field": "2021-01-15"},
-            {"partition_key": "partition_2": "cursor_field": "2021-02-14"}
-        [,
+            {
+                "partition": {"partition_key": "partition_1"},
+                "cursor": {"cursor_field": "2021-01-15"}
+            },
+            {
+                "partition": {"partition_key": "partition_2"},
+                "cursor": {"cursor_field": "2021-02-14"}
+            }
+        ],
         "state": {
             "cursor_field": "2021-02-15"
         },
         "use_global_cursor": false
     }
     ```
+
+    In this example, the cursor is using partition-based state management (`"use_global_cursor": false`), maintaining separate cursor states for each partition.
+
+    **Usage Scenario**
+
+    Suitable for streams where the number of partitions may vary significantly, requiring dynamic switching between per-partition and global state management to ensure data consistency and efficient synchronization.
     """
 
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter, stream_cursor: DatetimeBasedCursor):
@@ -50,15 +67,22 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         self._global_cursor = GlobalSubstreamCursor(stream_cursor, partition_router)
         self._use_global_cursor = False
 
+    def _get_active_cursor(self) -> Union[PerPartitionCursor, GlobalSubstreamCursor]:
+        return self._global_cursor if self._use_global_cursor else self._per_partition_cursor
+
     def stream_slices(self) -> Iterable[StreamSlice]:
         self._global_cursor.start_slices_generation()
 
         # Iterate through partitions and process slices
         for partition, is_last_partition in iterate_with_last_flag(self._partition_router.stream_slices()):
-            cursor = self._global_cursor if self._use_global_cursor else self._per_partition_cursor
             # Generate slices for the current cursor and handle the last slice using the flag
+            if partition is None:
+                continue
             for slice, is_last_slice in iterate_with_last_flag(
-                    cursor.generate_slices_from_partition(partition=partition)):
+                self._get_active_cursor().generate_slices_from_partition(partition=partition)
+            ):
+                if slice is None:
+                    continue
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
 
@@ -94,10 +118,7 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         return final_state
 
     def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
-        if self._use_global_cursor:
-            return self._global_cursor.select_state(stream_slice)
-        else:
-            return self._per_partition_cursor.select_state(stream_slice)
+        return self._get_active_cursor().select_state(stream_slice)
 
     def get_request_params(
         self,
@@ -106,18 +127,11 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        if self._use_global_cursor:
-            return self._global_cursor.get_request_params(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
-        else:
-            return self._per_partition_cursor.get_request_params(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
+        return self._get_active_cursor().get_request_params(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
     def get_request_headers(
         self,
@@ -126,18 +140,11 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        if self._use_global_cursor:
-            return self._global_cursor.get_request_headers(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
-        else:
-            return self._per_partition_cursor.get_request_headers(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
+        return self._get_active_cursor().get_request_headers(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
     def get_request_body_data(
         self,
@@ -146,19 +153,11 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
-        if self._use_global_cursor:
-            return self._global_cursor.get_request_body_data(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
-        else:
-            return self._per_partition_cursor.get_request_body_data(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
-
+        return self._get_active_cursor().get_request_body_data(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
     def get_request_body_json(
         self,
@@ -167,18 +166,11 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        if self._use_global_cursor:
-            return self._global_cursor.get_request_body_json(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
-        else:
-            return self._per_partition_cursor.get_request_body_json(
-                stream_state=stream_state,
-                stream_slice=stream_slice,
-                next_page_token=next_page_token,
-            )
+        return self._get_active_cursor().get_request_body_json(
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
 
     def should_be_synced(self, record: Record) -> bool:
         return self._global_cursor.should_be_synced(record) or self._per_partition_cursor.should_be_synced(record)

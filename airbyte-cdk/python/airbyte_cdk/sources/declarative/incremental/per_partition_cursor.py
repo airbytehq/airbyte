@@ -11,6 +11,8 @@ from airbyte_cdk.sources.declarative.partition_routers.partition_router import P
 from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
+logger = logging.getLogger("airbyte")
+
 
 class CursorFactory:
     def __init__(self, create_function: Callable[[], DeclarativeCursor]):
@@ -54,7 +56,6 @@ class PerPartitionCursor(DeclarativeCursor):
         # The dict is ordered to ensure that once the maximum number of partitions is reached,
         # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
-        self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._over_limit = 0
         self._partition_serializer = PerPartitionKeySerializer()
 
@@ -83,7 +84,7 @@ class PerPartitionCursor(DeclarativeCursor):
         while len(self._cursor_per_partition) > self.DEFAULT_MAX_PARTITIONS_NUMBER - 1:
             self._over_limit += 1
             oldest_partition = self._cursor_per_partition.popitem(last=False)[0]  # Remove the oldest partition
-            logging.warning(
+            logger.warning(
                 f"The maximum number of partitions has been reached. Dropping the oldest partition: {oldest_partition}. Over limit: {self._over_limit}."
             )
 
