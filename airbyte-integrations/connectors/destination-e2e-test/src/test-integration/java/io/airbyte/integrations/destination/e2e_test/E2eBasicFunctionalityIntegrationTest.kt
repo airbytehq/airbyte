@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.e2e_test
 
+import io.airbyte.cdk.test.spec.SpecTest
 import io.airbyte.cdk.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.test.write.BasicFunctionalityIntegrationTest
@@ -27,3 +28,5 @@ class E2eBasicFunctionalityIntegrationTest :
         super.testBasicWrite()
     }
 }
+
+class E2eSpecTest : SpecTest()
