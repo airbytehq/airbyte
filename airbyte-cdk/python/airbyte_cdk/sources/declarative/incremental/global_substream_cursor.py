@@ -4,7 +4,7 @@
 
 import threading
 import time
-from typing import Any, Iterable, Mapping, Optional, TypeVar, Union
+from typing import Any, Iterable, Mapping, Optional, Union, TypeVar
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
@@ -54,8 +54,8 @@ class Timer:
         self._start = time.perf_counter_ns()
 
     def finish(self) -> int:
-        if self._start:
-            return ((time.perf_counter_ns() - self._start) / 1e9).__ceil__()
+        if self._start is not None:
+            return (time.perf_counter_ns() - self._start + 999_999_999) // 1_000_000_000
         else:
             raise RuntimeError("Global substream cursor timer not started")
 
