@@ -1,7 +1,6 @@
 *
-!Dockerfile
-!Dockerfile.test
-!main.py
 !source_google_ads
-!setup.py
-!secrets
+!main.py
+!poetry.lock
+!pyproject.toml
+!README.md
