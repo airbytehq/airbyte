@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the issue type scheme.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name given to the issue type scheme.",
+      "type": "string"
+    },
+    "description": {
+      "description": "A brief description of the issue type scheme.",
+      "type": "string"
+    },
+    "defaultIssueTypeId": {
+      "description": "The ID of the default issue type associated with the issue type scheme.",
+      "type": "string"
+    },
+    "isDefault": {
+      "description": "Indicates whether the issue type scheme is set as the default.",
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details of an issue type scheme."
+}

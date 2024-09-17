@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "2af123bf-0aaf-4e0d-9784-cb497f23741a",
-  "name": "Appstore",
-  "dockerRepository": "airbyte/source-appstore-singer",
-  "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-appstore-singer",
-  "icon": "appstore.svg"
-}

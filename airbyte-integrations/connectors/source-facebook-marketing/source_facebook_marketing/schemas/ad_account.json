@@ -1,0 +1,348 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "account_id": {
+      "description": "The unique identifier for the Facebook ad account.",
+      "type": ["null", "string"]
+    },
+    "account_status": {
+      "description": "The status of the Facebook ad account.",
+      "type": ["null", "integer"]
+    },
+    "age": {
+      "description": "Age associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "amount_spent": {
+      "description": "Total amount spent on ads by the ad account.",
+      "type": ["null", "string"]
+    },
+    "balance": {
+      "description": "Current balance of the ad account.",
+      "type": ["null", "string"]
+    },
+    "business": {
+      "description": "Represents information about the business associated with the ad account.",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "The unique identifier for the associated business.",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "Name of the associated business.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "business_city": {
+      "description": "City associated with the business.",
+      "type": ["null", "string"]
+    },
+    "business_country_code": {
+      "description": "Country code associated with the business.",
+      "type": ["null", "string"]
+    },
+    "business_name": {
+      "description": "Name of the business.",
+      "type": ["null", "string"]
+    },
+    "business_state": {
+      "description": "State associated with the business.",
+      "type": ["null", "string"]
+    },
+    "business_street": {
+      "description": "Street address of the business.",
+      "type": ["null", "string"]
+    },
+    "business_street2": {
+      "description": "Additional street information of the business.",
+      "type": ["null", "string"]
+    },
+    "business_zip": {
+      "description": "ZIP code associated with the business.",
+      "type": ["null", "string"]
+    },
+    "can_create_brand_lift_study": {
+      "description": "Flag indicating if the ad account can create brand lift studies.",
+      "type": ["null", "boolean"]
+    },
+    "capabilities": {
+      "description": "Specifies the capabilities of the ad account.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "List of capabilities associated with the ad account.",
+        "type": "string"
+      }
+    },
+    "created_time": {
+      "description": "Date and time when the ad account was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "currency": {
+      "description": "Currency used by the ad account.",
+      "type": ["null", "string"]
+    },
+    "disable_reason": {
+      "description": "Reason for disabling the ad account.",
+      "type": ["null", "number"]
+    },
+    "end_advertiser": {
+      "description": "The end advertiser associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "end_advertiser_name": {
+      "description": "Name of the end advertiser.",
+      "type": ["null", "string"]
+    },
+    "extended_credit_invoice_group": {
+      "description": "Contains details about the extended credit invoice group linked to the ad account.",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "Unique identifier for the extended credit invoice group.",
+          "type": ["null", "string"]
+        },
+        "auto_enroll": {
+          "description": "Flag indicating if auto-enroll is enabled.",
+          "type": ["null", "boolean"]
+        },
+        "customer_po_number": {
+          "description": "Customer's PO number.",
+          "type": ["null", "string"]
+        },
+        "email": {
+          "description": "Email address associated with the extended credit invoice group.",
+          "type": ["null", "string"]
+        },
+        "emails": {
+          "description": "Emails associated with the extended credit invoice group.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "List of email addresses associated with the extended credit invoice group.",
+            "type": ["null", "string"]
+          }
+        },
+        "name": {
+          "description": "Name of the extended credit invoice group.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "failed_delivery_checks": {
+      "description": "List of failed delivery checks performed for the ad account.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "summary": {
+            "description": "Summary of the failed delivery check.",
+            "type": ["null", "string"]
+          },
+          "description": {
+            "description": "Description of the failed delivery check.",
+            "type": ["null", "string"]
+          },
+          "check_name": {
+            "description": "Name of the failed delivery check.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "fb_entity": {
+      "description": "Facebook entity associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "funding_source": {
+      "description": "Source of funding for the ad account.",
+      "type": ["null", "number"]
+    },
+    "funding_source_details": {
+      "description": "Provides information about the funding source linked to the ad account.",
+      "type": ["null", "object"],
+      "properties": {
+        "display_string": {
+          "description": "Display string for the funding source details.",
+          "type": ["null", "string"]
+        },
+        "id": {
+          "description": "Unique identifier for the funding source.",
+          "type": ["null", "string"]
+        },
+        "type": {
+          "description": "Type of the funding source.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "has_migrated_permissions": {
+      "description": "Flag indicating if permissions have been migrated.",
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "description": "Unique identifier for the ad account.",
+      "type": ["null", "string"]
+    },
+    "io_number": {
+      "description": "IO number associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "is_attribution_spec_system_default": {
+      "description": "Flag indicating if attribution specification is system default.",
+      "type": ["null", "boolean"]
+    },
+    "is_direct_deals_enabled": {
+      "description": "Flag indicating if direct deals are enabled.",
+      "type": ["null", "boolean"]
+    },
+    "is_in_3ds_authorization_enabled_market": {
+      "description": "Flag indicating if the ad account is in a 3DS authorization enabled market.",
+      "type": ["null", "boolean"]
+    },
+    "is_notifications_enabled": {
+      "description": "Flag indicating if notifications are enabled for the ad account.",
+      "type": ["null", "boolean"]
+    },
+    "is_personal": {
+      "description": "Flag indicating if the ad account is personal.",
+      "type": ["null", "number"]
+    },
+    "is_prepay_account": {
+      "description": "Flag indicating if the ad account is a prepay account.",
+      "type": ["null", "boolean"]
+    },
+    "is_tax_id_required": {
+      "description": "Flag indicating if a tax ID is required for the ad account.",
+      "type": ["null", "boolean"]
+    },
+    "line_numbers": {
+      "description": "Line numbers associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "media_agency": {
+      "description": "Media agency associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "min_campaign_group_spend_cap": {
+      "description": "Minimum campaign group spend cap for the ad account.",
+      "type": ["null", "number"]
+    },
+    "min_daily_budget": {
+      "description": "Minimum daily budget for the ad account.",
+      "type": ["null", "number"]
+    },
+    "name": {
+      "description": "Name of the ad account.",
+      "type": ["null", "string"]
+    },
+    "offsite_pixels_tos_accepted": {
+      "description": "Flag indicating if offsite pixels terms of service are accepted.",
+      "type": ["null", "boolean"]
+    },
+    "owner": {
+      "description": "Owner of the ad account.",
+      "type": ["null", "number"]
+    },
+    "partner": {
+      "description": "Partner associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "rf_spec": {
+      "description": "Specifications related to reach and frequency for the ad account.",
+      "type": ["null", "object"],
+      "properties": {
+        "countries": {
+          "description": "List of countries targeted by the ad account for reach and frequency campaigns.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "List of countries specified in the RF spec.",
+            "type": ["null", "string"]
+          }
+        },
+        "global_io_max_campaign_duration": {
+          "description": "Global max duration of the IO campaign.",
+          "type": ["null", "integer"]
+        },
+        "max_campaign_duration": {
+          "description": "Max duration of the campaign.",
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "max_days_to_finish": {
+          "description": "Max days to finish the campaign.",
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "min_campaign_duration": {
+          "description": "Min duration of the campaign.",
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "min_reach_limits": {
+          "description": "Min reach limits specified in the RF spec.",
+          "type": ["null", "object"],
+          "additionalProperties": true
+        }
+      }
+    },
+    "spend_cap": {
+      "description": "Spend cap for the ad account.",
+      "type": ["null", "string"]
+    },
+    "tax_id": {
+      "description": "Tax ID associated with the ad account.",
+      "type": ["null", "string"]
+    },
+    "tax_id_status": {
+      "description": "Status of the tax ID associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "tax_id_type": {
+      "description": "Type of tax ID associated with the ad account.",
+      "type": ["null", "string"]
+    },
+    "timezone_id": {
+      "description": "Timezone ID associated with the ad account.",
+      "type": ["null", "number"]
+    },
+    "timezone_name": {
+      "description": "Name of the timezone associated with the ad account.",
+      "type": ["null", "string"]
+    },
+    "timezone_offset_hours_utc": {
+      "description": "Timezone offset hours in UTC for the ad account.",
+      "type": ["null", "number"]
+    },
+    "tos_accepted": {
+      "description": "Indicates whether the terms of service have been accepted for the ad account.",
+      "type": ["null", "object"],
+      "properties": {
+        "web_custom_audience_tos": {
+          "description": "TOS accepted for web custom audience.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "user_tasks": {
+      "description": "Tasks assigned to users associated with the ad account.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "List of user tasks associated with the ad account.",
+        "type": ["null", "string"]
+      }
+    },
+    "user_tos_accepted": {
+      "description": "Records the acceptance of terms of service by users of the ad account.",
+      "type": ["null", "object"],
+      "properties": {
+        "web_custom_audience_tos": {
+          "description": "TOS accepted for web custom audience by the user.",
+          "type": ["null", "integer"]
+        }
+      }
+    }
+  }
+}

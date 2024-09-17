@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "birthday": { "type": ["null", "string"], "format": "date-time" },
+    "country_code": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "join_date": { "type": ["null", "string"], "format": "date" },
+    "email": { "type": ["null", "string"] },
+    "enabled": { "type": ["null", "boolean"] },
+    "id": { "type": ["null", "string"] },
+    "is_admin": { "type": ["null", "boolean"] },
+    "is_guest": { "type": ["null", "boolean"] },
+    "is_pending": { "type": ["null", "boolean"] },
+    "is_view_only": { "type": ["null", "boolean"] },
+    "is_verified": { "type": ["null", "boolean"] },
+    "location": { "type": ["null", "string"] },
+    "mobile_phone": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
+    "phone": { "type": ["null", "string"] },
+    "photo_original": { "type": ["null", "string"] },
+    "photo_small": { "type": ["null", "string"] },
+    "photo_thumb": { "type": ["null", "string"] },
+    "photo_thumb_small": { "type": ["null", "string"] },
+    "photo_tiny": { "type": ["null", "string"] },
+    "time_zone_identifier": { "type": ["null", "string"] },
+    "title": { "type": ["null", "string"] },
+    "url": { "type": ["null", "string"] },
+    "utc_hours_diff": { "type": ["null", "integer"] }
+  }
+}

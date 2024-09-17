@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /money for this object.",
+      "pattern": "^/money$"
+    },
+    "amount": {
+      "type": "string",
+      "description": "A string representing the decimal amount"
+    },
+    "currency_code": {
+      "type": "string",
+      "description": "The currency of the amount"
+    }
+  }
+}

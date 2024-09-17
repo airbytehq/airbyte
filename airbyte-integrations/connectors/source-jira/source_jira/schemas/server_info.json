@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "baseUrl": {
+      "description": "The base URL of the Jira instance.",
+      "type": "string"
+    },
+    "version": {
+      "description": "The version of Jira.",
+      "type": "string"
+    },
+    "versionNumbers": {
+      "description": "The major, minor, and revision version numbers of the Jira version.",
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "deploymentType": {
+      "description": "The type of server deployment. This is always returned as *Cloud*.",
+      "type": "string"
+    },
+    "buildNumber": {
+      "description": "The build number of the Jira version.",
+      "type": "integer"
+    },
+    "buildDate": {
+      "description": "The timestamp when the Jira version was built.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "serverTime": {
+      "description": "The time in Jira when this request was responded to.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "scmInfo": {
+      "description": "The unique identifier of the Jira version.",
+      "type": "string"
+    },
+    "serverTitle": {
+      "description": "The name of the Jira instance.",
+      "type": "string"
+    },
+    "healthChecks": {
+      "description": "Jira instance health check results. Deprecated and no longer returned.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The name of the Jira health check item.",
+            "type": "string"
+          },
+          "description": {
+            "description": "The description of the Jira health check item.",
+            "type": "string"
+          },
+          "passed": {
+            "description": "Whether the Jira health check item passed or failed.",
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about the Jira instance."
+}

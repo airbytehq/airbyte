@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
-  "name": "File",
-  "dockerRepository": "airbyte/source-file",
-  "dockerImageTag": "0.2.2",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-file",
-  "icon": "file.svg"
-}

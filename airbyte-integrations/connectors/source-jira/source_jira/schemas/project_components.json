@@ -1,0 +1,523 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "self": {
+      "description": "The URL of the component.",
+      "type": "string",
+      "readOnly": true
+    },
+    "id": {
+      "description": "The unique identifier for the component.",
+      "type": "string",
+      "readOnly": true
+    },
+    "name": {
+      "description": "The unique name for the component in the project. Required when creating a component. Optional when updating a component. The maximum length is 255 characters.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description for the component. Optional when creating or updating a component.",
+      "type": "string"
+    },
+    "lead": {
+      "description": "The user details for the component's lead user.",
+      "type": "object",
+      "properties": {
+        "self": {
+          "description": "The URL of the user.",
+          "type": "string",
+          "readOnly": true
+        },
+        "key": {
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string"
+        },
+        "accountId": {
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.",
+          "maxLength": 128,
+          "type": "string"
+        },
+        "accountType": {
+          "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
+          "type": "string",
+          "readOnly": true,
+          "enum": ["atlassian", "app", "customer", "unknown"]
+        },
+        "name": {
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string"
+        },
+        "emailAddress": {
+          "description": "The email address of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
+          "readOnly": true
+        },
+        "avatarUrls": {
+          "description": "The avatars of the user.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "16x16": {
+              "description": "The URL of the item's 16x16 pixel avatar.",
+              "type": "string"
+            },
+            "24x24": {
+              "description": "The URL of the item's 24x24 pixel avatar.",
+              "type": "string"
+            },
+            "32x32": {
+              "description": "The URL of the item's 32x32 pixel avatar.",
+              "type": "string"
+            },
+            "48x48": {
+              "description": "The URL of the item's 48x48 pixel avatar.",
+              "type": "string"
+            }
+          }
+        },
+        "displayName": {
+          "description": "The display name of the user. Depending on the user\u2019s privacy setting, this may return an alternative value.",
+          "type": "string",
+          "readOnly": true
+        },
+        "active": {
+          "description": "Whether the user is active.",
+          "type": "boolean",
+          "readOnly": true
+        },
+        "timeZone": {
+          "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
+          "readOnly": true
+        },
+        "locale": {
+          "description": "The locale of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
+          "readOnly": true
+        },
+        "groups": {
+          "description": "The groups that the user belongs to.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "integer",
+              "xml": {
+                "attribute": true
+              }
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "The name of group.",
+                    "type": "string"
+                  },
+                  "self": {
+                    "description": "The URL for these group details.",
+                    "type": "string",
+                    "readOnly": true
+                  }
+                }
+              }
+            },
+            "pagingCallback": {
+              "type": "object"
+            },
+            "callback": {
+              "type": "object"
+            },
+            "max-results": {
+              "type": "integer",
+              "xml": {
+                "name": "max-results",
+                "attribute": true
+              }
+            }
+          }
+        },
+        "applicationRoles": {
+          "description": "The application roles the user is assigned to.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "integer",
+              "xml": {
+                "attribute": true
+              }
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "description": "The key of the application role.",
+                    "type": "string"
+                  },
+                  "groups": {
+                    "description": "The groups associated with the application role.",
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "name": {
+                    "description": "The display name of the application role.",
+                    "type": "string"
+                  },
+                  "defaultGroups": {
+                    "description": "The groups that are granted default access for this application role.",
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "selectedByDefault": {
+                    "description": "Determines whether this application role should be selected by default on user creation.",
+                    "type": "boolean"
+                  },
+                  "defined": {
+                    "description": "Deprecated.",
+                    "type": "boolean"
+                  },
+                  "numberOfSeats": {
+                    "description": "The maximum count of users on your license.",
+                    "type": "integer"
+                  },
+                  "remainingSeats": {
+                    "description": "The count of users remaining on your license.",
+                    "type": "integer"
+                  },
+                  "userCount": {
+                    "description": "The number of users counting against your license.",
+                    "type": "integer"
+                  },
+                  "userCountDescription": {
+                    "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.",
+                    "type": "string"
+                  },
+                  "hasUnlimitedSeats": {
+                    "type": "boolean"
+                  },
+                  "platform": {
+                    "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "pagingCallback": {
+              "type": "object"
+            },
+            "callback": {
+              "type": "object"
+            },
+            "max-results": {
+              "type": "integer",
+              "xml": {
+                "name": "max-results",
+                "attribute": true
+              }
+            }
+          }
+        },
+        "expand": {
+          "description": "Expand options that include additional user details in the response.",
+          "type": "string",
+          "readOnly": true,
+          "xml": {
+            "attribute": true
+          }
+        }
+      }
+    },
+    "leadUserName": {
+      "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+      "type": ["string", "null"]
+    },
+    "leadAccountId": {
+      "description": "The accountId of the component's lead user. The accountId uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*.",
+      "maxLength": 128,
+      "type": ["string", "null"],
+      "writeOnly": true
+    },
+    "assigneeType": {
+      "description": "The nominal user type used to determine the assignee for issues created with this component. See `realAssigneeType` for details on how the type of the user, and hence the user, assigned to issues is determined. Can take the following values:\n\n *  `PROJECT_LEAD` the assignee to any issues created with this component is nominally the lead for the project the component is in.\n *  `COMPONENT_LEAD` the assignee to any issues created with this component is nominally the lead for the component.\n *  `UNASSIGNED` an assignee is not set for issues created with this component.\n *  `PROJECT_DEFAULT` the assignee to any issues created with this component is nominally the default assignee for the project that the component is in.\n\nDefault value: `PROJECT_DEFAULT`.  \nOptional when creating or updating a component.",
+      "type": "string",
+      "enum": [
+        "PROJECT_DEFAULT",
+        "COMPONENT_LEAD",
+        "PROJECT_LEAD",
+        "UNASSIGNED"
+      ]
+    },
+    "assignee": {
+      "description": "The details of the user associated with `assigneeType`, if any. See `realAssignee` for details of the user assigned to issues created with this component.",
+      "type": "object",
+      "properties": {
+        "self": {
+          "description": "The URL of the user.",
+          "type": "string",
+          "readOnly": true
+        },
+        "key": {
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": ["string", "null"]
+        },
+        "accountId": {
+          "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.",
+          "maxLength": 128,
+          "type": "string"
+        },
+        "accountType": {
+          "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
+          "type": "string",
+          "readOnly": true,
+          "enum": ["atlassian", "app", "customer", "unknown"]
+        },
+        "name": {
+          "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+          "type": "string"
+        },
+        "emailAddress": {
+          "description": "The email address of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
+          "readOnly": true
+        },
+        "avatarUrls": {
+          "description": "The avatars of the user.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "16x16": {
+              "description": "The URL of the item's 16x16 pixel avatar.",
+              "type": "string"
+            },
+            "24x24": {
+              "description": "The URL of the item's 24x24 pixel avatar.",
+              "type": "string"
+            },
+            "32x32": {
+              "description": "The URL of the item's 32x32 pixel avatar.",
+              "type": "string"
+            },
+            "48x48": {
+              "description": "The URL of the item's 48x48 pixel avatar.",
+              "type": "string"
+            }
+          }
+        },
+        "displayName": {
+          "description": "The display name of the user. Depending on the user\u2019s privacy setting, this may return an alternative value.",
+          "type": "string",
+          "readOnly": true
+        },
+        "active": {
+          "description": "Whether the user is active.",
+          "type": "boolean",
+          "readOnly": true
+        },
+        "timeZone": {
+          "description": "The time zone specified in the user's profile. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
+          "readOnly": true
+        },
+        "locale": {
+          "description": "The locale of the user. Depending on the user\u2019s privacy setting, this may be returned as null.",
+          "type": "string",
+          "readOnly": true
+        },
+        "groups": {
+          "description": "The groups that the user belongs to.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "size": {
+              "type": "integer",
+              "xml": {
+                "attribute": true
+              }
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "The name of group.",
+                    "type": "string"
+                  },
+                  "self": {
+                    "description": "The URL for these group details.",
+                    "type": "string",
+                    "readOnly": true
+                  }
+                }
+              }
+            },
+            "pagingCallback": {
+              "type": "object"
+            },
+            "callback": {
+              "type": "object"
+            },
+            "max-results": {
+              "type": "integer",
+              "xml": {
+                "name": "max-results",
+                "attribute": true
+              }
+            }
+          }
+        },
+        "applicationRoles": {
+          "description": "The application roles the user is assigned to.",
+          "readOnly": true,
+          "type": ["object", "null"],
+          "properties": {
+            "size": {
+              "type": "integer",
+              "xml": {
+                "attribute": true
+              }
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "description": "The key of the application role.",
+                    "type": "string"
+                  },
+                  "groups": {
+                    "description": "The groups associated with the application role.",
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "name": {
+                    "description": "The display name of the application role.",
+                    "type": "string"
+                  },
+                  "defaultGroups": {
+                    "description": "The groups that are granted default access for this application role.",
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "selectedByDefault": {
+                    "description": "Determines whether this application role should be selected by default on user creation.",
+                    "type": "boolean"
+                  },
+                  "defined": {
+                    "description": "Deprecated.",
+                    "type": "boolean"
+                  },
+                  "numberOfSeats": {
+                    "description": "The maximum count of users on your license.",
+                    "type": "integer"
+                  },
+                  "remainingSeats": {
+                    "description": "The count of users remaining on your license.",
+                    "type": "integer"
+                  },
+                  "userCount": {
+                    "description": "The number of users counting against your license.",
+                    "type": "integer"
+                  },
+                  "userCountDescription": {
+                    "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.",
+                    "type": "string"
+                  },
+                  "hasUnlimitedSeats": {
+                    "type": "boolean"
+                  },
+                  "platform": {
+                    "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "pagingCallback": {
+              "type": "object"
+            },
+            "callback": {
+              "type": "object"
+            },
+            "max-results": {
+              "type": "integer",
+              "xml": {
+                "name": "max-results",
+                "attribute": true
+              }
+            }
+          }
+        },
+        "expand": {
+          "description": "Expand options that include additional user details in the response.",
+          "type": "string",
+          "readOnly": true,
+          "xml": {
+            "attribute": true
+          }
+        }
+      }
+    },
+    "realAssigneeType": {
+      "description": "The type of the assignee that is assigned to issues created with this component, when an assignee cannot be set from the `assigneeType`. For example, `assigneeType` is set to `COMPONENT_LEAD` but no component lead is set. This property is set to one of the following values:\n\n *  `PROJECT_LEAD` when `assigneeType` is `PROJECT_LEAD` and the project lead has permission to be assigned issues in the project that the component is in.\n *  `COMPONENT_LEAD` when `assignee`Type is `COMPONENT_LEAD` and the component lead has permission to be assigned issues in the project that the component is in.\n *  `UNASSIGNED` when `assigneeType` is `UNASSIGNED` and Jira is configured to allow unassigned issues.\n *  `PROJECT_DEFAULT` when none of the preceding cases are true.",
+      "type": "string",
+      "readOnly": true,
+      "enum": [
+        "PROJECT_DEFAULT",
+        "COMPONENT_LEAD",
+        "PROJECT_LEAD",
+        "UNASSIGNED"
+      ]
+    },
+    "realAssignee": {
+      "description": "The user assigned to issues created with this component, when `assigneeType` does not identify a valid assignee.",
+      "readOnly": true,
+      "type": "object"
+    },
+    "isAssigneeTypeValid": {
+      "description": "Whether a user is associated with `assigneeType`. For example, if the `assigneeType` is set to `COMPONENT_LEAD` but the component lead is not set, then `false` is returned.",
+      "type": "boolean",
+      "readOnly": true
+    },
+    "project": {
+      "description": "The key of the project the component is assigned to. Required when creating a component. Can't be updated.",
+      "type": "string"
+    },
+    "projectId": {
+      "description": "The ID of the project the component is assigned to.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "componentBean": {
+      "description": "Contains information about the component associated with the project.",
+      "type": ["null", "object"]
+    },
+    "issueCount": {
+      "description": "The total count of issues related to the project component.",
+      "type": ["null", "integer"]
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about a project component.",
+  "xml": {
+    "name": "component"
+  }
+}

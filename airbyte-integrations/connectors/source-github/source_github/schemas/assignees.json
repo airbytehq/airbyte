@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Repository where the assignee is assigned",
+      "type": "string"
+    },
+    "login": {
+      "description": "Username of the assignee",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier of the assignee",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node ID of the assignee",
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "description": "URL of the assignee's avatar image",
+      "type": ["null", "string"]
+    },
+    "gravatar_id": {
+      "description": "Gravatar ID of the assignee",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL of the assignee's account",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL of the assignee's GitHub profile",
+      "type": ["null", "string"]
+    },
+    "followers_url": {
+      "description": "URL of the assignee's followers",
+      "type": ["null", "string"]
+    },
+    "following_url": {
+      "description": "URL of the assignee's following",
+      "type": ["null", "string"]
+    },
+    "gists_url": {
+      "description": "URL of the assignee's gists",
+      "type": ["null", "string"]
+    },
+    "starred_url": {
+      "description": "URL of the assignee's starred items",
+      "type": ["null", "string"]
+    },
+    "subscriptions_url": {
+      "description": "URL of the assignee's subscriptions",
+      "type": ["null", "string"]
+    },
+    "organizations_url": {
+      "description": "URL of the assignee's organizations",
+      "type": ["null", "string"]
+    },
+    "repos_url": {
+      "description": "URL of the assignee's repositories",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "URL of the assignee's events",
+      "type": ["null", "string"]
+    },
+    "received_events_url": {
+      "description": "URL of the assignee's received events",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "Type of the assignee's account",
+      "type": ["null", "string"]
+    },
+    "site_admin": {
+      "description": "Boolean indicating if the assignee is a site administrator",
+      "type": ["null", "boolean"]
+    }
+  }
+}

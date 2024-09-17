@@ -1,0 +1,432 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Repository information",
+      "type": "string"
+    },
+    "url": {
+      "description": "URL for fetching detailed information about this pull request",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the pull request",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node identifier for the pull request",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL for viewing the pull request on GitHub",
+      "type": ["null", "string"]
+    },
+    "diff_url": {
+      "description": "URL to view the diff for this pull request",
+      "type": ["null", "string"]
+    },
+    "patch_url": {
+      "description": "URL for fetching the patch file for this pull request",
+      "type": ["null", "string"]
+    },
+    "issue_url": {
+      "description": "URL for viewing the issue associated with this pull request",
+      "type": ["null", "string"]
+    },
+    "commits_url": {
+      "description": "URL for fetching commits on this pull request",
+      "type": ["null", "string"]
+    },
+    "review_comments_url": {
+      "description": "URL for fetching review comments on this pull request",
+      "type": ["null", "string"]
+    },
+    "review_comment_url": {
+      "description": "URL for fetching review comments on this pull request",
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "description": "URL for fetching comments on this pull request",
+      "type": ["null", "string"]
+    },
+    "statuses_url": {
+      "description": "URL for fetching status information for this pull request",
+      "type": ["null", "string"]
+    },
+    "number": {
+      "description": "Number assigned to the pull request",
+      "type": ["null", "integer"]
+    },
+    "state": {
+      "description": "State of the pull request",
+      "type": ["null", "string"]
+    },
+    "locked": {
+      "description": "Indicates if the pull request is locked",
+      "type": ["null", "boolean"]
+    },
+    "title": {
+      "description": "Title of the pull request",
+      "type": ["null", "string"]
+    },
+    "user": {
+      "description": "User who created the pull request",
+      "$ref": "user.json"
+    },
+    "body": {
+      "description": "Body content of the pull request",
+      "type": ["null", "string"]
+    },
+    "labels": {
+      "description": "Labels attached to this pull request",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "node_id": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "color": {
+            "type": ["null", "string"]
+          },
+          "default": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "milestone": {
+      "description": "Milestone information for this pull request",
+      "type": ["null", "object"],
+      "properties": {
+        "url": {
+          "description": "URL for fetching milestone information",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "URL for viewing the milestone on GitHub",
+          "type": ["null", "string"]
+        },
+        "labels_url": {
+          "description": "URL for fetching labels on the milestone",
+          "type": ["null", "string"]
+        },
+        "id": {
+          "description": "Unique identifier for the milestone",
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "number": {
+          "description": "Milestone number",
+          "type": ["null", "integer"]
+        },
+        "state": {
+          "description": "State of the milestone",
+          "type": ["null", "string"]
+        },
+        "title": {
+          "description": "Title of the milestone",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "Description of the milestone",
+          "type": ["null", "string"]
+        },
+        "creator": {
+          "description": "User who created the milestone",
+          "$ref": "user.json"
+        },
+        "open_issues": {
+          "description": "Number of open issues in the milestone",
+          "type": ["null", "integer"]
+        },
+        "closed_issues": {
+          "description": "Number of closed issues in the milestone",
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "description": "Date and time when the milestone was created",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "Date and time when the milestone was last updated",
+          "type": "string",
+          "format": "date-time"
+        },
+        "closed_at": {
+          "description": "Date and time when the milestone was closed",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "due_on": {
+          "description": "Date when the milestone is due",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "active_lock_reason": {
+      "description": "Reason this pull request is locked",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "Date and time when the pull request was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Date and time when the pull request was last updated",
+      "type": "string",
+      "format": "date-time"
+    },
+    "closed_at": {
+      "description": "Date and time when the pull request was closed",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "merged_at": {
+      "description": "Date and time when the pull request was merged",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "merge_commit_sha": {
+      "description": "SHA hash of the merged commit",
+      "type": ["null", "string"]
+    },
+    "assignee": {
+      "description": "User assigned to this pull request",
+      "$ref": "user.json"
+    },
+    "assignees": {
+      "description": "Users assigned to this pull request",
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "user.json"
+      }
+    },
+    "requested_reviewers": {
+      "description": "Requested reviewers for this pull request",
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "user.json"
+      }
+    },
+    "requested_teams": {
+      "description": "Requested teams for this pull request",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "node_id": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "html_url": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "slug": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "privacy": {
+            "type": ["null", "string"]
+          },
+          "permission": {
+            "type": ["null", "string"]
+          },
+          "members_url": {
+            "type": ["null", "string"]
+          },
+          "repositories_url": {
+            "type": ["null", "string"]
+          },
+          "parent": {
+            "type": ["null", "object"],
+            "properties": {}
+          }
+        }
+      }
+    },
+    "head": {
+      "description": "Head branch information",
+      "type": ["null", "object"],
+      "properties": {
+        "label": {
+          "type": ["null", "string"]
+        },
+        "ref": {
+          "type": ["null", "string"]
+        },
+        "sha": {
+          "type": ["null", "string"]
+        },
+        "user_id": {
+          "type": ["null", "integer"]
+        },
+        "repo_id": {
+          "type": ["null", "integer"]
+        },
+        "user": {
+          "$ref": "user.json"
+        }
+      }
+    },
+    "base": {
+      "description": "Base branch information",
+      "type": ["null", "object"],
+      "properties": {
+        "label": {
+          "type": ["null", "string"]
+        },
+        "ref": {
+          "type": ["null", "string"]
+        },
+        "sha": {
+          "type": ["null", "string"]
+        },
+        "user_id": {
+          "type": ["null", "integer"]
+        },
+        "repo_id": {
+          "type": ["null", "integer"]
+        },
+        "repo": {
+          "type": ["null", "object"]
+        },
+        "user": {
+          "$ref": "user.json"
+        }
+      }
+    },
+    "_links": {
+      "description": "Object containing links related to the pull request.",
+      "type": ["null", "object"],
+      "properties": {
+        "self": {
+          "description": "URL for fetching detailed information about this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "html": {
+          "description": "URL for viewing the pull request on GitHub",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "issue": {
+          "description": "URL for viewing the issue associated with this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "comments": {
+          "description": "URL for fetching comments related to this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "review_comments": {
+          "description": "URL for fetching review comments related to this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "review_comment": {
+          "description": "URL for fetching review comments related to this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "commits": {
+          "description": "URL for fetching commits related to this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "statuses": {
+          "description": "URL for fetching status information for this pull request",
+          "type": ["null", "object"],
+          "properties": {
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "author_association": {
+      "description": "Association of the author with this pull request",
+      "type": ["null", "string"]
+    },
+    "auto_merge": {
+      "description": "Details about automatic merging of this pull request",
+      "type": ["null", "object"],
+      "properties": {
+        "enabled_by": {
+          "$ref": "user.json"
+        },
+        "commit_title": {
+          "type": ["null", "string"]
+        },
+        "merge_method": {
+          "type": ["null", "string"]
+        },
+        "commit_message": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "draft": {
+      "description": "Indicates if the pull request is a draft",
+      "type": ["null", "boolean"]
+    }
+  }
+}

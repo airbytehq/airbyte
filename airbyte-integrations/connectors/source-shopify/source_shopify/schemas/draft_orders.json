@@ -1,0 +1,702 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier of the draft order",
+      "type": ["null", "integer"]
+    },
+    "note": {
+      "description": "Additional notes or comments related to the draft order",
+      "type": ["null", "string"]
+    },
+    "email": {
+      "description": "Email address associated with the draft order",
+      "type": ["null", "string"]
+    },
+    "taxes_included": {
+      "description": "Indicates if taxes are included in the prices",
+      "type": ["null", "boolean"]
+    },
+    "currency": {
+      "description": "Currency used for the draft order",
+      "type": ["null", "string"]
+    },
+    "invoice_sent_at": {
+      "description": "Timestamp when the invoice was sent",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "description": "Timestamp when the draft order was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Timestamp when the draft order was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tax_exempt": {
+      "description": "Indicates if the draft order is tax exempt",
+      "type": ["null", "boolean"]
+    },
+    "completed_at": {
+      "description": "Timestamp when the draft order was completed",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "description": "Name of the draft order",
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "Status of the draft order",
+      "type": ["null", "string"]
+    },
+    "line_items": {
+      "description": "Items included in the draft order",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "Unique identifier of the line item",
+            "type": ["null", "integer"]
+          },
+          "variant_id": {
+            "description": "Unique identifier of the variant associated with the line item",
+            "type": ["null", "integer"]
+          },
+          "product_id": {
+            "description": "Unique identifier of the product associated with the line item",
+            "type": ["null", "integer"]
+          },
+          "title": {
+            "description": "Title of the line item",
+            "type": ["null", "string"]
+          },
+          "variant_title": {
+            "description": "Title of the variant associated with the line item",
+            "type": ["null", "string"]
+          },
+          "sku": {
+            "description": "Stock Keeping Unit (SKU) of the line item",
+            "type": ["null", "string"]
+          },
+          "vendor": {
+            "description": "Vendor of the product associated with the line item",
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "description": "Quantity of the line item",
+            "type": ["null", "integer"]
+          },
+          "requires_shipping": {
+            "description": "Indicates if the line item requires shipping",
+            "type": ["null", "boolean"]
+          },
+          "taxable": {
+            "description": "Indicates if the line item is taxable",
+            "type": ["null", "boolean"]
+          },
+          "gift_card": {
+            "description": "Indicates if the line item is a gift card",
+            "type": ["null", "boolean"]
+          },
+          "fulfillment_service": {
+            "description": "Service used for fulfillment of the line item",
+            "type": ["null", "string"]
+          },
+          "grams": {
+            "description": "Weight in grams of the line item",
+            "type": ["null", "number"]
+          },
+          "tax_lines": {
+            "description": "Tax information related to the line item",
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "price": {
+                  "description": "Amount of tax for the line item",
+                  "type": ["null", "number"]
+                },
+                "rate": {
+                  "description": "Tax rate applied",
+                  "type": ["null", "number"]
+                },
+                "title": {
+                  "description": "Title of the tax",
+                  "type": ["null", "string"]
+                },
+                "price_set": {
+                  "description": "Information about the price set for tax",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "shop_money": {
+                      "description": "Money information in the shop's currency",
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "description": "Amount of money",
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "description": "Currency code",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "presentment_money": {
+                      "description": "Money information in the presentment currency",
+                      "type": ["null", "object"],
+                      "properties": {
+                        "amount": {
+                          "description": "Amount of money",
+                          "type": ["null", "number"]
+                        },
+                        "currency_code": {
+                          "description": "Currency code",
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "applied_discount": {
+            "description": "Details of any discount applied to the line item",
+            "type": ["null", "object"],
+            "properties": {
+              "description": {
+                "description": "Description of the discount applied to the line item",
+                "type": ["null", "string"]
+              },
+              "value": {
+                "description": "The value of the discount applied to the line item",
+                "type": ["null", "string"]
+              },
+              "title": {
+                "description": "Title of the discount applied to the line item",
+                "type": ["null", "string"]
+              },
+              "amount": {
+                "description": "The amount of the discount applied to the line item",
+                "type": ["null", "string"]
+              },
+              "value_type": {
+                "description": "Type of the value in the discount applied to the line item",
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "name": {
+            "description": "Name of the line item",
+            "type": ["null", "string"]
+          },
+          "properties": {
+            "description": "Additional properties associated with the line item",
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "name": {
+                  "description": "Name of the property",
+                  "type": ["null", "string"]
+                },
+                "value": {
+                  "description": "Value of the property",
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+          "custom": {
+            "description": "Custom information related to the line item",
+            "type": ["null", "boolean"]
+          },
+          "price": {
+            "description": "Price of the line item",
+            "type": ["null", "number"]
+          },
+          "admin_graphql_api_id": {
+            "description": "The unique identifier of the line item in the Shopify Admin GraphQL API",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "shipping_address": {
+      "description": "The shipping address associated with the draft order",
+      "properties": {
+        "phone": {
+          "description": "Phone number associated with the shipping address",
+          "type": ["null", "string"]
+        },
+        "country": {
+          "description": "Country of the shipping address",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "Full name in the shipping address",
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "description": "First line of the shipping address",
+          "type": ["null", "string"]
+        },
+        "longitude": {
+          "description": "Longitude coordinate of the shipping address",
+          "type": ["null", "number"]
+        },
+        "address2": {
+          "description": "Second line of the shipping address",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "Last name in the shipping address",
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "description": "First name in the shipping address",
+          "type": ["null", "string"]
+        },
+        "province": {
+          "description": "Province of the shipping address",
+          "type": ["null", "string"]
+        },
+        "city": {
+          "description": "City of the shipping address",
+          "type": ["null", "string"]
+        },
+        "company": {
+          "description": "Company name in the shipping address",
+          "type": ["null", "string"]
+        },
+        "latitude": {
+          "description": "Latitude coordinate of the shipping address",
+          "type": ["null", "number"]
+        },
+        "country_code": {
+          "description": "Country code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "province_code": {
+          "description": "Province code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "description": "ZIP or postal code of the shipping address",
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "billing_address": {
+      "description": "The billing address associated with the draft order",
+      "properties": {
+        "phone": {
+          "description": "Phone number associated with the billing address",
+          "type": ["null", "string"]
+        },
+        "country": {
+          "description": "Country of the billing address",
+          "type": ["null", "string"]
+        },
+        "name": {
+          "description": "Full name in the billing address",
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "description": "First line of the billing address",
+          "type": ["null", "string"]
+        },
+        "longitude": {
+          "description": "Longitude coordinate of the billing address",
+          "type": ["null", "number"]
+        },
+        "address2": {
+          "description": "Second line of the billing address",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "Last name in the billing address",
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "description": "First name in the billing address",
+          "type": ["null", "string"]
+        },
+        "province": {
+          "description": "Province of the billing address",
+          "type": ["null", "string"]
+        },
+        "city": {
+          "description": "City of the billing address",
+          "type": ["null", "string"]
+        },
+        "company": {
+          "description": "Company name in the billing address",
+          "type": ["null", "string"]
+        },
+        "latitude": {
+          "description": "Latitude coordinate of the billing address",
+          "type": ["null", "number"]
+        },
+        "country_code": {
+          "description": "Country code of the billing address",
+          "type": ["null", "string"]
+        },
+        "province_code": {
+          "description": "Province code of the billing address",
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "description": "ZIP or postal code of the billing address",
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "invoice_url": {
+      "description": "URL for the invoice related to the draft order",
+      "type": ["null", "string"]
+    },
+    "applied_discount": {
+      "description": "Details of any discount applied to the draft order",
+      "type": ["null", "object"],
+      "properties": {
+        "description": {
+          "description": "Description of the discount applied",
+          "type": ["null", "string"]
+        },
+        "value": {
+          "description": "The value of the discount",
+          "type": ["null", "string"]
+        },
+        "title": {
+          "description": "Title of the discount",
+          "type": ["null", "string"]
+        },
+        "amount": {
+          "description": "The amount of the discount applied",
+          "type": ["null", "string"]
+        },
+        "value_type": {
+          "description": "Type of the value in the discount",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "order_id": {
+      "description": "Unique identifier of the order associated with the draft order",
+      "type": ["null", "integer"]
+    },
+    "payment_terms": {
+      "description": "Terms of payment for the draft order",
+      "type": ["null", "string"]
+    },
+    "po_number": {
+      "description": "Purchase order number associated with the draft order",
+      "type": ["null", "string"]
+    },
+    "shipping_line": {
+      "description": "Details of the shipping service and cost associated with the draft order",
+      "properties": {
+        "price": {
+          "description": "Price of the shipping service",
+          "type": ["null", "number"]
+        },
+        "title": {
+          "description": "Title of the shipping service",
+          "type": ["null", "string"]
+        },
+        "custom": {
+          "description": "Custom information related to the shipping line",
+          "type": ["null", "boolean"]
+        },
+        "handle": {
+          "description": "Identifier for the shipping line",
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "tax_lines": {
+      "description": "Tax information related to the draft order",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "price": {
+            "description": "Amount of tax for the draft order",
+            "type": ["null", "number"]
+          },
+          "rate": {
+            "description": "Tax rate applied",
+            "type": ["null", "number"]
+          },
+          "title": {
+            "description": "Title of the tax",
+            "type": ["null", "string"]
+          },
+          "price_set": {
+            "description": "Information about the price set for tax",
+            "type": ["null", "object"],
+            "properties": {
+              "shop_money": {
+                "description": "Money information in the shop's currency",
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "description": "Amount of money",
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "description": "Currency code",
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "presentment_money": {
+                "description": "Money information in the presentment currency",
+                "type": ["null", "object"],
+                "properties": {
+                  "amount": {
+                    "description": "Amount of money",
+                    "type": ["null", "number"]
+                  },
+                  "currency_code": {
+                    "description": "Currency code",
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "tags": {
+      "description": "Tags associated with the draft order",
+      "type": ["null", "string"]
+    },
+    "note_attributes": {
+      "description": "Additional attributes or notes associated with the draft order",
+      "items": {
+        "properties": {
+          "name": {
+            "description": "Name of the attribute or note",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "Value of the attribute or note",
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "total_price": {
+      "description": "Total price of the draft order",
+      "type": ["null", "string"]
+    },
+    "subtotal_price": {
+      "description": "Subtotal price of the draft order",
+      "type": ["null", "string"]
+    },
+    "total_tax": {
+      "description": "Total tax amount for the draft order",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier of the draft order in the Shopify Admin GraphQL API",
+      "type": ["null", "string"]
+    },
+    "customer": {
+      "description": "Details of the customer associated with the draft order",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "Unique identifier of the customer",
+          "type": ["null", "integer"]
+        },
+        "email": {
+          "description": "Email address of the customer",
+          "type": ["null", "string"]
+        },
+        "accepts_marketing": {
+          "description": "Indicates if the customer accepts marketing",
+          "type": ["null", "boolean"]
+        },
+        "created_at": {
+          "description": "Timestamp when the customer was created",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "Timestamp when the customer record was last updated",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "first_name": {
+          "description": "First name of the customer",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "Last name of the customer",
+          "type": ["null", "string"]
+        },
+        "orders_count": {
+          "description": "Total number of orders made by the customer",
+          "type": ["null", "integer"]
+        },
+        "state": {
+          "description": "State of the customer",
+          "type": ["null", "string"]
+        },
+        "total_spent": {
+          "description": "Total amount spent by the customer",
+          "type": ["null", "number"]
+        },
+        "last_order_id": {
+          "description": "Unique identifier of the last order made by the customer",
+          "type": ["null", "integer"]
+        },
+        "note": {
+          "description": "Notes or comments about the customer",
+          "type": ["null", "string"]
+        },
+        "verified_email": {
+          "description": "Indicates if the email address of the customer is verified",
+          "type": ["null", "boolean"]
+        },
+        "multipass_identifier": {
+          "description": "Multipass identifier associated with the customer",
+          "type": ["null", "string"]
+        },
+        "tax_exempt": {
+          "description": "Indicates if the customer is tax exempt",
+          "type": ["null", "boolean"]
+        },
+        "phone": {
+          "description": "Phone number associated with the customer",
+          "type": ["null", "string"]
+        },
+        "tags": {
+          "description": "Tags associated with the customer",
+          "type": ["null", "string"]
+        },
+        "last_order_name": {
+          "description": "Name of the last order made by the customer",
+          "type": ["null", "string"]
+        },
+        "currency": {
+          "description": "Currency used for the customer",
+          "type": ["null", "string"]
+        },
+        "accepts_marketing_updated_at": {
+          "description": "Timestamp when marketing acceptance was last updated",
+          "type": ["null", "string"]
+        },
+        "marketing_opt_in_level": {
+          "description": "Level of marketing opt-in for the customer",
+          "type": ["null", "string"]
+        },
+        "tax_exemptions": {
+          "description": "List of tax exemptions for the customer",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "admin_graphql_api_id": {
+          "description": "The unique identifier of the customer in the Shopify Admin GraphQL API",
+          "type": ["null", "string"]
+        },
+        "default_address": {
+          "description": "Default address of the customer",
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "description": "Unique identifier of the default address",
+              "type": ["null", "integer"]
+            },
+            "customer_id": {
+              "description": "The unique identifier of the customer associated with the address",
+              "type": ["null", "integer"]
+            },
+            "first_name": {
+              "description": "First name in the default address",
+              "type": ["null", "string"]
+            },
+            "last_name": {
+              "description": "Last name in the default address",
+              "type": ["null", "string"]
+            },
+            "company": {
+              "description": "Company name in the default address",
+              "type": ["null", "string"]
+            },
+            "address1": {
+              "description": "First line of the default address",
+              "type": ["null", "string"]
+            },
+            "address2": {
+              "description": "Second line of the default address",
+              "type": ["null", "string"]
+            },
+            "city": {
+              "description": "City of the default address",
+              "type": ["null", "string"]
+            },
+            "province": {
+              "description": "Province of the default address",
+              "type": ["null", "string"]
+            },
+            "country": {
+              "description": "Country of the default address",
+              "type": ["null", "string"]
+            },
+            "zip": {
+              "description": "ZIP or postal code of the default address",
+              "type": ["null", "string"]
+            },
+            "phone": {
+              "description": "Phone number associated with the default address",
+              "type": ["null", "string"]
+            },
+            "name": {
+              "description": "Full name in the default address",
+              "type": ["null", "string"]
+            },
+            "province_code": {
+              "description": "Province code of the default address",
+              "type": ["null", "string"]
+            },
+            "country_code": {
+              "description": "Country code of the default address",
+              "type": ["null", "string"]
+            },
+            "country_name": {
+              "description": "Name of the country in the default address",
+              "type": ["null", "string"]
+            },
+            "default": {
+              "description": "Indicates if this is the default address for the customer",
+              "type": ["null", "boolean"]
+            }
+          }
+        }
+      }
+    },
+    "shop_url": {
+      "description": "URL of the shop related to the draft order",
+      "type": ["null", "string"]
+    }
+  }
+}

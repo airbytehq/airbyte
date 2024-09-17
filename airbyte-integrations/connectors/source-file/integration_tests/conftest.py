@@ -1,31 +1,14 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import os
+import random
+import shutil
 import socket
+import string
 import tempfile
 import uuid
 from pathlib import Path
@@ -34,6 +17,7 @@ from typing import Mapping
 import boto3
 import pandas
 import pytest
+from azure.storage.blob import BlobServiceClient
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
@@ -41,6 +25,10 @@ from paramiko.client import AutoAddPolicy, SSHClient
 from paramiko.ssh_exception import SSHException
 
 HERE = Path(__file__).parent.absolute()
+
+
+def random_char(length):
+    return "".join(random.choice(string.ascii_letters) for x in range(length))
 
 
 @pytest.fixture(scope="session")
@@ -71,6 +59,13 @@ def cloud_bucket_name():
     return "airbytetestbucket"
 
 
+@pytest.fixture(scope="session")
+def azblob_credentials() -> Mapping:
+    filename = HERE.parent / "secrets/azblob.json"
+    with open(filename) as json_file:
+        return json.load(json_file)
+
+
 def is_ssh_ready(ip, port):
     try:
         with SSHClient() as ssh:
@@ -79,7 +74,7 @@ def is_ssh_ready(ip, port):
                 ip,
                 port=port,
                 username="user1",
-                password="pass1",
+                password="abc123@456#",
             )
         return True
     except (SSHException, socket.error):
@@ -87,9 +82,18 @@ def is_ssh_ready(ip, port):
 
 
 @pytest.fixture(scope="session")
-def ssh_service(docker_ip, docker_services):
-    """Ensure that SSH service is up and responsive."""
+def move_sample_files_to_tmp():
+    """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
+    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory."""
+    sample_files = Path(HERE / "sample_files")
+    shutil.copytree(sample_files, "/tmp/s3_sample_files")
+    yield True
+    shutil.rmtree("/tmp/s3_sample_files")
 
+
+@pytest.fixture(scope="session")
+def ssh_service(move_sample_files_to_tmp, docker_ip, docker_services):
+    """Ensure that SSH service is up and responsive."""
     # `port_for` takes a container port and returns the corresponding host port
     port = docker_services.port_for("ssh", 22)
     docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port))
@@ -100,11 +104,12 @@ def ssh_service(docker_ip, docker_services):
 def provider_config(ssh_service):
     def lookup(name):
         providers = {
-            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="pass1", port=2222),
-            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="pass1", port=2222),
-            "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="pass1", port=100),
+            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=2222),
+            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=2222),
+            "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="abc123@456#", port=100),
             "gcs": dict(storage="GCS"),
             "s3": dict(storage="S3"),
+            "azure": dict(storage="AzBlob"),
         }
         return providers[name]
 
@@ -183,3 +188,37 @@ def private_aws_file(aws_credentials, cloud_bucket_name, download_gcs_public_dat
     bucket = s3.Bucket(bucket_name)
     bucket.objects.all().delete()
     print(f"\nS3 Bucket {bucket_name} is now deleted")
+
+
+def azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
+    acc_url = f"https://{azblob_credentials['storage_account']}.blob.core.windows.net"
+    azblob_client = BlobServiceClient(account_url=acc_url, credential=azblob_credentials["shared_key"])
+    container_name = cloud_bucket_name + random_char(3).lower()
+    if public:
+        container_name += "public"
+    print(f"\nUpload dataset to private azure blob container {container_name}")
+    if container_name not in [cntr["name"] for cntr in azblob_client.list_containers()]:
+        if public:
+            azblob_client.create_container(name=container_name, metadata=None, public_access="container")
+        else:
+            azblob_client.create_container(name=container_name, metadata=None, public_access=None)
+    blob_client = azblob_client.get_blob_client(container_name, "myfile.csv")
+    with open(download_gcs_public_data, "r") as f:
+        blob_client.upload_blob(f.read(), blob_type="BlockBlob", overwrite=True)
+
+    yield f"{container_name}/myfile.csv"
+
+    azblob_client.delete_container(container_name)
+    print(f"\nAzure Blob Container {container_name} is now marked for deletion")
+
+
+@pytest.fixture(scope="session")
+def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=False):
+        yield yld
+
+
+@pytest.fixture(scope="session")
+def public_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
+    for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=True):
+        yield yld

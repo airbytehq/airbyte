@@ -1,0 +1,10 @@
+{
+  "aws_key_id": "123",
+  "aws_secret_key": "123",
+  "aws_region_name": "123",
+  "start_date": "123",
+  "lookup_attributes_filter": {
+    "attribute_key": "WrongAttribute",
+    "attribute_value": "WrongValue"
+  }
+}

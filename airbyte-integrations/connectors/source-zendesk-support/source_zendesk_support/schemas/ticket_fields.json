@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Ticket Fields",
+  "type": ["null", "object"],
+  "properties": {
+    "created_at": {
+      "description": "The date and time when the ticket field was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "title_in_portal": {
+      "description": "The title of the ticket field visible in the portal.",
+      "type": ["null", "string"]
+    },
+    "visible_in_portal": {
+      "description": "Indicates whether the ticket field is visible in the portal or not.",
+      "type": ["null", "boolean"]
+    },
+    "collapsed_for_agents": {
+      "description": "Specifies if the ticket field is collapsed for agents.",
+      "type": ["null", "boolean"]
+    },
+    "regexp_for_validation": {
+      "description": "Regular expression for validation of the ticket field value.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title of the ticket field.",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "Position of the ticket field.",
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "description": "Type of the ticket field.",
+      "type": ["null", "string"]
+    },
+    "editable_in_portal": {
+      "description": "Indicates whether the ticket field is editable in the portal or not.",
+      "type": ["null", "boolean"]
+    },
+    "raw_title_in_portal": {
+      "description": "The raw title of the ticket field visible in the portal.",
+      "type": ["null", "string"]
+    },
+    "raw_description": {
+      "description": "The raw description of the ticket field.",
+      "type": ["null", "string"]
+    },
+    "custom_field_options": {
+      "description": "Options for custom ticket field with properties like default, id, name, raw_name, and value.",
+      "items": {
+        "properties": {
+          "name": {
+            "description": "The name of the custom field option.",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The value associated with the custom field option.",
+            "type": ["null", "string"]
+          },
+          "id": {
+            "description": "The unique identifier of the custom field option.",
+            "type": ["null", "integer"]
+          },
+          "default": {
+            "description": "Indicates if this custom field value is the default one.",
+            "type": ["null", "boolean"]
+          },
+          "raw_name": {
+            "description": "The raw name of the custom field option.",
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "updated_at": {
+      "description": "The date and time when the ticket field was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "tag": {
+      "description": "Tag associated with the ticket field.",
+      "type": ["null", "string"]
+    },
+    "removable": {
+      "description": "Specifies if the ticket field is removable.",
+      "type": ["null", "boolean"]
+    },
+    "active": {
+      "description": "Indicates whether the ticket field is active or not.",
+      "type": ["null", "boolean"]
+    },
+    "url": {
+      "description": "URL of the ticket field.",
+      "type": ["null", "string"]
+    },
+    "raw_title": {
+      "description": "The raw title of the ticket field.",
+      "type": ["null", "string"]
+    },
+    "required": {
+      "description": "Indicates if the ticket field is required.",
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "description": "The unique identifier of the ticket field.",
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "description": "Description of the ticket field.",
+      "type": ["null", "string"]
+    },
+    "agent_description": {
+      "description": "The description of the ticket field visible to agents.",
+      "type": ["null", "string"]
+    },
+    "required_in_portal": {
+      "description": "Specifies if the ticket field is required in the portal.",
+      "type": ["null", "boolean"]
+    },
+    "system_field_options": {
+      "description": "Options for the system field associated with the ticket field.",
+      "type": ["null", "array"]
+    },
+    "custom_statuses": {
+      "description": "Custom statuses associated with the ticket field.",
+      "type": ["null", "array"]
+    },
+    "key": {
+      "description": "Key associated with the ticket field.",
+      "type": ["null", "string"]
+    },
+    "sub_type_id": {
+      "description": "The subtype identifier of the ticket field.",
+      "type": ["null", "integer"]
+    }
+  }
+}

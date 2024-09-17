@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "c8630570-086d-4a40-99ae-ea5b18673071",
-  "name": "Zendesk Talk",
-  "dockerRepository": "airbyte/source-zendesk-talk",
-  "dockerImageTag": "0.1.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-talk"
-}

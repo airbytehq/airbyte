@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "visibleFieldNames": {
+      "description": "List of fields usable in JQL queries.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "description": "The field identifier.",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "The display name of the field.",
+            "type": "string"
+          },
+          "orderable": {
+            "description": "Whether the field can be used in a query's `ORDER BY` clause.",
+            "type": "string",
+            "enum": ["true", "false"]
+          },
+          "searchable": {
+            "description": "Whether the content of this field can be searched.",
+            "type": "string",
+            "enum": ["true", "false"]
+          },
+          "auto": {
+            "description": "Whether the field provides auto-complete suggestions.",
+            "type": "string",
+            "enum": ["true", "false"]
+          },
+          "cfid": {
+            "description": "If the item is a custom field, the ID of the custom field.",
+            "type": "string"
+          },
+          "operators": {
+            "description": "The valid search operators for the field.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "types": {
+            "description": "The data types of items in the field.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "visibleFunctionNames": {
+      "description": "List of functions usable in JQL queries.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "description": "The function identifier.",
+            "type": "string"
+          },
+          "displayName": {
+            "description": "The display name of the function.",
+            "type": "string"
+          },
+          "isList": {
+            "description": "Whether the function can take a list of arguments.",
+            "type": "string",
+            "enum": ["true", "false"]
+          },
+          "types": {
+            "description": "The data types returned by the function.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "jqlReservedWords": {
+      "description": "List of JQL query reserved words.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "Lists of JQL reference data."
+}

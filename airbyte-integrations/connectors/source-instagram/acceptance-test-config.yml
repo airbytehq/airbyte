@@ -1,0 +1,53 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-instagram:dev
+test_strictness_level: high
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_instagram/spec.json"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        empty_streams:
+          - name: media_insights
+            bypass_reason: Media statistic changed frequently
+          - name: user_insights
+            bypass_reason: User statistic changed frequently
+          - name: stories
+            bypass_reason: Stories available only 24 hours
+          - name: story_insights
+            bypass_reason: Stories available only 24 hours, so do the insights
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          user_lifetime_insights:
+            - name: value
+              bypass_reason: Floating values from sync-to-sync, due to live updating info.
+          user_insights:
+            - name: profile_views
+              bypass_reason: Floating values from sync-to-sync, due to live updating info.
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        # because state is complex and stores values for different accounts on one hand
+        # and there's no way we can set multiple cursor paths for a single stream on the other,
+        # this test should be skipped as it is false negative.
+        # (we can not restrict accounts via config as well)
+        skip_comprehensive_incremental_tests: true

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "projectId": {
+      "description": "The unique identifier for the project.",
+      "type": "string"
+    },
+    "emailAddress": {
+      "description": "The email address of the project.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "description": "A project's sender email address."
+}

@@ -1,9 +1,0 @@
-{{ config(alias="NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_E78_DOUBLE_ARRAY_DATA_AB2", schema="_AIRBYTE_TEST_NORMALIZATION", tags=["nested-intermediate"]) }}
--- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
-select
-    _AIRBYTE_PARTITION_HASHID,
-    cast(ID as {{ dbt_utils.type_string() }}) as ID,
-    _airbyte_emitted_at
-from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION_E78_DOUBLE_ARRAY_DATA_AB1_A78') }}
--- DOUBLE_ARRAY_DATA at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
-

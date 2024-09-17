@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "createdBy": {
+      "$ref": "created_by.json"
+    },
+    "lastModifiedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lastModifiedBy": {
+      "$ref": "last_modified_by.json"
+    },
+    "name": {
+      "$ref": "localized_string.json"
+    },
+    "description": {
+      "$ref": "localized_string.json"
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "cartDiscounts": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "reference.json"
+      }
+    },
+    "groups": {
+      "type": ["null", "array"]
+    },
+    "isActive": {
+      "type": ["null", "boolean"]
+    },
+    "validFrom": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "validUntil": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "references": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "reference.json"
+      }
+    },
+    "maxApplications": {
+      "type": ["null", "number"]
+    },
+    "maxApplicationsPerCustomer": {
+      "type": ["null", "number"]
+    },
+    "custom": {
+      "$ref": "custom.json"
+    },
+    "applicationVersion": {
+      "type": ["null", "integer"]
+    },
+    "attributeTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "cartFieldTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "customLineItemFieldTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "lineItemFieldTypes": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "versionModifiedAt": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "groups": {
+      "type": ["array", "object"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": ["string", "null"]
+          },
+          "action_id": {
+            "type": ["string", "null"]
+          },
+          "properties": {
+            "type": ["array"],
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "deleted": {
+      "type": "boolean"
+    },
+    "is_calculating": {
+      "type": "boolean"
+    },
+    "created_by": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "uuid": {
+          "type": "string"
+        },
+        "distinct_id": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "created_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "last_calculation": {
+      "type": ["string", "null"]
+    },
+    "errors_calculating": {
+      "type": "integer"
+    },
+    "count": {
+      "type": ["integer", "null"]
+    },
+    "is_static": {
+      "type": "boolean"
+    }
+  }
+}

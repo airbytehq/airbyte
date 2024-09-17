@@ -1,0 +1,166 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "description": "The name of the ad set.",
+      "type": ["null", "string"]
+    },
+    "end_time": {
+      "description": "The date and time when the ad set will end.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "promoted_object": {
+      "description": "Information about the object being promoted in the ad set.",
+      "type": ["null", "object"],
+      "properties": {
+        "custom_event_type": {
+          "description": "The custom event type used for tracking purposes.",
+          "type": ["null", "string"]
+        },
+        "pixel_id": {
+          "description": "The Pixel ID associated with the ad set.",
+          "type": ["null", "string"]
+        },
+        "pixel_rule": {
+          "description": "The rule set for the Pixel.",
+          "type": ["null", "string"]
+        },
+        "page_id": {
+          "description": "The ID of the promoted Facebook page.",
+          "type": ["null", "string"]
+        },
+        "object_store_url": {
+          "description": "The URL of the promoted object in the store.",
+          "type": ["null", "string"]
+        },
+        "application_id": {
+          "description": "The ID of the promoted application.",
+          "type": ["null", "string"]
+        },
+        "product_set_id": {
+          "description": "The ID of the product set being promoted.",
+          "type": ["null", "string"]
+        },
+        "offer_id": {
+          "description": "The ID of the promoted offer.",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "id": {
+      "description": "The unique ID of the ad set.",
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "description": "The ID of the Facebook ad account to which the ad set belongs.",
+      "type": ["null", "string"]
+    },
+    "updated_time": {
+      "description": "The date and time when the ad set was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "daily_budget": {
+      "description": "The daily budget set for the ad set.",
+      "type": ["null", "number"]
+    },
+    "budget_remaining": {
+      "description": "The remaining budget in the ad set.",
+      "type": ["null", "number"]
+    },
+    "effective_status": {
+      "description": "The effective status of the ad set (e.g., active, paused).",
+      "type": ["null", "string"]
+    },
+    "campaign_id": {
+      "description": "The ID of the campaign associated with the ad set.",
+      "type": ["null", "string"]
+    },
+    "created_time": {
+      "description": "The date and time when the ad set was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "start_time": {
+      "description": "The date and time when the ad set will start.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "lifetime_budget": {
+      "description": "The lifetime budget set for the ad set.",
+      "type": ["null", "number"]
+    },
+    "targeting": {
+      "description": "The targeting parameters set for the ad set.",
+      "$ref": "targeting.json"
+    },
+    "bid_info": {
+      "description": "Information about bidding in the ad set.",
+      "type": ["null", "object"],
+      "properties": {
+        "CLICKS": {
+          "description": "Number of clicks on the ad set.",
+          "type": ["null", "integer"]
+        },
+        "ACTIONS": {
+          "description": "Number of actions taken as a result of the ad set.",
+          "type": ["null", "integer"]
+        },
+        "IMPRESSIONS": {
+          "description": "Number of times the ad set was displayed.",
+          "type": ["null", "integer"]
+        },
+        "REACH": {
+          "description": "Number of unique users who saw the ad set.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "bid_strategy": {
+      "description": "The bidding strategy used in the ad set.",
+      "type": ["null", "string"]
+    },
+    "bid_amount": {
+      "description": "The amount set for bidding in the ad set.",
+      "type": ["null", "number"]
+    },
+    "bid_constraints": {
+      "description": "Bid constraints for the ad set.",
+      "type": ["null", "object"],
+      "properties": {
+        "roas_average_floor": {
+          "description": "The minimum return on ad spend (ROAS) required for the ad set.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "adlabels": {
+      "description": "Labels associated with the ad set.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The ID of the label.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The name of the label.",
+            "type": "string"
+          },
+          "created_time": {
+            "description": "The date and time when the label was created.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_time": {
+            "description": "The date and time when the label was last updated.",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

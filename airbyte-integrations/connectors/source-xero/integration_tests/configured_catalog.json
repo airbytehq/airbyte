@@ -1,0 +1,277 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "bank_transactions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["BankTransactionID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["BankTransactionID"]]
+    },
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["ContactID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["ContactID"]]
+    },
+    {
+      "stream": {
+        "name": "credit_notes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["CreditNoteID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["CreditNoteID"]]
+    },
+    {
+      "stream": {
+        "name": "invoices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["InvoiceID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["InvoiceID"]]
+    },
+    {
+      "stream": {
+        "name": "manual_journals",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["ManualJournalID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["ManualJournalID"]]
+    },
+    {
+      "stream": {
+        "name": "overpayments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["OverpaymentID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["OverpaymentID"]]
+    },
+    {
+      "stream": {
+        "name": "prepayments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["PrepaymentID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["PrepaymentID"]]
+    },
+    {
+      "stream": {
+        "name": "purchase_orders",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["PurchaseOrderID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["PurchaseOrderID"]]
+    },
+    {
+      "stream": {
+        "name": "accounts",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["AccountID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["AccountID"]]
+    },
+    {
+      "stream": {
+        "name": "bank_transfers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["CreatedDateUTC"],
+        "source_defined_primary_key": [["BankTransferID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["CreatedDateUTC"],
+      "primary_key": [["BankTransferID"]]
+    },
+    {
+      "stream": {
+        "name": "employees",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["EmployeeID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["EmployeeID"]]
+    },
+    {
+      "stream": {
+        "name": "items",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["ItemID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["ItemID"]]
+    },
+    {
+      "stream": {
+        "name": "payments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["PaymentID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["PaymentID"]]
+    },
+    {
+      "stream": {
+        "name": "users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["UpdatedDateUTC"],
+        "source_defined_primary_key": [["UserID"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["UpdatedDateUTC"],
+      "primary_key": [["UserID"]]
+    },
+    {
+      "stream": {
+        "name": "branding_themes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["BrandingThemeID"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["BrandingThemeID"]]
+    },
+    {
+      "stream": {
+        "name": "contact_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["ContactGroupID"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["ContactGroupID"]]
+    },
+    {
+      "stream": {
+        "name": "currencies",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["Code"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["Code"]]
+    },
+    {
+      "stream": {
+        "name": "organisations",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["OrganisationID"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["OrganisationID"]]
+    },
+    {
+      "stream": {
+        "name": "repeating_invoices",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["RepeatingInvoiceID"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["RepeatingInvoiceID"]]
+    },
+    {
+      "stream": {
+        "name": "tax_rates",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["Name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["Name"]]
+    },
+    {
+      "stream": {
+        "name": "tracking_categories",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["TrackingCategoryID"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["TrackingCategoryID"]]
+    }
+  ]
+}

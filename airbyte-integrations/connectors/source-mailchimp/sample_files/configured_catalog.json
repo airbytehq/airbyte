@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "Campaigns",
+        "name": "campaigns",
         "json_schema": {
           "type": "object",
           "title": "Campaign",
@@ -733,58 +733,6 @@
                   "readOnly": true
                 }
               }
-            },
-            "_links": {
-              "title": "Links",
-              "description": "A list of link types and descriptions for the API schema documents.",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "title": "Resource Link",
-                "description": "This object represents a link from the resource where it is found to another resource or action that may be performed.",
-                "properties": {
-                  "rel": {
-                    "type": "string",
-                    "title": "Rel",
-                    "description": "As with an HTML 'rel' attribute, this describes the type of link.",
-                    "readOnly": true
-                  },
-                  "href": {
-                    "type": "string",
-                    "title": "Href",
-                    "description": "This property contains a fully-qualified URL that can be called to retrieve the linked resource or perform the linked action.",
-                    "readOnly": true
-                  },
-                  "method": {
-                    "type": "string",
-                    "title": "Method",
-                    "description": "The HTTP method that should be used when accessing the URL defined in 'href'.",
-                    "enum": [
-                      "GET",
-                      "POST",
-                      "PUT",
-                      "PATCH",
-                      "DELETE",
-                      "OPTIONS",
-                      "HEAD"
-                    ],
-                    "readOnly": true
-                  },
-                  "targetSchema": {
-                    "type": "string",
-                    "title": "Target Schema",
-                    "description": "For GETs, this is a URL representing the schema that the response should conform to.",
-                    "readOnly": true
-                  },
-                  "schema": {
-                    "type": "string",
-                    "title": "Schema",
-                    "description": "For HTTP methods that can receive bodies (POST and PUT), this is a URL representing the schema that the body should conform to.",
-                    "readOnly": true
-                  }
-                }
-              },
-              "readOnly": true
             }
           }
         },
@@ -798,7 +746,225 @@
     },
     {
       "stream": {
-        "name": "Lists",
+        "name": "automations",
+        "json_schema": {
+          "type": "object",
+          "title": "Automation",
+          "description": "A summary of an individual campaign's settings and content.",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "create_time": {
+              "type": ["null", "string"]
+            },
+            "start_time": {
+              "type": ["null", "string"]
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "emails_sent": {
+              "type": ["null", "number"]
+            },
+            "recipients": {
+              "type": ["null", "object"],
+              "properties": {
+                "list_id": {
+                  "type": ["null", "string"]
+                },
+                "list_is_active": {
+                  "type": ["null", "boolean"]
+                },
+                "list_name": {
+                  "type": ["null", "string"]
+                },
+                "segment_opts": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "saved_segment_id": {
+                      "type": ["null", "number"]
+                    },
+                    "match": {
+                      "type": ["null", "string"]
+                    },
+                    "conditions": {
+                      "type": ["null", "array"],
+                      "items": {}
+                    }
+                  }
+                },
+                "store_id": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "settings": {
+              "type": ["null", "object"],
+              "properties": {
+                "title": {
+                  "type": ["null", "string"]
+                },
+                "from_name": {
+                  "type": ["null", "string"]
+                },
+                "reply_to": {
+                  "type": ["null", "string"]
+                },
+                "use_conversation": {
+                  "type": ["null", "boolean"]
+                },
+                "to_name": {
+                  "type": ["null", "string"]
+                },
+                "authenticate": {
+                  "type": ["null", "boolean"]
+                },
+                "auto_footer": {
+                  "type": ["null", "boolean"]
+                },
+                "inline_css": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "tracking": {
+              "type": ["null", "object"],
+              "properties": {
+                "opens": {
+                  "type": ["null", "boolean"]
+                },
+                "html_clicks": {
+                  "type": ["null", "boolean"]
+                },
+                "text_clicks": {
+                  "type": ["null", "boolean"]
+                },
+                "goal_tracking": {
+                  "type": ["null", "boolean"]
+                },
+                "ecomm360": {
+                  "type": ["null", "boolean"]
+                },
+                "google_analytics": {
+                  "type": ["null", "string"]
+                },
+                "clicktale": {
+                  "type": ["null", "string"]
+                },
+                "salesforce": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "campaign": {
+                      "type": ["null", "boolean"]
+                    },
+                    "notes": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
+                },
+                "capsule": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "notes": {
+                      "type": ["null", "boolean"]
+                    }
+                  }
+                }
+              }
+            },
+            "trigger_settings": {
+              "type": ["null", "object"],
+              "properties": {
+                "workflow_type": {
+                  "type": ["null", "string"]
+                },
+                "workflow_title": {
+                  "type": ["null", "string"]
+                },
+                "runtime": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "days": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "hours": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "type": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "workflow_emails_count": {
+                  "type": ["null", "number"]
+                }
+              }
+            },
+            "report_summary": {
+              "type": ["null", "object"],
+              "properties": {
+                "opens": {
+                  "type": ["null", "number"]
+                },
+                "unique_opens": {
+                  "type": ["null", "number"]
+                },
+                "open_rate": {
+                  "type": ["null", "number"]
+                },
+                "clicks": {
+                  "type": ["null", "number"]
+                },
+                "subscriber_clicks": {
+                  "type": ["null", "number"]
+                },
+                "click_rate": {
+                  "type": ["null", "number"]
+                }
+              }
+            },
+            "_links": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "rel": {
+                    "type": ["null", "string"]
+                  },
+                  "href": {
+                    "type": ["null", "string"]
+                  },
+                  "method": {
+                    "type": ["null", "string"]
+                  },
+                  "targetSchema": {
+                    "type": ["null", "string"]
+                  },
+                  "schema": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["create_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["create_time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "lists",
         "json_schema": {
           "type": "object",
           "title": "Subscriber List",
@@ -1100,58 +1266,6 @@
                   "readOnly": true
                 }
               }
-            },
-            "_links": {
-              "title": "Links",
-              "description": "A list of link types and descriptions for the API schema documents.",
-              "type": "array",
-              "items": {
-                "type": "object",
-                "title": "Resource Link",
-                "description": "This object represents a link from the resource where it is found to another resource or action that may be performed.",
-                "properties": {
-                  "rel": {
-                    "type": "string",
-                    "title": "Rel",
-                    "description": "As with an HTML 'rel' attribute, this describes the type of link.",
-                    "readOnly": true
-                  },
-                  "href": {
-                    "type": "string",
-                    "title": "Href",
-                    "description": "This property contains a fully-qualified URL that can be called to retrieve the linked resource or perform the linked action.",
-                    "readOnly": true
-                  },
-                  "method": {
-                    "type": "string",
-                    "title": "Method",
-                    "description": "The HTTP method that should be used when accessing the URL defined in 'href'.",
-                    "enum": [
-                      "GET",
-                      "POST",
-                      "PUT",
-                      "PATCH",
-                      "DELETE",
-                      "OPTIONS",
-                      "HEAD"
-                    ],
-                    "readOnly": true
-                  },
-                  "targetSchema": {
-                    "type": "string",
-                    "title": "Target Schema",
-                    "description": "For GETs, this is a URL representing the schema that the response should conform to.",
-                    "readOnly": true
-                  },
-                  "schema": {
-                    "type": "string",
-                    "title": "Schema",
-                    "description": "For HTTP methods that can receive bodies (POST and PUT), this is a URL representing the schema that the body should conform to.",
-                    "readOnly": true
-                  }
-                }
-              },
-              "readOnly": true
             }
           }
         },
@@ -1161,6 +1275,106 @@
       },
       "sync_mode": "incremental",
       "cursor_field": ["date_created"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "email_activity",
+        "json_schema": {
+          "type": "object",
+          "title": "Email Activity",
+          "description": "A list of member's subscriber activity in a specific campaign.",
+          "properties": {
+            "emails": {
+              "type": "object",
+              "title": "List members",
+              "description": "An array of members that were sent the campaign.",
+              "properties": {
+                "campaign_id": {
+                  "type": "string",
+                  "title": "The unique id for the campaign.",
+                  "description": "The unique id for the campaign."
+                },
+                "list_id": {
+                  "type": "string",
+                  "title": "The unique id for the list.",
+                  "description": "The unique id for the list."
+                },
+                "list_is_active": {
+                  "type": "boolean",
+                  "title": "The status of the list used.",
+                  "description": "The status of the list used, namely if it's deleted or disabled."
+                },
+                "email_id": {
+                  "type": "string",
+                  "title": "email MD5 hash.",
+                  "description": "The MD5 hash of the lowercase version of the list member's email address."
+                },
+                "email_address": {
+                  "type": "string",
+                  "title": "Email address for a subscriber.",
+                  "description": "Email address for a subscriber."
+                },
+                "action": {
+                  "type": "string",
+                  "title": "action",
+                  "enum": ["open", "click", "bounce"],
+                  "description": "One of the following actions: 'open', 'click', or 'bounce'"
+                },
+                "type": {
+                  "type": "string",
+                  "title": "Type",
+                  "enum": ["hard", "soft"],
+                  "description": "If the action is a 'bounce', the type of bounce received: 'hard', 'soft'."
+                },
+                "timestamp": {
+                  "type": "string",
+                  "title": "Action date and time",
+                  "description": "The date and time recorded for the action in ISO 8601 format.",
+                  "format": "date-time"
+                },
+                "url": {
+                  "type": "string",
+                  "title": "The IP address.",
+                  "description": "The IP address recorded for the action."
+                },
+                "ip": {
+                  "type": "string",
+                  "title": "Action ip address",
+                  "description": "The IP address recorded for the action."
+                }
+              }
+            },
+            "campaign_id": {
+              "type": "string",
+              "title": "Campaign ID",
+              "description": "The unique id for the sent campaign."
+            },
+            "total_items": {
+              "type": "integer",
+              "title": "Total amount of items",
+              "description": "The total number of items matching the query regardless of pagination."
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["timestamp"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "reports",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["send_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["send_time"],
       "destination_sync_mode": "append"
     }
   ]

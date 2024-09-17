@@ -1,0 +1,34 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_csv"
+      },
+      "stream_state": {
+        "history": {
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/TestFile.csv": "2023-11-17T13:52:35.000000Z",
+          "Test_folder_2/TestFileOneDrive.csv": "2023-11-23T06:49:25.000000Z",
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_folder_2/TestFileSharePoint.csv": "2023-12-15T17:34:08.000000Z",
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv": "2024-01-16T12:45:20.000000Z"
+        },
+        "_ab_source_file_last_modified": "2024-01-16T12:45:20.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/simple_test.csv"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "test_unstructured"
+      },
+      "stream_state": {
+        "history": {
+          "simple_pdf_file.pdf": "2023-12-13T11:24:38.000000Z",
+          "https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf": "2023-12-15T16:47:21.000000Z"
+        },
+        "_ab_source_file_last_modified": "2023-12-15T16:47:21.000000Z_https://airbyte179.sharepoint.com/Shared%20Documents/Test_folder/Test_foler_2_1/simple_pdf_file.pdf"
+      }
+    }
+  }
+]

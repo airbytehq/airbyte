@@ -3,48 +3,24 @@
   "type": "object",
   "properties": {
     "default": {
+      "description": "The default action or response for this IVR menu.",
       "type": ["null", "boolean"]
     },
     "greeting_id": {
+      "description": "The ID of the greeting message associated with this IVR menu.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier of the IVR menu.",
       "type": ["null", "integer"]
     },
     "ivr_id": {
+      "description": "The ID of the IVR associated with this menu.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the IVR menu.",
       "type": ["null", "string"]
-    },
-    "routes": {
-      "type": ["array", "null"],
-      "items": {
-        "type": "object",
-        "properties": {
-          "action": {
-            "type": ["null", "string"]
-          },
-          "greeting": {
-            "type": ["null", "string"]
-          },
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "keypress": {
-            "type": ["null", "string"]
-          },
-          "option_text": {
-            "type": ["null", "string"]
-          },
-          "options": {
-            "type": ["null", "object"]
-          },
-          "overflow_options": {
-            "type": ["null", "object"]
-          }
-        }
-      }
     }
   }
 }

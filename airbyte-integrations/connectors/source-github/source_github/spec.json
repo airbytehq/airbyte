@@ -1,0 +1,190 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "GitHub Source Spec",
+    "type": "object",
+    "required": ["credentials", "repositories"],
+    "additionalProperties": true,
+    "properties": {
+      "credentials": {
+        "title": "Authentication",
+        "description": "Choose how to authenticate to GitHub",
+        "type": "object",
+        "order": 0,
+        "group": "auth",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth",
+            "required": ["access_token"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "OAuth Credentials",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "OAuth access token",
+                "airbyte_secret": true
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client Id",
+                "description": "OAuth Client Id",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client secret",
+                "description": "OAuth Client secret",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Personal Access Token",
+            "required": ["personal_access_token"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "PAT Credentials",
+                "order": 0
+              },
+              "personal_access_token": {
+                "type": "string",
+                "title": "Personal Access Tokens",
+                "description": "Log into GitHub and then generate a <a href=\"https://github.com/settings/tokens\">personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with \",\"",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      },
+      "repository": {
+        "type": "string",
+        "examples": [
+          "airbytehq/airbyte airbytehq/another-repo",
+          "airbytehq/*",
+          "airbytehq/airbyte"
+        ],
+        "title": "GitHub Repositories",
+        "description": "(DEPRCATED) Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.",
+        "airbyte_hidden": true,
+        "pattern": "^([\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))\\s+)*[\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))$",
+        "pattern_descriptor": "org/repo org/another-repo org/*"
+      },
+      "repositories": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[\\w.-]+/(([\\w.-]*\\*)|[\\w.-]+(?<!\\.git))$"
+        },
+        "minItems": 1,
+        "examples": [
+          "airbytehq/airbyte",
+          "airbytehq/another-repo",
+          "airbytehq/*",
+          "airbytehq/a*"
+        ],
+        "title": "GitHub Repositories",
+        "description": "List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a* for matching multiple repositories by pattern.",
+        "order": 1,
+        "pattern_descriptor": "org/repo org/another-repo org/* org/a*"
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start date",
+        "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. If the date is not set, all data will be replicated.  For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the <a href=\"https://docs.airbyte.com/integrations/sources/github\">docs</a> for more info",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "pattern_descriptor": "YYYY-MM-DDTHH:mm:ssZ",
+        "order": 2,
+        "format": "date-time"
+      },
+      "api_url": {
+        "type": "string",
+        "examples": ["https://github.com", "https://github.company.org"],
+        "title": "API URL",
+        "default": "https://api.github.com/",
+        "description": "Please enter your basic URL from self-hosted GitHub instance or leave it empty to use GitHub.",
+        "order": 3
+      },
+      "branch": {
+        "type": "string",
+        "title": "Branch",
+        "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
+        "description": "(DEPRCATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "airbyte_hidden": true,
+        "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
+      },
+      "branches": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "title": "Branches",
+        "examples": ["airbytehq/airbyte/master", "airbytehq/airbyte/my-branch"],
+        "description": "List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
+        "order": 4,
+        "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
+      },
+      "max_waiting_time": {
+        "type": "integer",
+        "title": "Max Waiting Time (in minutes)",
+        "examples": [10, 30, 60],
+        "default": 10,
+        "minimum": 1,
+        "maximum": 60,
+        "description": "Max Waiting Time for rate limit. Set higher value to wait till rate limits will be resetted to continue sync",
+        "order": 5
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "option_title"],
+    "predicate_value": "OAuth Credentials",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
+    }
+  }
+}

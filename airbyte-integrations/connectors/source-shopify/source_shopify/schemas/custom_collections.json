@@ -1,0 +1,92 @@
+{
+  "properties": {
+    "handle": {
+      "description": "The unique URL-friendly string that identifies the custom collection.",
+      "type": ["null", "string"]
+    },
+    "sort_order": {
+      "description": "The order in which the custom collection should be displayed.",
+      "type": ["null", "string"]
+    },
+    "body_html": {
+      "description": "The full description of the custom collection for display purposes.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title of the custom collection.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the custom collection.",
+      "type": ["null", "integer"]
+    },
+    "published_scope": {
+      "description": "The scope where the custom collection is published (global or web).",
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier of the custom collection accessible via GraphQL Admin API.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the custom collection was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "image": {
+      "description": "Represents the image associated with the custom collection if available.",
+      "properties": {
+        "alt": {
+          "description": "The alternative text description of the image.",
+          "type": ["null", "string"]
+        },
+        "src": {
+          "description": "The URL of the image.",
+          "type": ["null", "string"]
+        },
+        "width": {
+          "description": "The width of the image in pixels.",
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "description": "The date and time when the image was created.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "height": {
+          "description": "The height of the image in pixels.",
+          "type": ["null", "integer"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "published_at": {
+      "description": "The date and time when the custom collection was published.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "template_suffix": {
+      "description": "The template suffix for the custom collection's URL.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop where the custom collection belongs.",
+      "type": ["null", "string"]
+    },
+    "deleted_at": {
+      "description": "The date and time when the custom collection was deleted.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted_message": {
+      "description": "Any additional message related to the deletion of the custom collection.",
+      "type": ["null", "string"]
+    },
+    "deleted_description": {
+      "description": "The description of why the custom collection was deleted.",
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true,
+  "type": ["null", "object"]
+}

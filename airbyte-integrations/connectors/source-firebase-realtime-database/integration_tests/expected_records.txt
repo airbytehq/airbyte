@@ -1,0 +1,4 @@
+{"stream": "users", "data": {"key": "a", "value": "{\"a\": 1}"}, "emitted_at": 1640962800000}
+{"stream": "users", "data": {"key": "aa", "value": "{\"aa\": 2}"}, "emitted_at": 1640962800000}
+{"stream": "users", "data": {"key": "b", "value": "{\"b\": 3}"}, "emitted_at": 1640962800000}
+{"stream": "users", "data": {"key": "c", "value": "{\"c\": 4}"}, "emitted_at": 1640962800000}

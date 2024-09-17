@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "unit": {
+      "type": ["null", "string"]
+    },
+    "tax": {
+      "type": ["null", "integer"]
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "selectable": {
+      "type": ["null", "boolean"]
+    },
+    "first_char": {
+      "type": ["null", "string"]
+    },
+    "visible_to": {
+      "type": ["null", "string"]
+    },
+    "owner_id": {
+      "type": ["null", "integer"]
+    },
+    "files_count": {
+      "type": ["null", "integer"]
+    },
+    "add_time": {
+      "type": ["null", "string"]
+    },
+    "update_time": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "prices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "product_id": {
+            "type": ["null", "integer"]
+          },
+          "price": {
+            "type": ["null", "integer"]
+          },
+          "currency": {
+            "type": ["null", "string"]
+          },
+          "cost": {
+            "type": ["null", "integer"]
+          },
+          "overhead_cost": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "owner_name": {
+      "type": ["null", "string"]
+    }
+  }
+}

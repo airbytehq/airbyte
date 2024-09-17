@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "5a1d14c2-d829-49cd-8437-1e87dc9f5368",
-  "name": "Google Search Console",
-  "dockerRepository": "airbyte/source-google-search-console-singer",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-google-search-console-singer"
-}

@@ -1,25 +1,5 @@
 /*
- * MIT License
- *
- * Copyright (c) 2020 Airbyte
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.e2e_test;
@@ -27,14 +7,14 @@ package io.airbyte.integrations.destination.e2e_test;
 import static java.lang.Thread.sleep;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +36,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new ThrottledConsumer(config.get("millis_per_record").asLong(), outputRecordCollector);
+    return new ThrottledConsumer(config.get("test_destination").get("millis_per_record").asLong(), outputRecordCollector);
   }
 
   public static class ThrottledConsumer implements AirbyteMessageConsumer {
@@ -64,9 +44,10 @@ public class ThrottledDestination extends BaseConnector implements Destination {
     private final Consumer<AirbyteMessage> outputRecordCollector;
     private final long millisPerRecord;
 
-    public ThrottledConsumer(long millisPerRecord, Consumer<AirbyteMessage> outputRecordCollector) {
+    public ThrottledConsumer(final long millisPerRecord, final Consumer<AirbyteMessage> outputRecordCollector) {
       this.millisPerRecord = millisPerRecord;
       this.outputRecordCollector = outputRecordCollector;
+      LOGGER.info("Will sleep {} millis before processing every record", millisPerRecord);
     }
 
     @Override
@@ -74,12 +55,10 @@ public class ThrottledDestination extends BaseConnector implements Destination {
 
     @Override
     public void accept(final AirbyteMessage message) throws Exception {
-      LOGGER.info("received record: {}", message);
       sleep(millisPerRecord);
-      LOGGER.info("completed sleep");
 
       if (message.getType() == Type.STATE) {
-        LOGGER.info("emitting state: {}", message);
+        LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
       }
     }

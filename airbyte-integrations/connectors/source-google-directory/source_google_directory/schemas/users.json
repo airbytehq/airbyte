@@ -3,146 +3,292 @@
   "type": "object",
   "properties": {
     "kind": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "username": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "givenName": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "familyName": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "fullName": {
-          "type": "string"
+          "type": ["null", "string"]
         }
-      },
-      "required": ["givenName", "familyName", "fullName"]
+      }
     },
     "isAdmin": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "isDelegatedAdmin": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "lastLoginTime": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "creationTime": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "agreedToTerms": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "hashFunction": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "suspended": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "changePasswordAtNextLogin": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "ipWhitelisted": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "emails": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "address": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "customType": {
-              "type": "string"
-            },
-            "primary": {
-              "type": "boolean"
-            }
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": ["null", "string"]
           },
-          "required": ["address", "type", "customType", "primary"]
+          "type": {
+            "type": ["null", "string"]
+          },
+          "customType": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          }
         }
-      ]
+      }
     },
     "externalIds": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "value": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "customType": {
-              "type": "string"
-            }
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": ["null", "string"]
           },
-          "required": ["value", "type", "customType"]
+          "type": {
+            "type": ["null", "string"]
+          },
+          "customType": {
+            "type": ["null", "string"]
+          }
         }
-      ]
+      }
     },
     "relations": {
-      "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "value": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "customType": {
-              "type": "string"
-            }
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": ["null", "string"]
           },
-          "required": ["value", "type", "customType"]
+          "type": {
+            "type": ["null", "string"]
+          },
+          "customType": {
+            "type": ["null", "string"]
+          }
         }
-      ]
+      }
+    },
+    "organizations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          },
+          "primary": {
+            "type": ["null", "boolean"]
+          },
+          "customType": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "phones": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "aliases": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "nonEditableAliases": {
-      "type": "array",
-      "items": [
-        {
-          "type": "string"
-        }
-      ]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "customerId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "orgUnitPath": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isMailboxSetup": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "includeInGlobalAddressList": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
+    },
+    "etag": {
+      "type": ["null", "string"]
+    },
+    "languages": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "languageCode": {
+            "type": ["null", "string"]
+          },
+          "preference": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "isEnforcedIn2Sv": {
+      "type": ["null", "boolean"]
+    },
+    "isEnrolledIn2Sv": {
+      "type": ["null", "boolean"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "primaryEmail": {
+      "type": ["null", "string"]
+    },
+    "suspensionReason": {
+      "type": ["null", "string"]
+    },
+    "locations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "area": {
+            "type": ["null", "string"]
+          },
+          "buildingId": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "thumbnailPhotoEtag": {
+      "type": ["null", "string"]
+    },
+    "thumbnailPhotoUrl": {
+      "type": ["null", "string"]
+    },
+    "addresses": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "formatted": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "recoveryPhone": {
+      "type": ["null", "string"]
+    },
+    "recoveryEmail": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sshPublicKeys": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "expirationTimeUsec": {
+            "type": ["null", "string"]
+          },
+          "fingerprint": {
+            "type": ["null", "string"]
+          },
+          "key": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "posixAccounts": {
+      "gid": {
+        "type": ["null", "string"]
+      },
+      "homeDirectory": {
+        "type": ["null", "string"]
+      },
+      "operatingSystemType": {
+        "type": ["null", "string"]
+      },
+      "primary": {
+        "type": ["null", "boolean"]
+      },
+      "systemId": {
+        "type": ["null", "string"]
+      },
+      "uid": {
+        "type": ["null", "string"]
+      },
+      "username": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

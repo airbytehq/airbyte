@@ -1,7 +1,0 @@
-{
-  "sourceDefinitionId": "2e875208-0c0b-4ee4-9e92-1cb3156ea799",
-  "name": "Iterable",
-  "dockerRepository": "airbyte/source-iterable",
-  "dockerImageTag": "0.1.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-iterable"
-}

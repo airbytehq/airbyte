@@ -1,0 +1,21 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/convex
+connectionSpecification:
+  additionalProperties: true
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Convex Source Spec
+  type: object
+  required:
+    - deployment_url
+    - access_key
+  properties:
+    deployment_url:
+      type: string
+      title: Deployment Url
+      examples:
+        - https://murky-swan-635.convex.cloud
+        - https://cluttered-owl-337.convex.cloud
+    access_key:
+      type: string
+      title: Access Key
+      description: API access key used to retrieve data from Convex.
+      airbyte_secret: true

@@ -1,0 +1,123 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Databricks Lakehouse Destination Spec",
+    "type": "object",
+    "required": [
+      "accept_terms",
+      "hostname",
+      "http_path",
+      "database",
+      "authentication"
+    ],
+    "properties": {
+      "accept_terms": {
+        "title": "Agree to the Databricks JDBC Driver Terms & Conditions",
+        "type": "boolean",
+        "description": "You must agree to the Databricks JDBC Driver <a href=\"https://databricks.com/jdbc-odbc-driver-license\">Terms & Conditions</a> to use this connector.",
+        "default": false,
+        "order": 1
+      },
+      "hostname": {
+        "title": "Server Hostname",
+        "type": "string",
+        "description": "Databricks Cluster Server Hostname.",
+        "examples": ["abc-12345678-wxyz.cloud.databricks.com"],
+        "order": 2
+      },
+      "http_path": {
+        "title": "HTTP Path",
+        "type": "string",
+        "description": "Databricks Cluster HTTP Path.",
+        "examples": ["sql/1.0/warehouses/0000-1111111-abcd90"],
+        "order": 3
+      },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Databricks Cluster Port.",
+        "default": "443",
+        "examples": ["443"],
+        "order": 4
+      },
+      "database": {
+        "title": "Databricks Unity Catalog Name",
+        "description": "The name of the unity catalog for the database",
+        "type": "string",
+        "order": 5
+      },
+      "schema": {
+        "title": "Default Schema",
+        "description": "The default schema tables are written. If not specified otherwise, the \"default\" will be used.",
+        "type": "string",
+        "examples": ["default"],
+        "default": "default",
+        "order": 6
+      },
+      "authentication": {
+        "title": "Authentication",
+        "type": "object",
+        "description": "Authentication mechanism for Staging files and running queries",
+        "default": "OAUTH",
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "OAuth2 (Recommended)",
+            "required": ["auth_type", "client_id", "secret"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "OAUTH",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "order": 1
+              },
+              "secret": {
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 2
+              }
+            }
+          },
+          {
+            "title": "Personal Access Token",
+            "required": ["auth_type", "personal_access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "BASIC",
+                "order": 0
+              },
+              "personal_access_token": {
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 1
+              }
+            }
+          }
+        ]
+      },
+      "purge_staging_data": {
+        "title": "Purge Staging Files and Tables",
+        "type": "boolean",
+        "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
+        "default": true,
+        "order": 9
+      },
+      "raw_schema_override": {
+        "type": "string",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Schema Name",
+        "default": "airbyte_internal",
+        "order": 10
+      }
+    }
+  }
+}

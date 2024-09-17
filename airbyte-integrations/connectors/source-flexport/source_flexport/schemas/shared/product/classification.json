@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /product/classification for this object.",
+      "pattern": "^/product/classification$"
+    },
+    "region": {
+      "type": "string",
+      "description": "The two letter code for the region of the classification"
+    },
+    "codes": {
+      "type": "array",
+      "description": "Array of 6 digit (international HS) or 10 digit (US HTS) code.",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

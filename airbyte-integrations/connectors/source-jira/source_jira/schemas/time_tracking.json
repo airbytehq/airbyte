@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "required": ["key"],
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "The key associated with the time tracking provider.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the time tracking provider.",
+      "type": "string"
+    },
+    "url": {
+      "description": "The URL of the configuration page for the time tracking provider app. This property is only returned if the `adminPageKey` property is set in the module descriptor of the time tracking provider app.",
+      "type": "string",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about the time tracking provider."
+}

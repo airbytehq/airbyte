@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Ticket Comments",
+  "type": ["null", "object"],
+  "properties": {
+    "created_at": {
+      "description": "Timestamp indicating when the ticket comment was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "timestamp": {
+      "description": "UNIX timestamp representing the time the ticket comment was created.",
+      "type": ["null", "integer"]
+    },
+    "body": {
+      "description": "Text body of the ticket comment.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier for the ticket comment.",
+      "type": ["null", "integer"]
+    },
+    "ticket_id": {
+      "description": "Identifier of the ticket to which the comment belongs.",
+      "type": ["null", "integer"]
+    },
+    "event_type": {
+      "description": "Type of event associated with the ticket comment.",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "Type of the ticket comment.",
+      "type": ["null", "string"]
+    },
+    "via_reference_id": {
+      "description": "Reference ID associated with the channel through which the ticket comment was created.",
+      "type": ["null", "integer"]
+    },
+    "html_body": {
+      "description": "HTML formatted body of the ticket comment.",
+      "type": ["null", "string"]
+    },
+    "plain_body": {
+      "description": "Plain text version of the ticket comment body.",
+      "type": ["null", "string"]
+    },
+    "public": {
+      "description": "Flag indicating if the ticket comment is public or private.",
+      "type": ["null", "boolean"]
+    },
+    "audit_id": {
+      "description": "Unique identifier for the audit associated with this ticket comment.",
+      "type": ["null", "integer"]
+    },
+    "author_id": {
+      "description": "Identifier of the author of the ticket comment.",
+      "type": ["null", "integer"]
+    },
+    "via": {
+      "description": "Channel through which the ticket comment was created.",
+      "$ref": "via.json"
+    },
+    "metadata": {
+      "description": "Additional metadata associated with the ticket comment.",
+      "$ref": "metadata.json"
+    },
+    "attachments": {
+      "description": "Information about any attachments included in the ticket comment.",
+      "$ref": "attachments.json"
+    },
+    "uploads": {
+      "description": "Information about any file uploads associated with the ticket comment.",
+      "type": ["null", "array"]
+    }
+  }
+}

@@ -1,0 +1,18 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.19.0'
+    features = ['db-destinations', 'datastore-mongo']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.mongodb.MongodbDestinationStrictEncrypt'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+    implementation project(':airbyte-integrations:connectors:destination-mongodb')
+}

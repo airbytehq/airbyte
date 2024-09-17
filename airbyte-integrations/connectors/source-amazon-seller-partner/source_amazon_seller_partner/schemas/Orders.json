@@ -1,0 +1,220 @@
+{
+  "title": "Orders",
+  "description": "All orders that were updated after a specified date",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "seller_id": {
+      "description": "Identifier for the seller associated with the order",
+      "type": "string",
+      "title": "seller_id"
+    },
+    "AmazonOrderId": {
+      "description": "Unique identifier for the Amazon order",
+      "type": ["null", "string"]
+    },
+    "BuyerInfo": {
+      "description": "Information about the buyer",
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "PurchaseDate": {
+      "description": "Date and time when the order was purchased",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "LastUpdateDate": {
+      "description": "Date and time when the order was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "OrderStatus": {
+      "description": "Status of the order",
+      "type": ["null", "string"]
+    },
+    "SellerOrderId": {
+      "description": "Unique identifier given by the seller for the order",
+      "type": ["null", "string"]
+    },
+    "FulfillmentChannel": {
+      "description": "Channel through which the order is fulfilled",
+      "type": ["null", "string"]
+    },
+    "SalesChannel": {
+      "description": "Channel through which the order was sold",
+      "type": ["null", "string"]
+    },
+    "AutomatedShippingSettings": {
+      "description": "Settings related to automated shipping processes.",
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "HasAutomatedShippingSettings": {
+          "description": "Indicates if the order has automated shipping settings",
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "HasRegulatedItems": {
+      "description": "Indicates if the order has regulated items",
+      "type": ["null", "boolean"]
+    },
+    "ShipServiceLevel": {
+      "description": "Service level for shipping the order",
+      "type": ["null", "string"]
+    },
+    "OrderTotal": {
+      "description": "Total amount of the order including taxes and shipping costs.",
+      "type": ["null", "object"],
+      "properties": {
+        "CurrencyCode": {
+          "description": "Currency code of the order amount",
+          "type": ["null", "string"]
+        },
+        "Amount": {
+          "description": "Total amount of the order",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "NumberOfItemsShipped": {
+      "description": "Number of items shipped in the order",
+      "type": ["null", "integer"]
+    },
+    "NumberOfItemsUnshipped": {
+      "description": "Number of items yet to be shipped in the order",
+      "type": ["null", "integer"]
+    },
+    "PaymentMethod": {
+      "description": "Payment method used for the order",
+      "type": ["null", "string"]
+    },
+    "PaymentMethodDetails": {
+      "description": "Details of the payment method used for the order.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Details of the payment method used",
+        "type": ["null", "string"]
+      }
+    },
+    "IsAccessPointOrder": {
+      "description": "Indicates if the order is an Amazon Hub Counter order",
+      "type": ["null", "boolean"]
+    },
+    "IsReplacementOrder": {
+      "description": "Indicates if the order is a replacement order",
+      "type": ["null", "string"]
+    },
+    "MarketplaceId": {
+      "description": "Identifier for the marketplace where the order was placed",
+      "type": ["null", "string"]
+    },
+    "ShipmentServiceLevelCategory": {
+      "description": "Service level category for shipping the order",
+      "type": ["null", "string"]
+    },
+    "OrderType": {
+      "description": "Type of the order",
+      "type": ["null", "string"]
+    },
+    "EarliestShipDate": {
+      "description": "Earliest shipment date for the order",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "LatestShipDate": {
+      "description": "Latest shipment date for the order",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "IsBusinessOrder": {
+      "description": "Indicates if the order is a business order",
+      "type": ["null", "boolean"]
+    },
+    "IsSoldByAB": {
+      "description": "Indicates if the order is sold by Amazon Business",
+      "type": ["null", "boolean"]
+    },
+    "IsPrime": {
+      "description": "Indicates if the order is a Prime order",
+      "type": ["null", "boolean"]
+    },
+    "IsGlobalExpressEnabled": {
+      "description": "Indicates if global express is enabled for the order",
+      "type": ["null", "boolean"]
+    },
+    "IsPremiumOrder": {
+      "description": "Indicates if the order is a premium order",
+      "type": ["null", "boolean"]
+    },
+    "IsISPU": {
+      "description": "Indicates if the order is for In-Store Pickup",
+      "type": ["null", "boolean"]
+    },
+    "DefaultShipFromLocationAddress": {
+      "description": "The default address from which orders are shipped.",
+      "type": ["null", "object"],
+      "properties": {
+        "AddressLine1": {
+          "description": "First line of the shipping address",
+          "type": ["null", "string"]
+        },
+        "City": {
+          "description": "City of the shipping address",
+          "type": ["null", "string"]
+        },
+        "CountryCode": {
+          "description": "Country code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "Name": {
+          "description": "Name associated with the shipping address",
+          "type": ["null", "string"]
+        },
+        "PostalCode": {
+          "description": "Postal code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "StateOrRegion": {
+          "description": "State or region of the shipping address",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "EarliestDeliveryDate": {
+      "description": "Earliest estimated delivery date of the order",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "LatestDeliveryDate": {
+      "description": "Latest estimated delivery date of the order",
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "ShippingAddress": {
+      "description": "The address to which the order will be shipped.",
+      "type": ["null", "object"],
+      "properties": {
+        "City": {
+          "description": "City of the shipping address",
+          "type": ["null", "string"]
+        },
+        "CountryCode": {
+          "description": "Country code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "PostalCode": {
+          "description": "Postal code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "StateOrRegion": {
+          "description": "State or region of the shipping address",
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

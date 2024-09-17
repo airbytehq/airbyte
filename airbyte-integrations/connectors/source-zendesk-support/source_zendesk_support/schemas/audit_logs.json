@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Audit Logs",
+  "type": ["null", "object"],
+  "properties": {
+    "action": {
+      "description": "The type of action performed in the audit log.",
+      "type": ["null", "string"]
+    },
+    "action_label": {
+      "description": "A human-readable label representing the action.",
+      "type": ["null", "string"]
+    },
+    "actor_id": {
+      "description": "The ID of the actor (user) who performed the action.",
+      "type": ["null", "number"]
+    },
+    "actor_name": {
+      "description": "The name of the actor (user) who performed the action.",
+      "type": ["null", "string"]
+    },
+    "change_description": {
+      "description": "Description of the change made.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the audit log entry was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "description": "Unique identifier for the audit log entry.",
+      "type": ["null", "number"]
+    },
+    "ip_address": {
+      "description": "The IP address from which the action was performed.",
+      "type": ["null", "string"]
+    },
+    "source_id": {
+      "description": "The ID of the source object related to the action.",
+      "type": ["null", "number"]
+    },
+    "source_label": {
+      "description": "A human-readable label representing the source object.",
+      "type": ["null", "string"]
+    },
+    "source_type": {
+      "description": "The type of the source object.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "The URL associated with the action or source object.",
+      "type": ["null", "string"]
+    }
+  }
+}

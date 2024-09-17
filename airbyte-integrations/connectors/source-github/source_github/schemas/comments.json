@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Details about the repository to which the comment belongs",
+      "type": "string"
+    },
+    "id": {
+      "description": "The unique identifier of the comment",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "The unique identifier of the node",
+      "type": ["null", "string"]
+    },
+    "user": {
+      "description": "Details about the user who created the comment",
+      "$ref": "user.json"
+    },
+    "url": {
+      "description": "The URL of the comment",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "The URL of the comment on GitHub",
+      "type": ["null", "string"]
+    },
+    "body": {
+      "description": "The content of the comment",
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "description": "The unique identifier of the user",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time the comment was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time the comment was last updated",
+      "type": "string",
+      "format": "date-time"
+    },
+    "issue_url": {
+      "description": "The URL of the issue to which the comment belongs",
+      "type": ["null", "string"]
+    },
+    "author_association": {
+      "description": "The association of the comment author to the repository (e.g., owner, member, collaborator, contributor, etc.)",
+      "type": ["null", "string"]
+    },
+    "reactions": {
+      "description": "Reactions (e.g., like, heart, etc.) received on the comment",
+      "$ref": "reactions.json"
+    },
+    "performed_via_github_app": {
+      "description": "Details about the GitHub App that performed the action",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "The unique identifier of the GitHub App",
+          "type": ["null", "integer"]
+        },
+        "slug": {
+          "description": "The slug associated with the GitHub App",
+          "type": ["null", "string"]
+        },
+        "node_id": {
+          "description": "The unique identifier of the node for the GitHub App",
+          "type": ["null", "string"]
+        },
+        "owner": {
+          "description": "Details about the owner of the GitHub App",
+          "$ref": "user.json"
+        },
+        "name": {
+          "description": "The name of the GitHub App",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "A description of the GitHub App",
+          "type": ["null", "string"]
+        },
+        "external_url": {
+          "description": "The external URL of the GitHub App",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "The HTML URL of the GitHub App",
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "description": "The date and time the GitHub App was created",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "The date and time the GitHub App was last updated",
+          "type": "string",
+          "format": "date-time"
+        },
+        "permissions": {
+          "description": "Permissions granted to the GitHub App",
+          "type": "object",
+          "properties": {
+            "issues": {
+              "description": "Permission for accessing issues",
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "description": "Permission for accessing metadata",
+              "type": ["null", "string"]
+            },
+            "pull_requests": {
+              "description": "Permission for accessing pull requests",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "events": {
+          "description": "Events associated with the GitHub App",
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

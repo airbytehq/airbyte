@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "self": {
+      "description": "The URL of the issue security scheme.",
+      "type": "string",
+      "readOnly": true
+    },
+    "id": {
+      "description": "The ID of the issue security scheme.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "name": {
+      "description": "The name of the issue security scheme.",
+      "type": "string",
+      "readOnly": true
+    },
+    "description": {
+      "description": "The description of the issue security scheme.",
+      "type": "string",
+      "readOnly": true
+    },
+    "defaultSecurityLevelId": {
+      "description": "The ID of the default security level.",
+      "type": "integer",
+      "readOnly": true
+    },
+    "levels": {
+      "description": "The issue security levels associated with the security scheme.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "self": {
+            "description": "The URL of the issue level security item.",
+            "type": "string",
+            "readOnly": true
+          },
+          "id": {
+            "description": "The unique identifier of the issue security level.",
+            "type": "string",
+            "readOnly": true
+          },
+          "description": {
+            "description": "A brief description of the issue security level.",
+            "type": "string",
+            "readOnly": true
+          },
+          "name": {
+            "description": "The unique name of the issue security level.",
+            "type": "string",
+            "readOnly": true
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "List of security schemes."
+}

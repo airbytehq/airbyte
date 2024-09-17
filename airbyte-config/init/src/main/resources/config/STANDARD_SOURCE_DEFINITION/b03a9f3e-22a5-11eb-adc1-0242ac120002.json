@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
-  "name": "Mailchimp",
-  "dockerRepository": "airbyte/source-mailchimp",
-  "dockerImageTag": "0.2.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-mailchimp",
-  "icon": "mailchimp.svg"
-}

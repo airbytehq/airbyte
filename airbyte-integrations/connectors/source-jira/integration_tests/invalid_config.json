@@ -1,0 +1,6 @@
+{
+  "api_token": "invalid_token",
+  "email": "test@test.com",
+  "projects": ["invalidproject"],
+  "start_date": "2021-09-25T00:00:00Z"
+}

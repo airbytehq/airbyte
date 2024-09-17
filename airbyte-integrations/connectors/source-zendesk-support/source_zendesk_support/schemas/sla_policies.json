@@ -1,0 +1,111 @@
+{
+  "properties": {
+    "id": {
+      "description": "The unique identifier for the SLA policy.",
+      "type": ["integer"]
+    },
+    "url": {
+      "description": "The URL link to access the SLA policy details.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title of the SLA policy.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description of the SLA policy.",
+      "type": ["null", "string"]
+    },
+    "position": {
+      "description": "The position of the SLA policy.",
+      "type": ["null", "integer"]
+    },
+    "filter": {
+      "description": "Contains filtering criteria for retrieving SLA policies data.",
+      "properties": {
+        "all": {
+          "description": "All conditions within this array must be met for a policy to be returned.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "Defines specific conditions for filtering SLA policies.",
+            "properties": {
+              "field": {
+                "description": "The field to filter on.",
+                "type": ["null", "string"]
+              },
+              "operator": {
+                "description": "The operator for the filter.",
+                "type": ["null", "string"]
+              },
+              "value": {
+                "description": "The value to filter by.",
+                "type": ["null", "string", "number", "boolean"]
+              }
+            },
+            "type": ["object"]
+          }
+        },
+        "any": {
+          "description": "At least one condition within this array must be met for a policy to be returned.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "Defines specific conditions for filtering SLA policies.",
+            "properties": {
+              "field": {
+                "description": "The field to filter on.",
+                "type": ["null", "string"]
+              },
+              "operator": {
+                "description": "The operator for the filter.",
+                "type": ["null", "string"]
+              },
+              "value": {
+                "description": "The value to filter by.",
+                "type": ["null", "string"]
+              }
+            },
+            "type": ["object"]
+          }
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "policy_metrics": {
+      "description": "Contains metrics associated with SLA policies.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "Specifies individual metrics related to SLA policies.",
+        "properties": {
+          "priority": {
+            "description": "The priority level of the SLA policy.",
+            "type": ["null", "string"]
+          },
+          "target": {
+            "description": "The target value for the metric.",
+            "type": ["null", "integer"]
+          },
+          "business_hours": {
+            "description": "The business hours considered for the SLA policy.",
+            "type": ["null", "boolean"]
+          },
+          "metric": {
+            "description": "The metric to measure the SLA policy against.",
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      }
+    },
+    "created_at": {
+      "description": "The timestamp for when the SLA policy was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The timestamp for when the SLA policy was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  },
+  "type": ["object"]
+}

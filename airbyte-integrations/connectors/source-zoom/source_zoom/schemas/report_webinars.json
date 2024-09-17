@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_uuid": {
+      "type": ["null", "string"]
+    },
+    "custom_keys": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "dept": {
+      "type": ["null", "string"]
+    },
+    "duration": {
+      "type": ["null", "number"]
+    },
+    "end_time": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "participants_count": {
+      "type": ["null", "number"]
+    },
+    "start_time": {
+      "type": ["null", "string"]
+    },
+    "topic": {
+      "type": ["null", "string"]
+    },
+    "total_minutes": {
+      "type": ["null", "number"]
+    },
+    "tracking_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "field": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "type": {
+      "type": ["null", "number"]
+    },
+    "user_email": {
+      "type": ["null", "string"]
+    },
+    "user_name": {
+      "type": ["null", "string"]
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,16 +1,36 @@
 {#
-    Overriding the following macro from dbt-utils:
-        https://github.com/fishtown-analytics/dbt-utils/blob/0.6.2/macros/cross_db_utils/concat.sql
-    To implement our own version of concat
-    Because on postgres, we cannot pass more than 100 arguments to a function
-    This is necessary until: https://github.com/fishtown-analytics/dbt-utils/blob/dev/0.7.0/macros/cross_db_utils/concat.sql
-    is released.
+    concat in dbt 0.6.4 used to work fine for bigquery but the new implementaion in 0.7.3 is less scalable (can not handle too many columns)
+    Therefore, we revert the implementation here and add versions for missing destinations
 #}
 
 {% macro concat(fields) -%}
-  {{ adapter.dispatch('concat', packages = ['airbyte_utils', 'dbt_utils'])(fields) }}
+  {{ adapter.dispatch('concat')(fields) }}
 {%- endmacro %}
 
-{% macro postgres__concat(fields) %}
-    {{ dbt_utils.alternative_concat(fields) }}
-{% endmacro %}
+{% macro bigquery__concat(fields) -%}
+    {#-- concat() in SQL bigquery scales better with number of columns than using the '||' operator --#}
+    concat({{ fields|join(', ') }})
+{%- endmacro %}
+
+{% macro mysql__concat(fields) -%}
+    {#-- MySQL doesn't support the '||' operator as concatenation by default --#}
+    concat({{ fields|join(', ') }})
+{%- endmacro %}
+
+{% macro sqlserver__concat(fields) -%}
+    {#-- CONCAT() in SQL SERVER accepts from 2 to 254 arguments, we use batches for the main concat, to overcome the limit. --#}
+    {% set concat_chunks = [] %}
+    {% for chunk in fields|batch(253) -%}
+        {% set _ = concat_chunks.append( "concat(" ~ chunk|join(', ') ~ ",'')" ) %}
+    {% endfor %}
+
+    concat({{ concat_chunks|join(', ') }}, '')
+{%- endmacro %}
+
+{% macro tidb__concat(fields) -%}
+    concat({{ fields|join(', ') }})
+{%- endmacro %}
+
+{% macro duckdb__concat(fields) -%}
+    concat({{ fields|join(', ') }})
+{%- endmacro %}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "The key of the property. This field is required when creating or updating issue comment properties.",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value associated with the key. This field is required when creating or updating issue comment properties."
+    }
+  },
+  "additionalProperties": true,
+  "description": "An entity property, for more information see [Entity properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/)."
+}

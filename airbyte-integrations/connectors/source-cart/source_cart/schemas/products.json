@@ -1,0 +1,507 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the product",
+      "type": "integer"
+    },
+    "item_number": {
+      "description": "Item number of the product",
+      "type": ["string", "null"]
+    },
+    "manufacturer_id": {
+      "description": "Manufacturer ID of the product",
+      "type": ["integer", "null"]
+    },
+    "manufacturer_part_number": {
+      "description": "Manufacturer part number of the product",
+      "type": ["string", "null"]
+    },
+    "primary_category_id": {
+      "description": "ID of the primary category the product belongs to",
+      "type": ["integer", "null"]
+    },
+    "product_status_id": {
+      "description": "ID indicating the status of the product",
+      "type": ["integer", "null"]
+    },
+    "item_name": {
+      "description": "Name of the product",
+      "type": ["string", "null"]
+    },
+    "bullets": {
+      "description": "List of bullet points describing the product",
+      "type": ["string", "null"]
+    },
+    "short_description": {
+      "description": "Short description of the product",
+      "type": ["string", "null"]
+    },
+    "long_description_2": {
+      "description": "Second long description of the product",
+      "type": ["string", "null"]
+    },
+    "long_description_3": {
+      "description": "Third long description of the product",
+      "type": ["string", "null"]
+    },
+    "long_description_4": {
+      "description": "Fourth long description of the product",
+      "type": ["string", "null"]
+    },
+    "long_description_5": {
+      "description": "Fifth long description of the product",
+      "type": ["string", "null"]
+    },
+    "height": {
+      "description": "Height dimension of the product",
+      "type": ["string", "null"]
+    },
+    "length": {
+      "description": "Length dimension of the product",
+      "type": ["string", "null"]
+    },
+    "width": {
+      "description": "Width dimension of the product",
+      "type": ["string", "null"]
+    },
+    "size_unit": {
+      "description": "Unit of size measurement for the product",
+      "type": ["string", "null"]
+    },
+    "weight": {
+      "description": "Weight of the product",
+      "type": ["number", "null"]
+    },
+    "weight_unit": {
+      "description": "Unit of weight measurement for the product",
+      "type": ["string", "null"]
+    },
+    "cost": {
+      "description": "Cost of the product",
+      "type": ["number", "null"]
+    },
+    "price": {
+      "description": "Price of the product",
+      "type": ["number", "null"]
+    },
+    "retail": {
+      "description": "Retail price of the product",
+      "type": ["number", "null"]
+    },
+    "minimum_quantity": {
+      "description": "Minimum quantity required for purchase",
+      "type": ["integer", "null"]
+    },
+    "maximum_quantity": {
+      "description": "Maximum quantity allowed for purchase",
+      "type": ["integer", "null"]
+    },
+    "is_spotlight_item": {
+      "description": "Flag indicating if the product is a spotlight item",
+      "type": ["integer", "null"]
+    },
+    "quantity_on_hand": {
+      "description": "Current quantity on hand for the product",
+      "type": ["integer", "null"]
+    },
+    "keywords": {
+      "description": "Keywords associated with the product",
+      "type": ["string", "null"]
+    },
+    "is_non_taxable": {
+      "description": "Flag indicating if the product is non-taxable",
+      "type": ["integer", "null"]
+    },
+    "is_shipped_individually": {
+      "description": "Flag indicating if the product is shipped individually",
+      "type": ["integer", "null"]
+    },
+    "is_hidden": {
+      "description": "Flag indicating if the product is hidden",
+      "type": ["integer", "null"]
+    },
+    "sort_order": {
+      "description": "Order in which the product is displayed",
+      "type": ["integer", "null"]
+    },
+    "e_product_type": {
+      "description": "Type of electronic product",
+      "type": ["string", "null"]
+    },
+    "e_product_url": {
+      "description": "URL for accessing electronic products",
+      "type": ["string", "null"]
+    },
+    "e_product_password": {
+      "description": "Password for accessing electronic products",
+      "type": ["string", "null"]
+    },
+    "e_product_verification_link_expiration": {
+      "description": "Expiration time for electronic product verification links",
+      "type": ["integer", "null"]
+    },
+    "e_product_email": {
+      "description": "Email associated with electronic product delivery",
+      "type": ["string", "null"]
+    },
+    "e_product_allow_multiple_deliveries": {
+      "description": "Flag indicating if multiple deliveries are allowed for electronic products",
+      "type": ["integer", "null"]
+    },
+    "warehouse_id": {
+      "description": "ID of the warehouse where the product is stored",
+      "type": ["integer", "null"]
+    },
+    "call_for_shipping": {
+      "description": "Flag indicating if shipping details need to be requested",
+      "type": ["integer", "null"]
+    },
+    "quickbooks_item_id": {
+      "description": "QuickBooks item ID for accounting purposes",
+      "type": ["string", "null"]
+    },
+    "call_for_pricing": {
+      "description": "Flag indicating if pricing details need to be requested",
+      "type": ["integer", "null"]
+    },
+    "rate_adjustment_type": {
+      "description": "Type of rate adjustment for the product",
+      "type": ["string", "null"]
+    },
+    "meta_description": {
+      "description": "Meta description for SEO purposes",
+      "type": ["string", "null"]
+    },
+    "page_title": {
+      "description": "Page title for the product",
+      "type": ["string", "null"]
+    },
+    "use_tabs": {
+      "description": "Flag indicating if tabs are used to display product information",
+      "type": "boolean"
+    },
+    "related_name": {
+      "description": "Name of related products",
+      "type": ["string", "null"]
+    },
+    "override_theme_use_tabs": {
+      "description": "Flag indicating if theme tab override is enabled",
+      "type": "boolean"
+    },
+    "long_description_tab_name_1": {
+      "description": "Tab name for the first long description",
+      "type": ["string", "null"]
+    },
+    "long_description_tab_name_2": {
+      "description": "Tab name for the second long description",
+      "type": ["string", "null"]
+    },
+    "long_description_tab_name_3": {
+      "description": "Tab name for the third long description",
+      "type": ["string", "null"]
+    },
+    "long_description_tab_name_4": {
+      "description": "Tab name for the fourth long description",
+      "type": ["string", "null"]
+    },
+    "long_description_tab_name_5": {
+      "description": "Tab name for the fifth long description",
+      "type": ["string", "null"]
+    },
+    "long_description_1": {
+      "description": "First long description of the product",
+      "type": ["string", "null"]
+    },
+    "is_non_shipping_item": {
+      "description": "Flag indicating if the product does not require shipping",
+      "type": "boolean"
+    },
+    "e_product_delivery_action": {
+      "description": "Action to be taken upon electronic product delivery",
+      "type": ["string", "null"]
+    },
+    "use_variant_inventory": {
+      "description": "Flag indicating if variant inventory is used",
+      "type": "boolean"
+    },
+    "is_featured_item": {
+      "description": "Flag indicating if the product is featured",
+      "type": "boolean"
+    },
+    "long_description_external_url_1": {
+      "description": "External URL for the first long description",
+      "type": ["string", "null"]
+    },
+    "long_description_external_url_2": {
+      "description": "External URL for the second long description",
+      "type": ["string", "null"]
+    },
+    "long_description_external_url_3": {
+      "description": "External URL for the third long description",
+      "type": ["string", "null"]
+    },
+    "long_description_external_url_4": {
+      "description": "External URL for the fourth long description",
+      "type": ["string", "null"]
+    },
+    "long_description_external_url_5": {
+      "description": "External URL for the fifth long description",
+      "type": ["string", "null"]
+    },
+    "bullets_external_url": {
+      "description": "External URL for detailed information related to bullet points",
+      "type": ["string", "null"]
+    },
+    "custom_flag_1": {
+      "description": "Custom flag 1 for product customization",
+      "type": "boolean"
+    },
+    "custom_flag_2": {
+      "description": "Custom flag 2 for product customization",
+      "type": "boolean"
+    },
+    "custom_flag_3": {
+      "description": "Custom flag 3 for product customization",
+      "type": "boolean"
+    },
+    "custom_flag_4": {
+      "description": "Custom flag 4 for product customization",
+      "type": "boolean"
+    },
+    "custom_flag_5": {
+      "description": "Custom flag 5 for product customization",
+      "type": "boolean"
+    },
+    "created_at": {
+      "description": "Timestamp indicating when the product was created",
+      "type": "string"
+    },
+    "updated_at": {
+      "description": "Timestamp indicating when the product was last updated",
+      "type": "string"
+    },
+    "url_rewrite": {
+      "description": "Rewritten URL for SEO-friendly purposes",
+      "type": ["string", "null"]
+    },
+    "is_kit": {
+      "description": "Flag indicating if the product is a kit",
+      "type": "boolean"
+    },
+    "is_child_product": {
+      "description": "Flag indicating if the product is a child product",
+      "type": "boolean"
+    },
+    "is_non_inventory": {
+      "description": "Flag indicating if the product is a non-inventory item",
+      "type": "boolean"
+    },
+    "is_discontinued": {
+      "description": "Flag indicating if the product is discontinued",
+      "type": "boolean"
+    },
+    "eta_date": {
+      "description": "Estimated Time of Arrival date for the product",
+      "type": ["string", "null"]
+    },
+    "quantity_on_order": {
+      "description": "Quantity of the product on order",
+      "type": ["integer", "null"]
+    },
+    "available_region_id": {
+      "description": "Region ID where the product is available for purchase",
+      "type": ["integer", "null"]
+    },
+    "call_for_shipping_on_whole_order": {
+      "description": "Flag indicating if shipping needs to be requested for the entire order",
+      "type": "boolean"
+    },
+    "break_out_shipping": {
+      "description": "Flag indicating if shipping is separately charged for the product",
+      "type": "boolean"
+    },
+    "shipping_classification_code": {
+      "description": "Code for shipping classification of the product",
+      "type": ["string", "null"]
+    },
+    "exclude_parent_from_display": {
+      "description": "Flag indicating if parent product should be excluded from display",
+      "type": "boolean"
+    },
+    "drop_ship": {
+      "description": "Flag indicating if the product is drop-shipped",
+      "type": "boolean"
+    },
+    "no_price_mask": {
+      "description": "Flag indicating if price masking is disabled",
+      "type": ["string", "null"]
+    },
+    "starting_quantity": {
+      "description": "Starting quantity for purchase",
+      "type": ["integer", "null"]
+    },
+    "tax_code": {
+      "description": "Tax code associated with the product",
+      "type": ["string", "null"]
+    },
+    "use_map_pricing": {
+      "description": "Flag indicating if map pricing is used for the product",
+      "type": "boolean"
+    },
+    "last_item_number": {
+      "description": "Last item number assigned to the product",
+      "type": ["string", "null"]
+    },
+    "has_visible_variants": {
+      "description": "Flag indicating if the product has visible variants",
+      "type": "boolean"
+    },
+    "product_rating_dimension_group_override_id": {
+      "description": "ID for overriding product rating dimension group",
+      "type": ["string", "null"]
+    },
+    "average_review_rating": {
+      "description": "Average rating of reviews for the product",
+      "type": ["number", "null"]
+    },
+    "review_count": {
+      "description": "Number of reviews received for the product",
+      "type": ["integer", "null"]
+    },
+    "exclude_children_from_display": {
+      "description": "Flag indicating if child products should be excluded from display",
+      "type": "boolean"
+    },
+    "use_pricing_from_parent": {
+      "description": "Flag indicating if pricing should be derived from the parent product",
+      "type": "boolean"
+    },
+    "low_stock_warning_threshold": {
+      "description": "Threshold limit for low stock warning",
+      "type": ["integer", "null"]
+    },
+    "enable_low_stock_warning": {
+      "description": "Flag indicating if low stock warning is enabled for the product",
+      "type": "boolean"
+    },
+    "do_not_discount": {
+      "description": "Flag indicating if the product is not eligible for discounts",
+      "type": "boolean"
+    },
+    "head_tags": {
+      "description": "HTML head tags for SEO purposes",
+      "type": ["string", "null"]
+    },
+    "handling_fee": {
+      "description": "Fee charged for handling the product",
+      "type": ["number", "null"]
+    },
+    "custom_upsell_url": {
+      "description": "URL for customized upselling options",
+      "type": ["string", "null"]
+    },
+    "e_product_serial_number_file_path": {
+      "description": "File path for storing electronic product serial numbers",
+      "type": ["string", "null"]
+    },
+    "hide_variant_surcharges": {
+      "description": "Flag indicating if variant surcharges should be hidden",
+      "type": "boolean"
+    },
+    "quantity_increment": {
+      "description": "Quantity increment for ordering the product",
+      "type": ["integer", "null"]
+    },
+    "gtin": {
+      "description": "Global Trade Item Number for the product",
+      "type": ["string", "null"]
+    },
+    "add_to_cart_message": {
+      "description": "Message displayed when adding the product to the cart",
+      "type": ["string", "null"]
+    },
+    "is_subscription_product": {
+      "description": "Flag indicating if the product is a subscription product",
+      "type": "boolean"
+    },
+    "subscription_frequency": {
+      "description": "Frequency of subscription for the product",
+      "type": ["integer", "null"]
+    },
+    "subscription_frequency_type": {
+      "description": "Type of subscription frequency",
+      "type": ["string", "null"]
+    },
+    "e_product_generic_username": {
+      "description": "Generic username for accessing electronic products",
+      "type": ["string", "null"]
+    },
+    "e_product_generic_password": {
+      "description": "Generic password for accessing electronic products",
+      "type": ["string", "null"]
+    },
+    "shipping_override": {
+      "description": "Override for shipping settings",
+      "type": ["number", "null"]
+    },
+    "insurance_cost": {
+      "description": "Cost of insurance for the product",
+      "type": ["number", "null"]
+    },
+    "exclude_from_commissions": {
+      "description": "Flag indicating if the product is excluded from commissions",
+      "type": "boolean"
+    },
+    "days_until_reorder_allowed": {
+      "description": "Number of days until reorder is allowed for the product",
+      "type": ["integer", "null"]
+    },
+    "force_separate_order": {
+      "description": "Flag indicating if a separate order is required for the product",
+      "type": "boolean"
+    },
+    "approval_required": {
+      "description": "Flag indicating if approval is required for purchasing the product",
+      "type": "boolean"
+    },
+    "in_stock_notification_email_template_id": {
+      "description": "Template ID for in-stock notification emails",
+      "type": ["integer", "null"]
+    },
+    "earns_points": {
+      "description": "Flag indicating if purchasing the product earns points",
+      "type": "boolean"
+    },
+    "additional_points_earned": {
+      "description": "Additional points earned when purchasing the product",
+      "type": ["integer", "null"]
+    },
+    "allowed_variable_subscription_types": {
+      "description": "List of variable subscription types allowed for the product",
+      "type": ["string", "null"]
+    },
+    "profile_id": {
+      "description": "Profile ID associated with the product",
+      "type": ["integer", "null"]
+    },
+    "is_linked_product": {
+      "description": "Flag indicating if the product is linked to another product",
+      "type": "boolean"
+    },
+    "master_product_id": {
+      "description": "ID of the master product for variants",
+      "type": ["integer", "null"]
+    },
+    "do_not_send_review_request": {
+      "description": "Flag indicating if review requests should not be sent",
+      "type": "boolean"
+    },
+    "vendor_store_id": {
+      "description": "ID of the vendor store associated with the product",
+      "type": ["integer", "null"]
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Repository information related to the collaborator",
+      "type": "string"
+    },
+    "login": {
+      "description": "Username of the collaborator",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier of the collaborator",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node ID of the collaborator",
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "description": "URL of the collaborator's avatar image",
+      "type": ["null", "string"]
+    },
+    "gravatar_id": {
+      "description": "Gravatar ID of the collaborator",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL of the collaborator's GitHub API endpoint",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "HTML URL of the collaborator's profile",
+      "type": ["null", "string"]
+    },
+    "followers_url": {
+      "description": "URL of the followers of the collaborator",
+      "type": ["null", "string"]
+    },
+    "following_url": {
+      "description": "URL of the users followed by the collaborator",
+      "type": ["null", "string"]
+    },
+    "gists_url": {
+      "description": "URL of gists created by the collaborator",
+      "type": ["null", "string"]
+    },
+    "starred_url": {
+      "description": "URL of the repositories starred by the collaborator",
+      "type": ["null", "string"]
+    },
+    "subscriptions_url": {
+      "description": "URL of the repositories subscribed to by the collaborator",
+      "type": ["null", "string"]
+    },
+    "organizations_url": {
+      "description": "URL of organizations the collaborator is associated with",
+      "type": ["null", "string"]
+    },
+    "repos_url": {
+      "description": "URL of the repositories of the collaborator",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "URL of the events related to the collaborator",
+      "type": ["null", "string"]
+    },
+    "received_events_url": {
+      "description": "URL of events received by the collaborator",
+      "type": ["null", "string"]
+    },
+    "type": {
+      "description": "Type of the collaborator (e.g., User)",
+      "type": ["null", "string"]
+    },
+    "site_admin": {
+      "description": "Indicates if the collaborator is a site administrator",
+      "type": ["null", "boolean"]
+    },
+    "role_name": {
+      "description": "Name of the collaborator's role",
+      "type": ["null", "string"]
+    },
+    "permissions": {
+      "description": "The permissions assigned to the collaborators",
+      "type": ["null", "object"],
+      "properties": {
+        "admin": {
+          "description": "Indicates if the collaborator has admin access",
+          "type": ["null", "boolean"]
+        },
+        "maintain": {
+          "description": "Indicates if the collaborator has maintain access",
+          "type": ["null", "boolean"]
+        },
+        "push": {
+          "description": "Indicates if the collaborator has push access",
+          "type": ["null", "boolean"]
+        },
+        "pull": {
+          "description": "Indicates if the collaborator has pull access",
+          "type": ["null", "boolean"]
+        },
+        "triage": {
+          "description": "Indicates if the collaborator has triage access",
+          "type": ["null", "boolean"]
+        }
+      }
+    }
+  }
+}

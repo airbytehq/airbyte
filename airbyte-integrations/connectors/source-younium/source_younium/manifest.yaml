@@ -1,0 +1,2994 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
+  requester:
+    type: HttpRequester
+    url_base:
+      "{{ 'https://apisandbox.younium.com' if config['playground'] else 'https://api.younium.com'
+      }}"
+    http_method: "GET"
+
+    authenticator:
+      class_name: source_younium.components.CustomYouniumAuthenticator
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
+      legal_entity: "{{ config['legal_entity'] }}"
+      grant_type: password
+      client_id: apiclient
+      scope: openid youniumapi profile
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestPath
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 100
+        cursor_value: '{{ response.get("nextPage", {}) }}'
+        stop_condition: '{{ not response.get("nextPage", {}) }}'
+      page_size_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: PageSize
+
+    requester:
+      $ref: "#/definitions/requester"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  account_stream:
+    $ref: "#/definitions/base_stream"
+    name: account
+    $parameters:
+      path: Accounts
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          accountNumber:
+            description: The unique identifier for the account.
+            type:
+              - "null"
+              - string
+          accountType:
+            description: The type of the account.
+            type:
+              - "null"
+              - string
+          accountsReceivable:
+            description: The total accounts receivable amount.
+            type:
+              - "null"
+              - string
+          acv:
+            description: Annual Contract Value
+            additionalProperties: true
+            properties:
+              amount:
+                description: ACV amount.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                description: ACV amount in base currency.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code for ACV.
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                description: Currency code for ACV.
+                type:
+                  - "null"
+                  - string
+            type: object
+          addresses:
+            description: List of addresses associated with the account.
+            items:
+              additionalProperties: true
+              properties:
+                city:
+                  description: City of the address.
+                  type:
+                    - "null"
+                    - string
+                country:
+                  description: Country of the address.
+                  type:
+                    - "null"
+                    - string
+                description:
+                  description: Description of the address.
+                  type:
+                    - "null"
+                    - string
+                id:
+                  description: Unique identifier for the address.
+                  type:
+                    - "null"
+                    - string
+                street:
+                  description: Street of the address.
+                  type:
+                    - "null"
+                    - string
+                zip:
+                  description: ZIP or postal code of the address.
+                  type:
+                    - "null"
+                    - string
+              type: object
+            type: array
+          cmrr:
+            description: Current Monthly Recurring Revenue
+            additionalProperties: true
+            properties:
+              amount:
+                description: CMRR amount.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                description: CMRR amount in base currency.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code for CMRR.
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                description: Currency code for CMRR.
+                type:
+                  - "null"
+                  - string
+            type: object
+          created:
+            description: Date and time when the account was created.
+            type:
+              - "null"
+              - string
+          currencyCode:
+            description: Currency code used for transactions.
+            type:
+              - "null"
+              - string
+          customFields:
+            description: Additional custom fields associated with the account.
+            additionalProperties: true
+            type: object
+          defaultDeliveryAddress:
+            description: Default delivery address for the account.
+            additionalProperties: true
+            properties:
+              country:
+                description: Country of the default delivery address.
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the default delivery address.
+                type:
+                  - "null"
+                  - string
+            type: object
+          defaultInvoiceAddress:
+            description: Default invoice address for the account.
+            additionalProperties: true
+            properties:
+              city:
+                description: City of the default invoice address.
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country of the default invoice address.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the default invoice address.
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the default invoice address.
+                type:
+                  - "null"
+                  - string
+              street:
+                description: Street of the default invoice address.
+                type:
+                  - "null"
+                  - string
+              zip:
+                description: ZIP or postal code of the default invoice address.
+                type:
+                  - "null"
+                  - string
+            type: object
+          defaultPaymentTerm:
+            description: Default payment term for the account.
+            type:
+              - "null"
+              - string
+          emrr:
+            description: Expected Monthly Recurring Revenue
+            additionalProperties: true
+            properties:
+              amount:
+                description: EMRR amount.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                description: EMRR amount in base currency.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code for EMRR.
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                description: Currency code for EMRR.
+                type:
+                  - "null"
+                  - string
+            type: object
+          id:
+            description: Unique identifier for the account.
+            type:
+              - "null"
+              - string
+          inactive:
+            description: Indicates if the account is inactive.
+            type:
+              - "null"
+              - boolean
+          invoiceDeliveryMethod:
+            description: Preferred method of delivery for invoices.
+            type:
+              - "null"
+              - string
+          invoiceTemplateId:
+            description: Unique identifier for the invoice template used.
+            type:
+              - "null"
+              - string
+          modified:
+            description: Date and time when the account was last modified.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the account.
+            type:
+              - "null"
+              - string
+          oneTimeFees:
+            description: One-time fees charged to the account.
+            additionalProperties: true
+            properties:
+              amount:
+                description: One-time fees amount.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                description: One-time fees amount in base currency.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code for one-time fees.
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                description: Currency code for one-time fees.
+                type:
+                  - "null"
+                  - string
+            type: object
+          organizationNumber:
+            description: The organization number associated with the account.
+            type:
+              - "null"
+              - string
+          ourReference:
+            description: Our reference for the account.
+            type:
+              - "null"
+              - string
+          taxRegistrationNumber:
+            description: Tax registration number for the account.
+            type:
+              - "null"
+              - string
+          taxTemplate:
+            description: Tax template applied to the account.
+            type:
+              - "null"
+              - string
+          tcv:
+            description: Total Contract Value
+            additionalProperties: true
+            properties:
+              amount:
+                description: TCV amount.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyAmount:
+                description: TCV amount in base currency.
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code for TCV.
+                type:
+                  - "null"
+                  - string
+              currencyCode:
+                description: Currency code for TCV.
+                type:
+                  - "null"
+                  - string
+            type: object
+        type: object
+  booking_stream:
+    $ref: "#/definitions/base_stream"
+    name: booking
+    $parameters:
+      path: Bookings
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          accountCategory:
+            description: Category of the account
+            type:
+              - "null"
+              - string
+          acv:
+            description: Annual Contracted Value
+            additionalProperties: true
+            properties:
+              amount:
+                description: ACV amount
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                description: ACV amount in base currency
+                type:
+                  - "null"
+                  - number
+            type: object
+          bookingLines:
+            description: List of booking line items
+            items:
+              additionalProperties: true
+              properties:
+                acv:
+                  description: Annual Contracted Value for the booking line
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      description: ACV amount
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      description: ACV amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code for ACV
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      description: Currency code for ACV
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion for ACV
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                charge:
+                  description: Charge details
+                  additionalProperties: true
+                  properties:
+                    chargeNumber:
+                      description: Charge number
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      description: Charge description
+                      type:
+                        - "null"
+                        - string
+                    id:
+                      description: Charge ID
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Charge name
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                cmrr:
+                  description: Contracted Monthly Recurring Revenue
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      description: CMRR amount
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      description: CMRR amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code for CMRR
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      description: Currency code for CMRR
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion for CMRR
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                created:
+                  description: Date of creation
+                  type:
+                    - "null"
+                    - string
+                emrr:
+                  description: Expansion Monthly Recurring Revenue
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      description: EMRR amount
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      description: EMRR amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code for EMRR
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      description: Currency code for EMRR
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion for EMRR
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                fmrr:
+                  description: Forecasted Monthly Recurring Revenue
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      description: FMRR amount
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      description: FMRR amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code for FMRR
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      description: Currency code for FMRR
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion for FMRR
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                modified:
+                  description: Date of modification
+                  type:
+                    - "null"
+                    - string
+                oneTimeFees:
+                  description: One-time fees information
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      description: One-time fees amount
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      description: One-time fees amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code for one-time fees
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      description: Currency code for one-time fees
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion for one-time fees
+                      type:
+                        - "null"
+                        - string
+                  type: object
+                tcv:
+                  description: Total Contracted Value
+                  additionalProperties: true
+                  properties:
+                    amount:
+                      description: TCV amount
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyAmount:
+                      description: TCV amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code for TCV
+                      type:
+                        - "null"
+                        - string
+                    currencyCode:
+                      description: Currency code for TCV
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion for TCV
+                      type:
+                        - "null"
+                        - string
+                  type: object
+              type: object
+            type: array
+          bookingType:
+            description: Type of booking
+            type:
+              - "null"
+              - string
+          changeType:
+            description: Type of change
+            type:
+              - "null"
+              - string
+          classification:
+            description: Classification details
+            additionalProperties: true
+            properties:
+              chartColor:
+                description: Color for classification in a chart
+                type:
+                  - "null"
+                  - string
+              classificationType:
+                description: Type of classification
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Classification description
+                type:
+                  - "null"
+                  - string
+              isSystemClassification:
+                description: Flag indicating if the classification is a system classification
+                type:
+                  - "null"
+                  - boolean
+              name:
+                description: Classification name
+                type:
+                  - "null"
+                  - string
+            type: object
+          cmrr:
+            description: Contracted Monthly Recurring Revenue
+            additionalProperties: true
+            properties:
+              amount:
+                description: CMRR amount
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                description: CMRR amount in base currency
+                type:
+                  - "null"
+                  - number
+            type: object
+          created:
+            description: Date of creation
+            type:
+              - "null"
+              - string
+          effectiveDate:
+            description: Effective date of the booking
+            type:
+              - "null"
+              - string
+          emrr:
+            description: Expansion Monthly Recurring Revenue
+            additionalProperties: true
+            properties:
+              amount:
+                description: EMRR amount
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                description: EMRR amount in base currency
+                type:
+                  - "null"
+                  - number
+            type: object
+          fmrr:
+            description: Forecasted Monthly Recurring Revenue
+            additionalProperties: true
+            properties:
+              amount:
+                description: FMRR amount
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                description: FMRR amount in base currency
+                type:
+                  - "null"
+                  - number
+            type: object
+          id:
+            description: Unique identifier for the booking
+            type:
+              - "null"
+              - string
+          modified:
+            description: Date of modification
+            type:
+              - "null"
+              - string
+          oneTimeFees:
+            description: One-time fees information
+            additionalProperties: true
+            properties:
+              amount:
+                description: One-time fees amount
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                description: One-time fees amount in base currency
+                type:
+                  - "null"
+                  - number
+            type: object
+          order:
+            description: Order details
+            additionalProperties: true
+            properties:
+              id:
+                description: Order ID
+                type:
+                  - "null"
+                  - string
+              orderNumber:
+                description: Order number
+                type:
+                  - "null"
+                  - string
+            type: object
+          tcv:
+            description: Total Contracted Value
+            additionalProperties: true
+            properties:
+              amount:
+                description: TCV amount
+                type:
+                  - "null"
+                  - number
+              amountInBaseCurrency:
+                description: TCV amount in base currency
+                type:
+                  - "null"
+                  - number
+            type: object
+        type: object
+  invoice_stream:
+    $ref: "#/definitions/base_stream"
+    name: invoice
+    $parameters:
+      path: Invoices
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the invoice
+            type:
+              - "null"
+              - string
+          invoiceNumber:
+            description: Unique invoice number
+            type:
+              - "null"
+              - string
+          status:
+            description: Current status of the invoice
+            type:
+              - "null"
+              - string
+          created:
+            description: Timestamp for when the invoice was created
+            type:
+              - "null"
+              - string
+          invoiceDeliveryMethod:
+            description: Delivery method for sending the invoice
+            type:
+              - "null"
+              - string
+          modified:
+            description: Timestamp for when the invoice was last modified
+            type:
+              - "null"
+              - string
+          account:
+            description: Information about the account related to the invoice
+            type: object
+            properties:
+              name:
+                description: Name of the account
+                type:
+                  - "null"
+                  - string
+              accountNumber:
+                description: The account number
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the account
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                description: External ERP ID for the account
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                description: External CRM ID for the account
+                type:
+                  - "null"
+                  - string
+          notes:
+            description: Additional notes or comments related to the invoice
+            type:
+              - "null"
+              - string
+          invoiceDate:
+            description: Date when the invoice was issued
+            type:
+              - "null"
+              - string
+          dueDate:
+            description: Due date for the invoice payment
+            type:
+              - "null"
+              - string
+          daysPastDue:
+            description: Number of days past due for the invoice payment
+            type:
+              - "null"
+              - number
+          nrOfReminders:
+            description: Number of reminders sent for the invoice
+            type:
+              - "null"
+              - number
+          paymentTerm:
+            description: Payment term details
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the payment term
+                type:
+                  - "null"
+                  - string
+              days:
+                description: Number of days for the payment term
+                type:
+                  - "null"
+                  - number
+              name:
+                description: Name of the payment term
+                type:
+                  - "null"
+                  - string
+          currency:
+            description: Currency used in the invoice
+            type:
+              - "null"
+              - string
+          subtotal:
+            description: Subtotal amount of the invoice
+            type:
+              - "null"
+              - number
+          tax:
+            description: Total tax amount for the invoice
+            type:
+              - "null"
+              - number
+          totalAmount:
+            description: Total amount of the invoice including tax
+            type:
+              - "null"
+              - number
+          totalRoundingAmount:
+            description: Rounded amount in the total calculation
+            type:
+              - "null"
+              - number
+          settledAmount:
+            description: Amount that has been settled for the invoice
+            type:
+              - "null"
+              - number
+          balancedAmount:
+            description: The total balanced amount in the invoice
+            type:
+              - "null"
+              - number
+          taxIncluded:
+            description: Flag to indicate if tax is included in the total amount
+            type:
+              - "null"
+              - boolean
+          invoiceAddress:
+            description: Invoice address details
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the invoice address
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Additional description for the invoice address
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name associated with the invoice address
+                type:
+                  - "null"
+                  - string
+              street:
+                description: Street address in the invoice address
+                type:
+                  - "null"
+                  - string
+              street2:
+                description: Additional street details in the invoice address
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City in the invoice address
+                type:
+                  - "null"
+                  - string
+              county:
+                description: County in the invoice address
+                type:
+                  - "null"
+                  - string
+              state:
+                description: State in the invoice address
+                type:
+                  - "null"
+                  - string
+              zip:
+                description: Zip code in the invoice address
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country in the invoice address
+                type:
+                  - "null"
+                  - string
+          deliveryAddress:
+            description: Delivery address for the invoice
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the delivery address
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Additional description for the delivery address
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name associated with the delivery address
+                type:
+                  - "null"
+                  - string
+              street:
+                description: Street address in the delivery address
+                type:
+                  - "null"
+                  - string
+              street2:
+                description: Additional street details in the delivery address
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City in the delivery address
+                type:
+                  - "null"
+                  - string
+              county:
+                description: County in the delivery address
+                type:
+                  - "null"
+                  - string
+              state:
+                description: State in the delivery address
+                type:
+                  - "null"
+                  - string
+              zip:
+                description: Zip code in the delivery address
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country in the delivery address
+                type:
+                  - "null"
+                  - string
+          invoiceBatchId:
+            description: Identifier for the batch of invoices
+            type:
+              - "null"
+              - string
+          invoiceLines:
+            description: Details of each line item in the invoice
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the line item
+                  type:
+                    - "null"
+                    - string
+                invoiceLineNumber:
+                  description: Line number in the invoice for the item
+                  type:
+                    - "null"
+                    - number
+                productNumber:
+                  description: Product number for the line item
+                  type:
+                    - "null"
+                    - string
+                productName:
+                  description: Name of the product for the line item
+                  type:
+                    - "null"
+                    - string
+                chargeDescription:
+                  description: Description of the charge for the line item
+                  type:
+                    - "null"
+                    - string
+                chargeNumber:
+                  description: Charge number for the line item
+                  type:
+                    - "null"
+                    - string
+                quantity:
+                  description: Quantity of the product in the line item
+                  type:
+                    - "null"
+                    - number
+                unitOfMeasure:
+                  description: Unit of measure for the product in the line item
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the unit of measure
+                      type:
+                        - "null"
+                        - string
+                    unitCode:
+                      description: Code representing the unit of measure
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the unit of measure
+                      type:
+                        - "null"
+                        - string
+                    displayName:
+                      description: Display name of the unit of measure
+                      type:
+                        - "null"
+                        - string
+                price:
+                  description: Price of the line item
+                  type:
+                    - "null"
+                    - number
+                subtotal:
+                  description: Subtotal amount for the line item
+                  type:
+                    - "null"
+                    - number
+                total:
+                  description: Total amount for the line item
+                  type:
+                    - "null"
+                    - number
+                tax:
+                  description: Tax amount for the line item
+                  type:
+                    - "null"
+                    - number
+                servicePeriodStartDate:
+                  description: Start date of the service period for the line item
+                  type:
+                    - "null"
+                    - string
+                servicePeriodEndDate:
+                  description: End date of the service period for the line item
+                  type:
+                    - "null"
+                    - string
+                notes:
+                  description: Additional notes for the line item
+                  type:
+                    - "null"
+                    - string
+                orderChargeId:
+                  description:
+                    Identifier for the order charge related to the line
+                    item
+                  type:
+                    - "null"
+                    - string
+                orderId:
+                  description: Identifier for the order related to the line item
+                  type:
+                    - "null"
+                    - string
+                accountId:
+                  description:
+                    Unique identifier for the account associated with the
+                    line item
+                  type:
+                    - "null"
+                    - string
+                customFields:
+                  description: Custom fields associated with the line item
+                  type:
+                    - "null"
+                    - object
+                accountsReceivable:
+                  description: Details about accounts receivable for the line item
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the accounts receivable
+                      type:
+                        - "null"
+                        - string
+                    code:
+                      description: Code for the accounts receivable
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the accounts receivable
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      description: Description of the accounts receivable
+                      type:
+                        - "null"
+                        - string
+                    externalERPId:
+                      description: External ERP ID for the accounts receivable
+                      type:
+                        - "null"
+                        - string
+                    externalCRMId:
+                      description: External CRM ID for the accounts receivable
+                      type:
+                        - "null"
+                        - string
+                deferredRevenue:
+                  description: Details of deferred revenue for the line item
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the deferred revenue
+                      type:
+                        - "null"
+                        - string
+                    code:
+                      description: Code for the deferred revenue
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the deferred revenue
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      description: Description of the deferred revenue
+                      type:
+                        - "null"
+                        - string
+                    externalERPId:
+                      description: External ERP ID for the deferred revenue
+                      type:
+                        - "null"
+                        - string
+                    externalCRMId:
+                      description: External CRM ID for the deferred revenue
+                      type:
+                        - "null"
+                        - string
+                recognizedRevenue:
+                  description: Details of recognized revenue for the line item
+                  type: object
+                  properties:
+                    id:
+                      description: Unique identifier for the recognized revenue
+                      type:
+                        - "null"
+                        - string
+                    code:
+                      description: Code for the recognized revenue
+                      type:
+                        - "null"
+                        - string
+                    name:
+                      description: Name of the recognized revenue
+                      type:
+                        - "null"
+                        - string
+                    description:
+                      description: Description of the recognized revenue
+                      type:
+                        - "null"
+                        - string
+                    externalERPId:
+                      description: External ERP ID for the recognized revenue
+                      type:
+                        - "null"
+                        - string
+                    externalCRMId:
+                      description: External CRM ID for the recognized revenue
+                      type:
+                        - "null"
+                        - string
+                externalERPId:
+                  description: External ERP ID for the line item
+                  type:
+                    - "null"
+                    - string
+                externalCRMId:
+                  description: External CRM ID for the line item
+                  type:
+                    - "null"
+                    - string
+                taxCategoryName:
+                  description: Name of the tax category
+                  type:
+                    - "null"
+                    - string
+                taxRate:
+                  description: Tax rate applied to the line item
+                  type:
+                    - "null"
+                    - number
+          yourReference:
+            description: Reference provided by the buyer
+            type:
+              - "null"
+              - string
+          ourReference:
+            description: Reference provided by the company
+            type:
+              - "null"
+              - string
+          yourOrderNumber:
+            description: Order number specified by the buyer
+            type:
+              - "null"
+              - string
+          buyerReference:
+            description: Reference information provided by the buyer
+            type:
+              - "null"
+              - string
+          invoiceType:
+            description: Type of the invoice
+            type:
+              - "null"
+              - string
+          sendMethod:
+            description: Method used for sending the invoice
+            type:
+              - "null"
+              - string
+          exchangeRate:
+            description: Exchange rate used in the invoice
+            type:
+              - "null"
+              - number
+          settledNotes:
+            description: Notes related to the settled amount
+            type:
+              - "null"
+              - string
+          invoiceTemplateId:
+            description: Identifier for the invoice template used
+            type:
+              - "null"
+              - string
+          disableAutomaticInvoiceReminder:
+            description: Flag to indicate if automatic invoice reminders are disabled
+            type:
+              - "null"
+              - boolean
+          onlinePaymentLink:
+            description: Link for online payment of the invoice
+            type:
+              - "null"
+              - string
+          accountsReceivable:
+            description: Details about accounts receivable
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the accounts receivable
+                type:
+                  - "null"
+                  - string
+              code:
+                description: Code for the accounts receivable
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the accounts receivable
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the accounts receivable
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                description: External ERP ID for the accounts receivable
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                description: External CRM ID for the accounts receivable
+                type:
+                  - "null"
+                  - string
+          customFields:
+            description: Custom fields associated with the invoice
+            type:
+              - "null"
+              - object
+          externalERPId:
+            description: External ERP ID for the invoice
+            type:
+              - "null"
+              - string
+          externalCRMId:
+            description: External CRM ID for the invoice
+            type:
+              - "null"
+              - string
+  product_stream:
+    $ref: "#/definitions/base_stream"
+    name: product
+    $parameters:
+      path: Products
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: The unique identifier for the product.
+            type:
+              - "null"
+              - string
+          productNumber:
+            description: The unique number associated with the product.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name of the product.
+            type:
+              - "null"
+              - string
+          created:
+            description: The date when the product was created.
+            type:
+              - "null"
+              - string
+          modified:
+            description: The date when the product was last modified.
+            type:
+              - "null"
+              - string
+          productType:
+            description: The type of product.
+            type:
+              - "null"
+              - string
+          category:
+            description: The category the product belongs to.
+            type:
+              - "null"
+              - string
+          activationDate:
+            description: The date when the product is activated.
+            type:
+              - "null"
+              - string
+          endOfNewSalesDate:
+            description: The end date for new sales of the product.
+            type:
+              - "null"
+              - string
+          endOfRenewalDate:
+            description: The end date for product renewals.
+            type:
+              - "null"
+              - string
+          endOfLifeDate:
+            description: The end of life date for the product.
+            type:
+              - "null"
+              - string
+          isFrameworkProduct:
+            description: Indicates if the product is a framework product.
+            type:
+              - "null"
+              - boolean
+          chargePlans:
+            description: List of charge plans associated with the product
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: The unique identifier for the charge plan.
+                  type:
+                    - "null"
+                    - string
+                chargePlanNumber:
+                  description: The number associated with the charge plan.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: The name of the charge plan.
+                  type:
+                    - "null"
+                    - string
+                effectiveStartDate:
+                  description: The date when the charge plan becomes effective.
+                  type:
+                    - "null"
+                    - string
+                endOfNewSalesDate:
+                  description: The end date for new sales of the charge plan.
+                  type:
+                    - "null"
+                    - string
+                effectiveEndDate:
+                  description: The date when the charge plan is no longer effective.
+                  type:
+                    - "null"
+                    - string
+                charges:
+                  description: List of charges related to the charge plan
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        description: The unique identifier for the charge.
+                        type:
+                          - "null"
+                          - string
+                      chargeNumber:
+                        description: The number associated with the charge.
+                        type:
+                          - "null"
+                          - string
+                      name:
+                        description: The name of the charge.
+                        type:
+                          - "null"
+                          - string
+                      model:
+                        description: The model associated with the charge.
+                        type:
+                          - "null"
+                          - string
+                      chargeType:
+                        description: The type of charge.
+                        type:
+                          - "null"
+                          - string
+                      unitCode:
+                        description: The unit code for the charge.
+                        type:
+                          - "null"
+                          - string
+                      defaultQuantity:
+                        description: The default quantity for the charge.
+                        type:
+                          - "null"
+                          - number
+                      pricePeriod:
+                        description: The period for pricing.
+                        type:
+                          - "null"
+                          - string
+                      usageRating:
+                        description: The rating for usage.
+                        type:
+                          - "null"
+                          - string
+                      createInvoiceLinesPerTier:
+                        description: Whether to create invoice lines per tier.
+                        type:
+                          - "null"
+                          - boolean
+                      billingDay:
+                        description: The day of the month when billing occurs.
+                        type:
+                          - "null"
+                          - string
+                      specificBillingDay:
+                        description: A specific day for billing.
+                        type:
+                          - "null"
+                          - number
+                      billingPeriod:
+                        description: The period for billing.
+                        type:
+                          - "null"
+                          - string
+                      periodAlignment:
+                        description: The alignment of the billing period.
+                        type:
+                          - "null"
+                          - string
+                      billingTiming:
+                        description: The timing of billing.
+                        type:
+                          - "null"
+                          - string
+                      taxTemplate:
+                        description: The tax template used for the charge.
+                        type:
+                          - "null"
+                          - string
+                      taxIncluded:
+                        description: Indicates if tax is included in the charge.
+                        type:
+                          - "null"
+                          - boolean
+                      externalERPId:
+                        description: The ID from an external ERP system.
+                        type:
+                          - "null"
+                          - string
+                      externalCRMId:
+                        description: The ID from an external CRM system.
+                        type:
+                          - "null"
+                          - string
+                      deferredRevenueAccount:
+                        description: The account used for deferred revenue.
+                        type:
+                          - "null"
+                          - string
+                      recognizedRevenueAccount:
+                        description: The account used for recognized revenue.
+                        type:
+                          - "null"
+                          - string
+                      customFields:
+                        description: Custom fields associated with the charge.
+                        type:
+                          - "null"
+                          - object
+                      priceDetails:
+                        description: Details of pricing related to the charge
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            currency:
+                              description: The currency for pricing.
+                              type:
+                                - "null"
+                                - string
+                            price:
+                              description: The price for the quantity range.
+                              type:
+                                - "null"
+                                - number
+                            tier:
+                              description: The tier level for pricing.
+                              type:
+                                - "null"
+                                - number
+                            description:
+                              description: A description of the price details.
+                              type:
+                                - "null"
+                                - string
+                            fromQuantity:
+                              description: The minimum quantity for the price tier.
+                              type:
+                                - "null"
+                                - number
+                            toQuantity:
+                              description: The maximum quantity for the price tier.
+                              type:
+                                - "null"
+                                - number
+                            priceBase:
+                              description: The base price for the tier.
+                              type:
+                                - "null"
+                                - string
+          externalERPId:
+            description: The ID from an external ERP system.
+            type:
+              - "null"
+              - string
+          externalCRMId:
+            description: The ID from an external CRM system.
+            type:
+              - "null"
+              - string
+          customFields:
+            description: Custom fields associated with the product.
+            type:
+              - "null"
+              - object
+  subscription_stream:
+    $ref: "#/definitions/base_stream"
+    name: subscription
+    $parameters:
+      path: Subscriptions
+
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/draft-04/schema#
+        additionalProperties: true
+        type: object
+        properties:
+          id:
+            description: Unique identifier for the subscription
+            type:
+              - "null"
+              - string
+          orderNumber:
+            description: Order number associated with the subscription
+            type:
+              - "null"
+              - string
+          created:
+            description: Date of subscription creation
+            type:
+              - "null"
+              - string
+          modified:
+            description: Date of the last modification to the subscription
+            type:
+              - "null"
+              - string
+          orderBillingPeriod:
+            description: Billing period for the order
+            type:
+              - "null"
+              - string
+          setOrderBillingPeriod:
+            description: Setup billing period for the order
+            type:
+              - "null"
+              - boolean
+          version:
+            description: Version of the data
+            type:
+              - "null"
+              - number
+          isLastVersion:
+            description: Flag indicating if the subscription is the last version
+            type:
+              - "null"
+              - boolean
+          status:
+            description: Status of the subscription
+            type:
+              - "null"
+              - string
+          description:
+            description: Description of the subscription
+            type:
+              - "null"
+              - string
+          remarks:
+            description: Additional remarks or notes
+            type:
+              - "null"
+              - string
+          effectiveStartDate:
+            description: Effective start date of the subscription
+            type:
+              - "null"
+              - string
+          effectiveEndDate:
+            description: Effective end date of the subscription
+            type:
+              - "null"
+              - string
+          cancellationDate:
+            description: Date of subscription cancellation
+            type:
+              - "null"
+              - string
+          effectiveChangeDate:
+            description: Effective date of subscription change
+            type:
+              - "null"
+              - string
+          orderDate:
+            description: Date of the order
+            type:
+              - "null"
+              - string
+          noticePeriodDate:
+            description: Date when notice period starts
+            type:
+              - "null"
+              - string
+          lastRenewalDate:
+            description: Date of the last renewal
+            type:
+              - "null"
+              - string
+          noticePeriod:
+            description: Notice period for subscription cancellation
+            type:
+              - "null"
+              - number
+          term:
+            description: Term of the subscription
+            type:
+              - "null"
+              - number
+          renewalTerm:
+            description: Renewal term for the subscription
+            type:
+              - "null"
+              - number
+          isAutoRenewed:
+            description: Flag indicating if the subscription is set to auto-renew
+            type:
+              - "null"
+              - boolean
+          orderType:
+            description: Type of the order
+            type:
+              - "null"
+              - string
+          termType:
+            description: Type of the subscription term
+            type:
+              - "null"
+              - string
+          orderPaymentMethod:
+            description: Payment method used for the order
+            type:
+              - "null"
+              - string
+          invoiceSeparatly:
+            description: Flag indicating if the subscription is invoiced separately
+            type:
+              - "null"
+              - boolean
+          yourReference:
+            description: Reference provided by user
+            type:
+              - "null"
+              - string
+          ourReference:
+            description: Our reference for the subscription
+            type:
+              - "null"
+              - string
+          yourOrderNumber:
+            description: Order number specified by user
+            type:
+              - "null"
+              - string
+          invoiceAddress:
+            description: Address for invoicing
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the address
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of invoice address
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the invoice address
+                type:
+                  - "null"
+                  - string
+              street:
+                description: Street of invoice address
+                type:
+                  - "null"
+                  - string
+              street2:
+                description: Additional street information
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City of invoice address
+                type:
+                  - "null"
+                  - string
+              county:
+                description: County of invoice address
+                type:
+                  - "null"
+                  - string
+              state:
+                description: State of invoice address
+                type:
+                  - "null"
+                  - string
+              zip:
+                description: Zip code of invoice address
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country of invoice address
+                type:
+                  - "null"
+                  - string
+          deliveryAddress:
+            description: Address for product deliveries
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the address
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of delivery address
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the delivery address
+                type:
+                  - "null"
+                  - string
+              street:
+                description: Street of delivery address
+                type:
+                  - "null"
+                  - string
+              street2:
+                description: Additional street information
+                type:
+                  - "null"
+                  - string
+              city:
+                description: City of delivery address
+                type:
+                  - "null"
+                  - string
+              county:
+                description: County of delivery address
+                type:
+                  - "null"
+                  - string
+              state:
+                description: State of delivery address
+                type:
+                  - "null"
+                  - string
+              zip:
+                description: Zip code of delivery address
+                type:
+                  - "null"
+                  - string
+              country:
+                description: Country of delivery address
+                type:
+                  - "null"
+                  - string
+          invoiceBatchGroup:
+            description: Grouping for batch invoice processing
+            type: object
+            properties:
+              id:
+                description: Unique identifier for the invoice batch group
+                type:
+                  - "null"
+                  - string
+              code:
+                description: Code of the invoice batch group
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the invoice batch group
+                type:
+                  - "null"
+                  - string
+          paymentTerm:
+            description: Payment term for the subscription
+            type:
+              - "null"
+              - string
+          useAccountInvoiceBatchGroup:
+            description: Flag indicating if account invoice batch group is used
+            type:
+              - "null"
+              - boolean
+          account:
+            description: Information about the account associated with the subscription
+            type: object
+            properties:
+              name:
+                description: Name of the account
+                type:
+                  - "null"
+                  - string
+              accountNumber:
+                description: Unique identifier for the account
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the account
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                description: External ERP system ID associated with the account
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                description: External CRM system ID associated with the account
+                type:
+                  - "null"
+                  - string
+          invoiceAccount:
+            description: Account information for invoicing
+            type: object
+            properties:
+              name:
+                description: Name of the invoice account
+                type:
+                  - "null"
+                  - string
+              accountNumber:
+                description: Account number linked to the invoice
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the invoice account
+                type:
+                  - "null"
+                  - string
+              externalERPId:
+                description: External ERP system ID associated with the invoice account
+                type:
+                  - "null"
+                  - string
+              externalCRMId:
+                description: External CRM system ID associated with the invoice account
+                type:
+                  - "null"
+                  - string
+          products:
+            description: List of products included in the subscription
+            type: array
+            items:
+              description: Details of each product
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the product
+                  type:
+                    - "null"
+                    - string
+                productNumber:
+                  description: Number of the product
+                  type:
+                    - "null"
+                    - string
+                chargePlanId:
+                  description: ID of the charge plan
+                  type:
+                    - "null"
+                    - string
+                chargePlanName:
+                  description: Name of the charge plan
+                  type:
+                    - "null"
+                    - string
+                chargePlanNumber:
+                  description: Number of the charge plan
+                  type:
+                    - "null"
+                    - string
+                productLineNumber:
+                  description: Line number for the product
+                  type:
+                    - "null"
+                    - number
+                name:
+                  description: Name of the product
+                  type:
+                    - "null"
+                    - string
+                charges:
+                  description: List of charges associated with the product
+                  type: array
+                  items:
+                    description: Details of each charge
+                    type: object
+                    properties:
+                      id:
+                        description: Unique identifier for the charge
+                        type:
+                          - "null"
+                          - string
+                      chargeNumber:
+                        description: Number of the charge
+                        type:
+                          - "null"
+                          - string
+                      version:
+                        description: Version of the charge
+                        type:
+                          - "null"
+                          - number
+                      isLastVersion:
+                        description: Flag indicating if the charge is the last version
+                        type:
+                          - "null"
+                          - boolean
+                      name:
+                        description: Name of the charge
+                        type:
+                          - "null"
+                          - string
+                      chargeType:
+                        description: Type of charge
+                        type:
+                          - "null"
+                          - string
+                      priceModel:
+                        description: Pricing model for the charge
+                        type:
+                          - "null"
+                          - string
+                      effectiveStartDate:
+                        description: Effective start date of the charge
+                        type:
+                          - "null"
+                          - string
+                      effectiveEndDate:
+                        description: Effective end date of the charge
+                        type:
+                          - "null"
+                          - string
+                      quantity:
+                        description: Quantity of the charge
+                        type:
+                          - "null"
+                          - number
+                      unitCode:
+                        description: Unit code for the charge
+                        type:
+                          - "null"
+                          - string
+                      startOn:
+                        description: Start date for the charge
+                        type:
+                          - "null"
+                          - string
+                      endOn:
+                        description: End date for the charge
+                        type:
+                          - "null"
+                          - string
+                      chargedThroughDate:
+                        description: Date charges are accounted for
+                        type:
+                          - "null"
+                          - string
+                      lastRenewalDate:
+                        description: Date of the last renewal
+                        type:
+                          - "null"
+                          - string
+                      lastPriceAdjustmentDate:
+                        description: Date of the last price adjustment
+                        type:
+                          - "null"
+                          - string
+                      pricePeriod:
+                        description: Pricing period for the charge
+                        type:
+                          - "null"
+                          - string
+                      usageRating:
+                        description: Usage rating for the charge
+                        type:
+                          - "null"
+                          - string
+                      revenueRecognitionRule:
+                        description: Rule for revenue recognition
+                        type:
+                          - "null"
+                          - string
+                      billingDay:
+                        description: Billing day for the charge
+                        type:
+                          - "null"
+                          - string
+                      specificBillingDay:
+                        description: Specific billing day for the charge
+                        type:
+                          - "null"
+                          - number
+                      billingPeriod:
+                        description: Billing period for the charge
+                        type:
+                          - "null"
+                          - string
+                      billingTiming:
+                        description: Billing timing for the charge
+                        type:
+                          - "null"
+                          - string
+                      periodAlignment:
+                        description: Period alignment for the charge
+                        type:
+                          - "null"
+                          - string
+                      taxTemplate:
+                        description: Tax template applied to the charge
+                        type:
+                          - "null"
+                          - string
+                      taxIncluded:
+                        description: Flag indicating if tax is included in the charge
+                        type:
+                          - "null"
+                          - boolean
+                      createInvoiceLinesPerTier:
+                        description:
+                          Flag indicating if invoice lines are created
+                          per tier
+                        type:
+                          - "null"
+                          - boolean
+                      estimatedUsage:
+                        description: Estimated usage for the charge
+                        type:
+                          - "null"
+                          - number
+                      estimatedQuantity:
+                        description: Estimated quantity for the charge
+                        type:
+                          - "null"
+                          - number
+                      remarks:
+                        description: Remarks or notes for the charge
+                        type:
+                          - "null"
+                          - string
+                      accountsReceivableAccount:
+                        description: Account for accounts receivable
+                        type:
+                          - "null"
+                          - string
+                      deferredRevenueAccount:
+                        description: Account for deferred revenue
+                        type:
+                          - "null"
+                          - string
+                      recognizedRevenueAccount:
+                        description: Account for recognized revenue
+                        type:
+                          - "null"
+                          - string
+                      changeState:
+                        description: Change state for the charge
+                        type:
+                          - "null"
+                          - string
+                      displayPrice:
+                        description: Price displayed for the charge
+                        type:
+                          - "null"
+                          - number
+                      customFields:
+                        description: Custom fields associated with the charge
+                        type:
+                          - "null"
+                          - object
+                      priceDetails:
+                        description: Details of the pricing for the charge
+                        type: array
+                        items:
+                          description: Specific pricing details
+                          type: object
+                          properties:
+                            tier:
+                              description: Pricing tier of the charge
+                              type:
+                                - "null"
+                                - number
+                            price:
+                              description: Price of the charge
+                              type:
+                                - "null"
+                                - number
+                            listPrice:
+                              description: List price of the charge
+                              type:
+                                - "null"
+                                - number
+                            description:
+                              description: Description of the price
+                              type:
+                                - "null"
+                                - string
+                            fromQuantity:
+                              description: Quantity from which the price applies
+                              type:
+                                - "null"
+                                - number
+                            toQuantity:
+                              description: Quantity up to which the price applies
+                              type:
+                                - "null"
+                                - number
+                            priceBase:
+                              description: Base price of the charge
+                              type:
+                                - "null"
+                                - string
+                            lineDiscountPercent:
+                              description: Percentage of line discount
+                              type:
+                                - "null"
+                                - number
+                            lineDiscountAmount:
+                              description: Amount of line discount
+                              type:
+                                - "null"
+                                - number
+                      recurringMonthlyAmount:
+                        description: Recurring monthly amount for the charge
+                        type:
+                          - "null"
+                          - number
+                      recurringMonthlyAmountBase:
+                        description: Base recurring monthly amount for the charge
+                        type:
+                          - "null"
+                          - number
+                      features:
+                        description: List of features included in the charge
+                        type: array
+                        items:
+                          description: Details of each feature
+                          type: object
+                          properties:
+                            code:
+                              description: Feature code
+                              type:
+                                - "null"
+                                - string
+                            description:
+                              description: Description of the feature
+                              type:
+                                - "null"
+                                - string
+                      orderDiscounts:
+                        description: Discount information applied to the charge
+                        type: array
+                        items:
+                          description: Details of each discount
+                          type: object
+                          properties:
+                            orderDiscountId:
+                              description: Discount ID linked to the order
+                              type:
+                                - "null"
+                                - string
+                            chargeId:
+                              description: Charge ID linked to the order
+                              type:
+                                - "null"
+                                - string
+                      externalERPId:
+                        description: External ERP system ID associated with the charge
+                        type:
+                          - "null"
+                          - string
+                      externalCRMId:
+                        description: External CRM system ID associated with the charge
+                        type:
+                          - "null"
+                          - string
+                      cmrr:
+                        description: Committed Monthly Recurring Revenue of the charge
+                        type: object
+                        properties:
+                          amount:
+                            description: Amount of Committed Monthly Recurring Revenue
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            description: Currency code
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            description: Date of currency conversion
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            description: Amount in base currency
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            description: Base currency code
+                            type:
+                              - "null"
+                              - string
+                      acv:
+                        description: Annual Contract Value of the charge
+                        type: object
+                        properties:
+                          amount:
+                            description: Amount of Annual Contract Value
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            description: Currency code
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            description: Date of currency conversion
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            description: Amount in base currency
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            description: Base currency code
+                            type:
+                              - "null"
+                              - string
+                      tcv:
+                        description: Total Contract Value of the charge
+                        type: object
+                        properties:
+                          amount:
+                            description: Total Contract Value amount
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            description: Currency code
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            description: Date of currency conversion
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            description: Amount in base currency
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            description: Base currency code
+                            type:
+                              - "null"
+                              - string
+                      emrr:
+                        description: Estimated Monthly Recurring Revenue of the charge
+                        type: object
+                        properties:
+                          amount:
+                            description: Amount of Estimated Monthly Recurring Revenue
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            description: Currency code
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            description: Date of currency conversion
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            description: Amount in base currency
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            description: Base currency code
+                            type:
+                              - "null"
+                              - string
+                      oneTimeFees:
+                        description: One-time fees associated with the charge
+                        type: object
+                        properties:
+                          amount:
+                            description: Total amount of one-time fees
+                            type:
+                              - "null"
+                              - number
+                          currencyCode:
+                            description: Currency code
+                            type:
+                              - "null"
+                              - string
+                          currencyConversionDate:
+                            description: Date of currency conversion
+                            type:
+                              - "null"
+                              - string
+                          baseCurrencyAmount:
+                            description: Amount in base currency
+                            type:
+                              - "null"
+                              - number
+                          baseCurrencyCode:
+                            description: Base currency code
+                            type:
+                              - "null"
+                              - string
+                      orderProductId:
+                        description: Product ID linked to the order
+                        type:
+                          - "null"
+                          - string
+                      orderId:
+                        description: Order ID linked to the charge
+                        type:
+                          - "null"
+                          - string
+                customFields:
+                  description: Custom fields associated with the product
+                  type:
+                    - "null"
+                    - object
+                externalERPId:
+                  description: External ERP system ID associated with the product
+                  type:
+                    - "null"
+                    - string
+                externalCRMId:
+                  description: External CRM system ID associated with the product
+                  type:
+                    - "null"
+                    - string
+                cmrr:
+                  description: Committed Monthly Recurring Revenue of the product
+                  type: object
+                  properties:
+                    amount:
+                      description: Amount of Committed Monthly Recurring Revenue
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      description: Currency code
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      description: Amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code
+                      type:
+                        - "null"
+                        - string
+                acv:
+                  description: Annual Contract Value of the product
+                  type: object
+                  properties:
+                    amount:
+                      description: Amount of Annual Contract Value
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      description: Currency code
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      description: Amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code
+                      type:
+                        - "null"
+                        - string
+                emrr:
+                  description: Estimated Monthly Recurring Revenue of the product
+                  type: object
+                  properties:
+                    amount:
+                      description: Amount of Estimated Monthly Recurring Revenue
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      description: Currency code
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      description: Amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code
+                      type:
+                        - "null"
+                        - string
+                oneTimeFees:
+                  description: One-time fees associated with the product
+                  type: object
+                  properties:
+                    amount:
+                      description: Total amount of one-time fees
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      description: Currency code
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      description: Amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code
+                      type:
+                        - "null"
+                        - string
+                tcv:
+                  description: Total Contract Value of the product
+                  type: object
+                  properties:
+                    amount:
+                      description: Total Contract Value amount
+                      type:
+                        - "null"
+                        - number
+                    currencyCode:
+                      description: Currency code
+                      type:
+                        - "null"
+                        - string
+                    currencyConversionDate:
+                      description: Date of currency conversion
+                      type:
+                        - "null"
+                        - string
+                    baseCurrencyAmount:
+                      description: Amount in base currency
+                      type:
+                        - "null"
+                        - number
+                    baseCurrencyCode:
+                      description: Base currency code
+                      type:
+                        - "null"
+                        - string
+          milestones:
+            description: List of milestones associated with the subscription
+            type: array
+            items:
+              description: Details of each milestone
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the milestone
+                  type:
+                    - "null"
+                    - string
+                orderId:
+                  description: Order ID linked to the milestone
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the milestone
+                  type:
+                    - "null"
+                    - string
+                description:
+                  description: Description of the milestone
+                  type:
+                    - "null"
+                    - string
+                milestoneDate:
+                  description: Date of the milestone
+                  type:
+                    - "null"
+                    - string
+                plannedDate:
+                  description: Planned date for the milestone
+                  type:
+                    - "null"
+                    - string
+          orderDiscounts:
+            description: Discount information applied to the order
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  description: Unique identifier for the discount
+                  type:
+                    - "null"
+                    - string
+                orderId:
+                  description: Order ID linked to the discount
+                  type:
+                    - "null"
+                    - string
+                startOn:
+                  description: Start date for the discount
+                  type:
+                    - "null"
+                    - string
+                endOn:
+                  description: End date for the discount
+                  type:
+                    - "null"
+                    - string
+                startDate:
+                  description: Start date of the discount
+                  type:
+                    - "null"
+                    - string
+                endDate:
+                  description: End date of the discount
+                  type:
+                    - "null"
+                    - string
+                percent:
+                  description: Percentage of the discount
+                  type:
+                    - "null"
+                    - number
+                discountType:
+                  description: Type of discount applied to the order
+                  type:
+                    - "null"
+                    - string
+                orderProductCharges:
+                  description: List of charges for products in the order
+                  type: array
+                  items:
+                    description: Details of each product charge
+                    type: object
+                    properties:
+                      orderDiscountId:
+                        description: Discount ID linked to the order
+                        type:
+                          - "null"
+                          - string
+                      chargeId:
+                        description: Charge ID linked to the order
+                        type:
+                          - "null"
+                          - string
+                onSpecificCharges:
+                  description:
+                    Flag indicating if the discount is applied to specific
+                    charges
+                  type:
+                    - "null"
+                    - boolean
+          currency:
+            description: Currency used for the subscription
+            type:
+              - "null"
+              - string
+          externalERPId:
+            description: External ERP system ID associated with the subscription
+            type:
+              - "null"
+              - string
+          externalCRMId:
+            description: External CRM system ID associated with the subscription
+            type:
+              - "null"
+              - string
+          currencyCodeToUseWhenInvoice:
+            description: Currency code used for invoicing
+            type:
+              - "null"
+              - string
+          customFields:
+            description: Custom fields associated with the subscription
+            type:
+              - "null"
+              - object
+          cmrr:
+            description: Committed Monthly Recurring Revenue
+            type: object
+            properties:
+              amount:
+                description: Amount of Committed Monthly Recurring Revenue
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                description: Currency code
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                description: Date of currency conversion
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                description: Amount in base currency
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code
+                type:
+                  - "null"
+                  - string
+          acv:
+            description: Annual Contract Value
+            type: object
+            properties:
+              amount:
+                description: Amount of Annual Contract Value
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                description: Currency code
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                description: Date of currency conversion
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                description: Amount in base currency
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code
+                type:
+                  - "null"
+                  - string
+          emrr:
+            description: Estimated Monthly Recurring Revenue
+            type: object
+            properties:
+              amount:
+                description: Amount of Estimated Monthly Recurring Revenue
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                description: Currency code
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                description: Date of currency conversion
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                description: Amount in base currency
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code
+                type:
+                  - "null"
+                  - string
+          oneTimeFees:
+            description: One-time fees charged
+            type: object
+            properties:
+              amount:
+                description: Total amount of one-time fees
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                description: Currency code
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                description: Date of currency conversion
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                description: Amount in base currency
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code
+                type:
+                  - "null"
+                  - string
+          tcv:
+            description: Total Contract Value of the subscription
+            type: object
+            properties:
+              amount:
+                description: Total Contract Value amount
+                type:
+                  - "null"
+                  - number
+              currencyCode:
+                description: Currency code
+                type:
+                  - "null"
+                  - string
+              currencyConversionDate:
+                description: Date of currency conversion
+                type:
+                  - "null"
+                  - string
+              baseCurrencyAmount:
+                description: Amount in base currency
+                type:
+                  - "null"
+                  - number
+              baseCurrencyCode:
+                description: Base currency code
+                type:
+                  - "null"
+                  - string
+streams:
+  - "#/definitions/account_stream"
+  - "#/definitions/booking_stream"
+  - "#/definitions/invoice_stream"
+  - "#/definitions/product_stream"
+  - "#/definitions/subscription_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - account
+    - booking
+    - invoice
+    - product
+    - subscription
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/younium
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Younium Spec
+    type: object
+    additionalProperties: true
+    required:
+      - username
+      - password
+      - legal_entity
+    properties:
+      username:
+        title: Username
+        type: string
+        description: Username for Younium account
+      password:
+        title: Password
+        type: string
+        description: Account password for younium account API key
+        airbyte_secret: true
+      legal_entity:
+        title: Legal Entity
+        type: string
+        description: Legal Entity that data should be pulled from
+      playground:
+        title: Playground environment
+        type: boolean
+        description:
+          Property defining if connector is used against playground or
+          production environment
+        default: false

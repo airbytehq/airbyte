@@ -1,0 +1,15 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "reviews",
+        "json_schema": {},
+        "source_defined_cursor": true,
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["lastUpdatedISO"]
+    }
+  ]
+}

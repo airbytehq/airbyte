@@ -1,0 +1,261 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the order",
+      "type": "integer"
+    },
+    "customer_id": {
+      "description": "The ID of the customer who placed the order",
+      "type": ["integer", "null"]
+    },
+    "delivery_tax": {
+      "description": "The tax applied to delivery charges",
+      "type": ["string", "null"]
+    },
+    "entered_by_type": {
+      "description": "The type of user who entered the order",
+      "type": ["string", "null"]
+    },
+    "shipping_selections": {
+      "description": "The selected shipping options for the order",
+      "type": ["array", "null"],
+      "items": {
+        "description": "Details of the items selected for shipping",
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {}
+      }
+    },
+    "sales_agent_user_id": {
+      "description": "The ID of the sales agent associated with the order",
+      "type": ["string", "null"]
+    },
+    "customer_type_id": {
+      "description": "The ID representing the type of customer",
+      "type": ["integer", "null"]
+    },
+    "adcode": {
+      "description": "The adcode associated with the order",
+      "type": ["string", "null"]
+    },
+    "ordered_at": {
+      "description": "The timestamp when the order was placed",
+      "type": ["string", "null"]
+    },
+    "order_status_id": {
+      "description": "The ID representing the current status of the order",
+      "type": ["integer", "null"]
+    },
+    "special_instructions": {
+      "description": "Any special instructions provided for handling the order",
+      "type": ["string", "null"]
+    },
+    "subtotal": {
+      "description": "The subtotal amount before any taxes or discounts applied",
+      "type": ["number", "null"]
+    },
+    "tax_total": {
+      "description": "The total amount of tax applied to the order",
+      "type": ["number", "null"]
+    },
+    "shipping_total": {
+      "description": "The total shipping charges for the order",
+      "type": ["number", "null"]
+    },
+    "discount_total": {
+      "description": "The total discount applied to the order",
+      "type": ["number", "null"]
+    },
+    "grand_total": {
+      "description": "The total amount payable including all charges",
+      "type": ["number", "null"]
+    },
+    "cost_total": {
+      "description": "The total cost of the order",
+      "type": ["number", "null"]
+    },
+    "selected_shipping_method": {
+      "description": "The chosen shipping method for delivery",
+      "type": ["string", "null"]
+    },
+    "ip_address": {
+      "description": "The IP address from which the order was placed",
+      "type": ["string", "null"]
+    },
+    "exported_to_accounting_system": {
+      "description": "Flag indicating if the order has been exported to the accounting system",
+      "type": ["integer", "null"]
+    },
+    "referrer": {
+      "description": "The source or reference from where the order originated",
+      "type": ["string", "null"]
+    },
+    "order_shipping_address_id": {
+      "description": "The ID of the shipping address linked to the order",
+      "type": ["integer", "null"]
+    },
+    "order_billing_address_id": {
+      "description": "The ID of the billing address associated with the order",
+      "type": ["integer", "null"]
+    },
+    "admin_comments": {
+      "description": "Comments added by the admin for the order",
+      "type": ["string", "null"]
+    },
+    "source": {
+      "description": "The original source from where the order was generated",
+      "type": ["string", "null"]
+    },
+    "search_phrase": {
+      "description": "The search phrase used before placing the order",
+      "type": ["string", "null"]
+    },
+    "is_ppc": {
+      "description": "Indicates if the order is related to pay-per-click advertising",
+      "type": ["boolean", "null"]
+    },
+    "ppc_keyword": {
+      "description": "The keyword related to the pay-per-click campaign",
+      "type": ["string", "null"]
+    },
+    "affiliate_id": {
+      "description": "The affiliate ID associated with the order",
+      "type": ["integer", "null"]
+    },
+    "store_id": {
+      "description": "The ID of the store from where the order was placed",
+      "type": ["integer", "null"]
+    },
+    "session_id": {
+      "description": "The unique identifier of the session linked to the order",
+      "type": ["integer", "null"]
+    },
+    "handling_total": {
+      "description": "The total handling charges applied to the order",
+      "type": ["number", "null"]
+    },
+    "is_payment_order_only": {
+      "description": "Indicates if the order includes only payment items",
+      "type": ["boolean", "null"]
+    },
+    "selected_shipping_provider_service": {
+      "description": "The service provided by the selected shipping provider",
+      "type": ["string", "null"]
+    },
+    "additional_fees": {
+      "description": "Any additional fees applied to the order",
+      "type": ["number", "null"]
+    },
+    "adcode_id": {
+      "description": "The adcode ID associated with the order",
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "description": "The timestamp when the order was last updated",
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "description": "The timestamp when the order was created",
+      "type": ["string", "null"]
+    },
+    "is_gift": {
+      "description": "Indicates if the order is a gift order",
+      "type": ["boolean", "null"]
+    },
+    "gift_message": {
+      "description": "Any gift message associated with the order",
+      "type": ["string", "null"]
+    },
+    "public_comments": {
+      "description": "Comments visible to the public for the order",
+      "type": ["string", "null"]
+    },
+    "instructions": {
+      "description": "Any special instructions provided for the order",
+      "type": ["string", "null"]
+    },
+    "source_group": {
+      "description": "The group/category of the source from where the order originated",
+      "type": ["string", "null"]
+    },
+    "from_subscription_id": {
+      "description": "The ID of the subscription linked to the order",
+      "type": ["integer", "null"]
+    },
+    "previous_order_status_id": {
+      "description": "The ID representing the previous status of the order",
+      "type": ["integer", "null"]
+    },
+    "order_status_last_changed_at": {
+      "description": "The timestamp when the order status was last changed",
+      "type": ["string", "null"]
+    },
+    "discounted_shipping_total": {
+      "description": "The shipping total after discounts are applied",
+      "type": ["number", "null"]
+    },
+    "order_number": {
+      "description": "The unique order number",
+      "type": ["string", "null"]
+    },
+    "coupon_code": {
+      "description": "The coupon code used for discounts on the order",
+      "type": ["string", "null"]
+    },
+    "order_type": {
+      "description": "The type/category of the order",
+      "type": ["string", "null"]
+    },
+    "expires_at": {
+      "description": "The timestamp when the order expires",
+      "type": ["string", "null"]
+    },
+    "expires": {
+      "description": "Indicates if the order has expired",
+      "type": ["boolean", "null"]
+    },
+    "from_quote_id": {
+      "description": "The ID of the quote from which the order was created",
+      "type": ["integer", "null"]
+    },
+    "campaign_code": {
+      "description": "The campaign code linked to the order",
+      "type": ["string", "null"]
+    },
+    "reward_points_credited": {
+      "description": "The reward points credited for the order",
+      "type": ["boolean", "null"]
+    },
+    "channel": {
+      "description": "The channel through which the order was made",
+      "type": ["string", "null"]
+    },
+    "device": {
+      "description": "The device used to place the order",
+      "type": ["string", "null"]
+    },
+    "manufacturer_invoice_number": {
+      "description": "The invoice number provided by the manufacturer",
+      "type": ["string", "null"]
+    },
+    "manufacturer_invoice_amount": {
+      "description": "The amount mentioned in the manufacturer's invoice",
+      "type": ["number", "null"]
+    },
+    "manufacturer_invoice_paid": {
+      "description": "Indicates if the manufacturer's invoice has been paid",
+      "type": ["boolean", "null"]
+    },
+    "entered_by": {
+      "description": "The user who entered the order",
+      "type": ["string", "null"]
+    },
+    "due_date": {
+      "description": "The date by which the payment is due",
+      "type": ["string", "null"]
+    }
+  }
+}

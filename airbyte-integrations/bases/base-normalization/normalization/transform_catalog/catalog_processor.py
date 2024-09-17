@@ -1,37 +1,20 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import os
+import re
 from typing import Any, Dict, List, Set
 
 import yaml
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
 from normalization.destination_type import DestinationType
+from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer
 from normalization.transform_catalog.stream_processor import StreamProcessor
+from normalization.transform_catalog.table_name_registry import TableNameRegistry
 
 
 class CatalogProcessor:
@@ -53,6 +36,7 @@ class CatalogProcessor:
         self.output_directory: str = output_directory
         self.destination_type: DestinationType = destination_type
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
+        self.models_to_source: Dict[str, str] = {}
 
     def process(self, catalog_file: str, json_column_name: str, default_schema: str):
         """
@@ -63,34 +47,39 @@ class CatalogProcessor:
         @param json_column_name is the column name containing the JSON Blob with the raw data
         @param default_schema is the final schema where to output the final transformed data to
         """
-        # Registry of all tables produced in each schema. Those maps to the final sql file (dbt use that as
-        # internal model and thus filename should be unique accross schema/table names):
-        # { schema_name : [ { table_name : file_name } ] }
-        tables_registry: Dict[str, Dict[str, str]] = {}
-        # Registry of source tables in each schemas
-        # { schema_name : [ table_name ] }
+        tables_registry: TableNameRegistry = TableNameRegistry(self.destination_type)
         schema_to_source_tables: Dict[str, Set[str]] = {}
-
         catalog = read_json(catalog_file)
         # print(json.dumps(catalog, separators=(",", ":")))
         substreams = []
-        for stream_processor in self.build_stream_processor(
+        stream_processors = self.build_stream_processor(
             catalog=catalog,
             json_column_name=json_column_name,
             default_schema=default_schema,
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
             tables_registry=tables_registry,
-        ):
-            # Check properties
-            if not stream_processor.properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
-
-            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=False)
+        )
+        for stream_processor in stream_processors:
+            stream_processor.collect_table_names()
+        for conflict in tables_registry.resolve_names():
+            print(
+                f"WARN: Resolving conflict: {conflict.schema}.{conflict.table_name_conflict} "
+                f"from '{'.'.join(conflict.json_path)}' into {conflict.table_name_resolved}"
+            )
+        for stream_processor in stream_processors:
+            # MySQL table names need to be manually truncated, because it does not do it automatically
+            truncate = (
+                self.destination_type == DestinationType.MYSQL
+                or self.destination_type == DestinationType.TIDB
+                or self.destination_type == DestinationType.DUCKDB
+            )
+            raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
             nested_processors = stream_processor.process()
-            tables_registry = add_table_to_registry(tables_registry, stream_processor)
+            self.models_to_source.update(stream_processor.models_to_source)
+
             if nested_processors and len(nested_processors) > 0:
                 substreams += nested_processors
             for file in stream_processor.sql_outputs:
@@ -105,21 +94,38 @@ class CatalogProcessor:
         default_schema: str,
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
-        tables_registry: Dict[str, Dict[str, str]],
+        tables_registry: TableNameRegistry,
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
             stream_config = get_field(configured_stream, "stream", "Invalid Stream: 'stream' is not defined in Catalog streams")
 
-            # The logic here matches the logic in JdbcBufferedConsumerFactory.java. Any modifications need to be reflected there and vice versa.
+            # The logic here matches the logic in JdbcBufferedConsumerFactory.java.
+            # Any modifications need to be reflected there and vice versa.
             schema = default_schema
             if "namespace" in stream_config:
                 schema = stream_config["namespace"]
 
-            schema_name = name_transformer.normalize_schema_name(schema)
-            raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+            schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
+            if destination_type == DestinationType.ORACLE:
+                quote_in_parenthesis = re.compile(r"quote\((.*)\)")
+                raw_schema_name = name_transformer.normalize_schema_name(schema, truncate=False)
+                if not quote_in_parenthesis.findall(json_column_name):
+                    json_column_name = name_transformer.normalize_column_name(json_column_name, in_jinja=True)
+            else:
+                column_inside_single_quote = re.compile(r"\'(.*)\'")
+                raw_schema_name = name_transformer.normalize_schema_name(f"_airbyte_{schema}", truncate=False)
+                if not column_inside_single_quote.findall(json_column_name):
+                    json_column_name = f"'{json_column_name}'"
+
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
-            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=False)
+            # MySQL table names need to be manually truncated, because it does not do it automatically
+            truncate = (
+                destination_type == DestinationType.MYSQL
+                or destination_type == DestinationType.TIDB
+                or destination_type == DestinationType.DUCKDB
+            )
+            raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
             destination_sync_mode = get_destination_sync_mode(configured_stream, stream_name)
@@ -139,22 +145,19 @@ class CatalogProcessor:
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
             properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
-            from_table = "source('{}', '{}')".format(schema_name, raw_table_name)
-
-            # Check properties
-            if not properties:
-                raise EOFError("Invalid Catalog: Unexpected empty properties in catalog")
+            from_table = dbt_macro.Source(schema_name, raw_table_name)
 
             stream_processor = StreamProcessor.create(
                 stream_name=stream_name,
                 destination_type=destination_type,
                 raw_schema=raw_schema_name,
+                default_schema=default_schema,
                 schema=schema_name,
                 source_sync_mode=source_sync_mode,
                 destination_sync_mode=destination_sync_mode,
                 cursor_field=cursor_field,
                 primary_key=primary_key,
-                json_column_name=f"'{json_column_name}'",
+                json_column_name=json_column_name,
                 properties=properties,
                 tables_registry=tables_registry,
                 from_table=from_table,
@@ -162,7 +165,7 @@ class CatalogProcessor:
             result.append(stream_processor)
         return result
 
-    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: Dict[str, Dict[str, str]]):
+    def process_substreams(self, substreams: List[StreamProcessor], tables_registry: TableNameRegistry):
         """
         Handle nested stream/substream/children
         """
@@ -172,7 +175,7 @@ class CatalogProcessor:
             for substream in children:
                 substream.tables_registry = tables_registry
                 nested_processors = substream.process()
-                tables_registry = add_table_to_registry(tables_registry, substream)
+                self.models_to_source.update(substream.models_to_source)
                 if nested_processors:
                     substreams += nested_processors
                 for file in substream.sql_outputs:
@@ -279,31 +282,6 @@ def add_table_to_sources(schema_to_source_tables: Dict[str, Set[str]], schema_na
         schema_to_source_tables[schema_name].add(table_name)
     else:
         raise KeyError(f"Duplicate table {table_name} in {schema_name}")
-
-
-def add_table_to_registry(tables_registry: Dict[str, Dict[str, str]], processor: StreamProcessor) -> Dict[str, Dict[str, str]]:
-    """
-    Keeps track of all schema/table names created by this catalog, regardless of their destination schema.
-
-    Each StreamProcessor has its own "local" registry for schema/tables produced by the stream they are currently
-    processing. Here, we aggregate all "local" registries into a "global" one accross all streams being
-    processed from this catalog.
-
-    @param tables_registry where all table names are recorded
-    @param processor the processor that created tables as part of its process
-    """
-    base_registry = tables_registry
-    new_registry = processor.local_registry
-    for schema in new_registry:
-        if len(new_registry[schema]) > 0:
-            if schema not in base_registry:
-                base_registry[schema] = {}
-            for table_name in new_registry[schema]:
-                if table_name not in base_registry[schema]:
-                    base_registry[schema][table_name] = new_registry[schema][table_name]
-                else:
-                    raise KeyError(f"Duplicate table {table_name} in schema {schema}")
-    return base_registry
 
 
 def output_sql_file(file: str, sql: str):

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "The ID of the issue type screen scheme.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the issue type screen scheme.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of the issue type screen scheme.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details of an issue type screen scheme."
+}

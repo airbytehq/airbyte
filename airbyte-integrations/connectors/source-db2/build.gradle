@@ -1,0 +1,21 @@
+plugins {
+    id 'airbyte-java-connector'
+}
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.20.4'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.source.db2.Db2Source'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+dependencies {
+
+    implementation group: 'com.ibm.db2', name: 'jcc', version: '11.5.5.0'
+
+    testImplementation 'org.testcontainers:db2:1.19.4'
+}

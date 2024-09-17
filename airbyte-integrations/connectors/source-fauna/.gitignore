@@ -1,0 +1,6 @@
+# Python version tools
+.tool-versions
+../../../.tool-versions
+# emacs auto-save files
+*~
+*#

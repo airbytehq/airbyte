@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "commentable": {
+      "description": "Indicates whether comments are allowed on the blog.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the blog was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "feedburner": {
+      "description": "The Feedburner date for the blog.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "feedburner_location": {
+      "description": "The location information related to Feedburner.",
+      "type": ["null", "integer"]
+    },
+    "handle": {
+      "description": "The unique handle used in the blog's URL.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier for the blog.",
+      "type": ["null", "integer"]
+    },
+    "tags": {
+      "description": "Tags associated with the blog.",
+      "type": ["null", "string"]
+    },
+    "template_suffix": {
+      "description": "The template suffix used in the blog's layout.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "The title of the blog.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the blog was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier for the blog within the admin GraphQL API.",
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "description": "The URL of the shop associated with the blog.",
+      "type": ["null", "string"]
+    },
+    "deleted_at": {
+      "description": "The date and time when the blog was deleted, if applicable.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deleted_message": {
+      "description": "A message associated with the deletion of the blog.",
+      "type": ["null", "string"]
+    },
+    "deleted_description": {
+      "description": "A description of the reason for deleting the blog.",
+      "type": ["null", "string"]
+    }
+  }
+}

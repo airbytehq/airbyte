@@ -1,32 +1,57 @@
 #
-# MIT License
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-#
+from typing import Any, List, Mapping, Tuple
+
+import pendulum
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.core import Stream
+from source_instagram.api import InstagramAPI
+from source_instagram.streams import UserInsights
+
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
+
+WARNING: Do not modify this file.
+"""
 
 
-from base_python import BaseSource
+# Declarative Source
+class SourceInstagram(YamlDeclarativeSource):
+    def __init__(self):
+        super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
-from .client import Client
+    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
+        :param config:  the user-input config object conforming to the connector's spec.json
+        :param logger:  logger object
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        """
+        try:
+            self._validate_start_date(config)
+            api = InstagramAPI(access_token=config["access_token"])
+            logger.info(f"Available accounts: {api.accounts}")
+        except Exception as exc:
+            error_msg = repr(exc)
+            return False, error_msg
+        return super().check_connection(logger, config)
 
-class SourceInstagram(BaseSource):
-    client_class = Client
+    def _validate_start_date(self, config):
+        # If start_date is not found in config, set it to 2 years ago
+        if not config.get("start_date"):
+            config["start_date"] = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+        else:
+            if pendulum.parse(config["start_date"]) > pendulum.now():
+                raise ValueError("Please fix the start_date parameter in config, it cannot be in the future")
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = super().streams(config)
+        return streams + self.get_non_low_code_streams(config=config)
+
+    def get_non_low_code_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        api = InstagramAPI(access_token=config["access_token"])
+        self._validate_start_date(config)
+        streams = [UserInsights(api=api, start_date=config["start_date"])]
+        return streams

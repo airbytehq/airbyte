@@ -1,28 +1,20 @@
 # HTTP Request
 
+:::caution
+
+This connector is graveyarded and will not be receiving any updates from the Airbyte team. Its functionalities have been replaced by the [Airbyte CDK](../../connector-development/cdk-python/README.md), which allows you to create source connectors for any HTTP API.
+
+:::
+
 ## Overview
 
-This source allows you to make any http request an Airbyte source! On each sync, this source makes a single http request to the provided URL. Whatever json body is returned is written to the destination.
+This connector allows you to generally connect to any HTTP API. In order to use this connector, you must manually bring it in as a custom connector. The steps to do this can be found [here](../../connector-development/tutorials/custom-python-connector/0-getting-started.md).
 
-#### Output schema
+## Where do I find the Docker image?
 
-It contains one stream: `data`. That stream will contain one record which is the json blob returned by the http request.
+The Docker image for the HTTP Request connector image can be found at our DockerHub [here](https://hub.docker.com/r/airbyte/source-http-request).
 
-#### Data type mapping
+## Why was this connector graveyarded?
 
-`data` is a json blob.
-
-#### Features
-
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Coming soon |
-| Namespaces | No |
-
-### Getting started
-
-#### Setup guide
-
-Provide a url, http\_method, \(optional\) headers, \(optional\) request body. The source will make exactly this http request.
-
+We found that there are lots of cases in which using a general connector leads to poor user experience, as there are countless edge cases for different API structures, different authentication policies, and varied approaches to rate-limiting. We believe that enabling users to more easily
+create connectors is a more scalable and resilient approach to maximizing the quality of the user experience.

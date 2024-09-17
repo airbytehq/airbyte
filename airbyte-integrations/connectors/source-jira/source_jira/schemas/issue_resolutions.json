@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "self": {
+      "description": "The URL of the issue resolution.",
+      "type": "string"
+    },
+    "id": {
+      "description": "The ID of the issue resolution.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of the issue resolution.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the issue resolution.",
+      "type": "string"
+    },
+    "isDefault": {
+      "description": "Indicates if this is the default issue resolution.",
+      "type": ["null", "boolean"]
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details of an issue resolution."
+}

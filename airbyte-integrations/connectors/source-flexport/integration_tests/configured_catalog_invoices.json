@@ -1,0 +1,494 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "invoices",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "_object": {
+              "type": "string",
+              "description": "Type of the object. Always /invoice for this object.",
+              "pattern": "^/invoice$"
+            },
+            "id": {
+              "type": "string",
+              "description": "Unique ID for the invoice"
+            },
+            "name": {
+              "type": "string",
+              "description": "Unique name for the invoice"
+            },
+            "issued_at": {
+              "type": "string",
+              "description": "When the invoice was issued. In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
+            },
+            "due_date": {
+              "type": "string",
+              "description": "Due date of the invoice. Calendar date only, no time.",
+              "format": "date"
+            },
+            "total": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /money for this object.",
+                  "pattern": "^/money$"
+                },
+                "amount": {
+                  "type": "string",
+                  "description": "A string representing the decimal amount"
+                },
+                "currency_code": {
+                  "type": "string",
+                  "description": "The currency of the amount"
+                }
+              }
+            },
+            "balance": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /money for this object.",
+                  "pattern": "^/money$"
+                },
+                "amount": {
+                  "type": "string",
+                  "description": "A string representing the decimal amount"
+                },
+                "currency_code": {
+                  "type": "string",
+                  "description": "The currency of the amount"
+                }
+              }
+            },
+            "status": {
+              "type": "string",
+              "description": "Status of the invoice. One of:",
+              "enum": [
+                "outstanding",
+                "past_due",
+                "void",
+                "paid",
+                "payment_pending"
+              ]
+            },
+            "type": {
+              "type": ["null", "string"],
+              "description": "What the invoice is being issued for. Shipment related charges are type Shipment and non-shipment related charges are type Client"
+            },
+            "voided_at": {
+              "type": ["null", "string"],
+              "description": "When the invoice was voided (if applicable). In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
+            },
+            "last_updated_at": {
+              "type": ["null", "string"],
+              "description": "Time of the last adjustment to in invoice. In ISO8601 UTC format with timezone denoted by Z.",
+              "format": "date-time"
+            },
+            "recipient": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /company_entity for this object.",
+                  "pattern": "^/company_entity$"
+                },
+                "id": {
+                  "type": "integer",
+                  "description": "Unique identifier for the object."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Name of the company entity."
+                },
+                "ref": {
+                  "type": "string",
+                  "description": "Your reference for this company entity, as set in the Network tab."
+                },
+                "mailing_address": {
+                  "description": "Address of the company entity.",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "properties": {
+                        "_object": {
+                          "type": "string",
+                          "description": "String representing the object's type. Always /address for this object.",
+                          "pattern": "^/address$"
+                        },
+                        "street_address": {
+                          "type": "string",
+                          "description": "Address line 1 (Street address/PO Box)."
+                        },
+                        "street_address2": {
+                          "type": ["null", "string"],
+                          "description": "Address line 2 (Apartment/Suite/Unit/Building)."
+                        },
+                        "city": {
+                          "type": "string",
+                          "description": "City/Town."
+                        },
+                        "state": {
+                          "type": ["null", "string"],
+                          "description": "State/County/Province/Region."
+                        },
+                        "country": {
+                          "type": ["null", "string"],
+                          "description": "Country."
+                        },
+                        "country_code": {
+                          "type": ["null", "string"],
+                          "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
+                        },
+                        "zip": {
+                          "type": ["null", "string"],
+                          "description": "ZIP or postal code."
+                        },
+                        "timezone": {
+                          "type": ["null", "string"],
+                          "description": "Timezone for this address"
+                        },
+                        "ref": {
+                          "type": ["null", "string"],
+                          "description": "Your reference for the address, as set in your network tab"
+                        },
+                        "unlocode": {
+                          "type": ["null", "string"],
+                          "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                        }
+                      }
+                    }
+                  ]
+                },
+                "vat_numbers": {
+                  "type": "array",
+                  "description": "Array of VAT numbers of the company entity.",
+                  "items": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                      "_object": {
+                        "type": "string",
+                        "description": "String representing the object's type. Always /company_entity/vat_number for this object.",
+                        "pattern": "^/company_entity/vat_number$"
+                      },
+                      "country_code": {
+                        "type": "string",
+                        "description": "ISO 3166 two-letter country code of the VAT number's country"
+                      },
+                      "number": {
+                        "type": "string",
+                        "description": "Full VAT number, including the country code"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "issuer": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /company_entity for this object.",
+                  "pattern": "^/company_entity$"
+                },
+                "id": {
+                  "type": "integer",
+                  "description": "Unique identifier for the object."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Name of the company entity."
+                },
+                "ref": {
+                  "type": "string",
+                  "description": "Your reference for this company entity, as set in the Network tab."
+                },
+                "mailing_address": {
+                  "description": "Address of the company entity.",
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "properties": {
+                        "_object": {
+                          "type": "string",
+                          "description": "String representing the object's type. Always /address for this object.",
+                          "pattern": "^/address$"
+                        },
+                        "street_address": {
+                          "type": "string",
+                          "description": "Address line 1 (Street address/PO Box)."
+                        },
+                        "street_address2": {
+                          "type": ["null", "string"],
+                          "description": "Address line 2 (Apartment/Suite/Unit/Building)."
+                        },
+                        "city": {
+                          "type": "string",
+                          "description": "City/Town."
+                        },
+                        "state": {
+                          "type": ["null", "string"],
+                          "description": "State/County/Province/Region."
+                        },
+                        "country": {
+                          "type": ["null", "string"],
+                          "description": "Country."
+                        },
+                        "country_code": {
+                          "type": ["null", "string"],
+                          "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
+                        },
+                        "zip": {
+                          "type": ["null", "string"],
+                          "description": "ZIP or postal code."
+                        },
+                        "timezone": {
+                          "type": ["null", "string"],
+                          "description": "Timezone for this address"
+                        },
+                        "ref": {
+                          "type": ["null", "string"],
+                          "description": "Your reference for the address, as set in your network tab"
+                        },
+                        "unlocode": {
+                          "type": ["null", "string"],
+                          "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                        }
+                      }
+                    }
+                  ]
+                },
+                "vat_numbers": {
+                  "type": "array",
+                  "description": "Array of VAT numbers of the company entity.",
+                  "items": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                      "_object": {
+                        "type": "string",
+                        "description": "String representing the object's type. Always /company_entity/vat_number for this object.",
+                        "pattern": "^/company_entity/vat_number$"
+                      },
+                      "country_code": {
+                        "type": "string",
+                        "description": "ISO 3166 two-letter country code of the VAT number's country"
+                      },
+                      "number": {
+                        "type": "string",
+                        "description": "Full VAT number, including the country code"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "items": {
+              "type": "array",
+              "description": "Inlined list of InvoiceItems",
+              "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "_object": {
+                    "type": "string",
+                    "description": "String representing the object's type. Always /invoice_item for this object.",
+                    "pattern": "^/invoice_item$"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Line item name. Example: FCL 40' HQ"
+                  },
+                  "slug": {
+                    "type": "string",
+                    "description": "Line item code. Example: fcl_40_hq"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Category of the charge. Example freight"
+                  },
+                  "amount": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                      "_object": {
+                        "type": "string",
+                        "description": "String representing the object's type. Always /money for this object.",
+                        "pattern": "^/money$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "description": "A string representing the decimal amount"
+                      },
+                      "currency_code": {
+                        "type": "string",
+                        "description": "The currency of the amount"
+                      }
+                    }
+                  },
+                  "rate": {
+                    "description": "Describes the rate per unit used to calculate the price of a line item",
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": {
+                          "_object": {
+                            "type": "string",
+                            "description": "String representing the object's type. Always /invoice/rate for this object.",
+                            "pattern": "^/invoice/rate$"
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "Numeric value described by qualifier"
+                          },
+                          "qualifier": {
+                            "type": "string",
+                            "description": "Describes what the value represents ('USD', '% Drayage Base', etc)"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "quantity": {
+                    "description": "Describes the number of units used to calculate the price of a line item",
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": {
+                          "_object": {
+                            "type": "string",
+                            "description": "String representing the object's type. Always /invoice/quantity for this object.",
+                            "pattern": "^/invoice/quantity$"
+                          },
+                          "value": {
+                            "type": "string",
+                            "description": "Numeric value described by qualifier"
+                          },
+                          "qualifier": {
+                            "type": "string",
+                            "description": "Describes what the value represents ('kg', 'bill of lading', 'USD')"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "credit_memos": {
+              "type": "array",
+              "description": "Inlined list of CreditMemos",
+              "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "_object": {
+                    "type": "string",
+                    "description": "String representing the object's type. Always /credit_memo for this object.",
+                    "pattern": "^/credit_memo$"
+                  },
+                  "amount": {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": {
+                      "_object": {
+                        "type": "string",
+                        "description": "String representing the object's type. Always /money for this object.",
+                        "pattern": "^/money$"
+                      },
+                      "amount": {
+                        "type": "string",
+                        "description": "A string representing the decimal amount"
+                      },
+                      "currency_code": {
+                        "type": "string",
+                        "description": "The currency of the amount"
+                      }
+                    }
+                  },
+                  "credited_at": {
+                    "type": "string",
+                    "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z.",
+                    "format": "date-time"
+                  },
+                  "categories": {
+                    "type": "array",
+                    "description": "Category of the credit memo",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "reasons": {
+                    "type": "array",
+                    "description": "Why the credit was applied to the invoice",
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "notes": {
+              "type": "array",
+              "description": "Memoranda relevant to the invoice",
+              "items": {
+                "type": "string"
+              }
+            },
+            "shipments": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /api/refs/collection for this object.",
+                  "pattern": "^/api/refs/collection$"
+                },
+                "link": {
+                  "type": "string",
+                  "description": "API end point that points to a list of resources"
+                },
+                "ref_type": {
+                  "type": "string",
+                  "description": "The _object value of each individual element of the list that link points to."
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

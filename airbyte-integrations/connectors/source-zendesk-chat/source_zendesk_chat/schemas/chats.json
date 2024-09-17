@@ -73,7 +73,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "department_id": {
       "type": ["null", "integer"]
@@ -200,15 +200,50 @@
           "type": ["null", "integer"]
         },
         "avg": {
-          "type": ["null", "number", "integer"]
+          "type": ["null", "number"]
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "session": {
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "end_date": {
+          "format": "date-time",
+          "type": ["null", "string"]
+        },
+        "country_code": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "browser": {
+          "type": ["null", "string"]
+        },
+        "ip": {
+          "type": ["null", "string"]
+        },
+        "country_name": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "region": {
+          "type": ["null", "string"]
+        },
+        "platform": {
+          "type": ["null", "string"]
+        },
+        "user_agent": {
+          "type": ["null", "string"]
+        },
+        "start_date": {
+          "format": "date-time",
+          "type": ["null", "string"]
+        }
+      }
     },
     "started_by": {
       "type": ["null", "string"]
@@ -223,6 +258,10 @@
       "format": "date-time",
       "type": ["null", "string"]
     },
+    "update_timestamp": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
     "triggered": {
       "type": ["null", "boolean"]
     },
@@ -233,7 +272,7 @@
       "type": ["null", "string"]
     },
     "unread": {
-      "type": ["null", "boolean", "integer"]
+      "type": ["null", "boolean"]
     },
     "visitor": {
       "properties": {
@@ -254,7 +293,7 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "webpath": {
       "items": {
@@ -274,15 +313,100 @@
           }
         },
         "type": ["null", "object"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "type": ["null", "array"]
     },
     "message": {
       "type": ["null", "string"]
     },
+    "deleted": {
+      "type": ["null", "boolean"]
+    },
     "zendesk_ticket_id": {
       "type": ["null", "integer"]
+    },
+    "engagements": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "started_by": {
+            "type": ["null", "string"]
+          },
+          "agent_id": {
+            "type": ["null", "string"]
+          },
+          "agent_name": {
+            "type": ["null", "string"]
+          },
+          "agent_full_name": {
+            "type": ["null", "string"]
+          },
+          "department_id": {
+            "type": ["null", "integer"]
+          },
+          "assigned": {
+            "type": ["null", "boolean"]
+          },
+          "accepted": {
+            "type": ["null", "boolean"]
+          },
+          "rating": {
+            "type": ["null", "string"]
+          },
+          "comment": {
+            "type": ["null", "string"]
+          },
+          "skills_requested": {
+            "type": ["null", "array"]
+          },
+          "skills_fulfilled": {
+            "type": ["null", "boolean"]
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": ["null", "string"]
+          },
+          "duration": {
+            "type": ["null", "number"]
+          },
+          "response_time": {
+            "properties": {
+              "first": {
+                "type": ["null", "integer"]
+              },
+              "max": {
+                "type": ["null", "integer"]
+              },
+              "avg": {
+                "type": ["null", "number"]
+              }
+            },
+            "type": ["null", "object"],
+            "additionalProperties": true
+          },
+          "count": {
+            "properties": {
+              "total": {
+                "type": ["null", "integer"]
+              },
+              "agent": {
+                "type": ["null", "integer"]
+              },
+              "visitor": {
+                "type": ["null", "integer"]
+              }
+            },
+            "type": ["null", "object"],
+            "additionalProperties": true
+          }
+        },
+        "type": ["null", "object"],
+        "additionalProperties": true
+      },
+      "type": ["null", "array"]
     }
   }
 }

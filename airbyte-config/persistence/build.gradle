@@ -1,6 +1,0 @@
-dependencies {
-    implementation group: 'commons-io', name: 'commons-io', version: '2.7'
-
-    implementation project(':airbyte-config:models')
-    implementation project(":airbyte-json-validation")
-}

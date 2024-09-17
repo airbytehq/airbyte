@@ -1,8 +1,0 @@
-{
-  "sourceDefinitionId": "487b930d-7f6a-43ce-8bac-46e6b2de0a55",
-  "name": "Mongo DB",
-  "dockerRepository": "airbyte/source-mongodb",
-  "dockerImageTag": "0.3.1",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-mongodb",
-  "icon": "mongodb.svg"
-}

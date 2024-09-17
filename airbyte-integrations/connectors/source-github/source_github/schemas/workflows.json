@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft-04/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the workflow",
+      "type": "integer"
+    },
+    "node_id": {
+      "description": "Node ID of the workflow",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "Name of the workflow",
+      "type": ["null", "string"]
+    },
+    "path": {
+      "description": "Path to the workflow in the repository",
+      "type": ["null", "string"]
+    },
+    "state": {
+      "description": "Current state of the workflow",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "Date and time when the workflow was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Date and time when the workflow was last updated",
+      "type": "string",
+      "format": "date-time"
+    },
+    "url": {
+      "description": "URL to access detailed information about the workflow",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL to view the workflow on GitHub's web interface",
+      "type": ["null", "string"]
+    },
+    "badge_url": {
+      "description": "URL for the badge that represents the workflow status",
+      "type": ["null", "string"]
+    },
+    "repository": {
+      "description": "Repository information associated with the workflow",
+      "type": "string"
+    }
+  }
+}

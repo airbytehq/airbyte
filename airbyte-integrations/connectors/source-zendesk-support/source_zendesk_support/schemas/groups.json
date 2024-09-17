@@ -1,0 +1,43 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "description": "The name of the group.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "The date and time when the group was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "description": "The URL of the group.",
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "description": "The date and time when the group was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "default": {
+      "description": "Indicates if the group is set as the default group.",
+      "type": ["null", "boolean"]
+    },
+    "deleted": {
+      "description": "Indicates if the group has been deleted.",
+      "type": ["null", "boolean"]
+    },
+    "description": {
+      "description": "The description or details about the group.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the group.",
+      "type": ["null", "integer"]
+    },
+    "is_public": {
+      "description": "Indicates whether the group is public or private.",
+      "type": ["null", "boolean"]
+    }
+  }
+}

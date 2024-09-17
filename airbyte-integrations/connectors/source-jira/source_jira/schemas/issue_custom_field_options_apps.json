@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the custom field option within the select field's set of options.",
+      "type": "integer"
+    },
+    "value": {
+      "description": "The display name of the custom field option in Jira.",
+      "type": "string"
+    },
+    "properties": {
+      "description": "Arbitrary key-value pairs representing additional properties of the custom field option. These properties are searchable via JQL if defined in the descriptor.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "config": {
+      "description": "Configuration properties for the custom field option.",
+      "type": "object",
+      "properties": {
+        "scope": {
+          "description": "Defines the scope of the custom field option within different project contexts.",
+          "type": "object",
+          "properties": {
+            "projects": {
+              "description": "DEPRECATED - Reserved for future use.",
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "projects2": {
+              "description": "Configuration for the custom field option in specific projects, overriding global settings.",
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "The ID of the project to which the option's behavior applies.",
+                    "type": "integer"
+                  },
+                  "attributes": {
+                    "description": "Configuration attributes for the option in a project context. Defines behavior such as selectability and default value.",
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["notSelectable", "defaultValue"]
+                    }
+                  }
+                }
+              }
+            },
+            "global": {
+              "description": "Global configuration for the custom field option. If set, the option is available in all projects.",
+              "type": "object",
+              "properties": {
+                "attributes": {
+                  "description": "Configuration attributes for the option in the global context. Defines behavior such as selectability and default value.",
+                  "uniqueItems": true,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["notSelectable", "defaultValue"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "attributes": {
+          "description": "DEPRECATED - Reserved for additional configuration attributes if needed.",
+          "uniqueItems": true,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["notSelectable", "defaultValue"]
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details of the options for a select list issue field."
+}

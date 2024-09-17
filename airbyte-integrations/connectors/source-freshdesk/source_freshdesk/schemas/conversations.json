@@ -3,31 +3,31 @@
   "type": "object",
   "properties": {
     "body": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "body_text": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "incoming": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "private": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "user_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "support_email": {
       "type": ["string", "null"]
     },
     "source": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "category": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "to_emails": {
       "type": ["array", "null"]
@@ -42,16 +42,16 @@
       "type": ["array", "null"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "attachments": {
       "type": ["array", "null"]
     },
     "ticket_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "source_additional_info": {
       "type": ["object", "null"]

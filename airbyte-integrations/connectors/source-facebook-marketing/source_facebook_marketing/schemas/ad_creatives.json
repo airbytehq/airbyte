@@ -1,0 +1,1498 @@
+{
+  "properties": {
+    "body": {
+      "description": "The body text of the ad creative.",
+      "type": ["null", "string"]
+    },
+    "object_story_id": {
+      "description": "Story ID associated with the object.",
+      "type": ["null", "string"]
+    },
+    "image_url": {
+      "description": "URL of the main image used in the ad creative.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique identifier of the ad creative.",
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "description": "The unique identifier of the Facebook ad account associated with the ad creative.",
+      "type": ["null", "string"]
+    },
+    "actor_id": {
+      "description": "The unique identifier of the actor associated with the ad creative.",
+      "type": ["null", "string"]
+    },
+    "adlabels": {
+      "description": "A collection of ad labels associated with the ad creative.",
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "The unique identifier of the ad label.",
+            "type": "string"
+          },
+          "created_time": {
+            "description": "The timestamp when the ad label was created.",
+            "type": "string",
+            "format": "date-time"
+          },
+          "name": {
+            "description": "The name of the ad label.",
+            "type": "string"
+          },
+          "updated_time": {
+            "description": "The timestamp when the ad label was last updated.",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "applink_treatment": {
+      "description": "Specifies how the app link is treated.",
+      "type": ["null", "string"]
+    },
+    "asset_feed_spec": {
+      "description": "Specifies the asset customization rules, call to actions, and groups for the ad creative.",
+      "type": ["null", "object"],
+      "properties": {
+        "ad_formats": {
+          "description": "A collection of ad formats.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "additional_data": {
+          "description": "Additional data related to the asset feed.",
+          "type": ["null", "object"],
+          "properties": {
+            "brand_page_id": {
+              "description": "The unique identifier of the brand's Facebook page.",
+              "type": ["null", "string"]
+            },
+            "multi_share_end_card": {
+              "description": "Specifies if there is a multi-share end card.",
+              "type": ["null", "boolean"]
+            },
+            "is_click_to_message": {
+              "description": "Indicates whether the ad is a click-to-message ad.",
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "asset_customization_rules": {
+          "description": "Customization rules for assets within the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "Rules for customizing the ad asset.",
+            "type": ["null", "object"],
+            "properties": {
+              "body_label": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "call_to_action_label": {
+                "type": ["null", "string"]
+              },
+              "call_to_action_type_label": {
+                "type": ["null", "string"]
+              },
+              "caption_label": {
+                "type": ["null", "string"]
+              },
+              "customization_spec": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "age_max": {
+                    "type": ["null", "integer"]
+                  },
+                  "age_min": {
+                    "type": ["null", "integer"]
+                  },
+                  "publisher_platforms": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "instagram_positions": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "messenger_positions": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "facebook_positions": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "audience_network_positions": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              },
+              "description_label": {
+                "type": ["null", "string"]
+              },
+              "image_label": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "is_default": {
+                "type": ["null", "boolean"]
+              },
+              "link_url_label": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "priority": {
+                "type": ["null", "integer"]
+              },
+              "title_label": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "video_label": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "autotranslate": {
+          "description": "Specifies if autotranslate is enabled.",
+          "type": ["null", "string"]
+        },
+        "bodies": {
+          "description": "A collection of various bodies for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "text": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "call_to_action_types": {
+          "description": "A collection of call-to-action types.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "call_to_actions": {
+          "description": "Actions prompting the audience to take in response to the ad.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "A collection of call-to-action elements.",
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "type": {
+                "type": ["null", "string"]
+              },
+              "value": {
+                "type": ["null", "object"],
+                "properties": {
+                  "app_destination": {
+                    "type": ["null", "string"]
+                  },
+                  "app_link": {
+                    "type": ["null", "string"]
+                  },
+                  "application": {
+                    "type": ["null", "string"]
+                  },
+                  "event_id": {
+                    "type": ["null", "string"]
+                  },
+                  "lead_gen_form_id": {
+                    "type": ["null", "string"]
+                  },
+                  "link": {
+                    "type": ["null", "string"]
+                  },
+                  "link_caption": {
+                    "type": ["null", "string"]
+                  },
+                  "link_format": {
+                    "type": ["null", "string"]
+                  },
+                  "page": {
+                    "type": ["null", "string"]
+                  },
+                  "product_link": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "captions": {
+          "description": "A collection of captions for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "text": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "descriptions": {
+          "description": "A collection of descriptions for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "text": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "groups": {
+          "description": "Group information related to the asset feed.",
+          "type": ["null", "array"],
+          "items": {
+            "description": "Groups information associated with the ad creative.",
+            "type": ["null", "object"],
+            "properties": {
+              "body_label": {
+                "type": ["null", "string"]
+              },
+              "caption_label": {
+                "type": ["null", "string"]
+              },
+              "description_label": {
+                "type": ["null", "string"]
+              },
+              "image_label": {
+                "type": ["null", "string"]
+              },
+              "link_url_label": {
+                "type": ["null", "string"]
+              },
+              "title_label": {
+                "type": ["null", "string"]
+              },
+              "video_label": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "images": {
+          "description": "A collection of images for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "hash": {
+                "type": ["null", "string"]
+              },
+              "image_crops": {
+                "$ref": "ads_image_crops.json"
+              },
+              "url": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "link_urls": {
+          "description": "A collection of link URLs for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "carousel_see_more_url": {
+                "type": ["null", "string"]
+              },
+              "deeplink_url": {
+                "type": ["null", "string"]
+              },
+              "display_url": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              },
+              "website_url": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "optimization_type": {
+          "description": "The optimization type for the ad creative.",
+          "oneOf": [
+            {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            {
+              "type": ["null", "string"]
+            }
+          ]
+        },
+        "reasons_to_shop": {
+          "description": "Reasons to shop specified for the ad creative.",
+          "type": ["null", "boolean"]
+        },
+        "shops_bundle": {
+          "description": "Indicates if the ad creative is part of a shops bundle.",
+          "type": ["null", "boolean"]
+        },
+        "titles": {
+          "description": "A collection of titles for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "text": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        },
+        "videos": {
+          "description": "A collection of videos for the ad creative.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "adlabels": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "id": {
+                      "type": ["null", "string"]
+                    },
+                    "created_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    },
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "updated_time": {
+                      "type": ["null", "string"],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              },
+              "caption_ids": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              "thumbnail_hash": {
+                "type": ["null", "string"]
+              },
+              "thumbnail_url": {
+                "type": ["null", "string"]
+              },
+              "url_tags": {
+                "type": ["null", "string"]
+              },
+              "video_id": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "call_to_action_type": {
+      "description": "The type of call-to-action for the ad creative.",
+      "type": ["null", "string"]
+    },
+    "effective_instagram_story_id": {
+      "description": "The effective Instagram story ID associated with the ad creative.",
+      "type": ["null", "string"]
+    },
+    "effective_object_story_id": {
+      "description": "The effective object story ID for the ad creative.",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "Title of the ad creative.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "Name or title of the ad creative.",
+      "type": ["null", "string"]
+    },
+    "image_crops": {
+      "description": "Cropped versions of the main image used in the ad creative.",
+      "$ref": "ads_image_crops.json"
+    },
+    "instagram_actor_id": {
+      "description": "Instagram actor ID associated with the ad creative.",
+      "type": ["null", "string"]
+    },
+    "instagram_permalink_url": {
+      "description": "Permalink URL of the ad creative on Instagram.",
+      "type": ["null", "string"]
+    },
+    "instagram_story_id": {
+      "description": "ID of the story on Instagram.",
+      "type": ["null", "string"]
+    },
+    "link_og_id": {
+      "description": "Open Graph ID related to the link.",
+      "type": ["null", "string"]
+    },
+    "object_id": {
+      "description": "ID of the associated object.",
+      "type": ["null", "string"]
+    },
+    "object_story_spec": {
+      "description": "Specification for the object story associated with the ad creative.",
+      "properties": {
+        "page_id": {
+          "type": ["null", "string"]
+        },
+        "instagram_actor_id": {
+          "type": ["null", "string"]
+        },
+        "link_data": {
+          "properties": {
+            "additional_image_index": {
+              "type": ["null", "integer"]
+            },
+            "app_link_spec": {
+              "type": ["null", "object"],
+              "properties": {
+                "android": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "class": {
+                        "type": "string"
+                      },
+                      "package": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ios": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "app_store_id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ipad": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "app_store_id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "iphone": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "app_store_id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "attachment_style": {
+              "type": ["null", "string"]
+            },
+            "branded_content_sponsor_page_id": {
+              "type": ["null", "string"]
+            },
+            "branded_content_sponsor_relationship": {
+              "type": ["null", "string"]
+            },
+            "call_to_action": {
+              "properties": {
+                "value": {
+                  "properties": {
+                    "app_destination": {
+                      "type": ["null", "string"]
+                    },
+                    "app_link": {
+                      "type": ["null", "string"]
+                    },
+                    "application": {
+                      "type": ["null", "string"]
+                    },
+                    "event_id": {
+                      "type": ["null", "string"]
+                    },
+                    "lead_gen_form_id": {
+                      "type": ["null", "string"]
+                    },
+                    "link": {
+                      "type": ["null", "string"]
+                    },
+                    "link_caption": {
+                      "type": ["null", "string"]
+                    },
+                    "link_format": {
+                      "type": ["null", "string"]
+                    },
+                    "page": {
+                      "type": ["null", "string"]
+                    },
+                    "product_link": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "type": ["null", "object"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "caption": {
+              "type": ["null", "string"]
+            },
+            "child_attachments": {
+              "items": {
+                "properties": {
+                  "image_hash": {
+                    "type": ["null", "string"]
+                  },
+                  "link": {
+                    "type": ["null", "string"]
+                  },
+                  "call_to_action": {
+                    "properties": {
+                      "value": {
+                        "properties": {
+                          "app_destination": {
+                            "type": ["null", "string"]
+                          },
+                          "app_link": {
+                            "type": ["null", "string"]
+                          },
+                          "application": {
+                            "type": ["null", "string"]
+                          },
+                          "event_id": {
+                            "type": ["null", "string"]
+                          },
+                          "lead_gen_form_id": {
+                            "type": ["null", "string"]
+                          },
+                          "link": {
+                            "type": ["null", "string"]
+                          },
+                          "link_caption": {
+                            "type": ["null", "string"]
+                          },
+                          "link_format": {
+                            "type": ["null", "string"]
+                          },
+                          "page": {
+                            "type": ["null", "string"]
+                          },
+                          "product_link": {
+                            "type": ["null", "string"]
+                          }
+                        },
+                        "type": ["null", "object"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "type": ["null", "object"]
+                  },
+                  "caption": {
+                    "type": ["null", "string"]
+                  },
+                  "picture": {
+                    "type": ["null", "string"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "image_crops": {
+                    "$ref": "ads_image_crops.json"
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "static_card": {
+                    "type": ["null", "boolean"]
+                  },
+                  "video_id": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
+              "type": ["null", "array"]
+            },
+            "multi_share_optimized": {
+              "type": ["null", "boolean"]
+            },
+            "link": {
+              "type": ["null", "string"]
+            },
+            "image_crops": {
+              "$ref": "ads_image_crops.json"
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "event_id": {
+              "type": ["null", "string"]
+            },
+            "force_single_link": {
+              "type": ["null", "boolean"]
+            },
+            "multi_share_end_card": {
+              "type": ["null", "boolean"]
+            },
+            "message": {
+              "type": ["null", "string"]
+            },
+            "image_hash": {
+              "type": ["null", "string"]
+            },
+            "picture": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "offer_id": {
+              "type": ["null", "string"]
+            },
+            "page_welcome_message": {
+              "type": ["null", "string"]
+            },
+            "retailer_item_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "show_multiple_images": {
+              "type": ["null", "boolean"]
+            },
+            "use_flexible_image_aspect_ratio": {
+              "type": ["null", "boolean"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "photo_data": {
+          "type": ["null", "object"],
+          "properties": {
+            "branded_content_sponsor_page_id": {
+              "type": ["null", "string"]
+            },
+            "branded_content_sponsor_relationship": {
+              "type": ["null", "string"]
+            },
+            "caption": {
+              "type": "string"
+            },
+            "image_hash": {
+              "type": ["null", "string"]
+            },
+            "page_welcome_message": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "template_data": {
+          "properties": {
+            "additional_image_index": {
+              "type": ["null", "integer"]
+            },
+            "app_link_spec": {
+              "type": ["null", "object"],
+              "properties": {
+                "android": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "class": {
+                        "type": "string"
+                      },
+                      "package": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ios": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "app_store_id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "ipad": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "app_store_id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "iphone": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "app_name": {
+                        "type": "string"
+                      },
+                      "app_store_id": {
+                        "type": "string"
+                      },
+                      "url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "attachment_style": {
+              "type": ["null", "string"]
+            },
+            "branded_content_sponsor_page_id": {
+              "type": ["null", "string"]
+            },
+            "branded_content_sponsor_relationship": {
+              "type": ["null", "string"]
+            },
+            "call_to_action": {
+              "properties": {
+                "value": {
+                  "properties": {
+                    "app_destination": {
+                      "type": ["null", "string"]
+                    },
+                    "app_link": {
+                      "type": ["null", "string"]
+                    },
+                    "application": {
+                      "type": ["null", "string"]
+                    },
+                    "event_id": {
+                      "type": ["null", "string"]
+                    },
+                    "lead_gen_form_id": {
+                      "type": ["null", "string"]
+                    },
+                    "link": {
+                      "type": ["null", "string"]
+                    },
+                    "link_caption": {
+                      "type": ["null", "string"]
+                    },
+                    "link_format": {
+                      "type": ["null", "string"]
+                    },
+                    "page": {
+                      "type": ["null", "string"]
+                    },
+                    "product_link": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "type": ["null", "object"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "caption": {
+              "type": ["null", "string"]
+            },
+            "child_attachments": {
+              "items": {
+                "properties": {
+                  "image_hash": {
+                    "type": ["null", "string"]
+                  },
+                  "link": {
+                    "type": ["null", "string"]
+                  },
+                  "call_to_action": {
+                    "properties": {
+                      "value": {
+                        "properties": {
+                          "app_destination": {
+                            "type": ["null", "string"]
+                          },
+                          "app_link": {
+                            "type": ["null", "string"]
+                          },
+                          "application": {
+                            "type": ["null", "string"]
+                          },
+                          "event_id": {
+                            "type": ["null", "string"]
+                          },
+                          "lead_gen_form_id": {
+                            "type": ["null", "string"]
+                          },
+                          "link": {
+                            "type": ["null", "string"]
+                          },
+                          "link_caption": {
+                            "type": ["null", "string"]
+                          },
+                          "link_format": {
+                            "type": ["null", "string"]
+                          },
+                          "page": {
+                            "type": ["null", "string"]
+                          },
+                          "product_link": {
+                            "type": ["null", "string"]
+                          }
+                        },
+                        "type": ["null", "object"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "type": ["null", "object"]
+                  },
+                  "place_data": {
+                    "properties": {
+                      "location_source_id": {
+                        "type": ["null", "string"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "type": ["null", "object"]
+                  },
+                  "caption": {
+                    "type": ["null", "string"]
+                  },
+                  "picture": {
+                    "type": ["null", "string"]
+                  },
+                  "description": {
+                    "type": ["null", "string"]
+                  },
+                  "image_crops": {
+                    "$ref": "ads_image_crops.json"
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  },
+                  "static_card": {
+                    "type": ["null", "boolean"]
+                  },
+                  "video_id": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
+              "type": ["null", "array"]
+            },
+            "format_option": {
+              "type": ["null", "string"]
+            },
+            "multi_share_optimized": {
+              "type": ["null", "boolean"]
+            },
+            "link": {
+              "type": ["null", "string"]
+            },
+            "image_crops": {
+              "$ref": "ads_image_crops.json"
+            },
+            "description": {
+              "type": ["null", "string"]
+            },
+            "event_id": {
+              "type": ["null", "string"]
+            },
+            "force_single_link": {
+              "type": ["null", "boolean"]
+            },
+            "multi_share_end_card": {
+              "type": ["null", "boolean"]
+            },
+            "message": {
+              "type": ["null", "string"]
+            },
+            "image_hash": {
+              "type": ["null", "string"]
+            },
+            "picture": {
+              "type": ["null", "string"]
+            },
+            "name": {
+              "type": ["null", "string"]
+            },
+            "offer_id": {
+              "type": ["null", "string"]
+            },
+            "page_welcome_message": {
+              "type": ["null", "string"]
+            },
+            "retailer_item_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "show_multiple_images": {
+              "type": ["null", "boolean"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "text_data": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "video_data": {
+          "type": ["null", "object"],
+          "properties": {
+            "additional_image_index": {
+              "type": ["null", "integer"]
+            },
+            "branded_content_sponsor_page_id": {
+              "type": ["null", "string"]
+            },
+            "branded_content_sponsor_relationship": {
+              "type": ["null", "string"]
+            },
+            "call_to_action": {
+              "properties": {
+                "value": {
+                  "properties": {
+                    "app_destination": {
+                      "type": ["null", "string"]
+                    },
+                    "app_link": {
+                      "type": ["null", "string"]
+                    },
+                    "application": {
+                      "type": ["null", "string"]
+                    },
+                    "event_id": {
+                      "type": ["null", "string"]
+                    },
+                    "lead_gen_form_id": {
+                      "type": ["null", "string"]
+                    },
+                    "link": {
+                      "type": ["null", "string"]
+                    },
+                    "link_caption": {
+                      "type": ["null", "string"]
+                    },
+                    "link_format": {
+                      "type": ["null", "string"]
+                    },
+                    "page": {
+                      "type": ["null", "string"]
+                    },
+                    "product_link": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "type": ["null", "object"]
+                },
+                "type": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "image_hash": {
+              "type": ["null", "string"]
+            },
+            "image_url": {
+              "type": ["null", "string"]
+            },
+            "link_description": {
+              "type": ["null", "string"]
+            },
+            "message": {
+              "type": ["null", "string"]
+            },
+            "offer_id": {
+              "type": ["null", "string"]
+            },
+            "page_welcome_message": {
+              "type": ["null", "string"]
+            },
+            "retailer_item_ids": {
+              "type": ["null", "array"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "targeting": {
+              "$ref": "targeting.json"
+            },
+            "title": {
+              "type": ["null", "string"]
+            },
+            "video_id": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "object_type": {
+      "description": "Type of object associated with the ad creative.",
+      "type": ["null", "string"]
+    },
+    "object_url": {
+      "description": "URL of the associated object.",
+      "type": ["null", "string"]
+    },
+    "product_set_id": {
+      "description": "ID of the product set linked to the ad creative.",
+      "type": ["null", "string"]
+    },
+    "source_instagram_media_id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "description": "Status of the ad creative.",
+      "type": ["null", "string"]
+    },
+    "template_url": {
+      "description": "URL of the template used in the ad creative.",
+      "type": ["null", "string"]
+    },
+    "template_url_spec": {
+      "description": "Specification for the template URL.",
+      "type": ["null", "object"],
+      "properties": {
+        "android": {
+          "type": ["null", "object"],
+          "properties": {
+            "app_name": {
+              "type": "string"
+            },
+            "package": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "config": {
+          "type": ["null", "object"],
+          "properties": {
+            "app_id": {
+              "type": "string"
+            }
+          }
+        },
+        "ios": {
+          "type": ["null", "object"],
+          "properties": {
+            "app_name": {
+              "type": "string"
+            },
+            "app_store_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "ipad": {
+          "type": ["null", "object"],
+          "properties": {
+            "app_name": {
+              "type": "string"
+            },
+            "app_store_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "iphone": {
+          "type": ["null", "object"],
+          "properties": {
+            "app_name": {
+              "type": "string"
+            },
+            "app_store_id": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "web": {
+          "type": ["null", "object"],
+          "properties": {
+            "should_fallback": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        },
+        "windows_phone": {
+          "type": ["null", "object"],
+          "properties": {
+            "app_id": {
+              "type": "string"
+            },
+            "app_name": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "thumbnail_data_url": {
+      "description": "URL of the thumbnail data.",
+      "type": ["null", "string"]
+    },
+    "thumbnail_url": {
+      "description": "URL of the thumbnail image.",
+      "type": ["null", "string"]
+    },
+    "image_hash": {
+      "description": "Hash value representing the image used in the ad creative.",
+      "type": ["null", "string"]
+    },
+    "url_tags": {
+      "description": "Tags added to the URL of the ad creative.",
+      "type": ["null", "string"]
+    },
+    "video_id": {
+      "description": "ID of the video used in the ad creative.",
+      "type": ["null", "string"]
+    },
+    "link_url": {
+      "description": "URL associated with the ad creative.",
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}

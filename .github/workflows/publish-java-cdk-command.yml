@@ -1,0 +1,219 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+# Usage: This workflow can be invoked manually or by a slash command.
+#
+# To invoke via GitHub UI, go to Actions tab, select the workflow, and click "Run workflow".
+#
+# To invoke via slash command, use the following syntax in a comment on a PR:
+#    /publish-java-cdk                # Run with the defaults (dry-run=false, force=false)
+#    /publish-java-cdk dry-run=true   # Run in dry-run mode (no-op)
+#    /publish-java-cdk force=true     # Force-publish if needing to replace an already published version
+name: Publish Java CDK
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        type: choice
+        required: true
+        default: airbytehq/airbyte
+        options:
+          - airbytehq/airbyte
+      dry-run:
+        description: "Dry run (no-op)"
+        required: true
+        type: boolean
+        default: false
+      force:
+        description: "Force release (overwrite existing)"
+        required: true
+        type: boolean
+        default: false
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: true
+      comment-id:
+        description: "Optional comment-id of the slash command. Ignore if not applicable."
+        required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
+
+concurrency:
+  group: publish-java-cdk
+  cancel-in-progress: false
+
+env:
+  # Use the provided GITREF or default to the branch triggering the workflow.
+  GITREF: ${{ github.event.inputs.gitref || github.ref }}
+  FORCE: "${{ github.event_name == 'push' || github.event.inputs.force == null && 'false' ||  github.event.inputs.force }}"
+  DRY_RUN: "${{ github.event_name == 'push' && 'false' || github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
+  CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  publish-cdk:
+    name: Publish Java CDK
+    runs-on: connector-test-large
+    timeout-minutes: 30
+    steps:
+      - name: Link comment to Workflow Run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.GITREF }}
+
+      - name: Read Target Java CDK version
+        id: read-target-java-cdk-version
+        run: |
+          cdk_version=$(cat $CDK_VERSION_FILE_PATH | tr -d '\n')
+          echo "CDK_VERSION=$CDK_VERSION"
+          echo "FORCE=$FORCE"
+          echo "DRY_RUN=$DRY_RUN"
+          if [[ -z "$cdk_version" ]]; then
+            echo "Failed to retrieve CDK version from $CDK_VERSION_FILE_PATH"
+            exit 1
+          fi
+          echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Docker login
+        # Some tests use testcontainers which pull images from DockerHub.
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Build Java CDK
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: cdk-publish
+          read-only: ${{ !(env.DRY_RUN == 'false') }}
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkBuild
+
+      - name: Check for Existing Version
+        # we only check existing version if it's a manual trigger and FORCE is set to false
+        if: ${{ (env.FORCE != 'true') }}
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: cdk-publish
+          read-only: true
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
+
+      - name: Publish Poms and Jars to CloudRepo
+        if: ${{ env.DRY_RUN == 'false' }}
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        with:
+          job-id: cdk-publish
+          read-only: true
+          concurrent: true
+          execution-only-caches: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:java:airbyte-cdk:cdkPublish
+
+      - name: Add Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > :white_check_mark: Successfully published Java CDK ${{ env.CDK_VERSION }}!
+
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && failure()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > :x: Publish Java CDK ${{ env.CDK_VERSION }} failed!
+
+      - name: "Post failure to Slack channel"
+        if: ${{ env.DRY_RUN == 'false' && failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
+          payload: |
+            {
+                "text": "Error during `publish-cdk` while publishing Java CDK!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Error while publishing Java CDK!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: "Post success to Slack channel"
+        if: ${{ env.DRY_RUN == 'false' && !failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
+          payload: |
+            {
+                "text": "New `${{ env.CDK_VERSION }}` version of Java CDK was successfully published!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Java CDK ${{ env.CDK_VERSION }} published successfully!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}

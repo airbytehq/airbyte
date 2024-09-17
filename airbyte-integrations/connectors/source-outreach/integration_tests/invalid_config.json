@@ -1,0 +1,7 @@
+{
+  "client_id": "thisisclientid",
+  "client_secret": "thisisclientsecret",
+  "refresh_token": "thisisnotavalidrefreshtoken",
+  "redirect_uri": "http://localhost:8000/callback",
+  "start_date": "2020-11-16T00:00:00Z"
+}

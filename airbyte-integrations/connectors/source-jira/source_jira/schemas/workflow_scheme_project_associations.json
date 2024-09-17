@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "projectIds": {
+      "description": "The list of projects that use the workflow scheme.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "workflowScheme": {
+      "description": "The workflow scheme.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The ID of the workflow scheme.",
+          "type": "integer",
+          "readOnly": true
+        },
+        "name": {
+          "description": "The name of the workflow scheme. The name must be unique. The maximum length is 255 characters. Required when creating a workflow scheme.",
+          "type": "string"
+        },
+        "description": {
+          "description": "The description of the workflow scheme.",
+          "type": "string"
+        },
+        "defaultWorkflow": {
+          "description": "The name of the default workflow for the workflow scheme. The default workflow has *All Unassigned Issue Types* assigned to it in Jira. If `defaultWorkflow` is not specified when creating a workflow scheme, it is set to *Jira Workflow (jira)*.",
+          "type": "string"
+        },
+        "issueTypeMappings": {
+          "description": "The issue type to workflow mappings, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme.",
+          "type": "object",
+          "additionalProperties": true
+        },
+        "originalDefaultWorkflow": {
+          "description": "For draft workflow schemes, this property is the name of the default workflow for the original workflow scheme. The default workflow has *All Unassigned Issue Types* assigned to it in Jira.",
+          "type": "string",
+          "readOnly": true
+        },
+        "originalIssueTypeMappings": {
+          "description": "For draft workflow schemes, this property is the issue type to workflow mappings for the original workflow scheme, where each mapping is an issue type ID and workflow name pair. Note that an issue type can only be mapped to one workflow in a workflow scheme.",
+          "type": "object",
+          "additionalProperties": true,
+          "readOnly": true
+        },
+        "draft": {
+          "description": "Whether the workflow scheme is a draft or not.",
+          "type": "boolean",
+          "readOnly": true
+        },
+        "lastModifiedUser": {
+          "description": "The user that last modified the draft workflow scheme. A modification is a change to the issue type-project mappings only. This property does not apply to non-draft workflows.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "self": {
+              "description": "The URL of the user.",
+              "type": "string",
+              "readOnly": true
+            },
+            "key": {
+              "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+              "type": "string"
+            },
+            "accountId": {
+              "description": "The account ID of the user, which uniquely identifies the user across all Atlassian products. For example, *5b10ac8d82e05b22cc7d4ef5*. Required in requests.",
+              "maxLength": 128,
+              "type": "string"
+            },
+            "accountType": {
+              "description": "The user account type. Can take the following values:\n\n *  `atlassian` regular Atlassian user account\n *  `app` system account used for Connect applications and OAuth to represent external systems\n *  `customer` Jira Service Desk account representing an external service desk",
+              "type": "string",
+              "readOnly": true,
+              "enum": ["atlassian", "app", "customer", "unknown"]
+            },
+            "name": {
+              "description": "This property is no longer available and will be removed from the documentation soon. See the [deprecation notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/) for details.",
+              "type": "string"
+            },
+            "emailAddress": {
+              "description": "The email address of the user. Depending on the user's privacy setting, this may be returned as null.",
+              "type": "string",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The avatars of the user.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "16x16": {
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": "string"
+                },
+                "24x24": {
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": "string"
+                },
+                "32x32": {
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": "string"
+                },
+                "48x48": {
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": "string"
+                }
+              }
+            },
+            "displayName": {
+              "description": "The display name of the user. Depending on the user's privacy setting, this may return an alternative value.",
+              "type": "string",
+              "readOnly": true
+            },
+            "active": {
+              "description": "Whether the user is active.",
+              "type": "boolean",
+              "readOnly": true
+            },
+            "timeZone": {
+              "description": "The time zone specified in the user's profile. Depending on the user's privacy setting, this may be returned as null.",
+              "type": "string",
+              "readOnly": true
+            },
+            "locale": {
+              "description": "The locale of the user. Depending on the user's privacy setting, this may be returned as null.",
+              "type": "string",
+              "readOnly": true
+            },
+            "groups": {
+              "description": "The groups that the user belongs to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "integer",
+                  "xml": {
+                    "attribute": true
+                  }
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "description": "The name of group.",
+                        "type": "string"
+                      },
+                      "self": {
+                        "description": "The URL for these group details.",
+                        "type": "string",
+                        "readOnly": true
+                      }
+                    }
+                  }
+                },
+                "pagingCallback": {
+                  "type": "object"
+                },
+                "callback": {
+                  "type": "object"
+                },
+                "max-results": {
+                  "type": "integer",
+                  "xml": {
+                    "name": "max-results",
+                    "attribute": true
+                  }
+                }
+              }
+            },
+            "applicationRoles": {
+              "description": "The application roles the user is assigned to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "integer",
+                  "xml": {
+                    "attribute": true
+                  }
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "description": "The key of the application role.",
+                        "type": "string"
+                      },
+                      "groups": {
+                        "description": "The groups associated with the application role.",
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "name": {
+                        "description": "The display name of the application role.",
+                        "type": "string"
+                      },
+                      "defaultGroups": {
+                        "description": "The groups that are granted default access for this application role.",
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "selectedByDefault": {
+                        "description": "Determines whether this application role should be selected by default on user creation.",
+                        "type": "boolean"
+                      },
+                      "defined": {
+                        "description": "Deprecated.",
+                        "type": "boolean"
+                      },
+                      "numberOfSeats": {
+                        "description": "The maximum count of users on your license.",
+                        "type": "integer"
+                      },
+                      "remainingSeats": {
+                        "description": "The count of users remaining on your license.",
+                        "type": "integer"
+                      },
+                      "userCount": {
+                        "description": "The number of users counting against your license.",
+                        "type": "integer"
+                      },
+                      "userCountDescription": {
+                        "description": "The [type of users](https://confluence.atlassian.com/x/lRW3Ng) being counted against your license.",
+                        "type": "string"
+                      },
+                      "hasUnlimitedSeats": {
+                        "type": "boolean"
+                      },
+                      "platform": {
+                        "description": "Indicates if the application role belongs to Jira platform (`jira-core`).",
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                },
+                "pagingCallback": {
+                  "type": "object"
+                },
+                "callback": {
+                  "type": "object"
+                },
+                "max-results": {
+                  "type": "integer",
+                  "xml": {
+                    "name": "max-results",
+                    "attribute": true
+                  }
+                }
+              }
+            },
+            "expand": {
+              "description": "Expand options that include additional user details in the response.",
+              "type": "string",
+              "readOnly": true,
+              "xml": {
+                "attribute": true
+              }
+            }
+          }
+        },
+        "lastModified": {
+          "description": "The date-time that the draft workflow scheme was last modified. A modification is a change to the issue type-project mappings only. This property does not apply to non-draft workflows.",
+          "type": "string",
+          "readOnly": true
+        },
+        "self": {
+          "type": "string",
+          "readOnly": true
+        },
+        "updateDraftIfNeeded": {
+          "description": "Whether to create or update a draft workflow scheme when updating an active workflow scheme. An active workflow scheme is a workflow scheme that is used by at least one project. The following examples show how this property works:\n\n *  Update an active workflow scheme with `updateDraftIfNeeded` set to `true`: If a draft workflow scheme exists, it is updated. Otherwise, a draft workflow scheme is created.\n *  Update an active workflow scheme with `updateDraftIfNeeded` set to `false`: An error is returned, as active workflow schemes cannot be updated.\n *  Update an inactive workflow scheme with `updateDraftIfNeeded` set to `true`: The workflow scheme is updated, as inactive workflow schemes do not require drafts to update.\n\nDefaults to `false`.",
+          "type": "boolean"
+        },
+        "issueTypes": {
+          "description": "The issue types available in Jira.",
+          "type": "object",
+          "readOnly": true
+        }
+      }
+    }
+  }
+}

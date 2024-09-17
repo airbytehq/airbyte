@@ -1,0 +1,675 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "expand": {
+      "description": "Expand options that include additional notification scheme details in the response.",
+      "type": "string"
+    },
+    "id": {
+      "description": "The ID of the notification scheme.",
+      "type": "integer"
+    },
+    "self": {
+      "description": "",
+      "type": "string"
+    },
+    "name": {
+      "description": "The name of the notification scheme.",
+      "type": "string"
+    },
+    "description": {
+      "description": "The description of the notification scheme.",
+      "type": "string"
+    },
+    "notificationSchemeEvents": {
+      "description": "The notification events and associated recipients.",
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "The ID of the event. The event can be a Jira system event or a custom event.",
+                "type": "integer"
+              },
+              "name": {
+                "description": "The name of the event.",
+                "type": "string"
+              },
+              "description": {
+                "description": "The description of the event.",
+                "type": "string"
+              }
+            }
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "expand": {
+                  "description": "Expand options that include additional event notification details in the response.",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The ID of the notification.",
+                  "type": "integer"
+                },
+                "notificationType": {
+                  "description": "Identifies the recipients of the notification.",
+                  "type": "string",
+                  "enum": [
+                    "CurrentAssignee",
+                    "Reporter",
+                    "CurrentUser",
+                    "ProjectLead",
+                    "ComponentLead",
+                    "User",
+                    "Group",
+                    "ProjectRole",
+                    "EmailAddress",
+                    "AllWatchers",
+                    "UserCustomField",
+                    "GroupCustomField"
+                  ]
+                },
+                "parameter": {
+                  "description": "The value of the `notificationType`.",
+                  "type": "string"
+                },
+                "group": {
+                  "description": "The specified group.",
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "description": "The name of group.",
+                      "type": "string"
+                    },
+                    "self": {
+                      "description": "The URL for these group details.",
+                      "type": "string",
+                      "readOnly": true
+                    }
+                  }
+                },
+                "field": {
+                  "description": "The custom user or group field.",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "description": "The ID of the field.",
+                      "type": "string"
+                    },
+                    "key": {
+                      "description": "The key of the field.",
+                      "type": "string"
+                    },
+                    "name": {
+                      "description": "The name of the field.",
+                      "type": "string"
+                    },
+                    "custom": {
+                      "description": "Whether the field is a custom field.",
+                      "type": "boolean"
+                    },
+                    "orderable": {
+                      "description": "Whether the content of the field can be used to order lists.",
+                      "type": "boolean"
+                    },
+                    "navigable": {
+                      "description": "Whether the field can be used as a column on the issue navigator.",
+                      "type": "boolean"
+                    },
+                    "searchable": {
+                      "description": "Whether the content of the field can be searched.",
+                      "type": "boolean"
+                    },
+                    "clauseNames": {
+                      "description": "The names that can be used to reference the field in an advanced search.",
+                      "uniqueItems": true,
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "scope": {
+                      "description": "The scope of the field.",
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "description": "The type of scope.",
+                          "type": "string",
+                          "readOnly": true,
+                          "enum": ["PROJECT", "TEMPLATE"]
+                        },
+                        "project": {
+                          "description": "The project the item has scope in.",
+                          "readOnly": true,
+                          "type": "object",
+                          "properties": {
+                            "self": {
+                              "description": "The URL of the project details.",
+                              "type": "string",
+                              "readOnly": true
+                            },
+                            "id": {
+                              "description": "The ID of the project.",
+                              "type": "string"
+                            },
+                            "key": {
+                              "description": "The key of the project.",
+                              "type": "string",
+                              "readOnly": true
+                            },
+                            "name": {
+                              "description": "The name of the project.",
+                              "type": "string",
+                              "readOnly": true
+                            },
+                            "projectTypeKey": {
+                              "description": "The project type of the project.",
+                              "type": "string",
+                              "readOnly": true,
+                              "enum": ["software", "service_desk", "business"]
+                            },
+                            "simplified": {
+                              "description": "Whether or not the project is simplified.",
+                              "type": "boolean",
+                              "readOnly": true
+                            },
+                            "avatarUrls": {
+                              "description": "The URLs of the project's avatars.",
+                              "readOnly": true,
+                              "type": "object",
+                              "properties": {
+                                "16x16": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 16x16 pixel avatar."
+                                },
+                                "24x24": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 24x24 pixel avatar."
+                                },
+                                "32x32": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 32x32 pixel avatar."
+                                },
+                                "48x48": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 48x48 pixel avatar."
+                                }
+                              }
+                            },
+                            "projectCategory": {
+                              "description": "The category the project belongs to.",
+                              "readOnly": true,
+                              "type": "object",
+                              "properties": {
+                                "self": {
+                                  "description": "The URL of the project category.",
+                                  "type": "string",
+                                  "readOnly": true
+                                },
+                                "id": {
+                                  "description": "The ID of the project category.",
+                                  "type": "string",
+                                  "readOnly": true
+                                },
+                                "description": {
+                                  "description": "The name of the project category.",
+                                  "type": "string",
+                                  "readOnly": true
+                                },
+                                "name": {
+                                  "description": "The description of the project category.",
+                                  "type": "string",
+                                  "readOnly": true
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "schema": {
+                      "description": "The data schema for the field.",
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "description": "The data type of the field.",
+                          "type": "string",
+                          "readOnly": true
+                        },
+                        "items": {
+                          "description": "When the data type is an array, the name of the field items within the array.",
+                          "type": "string",
+                          "readOnly": true
+                        },
+                        "system": {
+                          "description": "If the field is a system field, the name of the field.",
+                          "type": "string",
+                          "readOnly": true
+                        },
+                        "custom": {
+                          "description": "If the field is a custom field, the URI of the field.",
+                          "type": "string",
+                          "readOnly": true
+                        },
+                        "customId": {
+                          "description": "If the field is a custom field, the custom ID of the field.",
+                          "type": "integer",
+                          "readOnly": true
+                        },
+                        "configuration": {
+                          "description": "If the field is a custom field, the configuration of the field.",
+                          "type": "object",
+                          "additionalProperties": true,
+                          "readOnly": true
+                        }
+                      }
+                    }
+                  }
+                },
+                "emailAddress": {
+                  "description": "The email address.",
+                  "type": "string"
+                },
+                "projectRole": {
+                  "description": "The specified project role.",
+                  "type": "object",
+                  "properties": {
+                    "self": {
+                      "description": "The URL the project role details.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "name": {
+                      "description": "The name of the project role.",
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "The ID of the project role.",
+                      "type": "integer",
+                      "readOnly": true
+                    },
+                    "description": {
+                      "description": "The description of the project role.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "actors": {
+                      "description": "The list of users who act in this role.",
+                      "type": "array",
+                      "readOnly": true,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "description": "The ID of the role actor.",
+                            "type": "integer",
+                            "readOnly": true
+                          },
+                          "displayName": {
+                            "description": "The display name of the role actor.",
+                            "type": "string",
+                            "readOnly": true
+                          },
+                          "type": {
+                            "description": "The type of role actor.",
+                            "type": "string",
+                            "readOnly": true,
+                            "enum": [
+                              "atlassian-group-role-actor",
+                              "atlassian-user-role-actor"
+                            ]
+                          },
+                          "name": {
+                            "description": "This property is no longer available and will be removed from the documentation soon.",
+                            "type": "string",
+                            "readOnly": true
+                          },
+                          "avatarUrl": {
+                            "description": "The avatar of the role actor.",
+                            "type": "string",
+                            "readOnly": true
+                          },
+                          "actorUser": {
+                            "readOnly": true,
+                            "type": "object",
+                            "properties": {
+                              "accountId": {
+                                "description": "The account ID of the user.",
+                                "maxLength": 128,
+                                "type": "string",
+                                "readOnly": true
+                              }
+                            }
+                          },
+                          "actorGroup": {
+                            "readOnly": true,
+                            "type": "object",
+                            "properties": {
+                              "displayName": {
+                                "description": "The display name of the group.",
+                                "type": "string"
+                              },
+                              "name": {
+                                "description": "The name of the group",
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "scope": {
+                      "description": "The scope of the role.",
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "The type of scope.",
+                          "readOnly": true,
+                          "enum": ["PROJECT", "TEMPLATE"]
+                        },
+                        "project": {
+                          "description": "The project the item has scope in.",
+                          "readOnly": true,
+                          "type": "object",
+                          "properties": {
+                            "self": {
+                              "type": "string",
+                              "description": "The URL of the project details.",
+                              "readOnly": true
+                            },
+                            "id": {
+                              "type": "string",
+                              "description": "The ID of the project."
+                            },
+                            "key": {
+                              "type": "string",
+                              "description": "The key of the project.",
+                              "readOnly": true
+                            },
+                            "name": {
+                              "type": "string",
+                              "description": "The name of the project.",
+                              "readOnly": true
+                            },
+                            "projectTypeKey": {
+                              "type": "string",
+                              "description": "The [project type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes) of the project.",
+                              "readOnly": true,
+                              "enum": ["software", "service_desk", "business"]
+                            },
+                            "simplified": {
+                              "type": "boolean",
+                              "description": "Whether or not the project is simplified.",
+                              "readOnly": true
+                            },
+                            "avatarUrls": {
+                              "description": "The URLs of the project's avatars.",
+                              "readOnly": true,
+                              "type": "object",
+                              "properties": {
+                                "16x16": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 16x16 pixel avatar."
+                                },
+                                "24x24": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 24x24 pixel avatar."
+                                },
+                                "32x32": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 32x32 pixel avatar."
+                                },
+                                "48x48": {
+                                  "type": "string",
+                                  "description": "The URL of the item's 48x48 pixel avatar."
+                                }
+                              }
+                            },
+                            "projectCategory": {
+                              "description": "The category the project belongs to.",
+                              "readOnly": true,
+                              "type": "object",
+                              "properties": {
+                                "self": {
+                                  "type": "string",
+                                  "description": "The URL of the project category.",
+                                  "readOnly": true
+                                },
+                                "id": {
+                                  "type": "string",
+                                  "description": "The ID of the project category.",
+                                  "readOnly": true
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "description": "The name of the project category.",
+                                  "readOnly": true
+                                },
+                                "name": {
+                                  "type": "string",
+                                  "description": "The description of the project category.",
+                                  "readOnly": true
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "translatedName": {
+                      "description": "The translated name of the project role.",
+                      "type": "string"
+                    },
+                    "currentUserRole": {
+                      "description": "Whether the calling user is part of this role.",
+                      "type": "boolean"
+                    },
+                    "admin": {
+                      "description": "Whether this role is the admin role for the project.",
+                      "type": "boolean",
+                      "readOnly": true
+                    },
+                    "roleConfigurable": {
+                      "description": "Whether the roles are configurable for this project.",
+                      "type": "boolean",
+                      "readOnly": true
+                    },
+                    "default": {
+                      "description": "Whether this role is the default role for the project",
+                      "type": "boolean",
+                      "readOnly": true
+                    }
+                  }
+                },
+                "user": {
+                  "description": "The specified user.",
+                  "type": "object",
+                  "properties": {
+                    "self": {
+                      "description": "The URL of the user.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "name": {
+                      "description": "This property is no longer available and will be removed from the documentation soon.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "key": {
+                      "description": "This property is no longer available and will be removed from the documentation soon.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "accountId": {
+                      "description": "The account ID of the user.",
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    "emailAddress": {
+                      "description": "The email address of the user.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "avatarUrls": {
+                      "description": "The avatars of the user.",
+                      "readOnly": true,
+                      "type": "object",
+                      "properties": {
+                        "16x16": {
+                          "type": "string",
+                          "description": "The URL of the item's 16x16 pixel avatar."
+                        },
+                        "24x24": {
+                          "type": "string",
+                          "description": "The URL of the item's 24x24 pixel avatar."
+                        },
+                        "32x32": {
+                          "type": "string",
+                          "description": "The URL of the item's 32x32 pixel avatar."
+                        },
+                        "48x48": {
+                          "type": "string",
+                          "description": "The URL of the item's 48x48 pixel avatar."
+                        }
+                      }
+                    },
+                    "displayName": {
+                      "description": "The display name of the user.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "active": {
+                      "description": "Whether the user is active.",
+                      "type": "boolean",
+                      "readOnly": true
+                    },
+                    "timeZone": {
+                      "description": "The time zone specified in the user's profile.",
+                      "type": "string",
+                      "readOnly": true
+                    },
+                    "accountType": {
+                      "description": "The type of account represented by this user.",
+                      "type": "string",
+                      "readOnly": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "scope": {
+      "description": "The scope of the notification scheme.",
+      "type": ["object", "null"],
+      "properties": {
+        "type": {
+          "description": "The type of scope.",
+          "type": "string",
+          "readOnly": true,
+          "enum": ["PROJECT", "TEMPLATE"]
+        },
+        "project": {
+          "description": "The project the item has scope in.",
+          "readOnly": true,
+          "type": "object",
+          "properties": {
+            "self": {
+              "description": "The URL of the project details.",
+              "type": "string",
+              "readOnly": true
+            },
+            "id": {
+              "description": "The ID of the project.",
+              "type": "string"
+            },
+            "key": {
+              "description": "The key of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "name": {
+              "description": "The name of the project.",
+              "type": "string",
+              "readOnly": true
+            },
+            "projectTypeKey": {
+              "description": "The project type of the project.",
+              "type": "string",
+              "readOnly": true,
+              "enum": ["software", "service_desk", "business"]
+            },
+            "simplified": {
+              "description": "Whether or not the project is simplified.",
+              "type": "boolean",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The URLs of the project's avatars.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "16x16": {
+                  "type": "string",
+                  "description": "The URL of the item's 16x16 pixel avatar."
+                },
+                "24x24": {
+                  "type": "string",
+                  "description": "The URL of the item's 24x24 pixel avatar."
+                },
+                "32x32": {
+                  "type": "string",
+                  "description": "The URL of the item's 32x32 pixel avatar."
+                },
+                "48x48": {
+                  "type": "string",
+                  "description": "The URL of the item's 48x48 pixel avatar."
+                }
+              }
+            },
+            "projectCategory": {
+              "description": "The category the project belongs to.",
+              "readOnly": true,
+              "type": "object",
+              "properties": {
+                "self": {
+                  "description": "The URL of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "id": {
+                  "description": "The ID of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "description": {
+                  "description": "The name of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                },
+                "name": {
+                  "description": "The description of the project category.",
+                  "type": "string",
+                  "readOnly": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about a notification scheme."
+}

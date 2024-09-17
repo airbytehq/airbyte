@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "login": {
+      "description": "Login username of the organization.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "Unique identifier of the organization.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Node ID of the organization.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL to the organization's API endpoint.",
+      "type": ["null", "string"]
+    },
+    "repos_url": {
+      "description": "URL to fetch repositories of the organization.",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "URL to fetch events related to the organization.",
+      "type": ["null", "string"]
+    },
+    "hooks_url": {
+      "description": "URL to manage webhooks for the organization.",
+      "type": ["null", "string"]
+    },
+    "issues_url": {
+      "description": "URL to fetch issues related to the organization.",
+      "type": ["null", "string"]
+    },
+    "members_url": {
+      "description": "URL to fetch members of the organization.",
+      "type": ["null", "string"]
+    },
+    "public_members_url": {
+      "description": "URL to fetch public members of the organization.",
+      "type": ["null", "string"]
+    },
+    "avatar_url": {
+      "description": "URL to the avatar image of the organization.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Description of the organization.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "Name of the organization.",
+      "type": ["null", "string"]
+    },
+    "company": {
+      "description": "Name of the company associated with the organization.",
+      "type": ["null", "string"]
+    },
+    "blog": {
+      "description": "URL to the blog of the organization.",
+      "type": ["null", "string"]
+    },
+    "location": {
+      "description": "Physical location of the organization.",
+      "type": ["null", "string"]
+    },
+    "email": {
+      "description": "Email address of the organization.",
+      "type": ["null", "string"]
+    },
+    "twitter_username": {
+      "description": "Twitter username of the organization.",
+      "type": ["null", "string"]
+    },
+    "is_verified": {
+      "description": "Indicates if the organization is verified.",
+      "type": ["null", "boolean"]
+    },
+    "has_organization_projects": {
+      "description": "Indicates if the organization has projects.",
+      "type": ["null", "boolean"]
+    },
+    "has_repository_projects": {
+      "description": "Indicates if the organization has projects tied to repositories.",
+      "type": ["null", "boolean"]
+    },
+    "public_repos": {
+      "description": "Number of public repositories owned by the organization.",
+      "type": ["null", "integer"]
+    },
+    "public_gists": {
+      "description": "Number of public gists created by the organization.",
+      "type": ["null", "integer"]
+    },
+    "followers": {
+      "description": "Number of followers the organization has.",
+      "type": ["null", "integer"]
+    },
+    "following": {
+      "description": "Number of accounts the organization is following.",
+      "type": ["null", "integer"]
+    },
+    "html_url": {
+      "description": "URL to the organization's profile page.",
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "description": "Timestamp indicating when the organization was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Timestamp indicating when the organization was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "archived_at": {
+      "description": "Timestamp indicating when the organization was archived.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "type": {
+      "description": "Type of the organization.",
+      "type": ["null", "string"]
+    },
+    "total_private_repos": {
+      "description": "Total number of private repositories owned by the organization.",
+      "type": ["null", "integer"]
+    },
+    "owned_private_repos": {
+      "description": "Number of private repositories owned by the organization.",
+      "type": ["null", "integer"]
+    },
+    "private_gists": {
+      "description": "Number of private gists created by the organization.",
+      "type": ["null", "integer"]
+    },
+    "disk_usage": {
+      "description": "Disk space used by the organization.",
+      "type": ["null", "integer"]
+    },
+    "collaborators": {
+      "description": "Number of collaborators the organization has.",
+      "type": ["null", "integer"]
+    },
+    "billing_email": {
+      "description": "Email address associated with the organization's billing.",
+      "type": ["null", "string"]
+    },
+    "default_repository_permission": {
+      "description": "Default permission level for new repositories.",
+      "type": ["null", "string"]
+    },
+    "members_can_create_repositories": {
+      "description": "Indicates if members can create repositories.",
+      "type": ["null", "boolean"]
+    },
+    "two_factor_requirement_enabled": {
+      "description": "Indicates if two-factor authentication is required for the organization.",
+      "type": ["null", "boolean"]
+    },
+    "members_allowed_repository_creation_type": {
+      "description": "Type of repositories members are allowed to create.",
+      "type": ["null", "string"]
+    },
+    "members_can_create_public_repositories": {
+      "description": "Indicates if members can create public repositories.",
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_private_repositories": {
+      "description": "Indicates if members can create private repositories.",
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_internal_repositories": {
+      "description": "Indicates if members can create internal repositories.",
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_pages": {
+      "description": "Indicates if members can create pages.",
+      "type": ["null", "boolean"]
+    },
+    "members_can_fork_private_repositories": {
+      "description": "Indicates if members can fork private repositories.",
+      "type": ["null", "boolean"]
+    },
+    "web_commit_signoff_required": {
+      "description": "Indicates if web commit signoff is required for the organization.",
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_public_pages": {
+      "description": "Indicates if members can create public pages.",
+      "type": ["null", "boolean"]
+    },
+    "members_can_create_private_pages": {
+      "description": "Indicates if members can create private pages.",
+      "type": ["null", "boolean"]
+    },
+    "plan": {
+      "description": "Information about the subscription plan of the organization.",
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "description": "Name of the organization's plan.",
+          "type": ["null", "string"]
+        },
+        "space": {
+          "description": "Space available in the organization's plan.",
+          "type": ["null", "integer"]
+        },
+        "private_repos": {
+          "description": "Number of private repositories allowed in the organization's plan.",
+          "type": ["null", "integer"]
+        },
+        "filled_seats": {
+          "description": "Number of filled seats in the organization's plan.",
+          "type": ["null", "integer"]
+        },
+        "seats": {
+          "description": "Total number of seats in the organization's plan.",
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "advanced_security_enabled_for_new_repositories": {
+      "description": "Indicates if advanced security features are enabled for new repositories within the organization.",
+      "type": ["null", "boolean"]
+    },
+    "dependabot_alerts_enabled_for_new_repositories": {
+      "description": "Indicates if dependabot alerts are enabled for new repositories within the organization.",
+      "type": ["null", "boolean"]
+    },
+    "dependabot_security_updates_enabled_for_new_repositories": {
+      "description": "Indicates if dependabot security updates are enabled for new repositories within the organization.",
+      "type": ["null", "boolean"]
+    },
+    "dependency_graph_enabled_for_new_repositories": {
+      "description": "Indicates if dependency graph is enabled for new repositories within the organization.",
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_enabled_for_new_repositories": {
+      "description": "Indicates if secret scanning is enabled for new repositories within the organization.",
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_push_protection_enabled_for_new_repositories": {
+      "description": "Indicates if secret scanning push protection is enabled for new repositories.",
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_push_protection_custom_link_enabled": {
+      "description": "Indicates if custom link for secret scanning push protection is enabled.",
+      "type": ["null", "boolean"]
+    },
+    "secret_scanning_push_protection_custom_link": {
+      "description": "Custom link for secret scanning push protection.",
+      "type": ["null", "string"]
+    }
+  }
+}

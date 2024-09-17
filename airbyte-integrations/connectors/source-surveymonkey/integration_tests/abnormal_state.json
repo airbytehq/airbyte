@@ -1,0 +1,251 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date_modified": "2023-01-19T10:02:01" },
+      "stream_descriptor": { "name": "surveys" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "survey_responses"
+      },
+      "stream_state": {
+        "states": [
+          {
+            "partition": {
+              "survey_id": "306079584"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:31"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785429"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:32"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785444"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:33"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785394"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:34"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785402"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:36"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785408"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:37"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784834"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:38"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785448"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:40"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784863"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:41"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784846"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:42"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784856"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:43"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785388"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:45"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785415"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:46"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "510388524"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:48"
+            }
+          }
+        ]
+      }
+    },
+    "data": {
+      "survey_responses": {
+        "states": [
+          {
+            "partition": {
+              "survey_id": "306079584"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:31"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785429"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:32"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785444"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:33"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785394"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:34"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785402"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:36"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785408"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:37"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784834"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:38"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785448"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:40"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784863"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:41"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784846"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:42"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307784856"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:43"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785388"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:45"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "307785415"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:46"
+            }
+          },
+          {
+            "partition": {
+              "survey_id": "510388524"
+            },
+            "cursor": {
+              "date_modified": "2025-02-27T12:39:48"
+            }
+          }
+        ]
+      }
+    }
+  }
+]

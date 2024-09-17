@@ -1,46 +1,59 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
-      "type": "string"
+      "description": "Unique identifier of the balance transaction",
+      "type": ["null", "string"]
     },
     "object": {
-      "type": "string"
+      "description": "Type of object, in this case, 'balance_transaction'",
+      "type": ["null", "string"]
     },
     "amount": {
-      "type": "integer"
+      "description": "The transaction amount in the smallest currency unit",
+      "type": ["null", "number"]
     },
     "created": {
-      "type": "integer"
+      "description": "The date and time when the transaction was created",
+      "type": ["null", "integer"]
     },
     "credit_note": {
-      "type": "string"
+      "description": "Credit note related to the balance transaction",
+      "type": ["null", "string"]
     },
     "currency": {
-      "type": "string"
+      "description": "The currency code of the transaction amount",
+      "type": ["null", "string"]
     },
     "customer": {
-      "type": "string"
+      "description": "ID of the customer associated with the transaction",
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "description": "Description of the balance transaction",
+      "type": ["null", "string"]
     },
     "ending_balance": {
-      "type": "integer"
+      "description": "The ending balance after the transaction",
+      "type": ["null", "number"]
     },
     "invoice": {
-      "type": "string"
+      "description": "ID of the invoice associated with the transaction",
+      "type": ["null", "string"]
     },
     "livemode": {
-      "type": "boolean"
+      "description": "Boolean indicating whether the balance transaction is in live mode",
+      "type": ["null", "boolean"]
     },
     "metadata": {
-      "type": "object",
+      "description": "Custom metadata attached to the balance transaction",
+      "type": ["null", "object"],
       "additionalProperties": true
     },
     "type": {
-      "type": "string"
+      "description": "Type of the balance transaction (e.g., charge, refund, adjustment)",
+      "type": ["null", "string"]
     }
   }
 }

@@ -1,0 +1,11 @@
+{
+  "aws_account_id": "111111111111",
+  "region": "us-east-1",
+  "credentials": {
+    "credentials_title": "IAM User",
+    "aws_access_key_id": "dummy",
+    "aws_secret_access_key": "dummykey"
+  },
+  "bucket_name": "my-bucket",
+  "partitioning": "NO PARTITIONING"
+}

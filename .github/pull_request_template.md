@@ -1,15 +1,28 @@
 ## What
-*Describe what the change is solving*
-*It helps to add screenshots if it affects the frontend.*
+<!--
+* Describe what the change is solving. Link all GitHub issues related to this change.
+-->
 
 ## How
-*Describe the solution*
+<!--
+* Describe how code changes achieve the solution.
+-->
 
-## Pre-merge Checklist
-- [ ] *Run integration tests*
-- [ ] *Publish Docker images*
+## Review guide
+<!--
+1. `x.py`
+2. `y.py`
+-->
 
-## Recommended reading order
-1. `test.java`
-1. `component.ts`
-1. the rest
+## User Impact
+<!--
+* What is the end result perceived by the user?
+* If there are negative side effects, please list them. 
+-->
+
+## Can this PR be safely reverted and rolled back?
+<!--
+* If unsure, leave it blank.
+-->
+- [ ] YES 💚
+- [ ] NO ❌

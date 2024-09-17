@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "distinct_id": {
+      "description": "The unique identifier for the user.",
+      "type": ["null", "string"]
+    },
+    "browser": {
+      "description": "The type of browser used by the user.",
+      "type": ["null", "string"]
+    },
+    "browser_version": {
+      "description": "The version of the browser used by the user.",
+      "type": ["null", "string"]
+    },
+    "city": {
+      "description": "The city where the user is located.",
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "description": "The country code of the user's location.",
+      "type": ["null", "string"]
+    },
+    "region": {
+      "description": "The region where the user is located.",
+      "type": ["null", "string"]
+    },
+    "timezone": {
+      "description": "The timezone of the user's location.",
+      "type": ["null", "string"]
+    },
+    "last_seen": {
+      "description": "The date and time when the user was last seen.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "email": {
+      "description": "The email address of the user.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The full name of the user.",
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "description": "The first name of the user.",
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "description": "The last name of the user.",
+      "type": ["null", "string"]
+    },
+    "id": {
+      "description": "The unique ID associated with the user.",
+      "type": ["null", "string"]
+    },
+    "unblocked": {
+      "description": "Indicates whether the user is unblocked or not.",
+      "type": ["null", "string"]
+    }
+  }
+}

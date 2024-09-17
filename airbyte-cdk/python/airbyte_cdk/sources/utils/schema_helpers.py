@@ -1,93 +1,112 @@
 #
-# MIT License
-#
-# Copyright (c) 2020 Airbyte
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import importlib
 import json
 import os
 import pkgutil
-from typing import Dict
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple
 
-import pkg_resources
-from jsonschema import RefResolver
+import jsonref
+from airbyte_cdk.models import ConnectorSpecification, FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from jsonschema import RefResolver, validate
+from jsonschema.exceptions import ValidationError
+from pydantic.v1 import BaseModel, Field
 
 
-class JsonSchemaResolver:
-    """Helper class to expand $ref items in json schema"""
+class JsonFileLoader:
+    """
+    Custom json file loader to resolve references to resources located in "shared" directory.
+    We need this for compatability with existing schemas cause all of them have references
+    pointing to shared_schema.json file instead of shared/shared_schema.json
+    """
 
-    def __init__(self, shared_schemas_path: str):
-        self._shared_refs = self._load_shared_schema_refs(shared_schemas_path)
+    def __init__(self, uri_base: str, shared: str):
+        self.shared = shared
+        self.uri_base = uri_base
 
-    @staticmethod
-    def _load_shared_schema_refs(shared_schemas_path: str):
-        shared_file_names = [f.name for f in os.scandir(shared_schemas_path) if f.is_file()]
-        shared_schema_refs = {}
-        for shared_file in shared_file_names:
-            with open(os.path.join(shared_schemas_path, shared_file)) as data_file:
-                shared_schema_refs[shared_file] = json.load(data_file)
+    def __call__(self, uri: str) -> Dict[str, Any]:
+        uri = uri.replace(self.uri_base, f"{self.uri_base}/{self.shared}/")
+        with open(uri) as f:
+            data = json.load(f)
+            if isinstance(data, dict):
+                return data
+            else:
+                raise ValueError(f"Expected to read a dictionary from {uri}. Got: {data}")
 
-        return shared_schema_refs
 
-    def _resolve_schema_references(self, schema: dict, resolver: RefResolver) -> dict:
+def resolve_ref_links(obj: Any) -> Any:
+    """
+    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+
+    :param obj - jsonschema object with ref field resolved.
+    :return JSON serializable object with references without external dependencies.
+    """
+    if isinstance(obj, jsonref.JsonRef):
+        obj = resolve_ref_links(obj.__subject__)
+        # Omit existing definitions for external resource since
+        # we dont need it anymore.
+        if isinstance(obj, dict):
+            obj.pop("definitions", None)
+            return obj
+        else:
+            raise ValueError(f"Expected obj to be a dict. Got {obj}")
+    elif isinstance(obj, dict):
+        return {k: resolve_ref_links(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [resolve_ref_links(item) for item in obj]
+    else:
+        return obj
+
+
+def _expand_refs(schema: Any, ref_resolver: Optional[RefResolver] = None) -> None:
+    """Internal function to iterate over schema and replace all occurrences of $ref with their definitions. Recursive.
+
+    :param schema: schema that will be patched
+    :param ref_resolver: resolver to get definition from $ref, if None pass it will be instantiated
+    """
+    ref_resolver = ref_resolver or RefResolver.from_schema(schema)
+
+    if isinstance(schema, MutableMapping):
         if "$ref" in schema:
-            reference_path = schema.pop("$ref", None)
-            resolved = resolver.resolve(reference_path)[1]
-            schema.update(resolved)
-            return self._resolve_schema_references(schema, resolver)
+            ref_url = schema.pop("$ref")
+            _, definition = ref_resolver.resolve(ref_url)
+            _expand_refs(definition, ref_resolver=ref_resolver)  # expand refs in definitions as well
+            schema.update(definition)
+        else:
+            for key, value in schema.items():
+                _expand_refs(value, ref_resolver=ref_resolver)
+    elif isinstance(schema, List):
+        for value in schema:
+            _expand_refs(value, ref_resolver=ref_resolver)
 
-        if "properties" in schema:
-            for k, val in schema["properties"].items():
-                schema["properties"][k] = self._resolve_schema_references(val, resolver)
 
-        if "patternProperties" in schema:
-            for k, val in schema["patternProperties"].items():
-                schema["patternProperties"][k] = self._resolve_schema_references(val, resolver)
+def expand_refs(schema: Any) -> None:
+    """Iterate over schema and replace all occurrences of $ref with their definitions.
 
-        if "items" in schema:
-            schema["items"] = self._resolve_schema_references(schema["items"], resolver)
+    :param schema: schema that will be patched
+    """
+    _expand_refs(schema)
+    schema.pop("definitions", None)  # remove definitions created by $ref
 
-        if "anyOf" in schema:
-            for i, element in enumerate(schema["anyOf"]):
-                schema["anyOf"][i] = self._resolve_schema_references(element, resolver)
 
-        return schema
+def rename_key(schema: Any, old_key: str, new_key: str) -> None:
+    """Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive."
 
-    def resolve(self, schema: dict, refs: Dict[str, dict] = None) -> dict:
-        """Resolves and replaces json-schema $refs with the appropriate dict.
-        Recursively walks the given schema dict, converting every instance
-        of $ref in a 'properties' structure with a resolved dict.
-        This modifies the input schema and also returns it.
-        Arguments:
-            schema:
-                the schema dict
-            refs:
-                a dict of <string, dict> which forms a store of referenced schemata
-        Returns:
-            schema
-        """
-        refs = refs or {}
-        refs = {**self._shared_refs, **refs}
-        return self._resolve_schema_references(schema, RefResolver("", schema, store=refs))
+    :param schema: schema that will be patched
+    :param old_key: name of the key to replace
+    :param new_key: new name of the key
+    """
+    if not isinstance(schema, MutableMapping):
+        return
+
+    for key, value in schema.items():
+        rename_key(value, old_key, new_key)
+        if old_key in schema:
+            schema[new_key] = schema.pop(old_key)
 
 
 class ResourceSchemaLoader:
@@ -96,7 +115,7 @@ class ResourceSchemaLoader:
     def __init__(self, package_name: str):
         self.package_name = package_name
 
-    def get_schema(self, name: str) -> dict:
+    def get_schema(self, name: str) -> dict[str, Any]:
         """
         This method retrieves a JSON schema from the schemas/ folder.
 
@@ -115,12 +134,90 @@ class ResourceSchemaLoader:
             raise IOError(f"Cannot find file {schema_filename}")
         try:
             raw_schema = json.loads(raw_file)
-        except ValueError:
-            # TODO use proper logging
-            print(f"Invalid JSON file format for file {schema_filename}")
-            raise
+        except ValueError as err:
+            raise RuntimeError(f"Invalid JSON file format for file {schema_filename}") from err
 
-        shared_schemas_folder = pkg_resources.resource_filename(self.package_name, "schemas/shared/")
-        if os.path.exists(shared_schemas_folder):
-            return JsonSchemaResolver(shared_schemas_folder).resolve(raw_schema)
-        return raw_schema
+        return self._resolve_schema_references(raw_schema)
+
+    def _resolve_schema_references(self, raw_schema: dict[str, Any]) -> dict[str, Any]:
+        """
+        Resolve links to external references and move it to local "definitions" map.
+
+        :param raw_schema jsonschema to lookup for external links.
+        :return JSON serializable object with references without external dependencies.
+        """
+
+        package = importlib.import_module(self.package_name)
+        if package.__file__:
+            base = os.path.dirname(package.__file__) + "/"
+        else:
+            raise ValueError(f"Package {package} does not have a valid __file__ field")
+        resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, "schemas/shared"), base_uri=base)
+        resolved = resolve_ref_links(resolved)
+        if isinstance(resolved, dict):
+            return resolved
+        else:
+            raise ValueError(f"Expected resolved to be a dict. Got {resolved}")
+
+
+def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification) -> None:
+    """
+    Check config object against spec. In case of spec is invalid, throws
+    an exception with validation error description.
+
+    :param config - config loaded from file specified over command line
+    :param spec - spec object generated by connector
+    """
+    spec_schema = spec.connectionSpecification
+    try:
+        validate(instance=config, schema=spec_schema)
+    except ValidationError as validation_error:
+        raise AirbyteTracedException(
+            message="Config validation error: " + validation_error.message,
+            internal_message=validation_error.message,
+            failure_type=FailureType.config_error,
+        ) from None  # required to prevent logging config secrets from the ValidationError's stacktrace
+
+
+class InternalConfig(BaseModel):
+    KEYWORDS: ClassVar[set[str]] = {"_limit", "_page_size"}
+    limit: int = Field(None, alias="_limit")
+    page_size: int = Field(None, alias="_page_size")
+
+    def dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        kwargs["by_alias"] = True
+        kwargs["exclude_unset"] = True
+        return super().dict(*args, **kwargs)  # type: ignore[no-any-return]
+
+    def is_limit_reached(self, records_counter: int) -> bool:
+        """
+        Check if record count reached limit set by internal config.
+        :param records_counter - number of records already red
+        :return True if limit reached, False otherwise
+        """
+        if self.limit:
+            if records_counter >= self.limit:
+                return True
+        return False
+
+
+def split_config(config: Mapping[str, Any]) -> Tuple[dict[str, Any], InternalConfig]:
+    """
+    Break config map object into 2 instances: first is a dict with user defined
+    configuration and second is internal config that contains private keys for
+    acceptance test configuration.
+
+    :param
+     config - Dict object that has been loaded from config file.
+
+    :return tuple of user defined config dict with filtered out internal
+    parameters and connector acceptance test internal config object.
+    """
+    main_config = {}
+    internal_config = {}
+    for k, v in config.items():
+        if k in InternalConfig.KEYWORDS:
+            internal_config[k] = v
+        else:
+            main_config[k] = v
+    return main_config, InternalConfig.parse_obj(internal_config)

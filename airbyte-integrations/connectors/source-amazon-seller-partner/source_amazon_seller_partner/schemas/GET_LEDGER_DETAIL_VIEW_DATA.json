@@ -1,0 +1,75 @@
+{
+  "title": "Inventory Ledger Report - Detailed View",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "Date": {
+      "description": "Date of the transaction",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "FNSKU": {
+      "description": "Fulfillment Network Stock Keeping Unit",
+      "type": ["null", "string"]
+    },
+    "ASIN": {
+      "description": "Unique identifier for the Amazon Standard Identification Number",
+      "type": ["null", "string"]
+    },
+    "MSKU": {
+      "description": "Merchant Stock Keeping Unit",
+      "type": ["null", "string"]
+    },
+    "Title": {
+      "description": "Title of the product",
+      "type": ["null", "string"]
+    },
+    "Event Type": {
+      "description": "Type of event related to the transaction",
+      "type": ["null", "string"]
+    },
+    "Reference ID": {
+      "description": "Unique identifier associated with the transaction",
+      "type": ["null", "string"]
+    },
+    "Quantity": {
+      "description": "Amount of units involved in the transaction",
+      "type": ["null", "string"]
+    },
+    "Fulfillment Center": {
+      "description": "Location where the product is fulfilled",
+      "type": ["null", "string"]
+    },
+    "Disposition": {
+      "description": "Status or outcome of the transaction",
+      "type": ["null", "string"]
+    },
+    "Reason": {
+      "description": "Reason for any discrepancy or action taken",
+      "type": ["null", "string"]
+    },
+    "Country": {
+      "description": "Country of the transaction",
+      "type": ["null", "string"]
+    },
+    "Reconciled Quantity": {
+      "description": "Quantity after reconciliation process",
+      "type": ["null", "string"]
+    },
+    "Unreconciled Quantity": {
+      "description": "Quantity yet to be reconciled",
+      "type": ["null", "string"]
+    },
+    "Date and Time": {
+      "description": "Date and Time of the transaction",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dataEndTime": {
+      "description": "End time of the data collection period",
+      "type": ["null", "string"],
+      "format": "date"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+compileTestFixturesKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
+
+dependencies {
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
+    api project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations')
+
+    api 'com.google.cloud:google-cloud-storage:2.32.1'
+
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
+    testFixturesApi project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations')
+    testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-s3-destinations'))
+}

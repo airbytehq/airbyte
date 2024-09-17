@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
+    "assets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "created_at": { "type": ["null", "string"], "format": "date-time" },
+          "file_extension": { "type": ["null", "string"] },
+          "file_size": { "type": ["null", "integer"] },
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "original_geometry": { "type": ["null", "string"] },
+          "public_url": { "type": ["null", "string"] },
+          "uploaded_by": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": { "type": ["null", "string"] }
+            }
+          },
+          "url": { "type": ["null", "string"] },
+          "url_thumbnail": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "board": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "name": { "type": ["null", "string"] }
+      }
+    },
+    "column_values": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] },
+          "text": { "type": ["null", "string"] },
+          "type": { "type": ["null", "string"] },
+          "value": { "type": ["null", "string"] },
+          "display_value": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "creator_id": { "type": ["null", "string"] },
+    "group": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": { "type": ["null", "string"] }
+      }
+    },
+    "parent_item": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": { "type": ["null", "string"] }
+      }
+    },
+    "state": { "type": ["null", "string"] },
+    "subscribers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] }
+        }
+      }
+    },
+    "updated_at": { "type": ["null", "string"], "format": "date-time" },
+    "updated_at_int": { "type": ["null", "integer"] },
+    "updates": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "string"] }
+        }
+      }
+    }
+  }
+}

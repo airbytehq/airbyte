@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Repository where the issue is located.",
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier for the issue.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "Unique identifier for the issue node.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL to retrieve more details about the issue.",
+      "type": ["null", "string"]
+    },
+    "repository_url": {
+      "description": "URL to retrieve more details about the repository.",
+      "type": ["null", "string"]
+    },
+    "labels_url": {
+      "description": "URL to retrieve labels associated with the issue.",
+      "type": ["null", "string"]
+    },
+    "comments_url": {
+      "description": "URL to retrieve comments on the issue.",
+      "type": ["null", "string"]
+    },
+    "events_url": {
+      "description": "URL to retrieve events related to the issue.",
+      "type": ["null", "string"]
+    },
+    "html_url": {
+      "description": "URL to view the issue on GitHub.",
+      "type": ["null", "string"]
+    },
+    "number": {
+      "description": "Number of the issue.",
+      "type": ["null", "integer"]
+    },
+    "state": {
+      "description": "State of the issue (open/closed).",
+      "type": ["null", "string"]
+    },
+    "title": {
+      "description": "Title of the issue.",
+      "type": ["null", "string"]
+    },
+    "user": {
+      "description": "User who opened the issue.",
+      "$ref": "user.json"
+    },
+    "body": {
+      "description": "The content of the issue.",
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "description": "Identifier of the user who opened the issue.",
+      "type": ["null", "integer"]
+    },
+    "labels": {
+      "description": "List of labels attached to the issue.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "description": "Unique identifier for the label.",
+            "type": ["null", "integer"]
+          },
+          "node_id": {
+            "description": "Unique identifier for the label node.",
+            "type": ["null", "string"]
+          },
+          "url": {
+            "description": "URL to retrieve more details about the label.",
+            "type": ["null", "string"]
+          },
+          "name": {
+            "description": "Name of the label.",
+            "type": ["null", "string"]
+          },
+          "description": {
+            "description": "Description of the label.",
+            "type": ["null", "string"]
+          },
+          "color": {
+            "description": "Color of the label.",
+            "type": ["null", "string"]
+          },
+          "default": {
+            "description": "Flag indicating if the label is a default label.",
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "assignee": {
+      "description": "User assigned to the issue.",
+      "$ref": "user.json"
+    },
+    "assignees": {
+      "description": "List of users assigned to the issue.",
+      "type": ["null", "array"],
+      "items": {
+        "description": "List of users assigned to the issue.",
+        "$ref": "user.json"
+      }
+    },
+    "milestone": {
+      "description": "Details of the milestone associated with the issue.",
+      "type": ["null", "object"],
+      "properties": {
+        "url": {
+          "description": "URL to retrieve more details about the milestone.",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "URL to view the milestone on GitHub.",
+          "type": ["null", "string"]
+        },
+        "labels_url": {
+          "description": "URL to retrieve labels associated with the milestone.",
+          "type": ["null", "string"]
+        },
+        "id": {
+          "description": "Unique identifier for the milestone.",
+          "type": ["null", "integer"]
+        },
+        "node_id": {
+          "description": "Unique identifier for the milestone node.",
+          "type": ["null", "string"]
+        },
+        "number": {
+          "description": "Number of the milestone.",
+          "type": ["null", "integer"]
+        },
+        "state": {
+          "description": "State of the milestone (open/closed).",
+          "type": ["null", "string"]
+        },
+        "title": {
+          "description": "Title of the milestone.",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "Description of the milestone.",
+          "type": ["null", "string"]
+        },
+        "creator": {
+          "description": "User who created the milestone.",
+          "$ref": "user.json"
+        },
+        "open_issues": {
+          "description": "Number of open issues in the milestone.",
+          "type": ["null", "integer"]
+        },
+        "closed_issues": {
+          "description": "Number of closed issues in the milestone.",
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "description": "Date and time when the milestone was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "Date and time when the milestone was last updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "closed_at": {
+          "description": "Date and time when the milestone was closed.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "due_on": {
+          "description": "Date and time when the milestone is due.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "locked": {
+      "description": "Flag indicating if the issue is locked.",
+      "type": ["null", "boolean"]
+    },
+    "active_lock_reason": {
+      "description": "Reason for the active lock on the issue, if any.",
+      "type": ["null", "string"]
+    },
+    "comments": {
+      "description": "Number of comments on the issue.",
+      "type": ["null", "integer"]
+    },
+    "pull_request": {
+      "description": "Details of a linked pull request, if the issue is a pull request.",
+      "type": ["null", "object"],
+      "properties": {
+        "url": {
+          "description": "URL to retrieve more details about the pull request.",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "URL to view the pull request on GitHub.",
+          "type": ["null", "string"]
+        },
+        "diff_url": {
+          "description": "URL to view the diff of the pull request.",
+          "type": ["null", "string"]
+        },
+        "patch_url": {
+          "description": "URL to view the patch of the pull request.",
+          "type": ["null", "string"]
+        },
+        "merged_at": {
+          "description": "Date and time when the pull request was merged.",
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    },
+    "closed_at": {
+      "description": "Date and time when the issue was closed.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "description": "Date and time when the issue was created.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Date and time when the issue was last updated.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "author_association": {
+      "description": "The association of the author with the issue.",
+      "type": ["null", "string"]
+    },
+    "draft": {
+      "description": "Flag indicating if the issue is a draft.",
+      "type": ["null", "boolean"]
+    },
+    "reactions": {
+      "description": "Reactions to the issue.",
+      "$ref": "reactions.json"
+    },
+    "timeline_url": {
+      "description": "URL to retrieve the timeline of the issue.",
+      "type": ["null", "string"]
+    },
+    "performed_via_github_app": {
+      "description": "Information related to the GitHub App that performed actions on the issue.",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "Unique identifier for the GitHub app.",
+          "type": ["null", "integer"]
+        },
+        "slug": {
+          "description": "Slug of the GitHub app.",
+          "type": ["null", "string"]
+        },
+        "node_id": {
+          "description": "Unique identifier for the GitHub app node.",
+          "type": ["null", "string"]
+        },
+        "owner": {
+          "description": "User who owns the GitHub app.",
+          "$ref": "user.json"
+        },
+        "name": {
+          "description": "Name of the GitHub app.",
+          "type": ["null", "string"]
+        },
+        "description": {
+          "description": "Description of the GitHub app.",
+          "type": ["null", "string"]
+        },
+        "external_url": {
+          "description": "External URL associated with the GitHub app.",
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "description": "URL to view the GitHub app on GitHub.",
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "description": "Date and time when the GitHub app was created.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "description": "Date and time when the GitHub app was last updated.",
+          "type": "string",
+          "format": "date-time"
+        },
+        "permissions": {
+          "description": "Permissions granted to the GitHub App on the issue.",
+          "type": ["null", "object"],
+          "properties": {
+            "issues": {
+              "description": "Permissions related to issues for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "description": "Permissions related to metadata for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "pull_requests": {
+              "description": "Permissions related to pull requests for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "actions": {
+              "description": "Permissions related to actions for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "checks": {
+              "description": "Permissions related to checks for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "contents": {
+              "description": "Permissions related to contents for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "deployments": {
+              "description": "Permissions related to deployments for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "discussions": {
+              "description": "Permissions related to discussions for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "repository_projects": {
+              "description": "Permissions related to repository projects for the GitHub app.",
+              "type": ["null", "string"]
+            },
+            "statuses": {
+              "description": "Permissions related to statuses for the GitHub app.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "events": {
+          "description": "List of events performed by the GitHub App on the issue.",
+          "type": "array",
+          "items": {
+            "description": "List of events performed by the GitHub app.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "state_reason": {
+      "description": "Reason for the state of the issue.",
+      "type": ["null", "string"]
+    }
+  }
+}

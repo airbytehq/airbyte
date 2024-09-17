@@ -1,0 +1,73 @@
+{
+  "paging": {
+    "start": 0,
+    "count": 10,
+    "links": []
+  },
+  "elements": [
+    {
+      "documentFirstQuartileCompletions": 0,
+      "actionClicks": 0,
+      "comments": 0,
+      "costInUsd": "-2E-18",
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        },
+        "end": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        }
+      },
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
+      "commentLikes": 0,
+      "adUnitClicks": 0,
+      "companyPageClicks": 0,
+      "costInLocalCurrency": "-2E-18",
+      "documentThirdQuartileCompletions": 0,
+      "externalWebsiteConversions": 0,
+      "cardImpressions": 0,
+      "documentCompletions": 0,
+      "clicks": 0,
+      "cardClicks": 0,
+      "approximateUniqueImpressions": 0,
+      "documentMidpointCompletions": 0,
+      "downloadClicks": 0
+    },
+    {
+      "documentFirstQuartileCompletions": 0,
+      "actionClicks": 0,
+      "comments": 0,
+      "costInUsd": "100",
+      "dateRange": {
+        "start": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        },
+        "end": {
+          "month": 1,
+          "day": 2,
+          "year": 2023
+        }
+      },
+      "pivotValues": ["urn:li:sponsoredCreative:1"],
+      "commentLikes": 0,
+      "adUnitClicks": 0,
+      "companyPageClicks": 0,
+      "costInLocalCurrency": "100",
+      "documentThirdQuartileCompletions": 0,
+      "externalWebsiteConversions": 0,
+      "cardImpressions": 0,
+      "documentCompletions": 0,
+      "clicks": 106,
+      "cardClicks": 0,
+      "approximateUniqueImpressions": 17392,
+      "documentMidpointCompletions": 0,
+      "downloadClicks": 0
+    }
+  ]
+}

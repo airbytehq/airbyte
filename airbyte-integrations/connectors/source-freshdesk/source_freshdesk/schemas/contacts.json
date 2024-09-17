@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "active": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "address": {
       "type": ["string", "null"]
@@ -15,52 +15,52 @@
       "type": ["string", "null"]
     },
     "email": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "job_title": {
       "type": ["string", "null"]
     },
     "language": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "mobile": {
-      "type": ["string", "integer", "null"]
+      "type": ["string", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "phone": {
-      "type": ["string", "integer", "null"]
+      "type": ["string", "null"]
     },
     "time_zone": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "twitter_id": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": "object"
+      "type": ["object", "null"]
     },
     "facebook_id": {
       "type": ["integer", "null"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "csat_rating": {
       "type": ["integer", "null"]
     },
     "preferred_source": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "unique_external_id": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"]
     }
   }
 }

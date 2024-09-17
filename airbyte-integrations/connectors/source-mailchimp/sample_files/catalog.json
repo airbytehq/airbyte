@@ -792,6 +792,219 @@
       }
     },
     {
+      "name": "Automations",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "create_time",
+      "json_schema": {
+        "type": "object",
+        "title": "Automation",
+        "description": "A summary of an individual automation's settings and content.",
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "create_time": {
+            "type": ["null", "string"]
+          },
+          "start_time": {
+            "type": ["null", "string"]
+          },
+          "status": {
+            "type": ["null", "string"]
+          },
+          "emails_sent": {
+            "type": ["null", "number"]
+          },
+          "recipients": {
+            "type": ["null", "object"],
+            "properties": {
+              "list_id": {
+                "type": ["null", "string"]
+              },
+              "list_is_active": {
+                "type": ["null", "boolean"]
+              },
+              "list_name": {
+                "type": ["null", "string"]
+              },
+              "segment_opts": {
+                "type": ["null", "object"],
+                "properties": {
+                  "saved_segment_id": {
+                    "type": ["null", "number"]
+                  },
+                  "match": {
+                    "type": ["null", "string"]
+                  },
+                  "conditions": {
+                    "type": ["null", "array"],
+                    "items": {}
+                  }
+                }
+              },
+              "store_id": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "settings": {
+            "type": ["null", "object"],
+            "properties": {
+              "title": {
+                "type": ["null", "string"]
+              },
+              "from_name": {
+                "type": ["null", "string"]
+              },
+              "reply_to": {
+                "type": ["null", "string"]
+              },
+              "use_conversation": {
+                "type": ["null", "boolean"]
+              },
+              "to_name": {
+                "type": ["null", "string"]
+              },
+              "authenticate": {
+                "type": ["null", "boolean"]
+              },
+              "auto_footer": {
+                "type": ["null", "boolean"]
+              },
+              "inline_css": {
+                "type": ["null", "boolean"]
+              }
+            }
+          },
+          "tracking": {
+            "type": ["null", "object"],
+            "properties": {
+              "opens": {
+                "type": ["null", "boolean"]
+              },
+              "html_clicks": {
+                "type": ["null", "boolean"]
+              },
+              "text_clicks": {
+                "type": ["null", "boolean"]
+              },
+              "goal_tracking": {
+                "type": ["null", "boolean"]
+              },
+              "ecomm360": {
+                "type": ["null", "boolean"]
+              },
+              "google_analytics": {
+                "type": ["null", "string"]
+              },
+              "clicktale": {
+                "type": ["null", "string"]
+              },
+              "salesforce": {
+                "type": ["null", "object"],
+                "properties": {
+                  "campaign": {
+                    "type": ["null", "boolean"]
+                  },
+                  "notes": {
+                    "type": ["null", "boolean"]
+                  }
+                }
+              },
+              "capsule": {
+                "type": ["null", "object"],
+                "properties": {
+                  "notes": {
+                    "type": ["null", "boolean"]
+                  }
+                }
+              }
+            }
+          },
+          "trigger_settings": {
+            "type": ["null", "object"],
+            "properties": {
+              "workflow_type": {
+                "type": ["null", "string"]
+              },
+              "workflow_title": {
+                "type": ["null", "string"]
+              },
+              "runtime": {
+                "type": ["null", "object"],
+                "properties": {
+                  "days": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "string"]
+                    }
+                  },
+                  "hours": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "workflow_emails_count": {
+                "type": ["null", "number"]
+              }
+            }
+          },
+          "report_summary": {
+            "type": ["null", "object"],
+            "properties": {
+              "opens": {
+                "type": ["null", "number"]
+              },
+              "unique_opens": {
+                "type": ["null", "number"]
+              },
+              "open_rate": {
+                "type": ["null", "number"]
+              },
+              "clicks": {
+                "type": ["null", "number"]
+              },
+              "subscriber_clicks": {
+                "type": ["null", "number"]
+              },
+              "click_rate": {
+                "type": ["null", "number"]
+              }
+            }
+          },
+          "_links": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "rel": {
+                  "type": ["null", "string"]
+                },
+                "href": {
+                  "type": ["null", "string"]
+                },
+                "method": {
+                  "type": ["null", "string"]
+                },
+                "targetSchema": {
+                  "type": ["null", "string"]
+                },
+                "schema": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "Lists",
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,

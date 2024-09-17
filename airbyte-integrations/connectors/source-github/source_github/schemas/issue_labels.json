@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Information about the repository to which the label belongs.",
+      "type": "string"
+    },
+    "id": {
+      "description": "Unique identifier for the label.",
+      "type": ["null", "integer"]
+    },
+    "node_id": {
+      "description": "A unique identifier for the label at the GitHub API level.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL that provides direct access to the label resource.",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the label used for identification.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "Descriptive text providing additional information about the label.",
+      "type": ["null", "string"]
+    },
+    "color": {
+      "description": "The color associated with the label, typically used for visual representation.",
+      "type": ["null", "string"]
+    },
+    "default": {
+      "description": "Indicates if the label is the default label for the repository.",
+      "type": ["null", "boolean"]
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "key": {
+      "description": "The key of the project type.",
+      "type": "string",
+      "readOnly": true
+    },
+    "formattedKey": {
+      "description": "The formatted key of the project type.",
+      "type": "string",
+      "readOnly": true
+    },
+    "descriptionI18nKey": {
+      "description": "The key of the project type's description.",
+      "type": "string",
+      "readOnly": true
+    },
+    "icon": {
+      "description": "The icon of the project type.",
+      "type": "string",
+      "readOnly": true
+    },
+    "color": {
+      "description": "The color of the project type.",
+      "type": "string",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details about a project type."
+}

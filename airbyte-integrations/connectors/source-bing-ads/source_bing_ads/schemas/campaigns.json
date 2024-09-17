@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "description": "The unique identifier of the account associated with the campaign.",
+      "type": ["null", "integer"]
+    },
+    "CustomerId": {
+      "description": "The unique identifier of the customer associated with the campaign.",
+      "type": ["null", "integer"]
+    },
+    "AudienceAdsBidAdjustment": {
+      "description": "Bid adjustment value for audience targeting ads.",
+      "type": ["null", "number"]
+    },
+    "BiddingScheme": {
+      "description": "Details of the bidding scheme for the campaign",
+      "type": ["null", "object"],
+      "properties": {
+        "Type": {
+          "description": "The type of bidding strategy used for the campaign.",
+          "type": ["null", "string"]
+        },
+        "MaxCpc": {
+          "description": "Details of the maximum cost-per-click bid",
+          "type": ["null", "object"],
+          "properties": {
+            "Amount": {
+              "description": "The maximum cost-per-click bid for the campaign.",
+              "type": ["null", "number"]
+            }
+          }
+        }
+      }
+    },
+    "BudgetType": {
+      "description": "The type of budget (e.g., daily, monthly) for the campaign.",
+      "type": ["null", "string"]
+    },
+    "MultimediaAdsBidAdjustment": {
+      "description": "Bid adjustment value for multimedia ads.",
+      "type": ["null", "number"]
+    },
+    "DailyBudget": {
+      "description": "The daily budget amount set for the campaign.",
+      "type": ["null", "number"]
+    },
+    "ExperimentId": {
+      "description": "The identifier of the experiment linked to the campaign.",
+      "type": ["null", "number"]
+    },
+    "FinalUrlSuffix": {
+      "description": "The final URL suffix appended to campaign URLs.",
+      "type": ["null", "string"]
+    },
+    "ForwardCompatibilityMap": {
+      "description": "Forward compatibility map for potential future enhancements",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "description": "The key identifying a forward compatibility setting.",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The value associated with the forward compatibility setting.",
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "Id": {
+      "description": "The unique identifier of the campaign.",
+      "type": ["null", "number"]
+    },
+    "Name": {
+      "description": "The name of the campaign.",
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "description": "The status of the campaign (e.g., Active, Paused).",
+      "type": ["null", "string"]
+    },
+    "SubType": {
+      "description": "The subtype of the campaign, providing additional context.",
+      "type": ["null", "string"]
+    },
+    "TimeZone": {
+      "description": "The time zone setting for the campaign.",
+      "type": ["null", "string"]
+    },
+    "TrackingUrlTemplate": {
+      "description": "The tracking URL template used for the campaign.",
+      "type": ["null", "string"]
+    },
+    "UrlCustomParameters": {
+      "description": "Custom parameters for campaign URLs",
+      "type": ["null", "object"],
+      "properties": {
+        "Parameters": {
+          "description": "Specific URL parameters",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Key": {
+                "description": "The key parameter for URL customization.",
+                "type": ["null", "string"]
+              },
+              "Value": {
+                "description": "The value parameter for URL customization.",
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "CampaignType": {
+      "description": "The type of campaign (e.g., Search, Display, Video) being run.",
+      "type": ["null", "string"]
+    },
+    "Settings": {
+      "description": "Settings related to the campaign",
+      "type": ["null", "object"],
+      "properties": {
+        "Setting": {
+          "description": "Specific setting details",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "Type": {
+                "description": "The type of setting applied to the campaign.",
+                "type": ["null", "string"]
+              },
+              "Details": {
+                "description": "Specific details of the setting",
+                "type": ["null", "object"],
+                "properties": {
+                  "TargetSettingDetail": {
+                    "description": "Specific target setting details",
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "CriterionTypeGroup": {
+                          "description": "The group type for targeting.",
+                          "type": ["null", "string"]
+                        },
+                        "TargetAndBid": {
+                          "description": "Indicates whether targeting is set to 'Bid only' or 'Target and bid'.",
+                          "type": ["null", "boolean"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "BudgetId": {
+      "description": "The identifier of the budget associated with the campaign.",
+      "type": ["null", "number"]
+    },
+    "Languages": {
+      "description": "Languages targeted in the campaign",
+      "type": ["null", "object"],
+      "properties": {
+        "string": {
+          "description": "The languages targeted by the campaign.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "AdScheduleUseSearcherTimeZone": {
+      "description": "Indicates whether ad schedules should be based on the searcher's time zone.",
+      "type": ["null", "boolean"]
+    }
+  }
+}

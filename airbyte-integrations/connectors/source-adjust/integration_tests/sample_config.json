@@ -1,0 +1,8 @@
+{
+  "ingest_start": "2022-07-07",
+  "api_token": "token",
+  "metrics": ["installs", "clicks"],
+  "dimensions": ["app", "network"],
+  "additional_metrics": [],
+  "until_today": true
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "description": "The date of the annotation in ISO 8601 date-time format.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "project_id": {
+      "description": "The identifier of the project to which the annotation belongs.",
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "description": "The unique identifier of the annotation.",
+      "type": ["null", "integer"]
+    },
+    "description": {
+      "description": "The description or notes associated with the annotation.",
+      "type": ["null", "string"]
+    },
+    "user": {
+      "description": "Information about the user who created the annotation.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The unique identifier of the user.",
+          "type": ["null", "integer"]
+        },
+        "first_name": {
+          "description": "The first name of the user.",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "The last name of the user.",
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

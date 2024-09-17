@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "label": {
+      "description": "The label representing the data displayed in the issue navigator column.",
+      "type": "string"
+    },
+    "value": {
+      "description": "The actual value/data associated with the label in the issue navigator column.",
+      "type": "string"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Details of an issue navigator column item."
+}

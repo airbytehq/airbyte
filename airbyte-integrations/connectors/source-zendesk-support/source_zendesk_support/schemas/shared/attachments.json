@@ -1,0 +1,85 @@
+{
+  "type": ["null", "array"],
+  "items": {
+    "properties": {
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "size": {
+        "type": ["null", "integer"]
+      },
+      "url": {
+        "type": ["null", "string"]
+      },
+      "malware_scan_result": {
+        "type": ["null", "string"]
+      },
+      "inline": {
+        "type": ["null", "boolean"]
+      },
+      "deleted": {
+        "type": ["null", "boolean"]
+      },
+      "malware_access_override": {
+        "type": ["null", "boolean"]
+      },
+      "height": {
+        "type": ["null", "integer"]
+      },
+      "width": {
+        "type": ["null", "integer"]
+      },
+      "content_url": {
+        "type": ["null", "string"]
+      },
+      "mapped_content_url": {
+        "type": ["null", "string"]
+      },
+      "content_type": {
+        "type": ["null", "string"]
+      },
+      "file_name": {
+        "type": ["null", "string"]
+      },
+      "thumbnails": {
+        "items": {
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "size": {
+              "type": ["null", "integer"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "inline": {
+              "type": ["null", "boolean"]
+            },
+            "height": {
+              "type": ["null", "integer"]
+            },
+            "width": {
+              "type": ["null", "integer"]
+            },
+            "content_url": {
+              "type": ["null", "string"]
+            },
+            "mapped_content_url": {
+              "type": ["null", "string"]
+            },
+            "content_type": {
+              "type": ["null", "string"]
+            },
+            "file_name": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "type": ["null", "array"]
+      }
+    },
+    "type": ["null", "object"]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the brand.",
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "description": "Name of the brand.",
+      "type": ["null", "string"]
+    },
+    "logo": {
+      "description": "URL of the brand's logo.",
+      "type": ["null", "string"]
+    },
+    "brand_url": {
+      "description": "URL of the brand's website.",
+      "type": ["null", "string"]
+    },
+    "host_mapping": {
+      "description": "Mapping for the brand's host.",
+      "type": ["null", "string"]
+    },
+    "subdomain": {
+      "description": "Subdomain assigned to the brand.",
+      "type": ["null", "string"]
+    },
+    "url": {
+      "description": "URL of the brand's API endpoint.",
+      "type": ["null", "string"]
+    },
+    "ticket_form_ids": {
+      "description": "List of IDs for ticket forms associated with the brand.",
+      "type": ["null", "array"]
+    },
+    "signature_template": {
+      "description": "Template for the brand's signature.",
+      "type": ["null", "string"]
+    },
+    "has_help_center": {
+      "description": "Indicates whether the brand has a help center.",
+      "type": ["null", "boolean"]
+    },
+    "help_center_state": {
+      "description": "State of the help center for the brand.",
+      "type": ["null", "string"]
+    },
+    "active": {
+      "description": "Indicates whether the brand is currently active or not.",
+      "type": ["null", "boolean"]
+    },
+    "default": {
+      "description": "Indicates if the brand is the default brand.",
+      "type": ["null", "boolean"]
+    },
+    "is_deleted": {
+      "description": "Indicates if the brand has been deleted.",
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "description": "Timestamp of when the brand was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "Timestamp of when the brand was last updated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

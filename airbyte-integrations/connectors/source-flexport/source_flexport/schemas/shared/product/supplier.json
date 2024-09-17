@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /product/supplier for this object.",
+      "pattern": "^/product/supplier$"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "ref": {
+      "type": "string"
+    },
+    "country_of_origin": {
+      "type": ["null", "string"]
+    }
+  }
+}

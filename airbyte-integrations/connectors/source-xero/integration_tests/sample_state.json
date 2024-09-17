@@ -1,0 +1,36 @@
+{
+  "bank_transactions": {
+    "date": "2021-10-28T11:08:03+00:00"
+  },
+  "contacts": {
+    "date": "2021-10-30T10:47:59+00:00"
+  },
+  "credit_notes": {
+    "date": "2021-10-28T11:06:20+00:00"
+  },
+  "invoices": {
+    "date": "2021-10-28T16:36:42+00:00"
+  },
+  "manual_journals": {
+    "date": "2021-10-28T12:08:59+00:00"
+  },
+  "overpayments": {
+    "date": "2021-10-29T12:30:01+00:00"
+  },
+  "prepayments": {},
+  "purchase_orders": {},
+  "accounts": {
+    "date": "2021-10-18T11:51:45+00:00"
+  },
+  "bank_transfers": {
+    "date": "2021-10-28T07:28:42+00:00"
+  },
+  "employees": {},
+  "items": {},
+  "payments": {
+    "date": "2021-10-28T16:36:42+00:00"
+  },
+  "users": {
+    "date": "2021-08-30T09:53:59+00:00"
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "_type": {
+      "type": ["null", "string"]
+    },
+    "view": {
+      "type": ["null", "string"]
+    },
+    "total_emails_count_in_thread": {
+      "type": ["null", "integer"]
+    },
+    "updated_by_name": {
+      "type": ["null", "string"]
+    },
+    "assigned_to": {
+      "type": ["null", "string"]
+    },
+    "assigned_to_name": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "string"]
+    },
+    "contact_name": {
+      "type": ["null", "string"]
+    },
+    "is_complete": {
+      "type": ["null", "boolean"]
+    },
+    "created_by": {
+      "type": ["null", "string"]
+    },
+    "created_by_name": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"]
+    },
+    "email_id": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "lead_id": {
+      "type": ["null", "string"]
+    },
+    "lead_name": {
+      "type": ["null", "string"]
+    },
+    "object_id": {
+      "type": ["null", "string"]
+    },
+    "object_type": {
+      "type": ["null", "string"]
+    },
+    "organization_id": {
+      "type": ["null", "string"]
+    },
+    "subject": {
+      "type": ["null", "string"]
+    },
+    "body_preview": {
+      "type": ["null", "string"]
+    },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
+    "updated_by_name ": {
+      "type": ["null", "string"]
+    },
+    "total_emails_count_in_thread ": {
+      "type": ["null", "integer"]
+    }
+  }
+}

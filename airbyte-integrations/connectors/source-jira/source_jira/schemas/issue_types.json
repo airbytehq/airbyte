@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "description": "Details about an issue type.",
+  "properties": {
+    "avatarId": {
+      "description": "The ID of the issue type's avatar.",
+      "type": ["null", "integer"],
+      "readOnly": true
+    },
+    "description": {
+      "description": "The description of the issue type.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "entityId": {
+      "description": "Unique ID for next-gen projects.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "hierarchyLevel": {
+      "description": "Hierarchy level of the issue type.",
+      "type": ["null", "integer"],
+      "readOnly": true
+    },
+    "iconUrl": {
+      "description": "The URL of the issue type's avatar.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "id": {
+      "description": "The ID of the issue type.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "name": {
+      "description": "The name of the issue type.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "self": {
+      "description": "The URL of these issue type details.",
+      "type": ["null", "string"],
+      "readOnly": true
+    },
+    "subtask": {
+      "description": "The URL of these issue type details.",
+      "type": ["null", "boolean"],
+      "readOnly": true
+    },
+    "scope": {
+      "description": "Details of the next-gen projects the issue type is available in.",
+      "readOnly": true,
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "description": "The type of scope.",
+          "type": ["null", "string"],
+          "readOnly": true
+        },
+        "project": {
+          "description": "The project the item has scope in.",
+          "readOnly": true,
+          "type": ["null", "object"],
+          "properties": {
+            "self": {
+              "description": "The URL of the project details.",
+              "type": ["null", "string"],
+              "readOnly": true
+            },
+            "id": {
+              "description": "The ID of the project.",
+              "type": ["null", "string"]
+            },
+            "key": {
+              "description": "The key of the project.",
+              "type": ["null", "string"],
+              "readOnly": true
+            },
+            "name": {
+              "description": "The name of the project.",
+              "type": ["null", "string"],
+              "readOnly": true
+            },
+            "projectTypeKey": {
+              "description": "The project type of the project.",
+              "type": ["null", "string"],
+              "readOnly": true,
+              "enum": ["software", "service_desk", "business"]
+            },
+            "simplified": {
+              "description": "Whether or not the project is simplified.",
+              "type": "boolean",
+              "readOnly": true
+            },
+            "avatarUrls": {
+              "description": "The URLs of the project's avatars.",
+              "readOnly": true,
+              "type": ["null", "object"],
+              "properties": {
+                "16x16": {
+                  "description": "The URL of the item's 16x16 pixel avatar.",
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "description": "The URL of the item's 24x24 pixel avatar.",
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "description": "The URL of the item's 32x32 pixel avatar.",
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "description": "The URL of the item's 48x48 pixel avatar.",
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "projectCategory": {
+              "description": "The category the project belongs to.",
+              "readOnly": true,
+              "type": ["null", "object"],
+              "properties": {
+                "self": {
+                  "description": "The URL of the project category.",
+                  "type": ["null", "string"],
+                  "readOnly": true
+                },
+                "id": {
+                  "description": "The ID of the project category.",
+                  "type": ["null", "string"],
+                  "readOnly": true
+                },
+                "description": {
+                  "description": "The name of the project category.",
+                  "type": ["null", "string"],
+                  "readOnly": true
+                },
+                "name": {
+                  "description": "The description of the project category.",
+                  "type": ["null", "string"],
+                  "readOnly": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "untranslatedName": {
+      "description": "The untranslated name of the issue type.",
+      "type": ["null", "string"]
+    }
+  }
+}
