@@ -12,7 +12,7 @@ There are three parts to this:
   * Azure OpenAI 
   * Fake `random vectors with 1536 embedding dimensions`
   * OpenAI-compatible
-  * Coming soon: Hugging Face's `e5-base-v2`).
+  * Coming soon: Hugging Face's `e5-base-v2`.
 * Postgres Connection - where to store the vectors. This configures a vector store using Postgres tables having the `VECTOR` data type which is achieved installing pgvector.
 
 ## Prerequisites
