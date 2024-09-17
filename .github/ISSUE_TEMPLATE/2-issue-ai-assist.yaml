@@ -1,4 +1,4 @@
-name: :robot_face: [AI Assist] Report an issue using the AI Assist
+name: 🤖 [AI Assist] Report an issue using the AI Assist
 description: Use this template when you have a problem creating a connector using the AI Connector Assist.
 labels: [type/bug, area/connector-builder, needs-triage, ai-assist]
 body:
