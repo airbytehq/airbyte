@@ -71,13 +71,15 @@ def test_send_request(mocker, customers):
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient.get_service", return_value=MockGoogleAdsService())
     google_ads_client = GoogleAds(**SAMPLE_CONFIG)
     query = "Query"
-    page_size = 1000
+    # NOTE: page size removed from send request due to error (https://github.com/airbytehq/airbyte/pull/44095)
+    # page_size = 1000
     customer_id = next(iter(customers)).id
     response = list(google_ads_client.send_request(query, customer_id=customer_id))
 
     assert response[0].customer_id == customer_id
     assert response[0].query == query
-    assert response[0].page_size == page_size
+    # NOTE: page size removed from send request due to error (https://github.com/airbytehq/airbyte/pull/44095)
+    # assert response[0].page_size == page_size
 
 
 def test_get_fields_from_schema():
