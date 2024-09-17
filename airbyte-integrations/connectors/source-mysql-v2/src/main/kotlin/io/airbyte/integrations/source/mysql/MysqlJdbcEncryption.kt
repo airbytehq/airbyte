@@ -62,7 +62,6 @@ class MysqlJdbcEncryption(
         } catch (ex: Exception) {
             throw ConfigErrorException("Failed to create keystore for CA certificate.", ex)
         }
-        throw ConfigErrorException("Failed to create keystore for CA certificate.")
     }
 
     private fun prepareClientCertificateKeyStore(): Pair<URI, String>? {
