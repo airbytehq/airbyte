@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.read.JdbcNonResumablePartitionReader
 import io.airbyte.cdk.read.JdbcPartition
-import io.airbyte.cdk.read.JdbcPartitionReader
 import io.airbyte.cdk.read.JdbcResumablePartitionReader
 import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.PartitionReader

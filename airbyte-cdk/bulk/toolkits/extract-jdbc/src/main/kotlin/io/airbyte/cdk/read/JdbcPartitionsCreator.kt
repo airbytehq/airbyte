@@ -157,17 +157,21 @@ class JdbcSequentialPartitionsCreator<
             log.warn {
                 "Table cannot be read by sequential partition reader because it cannot be split."
             }
-            return listOf(when (partitionFactory.sharedState.configuration.global) {
-                true -> CdcAwareJdbcNonResumablePartitionReader(partition)
-                false -> JdbcNonResumablePartitionReader(partition)
-            })
+            return listOf(
+                when (partitionFactory.sharedState.configuration.global) {
+                    true -> CdcAwareJdbcNonResumablePartitionReader(partition)
+                    false -> JdbcNonResumablePartitionReader(partition)
+                }
+            )
         }
         // Happy path.
         log.info { "Table will be read by sequential partition reader(s)." }
-        return listOf(when (partitionFactory.sharedState.configuration.global) {
-            true -> CdcAwareJdbcResumablePartitionReader(partition)
-            false -> JdbcResumablePartitionReader(partition)
-        })
+        return listOf(
+            when (partitionFactory.sharedState.configuration.global) {
+                true -> CdcAwareJdbcResumablePartitionReader(partition)
+                false -> JdbcResumablePartitionReader(partition)
+            }
+        )
     }
 }
 
@@ -197,10 +201,12 @@ class JdbcConcurrentPartitionsCreator<
                 "Table cannot be read by concurrent partition readers because it cannot be sampled."
             }
             // TODO: adaptive fetchSize computation?
-            return listOf(when (partitionFactory.sharedState.configuration.global) {
-                true -> CdcAwareJdbcNonResumablePartitionReader(partition)
-                false -> JdbcNonResumablePartitionReader(partition)
-            })
+            return listOf(
+                when (partitionFactory.sharedState.configuration.global) {
+                    true -> CdcAwareJdbcNonResumablePartitionReader(partition)
+                    false -> JdbcNonResumablePartitionReader(partition)
+                }
+            )
         }
         // Sample the table for partition split boundaries and for record byte sizes.
         val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
@@ -222,10 +228,12 @@ class JdbcConcurrentPartitionsCreator<
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
-            return listOf(when (partitionFactory.sharedState.configuration.global) {
-                true -> CdcAwareJdbcNonResumablePartitionReader(partition)
-                false -> JdbcNonResumablePartitionReader(partition)
-            })
+            return listOf(
+                when (partitionFactory.sharedState.configuration.global) {
+                    true -> CdcAwareJdbcNonResumablePartitionReader(partition)
+                    false -> JdbcNonResumablePartitionReader(partition)
+                }
+            )
         }
         // Happy path.
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
@@ -250,9 +258,11 @@ class JdbcConcurrentPartitionsCreator<
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         val isGlobal = partitionFactory.sharedState.configuration.global
-        return partitions.map { when (isGlobal) {
-            true -> CdcAwareJdbcNonResumablePartitionReader(it)
-            false -> JdbcNonResumablePartitionReader(it)
-        } }
+        return partitions.map {
+            when (isGlobal) {
+                true -> CdcAwareJdbcNonResumablePartitionReader(it)
+                false -> JdbcNonResumablePartitionReader(it)
+            }
+        }
     }
 }

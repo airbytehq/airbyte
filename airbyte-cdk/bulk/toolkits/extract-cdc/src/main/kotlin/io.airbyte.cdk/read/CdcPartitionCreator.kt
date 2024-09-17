@@ -10,9 +10,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 private val ran: AtomicBoolean = AtomicBoolean(false)
+
 class CdcPartitionCreator<
     A : CdcSharedState,
-    >(val sharedState: A, cdcContext: CdcContext, opaqueStateValue: OpaqueStateValue?) : PartitionsCreator {
+>(val sharedState: A, cdcContext: CdcContext, opaqueStateValue: OpaqueStateValue?) :
+    PartitionsCreator {
     private val acquiredResources = AtomicReference<AcquiredResources>()
     val cdcContext = cdcContext
     val opaqueStateValue = opaqueStateValue

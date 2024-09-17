@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.cdc.CdcPartitionReader
 import io.airbyte.cdk.command.SourceConfiguration
-import io.airbyte.cdk.read.CdcPartitionCreator
 import kotlinx.coroutines.sync.Semaphore
 
 class DefaultCdcSharedState(override val configuration: SourceConfiguration) : CdcSharedState {

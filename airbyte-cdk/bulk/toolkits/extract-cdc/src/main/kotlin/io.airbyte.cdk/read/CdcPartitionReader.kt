@@ -4,24 +4,20 @@
 
 package io.airbyte.cdk.cdc
 
-import com.fasterxml.jackson.databind.node.NullNode
-import io.airbyte.cdk.read.CdcPartition
-import io.airbyte.cdk.read.CdcSharedState
-import io.airbyte.cdk.read.DebeziumRecord
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CdcContext
 import io.airbyte.cdk.read.DebeziumRecord
-import io.airbyte.cdk.read.JdbcPartitionReader.AcquiredResources
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
 import io.airbyte.cdk.read.cdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.commons.json.Jsons
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
+import io.debezium.engine.format.Json
+import io.debezium.engine.spi.OffsetCommitPolicy
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineScope
@@ -58,10 +54,8 @@ class CdcPartitionReader(
     }
 
     override suspend fun run() {
-/*
         engine = createDebeziumEngine()
         engine?.run()
-*/
         cdcAware.cdcRan.set(true)
     }
 
