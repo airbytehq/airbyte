@@ -1,0 +1,2947 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - launchpads
+
+definitions:
+  streams:
+    launchpads:
+      type: DeclarativeStream
+      name: launchpads
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/launchpads
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/launchpads"
+    flows:
+      type: DeclarativeStream
+      name: flows
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/flows
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/flows"
+    banners:
+      type: DeclarativeStream
+      name: banners
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/banners
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/banners"
+    checklists:
+      type: DeclarativeStream
+      name: checklists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/checklists
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: created_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%ms"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/checklists"
+    pins:
+      type: DeclarativeStream
+      name: pins
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/pins
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%ms"
+        datetime_format: "%ms"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pins"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/tags
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: accounts/{{ config.account_id }}/segments
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.appcues.com/v2/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/launchpads"
+  - $ref: "#/definitions/streams/flows"
+  - $ref: "#/definitions/streams/banners"
+  - $ref: "#/definitions/streams/checklists"
+  - $ref: "#/definitions/streams/pins"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/segments"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - account_id
+      - start_date
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      account_id:
+        type: string
+        description: >-
+          Account ID of Appcues found in account settings page
+          (https://studio.appcues.com/settings/account)
+        order: 2
+        title: Account ID
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    launchpads: true
+    flows: true
+    banners: true
+    checklists: true
+    pins: true
+    tags: true
+    segments: true
+  testedStreams:
+    launchpads:
+      hasRecords: true
+      streamHash: 69bd82f733e305e79e3e73a0131c601cb665c41c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    flows:
+      hasRecords: true
+      streamHash: b6e871292a2d6513bc6bcb6bc2c1c2dbe65dda2f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    banners:
+      hasRecords: true
+      streamHash: 1046941a131d2bfd5a78fd0a33f6aa21e599227c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    checklists:
+      streamHash: 6ad1d07a2d2c00b56e25ccb29edf5bdf7ad3becb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    pins:
+      streamHash: 4da02f724263ab0b5916311a9493db7d7f7ed5da
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: d141967512fd19dfad6c8c0dd7a2fef7e50e5364
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    segments:
+      streamHash: 4e59548018fd5c1b7053a9322427e13779ef8ed0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  launchpads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      contains_localized_blocks:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      locked_for_localization:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      steps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            actions:
+              type:
+                - object
+                - "null"
+              properties:
+                appcues-flows-list-83ab2fbc-6178-4115-840b-b62c9335922d:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      config:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          interactionData:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              blockType:
+                                type:
+                                  - string
+                                  - "null"
+                          interactionType:
+                            type:
+                              - string
+                              - "null"
+                      mapEventToConfig:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          detail.id:
+                            type:
+                              - string
+                              - "null"
+                      "on":
+                        type:
+                          - string
+                          - "null"
+                launchpad-button:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      config:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          actions:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                type:
+                                  type:
+                                    - string
+                                    - "null"
+                                config:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    interactionData:
+                                      type:
+                                        - object
+                                        - "null"
+                                    interactionType:
+                                      type:
+                                        - string
+                                        - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                          animations:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                duration:
+                                  type:
+                                    - number
+                                    - "null"
+                                fill:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                                keyframes:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      animationTimingFunction:
+                                        type:
+                                          - string
+                                          - "null"
+                                      bottom:
+                                        type:
+                                          - string
+                                          - "null"
+                                      offset:
+                                        type:
+                                          - number
+                                          - "null"
+                                      opacity:
+                                        type:
+                                          - number
+                                          - "null"
+                                      right:
+                                        type:
+                                          - string
+                                          - "null"
+                                      transform:
+                                        type:
+                                          - string
+                                          - "null"
+                                      transformOrigin:
+                                        type:
+                                          - string
+                                          - "null"
+                                      visibility:
+                                        type:
+                                          - string
+                                          - "null"
+                          target:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              selector:
+                                type:
+                                  - string
+                                  - "null"
+                          toggleGroupId:
+                            type:
+                              - string
+                              - "null"
+                      "on":
+                        type:
+                          - string
+                          - "null"
+                launchpad-close-button:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      config:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          animations:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                duration:
+                                  type:
+                                    - number
+                                    - "null"
+                                fill:
+                                  type:
+                                    - string
+                                    - "null"
+                                id:
+                                  type:
+                                    - string
+                                    - "null"
+                                keyframes:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      animationTimingFunction:
+                                        type:
+                                          - string
+                                          - "null"
+                                      offset:
+                                        type:
+                                          - number
+                                          - "null"
+                                      opacity:
+                                        type:
+                                          - number
+                                          - "null"
+                                      transform:
+                                        type:
+                                          - string
+                                          - "null"
+                                      transformOrigin:
+                                        type:
+                                          - string
+                                          - "null"
+                                      visibility:
+                                        type:
+                                          - string
+                                          - "null"
+                          target:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              selector:
+                                type:
+                                  - string
+                                  - "null"
+                          toggleGroupId:
+                            type:
+                              - string
+                              - "null"
+                      "on":
+                        type:
+                          - string
+                          - "null"
+            children:
+              type:
+                - array
+                - "null"
+            content:
+              type:
+                - object
+                - "null"
+              properties:
+                version:
+                  type:
+                    - string
+                    - "null"
+                type:
+                  type:
+                    - string
+                    - "null"
+                nodeId:
+                  type:
+                    - string
+                    - "null"
+                props:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    children:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          nodeId:
+                            type:
+                              - string
+                              - "null"
+                          props:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              children:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                                    nodeId:
+                                      type:
+                                        - string
+                                        - "null"
+                                    props:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        activeColor:
+                                          type:
+                                            - string
+                                            - "null"
+                                        addButtons:
+                                          type:
+                                            - string
+                                            - "null"
+                                        blockType:
+                                          type:
+                                            - string
+                                            - "null"
+                                        children:
+                                          type:
+                                            - array
+                                            - "null"
+                                          items:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              version:
+                                                type:
+                                                  - number
+                                                  - "null"
+                                              type:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              nodeId:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              props:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  blockType:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  children:
+                                                    type:
+                                                      - array
+                                                      - "null"
+                                                    items:
+                                                      anyOf:
+                                                        - type: string
+                                                        - type: object
+                                                          properties:
+                                                            version:
+                                                              type: number
+                                                            type:
+                                                              type: string
+                                                            nodeId:
+                                                              type: string
+                                                            props:
+                                                              type: object
+                                                              properties:
+                                                                children:
+                                                                  type: array
+                                                                  items:
+                                                                    anyOf:
+                                                                      - type: string
+                                                                      - type: object
+                                                                        properties:
+                                                                          type:
+                                                                            type: string
+                                                                          nodeId:
+                                                                            type: string
+                                                                          props:
+                                                                            type: object
+                                                                            properties:
+                                                                              blockType:
+                                                                                type: string
+                                                                              children:
+                                                                                type: array
+                                                                                items:
+                                                                                  type: object
+                                                                                  properties:
+                                                                                    type:
+                                                                                      type: string
+                                                                                    nodeId:
+                                                                                      type: string
+                                                                                    props:
+                                                                                      type: object
+                                                                                      properties:
+                                                                                        d:
+                                                                                          type: string
+                                                                                        fill:
+                                                                                          type: string
+                                                                                        is:
+                                                                                          type: string
+                                                                              d:
+                                                                                type: string
+                                                                              fill:
+                                                                                type: string
+                                                                              height:
+                                                                                type: string
+                                                                              id:
+                                                                                type: string
+                                                                              is:
+                                                                                type: string
+                                                                              limit:
+                                                                                type: string
+                                                                              mode:
+                                                                                type: string
+                                                                              orderBy:
+                                                                                type: string
+                                                                              style:
+                                                                                type: object
+                                                                                properties:
+                                                                                  height:
+                                                                                    type: string
+                                                                                  width:
+                                                                                    type: string
+                                                                              viewBox:
+                                                                                type: string
+                                                                              width:
+                                                                                type: string
+                                                                              xmlns:
+                                                                                type: string
+                                                                fill:
+                                                                  type: string
+                                                                height:
+                                                                  type: string
+                                                                id:
+                                                                  type: string
+                                                                is:
+                                                                  type: string
+                                                                style:
+                                                                  type: object
+                                                                  properties:
+                                                                    alignItems:
+                                                                      type: string
+                                                                    alignSelf:
+                                                                      type: string
+                                                                    backgroundColor:
+                                                                      type: string
+                                                                    border:
+                                                                      type: string
+                                                                    borderRadius:
+                                                                      type: string
+                                                                    color:
+                                                                      type: string
+                                                                    cursor:
+                                                                      type: string
+                                                                    display:
+                                                                      type: string
+                                                                    flex:
+                                                                      type: string
+                                                                    fontFamily:
+                                                                      type: string
+                                                                    fontSize:
+                                                                      type: string
+                                                                    height:
+                                                                      type: string
+                                                                    justifyContent:
+                                                                      type: string
+                                                                    padding:
+                                                                      type: string
+                                                                    textWrap:
+                                                                      type: string
+                                                                    width:
+                                                                      type: string
+                                                                title:
+                                                                  type: string
+                                                                viewBox:
+                                                                  type: string
+                                                                width:
+                                                                  type: string
+                                                                xmlns:
+                                                                  type: string
+                                                  droppable:
+                                                    type:
+                                                      - boolean
+                                                      - "null"
+                                                  href:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  id:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  is:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  style:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      alignItems:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      background:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      border:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      color:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      cursor:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      display:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      flex:
+                                                        type:
+                                                          - number
+                                                          - "null"
+                                                      flexDirection:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      fontSize:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      fontWeight:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      margin:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      padding:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      textDecoration:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      width:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                  target:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  title:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                        data-ignore:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        draggable:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        hoverColor:
+                                          type:
+                                            - string
+                                            - "null"
+                                        is:
+                                          type:
+                                            - string
+                                            - "null"
+                                        style:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            alignItems:
+                                              type:
+                                                - string
+                                                - "null"
+                                            background:
+                                              type:
+                                                - string
+                                                - "null"
+                                            backgroundColor:
+                                              type:
+                                                - string
+                                                - "null"
+                                            borderBottom:
+                                              type:
+                                                - string
+                                                - "null"
+                                            boxSizing:
+                                              type:
+                                                - string
+                                                - "null"
+                                            color:
+                                              type:
+                                                - string
+                                                - "null"
+                                            display:
+                                              type:
+                                                - string
+                                                - "null"
+                                            flexDirection:
+                                              type:
+                                                - string
+                                                - "null"
+                                            fontSize:
+                                              type:
+                                                - string
+                                                - "null"
+                                            gap:
+                                              type:
+                                                - string
+                                                - "null"
+                                            height:
+                                              type:
+                                                - string
+                                                - "null"
+                                            justifyContent:
+                                              type:
+                                                - string
+                                                - "null"
+                                            marginBottom:
+                                              type:
+                                                - string
+                                                - "null"
+                                            marginTop:
+                                              type:
+                                                - string
+                                                - "null"
+                                            padding:
+                                              type:
+                                                - string
+                                                - "null"
+                                            position:
+                                              type:
+                                                - string
+                                                - "null"
+                                            top:
+                                              type:
+                                                - string
+                                                - "null"
+                                            transition:
+                                              type:
+                                                - string
+                                                - "null"
+                                            zIndex:
+                                              type:
+                                                - string
+                                                - "null"
+                              data-ignore:
+                                type:
+                                  - boolean
+                                  - "null"
+                              id:
+                                type:
+                                  - string
+                                  - "null"
+                              is:
+                                type:
+                                  - string
+                                  - "null"
+                              style:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  background:
+                                    type:
+                                      - string
+                                      - "null"
+                                  borderRadius:
+                                    type:
+                                      - string
+                                      - "null"
+                                  bottom:
+                                    type:
+                                      - number
+                                      - "null"
+                                  boxShadow:
+                                    type:
+                                      - string
+                                      - "null"
+                                  left:
+                                    type:
+                                      - string
+                                      - "null"
+                                  marginBottom:
+                                    type:
+                                      - string
+                                      - "null"
+                                  maxHeight:
+                                    type:
+                                      - string
+                                      - "null"
+                                  opacity:
+                                    type:
+                                      - string
+                                      - "null"
+                                  overflowX:
+                                    type:
+                                      - string
+                                      - "null"
+                                  position:
+                                    type:
+                                      - string
+                                      - "null"
+                                  right:
+                                    type:
+                                      - number
+                                      - "null"
+                                  transform:
+                                    type:
+                                      - string
+                                      - "null"
+                                  visibility:
+                                    type:
+                                      - string
+                                      - "null"
+                                  width:
+                                    type:
+                                      - string
+                                      - "null"
+                                  zIndex:
+                                    type:
+                                      - string
+                                      - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    is:
+                      type:
+                        - string
+                        - "null"
+                    style:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        "--container-background":
+                          type:
+                            - string
+                            - "null"
+                        "--container-border-radius":
+                          type:
+                            - string
+                            - "null"
+                        "--container-shadow":
+                          type:
+                            - string
+                            - "null"
+                        "--flows-list-block-background-hover":
+                          type:
+                            - string
+                            - "null"
+                        "--flows-list-block-color":
+                          type:
+                            - string
+                            - "null"
+                        "--flows-list-block-item-radius":
+                          type:
+                            - string
+                            - "null"
+                        "--flows-list-block-marker-color":
+                          type:
+                            - string
+                            - "null"
+                        "--flows-list-block-radius":
+                          type:
+                            - string
+                            - "null"
+                        "--flows-list-block-shadow":
+                          type:
+                            - string
+                            - "null"
+                        "--font-family":
+                          type:
+                            - string
+                            - "null"
+                        "--header-background":
+                          type:
+                            - string
+                            - "null"
+                        "--header-color":
+                          type:
+                            - string
+                            - "null"
+                        "--launcher-block-background":
+                          type:
+                            - string
+                            - "null"
+                        "--launcher-block-background-active":
+                          type:
+                            - string
+                            - "null"
+                        "--launcher-block-background-hover":
+                          type:
+                            - string
+                            - "null"
+                        "--launcher-block-color":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-background-hover":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-color":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-icon-background":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-icon-background-hover":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-icon-color":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-item-radius":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-marker-color":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-radius":
+                          type:
+                            - string
+                            - "null"
+                        "--link-block-shadow":
+                          type:
+                            - string
+                            - "null"
+                        "--primary-color":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-background-color":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-background-color-active":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-background-color-hover":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-color":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-content-wrapper-background-color":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-outline-color":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-radius":
+                          type:
+                            - string
+                            - "null"
+                        "--search-results-block-shadow":
+                          type:
+                            - string
+                            - "null"
+                        "--secondary-color":
+                          type:
+                            - string
+                            - "null"
+                        "--text-field-block-input-border-color":
+                          type:
+                            - string
+                            - "null"
+                        color:
+                          type:
+                            - string
+                            - "null"
+                        display:
+                          type:
+                            - string
+                            - "null"
+                        flexDirection:
+                          type:
+                            - string
+                            - "null"
+                        fontFamily:
+                          type:
+                            - string
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        width:
+                          type:
+                            - string
+                            - "null"
+                        zIndex:
+                          type:
+                            - number
+                            - "null"
+            contentType:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - number
+                - "null"
+            createdBy:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            index:
+              type:
+                - number
+                - "null"
+            rows:
+              type:
+                - array
+                - "null"
+            traits:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  config:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      onLaunchpadClose:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            config:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                animation:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    duration:
+                                      type:
+                                        - number
+                                        - "null"
+                                    fill:
+                                      type:
+                                        - string
+                                        - "null"
+                                    id:
+                                      type:
+                                        - string
+                                        - "null"
+                                    keyframes:
+                                      type:
+                                        - array
+                                        - "null"
+                                      items:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          animationTimingFunction:
+                                            type:
+                                              - string
+                                              - "null"
+                                          offset:
+                                            type:
+                                              - number
+                                              - "null"
+                                          opacity:
+                                            type:
+                                              - number
+                                              - "null"
+                                          transform:
+                                            type:
+                                              - string
+                                              - "null"
+                                          transformOrigin:
+                                            type:
+                                              - string
+                                              - "null"
+                                          visibility:
+                                            type:
+                                              - string
+                                              - "null"
+                                target:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    selector:
+                                      type:
+                                        - string
+                                        - "null"
+                                toggleGroupId:
+                                  type:
+                                    - string
+                                    - "null"
+                      placementUnit:
+                        type:
+                          - string
+                          - "null"
+                      strategy:
+                        type:
+                          - string
+                          - "null"
+                      target:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          selector:
+                            type:
+                              - string
+                              - "null"
+                      unsetOppositeDirection:
+                        type:
+                          - boolean
+                          - "null"
+                      xOffset:
+                        type:
+                          - number
+                          - "null"
+                      xPosition:
+                        type:
+                          - string
+                          - "null"
+                      yOffset:
+                        type:
+                          - number
+                          - "null"
+                      yPosition:
+                        type:
+                          - string
+                          - "null"
+            updatedAt:
+              type:
+                - number
+                - "null"
+            updatedBy:
+              type:
+                - string
+                - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      tags:
+        type:
+          - object
+          - "null"
+      traits:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+      updated_at:
+        type: number
+      updated_by:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  flows:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type:
+          - string
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - boolean
+          - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tags:
+        type:
+          - object
+          - "null"
+        properties:
+          44dffa27-aee8-4076-b080-06508ed80196:
+            type:
+              - boolean
+              - "null"
+          b831cc07-7155-4d43-a4e2-6ff8cf60b968:
+            type:
+              - boolean
+              - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  banners:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      contains_localized_blocks:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      locked_for_localization:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      preview_url:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      steps:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            actions:
+              type:
+                - object
+                - "null"
+              properties:
+                banner:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      "on":
+                        type:
+                          - string
+                          - "null"
+                dismiss-button:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      "on":
+                        type:
+                          - string
+                          - "null"
+            children:
+              type:
+                - array
+                - "null"
+            content:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                nodeId:
+                  type:
+                    - string
+                    - "null"
+                props:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    blockType:
+                      type:
+                        - string
+                        - "null"
+                    children:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          nodeId:
+                            type:
+                              - string
+                              - "null"
+                          props:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              blockType:
+                                type:
+                                  - string
+                                  - "null"
+                              children:
+                                type:
+                                  - array
+                                  - "null"
+                                items:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    version:
+                                      type:
+                                        - number
+                                        - "null"
+                                    type:
+                                      type:
+                                        - string
+                                        - "null"
+                                    nodeId:
+                                      type:
+                                        - string
+                                        - "null"
+                                    props:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        aria-label:
+                                          type:
+                                            - string
+                                            - "null"
+                                        blockType:
+                                          type:
+                                            - string
+                                            - "null"
+                                        children:
+                                          type:
+                                            - array
+                                            - "null"
+                                          items:
+                                            type:
+                                              - object
+                                              - "null"
+                                            properties:
+                                              type:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              nodeId:
+                                                type:
+                                                  - string
+                                                  - "null"
+                                              props:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  children:
+                                                    type:
+                                                      - array
+                                                      - "null"
+                                                    items:
+                                                      type:
+                                                        - object
+                                                        - "null"
+                                                      properties:
+                                                        type:
+                                                          type:
+                                                            - string
+                                                            - "null"
+                                                        nodeId:
+                                                          type:
+                                                            - string
+                                                            - "null"
+                                                        props:
+                                                          type:
+                                                            - object
+                                                            - "null"
+                                                          properties:
+                                                            children:
+                                                              type:
+                                                                - array
+                                                                - "null"
+                                                              items:
+                                                                type:
+                                                                  - string
+                                                                  - "null"
+                                                            d:
+                                                              type:
+                                                                - string
+                                                                - "null"
+                                                            fill:
+                                                              type:
+                                                                - string
+                                                                - "null"
+                                                            is:
+                                                              type:
+                                                                - string
+                                                                - "null"
+                                                  fill:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  height:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  is:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  style:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      margin:
+                                                        type:
+                                                          - number
+                                                          - "null"
+                                                      textAlign:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                  viewBox:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  width:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                                  xmlns:
+                                                    type:
+                                                      - string
+                                                      - "null"
+                                        data-ignore:
+                                          type:
+                                            - boolean
+                                            - "null"
+                                        id:
+                                          type:
+                                            - string
+                                            - "null"
+                                        is:
+                                          type:
+                                            - string
+                                            - "null"
+                                        style:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            alignSelf:
+                                              type:
+                                                - string
+                                                - "null"
+                                            background:
+                                              type:
+                                                - string
+                                                - "null"
+                                            border:
+                                              type:
+                                                - string
+                                                - "null"
+                                            color:
+                                              type:
+                                                - string
+                                                - "null"
+                                            cursor:
+                                              type:
+                                                - string
+                                                - "null"
+                                            height:
+                                              type:
+                                                - string
+                                                - "null"
+                                            margin:
+                                              type:
+                                                - number
+                                                - "null"
+                                            marginRight:
+                                              type:
+                                                - string
+                                                - "null"
+                                            marginTop:
+                                              type:
+                                                - string
+                                                - "null"
+                                            padding:
+                                              type:
+                                                - number
+                                                - "null"
+                                            position:
+                                              type:
+                                                - string
+                                                - "null"
+                                            right:
+                                              type:
+                                                - string
+                                                - "null"
+                                            top:
+                                              type:
+                                                - string
+                                                - "null"
+                                            width:
+                                              type:
+                                                - string
+                                                - "null"
+                              is:
+                                type:
+                                  - string
+                                  - "null"
+                              style:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  alignItems:
+                                    type:
+                                      - string
+                                      - "null"
+                                  display:
+                                    type:
+                                      - string
+                                      - "null"
+                                  flexDirection:
+                                    type:
+                                      - string
+                                      - "null"
+                                  justifyContent:
+                                    type:
+                                      - string
+                                      - "null"
+                                  marginLeft:
+                                    type:
+                                      - string
+                                      - "null"
+                                  marginRight:
+                                    type:
+                                      - string
+                                      - "null"
+                                  width:
+                                    type:
+                                      - string
+                                      - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    is:
+                      type:
+                        - string
+                        - "null"
+                    style:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        alignItems:
+                          type:
+                            - string
+                            - "null"
+                        backgroundColor:
+                          type:
+                            - string
+                            - "null"
+                        borderRadius:
+                          type:
+                            - string
+                            - "null"
+                        boxSizing:
+                          type:
+                            - string
+                            - "null"
+                        color:
+                          type:
+                            - string
+                            - "null"
+                        display:
+                          type:
+                            - string
+                            - "null"
+                        flexDirection:
+                          type:
+                            - string
+                            - "null"
+                        fontFamily:
+                          type:
+                            - string
+                            - "null"
+                        left:
+                          type:
+                            - number
+                            - "null"
+                        marginBottom:
+                          type:
+                            - string
+                            - "null"
+                        marginLeft:
+                          type:
+                            - string
+                            - "null"
+                        marginRight:
+                          type:
+                            - string
+                            - "null"
+                        marginTop:
+                          type:
+                            - string
+                            - "null"
+                        paddingBottom:
+                          type:
+                            - string
+                            - "null"
+                        paddingLeft:
+                          type:
+                            - string
+                            - "null"
+                        paddingRight:
+                          type:
+                            - string
+                            - "null"
+                        paddingTop:
+                          type:
+                            - string
+                            - "null"
+                        pointerEvents:
+                          type:
+                            - string
+                            - "null"
+                        position:
+                          type:
+                            - string
+                            - "null"
+                        right:
+                          type:
+                            - number
+                            - "null"
+                        willChange:
+                          type:
+                            - string
+                            - "null"
+                        zIndex:
+                          type:
+                            - number
+                            - "null"
+            contentType:
+              type:
+                - string
+                - "null"
+            createdAt:
+              type:
+                - number
+                - "null"
+            createdBy:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            index:
+              type:
+                - number
+                - "null"
+            rows:
+              type:
+                - array
+                - "null"
+            traits:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  config:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      duration:
+                        type:
+                          - number
+                          - "null"
+                      fill:
+                        type:
+                          - string
+                          - "null"
+                      keyframes:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            opacity:
+                              type:
+                                - number
+                                - "null"
+                            paddingBottom:
+                              type:
+                                - number
+                                - string
+                                - "null"
+                            paddingTop:
+                              type:
+                                - number
+                                - string
+                                - "null"
+                      placement:
+                        type:
+                          - string
+                          - "null"
+                      pointerEvents:
+                        type:
+                          - string
+                          - "null"
+                      rootDisplay:
+                        type:
+                          - string
+                          - "null"
+                      sticky:
+                        type:
+                          - boolean
+                          - "null"
+                      target:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          selector:
+                            type:
+                              - string
+                              - "null"
+            updatedAt:
+              type:
+                - number
+                - "null"
+            updatedBy:
+              type:
+                - string
+                - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tags:
+        type:
+          - object
+          - "null"
+        properties:
+          c141e1ae-993c-4869-8f77-4aa314fdb468:
+            type:
+              - boolean
+              - "null"
+      theme:
+        type:
+          - string
+          - "null"
+      traits:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            config:
+              type:
+                - object
+                - "null"
+              properties:
+                strategy:
+                  type:
+                    - string
+                    - "null"
+      updated_at:
+        type: number
+      updated_by:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  checklists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      checklist_id:
+        type:
+          - string
+          - "null"
+      completion_flow_id:
+        type:
+          - string
+          - "null"
+      created_at:
+        type: number
+      created_by:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      internal_name:
+        type:
+          - string
+          - "null"
+      intro_flow_id:
+        type:
+          - string
+          - "null"
+      is_dismissable:
+        type:
+          - boolean
+          - "null"
+      is_sequential:
+        type:
+          - boolean
+          - "null"
+      items:
+        type:
+          - object
+          - "null"
+        properties:
+          6288639f-2bf4-41ec-82dc-4a158efaf7a7:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - array
+                  - "null"
+              actions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    attributes:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        action_type:
+                          type:
+                            - string
+                            - "null"
+                        params:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            flow_id:
+                              type:
+                                - string
+                                - "null"
+              conditions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  and:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        content:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            content:
+                              type:
+                                - string
+                                - "null"
+              depends_on:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              index:
+                type:
+                  - number
+                  - "null"
+              label:
+                type:
+                  - string
+                  - "null"
+          c1d275b5-3ee4-4ce9-a4f6-3fb385f1328b:
+            type:
+              - object
+              - "null"
+            properties:
+              action:
+                type:
+                  - array
+                  - "null"
+              conditions:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  and:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        properties:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            operator:
+                              type:
+                                - string
+                                - "null"
+                            property:
+                              type:
+                                - string
+                                - "null"
+                            value:
+                              type:
+                                - string
+                                - "null"
+              depends_on:
+                type:
+                  - array
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              index:
+                type:
+                  - number
+                  - "null"
+              label:
+                type:
+                  - string
+                  - "null"
+      open_behavior:
+        type:
+          - string
+          - "null"
+      rule:
+        type:
+          - object
+          - "null"
+        properties:
+          conditions:
+            type:
+              - object
+              - "null"
+            properties:
+              and:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    or:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          url:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              operator:
+                                type:
+                                  - string
+                                  - "null"
+                              value:
+                                type:
+                                  - string
+                                  - "null"
+      state:
+        type:
+          - string
+          - "null"
+      styles:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          beacon_background_color:
+            type:
+              - string
+              - "null"
+          beacon_horizontal_offset:
+            type:
+              - number
+              - "null"
+          beacon_icon:
+            type:
+              - string
+              - "null"
+          beacon_text_color:
+            type:
+              - string
+              - "null"
+          beacon_vertical_offset:
+            type:
+              - number
+              - "null"
+          completion_icon:
+            type:
+              - string
+              - "null"
+          font:
+            type:
+              - string
+              - "null"
+          header_icon:
+            type:
+              - string
+              - "null"
+          position:
+            type:
+              - string
+              - "null"
+          primary_color:
+            type:
+              - string
+              - "null"
+          success_color:
+            type:
+              - string
+              - "null"
+          success_image_code:
+            type:
+              - string
+              - "null"
+      text_tokens:
+        type:
+          - object
+          - "null"
+        properties:
+          beacon_text:
+            type:
+              - string
+              - "null"
+          completion_dismiss_text:
+            type:
+              - string
+              - "null"
+          completion_text:
+            type:
+              - string
+              - "null"
+          completion_title:
+            type:
+              - string
+              - "null"
+          description_text:
+            type:
+              - string
+              - "null"
+          dismiss_cancel_text:
+            type:
+              - string
+              - "null"
+          dismiss_confirm_text:
+            type:
+              - string
+              - "null"
+          dismiss_prompt_text:
+            type:
+              - string
+              - "null"
+          dismiss_text:
+            type:
+              - string
+              - "null"
+          header_text:
+            type:
+              - string
+              - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - number
+          - "null"
+      updated_by:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - created_at
+  pins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      app_id:
+        type:
+          - string
+          - "null"
+      contains_localized_blocks:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - number
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      frequency:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      locked_for_localization:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      preview_url:
+        type:
+          - string
+          - "null"
+      published:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      steps:
+        type:
+          - array
+          - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tags:
+        type:
+          - object
+          - "null"
+        properties:
+          c141e1ae-993c-4869-8f77-4aa314fdb468:
+            type:
+              - boolean
+              - "null"
+      theme:
+        type:
+          - string
+          - "null"
+      traits:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+      updated_at:
+        type: number
+      updated_by:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      updated_by:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      updated_by:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
