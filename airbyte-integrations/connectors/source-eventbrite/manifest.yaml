@@ -1,0 +1,391 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: New connector to Eventbrite events
+
+check:
+  type: CheckStream
+  stream_names:
+    - event
+
+definitions:
+  streams:
+    event:
+      type: DeclarativeStream
+      name: event
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v3/organizations/{{ config['organization_id'] }}/events/
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/event"
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.eventbriteapi.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config[\"private_token\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/event"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - private_token
+      - organization_id
+    properties:
+      private_token:
+        type: string
+        description: The private token to use for authenticating API requests.
+        name: private_token
+        title: Private Token
+        airbyte_secret: true
+        order: 0
+      organization_id:
+        type: string
+        name: organization_id
+        title: organization_id
+        airbyte_secret: false
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    event: true
+  testedStreams:
+    event:
+      streamHash: 353d00e575bfcda616797431273bb0d83e7caae2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://www.eventbrite.com/platform/api#/introduction/about-our-api
+
+schemas:
+  event:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      events:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - object
+                - "null"
+              properties:
+                html:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+            capacity:
+              type:
+                - number
+                - "null"
+            capacity_is_custom:
+              type:
+                - boolean
+                - "null"
+            category_id:
+              type:
+                - string
+                - "null"
+            changed:
+              type:
+                - string
+                - "null"
+            created:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            end:
+              type:
+                - object
+                - "null"
+              properties:
+                local:
+                  type:
+                    - string
+                    - "null"
+                timezone:
+                  type:
+                    - string
+                    - "null"
+                utc:
+                  type:
+                    - string
+                    - "null"
+            hide_end_date:
+              type:
+                - boolean
+                - "null"
+            hide_start_date:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            inventory_type:
+              type:
+                - string
+                - "null"
+            invite_only:
+              type:
+                - boolean
+                - "null"
+            is_externally_ticketed:
+              type:
+                - boolean
+                - "null"
+            is_free:
+              type:
+                - boolean
+                - "null"
+            is_locked:
+              type:
+                - boolean
+                - "null"
+            is_reserved_seating:
+              type:
+                - boolean
+                - "null"
+            is_series:
+              type:
+                - boolean
+                - "null"
+            is_series_parent:
+              type:
+                - boolean
+                - "null"
+            listed:
+              type:
+                - boolean
+                - "null"
+            locale:
+              type:
+                - string
+                - "null"
+            logo:
+              type:
+                - object
+                - "null"
+              properties:
+                aspect_ratio:
+                  type:
+                    - string
+                    - "null"
+                crop_mask:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    height:
+                      type:
+                        - number
+                        - "null"
+                    top_left:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        x:
+                          type:
+                            - number
+                            - "null"
+                        "y":
+                          type:
+                            - number
+                            - "null"
+                    width:
+                      type:
+                        - number
+                        - "null"
+                edge_color:
+                  type:
+                    - string
+                    - "null"
+                edge_color_set:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                original:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    height:
+                      type:
+                        - number
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+                    width:
+                      type:
+                        - number
+                        - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+            logo_id:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - object
+                - "null"
+              properties:
+                html:
+                  type:
+                    - string
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+            online_event:
+              type:
+                - boolean
+                - "null"
+            organization_id:
+              type:
+                - string
+                - "null"
+            organizer_id:
+              type:
+                - string
+                - "null"
+            privacy_setting:
+              type:
+                - string
+                - "null"
+            resource_uri:
+              type:
+                - string
+                - "null"
+            shareable:
+              type:
+                - boolean
+                - "null"
+            show_colors_in_seatmap_thumbnail:
+              type:
+                - boolean
+                - "null"
+            show_pick_a_seat:
+              type:
+                - boolean
+                - "null"
+            show_remaining:
+              type:
+                - boolean
+                - "null"
+            show_seatmap_thumbnail:
+              type:
+                - boolean
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            start:
+              type:
+                - object
+                - "null"
+              properties:
+                local:
+                  type:
+                    - string
+                    - "null"
+                timezone:
+                  type:
+                    - string
+                    - "null"
+                utc:
+                  type:
+                    - string
+                    - "null"
+            status:
+              type:
+                - string
+                - "null"
+            subcategory_id:
+              type:
+                - string
+                - "null"
+            summary:
+              type:
+                - string
+                - "null"
+            tx_time_limit:
+              type:
+                - number
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      pagination:
+        type:
+          - object
+          - "null"
+        properties:
+          has_more_items:
+            type:
+              - boolean
+              - "null"
+          object_count:
+            type:
+              - number
+              - "null"
+          page_count:
+            type:
+              - number
+              - "null"
+          page_number:
+            type:
+              - number
+              - "null"
+          page_size:
+            type:
+              - number
+              - "null"
