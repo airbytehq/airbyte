@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.15"
+version = "0.1.17"
 name = "destination-amazon-sqs"
 description = "Destination implementation for Amazon Sqs."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -25,4 +25,4 @@ destination-amazon-sqs = "destination_amazon_sqs.run:run"
 
 [tool.poetry.group.dev.dependencies]
 moto = "^5.0.7"
-pytest = "^6.1"
+pytest = "^8.3.2"

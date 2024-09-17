@@ -33,11 +33,11 @@ def validate_metadata_images_in_dockerhub(
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
     base_docker_version = get(metadata_definition_dict, "data.dockerImageTag")
 
-    oss_docker_image = get(metadata_definition_dict, "data.registries.oss.dockerRepository", base_docker_image)
-    oss_docker_version = get(metadata_definition_dict, "data.registries.oss.dockerImageTag", base_docker_version)
+    oss_docker_image = get(metadata_definition_dict, "data.registryOverrides.oss.dockerRepository", base_docker_image)
+    oss_docker_version = get(metadata_definition_dict, "data.registryOverrides.oss.dockerImageTag", base_docker_version)
 
-    cloud_docker_image = get(metadata_definition_dict, "data.registries.cloud.dockerRepository", base_docker_image)
-    cloud_docker_version = get(metadata_definition_dict, "data.registries.cloud.dockerImageTag", base_docker_version)
+    cloud_docker_image = get(metadata_definition_dict, "data.registryOverrides.cloud.dockerRepository", base_docker_image)
+    cloud_docker_version = get(metadata_definition_dict, "data.registryOverrides.cloud.dockerImageTag", base_docker_version)
 
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
@@ -178,6 +178,8 @@ def validate_pypi_only_for_python(
 def validate_docker_image_tag_is_not_decremented(
     metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
     docker_image_name = get(metadata_definition, "data.dockerRepository")
     if not docker_image_name:
         return False, "The dockerRepository field is not set"
@@ -193,7 +195,10 @@ def validate_docker_image_tag_is_not_decremented(
     current_semver_version = semver.Version.parse(docker_image_tag)
     latest_released_semver_version = semver.Version.parse(latest_released_version)
     if current_semver_version < latest_released_semver_version:
-        return False, f"The dockerImageTag value can't be decremented: it should be equal to or above {latest_released_version}."
+        return (
+            False,
+            f"The dockerImageTag value ({current_semver_version}) can't be decremented: it should be equal to or above {latest_released_version}.",
+        )
     return True, None
 
 

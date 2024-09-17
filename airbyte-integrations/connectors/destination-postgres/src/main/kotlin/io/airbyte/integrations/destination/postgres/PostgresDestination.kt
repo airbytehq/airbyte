@@ -15,7 +15,6 @@ import io.airbyte.cdk.integrations.base.IntegrationRunner
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination
 import io.airbyte.cdk.integrations.destination.async.deser.StreamAwareDataTransformer
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination
-import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils
@@ -147,9 +146,14 @@ class PostgresDestination :
     override fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator {
         return PostgresSqlGenerator(PostgresSQLNameTransformer(), hasDropCascadeMode(config))
     }
-    override fun getSqlOperations(config: JsonNode): SqlOperations {
+    override fun getSqlOperations(config: JsonNode): PostgresSqlOperations {
         return PostgresSqlOperations(hasDropCascadeMode(config))
     }
+
+    override fun getGenerationHandler(): PostgresGenerationHandler {
+        return PostgresGenerationHandler()
+    }
+
     private fun hasDropCascadeMode(config: JsonNode): Boolean {
         val dropCascadeNode = config[DROP_CASCADE_OPTION]
         return dropCascadeNode != null && dropCascadeNode.asBoolean()
@@ -165,7 +169,7 @@ class PostgresDestination :
             databaseName,
             database,
             rawTableSchema,
-            getSqlOperations(config)
+            getGenerationHandler(),
         )
     }
 

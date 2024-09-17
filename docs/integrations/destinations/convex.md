@@ -56,14 +56,16 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
-| 0.2.6 | 2024-07-09 | [41275](https://github.com/airbytehq/airbyte/pull/41275) | Update dependencies |
-| 0.2.5 | 2024-07-06 | [40987](https://github.com/airbytehq/airbyte/pull/40987) | Update dependencies |
-| 0.2.4 | 2024-06-25 | [40496](https://github.com/airbytehq/airbyte/pull/40496) | Update dependencies |
-| 0.2.3 | 2024-06-22 | [40122](https://github.com/airbytehq/airbyte/pull/40122) | Update dependencies |
-| 0.2.2 | 2024-06-04 | [39083](https://github.com/airbytehq/airbyte/pull/39083) | [autopull] Upgrade base image to v1.2.1 |
-| 0.2.1 | 2024-05-21 | [38527](https://github.com/airbytehq/airbyte/pull/38527) | [autopull] base image + poetry + up_to_date |
-| 0.2.0 | 2023-05-15 | [26103](https://github.com/airbytehq/airbyte/pull/26103) | 🐛 Update Convex destination connector to fix overwrite sync mode |
-| 0.1.0 | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex |
+|:--------| :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.8   | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
+| 0.2.7   | 2024-07-31 | [42585](https://github.com/airbytehq/airbyte/pull/42585) | Improve error handling                                            |
+| 0.2.6   | 2024-07-09 | [41275](https://github.com/airbytehq/airbyte/pull/41275) | Update dependencies                                               |
+| 0.2.5   | 2024-07-06 | [40987](https://github.com/airbytehq/airbyte/pull/40987) | Update dependencies                                               |
+| 0.2.4   | 2024-06-25 | [40496](https://github.com/airbytehq/airbyte/pull/40496) | Update dependencies                                               |
+| 0.2.3   | 2024-06-22 | [40122](https://github.com/airbytehq/airbyte/pull/40122) | Update dependencies                                               |
+| 0.2.2   | 2024-06-04 | [39083](https://github.com/airbytehq/airbyte/pull/39083) | [autopull] Upgrade base image to v1.2.1                           |
+| 0.2.1   | 2024-05-21 | [38527](https://github.com/airbytehq/airbyte/pull/38527) | [autopull] base image + poetry + up_to_date                       |
+| 0.2.0   | 2023-05-15 | [26103](https://github.com/airbytehq/airbyte/pull/26103) | 🐛 Update Convex destination connector to fix overwrite sync mode |
+| 0.1.0   | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex                                        |
 
 </details>
