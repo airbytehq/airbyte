@@ -78,7 +78,7 @@ class SalesforceErrorHandler(ErrorHandler):
             )
         elif isinstance(response, requests.Response):
             if response.ok:
-                if self._is_bulk_job_status_check(response) and response.json().get('state') == 'Failed':
+                if self._is_bulk_job_status_check(response) and response.json().get("state") == "Failed":
                     raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
@@ -130,13 +130,18 @@ class SalesforceErrorHandler(ErrorHandler):
 
     @staticmethod
     def _is_bulk_job_status_check(response: requests.Response) -> bool:
-        # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
-        return bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
+        """Regular string ensures format used only for job status: /services/data/vXX.X/jobs/query/<queryJobId>,
+        see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm"""
+        return response.request.method == "GET" and bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
 
     @staticmethod
     def _is_bulk_job_creation(response: requests.Response) -> bool:
         # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
-        return bool(re.compile(r"services/data/[A-Za-z0-9.]+/jobs/query/?$").search(response.url))
+        return (
+            response.request.method == "POST"
+            and response.request.json().get("operation") == "queryAll"
+            and bool(re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url))
+        )
 
     def _handle_bulk_job_creation_endpoint_specific_errors(
         self, response: requests.Response, error_code: Optional[str], error_message: str
