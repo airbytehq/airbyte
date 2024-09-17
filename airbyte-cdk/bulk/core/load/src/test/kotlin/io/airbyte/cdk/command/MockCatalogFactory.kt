@@ -4,8 +4,10 @@
 
 package io.airbyte.cdk.command
 
-import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.protocol.models.Jsons
+import io.airbyte.cdk.data.FieldType
+import io.airbyte.cdk.data.IntegerType
+import io.airbyte.cdk.data.ObjectType
+import io.airbyte.cdk.data.StringType
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
@@ -20,10 +22,15 @@ class MockCatalogFactory : DestinationCatalogFactory {
         val stream1 =
             DestinationStream(
                 DestinationStream.Descriptor("test", "stream1"),
-                Append,
-                Jsons.deserialize(
-                    """{"type": "object", "properties": {"id": {"type": "integer"}}}"""
-                ) as ObjectNode,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(type = IntegerType, nullable = true),
+                                "name" to FieldType(type = StringType, nullable = true),
+                            ),
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
@@ -31,10 +38,15 @@ class MockCatalogFactory : DestinationCatalogFactory {
         val stream2 =
             DestinationStream(
                 DestinationStream.Descriptor("test", "stream2"),
-                Append,
-                Jsons.deserialize(
-                    """{"type": "object", "properties": {"id": {"type": "integer"}}}"""
-                ) as ObjectNode,
+                importType = Append,
+                schema =
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "id" to FieldType(type = IntegerType, nullable = true),
+                                "name" to FieldType(type = StringType, nullable = true),
+                            ),
+                    ),
                 generationId = 42,
                 minimumGenerationId = 0,
                 syncId = 42,
