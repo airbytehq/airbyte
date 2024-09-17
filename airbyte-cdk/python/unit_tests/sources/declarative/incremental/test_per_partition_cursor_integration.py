@@ -370,7 +370,7 @@ def test_partition_limitation(caplog):
     # Check if the warning was logged
     logged_messages = [record.message for record in caplog.records if record.levelname == "WARNING"]
     warning_message = (
-        "The maximum number of partitions has been reached. " "Dropping the oldest partition: {'partition_field': '1'}. Over limit: 1."
+        'The maximum number of partitions has been reached. Dropping the oldest partition: {"partition_field":"1"}. Over limit: 1.'
     )
     assert warning_message in logged_messages
 

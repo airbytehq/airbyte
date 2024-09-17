@@ -4,14 +4,14 @@
 
 import threading
 import time
-from typing import Any, Iterable, Mapping, Optional, Union, TypeVar
+from typing import Any, Iterable, Mapping, Optional, TypeVar, Union
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[Optional[T], bool]]:
