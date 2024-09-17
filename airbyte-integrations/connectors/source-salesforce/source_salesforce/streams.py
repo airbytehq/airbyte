@@ -404,7 +404,7 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
             )
 
 class BulkParentStreamStreamSlicer(StreamSlicer):
-    def __init__(self, batched_substream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_state: Optional[Mapping[str, Any]], parend_id_field: str) -> None:
+    def __init__(self, batched_substream: BatchedSubStream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_state: Optional[Mapping[str, Any]], parend_id_field: str) -> None:
         self._batched_substream = batched_substream
         self._sync_mode = sync_mode
         self._cursor_field = cursor_field
