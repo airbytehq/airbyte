@@ -59,7 +59,7 @@ def main() -> None:
     Path(CONNECTOR_DIR / ".venv-latest-version").mkdir(parents=True, exist_ok=True)
     new_source = ab.get_source(
         "source-s3",
-        pip_url=f"{CONNECTOR_DIR.absolute()!s}",
+        pip_url=f"-e {CONNECTOR_DIR.absolute()!s}",
         config=config_dict,
         # local_executable="source-s3",
         install_root=CONNECTOR_DIR / ".venv-latest-version",

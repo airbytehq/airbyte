@@ -133,7 +133,10 @@ class ConcurrentSource:
         concurrent_stream_processor: ConcurrentReadProcessor,
     ) -> Iterable[AirbyteMessage]:
         # handle queue item and call the appropriate handler depending on the type of the queue item
-        if isinstance(queue_item, StreamThreadException):
+        if isinstance(queue_item, AirbyteMessage):
+            # Most likely a record message, pre-wrapped for perf reasons. Just yield it.
+            yield queue_item
+        elif isinstance(queue_item, StreamThreadException):
             yield from concurrent_stream_processor.on_exception(queue_item)
         elif isinstance(queue_item, PartitionGenerationCompletedSentinel):
             yield from concurrent_stream_processor.on_partition_generation_completed(queue_item)

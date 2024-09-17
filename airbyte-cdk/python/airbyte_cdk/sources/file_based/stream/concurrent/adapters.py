@@ -3,6 +3,7 @@
 #
 
 import copy
+import datetime
 import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -10,6 +11,8 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, 
 import polars as pl
 from deprecated.classic import deprecated
 
+from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteStream, SyncMode
+from airbyte_cdk.models import Type as _AirbyteMessageType
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -260,21 +263,35 @@ class FileBasedStreamPartition(Partition):
     def _records_df_to_record_messages(
         self,
         dataframe: pl.DataFrame | pl.LazyFrame,
-    ) -> Iterable[Record]:
+    ) -> Iterable[AirbyteMessage]:
         if isinstance(dataframe, pl.LazyFrame):
             # Stream from the LazyFrame in chunks
             # TODO: This is cheating for now. We just put it in a single dataframe.
             # Note that this will fail if there is not enough memory.
-            dataframes = [dataframe.collect()]
-        else:
-            dataframes = [dataframe]
+            dataframes: list[DataFrame] = [dataframe.collect()]
 
-        for chunk in dataframes:
-            # Recursively process each chunk as a DataFrame
-            yield from self._records_df_to_record_messages(
-                dataframe=chunk,
+            for df in dataframes:
+                # Recursively process each chunk as a DataFrame
+                yield from self._records_df_to_record_messages(
+                    dataframe=df,
+                )
+            return
+
+        # If DataFrame, iterate over rows and create AirbyteMessages
+        record_generator = (
+            AirbyteMessage(
+                type=_AirbyteMessageType.RECORD,
+                record=AirbyteRecordMessage(
+                    stream=self._stream.name,
+                    data=record_data,
+                    emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
+                ),
             )
-        return
+            # In future, we can consider named=False for better performance,
+            # but in that case we would need to manually map field names.
+            for record_data in dataframe.iter_rows(named=True)
+        )
+        yield from record_generator
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         if self._slice is None:

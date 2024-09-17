@@ -99,4 +99,8 @@ def test_performance(instance: AcceptanceTestPerformanceInstance, capsys: pytest
 
     source = get_source(args=args)
     assert source
-    launch(source, args=args, out=os.devnull)
+    launch(
+        source,
+        args=args,
+        # out=os.devnull,
+    )

@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte"
-version = "0.17.6"
+version = "0.17.7"
 description = "PyAirbyte"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte-0.17.6-py3-none-any.whl", hash = "sha256:b31d19f4f9d46fcebf0c81858bbb30aea832f169ebc2bdb1d3f6ef63980a6a3b"},
-    {file = "airbyte-0.17.6.tar.gz", hash = "sha256:025f6533090fb6850b16fdfcb325d549cffd62023a523f37d473561a47f2e8a2"},
+    {file = "airbyte-0.17.7-py3-none-any.whl", hash = "sha256:83d797f6a2c5faaef2182a50a883664d6b21cf001150c9f645c6ca3baacbe523"},
+    {file = "airbyte-0.17.7.tar.gz", hash = "sha256:c0eeecf9fed35953a0f2dd5a597adea72ecd93035ee2e17af09ca10869d012bb"},
 ]
 
 [package.dependencies]
@@ -649,18 +649,18 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "filelock"
-version = "3.16.0"
+version = "3.16.1"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "filelock-3.16.0-py3-none-any.whl", hash = "sha256:f6ed4c963184f4c84dd5557ce8fece759a3724b37b80c6c4f20a2f63a4dc6609"},
-    {file = "filelock-3.16.0.tar.gz", hash = "sha256:81de9eb8453c769b63369f87f11131a7ab04e367f8d97ad39dc230daa07e3bec"},
+    {file = "filelock-3.16.1-py3-none-any.whl", hash = "sha256:2082e5703d51fbf98ea75855d9d5527e33d8ff23099bec374a134febee6946b0"},
+    {file = "filelock-3.16.1.tar.gz", hash = "sha256:c249fbfcd5db47e5e2d6d62198e565475ee65e4831e2561c8e313fa7eb961435"},
 ]
 
 [package.extras]
-docs = ["furo (>=2024.8.6)", "sphinx (>=8.0.2)", "sphinx-autodoc-typehints (>=2.4)"]
-testing = ["covdefaults (>=2.3)", "coverage (>=7.6.1)", "diff-cover (>=9.1.1)", "pytest (>=8.3.2)", "pytest-asyncio (>=0.24)", "pytest-cov (>=5)", "pytest-mock (>=3.14)", "pytest-timeout (>=2.3.1)", "virtualenv (>=20.26.3)"]
+docs = ["furo (>=2024.8.6)", "sphinx (>=8.0.2)", "sphinx-autodoc-typehints (>=2.4.1)"]
+testing = ["covdefaults (>=2.3)", "coverage (>=7.6.1)", "diff-cover (>=9.2)", "pytest (>=8.3.3)", "pytest-asyncio (>=0.24)", "pytest-cov (>=5)", "pytest-mock (>=3.14)", "pytest-timeout (>=2.3.1)", "virtualenv (>=20.26.4)"]
 typing = ["typing-extensions (>=4.12.2)"]
 
 [[package]]
@@ -1760,13 +1760,13 @@ pytzdata = ">=2020.1"
 
 [[package]]
 name = "platformdirs"
-version = "4.3.4"
+version = "4.3.6"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "platformdirs-4.3.4-py3-none-any.whl", hash = "sha256:8b4ba85412f5065dae40aa19feaa02ac2be584c8b14abd70712b5cd11ad80034"},
-    {file = "platformdirs-4.3.4.tar.gz", hash = "sha256:9e8a037c36fe1b1f1b5de4482e60464272cc8dca725e40b568bf2c285f7509cf"},
+    {file = "platformdirs-4.3.6-py3-none-any.whl", hash = "sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb"},
+    {file = "platformdirs-4.3.6.tar.gz", hash = "sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907"},
 ]
 
 [package.extras]
@@ -3139,4 +3139,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ed90370c1d03111f69fb5d005de0fa019977d541fe039744fff13b42133898ef"
+content-hash = "23abbbab373604caefd2cbcc18de924524cb06e9bd83529330c5d6b142a94987"

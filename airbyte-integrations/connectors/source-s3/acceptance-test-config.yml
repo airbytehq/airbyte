@@ -372,6 +372,8 @@ acceptance_tests:
 
   performance:
     tests:
+      - config_path: secrets/bulk_jsonl_perf_test_singlefile_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
       - config_path: secrets/bulk_jsonl_perf_test_config.json
         configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
 
