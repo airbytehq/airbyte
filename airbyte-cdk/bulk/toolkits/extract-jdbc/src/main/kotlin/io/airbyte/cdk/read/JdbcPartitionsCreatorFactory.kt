@@ -18,6 +18,8 @@ sealed class JdbcPartitionsCreatorFactory<
 >(
     // TODO : Inject state required by CdcPartitionsCreator
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
+    val cdcContext: CdcContext,
+    val initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
 ) : PartitionsCreatorFactory {
 
     override fun make(
@@ -29,7 +31,12 @@ sealed class JdbcPartitionsCreatorFactory<
         return when (feed) {
             is Global ->
                 when (isGlobal) {
-                    true -> CdcPartitionCreator(partitionFactory.sharedState.toCdcSharedState())
+                    true ->
+                        CdcPartitionCreator(
+                            partitionFactory.sharedState.toCdcSharedState(),
+                            cdcContext,
+                            initialCdcStateCreatorFactory.make(opaqueStateValue)
+                        )
                     false -> CreateNoPartitions
                 }
             is Stream -> {
@@ -55,7 +62,14 @@ class JdbcSequentialPartitionsCreatorFactory<
     P : JdbcPartition<S>,
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+    cdcContext: CdcContext,
+    initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
+) :
+    JdbcPartitionsCreatorFactory<A, S, P>(
+        partitionFactory,
+        cdcContext,
+        initialCdcStateCreatorFactory
+    ) {
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         JdbcSequentialPartitionsCreator(partition, partitionFactory)
@@ -70,7 +84,14 @@ class JdbcConcurrentPartitionsCreatorFactory<
     P : JdbcPartition<S>,
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
+    cdcContext: CdcContext,
+    initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
+) :
+    JdbcPartitionsCreatorFactory<A, S, P>(
+        partitionFactory,
+        cdcContext,
+        initialCdcStateCreatorFactory
+    ) {
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
         JdbcConcurrentPartitionsCreator(partition, partitionFactory)

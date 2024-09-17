@@ -4,6 +4,7 @@ dependencies {
     implementation 'io.debezium:debezium-api:2.4.0.Final'
     implementation 'io.debezium:debezium-embedded:2.4.0.Final'
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation 'io.debezium:debezium-embedded:2.7.1.Final'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
     testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
