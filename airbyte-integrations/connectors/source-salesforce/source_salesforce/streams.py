@@ -438,35 +438,64 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
                 },
             )
 
+
 class BulkParentStreamStreamSlicer(StreamSlicer):
-    def __init__(self, batched_substream: BatchedSubStream, sync_mode: SyncMode, cursor_field: Optional[List[str]], stream_state: Optional[Mapping[str, Any]], parend_id_field: str) -> None:
+    def __init__(
+        self,
+        batched_substream: BatchedSubStream,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]],
+        stream_state: Optional[Mapping[str, Any]],
+        parend_id_field: str,
+    ) -> None:
         self._batched_substream = batched_substream
         self._sync_mode = sync_mode
         self._cursor_field = cursor_field
         self._stream_state = stream_state
         self._parend_id_field = parend_id_field
 
-    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                           next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_headers(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                            next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_body_data(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Union[Mapping[str, Any], str]:
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
         return {}
 
-    def get_request_body_json(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                              next_page_token: Optional[Mapping[str, Any]] = None) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self) -> Iterable[StreamSlice]:
-        for batched_parents in self._batched_substream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state):
+        for batched_parents in self._batched_substream.stream_slices(
+            sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state
+        ):
             yield StreamSlice(
-                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]},
-                cursor_slice={}
+                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]}, cursor_slice={}
             )
 
 
@@ -664,9 +693,7 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository,
-                    stream_slices,
-                    exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
@@ -759,7 +786,11 @@ class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._instantiate_declarative_stream(BulkParentStreamStreamSlicer(super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]))
+        self._instantiate_declarative_stream(
+            BulkParentStreamStreamSlicer(
+                super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            )
+        )
         yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
 

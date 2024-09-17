@@ -15,7 +15,6 @@ from integration.test_rest_stream import create_http_response as create_standard
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
-
 from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
