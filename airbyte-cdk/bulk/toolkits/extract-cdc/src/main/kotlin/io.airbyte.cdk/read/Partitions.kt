@@ -7,20 +7,23 @@ package io.airbyte.cdk.read
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.sync.Mutex
 
-internal class LimitedMutex(private val maxCount: Int) {
+/**
+ * A [Mutex] wrapper that only allows locking n times
+ */
+internal class LimitedLockMutex(maxCount: Int) {
     private val mutex = Mutex()
-    private var lockCount = AtomicInteger(0)
+    private var locksLeft = AtomicInteger(maxCount)
 
     @Synchronized
     fun canLock(): Boolean {
-        return maxCount > lockCount.get()
+        return locksLeft.get() > 0
     }
 
     @Synchronized
     fun tryLock(): Boolean {
         if (canLock()) {
             if (mutex.tryLock()) {
-                lockCount.andIncrement
+                locksLeft.andDecrement
                 return true
             }
         }

@@ -24,6 +24,6 @@ interface CdcAware {
 
     companion object {
         // We can currenly run cdc only once per session
-        private val mutex = LimitedMutex(1)
+        private val mutex = LimitedLockMutex(1)
     }
 }
