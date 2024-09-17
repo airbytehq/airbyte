@@ -77,7 +77,7 @@ jobs:
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
           # TODO: be able to remove the skipSlowTests property
-          arguments: --scan check -DskipSlowTests=true
+          arguments: --scan check :airbyte-cdk:bulk:bulkCdkIntegrationTest -DskipSlowTests=true
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
