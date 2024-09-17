@@ -36,6 +36,8 @@ import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder
+import java.nio.charset.Charset
+import kotlin.text.Charsets.UTF_8
 
 private val log = KotlinLogging.logger {}
 
@@ -169,7 +171,7 @@ object SSLCertificateUtils {
     @JvmStatic
     fun convertPKCS1ToPKCS8(pkcs1KeyPath: Path, pkcs8KeyPath: Path, keyStorePassword: String?) {
         Security.addProvider(BouncyCastleProvider())
-        FileReader(pkcs1KeyPath.toFile()).use { reader ->
+        FileReader(pkcs1KeyPath.toFile(), UTF_8).use { reader ->
             val pemParser = PEMParser(reader)
             val pemObject = pemParser.readObject()
             // Convert PEM to a PrivateKey (JcaPEMKeyConverter handles different types like RSA,
