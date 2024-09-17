@@ -47,7 +47,7 @@ class MysqlCdcIntegrationTest {
         // val output: BufferingOutputConsumer = CliRunner.runSource("read", pojoConfig,
         // configuredCatalog)
         val output: BufferingOutputConsumer =
-            CliRunner.runSource("read", pojoConfig, configuredCatalog, list)
+            CliRunner.source("read", pojoConfig, configuredCatalog, list).run()
         Assertions.assertNotNull(output.specs())
     }
 
@@ -58,7 +58,7 @@ class MysqlCdcIntegrationTest {
         val pojoConfig: MysqlSourceConfigurationJsonObject = supplier.get()
         val configuredCatalog = catalogFactory.make(CDC_CATALOG)
         val output: BufferingOutputConsumer =
-            CliRunner.runSource("read", pojoConfig, configuredCatalog)
+            CliRunner.source("read", pojoConfig, configuredCatalog).run()
         Assertions.assertNotNull(output.specs())
     }
 }
