@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.incremental.declarative_cursor import Decla
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[Optional[T], bool]]:
