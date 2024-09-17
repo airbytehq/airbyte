@@ -368,11 +368,12 @@ def test_partition_limitation(caplog):
                 output = list(source.read(logger, {}, catalog, initial_state))
 
     # Check if the warning was logged
+    logged_messages = [record.message for record in caplog.records if record.levelname == "WARNING"]
     warning_message = (
         "The maximum number of partitions has been reached. " "Dropping the oldest partition: {'partition_field': '1'}. Over limit: 1."
     )
+    assert warning_message in logged_messages
 
-    # assert output_data == expected_records
     final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
     assert final_state[-1] == {
         "lookback_window": 1,

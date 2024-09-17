@@ -47,29 +47,29 @@ RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT = [
     "filter_template, records, expected_records",
     [
         (
-            "{{ record['created_at'] > stream_state['created_at'] }}",
-            [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
-            [{"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
+                "{{ record['created_at'] > stream_state['created_at'] }}",
+                [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
+                [{"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
         ),
         (
-            "{{ record['last_seen'] >= stream_slice['last_seen'] }}",
-            [{"id": 1, "last_seen": "06-06-21"}, {"id": 2, "last_seen": "06-07-21"}, {"id": 3, "last_seen": "06-10-21"}],
-            [{"id": 3, "last_seen": "06-10-21"}],
+                "{{ record['last_seen'] >= stream_slice['last_seen'] }}",
+                [{"id": 1, "last_seen": "06-06-21"}, {"id": 2, "last_seen": "06-07-21"}, {"id": 3, "last_seen": "06-10-21"}],
+                [{"id": 3, "last_seen": "06-10-21"}],
         ),
         (
-            "{{ record['id'] >= next_page_token['last_seen_id'] }}",
-            [{"id": 11}, {"id": 12}, {"id": 13}, {"id": 14}, {"id": 15}],
-            [{"id": 14}, {"id": 15}],
+                "{{ record['id'] >= next_page_token['last_seen_id'] }}",
+                [{"id": 11}, {"id": 12}, {"id": 13}, {"id": 14}, {"id": 15}],
+                [{"id": 14}, {"id": 15}],
         ),
         (
-            "{{ record['id'] >= next_page_token['path_to_nowhere'] }}",
-            [{"id": 11}, {"id": 12}, {"id": 13}, {"id": 14}, {"id": 15}],
-            [],
+                "{{ record['id'] >= next_page_token['path_to_nowhere'] }}",
+                [{"id": 11}, {"id": 12}, {"id": 13}, {"id": 14}, {"id": 15}],
+                [],
         ),
         (
-            "{{ record['created_at'] > parameters['created_at'] }}",
-            [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
-            [{"id": 3, "created_at": "06-08-21"}],
+                "{{ record['created_at'] > parameters['created_at'] }}",
+                [{"id": 1, "created_at": "06-06-21"}, {"id": 2, "created_at": "06-07-21"}, {"id": 3, "created_at": "06-08-21"}],
+                [{"id": 3, "created_at": "06-08-21"}],
         ),
     ],
     ids=[
@@ -105,54 +105,54 @@ def test_record_filter(filter_template: str, records: List[Mapping], expected_re
         (DATE_TIME_WITH_TZ_FORMAT, {}, None, "2021-01-05T00:00:00+00:00", RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT, [2, 3]),
         (DATE_TIME_WITH_TZ_FORMAT, {}, None, None, RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT, [2, 3, 4]),
         (
-            DATE_TIME_WITH_TZ_FORMAT,
-            {"created_at": "2021-01-04T00:00:00+00:00"},
-            None,
-            "2021-01-05T00:00:00+00:00",
-            RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT,
-            [3],
+                DATE_TIME_WITH_TZ_FORMAT,
+                {"created_at": "2021-01-04T00:00:00+00:00"},
+                None,
+                "2021-01-05T00:00:00+00:00",
+                RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT,
+                [3],
         ),
         (
-            DATE_TIME_WITH_TZ_FORMAT,
-            {"created_at": "2021-01-04T00:00:00+00:00"},
-            None,
-            None,
-            RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT,
-            [3, 4],
+                DATE_TIME_WITH_TZ_FORMAT,
+                {"created_at": "2021-01-04T00:00:00+00:00"},
+                None,
+                None,
+                RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT,
+                [3, 4],
         ),
         (
-            DATE_TIME_WITH_TZ_FORMAT,
-            {},
-            "{{ record['id'] % 2 == 1 }}",
-            "2021-01-05T00:00:00+00:00",
-            RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT,
-            [3],
+                DATE_TIME_WITH_TZ_FORMAT,
+                {},
+                "{{ record['id'] % 2 == 1 }}",
+                "2021-01-05T00:00:00+00:00",
+                RECORDS_TO_FILTER_DATE_TIME_WITH_TZ_FORMAT,
+                [3],
         ),
         (DATE_TIME_WITHOUT_TZ_FORMAT, {}, None, "2021-01-05T00:00:00", RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT, [2, 3]),
         (DATE_TIME_WITHOUT_TZ_FORMAT, {}, None, None, RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT, [2, 3, 4]),
         (
-            DATE_TIME_WITHOUT_TZ_FORMAT,
-            {"created_at": "2021-01-04T00:00:00"},
-            None,
-            "2021-01-05T00:00:00",
-            RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT,
-            [3],
+                DATE_TIME_WITHOUT_TZ_FORMAT,
+                {"created_at": "2021-01-04T00:00:00"},
+                None,
+                "2021-01-05T00:00:00",
+                RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT,
+                [3],
         ),
         (
-            DATE_TIME_WITHOUT_TZ_FORMAT,
-            {"created_at": "2021-01-04T00:00:00"},
-            None,
-            None,
-            RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT,
-            [3, 4],
+                DATE_TIME_WITHOUT_TZ_FORMAT,
+                {"created_at": "2021-01-04T00:00:00"},
+                None,
+                None,
+                RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT,
+                [3, 4],
         ),
         (
-            DATE_TIME_WITHOUT_TZ_FORMAT,
-            {},
-            "{{ record['id'] % 2 == 1 }}",
-            "2021-01-05T00:00:00",
-            RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT,
-            [3],
+                DATE_TIME_WITHOUT_TZ_FORMAT,
+                {},
+                "{{ record['id'] % 2 == 1 }}",
+                "2021-01-05T00:00:00",
+                RECORDS_TO_FILTER_DATE_TIME_WITHOUT_TZ_FORMAT,
+                [3],
         ),
     ],
     ids=[
@@ -174,12 +174,12 @@ def test_record_filter(filter_template: str, records: List[Mapping], expected_re
     ],
 )
 def test_client_side_record_filter_decorator_no_parent_stream(
-    datetime_format: str,
-    stream_state: Optional[Mapping],
-    record_filter_expression: str,
-    end_datetime: Optional[str],
-    records_to_filter: List[Mapping],
-    expected_record_ids: List[int],
+        datetime_format: str,
+        stream_state: Optional[Mapping],
+        record_filter_expression: str,
+        end_datetime: Optional[str],
+        records_to_filter: List[Mapping],
+        expected_record_ids: List[int],
 ):
     date_time_based_cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format=DATE_FORMAT, parameters={}),
@@ -287,16 +287,17 @@ def test_client_side_record_filter_decorator_with_cursor_types(
         cursor_type: str,
         expected_record_ids: List[int]
 ):
-    date_time_based_cursor_factory = lambda: DatetimeBasedCursor(
-        start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format=DATE_FORMAT, parameters={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-05", datetime_format=DATE_FORMAT, parameters={}),
-        step="P10Y",
-        cursor_field=InterpolatedString.create("created_at", parameters={}),
-        datetime_format=DATE_FORMAT,
-        cursor_granularity="P1D",
-        config={},
-        parameters={},
-    )
+    def date_time_based_cursor_factory() -> DatetimeBasedCursor:
+        return DatetimeBasedCursor(
+            start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format=DATE_FORMAT, parameters={}),
+            end_datetime=MinMaxDatetime(datetime="2021-01-05", datetime_format=DATE_FORMAT, parameters={}),
+            step="P10Y",
+            cursor_field=InterpolatedString.create("created_at", parameters={}),
+            datetime_format=DATE_FORMAT,
+            cursor_granularity="P1D",
+            config={},
+            parameters={},
+        )
 
     date_time_based_cursor = date_time_based_cursor_factory()
 
@@ -364,5 +365,3 @@ def test_client_side_record_filter_decorator_with_cursor_types(
     )
 
     assert [x.get("id") for x in filtered_records] == expected_record_ids
-
-

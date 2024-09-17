@@ -4,15 +4,17 @@
 
 import threading
 import time
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union, TypeVar
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 
+T = TypeVar('T')
 
-def iterate_with_last_flag(generator):
+
+def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[Optional[T], bool]]:
     """
     Iterates over the given generator and returns a tuple containing the element and a flag
     indicating whether it's the last element in the generator. If the generator is empty,
@@ -81,7 +83,7 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         self._all_slices_yielded = False
         self._lookback_window: Optional[int] = None
 
-    def start_slices_generation(self):
+    def start_slices_generation(self) -> None:
         self._timer.start()
 
     def stream_slices(self) -> Iterable[StreamSlice]:

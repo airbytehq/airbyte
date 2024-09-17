@@ -56,7 +56,6 @@ class PerPartitionCursor(DeclarativeCursor):
         # The dict is ordered to ensure that once the maximum number of partitions is reached,
         # the oldest partitions can be efficiently removed, maintaining the most recent partitions.
         self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
-        self._cursor_per_partition: OrderedDict[str, DeclarativeCursor] = OrderedDict()
         self._over_limit = 0
         self._partition_serializer = PerPartitionKeySerializer()
 
