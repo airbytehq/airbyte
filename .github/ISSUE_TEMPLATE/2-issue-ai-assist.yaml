@@ -45,7 +45,7 @@ body:
     id: alpha-release
     attributes:
       label: Is this in the Alpha Release?
-      description: Are you seeing this happening in the alpha release of AI Assist?
+      description: Are you noticing this issue in the alpha release of AI Assist?
       options:
-        - label: Yes, the issue is in AI Assist Alpha Release
+        - label: Yes, the issue is in the AI Assist Alpha Release.
           required: false
