@@ -10,6 +10,7 @@ import jakarta.inject.Singleton
 @Singleton
 data class CdcContext(
     val outputConsumer: OutputConsumer,
-    val propertyManager: DebeziumPropertiesManager,
-    val configuration: CdcSourceConfiguration,
+    val debeziumManager: DebeziumManager,
+    val positionMapperFactory: CdcPositionMapper.Factory,
+    val eventConverter: DebeziumEventConverter
 )

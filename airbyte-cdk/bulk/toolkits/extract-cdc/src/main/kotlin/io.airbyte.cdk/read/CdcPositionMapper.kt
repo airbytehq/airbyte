@@ -4,29 +4,34 @@
 
 package io.airbyte.cdk.read
 
-import org.apache.kafka.connect.source.SourceRecord
+import jakarta.inject.Singleton
 
-/**
- * [CdcPositionMapper] abstracts the mapping from states and records to a database-dependent Cdc
- * position value. All that matters as far as anything is concerned is that the values are
- * [Comparable].
- */
-interface CdcPositionMapper<T : Comparable<T>> {
+/** Encapsulates the logic for determining whether a cdc sync has reached its target position */
+interface CdcPositionMapper {
+    fun reachedTargetPosition(record: DebeziumRecord): Boolean
 
-    /** Maps a [DebeziumState.Offset] to an LSN value. */
-    fun get(offset: DebeziumState.Offset): T
+    /** Factory for [CdcPositionMapper] instances. */
+    fun interface Factory {
+        /** An implementation make a CdcPositionMapper [CdcPositionMapper] instance. */
+        fun get(): CdcPositionMapper
+    }
+}
 
-    /** Maps a [Record] to an Cdc position value. */
-    fun get(record: DebeziumRecord): T?
+class DefaultCdcPositionMapper : CdcPositionMapper {
+    var counter = 0
+    override fun reachedTargetPosition(record: DebeziumRecord): Boolean {
+        if (counter < 1) {
+            counter++
+            return false
+        }
+        return true
+    }
+}
 
-    /** Maps a [SourceRecord] to an Cdc position value. */
-    fun get(sourceRecord: SourceRecord): T?
+@Singleton
+class Factory() : CdcPositionMapper.Factory {
 
-    /** [asAny] makes it possible to compare the outputs of [CdcPositionMapper]<*>. */
-    @Suppress("UNCHECKED_CAST")
-    fun asAny(): CdcPositionMapper<Comparable<Any>> = this as CdcPositionMapper<Comparable<Any>>
-
-    fun comparator(): Comparator<DebeziumState> = Comparator { before, after ->
-        asAny().get(before!!.offset).compareTo(asAny().get(after!!.offset))
+    override fun get(): CdcPositionMapper {
+        return DefaultCdcPositionMapper()
     }
 }

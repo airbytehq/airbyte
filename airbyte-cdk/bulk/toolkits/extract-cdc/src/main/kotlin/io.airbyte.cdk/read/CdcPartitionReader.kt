@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.read.CdcPartition
 import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
+import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.read.CdcContext
+import io.airbyte.cdk.read.DebeziumRecord
+import io.airbyte.cdk.read.JdbcPartitionReader.AcquiredResources
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
@@ -15,22 +19,29 @@ import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
 import io.airbyte.cdk.read.cdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.commons.json.Jsons
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
-//    cdcContext: io.airbyte.cdk.read.CdcContext,
-    val partition: P
+class CdcPartitionReader(
+    cdcContext: CdcContext,
+    opaqueStateValue: OpaqueStateValue?,
 ) : PartitionReader, cdcAware, cdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
-//    private val outputConsumer = cdcContext.outputConsumer
-//    private val propertyManager = cdcContext.propertyManager
+    private var numRecords = 0L
+    private val outputConsumer = cdcContext.outputConsumer
+    private val eventConverter = cdcContext.eventConverter
+    private val propertyManager = cdcContext.debeziumManager
+    private val positionMapper = cdcContext.positionMapperFactory.get()
     private val acquiredResources = AtomicReference<AcquiredResources>()
+    val opaqueStateValue = opaqueStateValue
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -40,24 +51,22 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
             return RETRY_LATER
         }
 
-        val acquiredResources: AcquiredResources =
-            partition.tryAcquireResourcesForReader() ?: return RETRY_LATER
-        this.acquiredResources.set(acquiredResources)
-        return READY_TO_RUN
+        /*val acquiredResources: AcquiredResources =
+            partition.tryAcquireResourcesForReader() ?: return TryAcquireResourcesStatus.RETRY_LATER
+        this.acquiredResources.set(acquiredResources)*/
+        return TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override suspend fun run() {
 /*
         engine = createDebeziumEngine()
-        // TODO: Determine if debezium engine should be run asynchronously or engine stop should be
-        // run asynchronously
         engine?.run()
 */
         cdcAware.cdcRan.set(true)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
-        return PartitionReadCheckpoint(NullNode.instance, 0)
+        return PartitionReadCheckpoint(propertyManager.readOffsetState(), numRecords)
     }
 
     override fun releaseResources() {
@@ -65,21 +74,12 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
         // Release global CDC lock
     }
 
-    fun processDebeziumMessage(changeEvent: ChangeEvent<String?, String?>) {
-        log.info { changeEvent }
-        TODO("Not yet implemented")
-    }
-
-    fun convertToAirbyteMessage(record: DebeziumRecord): AirbyteRecordMessage {
-        // TODO : Convert event to an airbyte message
-        log.info { record }
-        return AirbyteRecordMessage()
-    }
-
-/*
     fun createDebeziumEngine(): DebeziumEngine<ChangeEvent<String?, String?>>? {
+        log.info {
+            "Using DBZ version: ${DebeziumEngine::class.java.getPackage().implementationVersion}"
+        }
         return DebeziumEngine.create(Json::class.java)
-            .using(propertyManager.get())
+            .using(propertyManager.getPropertiesForSync(opaqueStateValue))
             .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
             .notifying { event: ChangeEvent<String?, String?> ->
                 if (event.value() == null) {
@@ -88,9 +88,10 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
                 val record = DebeziumRecord(Jsons.deserialize(event.value()))
                 // TODO : Migrate over all of the timeout/heartbeat timeout logic
                 if (!record.isHeartbeat) {
-                    outputConsumer.accept(convertToAirbyteMessage(record))
+                    numRecords++
+                    outputConsumer.accept(eventConverter.toAirbyteMessage(record))
                 }
-                if (reachedTargetPosition(record)) {
+                if (positionMapper.reachedTargetPosition(record)) {
                     // Stop if we've reached the upper bound.
                     if (record.isHeartbeat) {
                         requestClose(
@@ -140,16 +141,9 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
             )
             .build()
     }
-*/
 
-    fun reachedTargetPosition(record: DebeziumRecord): Boolean {
-        // TODO : Implement this
-        log.info { record }
-        return false
-    }
     enum class DebeziumCloseReason() {
         TIMEOUT,
-        ITERATOR_CLOSE,
         HEARTBEAT_REACHED_TARGET_POSITION,
         CHANGE_EVENT_REACHED_TARGET_POSITION,
         HEARTBEAT_NOT_PROGRESSING
@@ -161,6 +155,6 @@ class CdcPartitionReader<P : CdcPartition<CdcSharedState>>(
         // TODO : send close analytics message
         // TODO : Close the engine. Note that engine must be closed in a different thread
         // than the running engine.
-        // launch { engine?.close() }
+        CoroutineScope(Dispatchers.Default).launch { engine?.close() }
     }
 }
