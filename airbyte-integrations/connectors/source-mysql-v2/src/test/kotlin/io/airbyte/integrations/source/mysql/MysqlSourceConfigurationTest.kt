@@ -26,16 +26,12 @@ class MysqlSourceConfigurationTest {
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 
-        Assertions.assertEquals(
-            config.realHost, "localhost")
-        Assertions.assertEquals(
-            config.realPort, 12345)
+        Assertions.assertEquals(config.realHost, "localhost")
+        Assertions.assertEquals(config.realPort, 12345)
         Assertions.assertEquals(config.namespaces, setOf("FOO", "SYSTEM"))
 
-        Assertions.assertEquals(
-            config.jdbcProperties["user"], "FOO")
-        Assertions.assertEquals(
-            config.jdbcProperties["password"], "BAR")
+        Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
+        Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
 
         // Make sure we don't accidentally drop the following hardcoded settings for mysql.
         Assertions.assertEquals(config.jdbcProperties["useCursorFetch"], "true")
@@ -43,8 +39,7 @@ class MysqlSourceConfigurationTest {
 
         Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
 
-        Assertions.assertEquals(
-            config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
+        Assertions.assertEquals(config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
         Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
     }
 }
