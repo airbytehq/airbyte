@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mysql.cdc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore
@@ -88,12 +89,19 @@ class MySqlDebeziumManager(
         offset: Map<String, String>,
         dbHistory: AirbyteSchemaHistoryStorage.SchemaHistory<String>
     ): JsonNode {
-        val state: MutableMap<String, Any> = HashMap()
-        state[MYSQL_CDC_OFFSET] = offset
-        state[MYSQL_DB_HISTORY] = dbHistory.schema
-        state[IS_COMPRESSED] = dbHistory.isCompressed
+        val mapper = ObjectMapper()
+        val internalState: MutableMap<String, Any> = HashMap()
+        internalState[MYSQL_CDC_OFFSET] = offset
+        internalState[MYSQL_DB_HISTORY] = dbHistory.schema
+        internalState[IS_COMPRESSED] = dbHistory.isCompressed
 
-        return ObjectMapper().valueToTree(state)
+        val internalStateNode: JsonNode = ObjectMapper().valueToTree(internalState)
+
+        // Add original fields into the "state" field of the new structure
+        val rootNode: ObjectNode = mapper.createObjectNode()
+        rootNode.set<ObjectNode>("state", internalStateNode)
+
+        return rootNode
     }
 
     fun setOffsetProps(props: Properties, opaqueStateValue: OpaqueStateValue?) {

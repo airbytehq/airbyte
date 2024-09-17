@@ -30,7 +30,7 @@ class MysqlCdcIntegrationTest {
     @Test
     @Property(name = "airbyte.connector.config.json", value = CDC_CONFIG_JSON)
     @Property(name = "airbyte.connector.catalog.json", value = CDC_CATALOG)
-    fun testRead() {
+    fun testReadWithState() {
         val pojoConfig: MysqlSourceConfigurationJsonObject = supplier.get()
         val configuredCatalog = catalogFactory.make(CDC_CATALOG)
         val list: List<io.airbyte.protocol.models.v0.AirbyteStateMessage>? =
@@ -41,12 +41,24 @@ class MysqlCdcIntegrationTest {
                 // Discard states messages with unset type to allow {} as a valid input state.
                 .filter { it.type != null }
 
+        print(list)
         // val inputState = inputStateFactory.make(AIRBYTE_STATE_MESSAGE)
         // println(inputState)
         // val output: BufferingOutputConsumer = CliRunner.runSource("read", pojoConfig,
         // configuredCatalog)
         val output: BufferingOutputConsumer =
             CliRunner.runSource("read", pojoConfig, configuredCatalog, list)
+        Assertions.assertNotNull(output.specs())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CDC_CONFIG_JSON)
+    @Property(name = "airbyte.connector.catalog.json", value = CDC_CATALOG)
+    fun testReadNoState() {
+        val pojoConfig: MysqlSourceConfigurationJsonObject = supplier.get()
+        val configuredCatalog = catalogFactory.make(CDC_CATALOG)
+        val output: BufferingOutputConsumer =
+            CliRunner.runSource("read", pojoConfig, configuredCatalog)
         Assertions.assertNotNull(output.specs())
     }
 }
@@ -57,7 +69,7 @@ const val CDC_CONFIG_JSON =
   "host": "34.106.250.115",
   "port": 3306,
   "username": "root",
-  "password": "********",
+  "password": "*******",
   "schemas": [
     "newcdk"
   ],
