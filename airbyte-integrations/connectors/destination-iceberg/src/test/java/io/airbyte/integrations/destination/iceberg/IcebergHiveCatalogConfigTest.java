@@ -68,6 +68,8 @@ class IcebergHiveCatalogConfigTest {
   private Catalog catalog;
   private IcebergCatalogConfigFactory factory;
 
+  private final JsonNode mockedJsonConfig = mock(JsonNode.class);
+
   @BeforeAll
   static void staticSetup() {
     IcebergHiveCatalogConfigTest.mockedIcebergGenerics = mockStatic(IcebergGenerics.class);
@@ -136,7 +138,7 @@ class IcebergHiveCatalogConfigTest {
   public void checksHiveCatalogWithoutS3ListObjectPermission() {
     final IcebergDestination destinationFail = new IcebergDestination(factory);
     doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
-    final AirbyteConnectionStatus status = destinationFail.check(null);
+    final AirbyteConnectionStatus status = destinationFail.check(mockedJsonConfig);
     log.info("status={}", status);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
     assertTrue(status.getMessage().contains("Access Denied"), "Connection check returned wrong failure message");
@@ -147,7 +149,7 @@ class IcebergHiveCatalogConfigTest {
     final IcebergDestination destinationFail = new IcebergDestination(factory);
     doThrow(new AlreadyExistsException("Table already exists: temp_1123412341234")).when(catalog)
         .createTable(any(TableIdentifier.class), any(Schema.class));
-    final AirbyteConnectionStatus status = destinationFail.check(null);
+    final AirbyteConnectionStatus status = destinationFail.check(mockedJsonConfig);
     log.info("status={}", status);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
     assertTrue(status.getMessage().contains("Table already exists"),
@@ -188,7 +190,7 @@ class IcebergHiveCatalogConfigTest {
   @Test
   public void checksHiveCatalogWithS3Success() {
     final IcebergDestination destinationSuccess = new IcebergDestination(factory);
-    final AirbyteConnectionStatus status = destinationSuccess.check(null);
+    final AirbyteConnectionStatus status = destinationSuccess.check(mockedJsonConfig);
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }
 
