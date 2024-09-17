@@ -41,7 +41,7 @@ class CdcPartitionReader<S : CdcSharedState>(val sharedState: S) :
     }
 
     override suspend fun run() {
-        delay(5000)
+        TODO()
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
