@@ -38,7 +38,7 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
-        state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
+        state: Optional[MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
         abstract_streams = self._select_abstract_streams(config, catalog)
         concurrent_stream_names = {stream.name for stream in abstract_streams}
@@ -48,9 +48,6 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
         if abstract_streams:
             yield from self._concurrent_source.read(abstract_streams)
         if configured_catalog_for_regular_streams.streams:
-            if isinstance(state, MutableMapping):
-                state = [AirbyteStateMessage(data=dict(state))]
-
             yield from super().read(logger, config, configured_catalog_for_regular_streams, state)
 
     def _select_abstract_streams(self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> List[AbstractStream]:
@@ -109,17 +106,14 @@ class ConcurrentSourceAdapter(AbstractSource, ABC):
             if not isinstance(cursor_field_name, str):
                 raise ValueError(f"Cursor field type must be a string, but received {type(cursor_field_name).__name__}.")
 
-            stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
-            cursor_field = CursorField(cursor_field_name)
-
             return ConcurrentCursor(
                 stream.name,
                 stream.namespace,
-                stream_state,
+                state_manager.get_stream_state(stream.name, stream.namespace),
                 self.message_repository,  # type: ignore[arg-type]  # _default_message_repository will be returned in the worst case
                 state_manager,
                 converter,
-                cursor_field,
+                CursorField(cursor_field_name),
                 slice_boundary_fields,
                 start,
                 end_provider,
