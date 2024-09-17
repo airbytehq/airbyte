@@ -34,7 +34,7 @@ definitions:
     url_base: https://www.eventbriteapi.com
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"private_token\"] }}"
+      api_token: '{{ config["private_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/event"
