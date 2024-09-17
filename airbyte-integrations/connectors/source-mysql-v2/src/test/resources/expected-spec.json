@@ -34,14 +34,10 @@
           {
             "type": "object",
             "title": "Scan Changes with User Defined Cursor",
-            "required": [
-              "cursor_method"
-            ],
+            "required": ["cursor_method"],
             "properties": {
               "cursor_method": {
-                "enum": [
-                  "user_defined"
-                ],
+                "enum": ["user_defined"],
                 "type": "string",
                 "default": "user_defined"
               }
@@ -52,14 +48,10 @@
           {
             "type": "object",
             "title": "Read Changes using Change Data Capture (CDC)",
-            "required": [
-              "cursor_method"
-            ],
+            "required": ["cursor_method"],
             "properties": {
               "cursor_method": {
-                "enum": [
-                  "cdc"
-                ],
+                "enum": ["cdc"],
                 "type": "string",
                 "default": "cdc"
               }
@@ -104,14 +96,10 @@
           {
             "type": "object",
             "title": "preferred",
-            "required": [
-              "encryption_method"
-            ],
+            "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
-                "enum": [
-                  "preferred"
-                ],
+                "enum": ["preferred"],
                 "type": "string",
                 "default": "preferred"
               }
@@ -122,14 +110,10 @@
           {
             "type": "object",
             "title": "required",
-            "required": [
-              "encryption_method"
-            ],
+            "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
-                "enum": [
-                  "required"
-                ],
+                "enum": ["required"],
                 "type": "string",
                 "default": "required"
               }
@@ -140,10 +124,7 @@
           {
             "type": "object",
             "title": "verify_ca",
-            "required": [
-              "encryption_method",
-              "ssl_certificate"
-            ],
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -160,9 +141,7 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": [
-                  "verify_ca"
-                ],
+                "enum": ["verify_ca"],
                 "type": "string",
                 "default": "verify_ca"
               },
@@ -187,10 +166,7 @@
           {
             "type": "object",
             "title": "verify_identity",
-            "required": [
-              "encryption_method",
-              "ssl_certificate"
-            ],
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -207,9 +183,7 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": [
-                  "verify_identity"
-                ],
+                "enum": ["verify_identity"],
                 "type": "string",
                 "default": "verify_identity"
               },
@@ -249,14 +223,10 @@
           {
             "type": "object",
             "title": "No Tunnel",
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
-                "enum": [
-                  "NO_TUNNEL"
-                ],
+                "enum": ["NO_TUNNEL"],
                 "type": "string",
                 "default": "NO_TUNNEL"
               }
@@ -305,9 +275,7 @@
                 "description": "OS-level username for logging into the jump server host"
               },
               "tunnel_method": {
-                "enum": [
-                  "SSH_KEY_AUTH"
-                ],
+                "enum": ["SSH_KEY_AUTH"],
                 "type": "string",
                 "default": "SSH_KEY_AUTH"
               }
@@ -348,9 +316,7 @@
                 "description": "OS-level username for logging into the jump server host"
               },
               "tunnel_method": {
-                "enum": [
-                  "SSH_PASSWORD_AUTH"
-                ],
+                "enum": ["SSH_PASSWORD_AUTH"],
                 "type": "string",
                 "default": "SSH_PASSWORD_AUTH"
               },
