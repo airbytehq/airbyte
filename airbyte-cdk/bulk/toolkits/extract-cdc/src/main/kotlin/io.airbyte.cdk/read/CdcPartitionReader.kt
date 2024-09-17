@@ -4,24 +4,15 @@
 
 package io.airbyte.cdk.cdc
 
-import com.fasterxml.jackson.databind.node.NullNode
-import io.airbyte.cdk.read.CdcAware
-import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.read.CdcAware
 import io.airbyte.cdk.read.CdcContext
+import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
-import io.airbyte.cdk.read.cdcResourceTaker
-import io.debezium.engine.ChangeEvent
-import io.debezium.engine.DebeziumEngine
-import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.*
-import java.util.concurrent.atomic.AtomicReference
-import kotlinx.coroutines.delay
-import io.airbyte.cdk.read.cdcAware
 import io.airbyte.cdk.read.cdcResourceTaker
 import io.airbyte.commons.json.Jsons
 import io.debezium.engine.ChangeEvent
@@ -29,15 +20,17 @@ import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.debezium.engine.spi.OffsetCommitPolicy
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CdcPartitionReader(
+class CdcPartitionReader<S : CdcSharedState>(
+    private val sharedState: S,
     cdcContext: CdcContext,
     opaqueStateValue: OpaqueStateValue?,
-) : PartitionReader, cdcAware, cdcResourceTaker {
+) : PartitionReader, CdcAware, cdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
@@ -66,7 +59,6 @@ class CdcPartitionReader(
     override suspend fun run() {
         engine = createDebeziumEngine()
         engine?.run()
-        cdcAware.cdcRan.set(true)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
@@ -76,12 +68,6 @@ class CdcPartitionReader(
     override fun releaseResources() {
         acquiredResources.getAndSet(null)?.close()
         cdcRunEnded()
-        // Release global CDC lock
-    }
-
-    enum class DebeziumCloseReason() {
-        TIMEOUT,
-        ITERATOR_CLOSE,
         // Release global CDC lock
     }
 

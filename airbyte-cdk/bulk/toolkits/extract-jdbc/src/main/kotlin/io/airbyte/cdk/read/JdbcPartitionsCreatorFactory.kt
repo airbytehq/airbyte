@@ -16,7 +16,6 @@ sealed class JdbcPartitionsCreatorFactory<
     S : JdbcStreamState<A>,
     P : JdbcPartition<S>,
 >(
-    // TODO : Inject state required by CdcPartitionsCreator
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
     val cdcContext: CdcContext,
     val initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
