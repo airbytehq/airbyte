@@ -19,9 +19,8 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.delay
 
-class CdcPartitionReader<S : CdcSharedState>(
-    val sharedState: S
-) : PartitionReader, CdcAware, cdcResourceTaker {
+class CdcPartitionReader<S : CdcSharedState>(val sharedState: S) :
+    PartitionReader, CdcAware, cdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null

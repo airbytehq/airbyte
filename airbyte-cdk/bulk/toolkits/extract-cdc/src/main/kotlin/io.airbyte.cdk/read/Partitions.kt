@@ -27,8 +27,7 @@ internal class LimitedMutex(private val maxCount: Int) {
         return false
     }
 
-    @Synchronized
-    fun unlock() = mutex.unlock()
+    @Synchronized fun unlock() = mutex.unlock()
 
     val isLocked: Boolean
         get() = mutex.isLocked

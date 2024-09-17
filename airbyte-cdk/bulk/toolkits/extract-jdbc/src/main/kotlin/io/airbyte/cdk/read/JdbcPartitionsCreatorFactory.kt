@@ -27,10 +27,11 @@ sealed class JdbcPartitionsCreatorFactory<
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         val isGlobal = partitionFactory.sharedState.configuration.global
         return when (feed) {
-            is Global -> when (isGlobal) {
+            is Global ->
+                when (isGlobal) {
                     true -> CdcPartitionCreator(partitionFactory.sharedState.toCdcSharedState())
                     false -> CreateNoPartitions
-            }
+                }
             is Stream -> {
                 val partition: P? = partitionFactory.create(feed, opaqueStateValue)
                 if (partition == null) {
