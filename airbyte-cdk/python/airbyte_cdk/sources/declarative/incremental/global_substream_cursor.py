@@ -54,8 +54,10 @@ class Timer:
         self._start = time.perf_counter_ns()
 
     def finish(self) -> int:
-        if self._start:
-            return ((time.perf_counter_ns() - self._start) / 1e9).__ceil__()
+        start = self._start
+        if start is not None:
+            elapsed_ns = time.perf_counter_ns() - start
+            return (elapsed_ns + 999_999_999) // 1_000_000_000  # Equivalent to ceil(elapsed_ns / 1e9)
         else:
             raise RuntimeError("Global substream cursor timer not started")
 
