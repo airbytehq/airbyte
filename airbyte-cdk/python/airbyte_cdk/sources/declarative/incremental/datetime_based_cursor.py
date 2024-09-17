@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
 import datetime
 from dataclasses import InitVar, dataclass, field
 from datetime import timedelta
@@ -109,12 +110,44 @@ class DatetimeBasedCursor(DeclarativeCursor):
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
-        Cursors are not initialized with their state. As state is needed in order to function properly, this method should be called
-        before calling anything else
+        Set the initial state for the cursors.
 
-        :param stream_state: The state of the stream as returned by get_stream_state
+        This method initializes the state for the global cursor using the provided stream state.
+
+        Additionally, it sets the parent state for partition routers that are based on parent streams. If a partition router
+        does not have parent streams, this step will be skipped due to the default PartitionRouter implementation.
+
+        Args:
+            stream_state (StreamState): The state of the streams to be set. The format of the stream state should be:
+                {
+                    "state": {
+                        "last_updated": "2023-05-27T00:00:00Z"
+                    },
+                    "parent_state": {
+                        "parent_stream_name": {
+                            "last_updated": "2023-05-27T00:00:00Z"
+                        }
+                    },
+                    "lookback_window": 132
+                }
         """
-        self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None  # type: ignore  # cursor_field is converted to an InterpolatedString in __post_init__
+        if not stream_state:
+            return
+
+        lookback_window, state, parent_state = (
+            stream_state.get("lookback_window"),
+            stream_state.get("state"),
+            stream_state.get("parent_state"),
+        )
+        if lookback_window is not None:
+            self._lookback_window = lookback_window
+            self._inject_lookback_into_stream_cursor(lookback_window)
+
+        if state:
+            self._stream_cursor.set_initial_state(state)
+
+        if parent_state:
+            self._partition_router.set_initial_state({"parent_state": parent_state})
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         """

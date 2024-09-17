@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
 import threading
 import time
 from typing import Any, Iterable, Mapping, Optional, TypeVar, Union
@@ -161,15 +162,20 @@ class GlobalSubstreamCursor(DeclarativeCursor):
         if not stream_state:
             return
 
-        if "lookback_window" in stream_state:
-            self._lookback_window = stream_state["lookback_window"]
-            self._inject_lookback_into_stream_cursor(stream_state["lookback_window"])
+        lookback_window, state, parent_state = (
+            stream_state.get("lookback_window"),
+            stream_state.get("state"),
+            stream_state.get("parent_state"),
+        )
+        if lookback_window is not None:
+            self._lookback_window = lookback_window
+            self._inject_lookback_into_stream_cursor(lookback_window)
 
-        if "state" in stream_state:
-            self._stream_cursor.set_initial_state(stream_state["state"])
+        if state:
+            self._stream_cursor.set_initial_state(state)
 
-        # Set parent state for partition routers based on parent streams
-        self._partition_router.set_initial_state(stream_state)
+        if parent_state:
+            self._partition_router.set_initial_state({"parent_state": parent_state})
 
     def _inject_lookback_into_stream_cursor(self, lookback_window: int) -> None:
         """
