@@ -14,7 +14,7 @@ private val ran: AtomicBoolean = AtomicBoolean(false)
 class CdcPartitionCreator<
     A : CdcSharedState,
 >(val sharedState: A, cdcContext: CdcContext, opaqueStateValue: OpaqueStateValue?) :
-    PartitionsCreator {
+    PartitionsCreator, CdcAware {
     private val acquiredResources = AtomicReference<AcquiredResources>()
     val cdcContext = cdcContext
     val opaqueStateValue = opaqueStateValue
@@ -29,9 +29,12 @@ class CdcPartitionCreator<
         this.acquiredResources.set(acquiredResources)
         return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
     }
-
     override suspend fun run(): List<PartitionReader> {
-        return listOf(CdcPartitionReader(cdcContext, opaqueStateValue))
+        if (cdcReadyToRun().not()) {
+            return emptyList()
+        }
+
+        return listOf(CdcPartitionReader(sharedState, cdcContext, opaqueStateValue))
     }
 
     override fun releaseResources() {
