@@ -3,6 +3,8 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamNamePair
+import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.EmptyInputState
 import io.airbyte.cdk.command.GlobalInputState
 import io.airbyte.cdk.command.InputState
@@ -27,10 +29,8 @@ import io.airbyte.cdk.output.StreamHasNoFields
 import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.SyncMode
 import jakarta.inject.Singleton
 
@@ -76,13 +76,16 @@ class StateManagerFactory(
         inputState: GlobalInputState? = null,
     ) =
         StateManager(
-            global = Global(streams.filter { it.configuredSyncMode == SyncMode.INCREMENTAL }),
+            global =
+                Global(streams.filter { it.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL }),
             initialGlobalState = inputState?.global,
             initialStreamStates =
                 streams.associateWith { stream: Stream ->
                     when (stream.configuredSyncMode) {
-                        SyncMode.INCREMENTAL -> inputState?.globalStreams?.get(stream.namePair)
-                        SyncMode.FULL_REFRESH -> inputState?.nonGlobalStreams?.get(stream.namePair)
+                        ConfiguredSyncMode.INCREMENTAL ->
+                            inputState?.globalStreams?.get(stream.namePair)
+                        ConfiguredSyncMode.FULL_REFRESH ->
+                            inputState?.nonGlobalStreams?.get(stream.namePair)
                     }
                 },
         )
@@ -106,14 +109,14 @@ class StateManagerFactory(
         val jsonSchemaProperties: JsonNode = stream.jsonSchema["properties"]
         val name: String = stream.name!!
         val namespace: String? = stream.namespace
-        val streamDescriptor = StreamDescriptor().withName(name).withNamespace(namespace)
-        val streamLabel: String = AirbyteStreamNameNamespacePair(name, namespace).toString()
+        val streamNamePair = StreamNamePair(name, namespace)
+        val streamLabel: String = streamNamePair.toString()
         when (metadataQuerier.streamNames(namespace).filter { it == name }.size) {
             0 -> {
                 handler.accept(StreamNotFound(name, namespace))
                 outputConsumer.accept(
                     AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamDescriptor)
+                        .withStreamDescriptor(streamNamePair.asProtocolStreamDescriptor())
                         .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                         .withMessage("Stream '$streamLabel' not found or not accessible in source.")
                 )
@@ -124,7 +127,7 @@ class StateManagerFactory(
                 handler.accept(MultipleStreamsFound(name, namespace))
                 outputConsumer.accept(
                     AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamDescriptor)
+                        .withStreamDescriptor(streamNamePair.asProtocolStreamDescriptor())
                         .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                         .withMessage("Multiple streams '$streamLabel' found in source.")
                 )
@@ -174,7 +177,7 @@ class StateManagerFactory(
             handler.accept(StreamHasNoFields(name, namespace))
             outputConsumer.accept(
                 AirbyteErrorTraceMessage()
-                    .withStreamDescriptor(streamDescriptor)
+                    .withStreamDescriptor(streamNamePair.asProtocolStreamDescriptor())
                     .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                     .withMessage("Stream '$streamLabel' has no accessible fields.")
             )
@@ -209,16 +212,16 @@ class StateManagerFactory(
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
         val configuredCursor: FieldOrMetaField? =
             configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
-        val configuredSyncMode: SyncMode =
+        val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
                     if (configuredCursor == null) {
                         handler.accept(InvalidIncrementalSyncMode(name, namespace))
-                        SyncMode.FULL_REFRESH
+                        ConfiguredSyncMode.FULL_REFRESH
                     } else {
-                        SyncMode.INCREMENTAL
+                        ConfiguredSyncMode.INCREMENTAL
                     }
-                else -> SyncMode.FULL_REFRESH
+                else -> ConfiguredSyncMode.FULL_REFRESH
             }
         return Stream(
             name,

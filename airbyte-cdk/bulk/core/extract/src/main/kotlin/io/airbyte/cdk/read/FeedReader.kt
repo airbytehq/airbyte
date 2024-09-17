@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -305,7 +306,7 @@ class FeedReader(
         if (feed is Stream) {
             root.outputConsumer.accept(
                 AirbyteStreamStatusTraceMessage()
-                    .withStreamDescriptor(feed.streamDescriptor)
+                    .withStreamDescriptor(feed.namePair.asProtocolStreamDescriptor())
                     .withStatus(status),
             )
         }

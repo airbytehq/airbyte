@@ -20,7 +20,6 @@ import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.SyncMode
 import java.time.Duration
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions
@@ -39,7 +38,8 @@ object TestFixtures {
             name = "events",
             namespace = "test",
             fields = listOf(id, ts, msg),
-            configuredSyncMode = if (withCursor) SyncMode.INCREMENTAL else SyncMode.FULL_REFRESH,
+            configuredSyncMode =
+                if (withCursor) ConfiguredSyncMode.INCREMENTAL else ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = listOf(id).takeIf { withPK },
             configuredCursor = ts.takeIf { withCursor },
         )

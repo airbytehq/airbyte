@@ -3,11 +3,12 @@ package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.StreamNamePair
+import io.airbyte.cdk.asStreamName
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -50,7 +51,7 @@ class InputStateFactory {
                         msg.type.toString()
                     } else {
                         val desc: StreamDescriptor = msg.stream.streamDescriptor
-                        AirbyteStreamNameNamespacePair(desc.name, desc.namespace).toString()
+                        desc.asStreamName().toString()
                     }
                 }
                 .mapNotNull { (groupKey, groupValues) ->
@@ -62,7 +63,7 @@ class InputStateFactory {
                     }
                     groupValues.last()
                 }
-        val nonGlobalStreams: Map<AirbyteStreamNameNamespacePair, OpaqueStateValue> =
+        val nonGlobalStreams: Map<StreamNamePair, OpaqueStateValue> =
             streamStates(deduped.mapNotNull { it.stream })
         val globalState: AirbyteGlobalState? =
             deduped.find { it.type == AirbyteStateMessage.AirbyteStateType.GLOBAL }?.global
@@ -74,17 +75,17 @@ class InputStateFactory {
                 globalState.sharedState,
                 OpaqueStateValue::class.java,
             )
-        val globalStreams: Map<AirbyteStreamNameNamespacePair, OpaqueStateValue> =
+        val globalStreams: Map<StreamNamePair, OpaqueStateValue> =
             streamStates(globalState.streamStates)
         return GlobalInputState(globalStateValue, globalStreams, nonGlobalStreams)
     }
 
     private fun streamStates(
         streamStates: List<AirbyteStreamState>?,
-    ): Map<AirbyteStreamNameNamespacePair, OpaqueStateValue> =
+    ): Map<StreamNamePair, OpaqueStateValue> =
         (streamStates ?: listOf()).associate { msg: AirbyteStreamState ->
             val sd: StreamDescriptor = msg.streamDescriptor
-            val key = AirbyteStreamNameNamespacePair(sd.name, sd.namespace)
+            val key: StreamNamePair = sd.asStreamName()
             val jsonValue: JsonNode = msg.streamState ?: Jsons.objectNode()
             key to ValidatedJsonUtils.parseUnvalidated(jsonValue, OpaqueStateValue::class.java)
         }

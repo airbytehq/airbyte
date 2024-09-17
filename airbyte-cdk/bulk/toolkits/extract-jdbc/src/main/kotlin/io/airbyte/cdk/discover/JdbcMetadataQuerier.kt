@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.StreamNamePair
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
@@ -13,7 +14,6 @@ import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
 import io.airbyte.cdk.read.optimize
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
@@ -292,7 +292,7 @@ class JdbcMetadataQuerier(
         val memoized: List<List<String>>? = memoizedPrimaryKeys[table]
         if (memoized != null) return memoized
         val results = mutableListOf<PrimaryKeyRow>()
-        val streamPair = AirbyteStreamNameNamespacePair(streamName, streamNamespace)
+        val streamPair = StreamNamePair(streamName, streamNamespace)
         log.info { "Querying primary keys in '$streamPair' for catalog discovery." }
         try {
             val dbmd: DatabaseMetaData = conn.metaData
