@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.cdc
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CdcAware
 import io.airbyte.cdk.read.CdcContext
@@ -20,11 +21,13 @@ import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.debezium.engine.spi.OffsetCommitPolicy
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.lang.reflect.Field
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.apache.kafka.connect.source.SourceRecord
 
 class CdcPartitionReader<S : CdcSharedState>(
     private val sharedState: S,
@@ -40,7 +43,9 @@ class CdcPartitionReader<S : CdcSharedState>(
     private val propertyManager = cdcContext.debeziumManager
     private val positionMapper = cdcContext.positionMapperFactory.get()
     private val acquiredResources = AtomicReference<AcquiredResources>()
-    val opaqueStateValue = opaqueStateValue
+    private val opaqueStateValue = opaqueStateValue
+    private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
+        HashMap(1)
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionReader]. */
     fun interface AcquiredResources : AutoCloseable
@@ -87,18 +92,18 @@ class CdcPartitionReader<S : CdcSharedState>(
                 if (!record.isHeartbeat) {
                     numRecords++
                     outputConsumer.accept(eventConverter.toAirbyteMessage(record))
-                }
-                if (positionMapper.reachedTargetPosition(record)) {
-                    // Stop if we've reached the upper bound.
-                    if (record.isHeartbeat) {
-                        requestClose(
-                            "Closing: Heartbeat indicates sync is done by reaching the target position",
-                            DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
-                        )
-                    } else {
+                    if (positionMapper.reachedTargetPosition(record)) {
                         requestClose(
                             "Closing: Heartbeat indicates sync is not progressing",
                             DebeziumCloseReason.HEARTBEAT_NOT_PROGRESSING
+                        )
+                    }
+                } else {
+                    val heartbeatSourceRecord = getSourceRecord(event)
+                    if (positionMapper.reachedTargetPosition(heartbeatSourceRecord)) {
+                        requestClose(
+                            "Closing: Heartbeat indicates sync is done by reaching the target position",
+                            DebeziumCloseReason.HEARTBEAT_REACHED_TARGET_POSITION
                         )
                     }
                 }
@@ -137,6 +142,40 @@ class CdcPartitionReader<S : CdcSharedState>(
                 },
             )
             .build()
+    }
+
+    /**
+     * [DebeziumRecordIterator.heartbeatEventSourceField] acts as a cache so that we avoid using
+     * reflection to setAccessible for each event
+     */
+    @VisibleForTesting
+    internal fun getSourceRecord(heartbeatEvent: ChangeEvent<String?, String?>): SourceRecord {
+        try {
+            val eventClass: Class<out ChangeEvent<*, *>?> = heartbeatEvent.javaClass
+            val f: Field?
+            if (heartbeatEventSourceField.containsKey(eventClass)) {
+                f = heartbeatEventSourceField[eventClass]
+            } else {
+                f = eventClass.getDeclaredField("sourceRecord")
+                f.isAccessible = true
+                heartbeatEventSourceField[eventClass] = f
+
+                if (heartbeatEventSourceField.size > 1) {
+                    log.warn {
+                        "Field Cache size growing beyond expected size of 1, size is ${heartbeatEventSourceField.size}"
+                    }
+                }
+            }
+
+            val sr = f!![heartbeatEvent] as SourceRecord
+            return sr
+        } catch (e: NoSuchFieldException) {
+            log.info { "failed to get heartbeat source offset" }
+            throw RuntimeException(e)
+        } catch (e: IllegalAccessException) {
+            log.info { "failed to get heartbeat source offset" }
+            throw RuntimeException(e)
+        }
     }
 
     enum class DebeziumCloseReason() {

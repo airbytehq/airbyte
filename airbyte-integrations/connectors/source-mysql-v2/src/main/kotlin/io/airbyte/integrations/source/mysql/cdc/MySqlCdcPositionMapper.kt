@@ -12,6 +12,7 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.ResultSet
+import org.apache.kafka.connect.source.SourceRecord
 
 class MySqlCdcPositionMapper(jdbcConnectionFactory: JdbcConnectionFactory) : CdcPositionMapper {
 
@@ -26,6 +27,16 @@ class MySqlCdcPositionMapper(jdbcConnectionFactory: JdbcConnectionFactory) : Cdc
     override fun reachedTargetPosition(record: DebeziumRecord): Boolean {
         val eventFileName: String = record.source().get("file").asText()
         val eventPosition: Long = record.source().get("pos").asLong()
+        return reachedTargetPosition(eventFileName, eventPosition)
+    }
+
+    override fun reachedTargetPosition(record: SourceRecord): Boolean {
+        val eventFileName: String = record.sourceOffset()["file"].toString()
+        val eventPosition: Long = record.sourceOffset()["pos"] as Long
+        return reachedTargetPosition(eventFileName, eventPosition)
+    }
+
+    internal fun reachedTargetPosition(eventFileName: String, eventPosition: Long): Boolean {
         val isEventPositionAfter =
             eventFileName.compareTo(targetPosition.fileName) > 0 ||
                 (eventFileName.compareTo(

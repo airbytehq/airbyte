@@ -5,6 +5,7 @@
 package io.airbyte.cdk.read
 
 import jakarta.inject.Singleton
+import org.apache.kafka.connect.source.SourceRecord
 
 /** Encapsulates the logic for determining whether a cdc sync has reached its target position */
 interface CdcPositionMapper {
@@ -15,6 +16,7 @@ interface CdcPositionMapper {
         /** An implementation make a CdcPositionMapper [CdcPositionMapper] instance. */
         fun get(): CdcPositionMapper
     }
+    fun reachedTargetPosition(record: SourceRecord): Boolean
 }
 
 class DefaultCdcPositionMapper : CdcPositionMapper {
@@ -25,6 +27,10 @@ class DefaultCdcPositionMapper : CdcPositionMapper {
             return false
         }
         return true
+    }
+
+    override fun reachedTargetPosition(record: SourceRecord): Boolean {
+        TODO("Not yet implemented")
     }
 }
 

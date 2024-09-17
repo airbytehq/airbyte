@@ -184,6 +184,8 @@ class MySqlDebeziumManager(
         // set the
         // following
         props.setProperty("value.converter.replace.null.with.default", "false")
+
+        props.setProperty("heartbeat.interval.ms", "1000") // Change to 10s for non tests
     }
 
     fun setRelationalDbProps(properties: Properties) {

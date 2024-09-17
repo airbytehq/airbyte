@@ -104,7 +104,6 @@ class MySqlDebeziumStateUtil {
             return Optional.empty()
         }
 
-        @JvmRecord
         data class MysqlDebeziumStateAttributes(
             val binlogFilename: String,
             val binlogPosition: Long,
