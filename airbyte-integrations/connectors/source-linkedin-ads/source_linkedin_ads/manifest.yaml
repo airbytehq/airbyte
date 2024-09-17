@@ -96,6 +96,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
@@ -161,6 +162,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
@@ -226,6 +228,7 @@ definitions:
         cursor_datetime_formats:
           - "%ms"
           - "%Y-%m-%dT%H:%M:%S%z"
+          - "%Y-%m-%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         lookback_window: P{{ config.get('lookback_window', 0) }}D
         start_datetime:
