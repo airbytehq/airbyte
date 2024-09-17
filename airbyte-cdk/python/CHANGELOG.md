@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.6.0
+Decouple low-code request_parameter_provider from cursor, add optional cursor_granularity to ConcurrentCursor
+
+## 5.5.2
+Fix pandas missing dependency
+
 ## 5.5.1
 Bug fix: Return a connection status failure on an expected check failure
 
