@@ -15,6 +15,7 @@ from integration.test_rest_stream import create_http_response as create_standard
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
+
 from source_salesforce.streams import LOOKBACK_SECONDS
 
 _A_FIELD_NAME = "a_field"
@@ -26,6 +27,7 @@ _INCREMENTAL_FIELDS = [_A_FIELD_NAME, _CURSOR_FIELD]
 _INCREMENTAL_SCHEMA_BUILDER = SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime")  # re-using same fields as _INCREMENTAL_FIELDS
 _INSTANCE_URL = "https://instance.salesforce.com"
 _JOB_ID = "a-job-id"
+_ANOTHER_JOB_ID = "another-job-id"
 _LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
@@ -33,6 +35,8 @@ _METHOD_FAILURE_HTTP_STATUS = 420
 _RETRYABLE_RESPONSE = HttpResponse("{}", _METHOD_FAILURE_HTTP_STATUS)  # TODO: document what the body actually is on 420 errors
 _SECOND_PAGE_LOCATOR = "second-page-locator"
 _STREAM_NAME = "a_stream_name"
+_STREAM_WITH_PARENT_NAME = "ContentDocumentLink"
+_PARENT_STREAM_NAME = "ContentDocument"
 
 _BASE_URL = create_base_url(_INSTANCE_URL)
 
@@ -287,8 +291,8 @@ class BulkStreamTest(TestCase):
         first_upper_boundary = start_date + timedelta(days=7)
         self._config.start_date(start_date).stream_slice_step("P7D")
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, _INCREMENTAL_SCHEMA_BUILDER)
-        self._create_sliced_job(start_date, first_upper_boundary, _INCREMENTAL_FIELDS, "first_slice_job_id", record_count=2)
-        self._create_sliced_job(first_upper_boundary, _NOW, _INCREMENTAL_FIELDS, "second_slice_job_id", record_count=1)
+        self._create_sliced_job(start_date, first_upper_boundary, _STREAM_NAME, _INCREMENTAL_FIELDS, "first_slice_job_id", record_count=2)
+        self._create_sliced_job(first_upper_boundary, _NOW, _STREAM_NAME, _INCREMENTAL_FIELDS, "second_slice_job_id", record_count=1)
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config)
 
@@ -304,21 +308,52 @@ class BulkStreamTest(TestCase):
         second_upper_boundary = first_upper_boundary + slice_range
         self._config.start_date(start_date).stream_slice_step("P7D")
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, _INCREMENTAL_SCHEMA_BUILDER)
-        self._create_sliced_job(start_date, first_upper_boundary, _INCREMENTAL_FIELDS, "first_slice_job_id", record_count=2)
+        self._create_sliced_job(start_date, first_upper_boundary, _STREAM_NAME, _INCREMENTAL_FIELDS, "first_slice_job_id", record_count=2)
         self._http_mocker.post(
-            self._make_sliced_job_request(first_upper_boundary, second_upper_boundary, _INCREMENTAL_FIELDS),
+            self._make_sliced_job_request(first_upper_boundary, second_upper_boundary, _STREAM_NAME, _INCREMENTAL_FIELDS),
             HttpResponse("", status_code=400),
         )
-        self._create_sliced_job(second_upper_boundary, _NOW, _INCREMENTAL_FIELDS, "third_slice_job_id", record_count=1)
+        self._create_sliced_job(second_upper_boundary, _NOW, _STREAM_NAME, _INCREMENTAL_FIELDS, "third_slice_job_id", record_count=1)
 
         output = read(_STREAM_NAME, SyncMode.incremental, self._config)
 
         assert len(output.records) == 3
         assert len(output.most_recent_state.stream_state.slices) == 2
 
-    def _create_sliced_job(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str], job_id: str, record_count: int) -> None:
+    def test_given_parent_stream_when_read_then_return_record_for_all_children(self) -> None:
+        start_date = (_NOW - timedelta(days=10)).replace(microsecond=0)
+        first_upper_boundary = start_date + timedelta(days=7)
+        self._config.start_date(start_date).stream_slice_step("P7D")
+
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_WITH_PARENT_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        self._create_sliced_job_with_records(start_date, first_upper_boundary, _PARENT_STREAM_NAME, "first_parent_slice_job_id", [{"Id": "parent1", "SystemModstamp": "any"}, {"Id": "parent2", "SystemModstamp": "any"}])
+        self._create_sliced_job_with_records(first_upper_boundary, _NOW, _PARENT_STREAM_NAME, "second_parent_slice_job_id", [{"Id": "parent3", "SystemModstamp": "any"}])
+
+        # job for first slice
         self._http_mocker.post(
-            self._make_sliced_job_request(lower_boundary, upper_boundary, fields),
+            self._build_job_creation_request(f"SELECT {', '.join([_A_FIELD_NAME])} FROM {_STREAM_WITH_PARENT_NAME} WHERE ContentDocumentId IN ('parent1', 'parent2', 'parent3')"),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(f"{_A_FIELD_NAME}\nfield_value"),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_WITH_PARENT_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
+
+    def _create_sliced_job(self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, fields: List[str], job_id: str, record_count: int) -> None:
+        self._create_sliced_job_with_records(lower_boundary, upper_boundary, stream_name, job_id, self._generate_random_records(fields, record_count))
+
+    def _create_sliced_job_with_records(self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, job_id: str, records: List[Dict[str, str]]) -> None:
+        self._http_mocker.post(
+            self._make_sliced_job_request(lower_boundary, upper_boundary, stream_name, list(records[0].keys())),
             JobCreateResponseBuilder().with_id(job_id).build(),
         )
         self._http_mocker.get(
@@ -327,7 +362,7 @@ class BulkStreamTest(TestCase):
         )
         self._http_mocker.get(
             HttpRequest(f"{_BASE_URL}/jobs/query/{job_id}/results"),
-            HttpResponse(self._generate_csv(fields, count=record_count)),
+            HttpResponse(self._generate_csv(records)),
         )
         self._mock_delete_job(job_id)
 
@@ -337,20 +372,28 @@ class BulkStreamTest(TestCase):
             HttpResponse(""),
         )
 
-    def _make_sliced_job_request(self, lower_boundary: datetime, upper_boundary: datetime, fields: List[str]) -> HttpRequest:
-        return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM a_stream_name WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}")
+    def _make_sliced_job_request(self, lower_boundary: datetime, upper_boundary: datetime, stream_name: str, fields: List[str]) -> HttpRequest:
+        return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM {stream_name} WHERE SystemModstamp >= {lower_boundary.isoformat(timespec='milliseconds')} AND SystemModstamp < {upper_boundary.isoformat(timespec='milliseconds')}")
 
-    def _make_full_job_request(self, fields: List[str]) -> HttpRequest:
-        return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM a_stream_name")
+    def _make_full_job_request(self, fields: List[str], stream_name: str = _STREAM_NAME) -> HttpRequest:
+        return self._build_job_creation_request(f"SELECT {', '.join(fields)} FROM {stream_name}")
 
-    def _generate_csv(self, fields: List[str], count: int = 1) -> str:
+    def _generate_random_records(self, fields: List[str], record_count: int) -> List[Dict[str, str]]:
+        record = {field: f"{field}_value" for field in fields}
+        return [record for _ in range(record_count)]
+
+    def _generate_csv(self, records: List[Dict[str, str]]) -> str:
         """
         This method does not handle field types for now which may cause some test failures on change if we start considering using some
         fields for calculation. One example of that would be cursor field parsing to datetime.
         """
-        record = ','.join([f"{field}_value" for field in fields])
-        records = '\n'.join([record for _ in range(count)])
-        return f"{','.join(fields)}\n{records}"
+        keys = list(records[0].keys())  # assuming all the records have the same keys
+        csv_entry = []
+        for record in records:
+            csv_entry.append(",".join([record[key] for key in keys]))
+
+        entries = '\n'.join(csv_entry)
+        return f"{','.join(keys)}\n{entries}"
 
     def _build_job_creation_request(self, query: str) -> HttpRequest:
         return HttpRequest(f"{_BASE_URL}/jobs/query", body=json.dumps({
