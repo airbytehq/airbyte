@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+import csv
+import io
 import json
 import urllib.parse
 from datetime import datetime, timedelta, timezone
@@ -15,9 +16,10 @@ from integration.test_rest_stream import create_http_response as create_standard
 from integration.utils import create_base_url, given_authentication, given_stream, read
 from salesforce_describe_response_builder import SalesforceDescribeResponseBuilder
 from salesforce_job_response_builder import JobCreateResponseBuilder, JobInfoResponseBuilder
-from source_salesforce.streams import LOOKBACK_SECONDS, BulkSalesforceStream
+from source_salesforce.streams import BulkSalesforceStream
 
 _A_FIELD_NAME = "a_field"
+_ANOTHER_FIELD_NAME = "another_field"
 _ACCESS_TOKEN = "an_access_token"
 _CLIENT_ID = "a_client_id"
 _CLIENT_SECRET = "a_client_secret"
@@ -26,7 +28,6 @@ _INCREMENTAL_FIELDS = [_A_FIELD_NAME, _CURSOR_FIELD]
 _INCREMENTAL_SCHEMA_BUILDER = SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_CURSOR_FIELD, "datetime")  # re-using same fields as _INCREMENTAL_FIELDS
 _INSTANCE_URL = "https://instance.salesforce.com"
 _JOB_ID = "a-job-id"
-_LOOKBACK_WINDOW = timedelta(seconds=LOOKBACK_SECONDS)
 _NOW = datetime.now(timezone.utc)
 _REFRESH_TOKEN = "a_refresh_token"
 _METHOD_FAILURE_HTTP_STATUS = 420
@@ -125,6 +126,130 @@ class BulkStreamTest(TestCase):
         self._http_mocker.assert_number_of_calls(delete_request, 1)
 
     @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_null_bytes_when_read_then_remove_null_bytes(self) -> None:
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(b'"a_field"\n\x00"001\x004W000027f6UwQAI"\n\x00\x00'.decode()),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data[_A_FIELD_NAME] == "0014W000027f6UwQAI"
+
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_type_when_read_then_field_is_casted_with_right_type(self) -> None:
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME, "boolean"))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse('"a_field"\ntrue'),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
+        assert type(output.records[0].record.data[_A_FIELD_NAME]) == bool
+
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_no_data_provided_when_read_then_field_is_none(self) -> None:
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(f'"{_A_FIELD_NAME}","{_ANOTHER_FIELD_NAME}"\n,"another field value"'),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 1
+        assert _A_FIELD_NAME not in output.records[0].record.data or output.records[0].record.data[_A_FIELD_NAME] is None
+
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_csv_unix_dialect_provided_when_read_then_parse_csv_properly(self) -> None:
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        data = [
+            {_A_FIELD_NAME: "1", _ANOTHER_FIELD_NAME: '"first_name" "last_name"'},
+            {_A_FIELD_NAME: "2", _ANOTHER_FIELD_NAME: "'" + 'first_name"\n' + "'" + 'last_name\n"'},
+            {_A_FIELD_NAME: "3", _ANOTHER_FIELD_NAME: "first_name last_name"},
+        ]
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(self._create_csv([_A_FIELD_NAME, _ANOTHER_FIELD_NAME], data, "unix")),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 3
+
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_specific_encoding_when_read_then_parse_csv_properly(self) -> None:
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(b'"\xc4"\n,"4"\n\x00,"\xca \xfc"'.decode("ISO-8859-1"), headers={"Content-Type": "text/csv; charset=ISO-8859-1"}),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert output.records[0].record.data == {"Ä": "4"}
+        assert output.records[1].record.data == {"Ä": "Ê ü"}
+
+    @freezegun.freeze_time(_NOW.isoformat())
     def test_given_locator_when_read_then_extract_records_from_both_pages(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
@@ -175,14 +300,36 @@ class BulkStreamTest(TestCase):
         assert len(output.records) == 1
 
     @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_job_polling_have_transient_error_when_read_then_sync_properly(self):
+        given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                _RETRYABLE_RESPONSE,
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(f"{_A_FIELD_NAME}\nfield_value"),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.errors) == 0
+        assert len(output.records) == 1
+
+    @freezegun.freeze_time(_NOW.isoformat())
     def test_given_bulk_restrictions_when_read_then_switch_to_standard(self):
         given_stream(self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME))
         self._http_mocker.post(
             _make_full_job_request([_A_FIELD_NAME]),
-            [
-                HttpResponse("[{}]", 403),
-                JobCreateResponseBuilder().with_id(_JOB_ID).build(),
-            ],
+            HttpResponse("[{}]", 403),
         )
         self._http_mocker.get(
             create_standard_http_request(_STREAM_NAME, [_A_FIELD_NAME]),
@@ -401,3 +548,11 @@ class BulkStreamTest(TestCase):
             HttpResponse(""),
         )
         return request
+
+    def _create_csv(self, headers: List[str], data: List[Dict[str, str]], dialect: str) -> str:
+        with io.StringIO("", newline="") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers, dialect=dialect)
+            writer.writeheader()
+            for line in data:
+                writer.writerow(line)
+            return csvfile.getvalue()
