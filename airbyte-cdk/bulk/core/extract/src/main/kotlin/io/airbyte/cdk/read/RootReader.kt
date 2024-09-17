@@ -61,9 +61,7 @@ class RootReader(
                 feeds.associateWith { feed: Feed ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
                     val handler = FeedExceptionHandler(feed, exceptions)
-                    //                    runBlocking { // TEMP
                     launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
-                    //                    }
                 }
             // Call listener hook.
             listener(feedJobs)
