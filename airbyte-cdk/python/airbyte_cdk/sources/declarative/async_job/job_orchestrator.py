@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 LOGGER = logging.getLogger("airbyte")
+_API_SIDE_RUNNING_STATUS = {AsyncJobStatus.RUNNING, AsyncJobStatus.TIMED_OUT}
 
 
 class AsyncPartition:
@@ -249,7 +250,7 @@ class AsyncJobOrchestrator:
 
     def _stop_partition(self, partition: AsyncPartition) -> None:
         for job in partition.jobs:
-            if job.status() in {AsyncJobStatus.RUNNING, AsyncJobStatus.TIMED_OUT}:
+            if job.status() in _API_SIDE_RUNNING_STATUS:
                 self._abort_job(job)
             else:
                 self._job_tracker.remove_job(job.api_job_id())
