@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.host", value = "localhost")
 @Property(name = "airbyte.connector.config.database", value = "testdb")
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "cdc")
-@Property(name = "metadata.resource", value = "read/metadata.json")
+@Property(name = "metadata.resource", value = "discover/metadata-valid.json")
 class StateManagerGlobalStatesTest {
     @Inject lateinit var config: SourceConfiguration
 
@@ -37,7 +37,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -55,7 +55,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(name = "airbyte.connector.state.json", value = "[]")
     fun testColdStart() {
         val streams: Streams = prelude()
@@ -98,7 +98,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -147,7 +147,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =

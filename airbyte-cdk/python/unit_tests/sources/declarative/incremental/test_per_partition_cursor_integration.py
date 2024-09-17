@@ -2,13 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+)
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, StreamSlice
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.types import Record
+from orjson import orjson
 
 CURSOR_FIELD = "cursor_field"
 SYNC_MODE = SyncMode.incremental
@@ -37,9 +49,8 @@ class ManifestBuilder:
                     "stream": "#/definitions/Rates",
                     "parent_key": "id",
                     "partition_field": "parent_id",
-
                 }
-            ]
+            ],
         }
         return self
 
@@ -100,10 +111,7 @@ class ManifestBuilder:
                     },
                 },
             },
-            "streams": [
-                {"$ref": "#/definitions/Rates"},
-                {"$ref": "#/definitions/AnotherStream"}
-            ],
+            "streams": [{"$ref": "#/definitions/Rates"}, {"$ref": "#/definitions/AnotherStream"}],
             "spec": {
                 "connection_specification": {
                     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -180,11 +188,9 @@ def test_given_record_for_partition_when_read_then_update_state():
     stream_instance = source.streams({})[0]
     list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
 
-    stream_slice = StreamSlice(partition={"partition_field": "1"},
-                               cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
+    stream_slice = StreamSlice(partition={"partition_field": "1"}, cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"})
     with patch.object(
-            SimpleRetriever, "_read_pages",
-            side_effect=[[Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, stream_slice)]]
+        SimpleRetriever, "_read_pages", side_effect=[[Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, stream_slice)]]
     ):
         list(
             stream_instance.read_records(
@@ -236,17 +242,131 @@ def test_substream_without_input_state():
 
     # This mocks the resulting records of the Rates stream which acts as the parent stream of the SubstreamPartitionRouter being tested
     with patch.object(
-            SimpleRetriever, "_read_pages", side_effect=[[Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, parent_stream_slice)],
-                                                         [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, parent_stream_slice)]]
+        SimpleRetriever,
+        "_read_pages",
+        side_effect=[
+            [Record({"id": "1", CURSOR_FIELD: "2022-01-15"}, parent_stream_slice)],
+            [Record({"id": "2", CURSOR_FIELD: "2022-01-15"}, parent_stream_slice)],
+        ],
     ):
         slices = list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
         assert list(slices) == [
-            StreamSlice(partition={"parent_id": "1", "parent_slice": {}, },
-                        cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
-            StreamSlice(partition={"parent_id": "1", "parent_slice": {}, },
-                        cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
-            StreamSlice(partition={"parent_id": "2", "parent_slice": {}, },
-                        cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"}),
-            StreamSlice(partition={"parent_id": "2", "parent_slice": {}, },
-                        cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"}),
+            StreamSlice(
+                partition={
+                    "parent_id": "1",
+                    "parent_slice": {},
+                },
+                cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"},
+            ),
+            StreamSlice(
+                partition={
+                    "parent_id": "1",
+                    "parent_slice": {},
+                },
+                cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"},
+            ),
+            StreamSlice(
+                partition={
+                    "parent_id": "2",
+                    "parent_slice": {},
+                },
+                cursor_slice={"start_time": "2022-01-01", "end_time": "2022-01-31"},
+            ),
+            StreamSlice(
+                partition={
+                    "parent_id": "2",
+                    "parent_slice": {},
+                },
+                cursor_slice={"start_time": "2022-02-01", "end_time": "2022-02-28"},
+            ),
         ]
+
+
+def test_partition_limitation():
+    source = ManifestDeclarativeSource(
+        source_config=ManifestBuilder()
+        .with_list_partition_router("Rates", "partition_field", ["1", "2", "3"])
+        .with_incremental_sync(
+            "Rates",
+            start_datetime="2022-01-01",
+            end_datetime="2022-02-28",
+            datetime_format="%Y-%m-%d",
+            cursor_field=CURSOR_FIELD,
+            step="P1M",
+            cursor_granularity="P1D",
+        )
+        .build()
+    )
+
+    partition_slices = [
+        StreamSlice(partition={"partition_field": "1"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "2"}, cursor_slice={}),
+        StreamSlice(partition={"partition_field": "3"}, cursor_slice={}),
+    ]
+
+    records_list = [
+        [
+            Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}, partition_slices[0]),
+            Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[0]),
+        ],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-15"}, partition_slices[0])],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-01-16"}, partition_slices[1])],
+        [],
+        [],
+        [Record({"a record key": "a record value", CURSOR_FIELD: "2022-02-17"}, partition_slices[2])],
+    ]
+
+    configured_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="Rates", json_schema={}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    catalog = ConfiguredAirbyteCatalog(streams=[configured_stream])
+
+    initial_state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="post_comment_votes", namespace=None),
+                stream_state=AirbyteStateBlob(
+                    {
+                        "states": [
+                            {
+                                "partition": {"partition_field": "1"},
+                                "cursor": {CURSOR_FIELD: "2022-01-01"},
+                            },
+                            {
+                                "partition": {"partition_field": "2"},
+                                "cursor": {CURSOR_FIELD: "2022-01-02"},
+                            },
+                            {
+                                "partition": {"partition_field": "3"},
+                                "cursor": {CURSOR_FIELD: "2022-01-03"},
+                            },
+                        ]
+                    }
+                ),
+            ),
+        )
+    ]
+    logger = MagicMock()
+
+    # with patch.object(PerPartitionCursor, "stream_slices", return_value=partition_slices):
+    with patch.object(SimpleRetriever, "_read_pages", side_effect=records_list):
+        with patch.object(PerPartitionCursor, "DEFAULT_MAX_PARTITIONS_NUMBER", 2):
+            output = list(source.read(logger, {}, catalog, initial_state))
+
+    # assert output_data == expected_records
+    final_state = [orjson.loads(orjson.dumps(message.state.stream.stream_state)) for message in output if message.state]
+    assert final_state[-1] == {
+        "states": [
+            {
+                "partition": {"partition_field": "2"},
+                "cursor": {CURSOR_FIELD: "2022-01-16"},
+            },
+            {
+                "partition": {"partition_field": "3"},
+                "cursor": {CURSOR_FIELD: "2022-02-17"},
+            },
+        ]
+    }

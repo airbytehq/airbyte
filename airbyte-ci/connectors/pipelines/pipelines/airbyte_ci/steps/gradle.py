@@ -83,7 +83,6 @@ class GradleTask(Step, ABC):
             ".root",
             ".env",
             "build.gradle",
-            "deps.toml",
             "gradle.properties",
             "gradle",
             "gradlew",

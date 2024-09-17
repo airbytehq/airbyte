@@ -219,9 +219,6 @@ Follow these instructions to add the Airbyte helm repository:
 ```yaml
 global:
   edition: enterprise
-  # Optional - enables Airbyte's second generation Workers, which allows for better back pressure and self-healing in resource constrained environments.
-  enterprise:
-    workloadsOptIn: true
 ```
 
 3. To enable SSO authentication, add instance admin details [SSO auth details](/access-management/sso) to your `values.yaml` file, under `global`. See the [following guide](/access-management/sso#set-up) on how to collect this information for various IDPs, such as Okta and Azure Entra ID.
@@ -236,8 +233,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
-      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -268,8 +265,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
-        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```

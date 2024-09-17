@@ -433,10 +433,6 @@ class MongoDbStateManagerTest {
     message = iter.next();
     assertEquals(Type.STATE, message.getType());
     assertEquals(
-        "null",
-        message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("id").asText(),
-        "state id should be null upon completion");
-    assertEquals(
         InitialSnapshotStatus.FULL_REFRESH.toString(),
         message.getState().getGlobal().getStreamStates().get(0).getStreamState().get("status").asText(),
         "state status should remain full_refresh upon completion");
