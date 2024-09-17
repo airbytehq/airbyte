@@ -8,6 +8,7 @@ import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mysql.MysqlSourceCursorBasedReadTest.LazyValues.allStateMessages
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
@@ -33,25 +34,20 @@ class MysqlSourceCursorBasedReadTest {
     @TestFactory
     @Timeout(300)
     fun syncTests(): Iterable<DynamicNode> {
-        val discover: DynamicNode =
-            DynamicTest.dynamicTest("discover") {
-                Assertions.assertFalse(LazyValues.actualStreams.isEmpty())
-            }
         val read: DynamicNode =
             DynamicTest.dynamicTest("read") {
                 Assertions.assertFalse(LazyValues.actualReads.isEmpty())
             }
         val cases: List<DynamicNode> =
-            allStreamNamesAndRecordData.keys.map { streamName: String ->
+            testCases.map { testCase: TestCase ->
                 DynamicContainer.dynamicContainer(
-                    streamName,
+                    testCase.insertValues.toString(),
                     listOf(
-                        DynamicTest.dynamicTest("discover") { discover(streamName) },
-                        DynamicTest.dynamicTest("records") { records(streamName) },
+                        DynamicTest.dynamicTest("records") { records(testCase) },
                     ),
                 )
             }
-        return listOf(discover, read) + cases
+        return listOf(read) + cases
     }
 
     object LazyValues {
@@ -106,36 +102,7 @@ class MysqlSourceCursorBasedReadTest {
             }
     }
 
-    private fun discover(streamName: String) {
-        val actualStream: AirbyteStream? = LazyValues.actualStreams[streamName]
-        log.info { "discover result: ${LazyValues.actualStreams}" }
-        log.info { "streamName: $streamName" }
-        Assertions.assertNotNull(actualStream)
-        log.info {
-            "test case $streamName: discovered stream ${
-                Jsons.valueToTree<JsonNode>(
-                    actualStream,
-                )
-            }"
-        }
-        val testCase: TestCase =
-            testCases.find { it.streamNamesToRecordData.keys.contains(streamName) }!!
-        val isIncrementalSupported: Boolean =
-            actualStream!!.supportedSyncModes.contains(SyncMode.INCREMENTAL)
-        val jsonSchema: JsonNode = actualStream.jsonSchema?.get("properties")!!
-            val actualSchema: JsonNode? = jsonSchema["col"]
-            Assertions.assertNotNull(actualSchema)
-            val expectedSchema: JsonNode = testCase.airbyteType.asJsonSchema()
-            Assertions.assertEquals(expectedSchema, actualSchema)
-            if (testCase.cursor) {
-                Assertions.assertTrue(isIncrementalSupported)
-            } else {
-                Assertions.assertFalse(isIncrementalSupported)
-            }
-
-    }
-
-    private fun records(streamName: String) {
+    private fun records(testCase: TestCase) {
         val actualRead: BufferingOutputConsumer? = LazyValues.actualReads[streamName]
         Assertions.assertNotNull(actualRead)
 
@@ -161,8 +128,9 @@ class MysqlSourceCursorBasedReadTest {
 
         val testCases: List<TestCase> =
             listOf(
-                TestCase(insertValues = mapOf("stream1" to listOf("test1", "test2"), "stream2" to listOf("test3")), expectedValues =  mapOf("stream1" to listOf("test1", "test2"), "stream2" to listOf("test3"))
-            )
+                TestCase(insertValues = mapOf("stream1" to listOf("test1", "test2"), "stream2" to listOf("test3")),
+                         expectedValues =  mapOf("stream1" to listOf("test1", "test2"), "stream2" to listOf("test3")),
+                         followUpDDL=listOf("INSERT INTO stream1 (col) VALUES ('test3')")),
             )
 
         val allStreamNamesAndRecordData: Map<String, List<JsonNode>> =
@@ -197,7 +165,7 @@ class MysqlSourceCursorBasedReadTest {
         val airbyteType: AirbyteType = LeafAirbyteType.STRING,
         val cursor: Boolean = true,
         val noPK: Boolean = false,
-        val customDDL: List<String>? = null,
+        val followUpDDL: List<String>? = null,
     ) {
         val sqlStatements: List<String>
             get() {
