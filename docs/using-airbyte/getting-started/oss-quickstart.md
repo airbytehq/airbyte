@@ -81,11 +81,6 @@ uname -m
 - If the output is `x86_64`, you have an x86-64 processor.
 - If the output is `aarch64` or something similar, you have an ARM-based processor.
 </details>
-:::
-
-:::tip
-
-For troubleshooting assistance, visit our [deployment troubleshooting guide](../../deploying-airbyte/troubleshoot-deploy).
 
 :::
 
@@ -158,6 +153,10 @@ If this command prints the installed version of the Airbyte Command Line Tool, i
 </TabItem>
 
 </Tabs>
+
+:::tip
+For troubleshooting assistance, visit our [deployment troubleshooting guide](../../deploying-airbyte/troubleshoot-deploy).
+:::
 
 ## 2: Run Airbyte
 
@@ -326,11 +325,10 @@ curl -LsfS https://get.airbyte.com | bash -
    :::tip
    By default, `abctl` only configures an ingress rule for the host `localhost`. In order to ensure that Airbyte can be accessed outside of the EC2 instance, you will need to specify the `--host` flag to the `local install` command, providing the FQDN of the host which is hosting Airbyte. For example, `abctl local install --host airbyte.company.example`.
    :::
-   :::tip
-   By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
+
+By default, `abctl` will listen on port 8000. If port 8000 is already in used or you require a different port, you can specify this by passing the `--port` flag to the `local install` command. For example, `abctl local install --port 6598`
 
 Ensure the security group configured for the EC2 Instance allows traffic in on the port (8000 by default, or whatever port was passed to `--port`) that you deploy Airbyte on. See the [Control traffic to your AWS resources using security groups](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html) documentation for more information.
-:::
 
 ```shell
 abctl local install --host [HOSTNAME]
