@@ -431,6 +431,10 @@ class AuditLogs(CursorPaginationZendeskSupportStream):
     cursor_field = "created_at"
 
 
+class Automations(FullRefreshZendeskSupportStream):
+    """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
+
+
 class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 
@@ -777,6 +781,10 @@ class Topics(CursorPaginationZendeskSupportStream):
 
     def path(self, **kwargs):
         return "community/topics"
+
+
+class Triggers(CursorPaginationZendeskSupportStream):
+    """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers"""
 
 
 class SlaPolicies(IncrementalZendeskSupportStream):
