@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.async_job.job import AsyncJob, AsyncJobStat
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator, AsyncPartition
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.http_client import MessageRepresentationAirbyteTracedErrors
 
 _ANY_STREAM_SLICE = Mock()
@@ -69,6 +70,7 @@ _MAX_NUMBER_OF_ATTEMPTS = 3
 class AsyncJobOrchestratorTest(TestCase):
     def setUp(self) -> None:
         self._job_repository = Mock(spec=AsyncJobRepository)
+        self._message_repository = Mock(spec=MessageRepository)
         self._logger = Mock(spec=logging.Logger)
 
         self._job_for_a_slice = self._an_async_job("an api job id", _A_STREAM_SLICE)
@@ -154,7 +156,7 @@ class AsyncJobOrchestratorTest(TestCase):
 
     def _orchestrator(self, slices: List[StreamSlice], job_tracker: Optional[JobTracker] = None) -> AsyncJobOrchestrator:
         job_tracker = job_tracker if job_tracker else JobTracker(_NO_JOB_LIMIT)
-        return AsyncJobOrchestrator(self._job_repository, slices, job_tracker)
+        return AsyncJobOrchestrator(self._job_repository, slices, job_tracker, self._message_repository)
 
     def test_given_more_jobs_than_limit_when_create_and_get_completed_partitions_then_still_return_all_slices_and_free_job_budget(self) -> None:
         job_tracker = JobTracker(1)
@@ -165,7 +167,7 @@ class AsyncJobOrchestratorTest(TestCase):
                 self._job_for_another_slice: [AsyncJobStatus.COMPLETED],
             }
         )
-        orchestrator = AsyncJobOrchestrator(self._job_repository, [self._job_for_a_slice.job_parameters(), self._job_for_another_slice.job_parameters()], job_tracker)
+        orchestrator = self._orchestrator([self._job_for_a_slice.job_parameters(), self._job_for_another_slice.job_parameters()], job_tracker)
 
         partitions = list(orchestrator.create_and_get_completed_partitions())
 
@@ -178,6 +180,7 @@ class AsyncJobOrchestratorTest(TestCase):
             self._job_repository,
         [_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE],
             JobTracker(_NO_JOB_LIMIT),
+            self._message_repository,
             exceptions_to_break_on=[ValueError],
         )
         self._job_repository.start.side_effect = [self._job_for_a_slice, ValueError("Something went wrong")]
@@ -195,7 +198,7 @@ class AsyncJobOrchestratorTest(TestCase):
         job_tracker = JobTracker(1)
         self._job_repository.start.side_effect = MessageRepresentationAirbyteTracedErrors("Can't create job", failure_type=FailureType.config_error)
 
-        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker, [ValueError])
+        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker, self._message_repository, [ValueError])
 
         with pytest.raises(AirbyteTracedException):
             list(orchestrator.create_and_get_completed_partitions())
@@ -217,10 +220,10 @@ class AsyncJobOrchestratorTest(TestCase):
     @mock.patch(sleep_mock_target)
     def test_given_exception_when_start_job_and_skip_this_exception(self, mock_sleep: MagicMock) -> None:
         self._job_repository.start.side_effect = [
-            AirbyteTracedException("Something went wrong. Expected error"),
+            AirbyteTracedException("Something went wrong. Expected error #1"),
             self._job_for_another_slice,
-            AirbyteTracedException("Something went wrong. Expected error"),
-            AirbyteTracedException("Something went wrong. Expected error"),
+            AirbyteTracedException("Something went wrong. Expected error #2"),
+            AirbyteTracedException("Something went wrong. Expected error #3"),
         ]
         self._job_repository.update_jobs_status.side_effect = _status_update_per_jobs(
             {
@@ -228,15 +231,12 @@ class AsyncJobOrchestratorTest(TestCase):
                 self._job_for_another_slice: [AsyncJobStatus.RUNNING, AsyncJobStatus.COMPLETED],
             }
         )
-        orchestrator = AsyncJobOrchestrator(
-            self._job_repository,
-            [_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE],
-            JobTracker(_NO_JOB_LIMIT),
-        )
+        orchestrator = self._orchestrator([_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE])
 
         partitions, exception = self._accumulate_create_and_get_completed_partitions(orchestrator)
 
         assert len(partitions) == 1  # only _job_for_another_slice has succeeded
+        assert self._message_repository.emit_message.call_count == 3  # one for each traced message
         assert exception.failure_type == FailureType.config_error  # type: ignore  # exception should be of type AirbyteTracedException
 
     @mock.patch(sleep_mock_target)
@@ -246,7 +246,7 @@ class AsyncJobOrchestratorTest(TestCase):
         self._job_repository.start.side_effect = jobs
         self._job_repository.update_jobs_status.side_effect = _status_update_per_jobs({job: [AsyncJobStatus.FAILED] for job in jobs})
 
-        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker)
+        orchestrator = self._orchestrator([_A_STREAM_SLICE], job_tracker)
 
         with pytest.raises(AirbyteTracedException):
             list(orchestrator.create_and_get_completed_partitions())
@@ -268,7 +268,7 @@ class AsyncJobOrchestratorTest(TestCase):
                 self._job_for_a_slice: [AsyncJobStatus.COMPLETED] * _BUFFER
             }
         )
-        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker)
+        orchestrator = self._orchestrator([_A_STREAM_SLICE], job_tracker)
 
         threading.Thread(target=wait_and_free_intent, args=[job_tracker, intent_to_free]).start()
         partitions = list(orchestrator.create_and_get_completed_partitions())
@@ -279,7 +279,7 @@ class AsyncJobOrchestratorTest(TestCase):
         job_tracker = JobTracker(1)
         self._job_repository.start.side_effect = ValueError("Can't create job")
 
-        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker, [ValueError])
+        orchestrator = AsyncJobOrchestrator(self._job_repository, [_A_STREAM_SLICE], job_tracker, self._message_repository, [ValueError])
 
         with pytest.raises(Exception):
             list(orchestrator.create_and_get_completed_partitions())

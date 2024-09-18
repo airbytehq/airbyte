@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.job_tracker import ConcurrentJobLimitReached, JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
@@ -92,6 +93,7 @@ class AsyncJobOrchestrator:
         job_repository: AsyncJobRepository,
         slices: Iterable[StreamSlice],
         job_tracker: JobTracker,
+        message_repository: MessageRepository,
         exceptions_to_break_on: Iterable[Type[Exception]] = tuple(),
     ) -> None:
         if {*AsyncJobStatus} != self._KNOWN_JOB_STATUSES:
@@ -104,6 +106,7 @@ class AsyncJobOrchestrator:
         self._slice_iterator = iter(slices)
         self._running_partitions: List[AsyncPartition] = []
         self._job_tracker = job_tracker
+        self._message_repository = message_repository
         self._exceptions_to_break_on: Tuple[Type[Exception], ...] = tuple(exceptions_to_break_on)
 
         self._has_started_a_job = False
@@ -165,23 +168,27 @@ class AsyncJobOrchestrator:
                 self._stop_orchestrator(id_to_replace)
                 raise exception
 
-            return self._swap_real_job_by_failed_job(_slice, exception, id_to_replace)
+            return self._keep_api_budget_with_failed_job(_slice, exception, id_to_replace)
         except Exception as exception:
-            return self._swap_real_job_by_failed_job(_slice, exception, id_to_replace)
+            return self._keep_api_budget_with_failed_job(_slice, exception, id_to_replace)
 
     def _stop_orchestrator(self, id_to_release_budget: str) -> None:
         self._abort_all_running_jobs()
         self._job_tracker.remove_job(id_to_release_budget)
 
-    def _swap_real_job_by_failed_job(self, _slice: StreamSlice, exception: Exception, intent: str) -> AsyncJob:
+    def _keep_api_budget_with_failed_job(self, _slice: StreamSlice, exception: Exception, intent: str) -> AsyncJob:
         """
-        We have a mechanist to retry job. It is used when a job status is FAILED or TIMED_OUt. The easiest way to retry is to have this job
+        We have a mechanism to retry job. It is used when a job status is FAILED or TIMED_OUT. The easiest way to retry is to have this job
         as created in a failed state and leverage the retry for failed/timed out jobs. This way, we don't have to have another process for
         retrying jobs that couldn't be started.
         """
         LOGGER.warning(
             f"Could not start job for slice {_slice}. Job will be flagged as failed and retried if max number of attempts not reached: {exception}"
         )
+        traced_exception = exception if isinstance(exception, AirbyteTracedException) else AirbyteTracedException.from_exception(exception)
+        # Even though we're not sure this will break the stream, we will emit here for simplicity's sake. If we wanted to be more accurate,
+        # we would keep the exceptions in-memory until we know that we have reached the max attempt.
+        self._message_repository.emit_message(traced_exception.as_airbyte_message())
         job = self._create_failed_job(_slice)
         self._job_tracker.add_job(intent, job.api_job_id())
         return job
