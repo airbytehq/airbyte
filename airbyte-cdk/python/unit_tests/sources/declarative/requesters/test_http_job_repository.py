@@ -121,6 +121,7 @@ class HttpJobRepositoryTest(TestCase):
             polling_requester=self._polling_job_requester,
             download_retriever=self._download_retriever,
             abort_requester=None,
+            delete_requester=None,
             status_extractor=DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["status"], config={}, parameters={} or {}),
             status_mapping={
                 "ready": AsyncJobStatus.COMPLETED,

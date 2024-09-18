@@ -1661,6 +1661,10 @@ class AsyncRetriever(BaseModel):
         None,
         description="Requester component that describes how to prepare HTTP requests to send to the source API to abort a job once it is timed out from the source's perspective.",
     )
+    delete_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
+        None,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to delete a job once the records are extracted.',
+    )
     partition_router: Optional[
         Union[
             CustomPartitionRouter,

@@ -139,7 +139,6 @@ class SalesforceErrorHandler(ErrorHandler):
         # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
         return (
             response.request.method == "POST"
-            and "queryAll" in str(response.request.body)
             and bool(re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url))
         )
 
