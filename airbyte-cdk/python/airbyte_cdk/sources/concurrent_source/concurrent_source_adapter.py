@@ -5,7 +5,7 @@
 import logging
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
