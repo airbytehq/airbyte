@@ -1,6 +1,5 @@
 # When_i_work
 This page contains the setup guide and reference information for the [When I Work](https://wheniwork.com/) source connector.
-Website: 
 
 ## Documentation reference:
 Visit `https://apidocs.wheniwork.com/external/index.html` for API documentation
