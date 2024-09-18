@@ -96,6 +96,6 @@ class DefaultInitialCdcStateCreatorFactory(
         // TODO : send close analytics message
         // TODO : Close the engine. Note that engine must be closed in a different thread
         // than the running engine.
-        CoroutineScope(Dispatchers.Default).launch { engine?.close() }
+        CoroutineScope(Dispatchers.IO).launch { engine?.close() }
     }
 }
