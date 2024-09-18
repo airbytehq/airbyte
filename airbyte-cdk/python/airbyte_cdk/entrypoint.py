@@ -250,21 +250,17 @@ def launch(
     or any other file-like object.
     """
     output_stream = output_stream or sys.stdout
-    source_entrypoint = AirbyteEntrypoint(source)
-    parsed_args = source_entrypoint.parse_args(args)
-    record_iterator = source_entrypoint.run(parsed_args)
+    entrypoint = AirbyteEntrypoint(source)
+    parsed_args = entrypoint.parse_args(args)
+    record_iterator = entrypoint.run(parsed_args)
 
     if output_stream is os.devnull:
-        # Skip printing:
         for _ in record_iterator:
             pass
-        return
-
-    with PrintBuffer():
-        for message in record_iterator:
-            # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
-            # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-            print(f"{message}\n", end="", flush=True, file=output_stream)
+    else:
+        with PrintBuffer():
+            for message in record_iterator:
+                print(f"{message}\n", end="", flush=True, file=output_stream)
 
 
 def _init_internal_request_filter() -> None:
