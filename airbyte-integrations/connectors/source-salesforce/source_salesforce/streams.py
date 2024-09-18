@@ -19,7 +19,6 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk import (
     BearerAuthenticator,
-    DeclarativeStream,
     CursorPaginationStrategy,
     DeclarativeStream,
     DefaultPaginator,
@@ -59,6 +58,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import exceptions
 from requests.models import PreparedRequest
 
+from . import SourceSalesforce
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
@@ -110,6 +110,18 @@ class SalesforceStream(HttpStream, ABC):
             session=self._http_client._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
             error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
         )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        """
+        In order to avoid RFR which does uses `_read_single_page` instead of `_read_pages`
+        """
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -349,18 +361,20 @@ class RestSalesforceStream(SalesforceStream):
         property_chunk: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        return self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
             headers=dict(request_headers),
             params=self.request_params(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
             ),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_kwargs={},
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
-        return request, response
 
 
 class BatchedSubStream(HttpSubStream):
@@ -476,7 +490,7 @@ class BulkSalesforceStream(SalesforceStream):
             parameters=parameters,
         )
         error_handler = SalesforceErrorHandler()
-        message_repository = NoopMessageRepository()  # FIXME set to None to unblock testing but we need to understand the implications
+        message_repository = SourceSalesforce.message_repository
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
@@ -516,7 +530,7 @@ class BulkSalesforceStream(SalesforceStream):
             message_repository=message_repository,
             use_cache=False,
             decoder=decoder,
-            stream_response=decoder.is_stream_response() if decoder else False,
+            stream_response=False,
         )
         polling_id_interpolation = "{{stream_slice['create_job_response'].json()['id'] }}"
         polling_requester = HttpRequester(
@@ -659,7 +673,7 @@ class BulkSalesforceStream(SalesforceStream):
             job_timeout=self.DEFAULT_WAIT_TIMEOUT,
         )
         record_selector = RecordSelector(
-            extractor=None,  # FIXME typing won't like that
+            extractor=None,  # FIXME typing won't like that but it is not used
             record_filter=None,
             transformations=[],
             schema_normalization=self.transformer,
@@ -673,10 +687,7 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=BulkDatetimeStreamSlicer(self._stream_slicer_cursor),
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository,
-                    stream_slices,
-                    self._job_tracker,
-                    exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, self._job_tracker, message_repository, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
@@ -753,6 +764,7 @@ class BulkSalesforceStream(SalesforceStream):
             schema=self.schema,
             sobject_options=self.sobject_options,
             authenticator=self._http_client._session.auth,
+            job_tracker=self._job_tracker,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
