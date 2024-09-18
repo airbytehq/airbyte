@@ -374,7 +374,27 @@ class SearchByKeyword(SearchAnalytics):
     """
     Adds searchAppearance value to dimensionFilterGroups in json body
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
+
+    groupType: "and" - Whether all filters in this group must return true ("and"), or one or more must return true (not yet supported).
+    filters: {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
     """
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        search_appearance_stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
+
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            keywords_records = search_appearance_stream.read_records(
+                sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice
+            )
+            keywords = {record["searchAppearance"] for record in keywords_records}
+
+            for keyword in keywords:
+                filters = {"dimension": "searchAppearance", "operator": "equals", "expression": keyword}
+                stream_slice["dimensionFilterGroups"] = [{"groupType": "and", "filters": filters}]
+
+                yield stream_slice
 
     def request_body_json(
         self,
@@ -383,16 +403,7 @@ class SearchByKeyword(SearchAnalytics):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Union[Dict[str, Any], str]]:
         data = super().request_body_json(stream_state, stream_slice, next_page_token)
-
-        stream = SearchAppearance(self._session.auth, self._site_urls, self._start_date, self._end_date)
-        keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
-        keywords = {record["searchAppearance"] for record in keywords_records}
-        filters = []
-        for keyword in keywords:
-            filters.append({"dimension": "searchAppearance", "operator": "equals", "expression": keyword})
-
-        data["dimensionFilterGroups"] = [{"filters": filters}]
-
+        data["dimensionFilterGroups"] = stream_slice["dimensionFilterGroups"]
         return data
 
 

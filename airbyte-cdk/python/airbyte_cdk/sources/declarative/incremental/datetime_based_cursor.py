@@ -4,6 +4,7 @@
 
 import datetime
 from dataclasses import InitVar, dataclass, field
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
@@ -15,7 +16,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
-from isodate import Duration, parse_duration
+from isodate import Duration, duration_isoformat, parse_duration
 
 
 @dataclass
@@ -363,3 +364,17 @@ class DatetimeBasedCursor(DeclarativeCursor):
             return True
         else:
             return False
+
+    def set_runtime_lookback_window(self, lookback_window_in_seconds: int) -> None:
+        """
+        Updates the lookback window based on a given number of seconds if the new duration
+        is greater than the currently configured lookback window.
+
+        :param lookback_window_in_seconds: The lookback duration in seconds to potentially update to.
+        """
+        runtime_lookback_window = duration_isoformat(timedelta(seconds=lookback_window_in_seconds))
+        config_lookback = parse_duration(self._lookback_window.eval(self.config) if self._lookback_window else "P0D")
+
+        # Check if the new runtime lookback window is greater than the current config lookback
+        if parse_duration(runtime_lookback_window) > config_lookback:
+            self._lookback_window = InterpolatedString.create(runtime_lookback_window, parameters={})
