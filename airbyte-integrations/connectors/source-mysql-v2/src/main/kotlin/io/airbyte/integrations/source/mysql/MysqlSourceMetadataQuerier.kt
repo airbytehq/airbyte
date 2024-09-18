@@ -1,15 +1,19 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.protocol.models.v0.AirbyteStream
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -29,9 +33,63 @@ class MysqlSourceMetadataQuerier(
     ): List<Field> {
         val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
         if (table !in base.memoizedColumnMetadata) return listOf()
-        return base.memoizedColumnMetadata[table]!!.map {
+        if (base.config.global) {
+            // more discover!
+            /**
+             *           .map(MySqlSource::overrideSyncModes)
+             *           .map(MySqlSource::removeIncrementalWithoutPk)
+             *           .map(MySqlSource::setIncrementalToSourceDefined)
+             *           .map(MySqlSource::setDefaultCursorFieldForCdc)
+             *           .map(MySqlSource::addCdcMetadataColumns)
+             */
+
+        }
+        val memoizedColumnMetadata : List<Field> = base.memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
         }
+        if (base.config.global) {
+          addCdcMetadataColumns()
+        }
+        return memoizedColumnMetadata
+    }
+
+
+    // Note: in place mutation.
+    private fun addCdcMetadataColumns(stream: AirbyteStream): AirbyteStream {
+        val cdcLogFile: Field = Field(CDC_LOG_FILE, FieldType.STRING)
+        val jsonSchema = stream.jsonSchema as ObjectNode
+        val properties = jsonSchema["properties"] as ObjectNode
+
+        val numberType: JsonNode =
+            io.airbyte.commons.json.Jsons.jsonNode<com.google.common.collect.ImmutableMap<String, String>>(
+                com.google.common.collect.ImmutableMap.of<String, String>("type", "number"),
+            )
+        val airbyteIntegerType: JsonNode =
+            io.airbyte.commons.json.Jsons.jsonNode<com.google.common.collect.ImmutableMap<String, String>>(
+                com.google.common.collect.ImmutableMap.of<String, String>(
+                    "type",
+                    "number",
+                    "airbyte_type",
+                    "integer",
+                ),
+            )
+        val stringType: JsonNode =
+            io.airbyte.commons.json.Jsons.jsonNode<com.google.common.collect.ImmutableMap<String, String>>(
+                com.google.common.collect.ImmutableMap.of<String, String>("type", "string"),
+            )
+        properties.set<JsonNode>(MySqlSource.CDC_LOG_FILE, stringType)
+        properties.set<JsonNode>(MySqlSource.CDC_LOG_POS, numberType)
+        properties.set<JsonNode>(
+            io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT,
+            stringType,
+        )
+        properties.set<JsonNode>(
+            io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT,
+            stringType,
+        )
+        properties.set<JsonNode>(MySqlSource.CDC_DEFAULT_CURSOR, airbyteIntegerType)
+
+        return stream
     }
 
     override fun streamNamespaces(): List<String> = base.config.namespaces.toList()
