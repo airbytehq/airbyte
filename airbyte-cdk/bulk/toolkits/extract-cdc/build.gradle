@@ -1,13 +1,9 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-    implementation 'io.debezium:debezium-api:2.4.0.Final'
-    implementation 'io.debezium:debezium-embedded:2.4.0.Final'
-    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
+    implementation 'io.debezium:debezium-api:2.7.1.Final'
     implementation 'io.debezium:debezium-embedded:2.7.1.Final'
 
-    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-base'))
-    testFixturesApi testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract'))
-    testFixturesImplementation 'com.h2database:h2:2.2.224'
-    testFixturesImplementation 'org.apache.commons:commons-lang3:3.14.0'
+    api 'com.google.guava:guava:33.0.0-jre'
+    implementation 'commons-io:commons-io:2.11.0'
 }

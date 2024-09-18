@@ -6,7 +6,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
-import io.airbyte.commons.json.Jsons
+import io.airbyte.cdk.util.Jsons
 import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,6 +28,8 @@ private val LOGGER = KotlinLogging.logger {}
  * schema history at the end of the sync so that it can be saved in state for future syncs. Check
  * [.read] 2. Write the saved content back to the file [.path] at the beginning of the sync so that
  * debezium can function smoothly. Check persist(Optional&lt;JsonNode&gt;).
+ *
+ * This class is copied over from the legacy CDK.
  */
 class AirbyteSchemaHistoryStorage(
     private val path: Path,

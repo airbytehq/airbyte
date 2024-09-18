@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.cdc
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CdcAware
@@ -15,7 +16,7 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
 import io.airbyte.cdk.read.cdcResourceTaker
-import io.airbyte.commons.json.Jsons
+import io.airbyte.cdk.util.Jsons
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
@@ -38,6 +39,7 @@ class CdcPartitionReader<S : CdcSharedState>(
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
     private var numRecords = 0L
+    private var initialOpaqueStateValue: OpaqueStateValue = ObjectMapper().createObjectNode()
     private val outputConsumer = cdcContext.outputConsumer
     private val eventConverter = cdcContext.eventConverter
     private val propertyManager = cdcContext.debeziumManager
@@ -63,9 +65,13 @@ class CdcPartitionReader<S : CdcSharedState>(
     }
 
     override suspend fun run() {
+        // A null state value implies that this is the first time debezium is run. If so, we skip
+        // running the debezium engine (as there are no new changes) and build the initial offset
         if (opaqueStateValue != null) {
             engine = createDebeziumEngine()
             engine?.run()
+        } else {
+            initialOpaqueStateValue = initialCdcStateCreatorFactory.make()
         }
     }
 
@@ -73,7 +79,7 @@ class CdcPartitionReader<S : CdcSharedState>(
         if (opaqueStateValue != null) {
             return PartitionReadCheckpoint(propertyManager.readOffsetState(), numRecords)
         } else {
-            return PartitionReadCheckpoint(initialCdcStateCreatorFactory.make(), 0)
+            return PartitionReadCheckpoint(initialOpaqueStateValue, 0)
         }
     }
 
@@ -91,6 +97,11 @@ class CdcPartitionReader<S : CdcSharedState>(
             .using(propertyManager.getPropertiesForSync(opaqueStateValue))
             .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
             .notifying { event: ChangeEvent<String?, String?> ->
+                // debezium outputs a tombstone event that has a value of null. this is an
+                // artifact of how it
+                // interacts with kafka. we want to ignore it.
+                // more on the tombstone:
+                // https://debezium.io/documentation/reference/2.2/transformations/event-flattening.html
                 if (event.value() == null) {
                     return@notifying
                 }

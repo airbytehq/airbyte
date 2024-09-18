@@ -23,12 +23,12 @@ class MySqlDebeziumEventConverter : DebeziumEventConverter {
 
         // Value of before and after may be a null or a NullNode object,
         // representing a "null" in json
-        val baseNode =
-            when (after.isNull == true) {
-                true -> before
-                false -> after
-            }
-                as ObjectNode
+        val baseNode: ObjectNode
+        if (after.isNull) {
+            baseNode = before as ObjectNode
+        } else {
+            baseNode = after as ObjectNode
+        }
 
         val data: JsonNode =
             DebeziumEventConverter.Companion.addCdcMetadata(baseNode, source, after.isNull == true)

@@ -6,7 +6,6 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.cdc.CdcPartitionReader
 import io.airbyte.cdk.command.OpaqueStateValue
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 class CdcPartitionCreator<

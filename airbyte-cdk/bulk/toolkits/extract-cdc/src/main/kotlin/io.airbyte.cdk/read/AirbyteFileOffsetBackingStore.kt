@@ -5,7 +5,7 @@ package io.airbyte.cdk.integrations.debezium.internals
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.base.Preconditions
-import io.airbyte.commons.json.Jsons
+import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.EOFException
 import java.io.IOException
@@ -29,6 +29,8 @@ private val LOGGER = KotlinLogging.logger {}
  * We deserialize it to a Map&lt;String, String&gt; so that the state file can be human readable. If
  * we ever discover that any of the contents of these offset files is not string serializable we
  * will likely have to drop the human readability support and just base64 encode it.
+ *
+ * This class is copied over from the legacy CDK.
  */
 class AirbyteFileOffsetBackingStore(
     private val offsetFilePath: Path,
