@@ -1,0 +1,380 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: Chameleon
+
+check:
+  type: CheckStream
+  stream_names:
+    - tours
+
+definitions:
+  streams:
+    tours:
+      type: DeclarativeStream
+      name: tours
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /edit/tours
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tours
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 1
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tours"
+    microsurveys:
+      type: DeclarativeStream
+      name: microsurveys
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /edit/surveys
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - surveys
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/microsurveys"
+    tooltips:
+      type: DeclarativeStream
+      name: tooltips
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /edit/tooltips
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tooltips
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tooltips"
+    launchers:
+      type: DeclarativeStream
+      name: launchers
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /edit/launchers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - launchers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/launchers"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.chameleon.io/v3
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Account-Secret
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/tours"
+  - $ref: "#/definitions/streams/microsurveys"
+  - $ref: "#/definitions/streams/tooltips"
+  - $ref: "#/definitions/streams/launchers"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    tours: false
+    microsurveys: false
+    tooltips: true
+    launchers: true
+  testedStreams:
+    tours:
+      hasRecords: true
+      streamHash: 8fbccfe7d0aba8ab9cf4960121797f34624a861a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    microsurveys:
+      hasRecords: true
+      streamHash: db79196dba54f616d7206c4e3c02bfe7a9a3e698
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tooltips:
+      hasRecords: true
+      streamHash: 1eb6c3fe16678e3d2fee0582f67291f73d4c3c33
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    launchers:
+      hasRecords: true
+      streamHash: 9dea0aabe1b99521a768895fca99b3e4475b24b0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://developers.chameleon.io/#/apis/tours
+
+schemas:
+  tours:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  microsurveys:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  tooltips:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+  launchers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      empty_state_content:
+        type:
+          - string
+          - "null"
+      excluded_segment_ids:
+        type:
+          - array
+          - "null"
+      icon_size:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            campaign_id:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            hide:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            script:
+              type:
+                - string
+                - "null"
+            segment_id:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      list_type:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position_type:
+        type:
+          - string
+          - "null"
+      quantifier_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            match_type:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      screen_position:
+        type:
+          - string
+          - "null"
+      segment_id:
+        type:
+          - string
+          - "null"
+      segment_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      segments_op:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          displayed_count:
+            type:
+              - number
+              - "null"
+          last_displayed_at:
+            type:
+              - string
+              - "null"
+          last_started_at:
+            type:
+              - string
+              - "null"
+          started_count:
+            type:
+              - number
+              - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - string
+          - "null"
+      trigger_text:
+        type:
+          - string
+          - "null"
+      trigger_type:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
