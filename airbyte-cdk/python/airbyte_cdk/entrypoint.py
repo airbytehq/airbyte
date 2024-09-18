@@ -13,7 +13,7 @@ import sys
 import tempfile
 from collections import defaultdict
 from functools import wraps
-from typing import Any, DefaultDict, Iterable, List, Literal, Mapping, Optional, TextIO
+from typing import Any, DefaultDict, Iterable, List, Mapping, Optional, TextIO
 from urllib.parse import urlparse
 
 import requests
@@ -258,13 +258,13 @@ def launch(
         # Skip printing:
         for _ in record_iterator:
             pass
+        return
 
-    else:
-        with PrintBuffer():
-            for message in record_iterator:
-                # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
-                # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-                print(f"{message}\n", end="", flush=True, file=output_stream)
+    with PrintBuffer():
+        for message in record_iterator:
+            # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
+            # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
+            print(f"{message}\n", end="", flush=True, file=output_stream)
 
 
 def _init_internal_request_filter() -> None:
