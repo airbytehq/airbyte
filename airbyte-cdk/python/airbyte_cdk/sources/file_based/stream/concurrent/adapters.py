@@ -237,6 +237,9 @@ class FileBasedStreamPartition(Partition):
                 stream_state=self._state,
             ):
                 yield from self._records_df_to_record_messages(df)
+
+            return
+
         try:
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
