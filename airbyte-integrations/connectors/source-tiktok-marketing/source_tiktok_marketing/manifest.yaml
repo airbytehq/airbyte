@@ -4154,7 +4154,147 @@ definitions:
       $schema: http://json-schema.org/draft-07/schema#
       additionalProperties: true
       type: object
-      properties: {}
+      properties:
+        user_info:
+          type:
+            - 'null'
+            - object
+          properties:
+            tiktok_name:
+              type:
+                - 'null'
+                - string
+            identity_id:
+              type:
+                - 'null'
+                - string
+            identity_type:
+              type:
+                - 'null'
+                - string
+        item_info:
+          type: 
+            - 'null'
+            - object
+          properties:
+            anchor_list:
+              type:
+                - 'null'
+                - array
+              items:
+                type: 
+                  - 'null'
+                  - object
+                properties:
+                  id:
+                    type:
+                      - 'null'
+                      - string
+                  status:
+                    type:
+                      - 'null'
+                      - string
+                  product_regions:
+                    type: 
+                      - 'null'
+                      - array
+                    items:
+                      type:
+                        - 'null'
+                        - string
+                  url:
+                    type:
+                      - 'null'
+                      - string
+                  title:
+                    type:
+                      - 'null'
+                      - string
+            text:
+              type:
+                - 'null'
+                - string
+            status:
+              type:
+                - 'null'
+                - string
+            auth_code:
+              type:
+                - 'null'
+                - string
+            item_id:
+              type:
+                - 'null'
+                - string
+            item_type:
+              type:
+                - 'null'
+                - string
+            carousel_info:
+              type:
+                - 'null'
+                - object
+        auth_info:
+          type: 
+            - 'null'
+            - object
+          properties:
+            auth_start_time:
+              type:
+                - 'null'
+                - string
+              format: date-time
+            ad_auth_status:
+              type:
+                - 'null'
+                - string
+            invite_start_time:
+              type:
+                - 'null'
+                - string
+              format: date-time
+            auth_end_time:
+              type:
+                - 'null'
+                - string
+              format: date-time
+        video_info:
+          type: 
+            - 'null'
+            - object
+          properties:
+            duration:
+              type: 
+                - 'null'
+                - number
+            preview_url:
+              type:
+                - 'null'
+                - string
+            bit_rate:
+              type: 
+                - 'null'
+                - integer
+            height:
+              type: 
+                - 'null'
+                - integer
+            width:
+              type: 
+                - 'null'
+                - integer
+            signature:
+              type:
+                - 'null'
+                - string
+            size:
+              type: 
+                - 'null'
+                - integer
+            poster_url:
+              type:
+                - 'null'
+                - string
 
 streams:
   - $ref: "#/definitions/advertiser_ids_stream"
