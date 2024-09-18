@@ -1,5 +1,5 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
     oss:
@@ -17,4 +17,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

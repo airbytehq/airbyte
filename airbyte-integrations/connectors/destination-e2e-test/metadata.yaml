@@ -8,7 +8,7 @@ data:
   icon: airbyte.svg
   license: MIT
   name: E2E Testing
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -22,4 +22,7 @@ data:
     ql: 100
   supportLevel: community
   supportsRefreshes: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

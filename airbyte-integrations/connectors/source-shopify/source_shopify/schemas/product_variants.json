@@ -54,6 +54,61 @@
       "description": "The value for option 3 of the variant",
       "type": ["null", "string"]
     },
+    "options": {
+      "description": "List of product options applied to the variant.",
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "description": "The product option’s name.",
+            "type": ["null", "string"]
+          },
+          "value": {
+            "description": "The product option’s value.",
+            "type": ["null", "string"]
+          },
+          "option_value": {
+            "description": "The product option’s value object.",
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "description": "A globally-unique ID.",
+                "type": ["null", "string"]
+              },
+              "name": {
+                "description": "The name of the product option value.",
+                "type": ["null", "string"]
+              },
+              "has_variants": {
+                "description": "Whether the product option value has any linked variants.",
+                "type": ["null", "boolean"]
+              },
+              "swatch": {
+                "description": "The swatch associated with the product option value.",
+                "type": ["null", "object"],
+                "properties": {
+                  "color": {
+                    "description": "The color representation of the swatch.",
+                    "type": ["null", "string"]
+                  },
+                  "image": {
+                    "description": "An image representation of the swatch.",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "id": {
+                        "description": "A globally-unique ID of an image representation of the swatch.",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "created_at": {
       "description": "The date and time when the variant was created",
       "type": ["null", "string"],
@@ -121,8 +176,17 @@
             }
           },
           "compare_at_price": {
-            "description": "The original price of the variant in a different currency before any discount",
-            "type": ["null", "number"]
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "description": "The amount of the price",
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "description": "The currency code of the price",
+                "type": ["null", "string"]
+              }
+            }
           }
         }
       }
@@ -137,6 +201,18 @@
     },
     "shop_url": {
       "description": "The URL of the shop where the variant is listed",
+      "type": ["null", "string"]
+    },
+    "available_for_sale": {
+      "description": "Whether the product variant is available for sale.",
+      "type": ["null", "boolean"]
+    },
+    "display_name": {
+      "description": "Display name of the variant, based on product's title + variant's title.",
+      "type": ["null", "string"]
+    },
+    "tax_code": {
+      "description": "The tax code for the product variant.",
       "type": ["null", "string"]
     }
   }

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql.initialsync;
 
+import static io.airbyte.cdk.db.DbAnalyticsUtils.cdcSnapshotForceShutdownMessage;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
@@ -11,7 +12,9 @@ import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.AirbyteRecordData;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.source.relationaldb.models.OrderedColumnLoadStatus;
+import io.airbyte.commons.exceptions.TransientErrorException;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mssql.MssqlQueryUtils;
@@ -21,7 +24,10 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.CheckForNull;
 import org.slf4j.Logger;
@@ -44,6 +50,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   private final long chunkSize;
   private final OrderedColumnInfo ocInfo;
   private final boolean isCompositeKeyLoad;
+  private final Instant startInstant;
+  private Optional<Duration> cdcInitialLoadTimeout;
+  private boolean isCdcSync;
 
   MssqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
@@ -53,7 +62,9 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
                                  final List<String> columnNames,
                                  final AirbyteStreamNameNamespacePair pair,
                                  final long chunkSize,
-                                 final boolean isCompositeKeyLoad) {
+                                 final boolean isCompositeKeyLoad,
+                                 final Instant startInstant,
+                                 final Optional<Duration> cdcInitialLoadTimeout) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
@@ -63,11 +74,23 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
     this.chunkSize = chunkSize;
     this.ocInfo = initialLoadStateManager.getOrderedColumnInfo(pair);
     this.isCompositeKeyLoad = isCompositeKeyLoad;
+    this.startInstant = startInstant;
+    this.cdcInitialLoadTimeout = cdcInitialLoadTimeout;
+    this.isCdcSync = isCdcSync(initialLoadStateManager);
   }
 
   @CheckForNull
   @Override
   protected AirbyteRecordData computeNext() {
+    if (isCdcSync && cdcInitialLoadTimeout.isPresent()
+        && Duration.between(startInstant, Instant.now()).compareTo(cdcInitialLoadTimeout.get()) > 0) {
+      final String cdcInitialLoadTimeoutMessage = String.format(
+          "Initial load has taken longer than %s hours, Canceling sync so that CDC replication can catch-up on subsequent attempt, and then initial snapshotting will resume",
+          cdcInitialLoadTimeout.get().toHours());
+      LOGGER.info(cdcInitialLoadTimeoutMessage);
+      AirbyteTraceMessageUtility.emitAnalyticsTrace(cdcSnapshotForceShutdownMessage());
+      throw new TransientErrorException(cdcInitialLoadTimeoutMessage);
+    }
     if (shouldBuildNextSubquery()) {
       try {
         // We will only issue one query for a composite key load. If we have already processed all the data
@@ -161,6 +184,16 @@ public class MssqlInitialLoadRecordIterator extends AbstractIterator<AirbyteReco
   public void close() throws Exception {
     if (currentIterator != null) {
       currentIterator.close();
+    }
+  }
+
+  private boolean isCdcSync(MssqlInitialLoadStateManager initialLoadStateManager) {
+    if (initialLoadStateManager instanceof MssqlInitialLoadGlobalStateManager) {
+      LOGGER.info("Running a cdc sync");
+      return true;
+    } else {
+      LOGGER.info("Not running a cdc sync");
+      return false;
     }
   }
 

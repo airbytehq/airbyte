@@ -9,11 +9,11 @@ data:
       - analyticsdata.googleapis.com
       - analyticsreporting.googleapis.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-google-analytics-v4
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   githubIssueLabel: source-google-analytics-v4
@@ -25,14 +25,41 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-google-analytics-v4
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: generally_available
-  supportLevel: certified
+  supportLevel: archived
   tags:
     - language:python
     - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: google-analytics-v4_old_config_dev_null
+          id: 1b9d53c4-ca7f-4beb-90b9-fde974248158
+        - name: google-analytics-v4_config_dev_null
+          id: 202a55ce-a80d-4b88-b5ca-1491d6bf5a11
+        - name: google-analytics-v4_service_config_dev_null
+          id: 5cdb278e-fcc3-498f-adc7-e2c6288aeb11
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-GOOGLE-ANALYTICS-V4_OLD_CREDS
+          fileName: old_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GOOGLE-ANALYTICS_V4_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-GOOGLE-ANALYTICS_V4_SRV_ACC_CREDS
+          fileName: service_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

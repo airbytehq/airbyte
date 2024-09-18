@@ -50,9 +50,14 @@ For each of the above high-level requirements as appropriate, add or point to a 
 
 For each major cloud provider we support, also add a follow-along guide for setting up Airbyte to connect to that destination. See the Postgres destination guide for an example of what this should look like.
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                              | Subject                    |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------- |
 | 0.1.1   | 2023-03-17 | [#24180](https://github.com/airbytehq/airbyte/pull/24180) | Fix field order            |
 | 0.1.0   | 2022-10-28 | [#18039](https://github.com/airbytehq/airbyte/pull/18039) | New Destination YugabyteDB |
+
+</details>

@@ -3,6 +3,19 @@
 This is the repository for the Langchain destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/langchain).
 
+> [!warning]
+> The vector db destination destination has been split into separate destinations per vector database. This destination will not receive any further updates and is not subject to SLAs. The separate destinations support all features of this destination and are actively maintained. Please migrate to the respective destination as soon as possible.
+>
+> Please use the respective destination for the vector database you want to use to ensure you receive updates and support.
+>
+> To following databases are supported:
+>
+> - [Pinecone](https://docs.airbyte.com/integrations/destinations/pinecone)
+> - [Weaviate](https://docs.airbyte.com/integrations/destinations/weaviate)
+> - [Milvus](https://docs.airbyte.com/integrations/destinations/milvus)
+> - [Chroma](https://docs.airbyte.com/integrations/destinations/chroma)
+> - [Qdrant](https://docs.airbyte.com/integrations/destinations/qdrant)
+
 ## Local development
 
 ### Prerequisites

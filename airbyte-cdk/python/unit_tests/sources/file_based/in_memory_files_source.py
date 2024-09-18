@@ -16,7 +16,7 @@ import avro.schema as avro_schema
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
@@ -28,7 +28,7 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SC
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor, DefaultFileBasedCursor
 from airbyte_cdk.sources.source import TState
 from avro import datafile
-from pydantic import AnyUrl
+from pydantic.v1 import AnyUrl
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -53,7 +53,7 @@ class InMemoryFilesSource(FileBasedSource):
         self.files = files
         self.file_type = file_type
         self.catalog = catalog
-        self.configured_catalog = ConfiguredAirbyteCatalog(streams=self.catalog["streams"]) if self.catalog else None
+        self.configured_catalog = ConfiguredAirbyteCatalogSerializer.load(self.catalog) if self.catalog else None
         self.config = config
         self.state = state
 
@@ -207,5 +207,25 @@ class TemporaryAvroFilesStreamReader(InMemoryFilesStreamReader):
                 data = {col["name"]: content[i] for i, col in enumerate(schema["fields"])}
                 file_writer.append(data)
             file_writer.flush()
+            fp.seek(0)
+            return fp.read()
+
+
+class TemporaryExcelFilesStreamReader(InMemoryFilesStreamReader):
+    """
+    A file reader that writes RemoteFiles to a temporary file and then reads them back.
+    """
+
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        return io.BytesIO(self._make_file_contents(file.uri))
+
+    def _make_file_contents(self, file_name: str) -> bytes:
+        contents = self.files[file_name]["contents"]
+        df = pd.DataFrame(contents)
+
+        with io.BytesIO() as fp:
+            writer = pd.ExcelWriter(fp, engine="xlsxwriter")
+            df.to_excel(writer, index=False, sheet_name="Sheet1")
+            writer._save()
             fp.seek(0)
             return fp.read()

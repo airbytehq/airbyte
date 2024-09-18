@@ -4,11 +4,23 @@
 
 import json
 import logging
+import os
 import time
 
 from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.destinations.vector_db_based.test_utils import BaseIntegrationTest
-from airbyte_cdk.models import DestinationSyncMode, Status
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
 from destination_pinecone.destination import DestinationPinecone
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
@@ -46,8 +58,17 @@ class PineconeIntegrationTest(BaseIntegrationTest):
             if "Namespace not found" not in str(e):
                 raise(e)
             else :
-                print("Noting to delete. No data in the index/namespace.")
+                print("Nothing to delete in default namespace. No data in the index/namespace.")
+        try:
+            self.pinecone_index.delete(delete_all=True, namespace="ns1")
+        except PineconeException as e:
+            if "Namespace not found" not in str(e):
+                raise(e)
+            else :
+                print("Nothing to delete in ns1 namespace. No data in the index/namespace.")
 
+    def test_integration_test_flag_is_set(self):
+        assert "PYTEST_CURRENT_TEST" in os.environ
 
     def test_check_valid_config(self):
         outcome = DestinationPinecone().check(logging.getLogger("airbyte"), self.config)        
@@ -104,3 +125,44 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         vector_store = Pinecone(self.pinecone_index_rest, embeddings.embed_query, "text")
         result = vector_store.similarity_search("feline animals", 1)
         assert result[0].metadata["_ab_record_id"] == "mystream_2"
+
+    def test_write_with_namespace(self):
+        catalog = self._get_configured_catalog_with_namespace(DestinationSyncMode.overwrite)
+        first_state_message = self._state({"state": "1"})
+        first_record_chunk = [self._record_with_namespace("mystream", f"Dogs are number {i}", i) for i in range(5)]
+
+        # initial sync
+        destination = DestinationPinecone()
+        list(destination.write(self.config, catalog, [*first_record_chunk, first_state_message]))
+
+        self._wait() 
+        assert self.pinecone_index.describe_index_stats().total_vector_count == 5
+
+
+    def _get_configured_catalog_with_namespace(self, destination_mode: DestinationSyncMode) -> ConfiguredAirbyteCatalog:
+        stream_schema = {"type": "object", "properties": {"str_col": {"type": "str"}, "int_col": {"type": "integer"}, "random_col": {"type": "integer"}}}
+
+        overwrite_stream = ConfiguredAirbyteStream(
+            stream=AirbyteStream(
+                name="mystream", 
+                namespace="ns1",
+                json_schema=stream_schema, 
+                supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]
+            ),
+            primary_key=[["int_col"]],
+            sync_mode=SyncMode.incremental,
+            destination_sync_mode=destination_mode,
+        )
+
+        return ConfiguredAirbyteCatalog(streams=[overwrite_stream])
+    
+    def _record_with_namespace(self, stream: str, str_value: str, int_value: int) -> AirbyteMessage:
+        return AirbyteMessage(
+            type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, 
+                                                          namespace="ns1",
+                                                          data={"str_col": str_value, "int_col": int_value}, 
+                                                          emitted_at=0)
+        )
+
+
+    

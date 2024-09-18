@@ -52,7 +52,7 @@ public class MssqlSourceOperationsTest {
     for (int i = 1; i <= 4; i++) {
       final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
       // Manually generate DATETIMEOFFSET data
-      final String cursorValue = String.format("'2023-0%s-10 10:00:00.%s00000 +00:00'", i, i * 10);
+      final String cursorValue = String.format("'2023-0%s-10T10:00:00.100000Z'", i, i * 10);
       jsonNode.put("id", i);
       // Remove single quotes from string since the date being retrieved will not have quotes
       jsonNode.put(cursorColumn, cursorValue.replaceAll("\'", ""));
@@ -61,7 +61,7 @@ public class MssqlSourceOperationsTest {
       executeQuery(insertQuery);
       expectedRecords.add(jsonNode);
     }
-    final String cursorAnchorValue = "2023-01-01 00:00:00.0000000 +00:00";
+    final String cursorAnchorValue = "2023-01-01T00:00:00.000000+00:00";
     final List<JsonNode> actualRecords = new ArrayList<>();
     try (final Connection connection = testdb.getContainer().createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(

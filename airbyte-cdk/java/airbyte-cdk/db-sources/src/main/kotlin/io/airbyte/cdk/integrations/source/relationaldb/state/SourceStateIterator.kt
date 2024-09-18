@@ -6,12 +6,14 @@ package io.airbyte.cdk.integrations.source.relationaldb.state
 import com.google.common.collect.AbstractIterator
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.time.OffsetDateTime
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+
+private val LOGGER = KotlinLogging.logger {}
 
 open class SourceStateIterator<T>(
     private val messageIterator: Iterator<T>,
@@ -21,6 +23,7 @@ open class SourceStateIterator<T>(
 ) : AbstractIterator<AirbyteMessage>(), MutableIterator<AirbyteMessage> {
     private var hasEmittedFinalState = false
     private var recordCount = 0L
+    private var streamRecordCount = mutableMapOf<AirbyteStreamNameNamespacePair, Long>()
     private var lastCheckpoint: Instant = Instant.now()
 
     override fun computeNext(): AirbyteMessage? {
@@ -44,8 +47,11 @@ open class SourceStateIterator<T>(
                 stateMessage!!.withSourceStats(
                     AirbyteStateStats().withRecordCount(recordCount.toDouble())
                 )
+                LOGGER.info { "sending state message, with count per stream: $streamRecordCount " }
 
                 recordCount = 0L
+                streamRecordCount.clear()
+
                 lastCheckpoint = Instant.now()
                 return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
             }
@@ -55,7 +61,15 @@ open class SourceStateIterator<T>(
                 val message = messageIterator.next()
                 val processedMessage =
                     sourceStateMessageProducer.processRecordMessage(stream, message)
-                recordCount++
+                if (processedMessage.type == AirbyteMessage.Type.RECORD) {
+                    val pair =
+                        AirbyteStreamNameNamespacePair(
+                            processedMessage.record.stream,
+                            processedMessage.record.namespace
+                        )
+                    streamRecordCount[pair] = streamRecordCount.getOrPut(pair) { 0 } + 1
+                    recordCount++
+                }
                 return processedMessage
             } catch (e: Exception) {
                 throw FailedRecordIteratorException(e)
@@ -67,7 +81,13 @@ open class SourceStateIterator<T>(
             finalStateMessageForStream!!.withSourceStats(
                 AirbyteStateStats().withRecordCount(recordCount.toDouble())
             )
+            LOGGER.info {
+                "sending final state message, with count per stream: $streamRecordCount "
+            }
+
             recordCount = 0L
+            streamRecordCount.clear()
+
             return AirbyteMessage()
                 .withType(AirbyteMessage.Type.STATE)
                 .withState(finalStateMessageForStream)
@@ -94,7 +114,5 @@ open class SourceStateIterator<T>(
         return false
     }
 
-    companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(SourceStateIterator::class.java)
-    }
+    companion object {}
 }

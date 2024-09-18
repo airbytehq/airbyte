@@ -3,6 +3,7 @@
 #
 
 import json
+import os
 import uuid
 from datetime import datetime
 from typing import Dict, List, Tuple
@@ -123,7 +124,7 @@ class UploadDependenciesToMetadataService(Step):
             file,
             key,
             self.context.metadata_bucket_name,
-            self.context.metadata_service_gcs_credentials_secret,
+            self.context.metadata_service_gcs_credentials,
             flags=['--cache-control="no-cache"'],
         )
         if exit_code != 0:
@@ -139,6 +140,18 @@ class PushConnectorImageToRegistry(Step):
     def latest_docker_image_name(self) -> str:
         return f"{self.context.docker_repository}:latest"
 
+    @property
+    def should_push_latest_tag(self) -> bool:
+        """
+        We don't want to push the latest tag for release candidates or pre-releases.
+
+        Returns:
+            bool: True if the latest tag should be pushed, False otherwise.
+        """
+        is_release_candidate = self.context.connector.metadata.get("releases", {}).get("isReleaseCandidate", False)
+        is_pre_release = self.context.pre_release
+        return not is_release_candidate and not is_pre_release
+
     async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
@@ -146,7 +159,7 @@ class PushConnectorImageToRegistry(Step):
                 platform_variants=built_containers_per_platform[1:],
                 forced_compression=ImageLayerCompression.Gzip,
             )
-            if not self.context.pre_release:
+            if self.should_push_latest_tag:
                 image_ref = await built_containers_per_platform[0].publish(
                     f"docker.io/{self.latest_docker_image_name}",
                     platform_variants=built_containers_per_platform[1:],
@@ -282,12 +295,58 @@ class UploadSpecToCache(Step):
                 file,
                 key,
                 self.context.spec_cache_bucket_name,
-                self.context.spec_cache_gcs_credentials_secret,
+                self.context.spec_cache_gcs_credentials,
                 flags=['--cache-control="no-cache"'],
             )
             if exit_code != 0:
                 return StepResult(step=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
         return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
+
+
+class UploadSbom(Step):
+    context: PublishConnectorContext
+    title = "Upload SBOM to metadata service bucket"
+    SBOM_KEY_PREFIX = "sbom"
+    SYFT_DOCKER_IMAGE = "anchore/syft:v1.6.0"
+    SBOM_FORMAT = "spdx-json"
+    IN_CONTAINER_SBOM_PATH = "sbom.json"
+    SBOM_EXTENSION = "spdx.json"
+
+    def get_syft_container(self) -> Container:
+        home_dir = os.path.expanduser("~")
+        config_path = os.path.join(home_dir, ".docker", "config.json")
+        config_file = self.dagger_client.host().file(config_path)
+        return (
+            self.dagger_client.container()
+            .from_(self.SYFT_DOCKER_IMAGE)
+            .with_mounted_file("/config/config.json", config_file)
+            .with_env_variable("DOCKER_CONFIG", "/config")
+            # Syft requires access to the docker daemon. We share the host's docker socket with the Syft container.
+            .with_unix_socket("/var/run/docker.sock", self.dagger_client.host().unix_socket("/var/run/docker.sock"))
+        )
+
+    async def _run(self) -> StepResult:
+        try:
+            syft_container = self.get_syft_container()
+            sbom_file = await syft_container.with_exec(
+                [self.context.docker_image, "-o", f"{self.SBOM_FORMAT}={self.IN_CONTAINER_SBOM_PATH}"]
+            ).file(self.IN_CONTAINER_SBOM_PATH)
+        except ExecError as e:
+            return StepResult(step=self, status=StepStatus.FAILURE, stderr=str(e), exc_info=e)
+
+        # This will lead to a key like: sbom/airbyte/source-faker/0.1.0.json
+        key = f"{self.SBOM_KEY_PREFIX}/{self.context.docker_image.replace(':', '/')}.{self.SBOM_EXTENSION}"
+        exit_code, stdout, stderr = await upload_to_gcs(
+            self.context.dagger_client,
+            sbom_file,
+            key,
+            self.context.metadata_bucket_name,
+            self.context.metadata_service_gcs_credentials,
+            flags=['--cache-control="no-cache"', "--content-type=application/json"],
+        )
+        if exit_code != 0:
+            return StepResult(step=self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
+        return StepResult(step=self, status=StepStatus.SUCCESS, stdout="Uploaded SBOM to metadata service bucket.")
 
 
 # Pipeline
@@ -309,13 +368,17 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     metadata_upload_step = MetadataUpload(
         context=context,
-        metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
-        docker_hub_username_secret=context.docker_hub_username_secret,
-        docker_hub_password_secret=context.docker_hub_password_secret,
+        metadata_service_gcs_credentials=context.metadata_service_gcs_credentials,
+        docker_hub_username=context.docker_hub_username,
+        docker_hub_password=context.docker_hub_password,
         metadata_bucket_name=context.metadata_bucket_name,
         pre_release=context.pre_release,
         pre_release_tag=context.docker_image_tag,
     )
+
+    upload_spec_to_cache_step = UploadSpecToCache(context)
+
+    upload_sbom_step = UploadSbom(context)
 
     def create_connector_report(results: List[StepResult]) -> ConnectorReport:
         report = ConnectorReport(context, results, name="PUBLISH RESULTS")
@@ -324,7 +387,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     async with semaphore:
         async with context:
-            # TODO add a strucutre to hold the results of each step. and perform skips and failures
 
             results = []
 
@@ -349,10 +411,16 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
                 already_published_connector = context.dagger_client.container().from_(context.docker_image)
-                upload_to_spec_cache_results = await UploadSpecToCache(context).run(already_published_connector)
+                upload_to_spec_cache_results = await upload_spec_to_cache_step.run(already_published_connector)
                 results.append(upload_to_spec_cache_results)
                 if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
                     return create_connector_report(results)
+
+                upload_sbom_results = await upload_sbom_step.run()
+                results.append(upload_sbom_results)
+                if upload_sbom_results.status is not StepStatus.SUCCESS:
+                    return create_connector_report(results)
+
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
@@ -388,9 +456,14 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if pull_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            upload_to_spec_cache_results = await UploadSpecToCache(context).run(built_connector_platform_variants[0])
+            upload_to_spec_cache_results = await upload_spec_to_cache_step.run(built_connector_platform_variants[0])
             results.append(upload_to_spec_cache_results)
             if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results)
+
+            upload_sbom_results = await upload_sbom_step.run()
+            results.append(upload_sbom_results)
+            if upload_sbom_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
             metadata_upload_results = await metadata_upload_step.run()

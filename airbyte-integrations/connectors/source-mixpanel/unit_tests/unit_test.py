@@ -5,7 +5,6 @@
 from datetime import date, timedelta
 
 import pendulum
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_mixpanel.streams import Export
 
 
@@ -15,7 +14,7 @@ def test_date_slices():
 
     # test with stream_state
     stream_slices = Export(
-        authenticator=NoAuth(),
+        authenticator=None,
         start_date=date.fromisoformat("2021-07-01"),
         end_date=date.fromisoformat("2021-07-03"),
         date_window_size=1,

@@ -103,8 +103,30 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| 3.0.22 | 2024-09-14 | [45517](https://github.com/airbytehq/airbyte/pull/45517) | Update dependencies |
+| 3.0.21 | 2024-09-07 | [45231](https://github.com/airbytehq/airbyte/pull/45231) | Update dependencies |
+| 3.0.20 | 2024-08-31 | [44961](https://github.com/airbytehq/airbyte/pull/44961) | Update dependencies |
+| 3.0.19 | 2024-08-24 | [44713](https://github.com/airbytehq/airbyte/pull/44713) | Update dependencies |
+| 3.0.18 | 2024-08-17 | [44282](https://github.com/airbytehq/airbyte/pull/44282) | Update dependencies |
+| 3.0.17 | 2024-08-12 | [43829](https://github.com/airbytehq/airbyte/pull/43829) | Update dependencies |
+| 3.0.16 | 2024-08-10 | [43563](https://github.com/airbytehq/airbyte/pull/43563) | Update dependencies |
+| 3.0.15 | 2024-08-03 | [43052](https://github.com/airbytehq/airbyte/pull/43052) | Update dependencies |
+| 3.0.14 | 2024-07-27 | [42666](https://github.com/airbytehq/airbyte/pull/42666) | Update dependencies |
+| 3.0.13 | 2024-07-20 | [42358](https://github.com/airbytehq/airbyte/pull/42358) | Update dependencies |
+| 3.0.12 | 2024-07-13 | [41745](https://github.com/airbytehq/airbyte/pull/41745) | Update dependencies |
+| 3.0.11 | 2024-07-10 | [41414](https://github.com/airbytehq/airbyte/pull/41414) | Update dependencies |
+| 3.0.10 | 2024-07-10 | [41325](https://github.com/airbytehq/airbyte/pull/41325) | Update dependencies |
+| 3.0.9 | 2024-07-09 | [40660](https://github.com/airbytehq/airbyte/pull/40660) | Fix configured catalog, inline schemas |
+| 3.0.8 | 2024-07-06 | [40885](https://github.com/airbytehq/airbyte/pull/40885) | Update dependencies |
+| 3.0.7 | 2024-06-25 | [40355](https://github.com/airbytehq/airbyte/pull/40355) | Update dependencies |
+| 3.0.6 | 2024-06-22 | [39955](https://github.com/airbytehq/airbyte/pull/39955) | Update dependencies |
+| 3.0.5 | 2024-06-06 | [39285](https://github.com/airbytehq/airbyte/pull/39285) | [autopull] Upgrade base image to v1.2.2 |
+| 3.0.4 | 2024-05-21 | [38518](https://github.com/airbytehq/airbyte/pull/38518) | [autopull] base image + poetry + up_to_date |
 | `3.0.3` | 2024-03-22 | [36389](https://github.com/airbytehq/airbyte/pull/36389) | Add refresh token updater and add missing properties to streams    |
 | `3.0.2` | 2024-02-20 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Small typo in spec correction                                      |
 | `3.0.1` | 2023-11-06 | [32236](https://github.com/airbytehq/airbyte/pull/32236) | Upgrade to `airbyte-cdk>=0.52.10` to resolve refresh token issues  |
@@ -120,3 +142,5 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 | `0.1.4` | 2021-12-20 | [8960](https://github.com/airbytehq/airbyte/pull/8960)   | Update connector fields title/description                          |
 | `0.1.3` | 2021-08-10 | [4986](https://github.com/airbytehq/airbyte/pull/4986)   | Using number data type for decimal fields instead string           |
 | `0.1.2` | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                    |
+
+</details>

@@ -101,6 +101,27 @@ There is no published rate limit. However, since this data updates infrequently,
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK] |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                              | Subject                                     |
+| :------ |:-----------| :-------------------------------------------------------- |:--------------------------------------------|
+| 0.2.0 | 2024-08-23 | [44617](https://github.com/airbytehq/airbyte/pull/44617) | Refactor connector to manifest-only format |
+| 0.1.15 | 2024-08-17 | [44264](https://github.com/airbytehq/airbyte/pull/44264) | Update dependencies |
+| 0.1.14 | 2024-08-12 | [43924](https://github.com/airbytehq/airbyte/pull/43924) | Update dependencies |
+| 0.1.13 | 2024-08-10 | [43562](https://github.com/airbytehq/airbyte/pull/43562) | Update dependencies |
+| 0.1.12 | 2024-08-03 | [43258](https://github.com/airbytehq/airbyte/pull/43258) | Update dependencies |
+| 0.1.11 | 2024-07-27 | [42701](https://github.com/airbytehq/airbyte/pull/42701) | Update dependencies |
+| 0.1.10 | 2024-07-20 | [42278](https://github.com/airbytehq/airbyte/pull/42278) | Update dependencies |
+| 0.1.9 | 2024-07-13 | [41827](https://github.com/airbytehq/airbyte/pull/41827) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41507](https://github.com/airbytehq/airbyte/pull/41507) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41244](https://github.com/airbytehq/airbyte/pull/41244) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40823](https://github.com/airbytehq/airbyte/pull/40823) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40394](https://github.com/airbytehq/airbyte/pull/40394) | Update dependencies |
+| 0.1.4 | 2024-06-23 | [39924](https://github.com/airbytehq/airbyte/pull/39924) | Update dependencies |
+| 0.1.3 | 2024-06-15 | [39509](https://github.com/airbytehq/airbyte/pull/39509) | Make connector compatible with Builder |
+| 0.1.2 | 2024-06-04 | [39017](https://github.com/airbytehq/airbyte/pull/39017) | [autopull] Upgrade base image to v1.2.1 |
+| 0.1.1 | 2024-05-21 | [38509](https://github.com/airbytehq/airbyte/pull/38509) | [autopull] base image + poetry + up_to_date |
+| 0.1.0   | 2022-10-17 | [#18075](https://github.com/airbytehq/airbyte/pull/18075) | 🎉 New Source: Gutendex API [low-code CDK]  |
+
+</details>

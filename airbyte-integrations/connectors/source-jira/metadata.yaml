@@ -1,18 +1,19 @@
 data:
   ab_internal:
     ql: 400
-    sl: 200
+    sl: 300
   allowedHosts:
     hosts:
       - ${domain}
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 1.2.2
+  dockerImageTag: 3.1.1
   dockerRepository: airbyte/source-jira
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
+  erdUrl: https://dbdocs.io/airbyteio/source-jira?view=relationships
   githubIssueLabel: source-jira
   icon: jira.svg
   license: MIT
@@ -22,7 +23,7 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-jira
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -30,11 +31,20 @@ data:
   releaseStage: generally_available
   releases:
     breakingChanges:
+      3.0.0:
+        message: "Primary key for Workflows stream has been changed from `Id` to [`entityId`, `name`]. This change of pk makes the stream compatible with more types of destinations."
+        upgradeDeadline: "2024-07-02"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["workflows"]
+      2.0.0:
+        message: "The source Jira connector is being migrated from the Python CDK to our declarative low-code CDK. Due to changes to the incremental stream state, this migration constitutes a breaking change. Additionally, an issue in the `ProjectAvatars` stream has been fixed. After updating, please reset your source before resuming syncs. For more information, see our migration documentation for source Jira."
+        upgradeDeadline: "2024-05-31"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["board_issues", "issues", "sprint_issues"]
       1.0.0:
-        message:
-          "Stream state will be saved for every board in stream `Boards Issues`.
-          Customers who use stream `Board Issues` in Incremental Sync mode must take
-          action with their connections."
+        message: "Stream state will be saved for every board in stream `Boards Issues`. Customers who use stream `Board Issues` in Incremental Sync mode must take action with their connections."
         upgradeDeadline: "2024-01-25"
         scopedImpact:
           - scopeType: stream
@@ -48,5 +58,37 @@ data:
   supportLevel: certified
   tags:
     - language:python
-    - cdk:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: jira_config_dev_null
+          id: 28344f6b-d2c9-4671-a5e2-81374985156e
+        - name: jira_config_empty_projects_dev_null
+          id: 8f0c8c2b-8bc4-4d13-a2ef-ce234370dbd8
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-JIRA_EMPTY_PROJECTS_CREDS
+          fileName: config_empty_projects.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-JIRA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-JIRA_EMPTY_PROJECTS_CREDS
+          fileName: config_empty_projects.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-JIRA__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
