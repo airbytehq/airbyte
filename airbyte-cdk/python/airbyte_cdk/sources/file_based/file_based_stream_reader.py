@@ -116,7 +116,7 @@ class AbstractFileBasedStreamReader(ABC):
         try:
             # If any part of this block raises an exception, we assume Polars is not supported
             # and we return False.
-            if file and not self.get_qualified_uri(file.uri):
+            if file and not self.get_fully_qualified_uri(file.uri):
                 return False
 
             if not self.polars_storage_options:
@@ -127,7 +127,7 @@ class AbstractFileBasedStreamReader(ABC):
             # No exceptions were raised, so we assume Polars is supported.
             return True
 
-    def get_qualified_uri(
+    def get_fully_qualified_uri(
         self,
         file_uri: str,
     ) -> str:
@@ -138,7 +138,9 @@ class AbstractFileBasedStreamReader(ABC):
         if "://" in file_uri:
             return file_uri
 
-        raise NotImplementedError("The `get_qualified_uri()` method is not implemented by class: " + type(self).__name__)
+        raise NotImplementedError(
+            "The `get_fully_qualified_uri()` method is not implemented by class: " + type(self).__name__,
+        )
 
     @property
     def polars_storage_options(self) -> dict[str, str]:
@@ -147,4 +149,6 @@ class AbstractFileBasedStreamReader(ABC):
         Raises:
             NotImplementedError: If the method is not implemented by the concrete class.
         """
-        raise NotImplementedError("The `polars_storage_options()` method is not implemented by class: " + type(self).__name__)
+        raise NotImplementedError(
+            "The `polars_storage_options()` method is not implemented by class: " + type(self).__name__,
+        )

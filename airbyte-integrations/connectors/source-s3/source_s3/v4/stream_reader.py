@@ -272,7 +272,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         return options
 
-    def get_qualified_uri(
+    def get_fully_qualified_uri(
         self,
         file_uri: str,
     ) -> str:

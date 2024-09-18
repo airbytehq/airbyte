@@ -67,47 +67,6 @@ class JsonlParser(FileTypeParser):
         """
         yield from self._parse_jsonl_entries(file, stream_reader, logger)
 
-    def parse_records_as_dataframes(
-        self,
-        config: FileBasedStreamConfig,
-        file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader,
-        logger: logging.Logger,
-        discovered_schema: Optional[Mapping[str, SchemaType]],
-    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
-        """Parse records and emit as iterable of data frames.
-
-        Currently this only returns an iterator containing a single data frame. This may
-        be updated in the future to return an iterator with multiple DataFrames.
-        """
-
-        # The URI isn't actually one; it's a relative path. It needs the absolute reference, for
-        # instance the 's3://' protocol, bucket name, etc.
-        actual_uri = stream_reader.get_qualified_uri(file.uri.split("#")[0])
-        storage_options = stream_reader.polars_storage_options
-
-        dataframe: pl.DataFrame | pl.LazyFrame
-        match config.bulk_mode:
-            case BulkMode.LAZY:
-                # Define the lazy dataframe but don't load it into memory.
-                dataframe = pl.scan_ndjson(actual_uri, storage_options=storage_options)
-            case BulkMode.INMEM:
-                # Load the entire file into memory.
-                # In the future, we may avoid memory overflow by
-                # forcing a match batch size and returning an iterator
-                # of DataFrames.
-                dataframe = pl.read_ndjson(actual_uri, storage_options=storage_options)
-            case _:
-                # Default to loading the entire file into memory.
-                raise ValueError(f"Unsupported bulk mode: {config.bulk_mode}")
-
-        # Add columns containing file name and last modified date.
-        dataframe = dataframe.with_columns(
-            pl.lit(file.uri).alias("_ab_source_file_url"),
-            pl.lit(file.last_modified).alias("_ab_source_file_last_modified")
-        )
-        yield dataframe
-
     @classmethod
     def _infer_schema_for_record(cls, record: Dict[str, Any]) -> Dict[str, Any]:
         record_schema = {}
@@ -171,3 +130,44 @@ class JsonlParser(FileTypeParser):
             return bytes("", json.detect_encoding(line))
         elif isinstance(line, str):
             return ""
+
+    def parse_records_as_dataframes(
+        self,
+        config: FileBasedStreamConfig,
+        file: RemoteFile,
+        stream_reader: AbstractFileBasedStreamReader,
+        logger: logging.Logger,
+        discovered_schema: Optional[Mapping[str, SchemaType]],
+    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
+        """Parse records and emit as iterable of data frames.
+
+        Currently this only returns an iterator containing a single data frame. This may
+        be updated in the future to return an iterator with multiple DataFrames.
+        """
+
+        # The URI isn't actually one; it's a relative path. It needs the absolute reference, for
+        # instance the 's3://' protocol, bucket name, etc.
+        actual_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
+        storage_options = stream_reader.polars_storage_options
+
+        dataframe: pl.DataFrame | pl.LazyFrame
+        match config.bulk_mode:
+            case BulkMode.LAZY:
+                # Define the lazy dataframe but don't load it into memory.
+                dataframe = pl.scan_ndjson(actual_uri, storage_options=storage_options)
+            case BulkMode.INMEM:
+                # Load the entire file into memory.
+                # In the future, we may avoid memory overflow by
+                # forcing a match batch size and returning an iterator
+                # of DataFrames.
+                dataframe = pl.read_ndjson(actual_uri, storage_options=storage_options)
+            case _:
+                # Default to loading the entire file into memory.
+                raise ValueError(f"Unsupported bulk mode: {config.bulk_mode}")
+
+        # Add columns containing file name and last modified date.
+        dataframe = dataframe.with_columns(
+            pl.lit(file.uri).alias("_ab_source_file_url"),
+            pl.lit(file.last_modified).alias("_ab_source_file_last_modified")
+        )
+        yield dataframe

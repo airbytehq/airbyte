@@ -76,7 +76,14 @@ class FileTypeParser(ABC):
         """
         ...
 
-    # TODO: Consider making abstract
+    @property
+    @abstractmethod
+    def file_read_mode(self) -> FileReadMode:
+        """
+        The mode in which the file should be opened for reading.
+        """
+        ...
+
     def parse_records_as_dataframes(
         self,
         config: FileBasedStreamConfig,
@@ -89,11 +96,3 @@ class FileTypeParser(ABC):
         Parse records and emit as iterable of Pandas DataFrames.
         """
         raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def file_read_mode(self) -> FileReadMode:
-        """
-        The mode in which the file should be opened for reading.
-        """
-        ...
