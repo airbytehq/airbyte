@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from __future__ import annotations
 import logging
 from collections import OrderedDict
 from typing import Any, Callable, Iterable, Mapping, Optional, Union
@@ -124,20 +125,13 @@ class PerPartitionCursor(DeclarativeCursor):
         if not stream_state:
             return
 
-        if "states" not in stream_state:
-            # We assume that `stream_state` is in a global format that can be applied to all partitions.
-            # Example: {"global_state_format_key": "global_state_format_value"}
+        states = stream_state.get("states")
+        if states:
+            partition_key_map = {self._to_partition_key(state["partition"]): state["cursor"] for state in states}
+            self._cursor_per_partition.update({k: self._create_cursor(v) for k, v in partition_key_map.items()})
+        else:
             self._state_to_migrate_from = stream_state
 
-        else:
-            for state in stream_state["states"]:
-                self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
-
-            # set default state for missing partitions if it is per partition with fallback to global
-            if "state" in stream_state:
-                self._state_to_migrate_from = stream_state["state"]
-
-        # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
