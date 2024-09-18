@@ -5,19 +5,9 @@ This page contains the setup guide and reference information for the [When I Wor
 Visit `https://apidocs.wheniwork.com/external/index.html` for API documentation
 
 ## Authentication setup
-`When I work` uses bearer token authentication,
-Refer `https://apidocs.wheniwork.com/external/index.html?repo=login` for more details.
-
-## Getting token via postman
-Make a POST call to URL `https://api.login.wheniwork.com/login`
-Along with body as raw-json with your login email and password
-```bash
-{
-  "email": "xxxx@yyyy.com",
-  "password": "123456789"
-}
-```
-You will get a response containing token for your authentication.
+`When I work` uses session token authentication,
+You have to give your login email and password used with `when-i-work` account for authentication.
+`https://apidocs.wheniwork.com/external/index.html?repo=login`
 
 ## Configuration
 
