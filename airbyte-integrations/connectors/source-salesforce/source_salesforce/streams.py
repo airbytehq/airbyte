@@ -4,16 +4,11 @@
 
 import csv
 import ctypes
-import math
-import os
-import time
 import urllib.parse
-import uuid
 from abc import ABC
-from contextlib import closing
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk import (
@@ -25,15 +20,16 @@ from airbyte_cdk import (
     HttpMethod,
     HttpRequester,
     JsonDecoder,
+    MessageRepository,
     RecordSelector,
     RequestOption,
     RequestOptionType,
     SimpleRetriever,
-    SinglePartitionRouter,
     StreamSlice,
 )
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
 from airbyte_cdk.sources.declarative.decoders import NoopDecoder
@@ -43,26 +39,19 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
-from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import exceptions
-from requests.models import PreparedRequest
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
-from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import (
-    RESPONSE_CONSUMPTION_EXCEPTIONS,
-    TRANSIENT_EXCEPTIONS,
     BulkNotSupportedException,
     SalesforceErrorHandler,
     default_backoff_handler,
@@ -88,6 +77,8 @@ class SalesforceStream(HttpStream, ABC):
         sf_api: Salesforce,
         pk: str,
         stream_name: str,
+        job_tracker: JobTracker,
+        message_repository: MessageRepository,
         sobject_options: Mapping[str, Any] = None,
         schema: dict = None,
         start_date=None,
@@ -100,12 +91,26 @@ class SalesforceStream(HttpStream, ABC):
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
         self.start_date = self.format_start_date(start_date)
+        self._job_tracker = job_tracker
+        self._message_repository = message_repository
         self._http_client = HttpClient(
             self.stream_name,
             self.logger,
             session=self._http_client._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
             error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
         )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        """
+        In order to avoid RFR which does uses `_read_single_page` instead of `_read_pages`
+        """
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     @staticmethod
     def format_start_date(start_date: Optional[str]) -> Optional[str]:
@@ -345,18 +350,20 @@ class RestSalesforceStream(SalesforceStream):
         property_chunk: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        return self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
             headers=dict(request_headers),
             params=self.request_params(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
             ),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_kwargs={},
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
-        return request, response
 
 
 class BatchedSubStream(HttpSubStream):
@@ -532,7 +539,6 @@ class BulkSalesforceStream(SalesforceStream):
             parameters=parameters,
         )
         error_handler = SalesforceErrorHandler()
-        message_repository = NoopMessageRepository()  # FIXME set to None to unblock testing but we need to understand the implications
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
@@ -574,10 +580,10 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             decoder=decoder,
-            stream_response=decoder.is_stream_response() if decoder else False,
+            stream_response=False,
         )
         polling_id_interpolation = "{{stream_slice['create_job_response'].json()['id'] }}"
         polling_requester = HttpRequester(
@@ -598,7 +604,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             decoder=decoder,
             stream_response=False,
@@ -624,7 +630,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             stream_response=True,
         )
@@ -650,6 +656,7 @@ class BulkSalesforceStream(SalesforceStream):
                 ),
                 pagination_strategy=CursorPaginationStrategy(
                     cursor_value="{{ headers['Sforce-Locator'] }}",
+                    stop_condition="{{ headers.get('Sforce-Locator', None) == 'null' or not headers.get('Sforce-Locator', None) }}",
                     decoder=NoopDecoder(),
                     config=config,
                     parameters={},
@@ -661,13 +668,52 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters={},
         )
+
+        abort_requester = HttpRequester(
+            name=f"{self.name} - abort requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.PATCH,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json={"state": "Aborted"},
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
+        delete_requester = HttpRequester(
+            name=f"{self.name} - delete requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.DELETE,
+            request_options_provider=None,
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
         status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
         urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
         job_repository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
             download_retriever=download_retriever,
-            abort_requester=None,
+            abort_requester=abort_requester,
+            delete_requester=delete_requester,
             status_extractor=status_extractor,
             status_mapping={
                 "InProgress": AsyncJobStatus.RUNNING,
@@ -677,9 +723,10 @@ class BulkSalesforceStream(SalesforceStream):
                 "Failed": AsyncJobStatus.FAILED,
             },
             urls_extractor=urls_extractor,
+            job_timeout=self.DEFAULT_WAIT_TIMEOUT,
         )
         record_selector = RecordSelector(
-            extractor=None,  # FIXME typing won't like that
+            extractor=None,  # FIXME typing won't like that but it is not used
             record_filter=None,
             transformations=[],
             schema_normalization=self.transformer,
@@ -693,7 +740,7 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository, stream_slices, exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, self._job_tracker, self._message_repository, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
@@ -706,7 +753,7 @@ class BulkSalesforceStream(SalesforceStream):
             stream_cursor_field="",
         )
 
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
+    DEFAULT_WAIT_TIMEOUT = timedelta(hours=24)
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
@@ -770,6 +817,8 @@ class BulkSalesforceStream(SalesforceStream):
             schema=self.schema,
             sobject_options=self.sobject_options,
             authenticator=self._http_client._session.auth,
+            job_tracker=self._job_tracker,
+            message_repository=self._message_repository,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):

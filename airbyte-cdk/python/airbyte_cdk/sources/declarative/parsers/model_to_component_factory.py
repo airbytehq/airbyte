@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, ge
 
 from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
@@ -1272,6 +1273,11 @@ class ModelToComponentFactory:
             if model.abort_requester
             else None
         )
+        delete_requester = (
+            self._create_component_from_model(model=model.delete_requester, decoder=decoder, config=config, name=f"job delete - {name}")
+            if model.delete_requester
+            else None
+        )
         status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
         urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(
@@ -1279,13 +1285,16 @@ class ModelToComponentFactory:
             polling_requester=polling_requester,
             download_retriever=download_retriever,
             abort_requester=abort_requester,
+            delete_requester=delete_requester,
             status_extractor=status_extractor,
             status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
             urls_extractor=urls_extractor,
         )
 
         return AsyncRetriever(
-            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices),
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                job_repository, stream_slices, JobTracker(1), self._message_repository,
+            ),  # FIXME eventually make the number of concurrent jobs in the API configurable. Until then, we limit to 1
             record_selector=record_selector,
             stream_slicer=stream_slicer,
             config=config,
