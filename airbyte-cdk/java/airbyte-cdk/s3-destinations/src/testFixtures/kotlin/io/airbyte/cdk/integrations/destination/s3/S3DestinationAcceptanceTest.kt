@@ -151,7 +151,7 @@ protected constructor(
             String.format(
                 "%s_test_%s",
                 outputFormat.name.lowercase(),
-                RandomStringUtils.randomAlphanumeric(5),
+                RandomStringUtils.insecure().nextAlphanumeric(5),
             )
         (configJson as ObjectNode)
             .put("s3_bucket_path", testBucketPath)
