@@ -4157,143 +4157,143 @@ definitions:
       properties:
         user_info:
           type:
-            - 'null'
+            - "null"
             - object
           properties:
             tiktok_name:
               type:
-                - 'null'
+                - "null"
                 - string
             identity_id:
               type:
-                - 'null'
+                - "null"
                 - string
             identity_type:
               type:
-                - 'null'
+                - "null"
                 - string
         item_info:
-          type: 
-            - 'null'
+          type:
+            - "null"
             - object
           properties:
             anchor_list:
               type:
-                - 'null'
+                - "null"
                 - array
               items:
-                type: 
-                  - 'null'
+                type:
+                  - "null"
                   - object
                 properties:
                   id:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   status:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   product_regions:
-                    type: 
-                      - 'null'
+                    type:
+                      - "null"
                       - array
                     items:
                       type:
-                        - 'null'
+                        - "null"
                         - string
                   url:
                     type:
-                      - 'null'
+                      - "null"
                       - string
                   title:
                     type:
-                      - 'null'
+                      - "null"
                       - string
             text:
               type:
-                - 'null'
+                - "null"
                 - string
             status:
               type:
-                - 'null'
+                - "null"
                 - string
             auth_code:
               type:
-                - 'null'
+                - "null"
                 - string
             item_id:
               type:
-                - 'null'
+                - "null"
                 - string
             item_type:
               type:
-                - 'null'
+                - "null"
                 - string
             carousel_info:
               type:
-                - 'null'
+                - "null"
                 - object
         auth_info:
-          type: 
-            - 'null'
+          type:
+            - "null"
             - object
           properties:
             auth_start_time:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             ad_auth_status:
               type:
-                - 'null'
+                - "null"
                 - string
             invite_start_time:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
             auth_end_time:
               type:
-                - 'null'
+                - "null"
                 - string
               format: date-time
         video_info:
-          type: 
-            - 'null'
+          type:
+            - "null"
             - object
           properties:
             duration:
-              type: 
-                - 'null'
+              type:
+                - "null"
                 - number
             preview_url:
               type:
-                - 'null'
+                - "null"
                 - string
             bit_rate:
-              type: 
-                - 'null'
+              type:
+                - "null"
                 - integer
             height:
-              type: 
-                - 'null'
+              type:
+                - "null"
                 - integer
             width:
-              type: 
-                - 'null'
+              type:
+                - "null"
                 - integer
             signature:
               type:
-                - 'null'
+                - "null"
                 - string
             size:
-              type: 
-                - 'null'
+              type:
+                - "null"
                 - integer
             poster_url:
               type:
-                - 'null'
+                - "null"
                 - string
 
 streams:
