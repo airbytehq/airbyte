@@ -9,8 +9,9 @@ import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.Deserializer
 import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.DestinationRecord
-import io.airbyte.cdk.message.DestinationRecordMessage
+import io.airbyte.cdk.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.message.DestinationStreamComplete
+import io.airbyte.cdk.message.DestinationStreamIncomplete
 import io.airbyte.cdk.message.SpooledRawMessagesLocalFile
 import io.airbyte.cdk.state.StreamManager
 import io.airbyte.cdk.state.StreamsManager
@@ -44,15 +45,17 @@ class ProcessRecordsTask(
                         .bufferedReader(Charsets.UTF_8)
                         .lineSequence()
                         .map {
-                            when (val record = deserializer.deserialize(it)) {
-                                is DestinationRecordMessage -> record
+                            when (val message = deserializer.deserialize(it)) {
+                                is DestinationStreamAffinedMessage -> message
                                 else ->
                                     throw IllegalStateException(
-                                        "Expected record message, got ${record::class}"
+                                        "Expected record message, got ${message::class}"
                                     )
                             }
                         }
-                        .takeWhile { it !is DestinationStreamComplete }
+                        .takeWhile {
+                            it !is DestinationStreamComplete && it !is DestinationStreamIncomplete
+                        }
                         .map { it as DestinationRecord }
                         .iterator()
                 streamLoader.processRecords(records, fileEnvelope.batch.totalSizeBytes)

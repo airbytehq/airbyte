@@ -30,7 +30,7 @@ def _make_cursor(input_state: Optional[MutableMapping[str, Any]]) -> FileBasedCo
         None,
         input_state,
         MagicMock(),
-        ConnectorStateManager(state=[AirbyteStateMessage.parse_obj(input_state)] if input_state is not None else None),
+        ConnectorStateManager(state=[AirbyteStateMessage(input_state)] if input_state is not None else None),
         CursorField(FileBasedConcurrentCursor.CURSOR_FIELD),
     )
     return cursor

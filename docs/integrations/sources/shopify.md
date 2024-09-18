@@ -167,6 +167,9 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/OrderTransaction)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2024-04/resources/tendertransaction)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Capturing deleted records
 
 The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams.
@@ -231,6 +234,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.1 | 2024-09-14 | [45255](https://github.com/airbytehq/airbyte/pull/45255) | Update dependencies |
+| 2.5.0 | 2024-09-06 | [45190](https://github.com/airbytehq/airbyte/pull/45190) | Migrate to CDK v5 |
+| 2.4.24 | 2024-09-03 | [45116](https://github.com/airbytehq/airbyte/pull/45116) | Have message and description be nullable for custom_collections deleted events |
 | 2.4.23 | 2024-08-31 | [44971](https://github.com/airbytehq/airbyte/pull/44971) | Update dependencies |
 | 2.4.22 | 2024-08-24 | [44723](https://github.com/airbytehq/airbyte/pull/44723) | Update dependencies |
 | 2.4.21 | 2024-08-17 | [44318](https://github.com/airbytehq/airbyte/pull/44318) | Update dependencies |
