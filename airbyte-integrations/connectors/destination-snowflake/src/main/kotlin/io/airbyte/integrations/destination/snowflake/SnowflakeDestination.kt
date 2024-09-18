@@ -316,19 +316,17 @@ constructor(
 }
 
 fun main(args: Array<String>) {
-    IntegrationRunner.addOrphanedThreadFilter { t: Thread ->
-        if (IntegrationRunner.getThreadCreationInfo(t) != null) {
-            for (stackTraceElement in IntegrationRunner.getThreadCreationInfo(t)!!.stack) {
-                val stackClassName = stackTraceElement.className
-                val stackMethodName = stackTraceElement.methodName
-                if (
-                    SFStatement::class.java.canonicalName == stackClassName &&
-                        "close" == stackMethodName ||
-                        SFSession::class.java.canonicalName == stackClassName &&
-                            "callHeartBeatWithQueryTimeout" == stackMethodName
-                ) {
-                    return@addOrphanedThreadFilter false
-                }
+    IntegrationRunner.addOrphanedThreadFilter { threadInfo: IntegrationRunner.OrphanedThreadInfo ->
+        for (stackTraceElement in threadInfo.threadCreationInfo.stack) {
+            val stackClassName = stackTraceElement.className
+            val stackMethodName = stackTraceElement.methodName
+            if (
+                SFStatement::class.java.canonicalName == stackClassName &&
+                    "close" == stackMethodName ||
+                    SFSession::class.java.canonicalName == stackClassName &&
+                        "callHeartBeatWithQueryTimeout" == stackMethodName
+            ) {
+                return@addOrphanedThreadFilter false
             }
         }
         true
