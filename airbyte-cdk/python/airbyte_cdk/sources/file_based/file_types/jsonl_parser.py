@@ -157,14 +157,11 @@ class JsonlParser(FileTypeParser):
                 logger.info("Using lazy bulk mode to read JSONL file.")
                 dataframe = pl.scan_ndjson(actual_uri, storage_options=storage_options)
             case BulkMode.INMEM:
-                # Load the entire file into memory.
-                # In the future, we may avoid memory overflow by
-                # forcing a match batch size and returning an iterator
-                # of DataFrames.
+                # Load the entire file into memory. In the future, we may avoid memory overflow
+                # by forcing a match batch size and returning an iterator of DataFrames.
                 logger.info("Using in-mem bulk mode to read JSONL file.")
                 dataframe = pl.read_ndjson(actual_uri, storage_options=storage_options)
             case _:
-                # Default to loading the entire file into memory.
                 raise ValueError(f"Unsupported bulk mode: {config.bulk_mode}")
 
         # Add columns containing file name and last modified date.
