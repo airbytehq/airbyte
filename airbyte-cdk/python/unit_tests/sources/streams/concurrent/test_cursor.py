@@ -105,7 +105,7 @@ class ConcurrentCursorStateTest(TestCase):
             {"slices": [{"end": 0, "start": 0}, {"end": 30, "start": 12}], "state_type": "date-range"},
         )
 
-    def test_given_boundary_fields_when_close_partition_then_emit_updated_state(self) -> None:
+    def test_close_partition_emits_message_to_lower_boundary_when_no_prior_state_exists(self) -> None:
         self._cursor_with_slice_boundary_fields().close_partition(
             _partition(
                 {_LOWER_SLICE_BOUNDARY_FIELD: 0, _UPPER_SLICE_BOUNDARY_FIELD: 30},
@@ -116,7 +116,7 @@ class ConcurrentCursorStateTest(TestCase):
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            {_A_CURSOR_FIELD_KEY: 0},  # State message is updated to the legacy format before being emitted
+            {_A_CURSOR_FIELD_KEY: 0},  # State message is updated to the lower slice boundary
         )
 
     def test_given_boundary_fields_and_record_observed_when_close_partition_then_ignore_records(self) -> None:
