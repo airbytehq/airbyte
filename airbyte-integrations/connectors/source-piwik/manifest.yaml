@@ -54,8 +54,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -97,8 +97,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -140,8 +140,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -183,8 +183,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -226,8 +226,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -269,8 +269,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -312,8 +312,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -363,8 +363,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -406,8 +406,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -506,8 +506,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -549,8 +549,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -600,8 +600,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -645,8 +645,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"links\", {}) }}"
-            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
+            cursor_value: '{{ response.get("links", {}) }}'
+            stop_condition: '{{ not response.get("links", {}).get("next") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -670,9 +670,9 @@ definitions:
     url_base: https://{{ config['organization_id'] }}.piwik.pro/api/
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: '{{ config["client_id"] }}'
       grant_type: client_credentials
-      client_secret: "{{ config[\"client_secret\"] }}"
+      client_secret: '{{ config["client_secret"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://{{ config['organization_id'] }}.piwik.pro/auth/token
 
