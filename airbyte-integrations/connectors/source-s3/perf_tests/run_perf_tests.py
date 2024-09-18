@@ -10,6 +10,7 @@ Usage:
 
 from __future__ import annotations
 
+import copy
 import json
 import logging
 from pathlib import Path
@@ -36,7 +37,7 @@ MEASURED_ITERATIONS = 2
 NUM_FILES = 1
 
 
-SKIP_OLD_VERSION = False
+SKIP_BASELINE = False
 
 def main() -> None:
     config_dict = json.loads(Path(SECRETS_FILE_NAME).read_text())
@@ -44,32 +45,38 @@ def main() -> None:
     # Truncate to the specific number of files to test
     config_dict["streams"][0]["globs"] = config_dict["streams"][0]["globs"][:NUM_FILES]
 
-    if not SKIP_OLD_VERSION:
+    baseline_config = copy.deepcopy(config_dict)
+    baseline_config["streams"][0]["bulk_mode"] = "DISABLED"
+
+    new_config = copy.deepcopy(config_dict)
+
+    if not SKIP_BASELINE:
         old_source = ab.get_source(
             "source-s3",
-            docker_image="airbyte/source-s3",
-            config=config_dict,
+            pip_url=f"-e {CONNECTOR_DIR.absolute()!s}",
+            config=baseline_config,
+            install_root=CONNECTOR_DIR / ".venv-latest-version",
             streams="*",
         )
 
     new_source = ab.get_source(
         "source-s3",
         pip_url=f"-e {CONNECTOR_DIR.absolute()!s}",
-        config=config_dict,
-        install_root=CONNECTOR_DIR / ".venv-latest-version-3",
+        config=new_config,
+        install_root=CONNECTOR_DIR / ".venv-latest-version",
         streams="*",
     )
 
-    if not SKIP_OLD_VERSION:
+    if not SKIP_BASELINE:
         for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
-            print(f"======Starting prev-version test iteration #{i}======")
+            print(f"======Starting prev-version test iteration #{i+1}======")
             old_source.read(force_full_refresh=True)
-            print(f"======Finished prev-version test iteration #{i}======")
+            print(f"======Finished prev-version test iteration #{i+1}======")
 
     for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
-        print(f"======Starting local-version test iteration #{i}======")
+        print(f"======Starting new-version test iteration #{i+1}======")
         new_source.read(force_full_refresh=True)
-        print(f"======Finished local-version test iteration #{i}======")
+        print(f"======Finished new-version test iteration #{i+1}======")
 
 
 if __name__ == "__main__":
