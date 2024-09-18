@@ -14,7 +14,7 @@ API Documentation: https://height.notion.site/API-documentation-643aea5bf01742de
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API secret which is copied from the settings page of height.app  |  |
-| `start_date` | `string` | Start date for   |  |
+| `start_date` | `string` | Start date for incremental sync supported streams |  |
 | `search_query` | `string` | search_query. Search query to be used with search stream | task |
 
 ## Streams
