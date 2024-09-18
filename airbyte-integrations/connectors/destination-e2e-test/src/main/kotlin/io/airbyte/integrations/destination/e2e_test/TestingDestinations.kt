@@ -47,12 +47,12 @@ constructor(
         config: JsonNode,
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
-    ): AirbyteMessageConsumer {
+    ): AirbyteMessageConsumer? {
         return selectDestination(config)!!.getConsumer(config, catalog, outputRecordCollector)
     }
 
     @Throws(Exception::class)
-    override fun check(config: JsonNode): AirbyteConnectionStatus {
+    override fun check(config: JsonNode): AirbyteConnectionStatus? {
         return try {
             selectDestination(config)!!.check(config)
         } catch (e: Exception) {

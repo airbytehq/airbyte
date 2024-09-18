@@ -25,7 +25,7 @@ class ThrottledDestination : BaseConnector(), Destination {
 
     override fun getConsumer(
         config: JsonNode,
-        catalog: ConfiguredAirbyteCatalog?,
+        catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer {
         return ThrottledConsumer(
