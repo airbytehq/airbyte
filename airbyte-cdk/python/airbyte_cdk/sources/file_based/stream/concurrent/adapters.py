@@ -268,8 +268,7 @@ class FileBasedStreamPartition(Partition):
         dataframe: pl.DataFrame | pl.LazyFrame,
     ) -> Iterable[AirbyteMessage]:
         if isinstance(dataframe, pl.LazyFrame):
-            # Stream from the LazyFrame in chunks
-            # TODO: This is cheating for now. We just put it in a single dataframe.
+            # Stream from the LazyFrame in chunks. For now, just collect into a single dataframe.
             # Note that this will fail if there is not enough memory.
             dataframes: list[pl.DataFrame] = [dataframe.collect()]
 
@@ -290,8 +289,6 @@ class FileBasedStreamPartition(Partition):
                     emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
                 ),
             )
-            # In future, we can consider named=False for better performance,
-            # but in that case we would need to manually map field names.
             for record_data in dataframe.iter_rows(named=True)
         )
         yield from record_generator
