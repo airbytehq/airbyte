@@ -144,6 +144,7 @@ class ConcurrentCursor(Cursor):
         end_provider: Callable[[], CursorValueType],
         lookback_window: Optional[GapType] = None,
         slice_range: Optional[GapType] = None,
+        cursor_granularity: Optional[GapType] = None,
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -160,6 +161,7 @@ class ConcurrentCursor(Cursor):
         self._slice_range = slice_range
         self._most_recent_cursor_value_per_partition: MutableMapping[Partition, Record] = {}
         self._has_closed_at_least_one_slice = False
+        self._cursor_granularity = cursor_granularity
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -318,7 +320,10 @@ class ConcurrentCursor(Cursor):
             current_lower_boundary = lower
             while not stop_processing:
                 current_upper_boundary = min(current_lower_boundary + self._slice_range, upper)
-                yield current_lower_boundary, current_upper_boundary
+                if self._cursor_granularity:
+                    yield current_lower_boundary, current_upper_boundary - self._cursor_granularity
+                else:
+                    yield current_lower_boundary, current_upper_boundary
                 current_lower_boundary = current_upper_boundary
                 if current_upper_boundary >= upper:
                     stop_processing = True

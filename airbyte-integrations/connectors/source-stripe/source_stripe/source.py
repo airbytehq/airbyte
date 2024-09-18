@@ -8,9 +8,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
-import stripe
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -23,20 +22,19 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import SyncMode
 from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
     IncrementalStripeStream,
     ParentIncrementalStipeSubStream,
-    Persons,
     SetupAttempts,
     StripeLazySubStream,
     StripeStream,
     StripeSubStream,
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
+    UpdatedCursorIncrementalStripeSubStream,
 )
 
 logger = logging.getLogger("airbyte")
@@ -107,13 +105,28 @@ class SourceStripe(ConcurrentSourceAdapter):
         return config
 
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        self.validate_and_fill_with_defaults(config)
-        stripe.api_key = config["client_secret"]
+        args = self._get_stream_base_args(config)
+        account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         try:
-            stripe.Account.retrieve(config["account_id"])
-        except (stripe.error.AuthenticationError, stripe.error.PermissionError) as e:
-            return False, str(e)
+            next(account_stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        except AirbyteTracedException as error:
+            if error.failure_type == FailureType.config_error:
+                return False, error.message
+            raise error
         return True, None
+
+    def _get_stream_base_args(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config = self.validate_and_fill_with_defaults(config)
+        authenticator = TokenAuthenticator(config["client_secret"])
+        start_timestamp = self._start_date_to_timestamp(config)
+        args = {
+            "authenticator": authenticator,
+            "account_id": config["account_id"],
+            "start_date": start_timestamp,
+            "slice_range": config["slice_range"],
+            "api_budget": self.get_api_call_budget(config),
+        }
+        return args
 
     @staticmethod
     def customers(**args):
@@ -174,17 +187,7 @@ class SourceStripe(ConcurrentSourceAdapter):
         return HttpAPIBudget(policies=policies)
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
-        config = self.validate_and_fill_with_defaults(config)
-        authenticator = TokenAuthenticator(config["client_secret"])
-
-        start_timestamp = self._start_date_to_timestamp(config)
-        args = {
-            "authenticator": authenticator,
-            "account_id": config["account_id"],
-            "start_date": start_timestamp,
-            "slice_range": config["slice_range"],
-            "api_budget": self.get_api_call_budget(config),
-        }
+        args = self._get_stream_base_args(config)
         incremental_args = {**args, "lookback_window_days": config["lookback_window_days"]}
         subscriptions = IncrementalStripeStream(
             name="subscriptions",
@@ -288,7 +291,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
-            Persons(**args),
+            UpdatedCursorIncrementalStripeSubStream(
+                name="persons",
+                path=lambda self, stream_slice, *args, **kwargs: f"accounts/{stream_slice['parent']['id']}/persons",
+                parent=StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
+                event_types=["person.created", "person.updated", "person.deleted"],
+                **args,
+            ),
             SetupAttempts(**incremental_args),
             StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args),
             CreatedCursorIncrementalStripeStream(name="shipping_rates", path="shipping_rates", **incremental_args),
@@ -303,17 +312,6 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "refund.updated",
                     # this is the only event that could track the refund updates
                     "charge.refund.updated",
-                ],
-                **args,
-            ),
-            UpdatedCursorIncrementalStripeStream(
-                name="payment_methods",
-                path="payment_methods",
-                event_types=[
-                    "payment_method.attached",
-                    "payment_method.automatically_updated",
-                    "payment_method.detached",
-                    "payment_method.updated",
                 ],
                 **args,
             ),
@@ -483,6 +481,13 @@ class SourceStripe(ConcurrentSourceAdapter):
                 sub_items_attr="refunds",
                 **args,
             ),
+            UpdatedCursorIncrementalStripeSubStream(
+                name="payment_methods",
+                path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/payment_methods",
+                parent=self.customers(**args),
+                event_types=["payment_method.*"],
+                **args,
+            ),
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice['parent']['id']}/bank_accounts",
@@ -532,7 +537,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        state_manager = ConnectorStateManager(state=self._state)
         return [
             self._to_concurrent(
                 stream,

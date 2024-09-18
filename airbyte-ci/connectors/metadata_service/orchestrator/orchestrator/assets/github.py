@@ -123,7 +123,7 @@ def entry_should_be_on_gcs(metadata_entry: LatestMetadataEntry) -> bool:
     """
     if metadata_entry.metadata_definition.data.supportLevel == "archived":
         return False
-    if getattr(metadata_entry.metadata_definition.releases, "isReleaseCandidate", False):
+    if getattr(metadata_entry.metadata_definition.data.releases, "isReleaseCandidate", False):
         return False
     if entry_is_younger_than_grace_period(metadata_entry):
         return False
