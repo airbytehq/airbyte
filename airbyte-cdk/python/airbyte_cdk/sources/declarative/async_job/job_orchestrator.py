@@ -299,7 +299,7 @@ class AsyncJobOrchestrator:
     def _stop_partition(self, partition: AsyncPartition) -> None:
         for job in partition.jobs:
             if job.status() in _API_SIDE_RUNNING_STATUS:
-                self._abort_job(job)
+                self._abort_job(job, free_job_allocation=True)
             else:
                 self._job_tracker.remove_job(job.api_job_id())
 
