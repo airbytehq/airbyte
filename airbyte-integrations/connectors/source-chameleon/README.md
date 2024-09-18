@@ -1,10 +1,12 @@
 # Chameleon
 This directory contains the manifest-only connector for `source-chameleon`.
 
-Chameleon
-Website: https://app.chameleon.io/
-API docs: https://developers.chameleon.io/#/apis/overview
-API page: https://app.chameleon.io/settings/tokens
+## Documentation reference:
+Visit `https://developers.chameleon.io/#/apis/overview` for API documentation
+
+## Authentication setup
+`Chameleon` uses API Key authentication,
+Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 
 ## Usage
 There are multiple ways to use this connector:

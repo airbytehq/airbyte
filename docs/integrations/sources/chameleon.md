@@ -1,8 +1,13 @@
 # Chameleon
-Chameleon
-Website: https://app.chameleon.io/
-API docs: https://developers.chameleon.io/#/apis/overview
-API page: https://app.chameleon.io/settings/tokens
+This page contains the setup guide and reference information for the [Chameleon](https://app.chameleon.io/) source connector.
+
+## Documentation reference:
+Visit `https://developers.chameleon.io/#/apis/overview` for API documentation
+
+## Authentication setup
+`Chameleon` uses API Key authentication,
+Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
+
 
 ## Configuration
 
@@ -32,8 +37,8 @@ API page: https://app.chameleon.io/settings/tokens
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-18 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-18 |[45658](https://github.com/airbytehq/airbyte/pull/45658)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
