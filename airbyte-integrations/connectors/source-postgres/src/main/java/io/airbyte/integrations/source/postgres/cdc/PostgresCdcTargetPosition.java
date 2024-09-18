@@ -60,11 +60,11 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
   public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
     if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.getSnapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final PgLsn eventLsn = extractLsn(changeEventWithMetadata.eventValueAsJson());
+      final PgLsn eventLsn = extractLsn(changeEventWithMetadata.getEventValueAsJson());
       final boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
@@ -135,7 +135,7 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
           See https://debezium.io/documentation/reference/2.4/connectors/postgresql.html#postgresql-create-events for the full event structure.
           @formatter:on
        */
-      final JsonNode lsnSequenceNode = event.eventValueAsJson().get("source").get("sequence");
+      final JsonNode lsnSequenceNode = event.getEventValueAsJson().get("source").get("sequence");
       List<String> lsnSequence = objectMapper.readValue(lsnSequenceNode.asText(), listType);
       // The sequence field is a pair of [lsn_commit, lsn_processed]. We want to make sure
       // lsn_commit(event) is compared against lsn_commit(state_offset). For the event, either of the lsn
