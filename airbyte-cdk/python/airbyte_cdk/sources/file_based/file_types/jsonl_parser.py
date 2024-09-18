@@ -147,7 +147,7 @@ class JsonlParser(FileTypeParser):
 
         # The URI isn't actually one; it's a relative path. It needs the absolute reference, for
         # instance the 's3://' protocol, bucket name, etc.
-        actual_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
+        fully_qualified_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
         storage_options = stream_reader.polars_storage_options
 
         dataframe: pl.DataFrame | pl.LazyFrame
@@ -155,12 +155,12 @@ class JsonlParser(FileTypeParser):
             case BulkMode.LAZY:
                 # Define the lazy dataframe but don't load it into memory.
                 logger.info("Using lazy bulk mode to read JSONL file.")
-                dataframe = pl.scan_ndjson(actual_uri, storage_options=storage_options)
+                dataframe = pl.scan_ndjson(fully_qualified_uri, storage_options=storage_options)
             case BulkMode.INMEM:
                 # Load the entire file into memory. In the future, we may avoid memory overflow
                 # by forcing a match batch size and returning an iterator of DataFrames.
                 logger.info("Using in-mem bulk mode to read JSONL file.")
-                dataframe = pl.read_ndjson(actual_uri, storage_options=storage_options)
+                dataframe = pl.read_ndjson(fully_qualified_uri, storage_options=storage_options)
             case _:
                 raise ValueError(f"Unsupported bulk mode: {config.bulk_mode}")
 
