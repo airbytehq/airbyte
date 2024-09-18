@@ -12,5 +12,6 @@ data class CdcContext(
     val outputConsumer: OutputConsumer,
     val debeziumManager: DebeziumManager,
     val positionMapperFactory: CdcPositionMapper.Factory,
-    val eventConverter: DebeziumEventConverter
+    val eventConverter: DebeziumEventConverter,
+    val initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
 )

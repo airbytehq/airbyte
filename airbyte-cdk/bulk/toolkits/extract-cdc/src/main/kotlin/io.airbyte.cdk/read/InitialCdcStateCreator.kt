@@ -20,26 +20,21 @@ import kotlinx.coroutines.launch
  such as building schema history & obtaining the initial offset.
 */
 interface InitialCdcStateCreatorFactory {
-    fun make(opaqueStateValue: OpaqueStateValue?): OpaqueStateValue
+    fun make(): OpaqueStateValue
 }
 
 @Singleton
-class DefaultInitialCdcStateCreatorFactory(
-    cdcContext: CdcContext,
-) : InitialCdcStateCreatorFactory {
+class DefaultInitialCdcStateCreatorFactory(debeziumManager: DebeziumManager) :
+    InitialCdcStateCreatorFactory {
     private val log = KotlinLogging.logger {}
-    private val propertyManager = cdcContext.debeziumManager
+    private val debeziumManager = debeziumManager
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
 
-    override fun make(opaqueStateValue: OpaqueStateValue?): OpaqueStateValue {
-        if (opaqueStateValue != null) {
-            return opaqueStateValue
-        }
-
+    override fun make(): OpaqueStateValue {
         engine = createDebeziumEngine()
         engine?.run()
         // Read state from files
-        return propertyManager.readOffsetState()
+        return this.debeziumManager.readOffsetState()
     }
 
     fun createDebeziumEngine(): DebeziumEngine<ChangeEvent<String?, String?>>? {
@@ -47,7 +42,7 @@ class DefaultInitialCdcStateCreatorFactory(
             "Using DBZ version: ${DebeziumEngine::class.java.getPackage().implementationVersion}"
         }
         return DebeziumEngine.create(Json::class.java)
-            .using(propertyManager.getPropertiesForSchemaHistory())
+            .using(this.debeziumManager.getPropertiesForSchemaHistory())
             .using(OffsetCommitPolicy.AlwaysCommitOffsetPolicy())
             .notifying { event: ChangeEvent<String?, String?> ->
                 if (event.value() == null) {

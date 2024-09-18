@@ -10,7 +10,6 @@ import io.airbyte.cdk.read.CdcAware
 import io.airbyte.cdk.read.CdcContext
 import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
-import io.airbyte.cdk.read.DefaultInitialCdcStateCreatorFactory
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
@@ -43,8 +42,9 @@ class CdcPartitionReader<S : CdcSharedState>(
     private val eventConverter = cdcContext.eventConverter
     private val propertyManager = cdcContext.debeziumManager
     private val positionMapper = cdcContext.positionMapperFactory.get()
+    private val initialCdcStateCreatorFactory = cdcContext.initialCdcStateCreatorFactory
     private val acquiredResources = AtomicReference<AcquiredResources>()
-    private var opaqueStateValue = opaqueStateValue
+    private val opaqueStateValue = opaqueStateValue
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
 
@@ -63,13 +63,18 @@ class CdcPartitionReader<S : CdcSharedState>(
     }
 
     override suspend fun run() {
-        opaqueStateValue = DefaultInitialCdcStateCreatorFactory(cdcContext).make(opaqueStateValue)
-        engine = createDebeziumEngine()
-        engine?.run()
+        if (opaqueStateValue != null) {
+            engine = createDebeziumEngine()
+            engine?.run()
+        }
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
-        return PartitionReadCheckpoint(propertyManager.readOffsetState(), numRecords)
+        if (opaqueStateValue != null) {
+            return PartitionReadCheckpoint(propertyManager.readOffsetState(), numRecords)
+        } else {
+            return PartitionReadCheckpoint(initialCdcStateCreatorFactory.make(), 0)
+        }
     }
 
     override fun releaseResources() {
