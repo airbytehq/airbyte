@@ -8,6 +8,8 @@
 | `access_token` | `string` | Access Token. Access token to use for authentication. Generate it in the 7shifts Developer Tools. |  |
 | `start_date` | `string` | Start date.  |  |
 
+Generate an Access Token by navigating to "Company Settings", then "Developer Tools". Under the Access Token Section click "Create Access Token". See [here](https://developers.7shifts.com/reference/authentication#creating-access-tokens) for more details.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
