@@ -10,6 +10,7 @@ import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
+import io.airbyte.cdk.jdbc.ByteFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
@@ -66,63 +67,59 @@ class MysqlSourceOperations : JdbcMetadataQuerier.FieldTypeMapper, SelectQueryGe
         }
 
     private fun leafType(type: SystemType): JdbcFieldType<*> {
-        val typeName = type.typeName
-        return when (typeName) {
-            MysqlType.BIT.getName() -> {
+        return when (MysqlType.getByName(type.typeName)) {
+            MysqlType.BIT -> {
                 if (type.precision!! > 1) {
-                    BinaryStreamFieldType
+                    ByteFieldType
                 } else {
                     BooleanFieldType
                 }
             }
-            MysqlType.BOOLEAN.getName() -> BooleanFieldType
-            MysqlType.TINYINT.getName() -> {
-                if (type.precision!! > 1) {
-                    BinaryStreamFieldType
-                } else {
-                    ShortFieldType
-                }
-            }
-            MysqlType.TINYINT_UNSIGNED.getName(),
-            MysqlType.YEAR.getName() -> ShortFieldType
-            MysqlType.SMALLINT.getName(),
-            MysqlType.SMALLINT_UNSIGNED.getName(),
-            MysqlType.MEDIUMINT.getName(),
-            MysqlType.MEDIUMINT_UNSIGNED.getName(),
-            MysqlType.INT.getName() -> IntFieldType
-            MysqlType.INT_UNSIGNED.getName(),
-            MysqlType.BIGINT.getName(),
-            MysqlType.BIGINT_UNSIGNED.getName() -> BigIntegerFieldType
-            MysqlType.FLOAT.getName(),
-            MysqlType.FLOAT_UNSIGNED.getName() -> FloatFieldType
-            MysqlType.DOUBLE.getName(),
-            MysqlType.DOUBLE_UNSIGNED.getName() -> DoubleFieldType
-            MysqlType.DECIMAL.getName(),
-            MysqlType.DECIMAL_UNSIGNED.getName() -> {
+            MysqlType.BOOLEAN -> BooleanFieldType
+            MysqlType.TINYINT,
+            MysqlType.TINYINT_UNSIGNED,
+            MysqlType.YEAR -> ShortFieldType
+            MysqlType.SMALLINT,
+            MysqlType.SMALLINT_UNSIGNED,
+            MysqlType.MEDIUMINT,
+            MysqlType.MEDIUMINT_UNSIGNED,
+            MysqlType.INT -> IntFieldType
+            MysqlType.INT_UNSIGNED,
+            MysqlType.BIGINT,
+            MysqlType.BIGINT_UNSIGNED -> BigIntegerFieldType
+            MysqlType.FLOAT,
+            MysqlType.FLOAT_UNSIGNED -> FloatFieldType
+            MysqlType.DOUBLE,
+            MysqlType.DOUBLE_UNSIGNED -> DoubleFieldType
+            MysqlType.DECIMAL,
+            MysqlType.DECIMAL_UNSIGNED -> {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
             }
-            MysqlType.DATE.getName() -> LocalDateFieldType
-            MysqlType.DATETIME.getName() -> LocalDateTimeFieldType
-            MysqlType.TIMESTAMP.getName() -> OffsetDateTimeFieldType
-            MysqlType.TIME.getName() -> LocalTimeFieldType
-            MysqlType.CHAR.getName(),
-            MysqlType.VARCHAR.getName(),
-            MysqlType.TINYTEXT.getName(),
-            MysqlType.TEXT.getName(),
-            MysqlType.MEDIUMTEXT.getName(),
-            MysqlType.LONGTEXT.getName(),
-            MysqlType.JSON.getName(),
-            MysqlType.ENUM.getName(),
-            MysqlType.SET.getName() -> StringFieldType
-            MysqlType.TINYBLOB.getName(),
-            MysqlType.BLOB.getName(),
-            MysqlType.MEDIUMBLOB.getName(),
-            MysqlType.LONGBLOB.getName(),
-            MysqlType.BINARY.getName(),
-            MysqlType.VARBINARY.getName(),
-            MysqlType.GEOMETRY.getName() -> BinaryStreamFieldType
-            MysqlType.NULL.getName() -> NullFieldType
-            else -> PokemonFieldType
+            MysqlType.DATE -> LocalDateFieldType
+            MysqlType.DATETIME -> LocalDateTimeFieldType
+            MysqlType.TIMESTAMP -> OffsetDateTimeFieldType
+            MysqlType.TIME -> LocalTimeFieldType
+            MysqlType.CHAR,
+            MysqlType.VARCHAR,
+            MysqlType.TINYTEXT,
+            MysqlType.TEXT,
+            MysqlType.MEDIUMTEXT,
+            MysqlType.LONGTEXT,
+            MysqlType.JSON,
+            MysqlType.ENUM,
+            MysqlType.SET -> StringFieldType
+            MysqlType.TINYBLOB,
+            MysqlType.BLOB,
+            MysqlType.MEDIUMBLOB,
+            MysqlType.LONGBLOB,
+            MysqlType.BINARY,
+            MysqlType.VARBINARY,
+            MysqlType.GEOMETRY -> BinaryStreamFieldType
+            MysqlType.NULL -> NullFieldType
+            else -> {
+                print("test debug: unrecognized type: ${type.typeName}")
+                PokemonFieldType
+            }
         }
     }
 
