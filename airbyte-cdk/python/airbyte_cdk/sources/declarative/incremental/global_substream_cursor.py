@@ -167,6 +167,10 @@ class GlobalSubstreamCursor(DeclarativeCursor):
 
         if "state" in stream_state:
             self._stream_cursor.set_initial_state(stream_state["state"])
+        elif "states" not in stream_state:
+            # We assume that `stream_state` is in the old global format
+            # Example: {"global_state_format_key": "global_state_format_value"}
+            self._stream_cursor.set_initial_state(stream_state)
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
