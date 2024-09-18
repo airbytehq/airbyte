@@ -79,7 +79,7 @@ def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: 
     return None
 
 
-def maybe_create_components_zip(working_directory: Path) -> ManifestOnlyFilePaths:
+def get_manifest_only_file_paths(working_directory: Path) -> ManifestOnlyFilePaths:
     """Create a zip file for components if they exist and return its SHA256 hash."""
     yaml_manifest_file_path = working_directory / MANIFEST_FILE_NAME
     components_py_file_path = working_directory / COMPONENTS_PY_FILE_NAME
@@ -132,7 +132,7 @@ def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
 
 
 def _any_uploaded(uploaded_files: List[UploadedFile], keys: List[str]) -> bool:
-    """Check if any of the uploaded files have been uploaded."""
+    """Check if the list of uploaded files contains any of the provided keys."""
     for uploaded_file in uploaded_files:
         if uploaded_file.id in keys:
             return True
@@ -221,10 +221,11 @@ def _file_upload(
     bucket: storage.bucket.Bucket,
     file_key: str,
     *,
-    upload_as_version: str | Literal[False],
+    upload_as_version: bool,
     upload_as_latest: bool,
     skip_if_not_exists: bool = True,
     disable_cache: bool = False,
+    version_folder: Optional[str] = None,
     override_destination_file_name: str | None = None,
 ) -> tuple[UploadedFile, UploadedFile]:
     """Upload a file to GCS.
@@ -246,6 +247,9 @@ def _file_upload(
         uploaded, the blob id, and the description. The first tuple is for the versioned file, the second for the
         latest file.
     """
+    if upload_as_version and not version_folder:
+        raise ValueError("version_folder must be provided if upload_as_version is True")
+
     latest_file_key = f"latest_{file_key}"
     versioned_file_key = f"versioned_{file_key}"
     versioned_file_info = UploadedFile(id=versioned_file_key, uploaded=False, blob_id=None)
@@ -261,7 +265,7 @@ def _file_upload(
     file_name = local_path.name if override_destination_file_name is None else override_destination_file_name
 
     if upload_as_version:
-        remote_upload_path = f"{gcp_connector_dir}/{upload_as_version}"
+        remote_upload_path = f"{gcp_connector_dir}/{version_folder}"
         versioned_uploaded, versioned_blob_id = upload_file_if_changed(
             local_file_path=local_path,
             bucket=bucket,
@@ -388,7 +392,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     """
     # Get our working directory
     working_directory = metadata_file_path.parent
-    manifest_only_file_info = maybe_create_components_zip(working_directory)
+    manifest_only_file_info = get_manifest_only_file_paths(working_directory)
 
     metadata_file_path = _apply_modifications_to_metadata_file(
         original_metadata_file_path=metadata_file_path,
@@ -418,7 +422,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     # Upload version metadata and doc
     # If the connector is a pre-release, we use the pre-release tag as the version
     # Otherwise, we use the dockerImageTag from the metadata
-    upload_as_version = metadata.data.dockerImageTag if not is_pre_release else validator_opts.prerelease_tag
+    version_folder = metadata.data.dockerImageTag if not is_pre_release else validator_opts.prerelease_tag
 
     # Start uploading files
     uploaded_files = []
@@ -429,7 +433,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         local_path=metadata_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
-        upload_as_version=upload_as_version,
+        version_folder=version_folder,
+        upload_as_version=True,
         upload_as_latest=should_upload_latest,
         disable_cache=True,
         override_destination_file_name=METADATA_FILE_NAME,
@@ -445,7 +450,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             local_path=metadata_file_path,
             gcp_connector_dir=gcp_connector_dir,
             bucket=bucket,
-            upload_as_version=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
+            version_folder=RELEASE_CANDIDATE_GCS_FOLDER_NAME,
+            upload_as_version=True,
             upload_as_latest=False,
             disable_cache=True,
             override_destination_file_name=METADATA_FILE_NAME,
@@ -472,7 +478,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         local_path=local_doc_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
-        upload_as_version=upload_as_version,
+        upload_as_version=True,
+        version_folder=version_folder,
         upload_as_latest=should_upload_latest,
         override_destination_file_name=DOC_FILE_NAME,
     )
@@ -484,7 +491,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         local_path=local_inapp_doc_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
-        upload_as_version=upload_as_version,
+        upload_as_version=True,
+        version_folder=version_folder,
         upload_as_latest=should_upload_latest,
         override_destination_file_name=DOC_INAPP_FILE_NAME,
     )
@@ -497,7 +505,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         local_path=manifest_only_file_info.manifest_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
-        upload_as_version=upload_as_version,
+        upload_as_version=True,
+        version_folder=version_folder,
         upload_as_latest=should_upload_latest,
         override_destination_file_name=MANIFEST_FILE_NAME,
     )
@@ -508,7 +517,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         local_path=manifest_only_file_info.sha256_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
-        upload_as_version=upload_as_version,
+        upload_as_version=True,
+        version_folder=version_folder,
         upload_as_latest=should_upload_latest,
         override_destination_file_name=COMPONENTS_ZIP_SHA256_FILE_NAME,
     )
@@ -519,7 +529,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
         local_path=manifest_only_file_info.zip_file_path,
         gcp_connector_dir=gcp_connector_dir,
         bucket=bucket,
-        upload_as_version=upload_as_version,
+        upload_as_version=True,
+        version_folder=version_folder,
         upload_as_latest=should_upload_latest,
         override_destination_file_name=COMPONENTS_ZIP_FILE_NAME,
     )
