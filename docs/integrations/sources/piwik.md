@@ -32,7 +32,7 @@ Visit `https://developers.piwik.pro/en/latest/platform/getting_started.html#gene
 | audit-log_entries | id | DefaultPaginator | ✅ |  ❌  |
 | apps_details | id | DefaultPaginator | ✅ |  ❌  |
 | access-control_actions | id | DefaultPaginator | ✅ |  ❌  |
-| access-control_meta-site_permission_user |  | DefaultPaginator | ✅ |  ❌  |
+| access-control_meta-site_permission_user | uid | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 

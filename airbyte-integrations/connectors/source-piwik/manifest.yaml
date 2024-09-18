@@ -54,8 +54,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -97,8 +97,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -140,8 +140,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -183,8 +183,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -226,8 +226,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -269,8 +269,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -312,8 +312,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -363,8 +363,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -406,8 +406,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -459,8 +459,8 @@ definitions:
             field_name: offset
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: limit
+            inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
             page_size: 1
@@ -506,8 +506,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -549,8 +549,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -600,8 +600,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -609,6 +609,8 @@ definitions:
     access-control_meta-site_permission_user:
       type: DeclarativeStream
       name: access-control_meta-site_permission_user
+      primary_key:
+        - uid
       retriever:
         type: SimpleRetriever
         requester:
@@ -643,8 +645,8 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            cursor_value: '{{ response.get("links", {}) }}'
-            stop_condition: '{{ not response.get("links", {}).get("next") }}'
+            cursor_value: "{{ response.get(\"links\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\") }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -653,6 +655,12 @@ definitions:
               partition_field: meta_site_id
               stream:
                 $ref: "#/definitions/streams/meta-sites"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc() }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -662,9 +670,9 @@ definitions:
     url_base: https://{{ config['organization_id'] }}.piwik.pro/api/
     authenticator:
       type: OAuthAuthenticator
-      client_id: '{{ config["client_id"] }}'
+      client_id: "{{ config[\"client_id\"] }}"
       grant_type: client_credentials
-      client_secret: '{{ config["client_secret"] }}'
+      client_secret: "{{ config[\"client_secret\"] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://{{ config['organization_id'] }}.piwik.pro/auth/token
 
@@ -729,98 +737,98 @@ metadata:
     access-control_meta-site_permission_user: true
   testedStreams:
     users:
+      hasRecords: true
       streamHash: 47d0ca8b90620c9f80b4252ce9064596db60e666
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     users-me:
+      hasRecords: true
       streamHash: 38c81b919a9a6d063dff822b55170364c51c49d6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     user-groups:
+      hasRecords: true
       streamHash: 0e3f0e06ed901c38917c3b499f9b4660aa4531ef
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tracker_settings:
+      hasRecords: true
       streamHash: a29c6d379be8c8116e32fc530a4455c742222bbf
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     modules:
+      hasRecords: true
       streamHash: 12d1db48eede9667c670318e5a39839c68c54b71
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     meta-sites:
+      hasRecords: true
       streamHash: 95b4bf03a28e59f6ac62c4a3256d9d4b52d02a62
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     meta-sites_apps:
+      hasRecords: true
       streamHash: 87fbc42a83aa30594f1e35cb59ef6b82beb0539e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     meta-sites_apps-with-meta-sites:
+      hasRecords: true
       streamHash: 591c378ed73cfebc80080cad9906d93c55d80479
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     container-settings_settings:
+      hasRecords: true
       streamHash: 709c60c2f087a0826a952427211a16ac1b92582d
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     apps:
+      hasRecords: true
       streamHash: 623aea8cd5cdcf97d11eda90f65f82357a26376c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     audit-log_entries:
+      hasRecords: true
       streamHash: d5fc025bedc55e2d09930a70e0fad919fae1df41
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     apps_details:
+      hasRecords: true
       streamHash: 5ddadf2f2e2c9e68bf6475d7eea912fbc9968f69
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     access-control_actions:
+      hasRecords: true
       streamHash: 607ddcc661e2bef437574969143ae944c1ac81f8
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     access-control_meta-site_permission_user:
-      streamHash: 3cf45ee065a34826d831073b4b5400d807292012
+      streamHash: 427b9a8a683c89cc3b3120366caedbbf64e7e3b1
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1561,3 +1569,7 @@ schemas:
         type:
           - string
           - "null"
+      uid:
+        type: string
+    required:
+      - uid
