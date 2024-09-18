@@ -1,10 +1,12 @@
 # Split-io
 This directory contains the manifest-only connector for `source-split-io`.
 
-Website: https://app.split.io/
-API Docs: https://docs.split.io/reference/introduction
-Authentication docs: https://docs.split.io/reference/authentication
-API Keys: vlru5ud5abuegn2nfdcfbcnjb63gdafashr3
+## Documentation reference:
+Visit `https://docs.split.io/reference/introduction` for API documentation
+
+## Authentication setup
+`Split io` uses bearer token authentication,
+Refer `https://docs.split.io/reference/authentication` for more details.
 
 ## Usage
 There are multiple ways to use this connector:

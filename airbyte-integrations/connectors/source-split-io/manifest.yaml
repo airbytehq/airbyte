@@ -6,7 +6,6 @@ description: |-
   Website: https://app.split.io/
   API Docs: https://docs.split.io/reference/introduction
   Authentication docs: https://docs.split.io/reference/authentication
-  API Keys: vlru5ud5abuegn2nfdcfbcnjb63gdafashr3
 
 check:
   type: CheckStream

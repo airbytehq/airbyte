@@ -1,8 +1,12 @@
 # Split-io
-Website: https://app.split.io/
-API Docs: https://docs.split.io/reference/introduction
-Authentication docs: https://docs.split.io/reference/authentication
-API Keys: vlru5ud5abuegn2nfdcfbcnjb63gdafashr3
+This page contains the setup guide and reference information for the [Split-io](https://app.split.io/) source connector.
+
+## Documentation reference:
+Visit `https://docs.split.io/reference/introduction` for API documentation
+
+## Authentication setup
+`Split io` uses bearer token authentication,
+Refer `https://docs.split.io/reference/authentication` for more details.
 
 ## Configuration
 
@@ -31,8 +35,8 @@ API Keys: vlru5ud5abuegn2nfdcfbcnjb63gdafashr3
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-18 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-18 |[45367](https://github.com/airbytehq/airbyte/pull/45367)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
