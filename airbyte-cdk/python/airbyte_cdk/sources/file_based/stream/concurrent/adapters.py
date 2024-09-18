@@ -271,7 +271,7 @@ class FileBasedStreamPartition(Partition):
             # Stream from the LazyFrame in chunks
             # TODO: This is cheating for now. We just put it in a single dataframe.
             # Note that this will fail if there is not enough memory.
-            dataframes: list[DataFrame] = [dataframe.collect()]
+            dataframes: list[pl.DataFrame] = [dataframe.collect()]
 
             for df in dataframes:
                 # Recursively process each chunk as a DataFrame
