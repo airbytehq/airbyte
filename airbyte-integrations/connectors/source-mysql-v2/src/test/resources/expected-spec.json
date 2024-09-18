@@ -123,14 +123,8 @@
           },
           {
             "type": "object",
-            "title": "Verify CA",
-            "required": [
-              "encryption_method",
-              "ssl_certificate",
-              "ssl_client_certificate",
-              "ssl_client_key",
-              "ssl_client_key_password"
-            ],
+            "title": "verify_ca",
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -147,9 +141,9 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["Verify CA"],
+                "enum": ["verify_ca"],
                 "type": "string",
-                "default": "Verify CA"
+                "default": "verify_ca"
               },
               "ssl_client_certificate": {
                 "type": "string",
@@ -171,14 +165,8 @@
           },
           {
             "type": "object",
-            "title": "Verify CA",
-            "required": [
-              "encryption_method",
-              "ssl_certificate",
-              "ssl_client_certificate",
-              "ssl_client_key",
-              "ssl_client_key_password"
-            ],
+            "title": "verify_identity",
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -195,9 +183,9 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["Verify CA"],
+                "enum": ["verify_identity"],
                 "type": "string",
-                "default": "Verify CA"
+                "default": "verify_identity"
               },
               "ssl_client_certificate": {
                 "type": "string",
