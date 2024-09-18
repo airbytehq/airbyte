@@ -18,7 +18,6 @@ sealed class JdbcPartitionsCreatorFactory<
 >(
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
     val cdcContext: CdcContext,
-    val initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
 ) : PartitionsCreatorFactory {
 
     override fun make(
@@ -34,7 +33,7 @@ sealed class JdbcPartitionsCreatorFactory<
                         CdcPartitionCreator(
                             partitionFactory.sharedState.toCdcSharedState(),
                             cdcContext,
-                            initialCdcStateCreatorFactory.make(opaqueStateValue)
+                            opaqueStateValue
                         )
                     false -> CreateNoPartitions
                 }
@@ -62,12 +61,10 @@ class JdbcSequentialPartitionsCreatorFactory<
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
     cdcContext: CdcContext,
-    initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
 ) :
     JdbcPartitionsCreatorFactory<A, S, P>(
         partitionFactory,
         cdcContext,
-        initialCdcStateCreatorFactory
     ) {
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
@@ -84,12 +81,10 @@ class JdbcConcurrentPartitionsCreatorFactory<
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
     cdcContext: CdcContext,
-    initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
 ) :
     JdbcPartitionsCreatorFactory<A, S, P>(
         partitionFactory,
         cdcContext,
-        initialCdcStateCreatorFactory
     ) {
 
     override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =

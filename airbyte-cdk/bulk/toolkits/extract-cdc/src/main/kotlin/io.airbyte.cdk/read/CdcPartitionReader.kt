@@ -10,6 +10,7 @@ import io.airbyte.cdk.read.CdcAware
 import io.airbyte.cdk.read.CdcContext
 import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
+import io.airbyte.cdk.read.DefaultInitialCdcStateCreatorFactory
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
@@ -31,7 +32,7 @@ import org.apache.kafka.connect.source.SourceRecord
 
 class CdcPartitionReader<S : CdcSharedState>(
     private val sharedState: S,
-    cdcContext: CdcContext,
+    private val cdcContext: CdcContext,
     opaqueStateValue: OpaqueStateValue?,
 ) : PartitionReader, CdcAware, cdcResourceTaker {
 
@@ -43,7 +44,7 @@ class CdcPartitionReader<S : CdcSharedState>(
     private val propertyManager = cdcContext.debeziumManager
     private val positionMapper = cdcContext.positionMapperFactory.get()
     private val acquiredResources = AtomicReference<AcquiredResources>()
-    private val opaqueStateValue = opaqueStateValue
+    private var opaqueStateValue = opaqueStateValue
     private val heartbeatEventSourceField: MutableMap<Class<out ChangeEvent<*, *>?>, Field?> =
         HashMap(1)
 
@@ -62,6 +63,7 @@ class CdcPartitionReader<S : CdcSharedState>(
     }
 
     override suspend fun run() {
+        opaqueStateValue = DefaultInitialCdcStateCreatorFactory(cdcContext).make(opaqueStateValue)
         engine = createDebeziumEngine()
         engine?.run()
     }
