@@ -238,17 +238,14 @@ class DatabricksDestinationHandler(
             .bufferedResultSetQuery(
                 { connection: Connection -> connection.createStatement().executeQuery(query) },
                 { resultSet: ResultSet ->
-                    resultSet.getObject("last_loaded_at", LocalDateTime::class.java)
+                    resultSet.getString("last_loaded_at")?.let {
+                        Instant.parse(it)
+                    }
                 },
             )
             .stream()
-            .filter { ts: LocalDateTime? -> Objects.nonNull(ts) }
+            .filter { ts: Instant? -> Objects.nonNull(ts) }
             .findFirst()
-            .map {
-                // Databricks doesn't have offset stored, so we always use UTC as the supposed
-                // timezone
-                it.toInstant(ZoneOffset.UTC)
-            }
     }
 
     private fun getInitialRawTableState(id: StreamId, suffix: String): InitialRawTableStatus {
