@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.cdc
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CdcAware
@@ -15,8 +14,8 @@ import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
-import io.airbyte.cdk.read.cdcResourceTaker
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.cdk.read.CdcResourceTaker
+import io.airbyte.commons.json.Jsons
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
@@ -34,7 +33,7 @@ class CdcPartitionReader<S : CdcSharedState>(
     private val sharedState: S,
     private val cdcContext: CdcContext,
     opaqueStateValue: OpaqueStateValue?,
-) : PartitionReader, CdcAware, cdcResourceTaker {
+) : PartitionReader, CdcAware, CdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
     private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null

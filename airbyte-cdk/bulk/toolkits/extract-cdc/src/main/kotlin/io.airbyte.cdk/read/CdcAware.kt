@@ -8,7 +8,7 @@ interface CdcAware {
     fun cdcReadyToRun(): Boolean {
         return when (this) {
             // For cdc resource taker retrun try lock cdc mutex
-            is cdcResourceTaker -> mutex.tryLock()
+            is CdcResourceTaker -> mutex.tryLock()
             // else return are there ore runs left and not currently running
             else -> mutex.canLock() && mutex.isLocked.not()
         }
