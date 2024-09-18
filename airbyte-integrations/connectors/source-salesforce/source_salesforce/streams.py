@@ -58,6 +58,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import exceptions
 from requests.models import PreparedRequest
 
+from . import SourceSalesforce
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
@@ -489,7 +490,7 @@ class BulkSalesforceStream(SalesforceStream):
             parameters=parameters,
         )
         error_handler = SalesforceErrorHandler()
-        message_repository = NoopMessageRepository()  # FIXME set to None to unblock testing but we need to understand the implications
+        message_repository = SourceSalesforce.message_repository
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
@@ -686,7 +687,7 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=BulkDatetimeStreamSlicer(self._stream_slicer_cursor),
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository, stream_slices, self._job_tracker, exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, self._job_tracker, message_repository, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
