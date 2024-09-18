@@ -619,6 +619,81 @@ def test_upload_metadata_to_gcs_with_prerelease(mocker, valid_metadata_upload_fi
         gcs_upload.upload_file_if_changed.reset_mock()
 
 
+@pytest.mark.parametrize("prerelease", [True, False])
+def test_upload_metadata_to_gcs_release_candidate(mocker, get_fixture_path, tmp_path, prerelease):
+    mocker.spy(gcs_upload, "_file_upload")
+    mocker.spy(gcs_upload, "upload_file_if_changed")
+    release_candidate_metadata_file = get_fixture_path(
+        "metadata_upload/valid/referenced_image_in_dockerhub/metadata_release_candidate.yaml"
+    )
+    release_candidate_metadata_file_path = Path(release_candidate_metadata_file)
+    metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(release_candidate_metadata_file_path.read_text()))
+
+    tmp_metadata_file_path = tmp_path / "metadata.yaml"
+    if tmp_metadata_file_path.exists():
+        tmp_metadata_file_path.unlink()
+
+    mocks = setup_upload_mocks(
+        mocker, "new_md5_hash1", "new_md5_hash2", "new_md5_hash3", None, None, None, release_candidate_metadata_file_path, None
+    )
+
+    # Mock tempfile to have a deterministic path
+    mocker.patch.object(
+        gcs_upload.tempfile,
+        "NamedTemporaryFile",
+        mocker.Mock(return_value=mocker.Mock(__enter__=mocker.Mock(return_value=tmp_metadata_file_path.open("w")), __exit__=mocker.Mock())),
+    )
+    assert metadata.data.releases.isReleaseCandidate
+
+    prerelease_tag = "1.5.6-dev.f80318f754" if prerelease else None
+
+    upload_info = gcs_upload.upload_metadata_to_gcs(
+        "my_bucket",
+        release_candidate_metadata_file_path,
+        ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_tag),
+    )
+
+    # Assert versioned uploads happened
+
+    assert_blob_upload(
+        upload_info=upload_info,
+        upload_info_file_key="versioned_release_candidate",
+        blob_mock=mocks["mock_release_candidate_blob"],
+        should_upload=not prerelease,
+        file_path=tmp_metadata_file_path,
+        failure_message="Latest blob should be uploaded.",
+    )
+
+    assert_blob_upload(
+        upload_info=upload_info,
+        upload_info_file_key="versioned_doc",
+        blob_mock=mocks["mock_doc_version_blob"],
+        should_upload=True,
+        file_path=VALID_DOC_FILE_PATH,
+        failure_message="Latest blob should be uploaded.",
+    )
+
+    # Assert latest uploads did not happen
+
+    assert_blob_upload(
+        upload_info=upload_info,
+        upload_info_file_key="latest_metadata",
+        blob_mock=mocks["mock_latest_blob"],
+        should_upload=False,
+        file_path=tmp_metadata_file_path,
+        failure_message="Latest blob should be uploaded.",
+    )
+
+    assert_blob_upload(
+        upload_info=upload_info,
+        upload_info_file_key="latest_doc",
+        blob_mock=mocks["mock_doc_latest_blob"],
+        should_upload=False,
+        file_path=VALID_DOC_FILE_PATH,
+        failure_message="Latest blob should be uploaded.",
+    )
+
+
 @pytest.mark.parametrize(
     "manifest_exists, components_py_exists",
     [
