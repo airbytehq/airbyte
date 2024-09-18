@@ -23,7 +23,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: 2/account
+          path: account
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -73,7 +73,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/payrolls
+          path: payrolls
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -123,7 +123,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: 2/users
+          path: users
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -173,7 +173,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: 2/timezones
+          path: timezones
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -202,11 +202,13 @@ definitions:
     payrolls_notices:
       type: DeclarativeStream
       name: payrolls_notices
+      primary_key:
+        - uid
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/payrolls/notices
+          path: payrolls/notices
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -222,11 +224,24 @@ definitions:
                     http_codes:
                       - 429
                     error_message: Rate limits hit
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 401
+                    error_message: Token expired, Please refresh
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc() }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -234,11 +249,13 @@ definitions:
     times:
       type: DeclarativeStream
       name: times
+      primary_key:
+        - uid
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: 2/times
+          path: times
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -259,6 +276,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc().strftime('%s') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -266,11 +289,13 @@ definitions:
     requests:
       type: DeclarativeStream
       name: requests
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/requests
+          path: requests
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -314,11 +339,13 @@ definitions:
     blocks:
       type: DeclarativeStream
       name: blocks
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/blocks
+          path: blocks
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -368,7 +395,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/sites
+          path: sites
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -418,7 +445,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/locations
+          path: locations
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -468,7 +495,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/positions
+          path: positions
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -497,11 +524,13 @@ definitions:
     openshiftapprovalrequests:
       type: DeclarativeStream
       name: openshiftapprovalrequests
+      primary_key:
+        - uid
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /2/openshiftapprovalrequests
+          path: openshiftapprovalrequests
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
@@ -537,16 +566,22 @@ definitions:
             page_size: 5
             start_from_page: 0
             inject_on_first_request: true
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - uid
+              value: "{{ now_utc().strftime('%s') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/openshiftapprovalrequests"
   base_requester:
     type: HttpRequester
-    url_base: https://api.wheniwork.com/
+    url_base: https://api.wheniwork.com/2/
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config["api_key"] }}'
+      api_token: "{{ config[\"api_key\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/account"
@@ -593,89 +628,89 @@ metadata:
     openshiftapprovalrequests: true
   testedStreams:
     account:
-      streamHash: 1048198a0847480ffa785119a26a34559352adb2
+      streamHash: 89bb7e316fdaeb6b43318c2345a5677c7e27b155
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     payrolls:
-      hasRecords: true
-      streamHash: a8acf2826e1f0908e127453856cbf32ceef757ea
+      streamHash: 7ddeebc90f79d0fe9bbd4a547ec7c9a19febad53
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     users:
-      hasRecords: true
-      streamHash: 86851ca3d56f8567aa03d7f7333c09262f7ea5e0
+      streamHash: 5c625a4f42fb90f21b9a1e1b002377959cfa4176
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     timezones:
-      hasRecords: true
-      streamHash: 76b9c6aadd76047d10443fc021a62a01d14e90cb
+      streamHash: 687fbe214afd31bd8c521493f9a32ea8c2407604
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     payrolls_notices:
-      hasRecords: true
-      streamHash: 94867db718a74155967b6c7a47f25e046b537395
+      streamHash: 5eee1feea1302d9bf91e3c1238d908ad54b29996
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     times:
-      hasRecords: true
-      streamHash: b71514c0e50cc31810b989916082d4939bb0889b
+      streamHash: 6833d42c1a962a1cf12dab636e259f2cc8113b51
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     requests:
-      streamHash: 1c0233204d87be11916ddd838a2a9c2c133e4662
+      streamHash: c117abf554ceed469033842f073876128973a064
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     blocks:
-      streamHash: f3c023fe50b9a6f1046e3adfa49a19b174d930de
+      streamHash: 934d538db5e5962d549f5b3b39db7b3d43517be8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     sites:
-      hasRecords: true
-      streamHash: 9c15190423a74e136bee7a98e06befee1db26f8f
+      streamHash: e559a5df20adae8e0aefaf3590d4978b13f1551e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     locations:
-      hasRecords: true
-      streamHash: 367b0e3f90cb912162dc4926fbc04d30bb16e9be
+      streamHash: e858f123f817f837300710ecb48706b04ec8fa8e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     positions:
-      streamHash: 057efaeb72c070e978a64e87cc013f3a089d30ba
+      streamHash: 2739d358352e9ddcc970703bd909c2016a41a653
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     openshiftapprovalrequests:
-      hasRecords: true
-      streamHash: 930dcdf940fe6fd62bb95f0739b79e63225465a9
+      streamHash: 6f35946ede3b7c476ada903fa94df3cde1366587
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -1000,7 +1035,7 @@ schemas:
               - "null"
       payroll_date:
         type:
-          - boolean
+          - string
           - "null"
       payroll_hours_max:
         type:
@@ -2296,6 +2331,10 @@ schemas:
         type:
           - string
           - "null"
+      invited_at:
+        type:
+          - string
+          - "null"
       is_active:
         type:
           - boolean
@@ -2409,7 +2448,7 @@ schemas:
           - object
           - "null"
         properties:
-          "5695674":
+          "5696679":
             type:
               - number
               - "null"
@@ -2473,225 +2512,10 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      locations:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            account_id:
-              type:
-                - number
-                - "null"
-            address:
-              type:
-                - string
-                - "null"
-            coordinates:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - number
-                  - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            deleted_at:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - number
-                - "null"
-            ip_address:
-              type:
-                - string
-                - "null"
-            is_default:
-              type:
-                - number
-                - "null"
-            is_deleted:
-              type:
-                - boolean
-                - "null"
-            latitude:
-              type:
-                - number
-                - "null"
-            longitude:
-              type:
-                - number
-                - "null"
-            max_hours:
-              type:
-                - number
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            place:
-              type:
-                - object
-                - "null"
-              properties:
-                address:
-                  type:
-                    - string
-                    - "null"
-                business_name:
-                  type:
-                    - string
-                    - "null"
-                country:
-                  type:
-                    - string
-                    - "null"
-                formatted_phone_number:
-                  type:
-                    - string
-                    - "null"
-                id:
-                  type:
-                    - number
-                    - "null"
-                international_phone_number:
-                  type:
-                    - string
-                    - "null"
-                latitude:
-                  type:
-                    - number
-                    - "null"
-                locality:
-                  type:
-                    - string
-                    - "null"
-                longitude:
-                  type:
-                    - number
-                    - "null"
-                place_id:
-                  type:
-                    - string
-                    - "null"
-                place_type:
-                  type:
-                    - array
-                    - "null"
-                  items:
-                    type:
-                      - string
-                      - "null"
-                postal_code:
-                  type:
-                    - string
-                    - "null"
-                region:
-                  type:
-                    - string
-                    - "null"
-                street_name:
-                  type:
-                    - string
-                    - "null"
-                street_number:
-                  type:
-                    - string
-                    - "null"
-                sub_locality:
-                  type:
-                    - string
-                    - "null"
-                subpremise:
-                  type:
-                    - string
-                    - "null"
-                updated_at:
-                  type:
-                    - string
-                    - "null"
-                updated_by:
-                  type:
-                    - string
-                    - "null"
-                website:
-                  type:
-                    - string
-                    - "null"
-            place_confirmed:
-              type:
-                - boolean
-                - "null"
-            place_id:
-              type:
-                - number
-                - "null"
-            radius:
-              type:
-                - number
-                - "null"
-            sort:
-              type:
-                - number
-                - "null"
-            updated_at:
-              type:
-                - string
-                - "null"
-            updated_by:
-              type:
-                - string
-                - "null"
       notices:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            absence_id:
-              type:
-                - number
-                - "null"
-            code:
-              type:
-                - number
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            punch_id:
-              type:
-                - number
-                - "null"
-            shift_id:
-              type:
-                - number
-                - "null"
-            time_id:
-              type:
-                - number
-                - "null"
-            title:
-              type:
-                - string
-                - "null"
-            user_id:
-              type:
-                - number
-                - "null"
       punches:
         type:
           - array
@@ -2700,578 +2524,14 @@ schemas:
         type:
           - array
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            account_id:
-              type:
-                - number
-                - "null"
-            acknowledged:
-              type:
-                - number
-                - "null"
-            actionable:
-              type:
-                - boolean
-                - "null"
-            alerted:
-              type:
-                - boolean
-                - "null"
-            block_id:
-              type:
-                - number
-                - "null"
-            break_time:
-              type:
-                - number
-                - "null"
-            color:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            creator_id:
-              type:
-                - number
-                - "null"
-            end_time:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - number
-                - "null"
-            instances:
-              type:
-                - number
-                - "null"
-            is_open:
-              type:
-                - boolean
-                - "null"
-            is_trimmed:
-              type:
-                - boolean
-                - "null"
-            location_id:
-              type:
-                - number
-                - "null"
-            notes:
-              type:
-                - string
-                - "null"
-            notified_at:
-              type:
-                - string
-                - "null"
-            position_id:
-              type:
-                - number
-                - "null"
-            published:
-              type:
-                - boolean
-                - "null"
-            published_date:
-              type:
-                - string
-                - "null"
-            shiftchain_key:
-              type:
-                - string
-                - "null"
-            site_id:
-              type:
-                - number
-                - "null"
-            start_time:
-              type:
-                - string
-                - "null"
-            updated_at:
-              type:
-                - string
-                - "null"
-            user_id:
-              type:
-                - number
-                - "null"
       times:
         type:
           - array
           - "null"
-      users:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - number
-                - "null"
-            account_id:
-              type:
-                - number
-                - "null"
-            activated:
-              type:
-                - boolean
-                - "null"
-            affiliate:
-              type:
-                - number
-                - "null"
-            alert_settings:
-              type:
-                - object
-                - "null"
-              properties:
-                absences:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                attendance:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                availability:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                hire:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                new_employee:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                ot_alerts:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                payroll:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                reminders:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                reporting:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                schedule:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                shift-bidding:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                swaps:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                timeoff:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-                workchat:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    alerts:
-                      type:
-                        - boolean
-                        - "null"
-                    badge_icon:
-                      type:
-                        - boolean
-                        - "null"
-                    in_app:
-                      type:
-                        - boolean
-                        - "null"
-                workplace_alerts:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    email:
-                      type:
-                        - boolean
-                        - "null"
-                    sms:
-                      type:
-                        - boolean
-                        - "null"
-            avatar:
-              type:
-                - object
-                - "null"
-              properties:
-                size:
-                  type:
-                    - string
-                    - "null"
-                url:
-                  type:
-                    - string
-                    - "null"
-            avatar_key:
-              type:
-                - string
-                - "null"
-            c2dm_auth_key:
-              type:
-                - number
-                - "null"
-            country_code:
-              type:
-                - string
-                - "null"
-            country_id:
-              type:
-                - number
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            created_by:
-              type:
-                - number
-                - "null"
-            delete_reason:
-              type:
-                - string
-                - "null"
-            deleted_at:
-              type:
-                - string
-                - "null"
-            edit_personal_timesheet:
-              type:
-                - number
-                - "null"
-            email:
-              type:
-                - string
-                - "null"
-            employee_code:
-              type:
-                - string
-                - "null"
-            employment_type:
-              type:
-                - string
-                - "null"
-            exclude_from_payrolls:
-              type:
-                - number
-                - "null"
-            first_name:
-              type:
-                - string
-                - "null"
-            hourly_rate:
-              type:
-                - number
-                - "null"
-            hours_max:
-              type:
-                - number
-                - "null"
-            hours_preferred:
-              type:
-                - number
-                - "null"
-            id:
-              type:
-                - number
-                - "null"
-            infotips:
-              type:
-                - string
-                - "null"
-            is_active:
-              type:
-                - boolean
-                - "null"
-            is_deleted:
-              type:
-                - boolean
-                - "null"
-            is_hidden:
-              type:
-                - boolean
-                - "null"
-            is_internal_login:
-              type:
-                - boolean
-                - "null"
-            is_onboarded:
-              type:
-                - boolean
-                - "null"
-            is_payroll:
-              type:
-                - boolean
-                - "null"
-            is_private:
-              type:
-                - boolean
-                - "null"
-            is_trusted:
-              type:
-                - number
-                - "null"
-            last_login:
-              type:
-                - string
-                - "null"
-            last_name:
-              type:
-                - string
-                - "null"
-            locations:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - number
-                  - "null"
-            login_id:
-              type:
-                - number
-                - "null"
-            middle_name:
-              type:
-                - string
-                - "null"
-            migration_id:
-              type:
-                - number
-                - "null"
-            my_positions:
-              type:
-                - array
-                - "null"
-            notes:
-              type:
-                - string
-                - "null"
-            notified_at:
-              type:
-                - string
-                - "null"
-            password:
-              type:
-                - boolean
-                - "null"
-            phone_number:
-              type:
-                - string
-                - "null"
-            position_quality:
-              type:
-                - array
-                - "null"
-            position_rates:
-              type:
-                - array
-                - "null"
-            positions:
-              type:
-                - array
-                - "null"
-            reminder_time:
-              type:
-                - number
-                - "null"
-            role:
-              type:
-                - number
-                - "null"
-            sleep_end:
-              type:
-                - string
-                - "null"
-            sleep_start:
-              type:
-                - string
-                - "null"
-            sort:
-              type:
-                - object
-                - "null"
-              properties:
-                "5695674":
-                  type:
-                    - number
-                    - "null"
-            start_date:
-              type:
-                - string
-                - "null"
-            suppress_alerts:
-              type:
-                - number
-                - "null"
-            terminated_at:
-              type:
-                - string
-                - "null"
-            timezone_id:
-              type:
-                - number
-                - "null"
-            timezone_name:
-              type:
-                - string
-                - "null"
-            token_valid_after:
-              type:
-                - string
-                - "null"
-            updated_at:
-              type:
-                - string
-                - "null"
-            uuid:
-              type:
-                - string
-                - "null"
+      uid:
+        type: string
+    required:
+      - uid
   times:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3297,6 +2557,10 @@ schemas:
         type:
           - array
           - "null"
+      uid:
+        type: number
+    required:
+      - uid
   requests:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3355,9 +2619,7 @@ schemas:
           - number
           - "null"
       id:
-        type:
-          - number
-          - "null"
+        type: number
       is_all_day:
         type:
           - number
@@ -3402,6 +2664,8 @@ schemas:
         type:
           - number
           - "null"
+    required:
+      - id
   blocks:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3428,9 +2692,7 @@ schemas:
           - string
           - "null"
       id:
-        type:
-          - number
-          - "null"
+        type: number
       is_shared:
         type:
           - number
@@ -3463,6 +2725,8 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - id
   sites:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3784,3 +3048,7 @@ schemas:
         type:
           - number
           - "null"
+      uid:
+        type: number
+    required:
+      - uid

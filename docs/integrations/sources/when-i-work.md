@@ -33,14 +33,14 @@ You will get a response containing token for your authentication.
 | payrolls | id | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ❌  |
 | timezones | id | No pagination | ✅ |  ❌  |
-| payrolls_notices |  | No pagination | ✅ |  ❌  |
-| times |  | No pagination | ✅ |  ❌  |
-| requests |  | DefaultPaginator | ✅ |  ❌  |
-| blocks |  | DefaultPaginator | ✅ |  ❌  |
+| payrolls_notices | uid | No pagination | ✅ |  ❌  |
+| times | uid | No pagination | ✅ |  ❌  |
+| requests | id | DefaultPaginator | ✅ |  ❌  |
+| blocks | id | DefaultPaginator | ✅ |  ❌  |
 | sites | id | DefaultPaginator | ✅ |  ❌  |
 | locations | id | DefaultPaginator | ✅ |  ❌  |
 | positions | id | No pagination | ✅ |  ❌  |
-| openshiftapprovalrequests |  | DefaultPaginator | ✅ |  ❌  |
+| openshiftapprovalrequests | uid | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
