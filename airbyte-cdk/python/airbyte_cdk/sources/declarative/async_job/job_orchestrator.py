@@ -4,12 +4,12 @@ import logging
 import time
 from typing import Any, Generator, Iterable, List, Mapping, Optional, Set
 
-from airbyte_cdk import StreamSlice
 from airbyte_cdk.logger import lazy_log
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.async_job.job import AsyncJob
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 LOGGER = logging.getLogger("airbyte")
