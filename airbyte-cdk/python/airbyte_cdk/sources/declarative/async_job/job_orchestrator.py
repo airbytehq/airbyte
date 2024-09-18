@@ -356,7 +356,8 @@ class AsyncJobOrchestrator:
             self._wait_on_status_update()
 
         if self._non_breaking_exceptions:
-            # We didn't break on non_breaking_exception, but we still need to raise an exception so that the stream is flagged as incomplete
+            # We emitted traced message but we didn't break on non_breaking_exception. We still need to raise an exception so that the
+            # call of `create_and_get_completed_partitions` knows that there was an issue with some partitions and the sync is incomplete.
             raise AirbyteTracedException(
                 message="",
                 internal_message="\n".join([filter_secrets(exception.__repr__()) for exception in self._non_breaking_exceptions]),
