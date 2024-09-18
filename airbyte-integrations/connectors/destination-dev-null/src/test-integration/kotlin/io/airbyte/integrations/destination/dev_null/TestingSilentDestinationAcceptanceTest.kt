@@ -6,21 +6,22 @@ package io.airbyte.integrations.destination.dev_null
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
 import io.airbyte.commons.json.Jsons
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.integrations.destination.dev_null.TestingDestinations.TestDestinationType
+import io.airbyte.protocol.models.v0.*
 import java.util.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class DevNullDestinationAcceptanceTest : DestinationAcceptanceTest() {
+open class TestingSilentDestinationAcceptanceTest : DestinationAcceptanceTest() {
     override val imageName = "airbyte/destination-dev-null:dev"
+    override val isCloudTest = false
 
     override fun getConfig(): JsonNode {
         return Jsons.jsonNode(
             Collections.singletonMap(
                 "test_destination",
-                Collections.singletonMap("test_destination_type", "SILENT")
+                Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name)
             )
         )
     }
@@ -59,12 +60,21 @@ class DevNullDestinationAcceptanceTest : DestinationAcceptanceTest() {
         Assertions.assertEquals(0, actual.size)
     }
 
+    open override fun getDefaultSchema(config: JsonNode): String? {
+        return super.getDefaultSchema(config) ?: "default_schema"
+    }
+
     // Skip because `retrieveRecords` returns an empty list at all times.
     @Disabled @Test override fun testSyncNotFailsWithNewFields() {}
 
     @Disabled @Test override fun testAirbyteTimeTypes() {}
 
-    open override fun getDefaultSchema(config: JsonNode): String? {
-        return super.getDefaultSchema(config) ?: "default_schema"
+    // This test assumes that dedup support means normalization support.
+    // Override it to do nothing.
+    @Disabled
+    @Test
+    @Throws(Exception::class)
+    override fun testIncrementalDedupeSync() {
+        super.testIncrementalDedupeSync()
     }
 }

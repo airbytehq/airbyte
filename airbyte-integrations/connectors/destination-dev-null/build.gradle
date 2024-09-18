@@ -9,10 +9,9 @@ airbyteJavaConnector {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.dev_null.DevNullDestination'
+    mainClass = 'io.airbyte.integrations.destination.dev_null.TestingDestinations'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation project(':airbyte-integrations:connectors:destination-e2e-test')
 }

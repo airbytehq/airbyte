@@ -1,33 +1,34 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.e2e_test.logging
+package io.airbyte.integrations.destination.dev_null.logging
 
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
+import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class EveryNthLogger(
+class RandomSamplingLogger(
     streamNamePair: AirbyteStreamNameNamespacePair,
-    private val nthEntryToLog: Int,
+    private val samplingRatio: Double,
+    seed: Long,
     maxEntryCount: Int
 ) : BaseLogger(streamNamePair, maxEntryCount), TestingLogger {
-    private var currentEntry = 0
+    private val random = Random(seed)
 
     override fun log(recordMessage: AirbyteRecordMessage?) {
         if (loggedEntryCount >= maxEntryCount) {
             return
         }
 
-        currentEntry += 1
-        if (currentEntry % nthEntryToLog == 0) {
+        if (random.nextDouble() < samplingRatio) {
             loggedEntryCount += 1
             LOGGER.info(entryMessage(recordMessage!!))
         }
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(EveryNthLogger::class.java)
+        private val LOGGER: Logger = LoggerFactory.getLogger(RandomSamplingLogger::class.java)
     }
 }

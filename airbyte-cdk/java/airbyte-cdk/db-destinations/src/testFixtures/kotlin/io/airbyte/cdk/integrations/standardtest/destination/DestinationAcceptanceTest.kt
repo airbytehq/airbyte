@@ -17,6 +17,8 @@ import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.Ar
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.BasicTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
+import io.airbyte.commons.features.FeatureFlagsWrapper
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
@@ -98,6 +100,13 @@ abstract class DestinationAcceptanceTest(
     protected var testSchemas: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
+    protected open val isCloudTest: Boolean = true
+    protected val featureFlags: FeatureFlags =
+        if (isCloudTest) {
+            FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "CLOUD")
+        } else {
+            FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "OSS")
+        }
 
     private lateinit var jobRoot: Path
     private lateinit var processFactory: ProcessFactory
@@ -1912,7 +1921,7 @@ abstract class DestinationAcceptanceTest(
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags
                     )
                 )
                 .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot)
@@ -1932,7 +1941,7 @@ abstract class DestinationAcceptanceTest(
                     null,
                     null,
                     false,
-                    EnvVariableFeatureFlags()
+                    featureFlags
                 ),
                 mConnectorConfigUpdater
             )
@@ -1954,7 +1963,7 @@ abstract class DestinationAcceptanceTest(
                             null,
                             null,
                             false,
-                            EnvVariableFeatureFlags()
+                            featureFlags
                         ),
                         mConnectorConfigUpdater
                     )
@@ -1982,7 +1991,7 @@ abstract class DestinationAcceptanceTest(
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags
                     )
             )
         }
@@ -1998,7 +2007,7 @@ abstract class DestinationAcceptanceTest(
                     null,
                     null,
                     false,
-                    EnvVariableFeatureFlags()
+                    featureFlags
                 )
         )
     }

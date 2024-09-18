@@ -1,19 +1,23 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.e2e_test
+package io.airbyte.integrations.destination.dev_null
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.BaseConnector
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.cdk.integrations.base.Destination
+import io.airbyte.integrations.destination.dev_null.logging.LoggingConsumer
+import io.airbyte.integrations.destination.dev_null.logging.TestingLoggerFactory
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.util.function.Consumer
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-/** This destination silently receives records. */
-class SilentDestination : BaseConnector(), Destination {
+/** This destination logs each record it receives. */
+class LoggingDestination : BaseConnector(), Destination {
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
     }
@@ -23,19 +27,10 @@ class SilentDestination : BaseConnector(), Destination {
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer {
-        return RecordConsumer(outputRecordCollector)
+        return LoggingConsumer(TestingLoggerFactory(config), catalog, outputRecordCollector)
     }
 
-    class RecordConsumer(private val outputRecordCollector: Consumer<AirbyteMessage>) :
-        AirbyteMessageConsumer {
-        override fun start() {}
-
-        override fun accept(message: AirbyteMessage) {
-            if (message.type == AirbyteMessage.Type.STATE) {
-                outputRecordCollector.accept(message)
-            }
-        }
-
-        override fun close() {}
+    companion object {
+        private val LOGGER: Logger = LoggerFactory.getLogger(LoggingDestination::class.java)
     }
 }

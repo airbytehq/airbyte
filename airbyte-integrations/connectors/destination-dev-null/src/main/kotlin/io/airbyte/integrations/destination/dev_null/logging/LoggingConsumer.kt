@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.e2e_test.logging
+package io.airbyte.integrations.destination.dev_null.logging
 
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer
 import io.airbyte.commons.json.Jsons

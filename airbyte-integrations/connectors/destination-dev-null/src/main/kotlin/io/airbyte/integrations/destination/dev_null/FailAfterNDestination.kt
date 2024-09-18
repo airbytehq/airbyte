@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.e2e_test
+package io.airbyte.integrations.destination.dev_null
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.BaseConnector
@@ -14,11 +14,7 @@ import java.util.function.Consumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-/**
- * This destination logs each record it receives. It sleeps for millis_per_record between accepting
- * each record. Useful for simulating backpressure / slow destination writes.
- */
-class ThrottledDestination : BaseConnector(), Destination {
+class FailAfterNDestination : BaseConnector(), Destination {
     override fun check(config: JsonNode): AirbyteConnectionStatus {
         return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)
     }
@@ -28,25 +24,30 @@ class ThrottledDestination : BaseConnector(), Destination {
         catalog: ConfiguredAirbyteCatalog,
         outputRecordCollector: Consumer<AirbyteMessage>
     ): AirbyteMessageConsumer {
-        return ThrottledConsumer(
-            config["test_destination"]["millis_per_record"].asLong(),
+        return FailAfterNConsumer(
+            config["test_destination"]["num_messages"].asLong(),
             outputRecordCollector
         )
     }
 
-    class ThrottledConsumer(
-        private val millisPerRecord: Long,
+    class FailAfterNConsumer(
+        private val numMessagesAfterWhichToFail: Long,
         private val outputRecordCollector: Consumer<AirbyteMessage>
     ) : AirbyteMessageConsumer {
+        private var numMessagesSoFar: Long = 0
+
         init {
-            LOGGER.info("Will sleep {} millis before processing every record", millisPerRecord)
+            LOGGER.info("Will fail after {} messages", numMessagesAfterWhichToFail)
         }
 
         override fun start() {}
 
-        @Throws(Exception::class)
         override fun accept(message: AirbyteMessage) {
-            Thread.sleep(millisPerRecord)
+            numMessagesSoFar += 1
+
+            check(numMessagesSoFar <= numMessagesAfterWhichToFail) {
+                "Forcing a fail after processing $numMessagesAfterWhichToFail messages."
+            }
 
             if (message.type == AirbyteMessage.Type.STATE) {
                 LOGGER.info("Emitting state: {}", message)
@@ -58,6 +59,6 @@ class ThrottledDestination : BaseConnector(), Destination {
     }
 
     companion object {
-        private val LOGGER: Logger = LoggerFactory.getLogger(ThrottledDestination::class.java)
+        private val LOGGER: Logger = LoggerFactory.getLogger(FailAfterNDestination::class.java)
     }
 }
