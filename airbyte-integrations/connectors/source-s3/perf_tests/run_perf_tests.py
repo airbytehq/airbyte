@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import copy
+from functools import cache
 import json
 import logging
 from pathlib import Path
@@ -33,31 +34,41 @@ LOCAL_TARGET_DIR = SCRIPT_DIR / Path(".test-data/perf-profile-dataset")
 SECRETS_FILE_NAME = SCRIPT_DIR / Path("../secrets/bulk_jsonl_perf_test_config.json")
 
 WARMUP_ITERATIONS = 0
-MEASURED_ITERATIONS = 2
-NUM_FILES = 1
+MEASURED_ITERATIONS = 3
+NUM_FILES = 4
+USE_CACHE = False
+
+INCLUDE_BASELINE = True
 
 
-SKIP_BASELINE = False
+devnull_destination: ab.Destination | None = None
+if not USE_CACHE:
+    devnull_destination = ab.get_destination(
+    name="destination-e2e-test",
+    docker_image="airbyte/destination-e2e-test:latest",
+    config={
+        "test_destination": {
+            "test_destination_type": "LOGGING",
+            "logging_config": {
+                "logging_type": "FirstN",
+                "max_entry_count": 100,
+            },
+        }
+    },
+)
+
 
 def main() -> None:
     config_dict = json.loads(Path(SECRETS_FILE_NAME).read_text())
 
-    # Truncate to the specific number of files to test
-    config_dict["streams"][0]["globs"] = config_dict["streams"][0]["globs"][:NUM_FILES]
+    if NUM_FILES:
+        # Truncate to the specific number of files to test
+        config_dict["streams"][0]["globs"] = config_dict["streams"][0]["globs"][:NUM_FILES]
 
     baseline_config = copy.deepcopy(config_dict)
     baseline_config["streams"][0]["bulk_mode"] = "DISABLED"
 
     new_config = copy.deepcopy(config_dict)
-
-    if not SKIP_BASELINE:
-        old_source = ab.get_source(
-            "source-s3",
-            pip_url=f"-e {CONNECTOR_DIR.absolute()!s}",
-            config=baseline_config,
-            install_root=CONNECTOR_DIR / ".venv-latest-version",
-            streams="*",
-        )
 
     new_source = ab.get_source(
         "source-s3",
@@ -67,16 +78,37 @@ def main() -> None:
         streams="*",
     )
 
-    if not SKIP_BASELINE:
-        for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
-            print(f"======Starting prev-version test iteration #{i+1}======")
-            old_source.read(force_full_refresh=True)
-            print(f"======Finished prev-version test iteration #{i+1}======")
-
     for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
         print(f"======Starting new-version test iteration #{i+1}======")
-        new_source.read(force_full_refresh=True)
+        if USE_CACHE:
+            new_source.read(force_full_refresh=True)
+        else:
+            devnull_destination.write(
+                new_source,
+                force_full_refresh=True,
+                cache=False,
+            )
         print(f"======Finished new-version test iteration #{i+1}======")
+
+    if INCLUDE_BASELINE:
+        baseline_source = ab.get_source(
+            "source-s3",
+            pip_url=f"-e {CONNECTOR_DIR.absolute()!s}",
+            install_root=CONNECTOR_DIR / ".venv-latest-version",
+            config=baseline_config,
+            streams="*",
+        )
+        for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
+            print(f"======Starting baseline test iteration #{i+1}======")
+            if USE_CACHE:
+                new_source.read(force_full_refresh=True)
+            else:
+                devnull_destination.write(
+                    baseline_source,
+                    force_full_refresh=True,
+                    cache=False,
+                )
+            print(f"======Finished baseline test iteration #{i+1}======")
 
 
 if __name__ == "__main__":
