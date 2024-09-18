@@ -24,6 +24,7 @@ class ValidationPolicy(Enum):
     skip_record = "Skip Record"
     wait_for_discover = "Wait for Discover"
 
+
 class BulkMode(Enum):
     """Enabled bulk processing for file-based streams.
 
@@ -35,6 +36,10 @@ class BulkMode(Enum):
     DISABLED = "DISABLED"
     INMEM = "INMEM"
     LAZY = "LAZY"
+
+
+# TODO: Consider defaulting to DISABLED if unstable
+DEFAULT_BULK_MODE = BulkMode.LAZY
 
 
 class FileBasedStreamConfig(BaseModel):
@@ -87,7 +92,7 @@ class FileBasedStreamConfig(BaseModel):
     bulk_mode: BulkMode = Field(
         title="Bulk Processing Optimizations",
         description="The bulk processing mode for this stream.",
-        default=BulkMode.LAZY,  # TODO: Consider defaulting to DISABLED if unstable
+        default=DEFAULT_BULK_MODE,
     )
 
     @validator("input_schema", pre=True)
