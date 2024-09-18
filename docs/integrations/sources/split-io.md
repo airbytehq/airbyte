@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the [Split-io](
 Visit `https://docs.split.io/reference/introduction` for API documentation
 
 ## Authentication setup
-`Split io` uses bearer token authentication,
+Split uses bearer token authentication,
 Refer `https://docs.split.io/reference/authentication` for more details.
 
 ## Configuration
