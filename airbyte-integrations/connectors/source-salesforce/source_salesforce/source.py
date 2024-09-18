@@ -148,6 +148,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
             "authenticator": authenticator,
             "start_date": config.get("start_date"),
             "job_tracker": self._job_tracker,
+            "message_repository": self.message_repository,
         }
 
         api_type = self._get_api_type(stream_name, json_schema, config.get("force_use_bulk_api", False))

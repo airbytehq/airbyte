@@ -4,17 +4,11 @@
 
 import csv
 import ctypes
-import math
-import os
-import time
 import urllib.parse
-import uuid
 from abc import ABC
-from contextlib import closing
 from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk import (
@@ -26,13 +20,14 @@ from airbyte_cdk import (
     HttpMethod,
     HttpRequester,
     JsonDecoder,
+    MessageRepository,
     RecordSelector,
     RequestOption,
     RequestOptionType,
     SimpleRetriever,
     StreamSlice,
 )
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
 from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
@@ -44,27 +39,19 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
-from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
 from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.utils import AirbyteTracedException
-from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import exceptions
-from requests.models import PreparedRequest
 
-from . import SourceSalesforce
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
-from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import (
-    RESPONSE_CONSUMPTION_EXCEPTIONS,
-    TRANSIENT_EXCEPTIONS,
     BulkNotSupportedException,
     SalesforceErrorHandler,
     default_backoff_handler,
@@ -91,6 +78,7 @@ class SalesforceStream(HttpStream, ABC):
         pk: str,
         stream_name: str,
         job_tracker: JobTracker,
+        message_repository: MessageRepository,
         sobject_options: Mapping[str, Any] = None,
         schema: dict = None,
         start_date=None,
@@ -104,6 +92,7 @@ class SalesforceStream(HttpStream, ABC):
         self.sobject_options = sobject_options
         self.start_date = self.format_start_date(start_date)
         self._job_tracker = job_tracker
+        self._message_repository = message_repository
         self._http_client = HttpClient(
             self.stream_name,
             self.logger,
@@ -457,6 +446,66 @@ class BulkDatetimeStreamSlicer(StreamSlicer):
             )
 
 
+class BulkParentStreamStreamSlicer(StreamSlicer):
+    def __init__(
+        self,
+        batched_substream: BatchedSubStream,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]],
+        stream_state: Optional[Mapping[str, Any]],
+        parend_id_field: str,
+    ) -> None:
+        self._batched_substream = batched_substream
+        self._sync_mode = sync_mode
+        self._cursor_field = cursor_field
+        self._stream_state = stream_state
+        self._parend_id_field = parend_id_field
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return {}
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for batched_parents in self._batched_substream.stream_slices(
+            sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state
+        ):
+            yield StreamSlice(
+                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]}, cursor_slice={}
+            )
+
+
 class BulkSalesforceStream(SalesforceStream):
     def __init__(self, **kwargs) -> None:
         self._stream_slicer_cursor = None
@@ -474,7 +523,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         pass
 
-    def _instantiate_declarative_stream(self):
+    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer) -> None:
         """
         For streams with a replication key and where filtering is supported, we need to have the cursor in order to instantiate the
         DeclarativeStream hence why this isn't called in the __init__
@@ -490,7 +539,6 @@ class BulkSalesforceStream(SalesforceStream):
             parameters=parameters,
         )
         error_handler = SalesforceErrorHandler()
-        message_repository = SourceSalesforce.message_repository
         select_fields = self.get_query_select_fields()
         query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
         if self.cursor_field:
@@ -503,6 +551,11 @@ class BulkSalesforceStream(SalesforceStream):
                 '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
             )
             query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
+        elif isinstance(stream_slicer, BulkParentStreamStreamSlicer):
+            where_in_query = " WHERE ContentDocumentId IN ('"
+            parents_interpolation = '{{ "\', \'".join(stream_slice["parents"]) }}'
+            closing_parenthesis = "')"
+            query = query + where_in_query + parents_interpolation + closing_parenthesis
         creation_requester = HttpRequester(
             name=f"{self.name} - creation requester",
             url_base=url_base,
@@ -527,7 +580,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             decoder=decoder,
             stream_response=False,
@@ -551,7 +604,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             decoder=decoder,
             stream_response=False,
@@ -577,7 +630,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             stream_response=True,
         )
@@ -634,7 +687,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             stream_response=False,
         )
@@ -649,7 +702,7 @@ class BulkSalesforceStream(SalesforceStream):
             config=config,
             parameters=parameters,
             disable_retries=False,
-            message_repository=message_repository,
+            message_repository=self._message_repository,
             use_cache=False,
             stream_response=False,
         )
@@ -685,9 +738,9 @@ class BulkSalesforceStream(SalesforceStream):
                 config={},
                 parameters={},
                 record_selector=record_selector,
-                stream_slicer=BulkDatetimeStreamSlicer(self._stream_slicer_cursor),
+                stream_slicer=stream_slicer,
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository, stream_slices, self._job_tracker, message_repository, exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository, stream_slices, self._job_tracker, self._message_repository, exceptions_to_break_on=[BulkNotSupportedException]
                 ),
             ),
             config={},
@@ -752,7 +805,7 @@ class BulkSalesforceStream(SalesforceStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._instantiate_declarative_stream()
+        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor))
         yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:
@@ -765,6 +818,7 @@ class BulkSalesforceStream(SalesforceStream):
             sobject_options=self.sobject_options,
             authenticator=self._http_client._session.auth,
             job_tracker=self._job_tracker,
+            message_repository=self._message_repository,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
@@ -778,7 +832,15 @@ class BulkSalesforceStream(SalesforceStream):
 
 
 class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
-    pass
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream(
+            BulkParentStreamStreamSlicer(
+                super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            )
+        )
+        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform

@@ -8,10 +8,9 @@ import logging
 import re
 from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 import freezegun
-import pendulum
 import pytest
 import requests_mock
 from airbyte_cdk.models import (
@@ -28,9 +27,8 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils import AirbyteTracedException
-from conftest import encoding_symbols_parameters, generate_stream
+from conftest import generate_stream
 from config_builder import ConfigBuilder
-from requests.exceptions import ChunkedEncodingError
 from salesforce_job_response_builder import JobInfoResponseBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
@@ -183,7 +181,7 @@ def test_bulk_sync_failed_retry(stream_config, stream_api):
         with pytest.raises(Exception) as err:
             stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
             next(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices))
-        assert "At least one job could not be completed" in str(err.value.message)
+        assert "At least one job could not be completed" in str(err.value.internal_message)
 
 
 @pytest.mark.parametrize(
@@ -217,22 +215,6 @@ def test_stream_start_date_should_be_converted_to_datetime_format(stream_config_
 def test_stream_start_datetime_format_should_not_changed(stream_config, stream_api):
     stream: IncrementalRestSalesforceStream = generate_stream("ActiveFeatureLicenseMetric", stream_config, stream_api)
     assert stream.start_date == "2010-01-18T21:18:20Z"
-
-
-@pytest.mark.parametrize(
-    "chunk_size, content_type_header, content, expected_result",
-    encoding_symbols_parameters(),
-    ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
-)
-def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type_header, content, expected_result):
-    job_full_url_results: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA/results"
-    stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
-
-    with requests_mock.Mocker() as m:
-        m.register_uri("GET", job_full_url_results, headers=content_type_header, content=content)
-        tmp_file, response_encoding, _ = stream.download_data(url=job_full_url_results)
-        res = list(stream.read_with_chunks(tmp_file, response_encoding))
-        assert res == expected_result
 
 
 @pytest.mark.parametrize(
@@ -634,37 +616,3 @@ def test_request_params_substream(stream_config_date_format, stream_api):
     params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
-
-
-@freezegun.freeze_time("2023-03-20")
-def test_stream_slices_for_substream(stream_config, stream_api, requests_mock):
-    """Test BulkSalesforceSubStream for ContentDocumentLink (+ parent ContentDocument)
-    ContentDocument return 1 record for each slice request.
-    Given start/end date leads to 3 date slice for ContentDocument, thus 3 total records
-    ContentDocumentLink
-    It means that ContentDocumentLink should have 2 slices, with 2 and 1 records in each
-    """
-    stream_config["start_date"] = "2023-01-01"
-    stream: BulkSalesforceSubStream = generate_stream("ContentDocumentLink", stream_config, stream_api)
-    stream.SLICE_BATCH_SIZE = 2  # each ContentDocumentLink should contain 2 records from parent ContentDocument stream
-
-    job_id = "fake_job"
-    requests_mock.register_uri("POST", _bulk_stream_path(), json={"id": job_id})
-    requests_mock.register_uri("GET", _bulk_stream_path() + f"/{job_id}", json=JobInfoResponseBuilder().with_id(job_id).with_state("JobComplete").get_response())
-    requests_mock.register_uri(
-        "GET",
-        _bulk_stream_path() + f"/{job_id}/results",
-        [{"text": "Field1,LastModifiedDate,ID\ntest,2021-11-16,123", "headers": {"Sforce-Locator": "null"}}],
-    )
-    requests_mock.register_uri("DELETE", _bulk_stream_path() + f"/{job_id}")
-
-    stream_slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh))
-    assert stream_slices == [
-        {
-            "parents": [
-                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
-                {"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"},
-            ]
-        },
-        {"parents": [{"Field1": "test", "ID": "123", "LastModifiedDate": "2021-11-16"}]},
-    ]

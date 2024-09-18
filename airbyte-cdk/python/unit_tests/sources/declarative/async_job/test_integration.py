@@ -17,6 +17,7 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
 from airbyte_cdk.sources.declarative.retrievers.async_retriever import AsyncRetriever
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
+from airbyte_cdk.sources.message import NoopMessageRepository
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
@@ -38,11 +39,18 @@ class MockAsyncJobRepository(AsyncJobRepository):
     def fetch_records(self, job: AsyncJob) -> Iterable[Mapping[str, Any]]:
         yield from [{"record_field": 10}]
 
+    def abort(self, job: AsyncJob) -> None:
+        pass
+
+    def delete(self, job: AsyncJob) -> None:
+        pass
+
 
 class MockSource(AbstractSource):
 
     def __init__(self, stream_slicer: Optional[StreamSlicer] = None) -> None:
         self._stream_slicer = SinglePartitionRouter({}) if stream_slicer is None else stream_slicer
+        self._message_repository = NoopMessageRepository()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         return True, None
@@ -67,7 +75,7 @@ class MockSource(AbstractSource):
                     record_selector=noop_record_selector,
                     stream_slicer=self._stream_slicer,
                     job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                        MockAsyncJobRepository(), stream_slices, JobTracker(_NO_LIMIT),
+                        MockAsyncJobRepository(), stream_slices, JobTracker(_NO_LIMIT), self._message_repository,
                     ),
                 ),
                 config={},
