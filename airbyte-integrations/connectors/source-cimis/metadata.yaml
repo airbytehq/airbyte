@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "et.water.ca.gov"
   registryOverrides:
     oss:
       enabled: true
