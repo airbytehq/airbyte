@@ -17,6 +17,8 @@ from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.call_rate import AbstractAPIBudget, HttpAPIBudget, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -535,27 +537,54 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
-        converter = EpochValueConcurrentStreamStateConverter()
-        start = datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc)
-        slice_range = timedelta(days=config["slice_range"])
-
+        state_manager = ConnectorStateManager(state=self._state)
         return [
-            self.convert_to_concurrent_stream(
-                logger,
+            self._to_concurrent(
                 stream,
-                cursor=self.initialize_cursor(
-                    stream,
-                    state_manager,
-                    converter,
-                    self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream)),
-                    start,
-                    converter.get_end_provider(),
-                    slice_range=slice_range,
-                ),
+                datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc),
+                timedelta(days=config["slice_range"]),
+                state_manager,
             )
             for stream in streams
         ]
+
+    def _to_concurrent(
+        self, stream: Stream, fallback_start: datetime, slice_range: timedelta, state_manager: ConnectorStateManager
+    ) -> Stream:
+        if stream.name in self._streams_configured_as_full_refresh:
+            return StreamFacade.create_from_stream(
+                stream,
+                self,
+                entrypoint_logger,
+                self._create_empty_state(),
+                FinalStateCursor(stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository),
+            )
+
+        state = state_manager.get_stream_state(stream.name, stream.namespace)
+        slice_boundary_fields = self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))
+        if slice_boundary_fields:
+            cursor_field = CursorField(stream.cursor_field) if isinstance(stream.cursor_field, str) else CursorField(stream.cursor_field[0])
+            converter = EpochValueConcurrentStreamStateConverter()
+            cursor = ConcurrentCursor(
+                stream.name,
+                stream.namespace,
+                state_manager.get_stream_state(stream.name, stream.namespace),
+                self.message_repository,
+                state_manager,
+                converter,
+                cursor_field,
+                slice_boundary_fields,
+                fallback_start,
+                converter.get_end_provider(),
+                timedelta(seconds=0),
+                slice_range,
+            )
+            return StreamFacade.create_from_stream(stream, self, entrypoint_logger, state, cursor)
+
+        return stream
+
+    def _create_empty_state(self) -> MutableMapping[str, Any]:
+        return {}
 
     @staticmethod
     def _start_date_to_timestamp(config: Mapping[str, Any]) -> int:
