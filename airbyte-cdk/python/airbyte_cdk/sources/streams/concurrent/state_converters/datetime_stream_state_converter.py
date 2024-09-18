@@ -142,8 +142,12 @@ class IsoMillisConcurrentStreamStateConverter(DateTimeStreamStateConverter):
 
     _zero_value = "0001-01-01T00:00:00.000Z"
 
+    def __init__(self, is_sequential_state: bool = True, cursor_granularity: Optional[timedelta] = None):
+        super().__init__(is_sequential_state=is_sequential_state)
+        self._cursor_granularity = cursor_granularity or timedelta(milliseconds=1)
+
     def increment(self, timestamp: datetime) -> datetime:
-        return timestamp + timedelta(milliseconds=1)
+        return timestamp + self._cursor_granularity
 
     def output_format(self, timestamp: datetime) -> Any:
         return timestamp.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
