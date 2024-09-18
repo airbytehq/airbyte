@@ -20,7 +20,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import (
     AbstractFileBasedAvailabilityStrategy,
     AbstractFileBasedAvailabilityStrategyWrapper,
 )
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, PrimaryKeyType, ResolvedBulkMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -229,7 +229,7 @@ class FileBasedStreamPartition(Partition):
         self._is_closed = False
 
     def read(self) -> Iterable[Record]:
-        if self._stream.config.bulk_mode != BulkMode.DISABLED:
+        if self._stream.config.bulk_mode.resolve() != BulkMode.DISABLED:
             for df in self._stream.read_records_as_dataframes(
                 sync_mode=self._sync_mode,
                 cursor_field=self._cursor_field,
