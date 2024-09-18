@@ -3,16 +3,8 @@
 Usage:
     cd perf_tests
     poetry install
-    poetry run ./run_perf_tests.py
+    poetry run python ./run_perf_tests.py
 
-Inline dependency metadata for `uv`:
-
-# /// script
-# requires-python = "==3.10"
-# dependencies = [
-#     "airbyte",  # PyAirbyte
-# ]
-# ///
 
 """
 
@@ -40,8 +32,11 @@ LOCAL_TARGET_DIR = SCRIPT_DIR / Path(".test-data/perf-profile-dataset")
 SECRETS_FILE_NAME = SCRIPT_DIR / Path("../secrets/bulk_jsonl_perf_test_config.json")
 
 WARMUP_ITERATIONS = 0
-MEASURED_ITERATIONS = 1
+MEASURED_ITERATIONS = 2
 NUM_FILES = 1
+
+
+SKIP_OLD_VERSION = False
 
 def main() -> None:
     config_dict = json.loads(Path(SECRETS_FILE_NAME).read_text())
@@ -49,27 +44,27 @@ def main() -> None:
     # Truncate to the specific number of files to test
     config_dict["streams"][0]["globs"] = config_dict["streams"][0]["globs"][:NUM_FILES]
 
-    old_source = ab.get_source(
-        "source-s3",
-        pip_url="airbyte-source-s3",
-        config=config_dict,
-        install_root=CONNECTOR_DIR / ".venv-prev-version",
-        streams="*",
-    )
-    Path(CONNECTOR_DIR / ".venv-latest-version").mkdir(parents=True, exist_ok=True)
+    if not SKIP_OLD_VERSION:
+        old_source = ab.get_source(
+            "source-s3",
+            docker_image="airbyte/source-s3",
+            config=config_dict,
+            streams="*",
+        )
+
     new_source = ab.get_source(
         "source-s3",
         pip_url=f"-e {CONNECTOR_DIR.absolute()!s}",
         config=config_dict,
-        # local_executable="source-s3",
-        install_root=CONNECTOR_DIR / ".venv-latest-version",
+        install_root=CONNECTOR_DIR / ".venv-latest-version-3",
         streams="*",
     )
 
-    for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
-        print(f"======Starting prev-version test iteration #{i}======")
-        old_source.read(force_full_refresh=True)
-        print(f"======Finished prev-version test iteration #{i}======")
+    if not SKIP_OLD_VERSION:
+        for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
+            print(f"======Starting prev-version test iteration #{i}======")
+            old_source.read(force_full_refresh=True)
+            print(f"======Finished prev-version test iteration #{i}======")
 
     for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
         print(f"======Starting local-version test iteration #{i}======")
