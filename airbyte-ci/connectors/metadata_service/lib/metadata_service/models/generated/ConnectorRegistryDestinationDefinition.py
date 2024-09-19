@@ -100,8 +100,8 @@ class AirbyteInternal(BaseModel):
     class Config:
         extra = Extra.allow
 
-    sl: Optional[Literal[100, 200, 300]] = None
-    ql: Optional[Literal[100, 200, 300, 400, 500, 600]] = None
+    sl: Optional[Literal[0, 100, 200, 300]] = None
+    ql: Optional[Literal[0, 100, 200, 300, 400, 500, 600]] = None
 
 
 class GitInfo(BaseModel):
@@ -241,6 +241,7 @@ class ConnectorRegistryReleases(BaseModel):
     class Config:
         extra = Extra.forbid
 
+    isReleaseCandidate: Optional[bool] = Field(None, description="Whether the current version is a release candidate.")
     releaseCandidates: Optional[ConnectorReleaseCandidates] = None
     rolloutConfiguration: Optional[RolloutConfiguration] = None
     breakingChanges: Optional[ConnectorBreakingChanges] = None

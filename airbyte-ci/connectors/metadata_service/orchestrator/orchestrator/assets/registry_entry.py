@@ -94,8 +94,8 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
 def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
     documentation_url = metadata.get("documentationUrl")
     final_registry_releases = {}
-
-    if metadata.get("releases", {}).get("breakingChanges"):
+    releases = metadata.get("releases")
+    if releases is not None and releases.get("breakingChanges"):
         # apply defaults for connector releases
         final_registry_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(
             metadata["releases"], documentation_url
@@ -111,8 +111,9 @@ def apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
                 )
             final_registry_releases["breakingChanges"] = breaking_changes
 
-    if metadata.get("releases", {}).get("rolloutConfiguration"):
+    if releases is not None and releases.get("rolloutConfiguration"):
         final_registry_releases["rolloutConfiguration"] = metadata["releases"]["rolloutConfiguration"]
+    final_registry_releases["isReleaseCandidate"] = False if releases is None else metadata["releases"].get("isReleaseCandidate", False)
     return final_registry_releases
 
 

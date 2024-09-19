@@ -21,9 +21,13 @@ import io.airbyte.workers.exception.TestHarnessException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.sql.SQLException
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import javax.sql.DataSource
-import kotlin.concurrent.Volatile
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Disabled
@@ -56,7 +60,7 @@ abstract class AbstractSnowflakeTypingDedupingTest(
         dataSource =
             SnowflakeDatabaseUtils.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS)
         database = SnowflakeDatabaseUtils.getDatabase(dataSource)
-        cleanAirbyteInternalTable(databaseName, database, forceUppercaseIdentifiers)
+        cleanAirbyteInternalTable(database)
         return config
     }
 
@@ -419,48 +423,101 @@ abstract class AbstractSnowflakeTypingDedupingTest(
                 "_AIRBYTE_GENERATION_ID",
             )
 
-        @Volatile private var cleanedAirbyteInternalTable = false
+        private val cleanedAirbyteInternalTable = AtomicBoolean(false)
+        private val threadId = AtomicInteger(0)
 
         @Throws(SQLException::class)
-        private fun cleanAirbyteInternalTable(
-            databaseName: String,
-            database: JdbcDatabase?,
-            forceUppercase: Boolean,
-        ) {
-            if (!cleanedAirbyteInternalTable) {
-                synchronized(AbstractSnowflakeTypingDedupingTest::class.java) {
-                    if (!cleanedAirbyteInternalTable) {
-                        val destinationStateTableExists =
-                            database!!.executeMetadataQuery {
-                                it.getTables(
-                                        databaseName,
-                                        if (forceUppercase) {
-                                            "AIRBYTE_INTERNAL"
-                                        } else {
-                                            "airbyte_internal"
-                                        },
-                                        if (forceUppercase) {
-                                            "_AIRBYTE_DESTINATION_STATE"
-                                        } else {
-                                            "_airbyte_destination_state"
-                                        },
-                                        null
-                                    )
-                                    .next()
-                            }
-                        if (destinationStateTableExists) {
-                            database.execute(
-                                """DELETE FROM "airbyte_internal"."_airbyte_destination_state" WHERE "updated_at" < current_date() - 7""",
+        private fun cleanAirbyteInternalTable(database: JdbcDatabase?) {
+            if (
+                database!!
+                    .queryJsons("SHOW PARAMETERS LIKE 'QUOTED_IDENTIFIERS_IGNORE_CASE';")
+                    .first()
+                    .get("value")
+                    .asText()
+                    .toBoolean()
+            ) {
+                return
+            }
+
+            if (!cleanedAirbyteInternalTable.getAndSet(true)) {
+                val cleanupCutoffHours = 6
+                LOGGER.info { "tableCleaner running" }
+                val executor =
+                    Executors.newSingleThreadExecutor {
+                        val thread = Executors.defaultThreadFactory().newThread(it)
+                        thread.name =
+                            "airbyteInternalTableCleanupThread-${threadId.incrementAndGet()}"
+                        thread.isDaemon = true
+                        thread
+                    }
+                executor.execute {
+                    database.execute(
+                        "DELETE FROM \"airbyte_internal\".\"_airbyte_destination_state\" WHERE \"updated_at\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())",
+                    )
+                }
+                executor.execute {
+                    database.execute(
+                        "DELETE FROM \"AIRBYTE_INTERNAL\".\"_AIRBYTE_DESTINATION_STATE\" WHERE \"UPDATED_AT\" < timestampadd('hours', -$cleanupCutoffHours, current_timestamp())",
+                    )
+                }
+                executor.execute {
+                    val schemaList =
+                        database.queryJsons(
+                            "SHOW SCHEMAS IN DATABASE INTEGRATION_TEST_DESTINATION;",
+                        )
+                    LOGGER.info(
+                        "tableCleaner found ${schemaList.size} schemas in database INTEGRATION_TEST_DESTINATION"
+                    )
+                    schemaList
+                        .associate {
+                            it.get("name").asText() to Instant.parse(it.get("created_on").asText())
+                        }
+                        .filter {
+                            it.value.isBefore(
+                                Instant.now().minus(cleanupCutoffHours.toLong(), ChronoUnit.HOURS)
                             )
                         }
-                        cleanedAirbyteInternalTable = true
+                        .filter {
+                            it.key.startsWith("SQL_GENERATOR", ignoreCase = true) ||
+                                it.key.startsWith("TDTEST", ignoreCase = true) ||
+                                it.key.startsWith("TYPING_DEDUPING", ignoreCase = true)
+                        }
+                        .forEach {
+                            executor.execute {
+                                database.execute(
+                                    "DROP SCHEMA INTEGRATION_TEST_DESTINATION.\"${it.key}\" /* created at ${it.value} */;"
+                                )
+                            }
+                        }
+                }
+                for (schemaName in
+                    listOf("AIRBYTE_INTERNAL", "airbyte_internal", "overridden_raw_dataset")) {
+                    executor.execute {
+                        val sql =
+                            "SHOW TABLES IN schema INTEGRATION_TEST_DESTINATION.\"$schemaName\";"
+                        val tableList = database.queryJsons(sql)
+                        LOGGER.info {
+                            "tableCleaner found ${tableList.size} tables in schema $schemaName"
+                        }
+                        tableList
+                            .associate {
+                                it.get("name").asText() to
+                                    Instant.parse(it.get("created_on").asText())
+                            }
+                            .filter {
+                                it.value.isBefore(Instant.now().minus(6, ChronoUnit.HOURS)) &&
+                                    it.key.startsWith("TDTEST", ignoreCase = true)
+                            }
+                            .forEach {
+                                executor.execute {
+                                    database.execute(
+                                        "DROP TABLE INTEGRATION_TEST_DESTINATION.\"$schemaName\".\"${it.key}\" /* created at ${it.value} */;"
+                                    )
+                                }
+                            }
                     }
                 }
             }
         }
     }
 }
-
-open class Batch(val name: String)
-
-class LocalFileBatch(name: String) : Batch(name)

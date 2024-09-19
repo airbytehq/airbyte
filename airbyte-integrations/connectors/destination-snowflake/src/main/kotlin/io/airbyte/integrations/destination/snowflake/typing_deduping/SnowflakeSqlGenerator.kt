@@ -86,7 +86,10 @@ class SnowflakeSqlGenerator(
     }
 
     override fun createSchema(schema: String): Sql {
-        return of("""CREATE SCHEMA IF NOT EXISTS "$schema";""")
+        return of(
+            """CREATE SCHEMA IF NOT EXISTS "$schema"
+            |DEFAULT_DDL_COLLATION='utf8';""".trimMargin()
+        )
     }
 
     override fun createTable(stream: StreamConfig, suffix: String, force: Boolean): Sql {
@@ -99,7 +102,7 @@ class SnowflakeSqlGenerator(
         val createTableSql =
             """
             |CREATE $forceCreateTable TABLE ${stream.id.quotedFinalTableId(suffix)} (
-            |  "_AIRBYTE_RAW_ID" TEXT NOT NULL,
+            |  "_AIRBYTE_RAW_ID" TEXT NOT NULL COLLATE 'utf8',
             |  "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
             |  "_AIRBYTE_META" VARIANT NOT NULL,
             |  "_AIRBYTE_GENERATION_ID" INTEGER
