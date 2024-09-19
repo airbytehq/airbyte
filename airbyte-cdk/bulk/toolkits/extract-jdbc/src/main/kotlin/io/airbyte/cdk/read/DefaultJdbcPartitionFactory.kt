@@ -49,7 +49,7 @@ class DefaultJdbcPartitionFactory(
         val pkMap: Map<Field, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
-                    handler.accept(ResetStream(stream.name, stream.namespace))
+                    handler.accept(ResetStream(stream.id))
                     streamState.reset()
                     return coldStart(streamState)
                 }
@@ -59,7 +59,7 @@ class DefaultJdbcPartitionFactory(
             } else {
                 sv.cursorPair(stream)
                     ?: run {
-                        handler.accept(ResetStream(stream.name, stream.namespace))
+                        handler.accept(ResetStream(stream.id))
                         streamState.reset()
                         return coldStart(streamState)
                     }
@@ -70,7 +70,7 @@ class DefaultJdbcPartitionFactory(
 
         return if (cursorPair == null) {
             if (isCursorBasedIncremental) {
-                handler.accept(ResetStream(stream.name, stream.namespace))
+                handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState)
             } else if (pkMap.isEmpty()) {
@@ -89,7 +89,7 @@ class DefaultJdbcPartitionFactory(
         } else {
             val (cursor: Field, cursorCheckpoint: JsonNode) = cursorPair
             if (!isCursorBasedIncremental) {
-                handler.accept(ResetStream(stream.name, stream.namespace))
+                handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState)
             } else if (pkMap.isNotEmpty()) {
@@ -127,7 +127,7 @@ class DefaultJdbcPartitionFactory(
         val fields: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != fields.map { it.id }.toSet()) {
             handler.accept(
-                InvalidPrimaryKey(stream.name, stream.namespace, primaryKey.keys.toList()),
+                InvalidPrimaryKey(stream.id, primaryKey.keys.toList()),
             )
             return null
         }
@@ -137,7 +137,7 @@ class DefaultJdbcPartitionFactory(
     private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
-                InvalidCursor(stream.name, stream.namespace, cursors.keys.toString()),
+                InvalidCursor(stream.id, cursors.keys.toString()),
             )
             return null
         }
@@ -145,13 +145,13 @@ class DefaultJdbcPartitionFactory(
         val cursor: FieldOrMetaField? = stream.fields.find { it.id == cursorLabel }
         if (cursor !is Field) {
             handler.accept(
-                InvalidCursor(stream.name, stream.namespace, cursorLabel),
+                InvalidCursor(stream.id, cursorLabel),
             )
             return null
         }
         if (stream.configuredCursor != cursor) {
             handler.accept(
-                InvalidCursor(stream.name, stream.namespace, cursorLabel),
+                InvalidCursor(stream.id, cursorLabel),
             )
             return null
         }

@@ -1,7 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import io.airbyte.cdk.StreamNamePair
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
 
@@ -29,16 +29,18 @@ data class Global(
  * Roughly equivalent to a [io.airbyte.protocol.models.v0.ConfiguredAirbyteStream].
  */
 data class Stream(
-    val name: String,
-    val namespace: String?,
+    val id: StreamIdentifier,
     val fields: List<Field>,
     val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<Field>?,
     val configuredCursor: FieldOrMetaField?,
 ) : Feed {
-    val namePair: StreamNamePair
-        get() = StreamNamePair(name, namespace)
+    val name: String
+        get() = id.name
+
+    val namespace: String?
+        get() = id.namespace
 
     override val label: String
-        get() = namePair.toString()
+        get() = id.toString()
 }

@@ -2,6 +2,7 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.InputState
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.output.BufferingCatalogValidationFailureHandler
@@ -11,6 +12,7 @@ import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -58,7 +60,7 @@ class StateManagerStreamStatesTest {
     fun testBadStreamName() {
         // test current state
         Assertions.assertEquals(listOf<Feed>(), stateManager.feeds)
-        Assertions.assertEquals(listOf(StreamNotFound("BLAH", "PUBLIC")), handler.get())
+        Assertions.assertEquals(listOf(StreamNotFound(streamID("BLAH"))), handler.get())
     }
 
     @Test
@@ -82,7 +84,10 @@ class StateManagerStreamStatesTest {
     fun testBadSchema() {
         // test current state
         Assertions.assertEquals(listOf<Feed>(), stateManager.feeds)
-        Assertions.assertEquals(listOf(StreamHasNoFields("EVENTS", "PUBLIC")), handler.get())
+        Assertions.assertEquals(
+            listOf(StreamHasNoFields(streamID("EVENTS"))),
+            handler.get(),
+        )
     }
 
     @Test
@@ -192,6 +197,9 @@ class StateManagerStreamStatesTest {
         Assertions.assertEquals(expectedCursor, eventsStream.configuredCursor?.id)
         return eventsStream
     }
+
+    private fun streamID(name: String): StreamIdentifier =
+        StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace("PUBLIC"))
 
     companion object {
         const val STREAM =

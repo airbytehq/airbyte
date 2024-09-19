@@ -205,7 +205,7 @@ class StateManagerGlobalStatesTest {
         Assertions.assertEquals(listOf("V", "K"), kv.fields.map { it.id })
         Assertions.assertEquals(listOf("K"), kv.configuredPrimaryKey?.map { it.id })
         Assertions.assertEquals(ConfiguredSyncMode.INCREMENTAL, kv.configuredSyncMode)
-        val events: Stream = streams.filter { it.namePair != kv.namePair }.first()
+        val events: Stream = streams.filter { it.id != kv.id }.first()
         Assertions.assertEquals("EVENTS", events.name)
         Assertions.assertEquals(listOf("MSG", "ID", "TS"), events.fields.map { it.id })
         Assertions.assertEquals(listOf("ID"), events.configuredPrimaryKey?.map { it.id })

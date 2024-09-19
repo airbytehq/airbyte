@@ -7,6 +7,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
@@ -20,6 +21,7 @@ import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.time.Duration
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions
@@ -35,8 +37,7 @@ object TestFixtures {
         withCursor: Boolean = true,
     ) =
         Stream(
-            name = "events",
-            namespace = "test",
+            id = StreamIdentifier.from(StreamDescriptor().withNamespace("test").withName("events")),
             fields = listOf(id, ts, msg),
             configuredSyncMode =
                 if (withCursor) ConfiguredSyncMode.INCREMENTAL else ConfiguredSyncMode.FULL_REFRESH,

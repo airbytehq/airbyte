@@ -1,8 +1,9 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.command
 
-import io.airbyte.cdk.StreamNamePair
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -27,9 +28,9 @@ class InputStateTest {
         val expected =
             StreamInputState(
                 mapOf(
-                    StreamNamePair("bar", "foo") to
+                    streamID("foo", "bar") to
                         Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
-                    StreamNamePair("baz", "foo") to Jsons.readTree("{\"cursors\":{\"c\":30}}"),
+                    streamID("foo", "baz") to Jsons.readTree("{\"cursors\":{\"c\":30}}"),
                 ),
             )
         Assertions.assertEquals(
@@ -49,7 +50,7 @@ class InputStateTest {
                 global = Jsons.readTree("{\"cdc\":{}}"),
                 globalStreams =
                     mapOf(
-                        StreamNamePair("bar", "foo") to
+                        streamID("foo", "bar") to
                             Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
                     ),
                 nonGlobalStreams = mapOf(),
@@ -71,13 +72,12 @@ class InputStateTest {
                 global = Jsons.readTree("{\"cdc\":{}}"),
                 globalStreams =
                     mapOf(
-                        StreamNamePair("bar", "foo") to
+                        streamID("foo", "bar") to
                             Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
                     ),
                 nonGlobalStreams =
                     mapOf(
-                        StreamNamePair("baz", "foo") to
-                            Jsons.readTree("{\"primary_key\":{\"k\":1}}"),
+                        streamID("foo", "baz") to Jsons.readTree("{\"primary_key\":{\"k\":1}}"),
                     ),
             )
         Assertions.assertEquals(
@@ -94,13 +94,12 @@ class InputStateTest {
                 global = Jsons.readTree("{\"cdc\":{}}"),
                 globalStreams =
                     mapOf(
-                        StreamNamePair("bar", "foo") to
+                        streamID("foo", "bar") to
                             Jsons.readTree("{\"primary_key\":{\"k1\":10,\"k2\":20}}"),
                     ),
                 nonGlobalStreams =
                     mapOf(
-                        StreamNamePair("baz", "foo") to
-                            Jsons.readTree("{\"primary_key\":{\"k\":10}}"),
+                        streamID("foo", "baz") to Jsons.readTree("{\"primary_key\":{\"k\":10}}"),
                     ),
             )
         Assertions.assertEquals(
@@ -108,4 +107,7 @@ class InputStateTest {
             Jsons.writeValueAsString(actual),
         )
     }
+
+    fun streamID(namespace: String, name: String): StreamIdentifier =
+        StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace(namespace))
 }
