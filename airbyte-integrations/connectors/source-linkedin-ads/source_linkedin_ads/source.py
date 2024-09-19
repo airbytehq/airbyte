@@ -106,8 +106,12 @@ class SourceLinkedinAds(YamlDeclarativeSource):
             if stream_config["name"] == "ad_campaign_analytics":
                 for ad_report in config.get("ad_analytics_reports", []):
                     updated_config = deepcopy(stream_config)
-                    update_specific_key(updated_config, "pivot", f"(value:{ad_report.get('pivot_by')})", condition_func=lambda d: d.get("q"))
-                    update_specific_key(updated_config, "value", f"{ad_report.get('pivot_by')}", condition_func=lambda d: d.get("path") == ["pivot"])
+                    update_specific_key(
+                        updated_config, "pivot", f"(value:{ad_report.get('pivot_by')})", condition_func=lambda d: d.get("q")
+                    )
+                    update_specific_key(
+                        updated_config, "value", f"{ad_report.get('pivot_by')}", condition_func=lambda d: d.get("path") == ["pivot"]
+                    )
 
                     # TODO: to avoid breaking changes left as is, but need to update to more adaptive way to avoid words merging
                     update_specific_key(updated_config, "name", f"Custom{ad_report.get('name')}")

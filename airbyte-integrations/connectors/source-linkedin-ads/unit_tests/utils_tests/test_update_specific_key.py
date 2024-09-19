@@ -4,7 +4,6 @@
 
 
 import pytest
-
 from source_linkedin_ads.utils import update_specific_key
 
 

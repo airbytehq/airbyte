@@ -130,8 +130,9 @@ def update_specific_key(target_dict, target_key, target_value, condition_func=No
         elif isinstance(value, list):
             # Recursively update lists
             target_dict[key] = [
-                update_specific_key(item, target_key, target_value, condition_func, excluded_keys) if isinstance(item, dict) else item for
-                item in value]
+                update_specific_key(item, target_key, target_value, condition_func, excluded_keys) if isinstance(item, dict) else item
+                for item in value
+            ]
 
     return target_dict
 
