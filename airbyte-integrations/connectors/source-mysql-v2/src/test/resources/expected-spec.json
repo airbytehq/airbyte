@@ -44,6 +44,20 @@
             },
             "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
             "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "title": "Read Changes using Change Data Capture (CDC)",
+            "required": ["cursor_method"],
+            "properties": {
+              "cursor_method": {
+                "enum": ["cdc"],
+                "type": "string",
+                "default": "cdc"
+              }
+            },
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
+            "additionalProperties": true
           }
         ],
         "order": 10,
@@ -109,14 +123,8 @@
           },
           {
             "type": "object",
-            "title": "Verify CA",
-            "required": [
-              "encryption_method",
-              "ssl_certificate",
-              "ssl_client_certificate",
-              "ssl_client_key",
-              "ssl_client_key_password"
-            ],
+            "title": "verify_ca",
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -133,9 +141,9 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["Verify CA"],
+                "enum": ["verify_ca"],
                 "type": "string",
-                "default": "Verify CA"
+                "default": "verify_ca"
               },
               "ssl_client_certificate": {
                 "type": "string",
@@ -157,14 +165,8 @@
           },
           {
             "type": "object",
-            "title": "Verify CA",
-            "required": [
-              "encryption_method",
-              "ssl_certificate",
-              "ssl_client_certificate",
-              "ssl_client_key",
-              "ssl_client_key_password"
-            ],
+            "title": "verify_identity",
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -181,9 +183,9 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["Verify CA"],
+                "enum": ["verify_identity"],
                 "type": "string",
-                "default": "Verify CA"
+                "default": "verify_identity"
               },
               "ssl_client_certificate": {
                 "type": "string",

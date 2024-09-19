@@ -2,7 +2,7 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.data.AirbyteType
 import io.airbyte.cdk.data.LeafAirbyteType
@@ -30,7 +30,6 @@ import org.testcontainers.containers.MySQLContainer
 
 private val log = KotlinLogging.logger {}
 
-/** Reference: https://docs.mysql.com/en/database/mysql/mysql-database/23/sqlrf/Data-Types.html */
 class MysqlSourceDatatypeIntegrationTest {
     @TestFactory
     @Timeout(300)
@@ -58,7 +57,7 @@ class MysqlSourceDatatypeIntegrationTest {
 
     object LazyValues {
         val actualStreams: Map<String, AirbyteStream> by lazy {
-            val output: BufferingOutputConsumer = CliRunner.runSource("discover", config())
+            val output: BufferingOutputConsumer = CliRunner.source("discover", config()).run()
             output.catalogs().firstOrNull()?.streams?.filterNotNull()?.associateBy { it.name }
                 ?: mapOf()
         }
@@ -77,13 +76,13 @@ class MysqlSourceDatatypeIntegrationTest {
         }
 
         val allReadMessages: List<AirbyteMessage> by lazy {
-            CliRunner.runSource("read", config(), configuredCatalog).messages()
+            CliRunner.source("read", config(), configuredCatalog).run().messages()
         }
 
         val actualReads: Map<String, BufferingOutputConsumer> by lazy {
             val result: Map<String, BufferingOutputConsumer> =
                 allStreamNamesAndRecordData.keys.associateWith {
-                    BufferingOutputConsumer(TestClockFactory().fixed())
+                    BufferingOutputConsumer(ClockFactory().fixed())
                 }
             for (msg in allReadMessages) {
                 result[streamName(msg) ?: continue]?.accept(msg)
@@ -126,7 +125,7 @@ class MysqlSourceDatatypeIntegrationTest {
             actualStream!!.supportedSyncModes.contains(SyncMode.INCREMENTAL)
         val jsonSchema: JsonNode = actualStream.jsonSchema?.get("properties")!!
         if (streamName == testCase.tableName) {
-            val actualSchema: JsonNode? = jsonSchema[testCase.columnName]
+            val actualSchema: JsonNode = jsonSchema[testCase.columnName]
             Assertions.assertNotNull(actualSchema)
             val expectedSchema: JsonNode = testCase.airbyteType.asJsonSchema()
             Assertions.assertEquals(expectedSchema, actualSchema)

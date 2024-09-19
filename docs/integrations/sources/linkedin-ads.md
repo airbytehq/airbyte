@@ -191,8 +191,11 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 5.0.0   | 2024-09-09 | [45353](https://github.com/airbytehq/airbyte/pull/45353) | Fix PK for `Account Users` stream                                                                               |
-| 4.1.0   | 2024-09-09 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code                                                                                             |
+| 5.0.0   | 2024-09-25 | [45353](https://github.com/airbytehq/airbyte/pull/45353) | Fix PK for `Account Users` stream                                                                               |
+| 4.1.0   | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code                                                                                             |
+| 4.0.6   | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies                                                                                             |
+| 4.0.5   | 2024-09-07 | [45209](https://github.com/airbytehq/airbyte/pull/45209) | Update dependencies                                                                                             |
+| 4.0.4   | 2024-08-31 | [44950](https://github.com/airbytehq/airbyte/pull/44950) | Update dependencies                                                                                             |
 | 4.0.3   | 2024-08-24 | [44682](https://github.com/airbytehq/airbyte/pull/44682) | Update dependencies                                                                                             |
 | 4.0.2   | 2024-08-17 | [44220](https://github.com/airbytehq/airbyte/pull/44220) | Update dependencies                                                                                             |
 | 4.0.1   | 2024-08-10 | [43629](https://github.com/airbytehq/airbyte/pull/43629) | Update dependencies                                                                                             |
