@@ -1,0 +1,30 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+from datetime import datetime
+from unittest.mock import Mock
+
+from source_gcs.helpers import GCSRemoteFile
+from source_gcs.stream import GCSStream
+
+
+def test_transform_record(zip_file, mocked_reader, logger):
+    stream = GCSStream(
+        config=Mock(), catalog_schema=Mock(), stream_reader=Mock(), availability_strategy=Mock(), discovery_policy=Mock(),parsers=Mock(),
+        validation_policy=Mock(), errors_collector=Mock(), cursor=Mock()
+    )
+
+    unzipped_file = mocked_reader.unzip_files(zip_file, logger)
+    transformed_record = stream.transform_record({"field1": 1}, unzipped_file)
+
+    assert transformed_record["_ab_source_file_url"] == unzipped_file.displayed_uri
+    assert transformed_record["_ab_source_file_url"] != unzipped_file.uri
+
+    csv_file = GCSRemoteFile(
+        uri="https://storage.googleapis.com/test/test",
+        last_modified=datetime.today(),
+        mime_type = "csv"
+    )
+    transformed_record = stream.transform_record({"field1": 1}, csv_file)
+
+    assert transformed_record["_ab_source_file_url"] == csv_file.uri
+    assert transformed_record["_ab_source_file_url"] != csv_file.displayed_uri
