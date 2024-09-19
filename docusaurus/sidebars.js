@@ -451,6 +451,10 @@ const deployAirbyte = {
       label: "Creating a Secret",
       id: "deploying-airbyte/creating-secrets",
     },
+    {
+      type: "doc",
+      id: "deploying-airbyte/troubleshoot-deploy",
+    },
   ],
 };
 
