@@ -1,11 +1,12 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.StreamNamePair
+import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 
 /** A [StateQuerier] is like a read-only [StateManager]. */
@@ -24,7 +25,7 @@ class StateManager(
     initialStreamStates: Map<Stream, OpaqueStateValue?> = mapOf(),
 ) : StateQuerier {
     private val global: GlobalStateManager?
-    private val nonGlobal: Map<AirbyteStreamNameNamespacePair, NonGlobalStreamStateManager>
+    private val nonGlobal: Map<StreamNamePair, NonGlobalStreamStateManager>
 
     init {
         if (global == null) {
@@ -141,7 +142,7 @@ class StateManager(
         initialGlobalState: OpaqueStateValue?,
         initialStreamStates: Map<Stream, OpaqueStateValue?>,
     ) : BaseStateManager<Global>(global, initialGlobalState) {
-        val streamStateManagers: Map<AirbyteStreamNameNamespacePair, GlobalStreamStateManager> =
+        val streamStateManagers: Map<StreamNamePair, GlobalStreamStateManager> =
             initialStreamStates
                 .mapValues { GlobalStreamStateManager(it.key, it.value) }
                 .mapKeys { it.key.namePair }
@@ -165,9 +166,10 @@ class StateManager(
                     streamStateValue = globalStreamSwapped.first
                     totalNumRecords += globalStreamSwapped.second
                 }
+                val namePair: StreamNamePair = streamStateManager.feed.namePair
                 streamStates.add(
                     AirbyteStreamState()
-                        .withStreamDescriptor(streamStateManager.feed.streamDescriptor)
+                        .withStreamDescriptor(namePair.asProtocolStreamDescriptor())
                         .withStreamState(streamStateValue),
                 )
             }
@@ -195,7 +197,7 @@ class StateManager(
             val (opaqueStateValue: OpaqueStateValue?, numRecords: Long) = swap() ?: return null
             val airbyteStreamState =
                 AirbyteStreamState()
-                    .withStreamDescriptor(feed.streamDescriptor)
+                    .withStreamDescriptor(feed.namePair.asProtocolStreamDescriptor())
                     .withStreamState(opaqueStateValue)
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)

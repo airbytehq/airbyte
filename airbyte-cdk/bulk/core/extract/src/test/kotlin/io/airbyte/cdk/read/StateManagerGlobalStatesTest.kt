@@ -9,7 +9,6 @@ import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -205,12 +204,12 @@ class StateManagerGlobalStatesTest {
         Assertions.assertEquals("KV", kv.name)
         Assertions.assertEquals(listOf("V", "K"), kv.fields.map { it.id })
         Assertions.assertEquals(listOf("K"), kv.configuredPrimaryKey?.map { it.id })
-        Assertions.assertEquals(SyncMode.INCREMENTAL, kv.configuredSyncMode)
+        Assertions.assertEquals(ConfiguredSyncMode.INCREMENTAL, kv.configuredSyncMode)
         val events: Stream = streams.filter { it.namePair != kv.namePair }.first()
         Assertions.assertEquals("EVENTS", events.name)
         Assertions.assertEquals(listOf("MSG", "ID", "TS"), events.fields.map { it.id })
         Assertions.assertEquals(listOf("ID"), events.configuredPrimaryKey?.map { it.id })
-        Assertions.assertEquals(SyncMode.FULL_REFRESH, events.configuredSyncMode)
+        Assertions.assertEquals(ConfiguredSyncMode.FULL_REFRESH, events.configuredSyncMode)
         return Streams(global, kv, events)
     }
 

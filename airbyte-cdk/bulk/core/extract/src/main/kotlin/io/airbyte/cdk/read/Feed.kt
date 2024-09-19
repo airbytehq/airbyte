@@ -1,11 +1,9 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.StreamNamePair
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.FieldOrMetaField
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
-import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.airbyte.protocol.models.v0.SyncMode
 
 /**
  * [Feed] identifies part of the data consumed during a READ operation.
@@ -34,15 +32,12 @@ data class Stream(
     val name: String,
     val namespace: String?,
     val fields: List<Field>,
-    val configuredSyncMode: SyncMode,
+    val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<Field>?,
     val configuredCursor: FieldOrMetaField?,
 ) : Feed {
-    val namePair: AirbyteStreamNameNamespacePair
-        get() = AirbyteStreamNameNamespacePair(name, namespace)
-
-    val streamDescriptor: StreamDescriptor
-        get() = StreamDescriptor().withName(name).withNamespace(namespace)
+    val namePair: StreamNamePair
+        get() = StreamNamePair(name, namespace)
 
     override val label: String
         get() = namePair.toString()

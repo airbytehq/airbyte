@@ -11,7 +11,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.RuntimeException
 import java.time.Duration
@@ -210,7 +209,7 @@ data class TestCase(
             name = name,
             namespace = "test",
             fields = listOf(),
-            configuredSyncMode = SyncMode.FULL_REFRESH,
+            configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,
         )

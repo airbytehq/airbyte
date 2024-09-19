@@ -11,7 +11,6 @@ import io.airbyte.cdk.output.StreamNotFound
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -101,7 +100,7 @@ class StateManagerStreamStatesTest {
     @Property(name = "airbyte.connector.state.json", value = "[]")
     fun testFullRefreshColdStart() {
         // test current state
-        val stream: Stream = prelude(SyncMode.FULL_REFRESH, listOf("ID"))
+        val stream: Stream = prelude(ConfiguredSyncMode.FULL_REFRESH, listOf("ID"))
         Assertions.assertNull(stateManager.scoped(stream).current())
         Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
         // update state manager with fake work result
@@ -148,7 +147,7 @@ class StateManagerStreamStatesTest {
     )
     fun testFullRefreshWarmStart() {
         // test current state
-        val stream: Stream = prelude(SyncMode.FULL_REFRESH, listOf("ID"))
+        val stream: Stream = prelude(ConfiguredSyncMode.FULL_REFRESH, listOf("ID"))
         Assertions.assertEquals(
             Jsons.readTree("{\"cursor_incremental\": \"initial_sync_ongoing\"}"),
             stateManager.scoped(stream).current(),
@@ -176,7 +175,7 @@ class StateManagerStreamStatesTest {
     }
 
     private fun prelude(
-        expectedSyncMode: SyncMode,
+        expectedSyncMode: ConfiguredSyncMode,
         expectedPrimaryKey: List<String>? = null,
         expectedCursor: String? = null,
     ): Stream {

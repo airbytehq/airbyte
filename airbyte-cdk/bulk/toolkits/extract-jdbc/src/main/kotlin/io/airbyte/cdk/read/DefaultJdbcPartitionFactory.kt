@@ -15,7 +15,6 @@ import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.SyncMode
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -67,7 +66,7 @@ class DefaultJdbcPartitionFactory(
             }
 
         val isCursorBasedIncremental: Boolean =
-            stream.configuredSyncMode == SyncMode.INCREMENTAL && !configuration.global
+            stream.configuredSyncMode == ConfiguredSyncMode.INCREMENTAL && !configuration.global
 
         return if (cursorPair == null) {
             if (isCursorBasedIncremental) {
@@ -162,7 +161,7 @@ class DefaultJdbcPartitionFactory(
     private fun coldStart(streamState: DefaultJdbcStreamState): DefaultJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
-        if (stream.configuredSyncMode == SyncMode.FULL_REFRESH || configuration.global) {
+        if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || configuration.global) {
             if (pkChosenFromCatalog.isEmpty()) {
                 return DefaultJdbcUnsplittableSnapshotPartition(
                     selectQueryGenerator,
