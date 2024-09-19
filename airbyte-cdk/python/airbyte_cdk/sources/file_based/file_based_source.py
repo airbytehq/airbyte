@@ -122,8 +122,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 f"resolve this issue.",
             )
 
-        skippable_errors = []
-        fatal_errors = []
+        errors = False
         available_streams = 0
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
@@ -134,10 +133,12 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     reason,
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
             except AirbyteTracedException as ate:
-                fatal_errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
+                logger.error(f"Unable to connect to stream {stream.name} - {ate.message}")
+                errors = True
                 continue
             except Exception:
-                fatal_errors.append(f"Unable to connect to stream {stream.name}")
+                logger.error(f"Unable to connect to stream {stream.name}")
+                errors = True
                 continue
             else:
                 if not stream_is_available:
@@ -147,15 +148,15 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                             message=f"An error occured while attempting to check connection to stream {stream}. Check the logs for more information.",
                             failure_type=FailureType.system_error
                         )
-                    skippable_errors.append(f"Unable to connect to stream {stream.name}: {reason}")
+                    logger.error(f"Unable to connect to stream {stream.name}: {reason}")
                 else:
                     available_streams += 1
 
-        if fatal_errors:
-            return False, f"An error occurred while attempting to connect to the configured stream(s): {fatal_errors}"
+        if errors:
+            return False, "An error occurred while attempting to connect to the configured stream(s). Please check the logs for more information."
 
-        if self._check_all_streams and len(streams) != available_streams:
-            return False, f"Unable to connect to any of the configured streams: {skippable_errors if skippable_errors else None}. Please check the logs for more information."
+        if not available_streams or (self._check_all_streams and len(streams) != available_streams):
+            return False, "Unable to connect to any of the configured streams. Please check the logs for more information."
 
         return available_streams > 0, None
 
