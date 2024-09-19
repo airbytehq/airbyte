@@ -660,7 +660,6 @@ class ModelToComponentFactory:
                 "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
 
-
         if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
             cursor_model = model.incremental_sync
 
