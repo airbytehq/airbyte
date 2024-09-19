@@ -18,12 +18,7 @@ data class StreamNamePair(val name: String, val namespace: String?) {
     }
 }
 
-fun StreamNamePair.asProtocolNameNamespacePair(): AirbyteStreamNameNamespacePair =
-    AirbyteStreamNameNamespacePair(name, namespace)
-
 fun StreamNamePair.asProtocolStreamDescriptor(): StreamDescriptor =
     StreamDescriptor().withName(name).withNamespace(namespace)
 
-fun AirbyteStreamNameNamespacePair.asStreamName(): StreamNamePair = StreamNamePair(name, namespace)
-
-fun StreamDescriptor.asStreamName(): StreamNamePair = StreamNamePair(name, namespace)
+fun StreamDescriptor.asStreamNamePair(): StreamNamePair = StreamNamePair(name, namespace)

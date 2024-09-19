@@ -4,13 +4,12 @@ package io.airbyte.cdk.command
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamNamePair
-import io.airbyte.cdk.asStreamName
+import io.airbyte.cdk.asStreamNamePair
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamState
-import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -50,8 +49,7 @@ class InputStateFactory {
                     if (msg.stream == null) {
                         msg.type.toString()
                     } else {
-                        val desc: StreamDescriptor = msg.stream.streamDescriptor
-                        desc.asStreamName().toString()
+                        msg.stream.streamDescriptor.asStreamNamePair().toString()
                     }
                 }
                 .mapNotNull { (groupKey, groupValues) ->
@@ -84,8 +82,7 @@ class InputStateFactory {
         streamStates: List<AirbyteStreamState>?,
     ): Map<StreamNamePair, OpaqueStateValue> =
         (streamStates ?: listOf()).associate { msg: AirbyteStreamState ->
-            val sd: StreamDescriptor = msg.streamDescriptor
-            val key: StreamNamePair = sd.asStreamName()
+            val key: StreamNamePair = msg.streamDescriptor.asStreamNamePair()
             val jsonValue: JsonNode = msg.streamState ?: Jsons.objectNode()
             key to ValidatedJsonUtils.parseUnvalidated(jsonValue, OpaqueStateValue::class.java)
         }
