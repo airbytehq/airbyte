@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.iceberg.config.storage;
 
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.HTTP_PREFIX;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ACCESS_KEY_ID_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_BUCKET_REGION_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ENDPOINT_CONFIG_KEY;
@@ -84,14 +85,14 @@ public class S3Config implements StorageConfig {
       // use Amazon S3
       builder.sslEnabled(true);
     } else {
-      boolean sslEnabled = !endpointStr.startsWith("http://");
+      boolean sslEnabled = !endpointStr.startsWith(HTTP_PREFIX);
       String pureEndpoint = removeSchemaSuffix(endpointStr);
       builder.sslEnabled(sslEnabled);
       builder.endpoint(pureEndpoint);
       if (sslEnabled) {
         builder.endpointWithSchema("https://" + pureEndpoint);
       } else {
-        builder.endpointWithSchema("http://" + pureEndpoint);
+        builder.endpointWithSchema(HTTP_PREFIX + pureEndpoint);
       }
     }
 
