@@ -24,6 +24,8 @@ To get started, register and request your appKey from the [CIMIS website](https:
 | spatial_zipcodes | ZipCode | No pagination | ✅ |  ❌  |
 | station_zipcodes | StationNbr.ZipCode | No pagination | ✅ |  ❌  |
 
+⚠️ Note that `Juilan` in the `data` stream represents the day (in Julia format).
+
 ## Changelog
 
 <details>
