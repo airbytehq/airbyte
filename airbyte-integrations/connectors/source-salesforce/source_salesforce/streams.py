@@ -341,6 +341,8 @@ class RestSalesforceStream(SalesforceStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    _read_single_page = _read_pages
+
     @default_backoff_handler(max_tries=5)  # FIXME remove once HttpStream relies on the HttpClient
     def _fetch_next_page_for_chunk(
         self,
@@ -509,6 +511,7 @@ class BulkParentStreamStreamSlicer(StreamSlicer):
 class BulkSalesforceStream(SalesforceStream):
     def __init__(self, **kwargs) -> None:
         self._stream_slicer_cursor = None
+        self._stream_to_use = None
         super().__init__(**kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -752,6 +755,7 @@ class BulkSalesforceStream(SalesforceStream):
             # but I get `'NoneType' object has no attribute 'eval'` by passing None
             stream_cursor_field="",
         )
+        self._stream_to_use = self._bulk_job_stream
 
     DEFAULT_WAIT_TIMEOUT = timedelta(hours=24)
     MAX_CHECK_INTERVAL_SECONDS = 2.0
@@ -800,13 +804,20 @@ class BulkSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
         call_count: int = 0,
     ) -> Iterable[Mapping[str, Any]]:
-        yield from self._bulk_job_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        yield from self._stream_to_use.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor))
-        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        self._stream_to_use = self._bulk_job_stream
+        standard_instance = self.get_standard_instance()
+        try:
+            yield from self._stream_to_use.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        except BulkNotSupportedException:
+            self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+            self._stream_to_use = standard_instance
+            yield from self._stream_to_use.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
