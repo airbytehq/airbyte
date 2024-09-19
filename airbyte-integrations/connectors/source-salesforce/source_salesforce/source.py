@@ -9,7 +9,7 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 import isodate
 import pendulum
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Level, SyncMode
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, FailureType, Level, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -22,7 +22,6 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 from dateutil.relativedelta import relativedelta
 from pendulum.parsing.exceptions import ParserError
 from requests import codes, exceptions  # type: ignore[import]
