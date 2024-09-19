@@ -16,6 +16,10 @@
       "description": "An approximation of unique ad impressions.",
       "type": ["null", "number"]
     },
+    "approximateMemberReach": {
+      "description": "The estimated number of unique member accounts with at least one impression. This metric is an updated and more accurate version of legacy metric approximateUniqueImpressions. This metric is only available when the number of days in the date range is less than or equal to 92 days. This metric is fully launched in Jan 2024.",
+      "type": ["null", "number"]
+    },
     "cardClicks": {
       "description": "The number of clicks on interactive card elements.",
       "type": ["null", "number"]
