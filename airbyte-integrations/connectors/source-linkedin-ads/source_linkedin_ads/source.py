@@ -88,6 +88,7 @@ class SourceLinkedinAds(YamlDeclarativeSource):
             )
             for stream_config in self._initialize_cache_for_parent_streams(custom_ad_analytics_configs)
         ]
+
         return custom_ad_analytics_streams
 
     @staticmethod
@@ -107,6 +108,8 @@ class SourceLinkedinAds(YamlDeclarativeSource):
                     updated_config = deepcopy(stream_config)
                     update_specific_key(updated_config, "pivot", f"(value:{ad_report.get('pivot_by')})", condition_func=lambda d: d.get("q"))
                     update_specific_key(updated_config, "value", f"{ad_report.get('pivot_by')}", condition_func=lambda d: d.get("path") == ["pivot"])
+
+                    # TODO: to avoid breaking changes left as is, but need to update to more adaptive way to avoid words merging
                     update_specific_key(updated_config, "name", f"Custom{ad_report.get('name')}")
                     update_specific_key(updated_config, "timeGranularity", f"(value:{ad_report.get('time_granularity')})")
 
