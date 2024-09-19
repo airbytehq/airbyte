@@ -3,7 +3,6 @@
 #
 
 import logging
-import traceback
 from abc import ABC
 from collections import Counter
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
@@ -26,7 +25,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError, CheckAvailabilityError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -125,7 +124,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
 
         skippable_errors = []
         fatal_errors = []
-        tracebacks = []
+        available_streams = 0
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
                 raise ValueError(f"Stream {stream} is not a file-based stream.")
@@ -136,37 +135,29 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
             except AirbyteTracedException as ate:
                 fatal_errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
-                tracebacks.append(traceback.format_exc())
+                continue
             except Exception:
                 fatal_errors.append(f"Unable to connect to stream {stream.name}")
-                tracebacks.append(traceback.format_exc())
+                continue
             else:
-                if not stream_is_available and reason:
-                    if self._check_all_streams:
-                        fatal_errors.append(reason)
-                    else:
-                        skippable_errors.append(f"Unable to connect to stream {stream.name}: {reason}")
+                if not stream_is_available:
+                    if not reason:
+                        raise AirbyteTracedException(
+                            internal_message=f"Stream {stream.name} not available, but no reason provided. Update the source's availability strategy.",
+                            message=f"An error occured while attempting to check connection to stream {stream}. Check the logs for more information.",
+                            failure_type=FailureType.system_error
+                        )
+                    skippable_errors.append(f"Unable to connect to stream {stream.name}: {reason}")
+                else:
+                    available_streams += 1
 
-        if len(fatal_errors) == 1:
-            raise AirbyteTracedException(
-                internal_message=(tracebacks[0] if tracebacks else None),
-                message=f"{fatal_errors[0]}",
-                failure_type=FailureType.config_error,
-            )
-        elif len(fatal_errors) > 1:
-            raise AirbyteTracedException(
-                internal_message="\n".join(tracebacks),
-                message=f"{len(fatal_errors)} streams with errors: {', '.join(error for error in fatal_errors)}",
-                failure_type=FailureType.config_error,
-            )
-        if len(streams) == len(skippable_errors):
-            raise AirbyteTracedException(
-                internal_message=f"Unable to connect to any of the configured streams: {skippable_errors}. Please check the logs for more information.",
-                message="Unable to connect to any of the configured streams. Please check the logs for more information.",
-                failure_type=FailureType.config_error
-            )
+        if fatal_errors:
+            return False, f"An error occurred while attempting to connect to the configured stream(s): {fatal_errors}"
 
-        return True, None
+        if self._check_all_streams and len(streams) != available_streams:
+            return False, f"Unable to connect to any of the configured streams: {skippable_errors if skippable_errors else None}. Please check the logs for more information."
+
+        return available_streams > 0, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
