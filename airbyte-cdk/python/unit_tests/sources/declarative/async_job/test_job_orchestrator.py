@@ -178,7 +178,7 @@ class AsyncJobOrchestratorTest(TestCase):
     def test_given_exception_to_break_when_start_job_and_raise_this_exception_and_abort_jobs(self, mock_sleep: MagicMock) -> None:
         orchestrator = AsyncJobOrchestrator(
             self._job_repository,
-        [_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE],
+            [_A_STREAM_SLICE, _ANOTHER_STREAM_SLICE],
             JobTracker(_NO_JOB_LIMIT),
             self._message_repository,
             exceptions_to_break_on=[ValueError],
