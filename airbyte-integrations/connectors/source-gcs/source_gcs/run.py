@@ -7,9 +7,8 @@ import sys
 import time
 import traceback
 
-from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
-from models import AirbyteMessageSerializer
+from airbyte_cdk import AirbyteEntrypoint, launch
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from orjson import orjson
 from source_gcs import Config, Cursor, SourceGCS, SourceGCSStreamReader
 
