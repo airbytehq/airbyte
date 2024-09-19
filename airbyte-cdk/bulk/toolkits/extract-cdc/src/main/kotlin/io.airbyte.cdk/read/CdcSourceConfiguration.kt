@@ -6,4 +6,5 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.SourceConfiguration
 
+/** Subtype of [SourceConfiguration] for CDC sources. */
 interface CdcSourceConfiguration : SourceConfiguration {}

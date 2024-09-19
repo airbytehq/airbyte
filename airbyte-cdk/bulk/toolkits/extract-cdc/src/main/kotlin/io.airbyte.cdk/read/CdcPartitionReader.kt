@@ -9,13 +9,13 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CdcAware
 import io.airbyte.cdk.read.CdcContext
+import io.airbyte.cdk.read.CdcResourceTaker
 import io.airbyte.cdk.read.CdcSharedState
 import io.airbyte.cdk.read.DebeziumRecord
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.PartitionReader.TryAcquireResourcesStatus.*
-import io.airbyte.cdk.read.CdcResourceTaker
 import io.airbyte.cdk.util.Jsons
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine

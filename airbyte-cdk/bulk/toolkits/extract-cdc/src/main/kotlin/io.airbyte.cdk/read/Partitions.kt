@@ -34,11 +34,11 @@ internal class LimitedLockMutex(maxCount: Int) {
         get() = mutex.isLocked
 }
 
-
 /**
- * A [CdcAware] object that is also a [CdcResourceTaker] can lock the cdc resource - CdcParitionReader.
+ * A [CdcAware] object that is also a [CdcResourceTaker] can lock the cdc resource -
+ * CdcParitionReader.
  *
- * A [CdcAware] that isn't a taker can only sense whether the resource is taken, but cannot take it itself -
- * Various partition reader that need to wait for CDC run to complete.
+ * A [CdcAware] that isn't a taker can only sense whether the resource is taken, but cannot take it
+ * itself - Various partition reader that need to wait for CDC run to complete.
  */
 interface CdcResourceTaker {}

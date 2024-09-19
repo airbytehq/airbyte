@@ -10,11 +10,9 @@ import java.util.concurrent.atomic.AtomicReference
 
 class CdcPartitionCreator<
     A : CdcSharedState,
->(val sharedState: A, cdcContext: CdcContext, opaqueStateValue: OpaqueStateValue?) :
+>(val sharedState: A, val cdcContext: CdcContext, val opaqueStateValue: OpaqueStateValue?) :
     PartitionsCreator, CdcAware {
     private val acquiredResources = AtomicReference<AcquiredResources>()
-    val cdcContext = cdcContext
-    val opaqueStateValue = opaqueStateValue
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionsCreator]. */
     fun interface AcquiredResources : AutoCloseable
