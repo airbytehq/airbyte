@@ -14,6 +14,8 @@ The California Irrigation Management Information System (CIMIS) is a program uni
 | `end_date` | `string` | End date.  |  |
 | `unit_of_measure` | `string` | Unit of Measure.  |  |
 
+To get started, register and request your appKey from the [CIMIS website](https://wwwcimis.water.ca.gov/). You will receive an application key (aka appKey).
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
