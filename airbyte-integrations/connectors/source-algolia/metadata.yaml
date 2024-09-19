@@ -2,9 +2,6 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*-1.algolianet.com"
-      - "*-2.algolianet.com"
-      - "*-3.algolianet.com"
       - "*.algolianet.com"
   registryOverrides:
     oss:
