@@ -26,7 +26,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError, CheckAvailabilityError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -67,6 +67,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         cursor_cls: Type[Union[AbstractConcurrentFileBasedCursor, AbstractFileBasedCursor]] = FileBasedConcurrentCursor,
+        check_all_streams: bool = False
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
@@ -86,6 +87,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             MAX_CONCURRENCY, INITIAL_N_PARTITIONS, self.logger, self._slice_logger, self.message_repository
         )
         self._state = None
+        self._check_all_streams = check_all_streams
         super().__init__(concurrent_source)
 
     @property
@@ -121,7 +123,8 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 f"resolve this issue.",
             )
 
-        errors = []
+        skippable_errors = []
+        fatal_errors = []
         tracebacks = []
         for stream in streams:
             if not isinstance(stream, AbstractFileBasedStream):
@@ -132,34 +135,38 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                     reason,
                 ) = stream.availability_strategy.check_availability_and_parsability(stream, logger, self)
             except AirbyteTracedException as ate:
-                errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
+                fatal_errors.append(f"Unable to connect to stream {stream.name} - {ate.message}")
                 tracebacks.append(traceback.format_exc())
             except Exception:
-                errors.append(f"Unable to connect to stream {stream.name}")
+                fatal_errors.append(f"Unable to connect to stream {stream.name}")
                 tracebacks.append(traceback.format_exc())
             else:
                 if not stream_is_available and reason:
-                    errors.append(reason)
+                    if self._check_all_streams:
+                        fatal_errors.append(reason)
+                    else:
+                        skippable_errors.append(f"Unable to connect to stream {stream.name}: {reason}")
 
-        if len(errors) == 1 and len(tracebacks) == 1:
+        if len(fatal_errors) == 1:
             raise AirbyteTracedException(
-                internal_message=tracebacks[0],
-                message=f"{errors[0]}",
+                internal_message=(tracebacks[0] if tracebacks else None),
+                message=f"{fatal_errors[0]}",
                 failure_type=FailureType.config_error,
             )
-        if len(errors) == 1 and len(tracebacks) == 0:
-            raise AirbyteTracedException(
-                message=f"{errors[0]}",
-                failure_type=FailureType.config_error,
-            )
-        elif len(errors) > 1:
+        elif len(fatal_errors) > 1:
             raise AirbyteTracedException(
                 internal_message="\n".join(tracebacks),
-                message=f"{len(errors)} streams with errors: {', '.join(error for error in errors)}",
+                message=f"{len(fatal_errors)} streams with errors: {', '.join(error for error in fatal_errors)}",
                 failure_type=FailureType.config_error,
             )
+        if len(streams) == len(skippable_errors):
+            raise AirbyteTracedException(
+                internal_message=f"Unable to connect to any of the configured streams: {skippable_errors}. Please check the logs for more information.",
+                message="Unable to connect to any of the configured streams. Please check the logs for more information.",
+                failure_type=FailureType.config_error
+            )
 
-        return not bool(errors), (errors or None)
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
