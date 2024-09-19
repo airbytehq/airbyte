@@ -31,6 +31,7 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 | tooltips | id | No pagination | ✅ |  ✅  |
 | tours | id | No pagination | ✅ |  ✅  |
 | surveys | id | No pagination | ✅ |  ✅  |
+| survey_responses | id | No pagination | ✅ |  ✅  |
 
 ## Changelog
 
