@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests_oauthlib import OAuth1
 from source_netsuite.constraints import CUSTOM_INCREMENTAL_CURSOR, INCREMENTAL_CURSOR, META_PATH, RECORD_PATH, SCHEMA_HEADERS
-from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream, CustomInventory, CustomSalesOrder
+from source_netsuite.streams import CustomIncrementalNetsuiteStream, IncrementalNetsuiteStream, NetsuiteStream, CustomInventory, CustomSalesOrder, CustomProduction
 
 
 class SourceNetsuite(AbstractSource):
@@ -184,5 +184,6 @@ class SourceNetsuite(AbstractSource):
         input_args.update(**{ "object_name": "" })
         streams.append(CustomInventory(**input_args))
         streams.append(CustomSalesOrder(**input_args))
+        streams.append(CustomProduction(**input_args))
         
         return streams
