@@ -82,7 +82,7 @@ class SnowflakeDestinationHandler(
                 SnowflakeTableInfo(
                     it["schema_name"].asText(),
                     it["name"].asText(),
-                    it["rows"].asText().toInt()
+                    it["rows"].asInt()
                 )
             }
         } catch (e: SnowflakeSQLException) {
@@ -560,7 +560,7 @@ class SnowflakeDestinationHandler(
         ): TableDefinition? {
             try {
                 val columns = LinkedHashMap<String, ColumnDefinition>()
-                database.queryJsons("DESCRIBE TABLE \"$schemaName\".\"$tableName\"").map {
+                database.queryJsons("""DESCRIBE TABLE "$schemaName"."$tableName" """).map {
                     val columnName = it["name"].asText()
                     val dataType =
                         when (
