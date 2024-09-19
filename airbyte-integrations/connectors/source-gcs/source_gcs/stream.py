@@ -35,7 +35,7 @@ class GCSStream(DefaultFileBasedStream):
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
         """
         Base implementation from DefaultFileBasedStream.read_records_from_slice
-        with providing correct ab_file_name_col value if file has remote_url
+        with providing correct ab_file_name_col value if file has displayed_uri
         """
         schema = self.catalog_schema
         if schema is None:
