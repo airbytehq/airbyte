@@ -655,16 +655,11 @@ class ModelToComponentFactory:
             if combined_slicers and not isinstance(combined_slicers, supported_slicers):
                 raise ValueError("Unsupported Slicer is used. PerPartitionWithGlobalCursor should be used here instead")
             client_side_incremental_sync = {
-                "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config)
+                "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
+                "substream_cursor": (
+                    combined_slicers if isinstance(combined_slicers, (PerPartitionWithGlobalCursor, GlobalSubstreamCursor)) else None
+                )
             }
-
-            client_side_incremental_sync.update(
-                {
-                    "substream_cursor": (
-                        combined_slicers if isinstance(combined_slicers, (PerPartitionWithGlobalCursor, GlobalSubstreamCursor)) else None
-                    )
-                }
-            )
 
         if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
             cursor_model = model.incremental_sync
