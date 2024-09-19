@@ -236,7 +236,7 @@ class MongoDbCdcTargetPositionTest {
 
     final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(changeEvent);
     final Map<String, String> offset =
-        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, RESUME_TOKEN), new TypeReference<>() {});
 
     final MongoDbCdcTargetPosition targetPosition =
         new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, DATABASE, CATALOG));
@@ -259,11 +259,11 @@ class MongoDbCdcTargetPositionTest {
     when(mongoDatabase.watch(PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
 
     final Map<String, String> offsetA =
-        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, RESUME_TOKEN), new TypeReference<>() {});
     final Map<String, String> offsetB =
-        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, RESUME_TOKEN), new TypeReference<>() {});
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, RESUME_TOKEN), new TypeReference<>() {});
     final Map<String, String> offsetC =
-        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, null, OTHER_RESUME_TOKEN), new TypeReference<>() {});
+        Jsons.object(MongoDbDebeziumStateUtil.formatState(null, OTHER_RESUME_TOKEN), new TypeReference<>() {});
 
     final MongoDbCdcTargetPosition targetPosition =
         new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, DATABASE, CATALOG));

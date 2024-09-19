@@ -113,7 +113,7 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         "GET",
         "https://sandbox.sellingpartnerapi-na.amazon.com/orders/v0/orders",
         status_code=200,
-        json={"payload": {"Orders": [{"some_key": "some_value"}]}},
+        json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02"}]}},
     )
     assert SourceAmazonSellerPartner().check_connection(logger, connector_config_with_report_options) == (True, None)
 

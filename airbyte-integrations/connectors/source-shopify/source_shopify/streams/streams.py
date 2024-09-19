@@ -12,6 +12,7 @@ from requests.exceptions import RequestException
 from source_shopify.shopify_graphql.bulk.query import (
     Collection,
     CustomerAddresses,
+    CustomerJourney,
     DiscountCode,
     FulfillmentOrder,
     InventoryItem,
@@ -24,6 +25,7 @@ from source_shopify.shopify_graphql.bulk.query import (
     MetafieldProduct,
     MetafieldProductImage,
     MetafieldProductVariant,
+    OrderAgreement,
     OrderRisk,
     Product,
     ProductImage,
@@ -114,7 +116,6 @@ class MetafieldDraftOrders(IncrementalShopifyGraphQlBulkStream):
 
 class Products(IncrementalShopifyGraphQlBulkStream):
     bulk_query: Product = Product
-    # pin the api version
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
@@ -206,6 +207,11 @@ class CustomCollections(IncrementalShopifyStreamWithDeletedEvents):
     deleted_events_api_name = "Collection"
 
 
+class CustomerJourneySummary(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: CustomerJourney = CustomerJourney
+    primary_key = "order_id"
+
+
 class SmartCollections(IncrementalShopifyStream):
     data_field = "smart_collections"
 
@@ -254,6 +260,10 @@ class BalanceTransactions(IncrementalShopifyStream):
         return f"shopify_payments/balance/{self.data_field}.json"
 
 
+class OrderAgreements(IncrementalShopifyGraphQlBulkStream):
+    bulk_query: OrderAgreement = OrderAgreement
+
+
 class OrderRefunds(IncrementalShopifyNestedStream):
     parent_stream_class = Orders
     # override default cursor field
@@ -263,7 +273,6 @@ class OrderRefunds(IncrementalShopifyNestedStream):
 
 class OrderRisks(IncrementalShopifyGraphQlBulkStream):
     bulk_query: OrderRisk = OrderRisk
-    # the updated stream work only with >= `2024-04` shopify api version
 
 
 class Transactions(IncrementalShopifySubstream):

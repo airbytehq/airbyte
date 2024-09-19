@@ -6,33 +6,14 @@ For information about how to use this connector within Airbyte, see [the documen
 ## Local development
 
 ### Prerequisites
+* Python (~=3.9)
+* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-**To iterate on this connector, make sure to complete this prerequisites section.**
-
-#### Minimum Python version required `= 3.7.0`
-
-#### Build & Activate Virtual Environment and install dependencies
-
-From this connector directory, create a virtual environment:
-
+### Installing the connector
+From this connector directory, run:
+```bash
+poetry install --with dev
 ```
-python -m venv .venv
-```
-
-This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
-development environment of choice. To activate it from the terminal, run:
-
-```
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
-
-Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
-used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
 
 #### Create credentials
 
@@ -47,10 +28,16 @@ and place them into `secrets/config.json`.
 ### Locally running the connector
 
 ```
-python main.py spec
-python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+poetry run source-braintree spec
+poetry run source-braintree check --config secrets/config.json
+poetry run source-braintree discover --config secrets/config.json
+poetry run source-braintree read --config secrets/config.json --catalog sample_files/configured_catalog.json
+```
+
+### Running unit tests
+To run unit tests locally, from the connector directory run:
+```
+poetry run pytest
 ```
 
 ### Locally running the connector docker image
@@ -65,11 +52,6 @@ airbyte-ci connectors --name=source-braintree build
 
 An image will be built with the tag `airbyte/source-braintree:dev`.
 
-**Via `docker build`:**
-
-```bash
-docker build -t airbyte/source-braintree:dev .
-```
 
 #### Run
 
@@ -97,20 +79,25 @@ If your connector requires to create or destroy resources for use during accepta
 
 ## Dependency Management
 
-All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
-We split dependencies between two groups, dependencies that are:
+All of your dependencies should be managed via Poetry. 
+To add a new dependency, run:
+```bash
+poetry add <package-name>
+```
 
-- required for your connector to work need to go to `MAIN_REQUIREMENTS` list.
-- required for the testing need to go to `TEST_REQUIREMENTS` list
+Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ### Publishing a new version of the connector
 
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-braintree test`
-2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+    - bump the `dockerImageTag` value in in `metadata.yaml`
+    - bump the `version` value in `pyproject.toml`
 3. Make sure the `metadata.yaml` content is up to date.
 4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/braintree.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.

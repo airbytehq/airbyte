@@ -19,13 +19,15 @@ import requests
 import xmltodict
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import CheckpointMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_protocol.models import FailureType
+from source_amazon_seller_partner.utils import STREAM_THRESHOLD_PERIOD, threshold_period_decorator
 
 REPORTS_API_VERSION = "2021-06-30"
 ORDERS_API_VERSION = "v0"
@@ -77,7 +79,7 @@ class AmazonSPStream(HttpStream, ABC):
         return 0 if IS_TESTING else super().retry_factor
 
 
-class IncrementalAmazonSPStream(AmazonSPStream, ABC):
+class IncrementalAmazonSPStream(AmazonSPStream, CheckpointMixin, ABC):
     page_size = 100
 
     @property
@@ -104,6 +106,18 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
     @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
         pass
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = {}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
@@ -142,7 +156,7 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         """
         yield from response.json().get(self.data_field, [])
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's
         most recent state object and returning an updated state object.
@@ -151,6 +165,17 @@ class IncrementalAmazonSPStream(AmazonSPStream, ABC):
         if stream_state := current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_record_state, stream_state)}
         return {self.cursor_field: latest_record_state}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class ReportProcessingStatus(str, Enum):
@@ -198,6 +223,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         period_in_days: Optional[int],
         replication_end_date: Optional[str],
         report_options: Optional[List[Mapping[str, Any]]] = None,
+        wait_to_avoid_fatal_errors: Optional[bool] = False,
         *args,
         **kwargs,
     ):
@@ -210,6 +236,8 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         self._report_options = report_options
         self._http_method = "GET"
         self._stream_name = stream_name
+
+        self.wait_to_avoid_fatal_errors = wait_to_avoid_fatal_errors
 
     @property
     def name(self):
@@ -358,6 +386,7 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             }
             start_date = end_date_slice
 
+    @threshold_period_decorator
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -375,18 +404,47 @@ class ReportsAmazonSPStream(HttpStream, ABC):
         seconds_waited = 0
         try:
             report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
-        except DefaultBackoffException as e:
-            logger.warning(f"The report for stream '{self.name}' was cancelled due to several failed retry attempts. {e}")
-            return []
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == requests.codes.FORBIDDEN:
-                logger.warning(
-                    f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
-                    "This is most likely due to insufficient permissions on the credentials in use. "
-                    "Try to grant required permissions/scopes or re-authenticate."
+            errors = " ".join([er.get("message", "") for er in e.response.json().get("errors", [])])
+            if e.response.status_code == requests.codes.BAD_REQUEST:
+                invalid_report_names = list(
+                    map(
+                        lambda error: error.get("message").replace("Invalid Report Type ", ""),
+                        filter(lambda error: "Invalid Report Type " in error.get("message"), e.response.json().get("errors", [])),
+                    )
                 )
-                return []
-            raise e
+                if invalid_report_names:
+                    raise AirbyteTracedException(
+                        failure_type=FailureType.config_error,
+                        message=f"Report {invalid_report_names} does not exist. Please update the report options in your config to match only existing reports.",
+                        internal_message=f"Errors received from the API were: {errors}",
+                    )
+            if e.response.status_code == requests.codes.FORBIDDEN:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"The endpoint {e.response.url} returned {e.response.status_code}: {e.response.reason}. "
+                    "This is most likely due to insufficient permissions on the credentials in use. "
+                    "Try to grant required permissions/scopes or re-authenticate.",
+                    internal_message=f"Errors received from the API were: {errors}",
+                )
+            if e.response.status_code == requests.codes.TOO_MANY_REQUESTS:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.transient_error,
+                    message=f"Too many requests on resource {e.response.url}. Please retry later",
+                    internal_message=f"Errors received from the API were: {errors}",
+                )
+
+            if "does not support account ID of type class com.amazon.partner.account.id.VendorGroupId." in errors:
+                raise AirbyteTracedException(
+                    failure_type=FailureType.config_error,
+                    message=f"The endpoint {e.response.url} returned {e.response.status_code}: {errors}. "
+                    "This is most likely due to account type (Vendor) on the credentials in use. "
+                    "Try to re-authenticate with Seller account type and sync again.",
+                    internal_message=f"Errors received from the API were: {errors}",
+                )
+            raise AirbyteTracedException.from_exception(
+                e, message=f"The report for stream '{self.name}' was cancelled due to several failed retry attempts."
+            )
 
         # create and retrieve the report
         processed = False
@@ -425,7 +483,9 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             if stream_slice and "dataStartTime" in stream_slice:
                 exception_message += (
                     f" for period {stream_slice['dataStartTime']}-{stream_slice['dataEndTime']}. "
-                    f"This will be read during the next sync. Error: {error_response}"
+                    f"This will be read during the next sync. Report ID: {report_id}."
+                    f" Error: {error_response}"
+                    " Visit https://docs.airbyte.com/integrations/sources/amazon-seller-partner#limitations--troubleshooting for more info."
                 )
             raise AirbyteTracedException(internal_message=exception_message)
         elif processing_status == ReportProcessingStatus.CANCELLED:
@@ -434,10 +494,22 @@ class ReportsAmazonSPStream(HttpStream, ABC):
             raise Exception(f"Unknown response for stream '{self.name}'. Response body: {report_payload}.")
 
 
-class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
+class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream, CheckpointMixin):
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return "dataEndTime"
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = {}
 
     def _transform_report_record_cursor_value(self, date_string: str) -> str:
         """
@@ -449,7 +521,7 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
             else date_string
         )
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's
         most recent state object and returning an updated state object.
@@ -458,6 +530,17 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
         if stream_state := current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_record_state, stream_state)}
         return {self.cursor_field: latest_record_state}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class MerchantReports(IncrementalReportsAmazonSPStream, ABC):
@@ -505,6 +588,10 @@ class FbaStorageFeesReports(IncrementalReportsAmazonSPStream):
 class FulfilledShipmentsReports(IncrementalReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
+
+    Threshold 12
+    Period (minutes) 480
+
     """
 
     report_name = "GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL"
@@ -604,6 +691,13 @@ class GetXmlBrowseTreeData(IncrementalReportsAmazonSPStream):
 
 
 class FbaEstimatedFbaFeesTxtReport(IncrementalReportsAmazonSPStream):
+    """
+
+    Threshold 2000
+    Period (minutes) 60
+
+    """
+
     report_name = "GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA"
 
 
@@ -757,12 +851,24 @@ class AnalyticsStream(ReportsAmazonSPStream):
         }
 
 
-class IncrementalAnalyticsStream(AnalyticsStream):
+class IncrementalAnalyticsStream(AnalyticsStream, CheckpointMixin):
     fixed_period_in_days = 0
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return "endDate"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = {}
 
     def parse_response(
         self,
@@ -782,7 +888,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 record["queryEndDate"] = pendulum.parse(stream_slice["dataEndTime"]).strftime("%Y-%m-%d")
             yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's
         most recent state object and returning an updated state object.
@@ -820,6 +926,17 @@ class IncrementalAnalyticsStream(AnalyticsStream):
                 "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
             }
             start_date = end_date_slice
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            self.state = self._get_updated_state(self.state, record)
+            yield record
 
 
 class NetPureProductMarginReport(IncrementalAnalyticsStream):
@@ -1010,6 +1127,10 @@ class FbaAfnInventoryReports(IncrementalReportsAmazonSPStream):
     Field definitions: https://developer-docs.amazon.com/sp-api/docs/report-type-values#inventory-reports
     Report has a long-running issue (fails when requested frequently):
     https://github.com/amzn/selling-partner-api-docs/issues/2231
+
+    Threshold 2
+    Period (minutes) 25
+
     """
 
     report_name = "GET_AFN_INVENTORY_DATA"

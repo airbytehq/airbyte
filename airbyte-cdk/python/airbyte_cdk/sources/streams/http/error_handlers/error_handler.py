@@ -13,6 +13,22 @@ class ErrorHandler(ABC):
     Abstract base class to determine how to handle a failed HTTP request.
     """
 
+    @property
+    @abstractmethod
+    def max_retries(self) -> Optional[int]:
+        """
+        The maximum number of retries to attempt before giving up.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def max_time(self) -> Optional[int]:
+        """
+        The maximum amount of time in seconds to retry before giving up.
+        """
+        pass
+
     @abstractmethod
     def interpret_response(self, response: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         """

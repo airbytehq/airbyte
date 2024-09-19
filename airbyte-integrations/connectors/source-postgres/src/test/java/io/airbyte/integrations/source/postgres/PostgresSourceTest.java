@@ -11,9 +11,7 @@ import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUti
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,6 +31,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
 import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -59,10 +58,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 class PostgresSourceTest {
 
@@ -252,6 +248,23 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testCheckPrivilegesToSelectTable() throws Exception {
+    testdb.query(ctx -> {
+      ctx.execute("DROP TABLE id_and_name;");
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
+      ctx.fetch("CREATE USER test_user_0 password '123';");
+      ctx.fetch("CREATE USER test_user_1 password '123';");
+      ctx.fetch("GRANT SELECT ON TABLE id_and_name TO test_user_1;");
+      return null;
+    });
+    final JsonNode configUser1 = getConfig("test_user_1", "123");
+    assertThat(source().check(configUser1).getStatus().equals(AirbyteConnectionStatus.Status.SUCCEEDED.toString()));
+    final JsonNode configUser0 = getConfig("test_user_0", "123");
+    assertThat(source().check(configUser0).getMessage().contains("User lacks privileges to SELECT from any of the tables in schema public"));
+  }
+
+  @Test
   void testUserDoesntHasPrivilegesToSelectTable() throws Exception {
     testdb.query(ctx -> {
       ctx.execute("DROP TABLE id_and_name CASCADE;");
@@ -283,10 +296,8 @@ class PostgresSourceTest {
     final Set<AirbyteMessage> actualMessages =
         MoreIterators.toSet(source().read(anotherUserConfig, CONFIGURED_CATALOG, null));
     setEmittedAtToNull(actualMessages);
-    // expect 6 records, 3 state messages and 4 stream status messages. (view does not have its own
-    // state message because it goes
-    // to non resumable full refresh path).
-    assertEquals(13, actualMessages.size());
+    // expect 6 records, 4 state messages and 4 stream status messages.
+    assertEquals(14, actualMessages.size());
     final var actualRecordMessages = filterRecords(actualMessages);
     assertEquals(PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES, actualRecordMessages);
   }
@@ -836,10 +847,20 @@ class PostgresSourceTest {
   @Test
   void testJdbcUrlWithEscapedDatabaseName() {
     final JsonNode jdbcConfig = source().toDatabaseConfig(buildConfigEscapingNeeded());
-    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?prepareThreshold=0&";
+  @Test
+  void testJdbcUrlWithSchemas() {
+    final JsonNode sourceConfig = buildConfigEscapingNeeded();
+    ((ObjectNode) sourceConfig).set("schemas", Jsons.arrayNode().add("bar").add("baz"));
+    final JsonNode jdbcConfig = source().toDatabaseConfig(sourceConfig);
+    assertEquals("jdbc:postgresql://localhost:1111/db%2Ffoo?" + EXPECTED_DEFAULT_PARAMS + "&currentSchema=bar,baz",
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_DEFAULT_PARAMS = "prepareThreshold=0&tcpKeepAlive=true";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(

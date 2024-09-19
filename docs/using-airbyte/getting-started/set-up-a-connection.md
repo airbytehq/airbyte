@@ -42,7 +42,7 @@ Once you've set up all the connection settings, click "Set up connection". You'v
 
 Once you've finished setting up the connection, you will be automatically redirected to a connection overview containing all the tools you need to keep track of your connection.
 
-![Connection dashboard](./assets/getting-started-status-page.png)
+![Connection dashboard](./assets/getting-started-connection-complete.png)
 
 Here's a basic overview of the tabs and their use:
 
@@ -61,7 +61,7 @@ Once the first sync has completed, you can verify the sync has completed by chec
      If you followed along and created your own connection using a **Google Sheets** destination, you will now see three tabs created in your Google Sheet, `products`, `users`, and `purchases`.
 
   </TabItem>
-  <TabItem value="self-managed" label="Self Hosted">
+  <TabItem value="self-managed" label="Self-Managed">
     If you followed along and created your own connection using a `Local JSON` destination, you can use this command to check the file's contents to make sure the replication worked as intended (be sure to replace YOUR_PATH with the path you chose in your destination setup, and YOUR_STREAM_NAME with the name of an actual stream you replicated):
 
     ```bash
@@ -80,6 +80,8 @@ If you are using Airbyte on Windows with WSL2 and Docker, refer to [this guide](
 ## What's next?
 
 Congratulations on successfully setting up your first connection using Airbyte! We hope that this will be just the first step on your journey with us. We support a large, ever-growing [catalog of sources and destinations](/integrations/), and you can even [contribute your own](/connector-development/).
+
+If you'd like an in-depth introduction to Airbyte that includes setting up example source and destination configurations, we recommend the Udemy course [The Complete Hands-on Introduction to Airbyte](https://www.udemy.com/course/the-complete-hands-on-introduction-to-airbyte/).
 
 If you have any questions at all, please reach out to us on [Slack](https://slack.airbyte.io/). If you would like to see a missing feature or connector added, please create an issue on our [Github](https://github.com/airbytehq/airbyte). Our community's participation is invaluable in helping us grow and improve every day, and we always welcome your feedback.
 

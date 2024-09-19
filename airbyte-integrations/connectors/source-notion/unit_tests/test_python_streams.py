@@ -189,18 +189,18 @@ def test_get_updated_state(stream):
         "latest_record": {"last_edited_time": "2021-10-20T00:00:00.000Z"},
     }
     expected_state = "2021-10-10T00:00:00.000Z"
-    state = stream.get_updated_state(**inputs)
+    state = stream._get_updated_state(**inputs)
     assert state["last_edited_time"].value == expected_state
 
     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-30T00:00:00.000Z"}}
-    state = stream.get_updated_state(**inputs)
+    state = stream._get_updated_state(**inputs)
     assert state["last_edited_time"].value == expected_state
 
     # after stream sync is finished, state should output the max cursor time
     stream.is_finished = True
     inputs = {"current_stream_state": state, "latest_record": {"last_edited_time": "2021-10-10T00:00:00.000Z"}}
     expected_state = "2021-10-30T00:00:00.000Z"
-    state = stream.get_updated_state(**inputs)
+    state = stream._get_updated_state(**inputs)
     assert state["last_edited_time"].value == expected_state
 
 

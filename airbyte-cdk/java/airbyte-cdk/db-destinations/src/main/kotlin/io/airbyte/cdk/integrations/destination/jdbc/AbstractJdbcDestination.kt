@@ -28,7 +28,6 @@ import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteRecordM
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator
 import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcV1V2Migrator
-import io.airbyte.cdk.integrations.util.addDefaultNamespaceToStreams
 import io.airbyte.commons.exceptions.ConnectionErrorException
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.map.MoreMaps
@@ -53,18 +52,15 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
     driverClass: String,
     private val optimalBatchSizeBytes: Long,
     protected open val namingResolver: NamingConventionTransformer,
-    protected val sqlOperations: SqlOperations,
 ) : JdbcConnector(driverClass), Destination {
 
     constructor(
         driverClass: String,
         namingResolver: NamingConventionTransformer,
-        sqlOperations: SqlOperations,
     ) : this(
         driverClass,
         JdbcBufferedConsumerFactory.DEFAULT_OPTIMAL_BATCH_SIZE_FOR_FLUSH,
         namingResolver,
-        sqlOperations
     )
     protected open val configSchemaKey: String = "schema"
 
@@ -80,6 +76,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
+        val sqlOperations = getSqlOperations(config)
 
         try {
             val database = getDatabase(dataSource)
@@ -190,7 +187,12 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
 
     protected abstract fun getSqlGenerator(config: JsonNode): JdbcSqlGenerator
 
+    protected abstract fun getSqlOperations(config: JsonNode): SqlOperations
+
+    protected abstract fun getGenerationHandler(): JdbcGenerationHandler
+
     protected abstract fun getDestinationHandler(
+        config: JsonNode,
         databaseName: String,
         database: JdbcDatabase,
         rawTableSchema: String
@@ -246,22 +248,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         outputRecordCollector: Consumer<AirbyteMessage>
     ): SerializedAirbyteMessageConsumer? {
         val database = getDatabase(getDataSource(config))
-        // Short circuit for non-v2 destinations.
-        if (!isDestinationV2) {
-            return JdbcBufferedConsumerFactory.createAsync(
-                outputRecordCollector,
-                database,
-                sqlOperations,
-                namingResolver,
-                config,
-                catalog,
-                null,
-                NoopTyperDeduper(),
-            )
-        }
-
         val defaultNamespace = config[configSchemaKey].asText()
-        addDefaultNamespaceToStreams(catalog, defaultNamespace)
         return getV2MessageConsumer(
             config,
             catalog,
@@ -290,8 +277,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val rawNamespaceOverride = getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
         val parsedCatalog =
             rawNamespaceOverride
-                .map { override: String -> CatalogParser(sqlGenerator, override) }
-                .orElse(CatalogParser(sqlGenerator))
+                .map { override: String -> CatalogParser(sqlGenerator, defaultNamespace, override) }
+                .orElse(CatalogParser(sqlGenerator, defaultNamespace))
                 .parseCatalog(catalog!!)
         val typerDeduper: TyperDeduper =
             buildTyperDeduper(
@@ -303,7 +290,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         return JdbcBufferedConsumerFactory.createAsync(
             outputRecordCollector,
             database,
-            sqlOperations,
+            getSqlOperations(config),
+            getGenerationHandler(),
             namingResolver,
             config,
             catalog,
@@ -326,6 +314,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
         val migrator = getV1V2Migrator(database, databaseName)
         val destinationHandler: DestinationHandler<DestinationState> =
             getDestinationHandler(
+                config,
                 databaseName,
                 database,
                 getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
@@ -442,6 +431,8 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                             listOf(dummyRecord),
                             outputSchema,
                             outputTableName,
+                            -1,
+                            -1,
                         )
                     }
                 } finally {
@@ -472,7 +463,7 @@ abstract class AbstractJdbcDestination<DestinationState : MinimumDestinationStat
                     .withRecord(
                         PartialAirbyteRecordMessage()
                             .withStream("stream1")
-                            .withEmittedAt(1602637589000L),
+                            .withEmittedAt(1602637589000L)
                     )
                     .withSerialized(dummyDataToInsert.toString())
             }

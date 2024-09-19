@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
+from pytest import fixture
 
 
-@pytest.fixture
+@fixture
 def config():
     return {
         "credentials": {

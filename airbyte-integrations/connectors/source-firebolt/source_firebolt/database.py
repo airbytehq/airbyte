@@ -4,10 +4,10 @@
 
 
 import json
+import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from firebolt.async_db import Connection as AsyncConnection
 from firebolt.async_db import connect as async_connect
 from firebolt.client import DEFAULT_API_URL
@@ -26,12 +26,12 @@ def _determine_auth(key: str, secret: str) -> Auth:
         return ClientCredentials(key, secret)
 
 
-def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
+def parse_config(config: json, logger: logging.Logger) -> Dict[str, Any]:
     """
     Convert dict of config values to firebolt.db.Connection arguments
 
     :param config: json-compatible dict of settings
-    :param logger: AirbyteLogger instance to print logs.
+    :param logger: logging.Logger instance to print logs.
 
     :return: dictionary of firebolt.db.Connection-compatible kwargs
     """
@@ -55,12 +55,12 @@ def parse_config(config: json, logger: AirbyteLogger) -> Dict[str, Any]:
     return connection_args
 
 
-def establish_connection(config: json, logger: AirbyteLogger) -> Connection:
+def establish_connection(config: json, logger: logging.Logger) -> Connection:
     """
     Creates a connection to Firebolt database using the parameters provided.
 
     :param config: Json object containing db credentials.
-    :param logger: AirbyteLogger instance to print logs.
+    :param logger: logging.Logger instance to print logs.
 
     :return: PEP-249 compliant database Connection object.
     """
@@ -70,13 +70,13 @@ def establish_connection(config: json, logger: AirbyteLogger) -> Connection:
     return connection
 
 
-async def establish_async_connection(config: json, logger: AirbyteLogger) -> AsyncConnection:
+async def establish_async_connection(config: json, logger: logging.Logger) -> AsyncConnection:
     """
     Creates an async connection to Firebolt database using the parameters provided.
     This connection can be used for parallel operations.
 
     :param config: Json object containing db credentials.
-    :param logger: AirbyteLogger instance to print logs.
+    :param logger: logging.Logger instance to print logs.
 
     :return: PEP-249 compliant database Connection object.
     """

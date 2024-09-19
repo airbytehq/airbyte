@@ -4,6 +4,12 @@ connector_image: airbyte/source-postgres:dev
 custom_environment_variables:
   USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
+  client_container_config:
+    client_container_dockerfile_path: "integration_tests/Dockerfile"
+    final_teardown_command:
+      - "python"
+      - "./hook.py"
+      - "final_teardown"
   spec:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
@@ -15,33 +21,84 @@ acceptance_tests:
         deployment_mode: cloud
         backward_compatibility_tests_config:
           disable_for_version: "1.0.52"
-      - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "secrets/config_cdc.json"
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.52"
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      - config_path: "secrets/config_cdc.json"
-        status: "succeed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
-      - config_path: "secrets/config_cdc.json"
         backward_compatibility_tests_config:
           disable_for_version: "2.1.1"
+  basic_read:
+    tests:
+      - config_path: "integration_tests/temp/config_active.json"
+        configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
-      - config_path: "secrets/config_cdc.json"
+      - config_path: "integration_tests/temp/config_active.json"
+        configured_catalog_path: "integration_tests/temp/configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
   incremental:
     tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+      - config_path: "integration_tests/temp/config_active.json"
+        configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
+          between_syncs_command:
+            - "python"
+            - "./hook.py"
+            - "insert"
         future_state:
-          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
-      - config_path: "secrets/config_cdc.json"
-        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+          future_state_path: "integration_tests/temp/abnormal_state_copy.json"
+      - config_path: "integration_tests/temp/config_cdc_active.json"
+        configured_catalog_path: "integration_tests/temp/incremental_configured_catalog_copy.json"
+        client_container_config:
+          client_container_dockerfile_path: "integration_tests/Dockerfile"
+          secrets_path: "secrets/config_cdc.json"
+          setup_command:
+            - "python"
+            - "./hook.py"
+            - "setup_cdc"
+          between_syncs_command:
+            - "python"
+            - "./hook.py"
+            - "insert"
+          teardown_command:
+            - "python"
+            - "./hook.py"
+            - "teardown"
         future_state:
-          bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
+          bypass_reason: "CDC does not have a future state as LSN will be absent from DB, triggering a full refresh"

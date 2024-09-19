@@ -46,6 +46,8 @@ import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
@@ -205,7 +207,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       final InitialLoadStreams initialLoadStreams = streamsForInitialPrimaryKeyLoad(cursorBasedStateManager, catalog);
       initialLoadStateManager =
           new MySqlInitialLoadStreamStateManager(catalog, initialLoadStreams,
-              initPairToPrimaryKeyInfoMap(database, initialLoadStreams, tableNameToTable, getQuoteString()));
+              initPairToPrimaryKeyInfoMap(database, catalog, tableNameToTable, getQuoteString()));
     }
   }
 
@@ -226,6 +228,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           Optional.empty(),
           getTableSizeInfoForStreams(database, catalog.getStreams(), getQuoteString()));
     }
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), initialLoadStateManager);
   }
 
   private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
@@ -477,7 +484,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         final List<AutoCloseableIterator<AirbyteMessage>> initialLoadIterator = new ArrayList<>(initialLoadHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(initialLoadStreams.streamsForInitialLoad()),
             tableNameToTable,
-            emittedAt, true, true));
+            emittedAt, true, true, Optional.empty()));
 
         // Build Cursor based iterator
         final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterator =
@@ -635,8 +642,9 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   public static void main(final String[] args) throws Exception {
     final Source source = MySqlSource.sshWrappedSource(new MySqlSource());
+    final MySqlSourceExceptionHandler exceptionHandler = new MySqlSourceExceptionHandler();
     LOGGER.info("starting source: {}", MySqlSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", MySqlSource.class);
   }
 

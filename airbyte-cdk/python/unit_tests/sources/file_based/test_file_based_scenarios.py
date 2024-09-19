@@ -77,6 +77,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     invalid_csv_multi_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
+    multi_csv_stream_n_file_exceeds_config_limit_for_inference,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
@@ -84,6 +85,12 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
+)
+from unit_tests.sources.file_based.scenarios.excel_scenarios import (
+    excel_all_types_scenario,
+    multiple_excel_combine_schema_scenario,
+    multiple_streams_excel_scenario,
+    single_excel_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
@@ -167,6 +174,7 @@ discover_success_scenarios = [
     single_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_csv_stream_n_file_exceeds_config_limit_for_inference,
     single_csv_input_state_is_earlier_scenario,
     single_csv_no_input_state_scenario,
     single_csv_input_state_is_later_scenario,
@@ -230,6 +238,10 @@ discover_success_scenarios = [
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
     avro_file_with_double_as_number_scenario,
+    excel_all_types_scenario,
+    multiple_excel_combine_schema_scenario,
+    multiple_streams_excel_scenario,
+    single_excel_scenario,
     csv_newline_in_values_not_quoted_scenario,
     csv_autogenerate_column_names_scenario,
     parquet_with_invalid_config_scenario,
@@ -297,6 +309,7 @@ check_scenarios = [
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     valid_single_stream_user_input_schema_scenario,
     single_avro_scenario,
+    single_excel_scenario,
     earlier_csv_scenario,
     csv_no_files_scenario,
 ]

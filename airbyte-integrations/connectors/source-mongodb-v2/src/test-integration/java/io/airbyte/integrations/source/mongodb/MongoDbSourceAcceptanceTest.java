@@ -505,9 +505,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
-    final String replicaSetName = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(databaseName, replicaSetName, INVALID_RESUME_TOKEN));
+        MongoDbDebeziumStateUtil.formatState(databaseName, INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
@@ -557,15 +556,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
         new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
-    final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
     final Map<String, String> offsetA = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, resumeTokenString), new TypeReference<>() {});
+        resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetB = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, resumeTokenString), new TypeReference<>() {});
+        resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetBDifferent = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, INVALID_RESUME_TOKEN), new TypeReference<>() {});
+        INVALID_RESUME_TOKEN), new TypeReference<>() {});
 
     assertFalse(targetPosition.isSameOffset(null, offsetB));
     assertFalse(targetPosition.isSameOffset(emptyOffsetA, offsetB));

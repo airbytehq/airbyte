@@ -72,9 +72,6 @@ jobs:
         continue-on-error: true
         with:
           context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

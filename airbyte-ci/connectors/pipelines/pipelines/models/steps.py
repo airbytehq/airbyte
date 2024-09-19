@@ -62,10 +62,6 @@ class MountPath:
     def __str__(self) -> str:
         return str(self.path)
 
-    @property
-    def is_file(self) -> bool:
-        return self.get_path().is_file()
-
 
 @dataclass(kw_only=True, frozen=True)
 class Result:
@@ -88,6 +84,7 @@ class StepResult(Result):
     """A dataclass to capture the result of a step."""
 
     step: Step
+    consider_in_overall_status: bool = True
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"

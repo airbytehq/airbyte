@@ -1,89 +1,63 @@
 # Everhour source connector
 
+This directory contains the manifest-only connector for `source-everhour`.
+This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
 
-This is the repository for the Everhour source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/everhour).
+For information about how to configure and use this connector within Airbyte, see [the connector's full documentation](https://docs.airbyte.com/integrations/sources/everhour).
 
 ## Local development
 
-### Prerequisites
-* Python (~=3.9)
-* Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
+We recommend using the Connector Builder to edit this connector.
+Using either Airbyte Cloud or your local Airbyte OSS instance, navigate to the **Builder** tab and select **Import a YAML**.
+Then select the connector's `manifest.yaml` file to load the connector into the Builder. You're now ready to make changes to the connector!
 
-
-### Installing the connector
-From this connector directory, run:
-```bash
-poetry install --with dev
-```
-
-
-### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/everhour)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_everhour/spec.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
-
-
-### Locally running the connector
-```
-poetry run source-everhour spec
-poetry run source-everhour check --config secrets/config.json
-poetry run source-everhour discover --config secrets/config.json
-poetry run source-everhour read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
-### Running unit tests
-To run unit tests locally, from the connector directory run:
-```
-poetry run pytest unit_tests
-```
+If you prefer to develop locally, you can follow the instructions below.
 
 ### Building the docker image
+
+You can build any manifest-only connector with `airbyte-ci`:
+
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
 2. Run the following command to build the docker image:
+
 ```bash
 airbyte-ci connectors --name=source-everhour build
 ```
 
 An image will be available on your host with the tag `airbyte/source-everhour:dev`.
 
+### Creating credentials
+
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/everhour)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` object in the connector's `manifest.yaml` file.
+Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 
 ### Running as a docker container
-Then run any of the connector commands as follows:
-```
+
+Then run any of the standard source connector commands:
+
+```bash
 docker run --rm airbyte/source-everhour:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-everhour:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-everhour:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-everhour:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-### Running our CI test suite
+### Running the CI test suite
+
 You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+
 ```bash
 airbyte-ci connectors --name=source-everhour test
 ```
 
-### Customizing acceptance Tests
-Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
-If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-
-### Dependency Management
-All of your dependencies should be managed via Poetry. 
-To add a new dependency, run:
-```bash
-poetry add <package-name>
-```
-
-Please commit the changes to `pyproject.toml` and `poetry.lock` files.
-
 ## Publishing a new version of the connector
-You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
-1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-everhour test`
-2. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)): 
+
+If you want to contribute changes to `source-everhour`, here's how you can do that:
+1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
+2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-everhour test`
+3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
     - bump the `dockerImageTag` value in in `metadata.yaml`
-    - bump the `version` value in `pyproject.toml`
-3. Make sure the `metadata.yaml` content is up to date.
 4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/everhour.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.

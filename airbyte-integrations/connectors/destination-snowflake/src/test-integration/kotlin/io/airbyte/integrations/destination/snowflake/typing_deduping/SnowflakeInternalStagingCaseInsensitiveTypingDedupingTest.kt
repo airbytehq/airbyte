@@ -7,11 +7,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.json.Jsons.emptyObject
 import java.util.*
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 
 class SnowflakeInternalStagingCaseInsensitiveTypingDedupingTest :
-    AbstractSnowflakeTypingDedupingTest() {
+    AbstractSnowflakeTypingDedupingTest(forceUppercaseIdentifiers = true) {
     override val configPath: String
         get() = "secrets/1s1t_case_insensitive.json"
 
@@ -34,14 +32,5 @@ class SnowflakeInternalStagingCaseInsensitiveTypingDedupingTest :
                 mutatedRecord
             }
             .toList()
-    }
-
-    @Disabled(
-        "This test assumes the ability to create case-sensitive tables, which is by definition not available with QUOTED_IDENTIFIERS_IGNORE_CASE=TRUE"
-    )
-    @Test
-    @Throws(Exception::class)
-    override fun testFinalTableUppercasingMigration_append() {
-        super.testFinalTableUppercasingMigration_append()
     }
 }

@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
+from typing import TYPE_CHECKING
 
 import asyncclick as click
 from pipelines import main_logger
@@ -15,6 +17,23 @@ from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 from pipelines.models.secrets import Secret
+
+if TYPE_CHECKING:
+    from typing import Iterable, List
+
+    from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+
+
+def filter_out_third_party_connectors(
+    selected_connectors_with_modified_files: Iterable[ConnectorWithModifiedFiles],
+) -> List[ConnectorWithModifiedFiles]:
+    filtered_connectors = []
+    for connector in selected_connectors_with_modified_files:
+        if connector.is_third_party:
+            main_logger.info(f"Skipping third party connector {connector.technical_name} from the list of connectors")
+        else:
+            filtered_connectors.append(connector)
+    return filtered_connectors
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
@@ -57,13 +76,6 @@ from pipelines.models.secrets import Secret
     envvar="SLACK_WEBHOOK",
 )
 @click.option(
-    "--slack-channel",
-    help="The Slack webhook URL to send notifications to.",
-    type=click.STRING,
-    envvar="SLACK_CHANNEL",
-    default="#connector-publish-updates",
-)
-@click.option(
     "--python-registry-token",
     help="Access token for python registry",
     type=click.STRING,
@@ -93,11 +105,16 @@ async def publish(
     metadata_service_bucket_name: str,
     metadata_service_gcs_credentials: Secret,
     slack_webhook: str,
-    slack_channel: str,
     python_registry_token: Secret,
     python_registry_url: str,
     python_registry_check_url: str,
 ) -> bool:
+
+    ctx.obj["selected_connectors_with_modified_files"] = filter_out_third_party_connectors(
+        ctx.obj["selected_connectors_with_modified_files"]
+    )
+    if not ctx.obj["selected_connectors_with_modified_files"]:
+        return True
 
     if ctx.obj["is_local"]:
         confirm(
@@ -119,7 +136,6 @@ async def publish(
                 docker_hub_username=Secret("docker_hub_username", ctx.obj["secret_stores"]["in_memory"]),
                 docker_hub_password=Secret("docker_hub_password", ctx.obj["secret_stores"]["in_memory"]),
                 slack_webhook=slack_webhook,
-                reporting_slack_channel=slack_channel,
                 ci_report_bucket=ctx.obj["ci_report_bucket_name"],
                 report_output_prefix=ctx.obj["report_output_prefix"],
                 is_local=ctx.obj["is_local"],

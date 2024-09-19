@@ -17,7 +17,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.stub import Stubber
 from moto import mock_sts
-from pydantic import AnyUrl
+from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
 

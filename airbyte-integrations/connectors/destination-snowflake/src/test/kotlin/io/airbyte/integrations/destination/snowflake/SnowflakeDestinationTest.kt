@@ -3,19 +3,12 @@
  */
 package io.airbyte.integrations.destination.snowflake
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.base.DestinationConfig
-import io.airbyte.cdk.integrations.destination.async.AsyncStreamConsumer
-import io.airbyte.commons.json.Jsons.deserialize
 import io.airbyte.commons.json.Jsons.emptyObject
-import io.airbyte.commons.resources.MoreResources.readResource
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.util.regex.Pattern
 import java.util.stream.Stream
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -36,18 +29,6 @@ class SnowflakeDestinationTest {
 
         val matcher = pattern.matcher(url)
         Assertions.assertEquals(isMatch, matcher.find())
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testWriteSnowflakeInternal() {
-        val config = deserialize(readResource("internal_staging_config.json"), JsonNode::class.java)
-        val consumer =
-            SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).getSerializedMessageConsumer(
-                config,
-                ConfiguredAirbyteCatalog()
-            ) { _: AirbyteMessage? -> }
-        Assertions.assertEquals(AsyncStreamConsumer::class.java, consumer.javaClass)
     }
 
     companion object {

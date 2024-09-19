@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dbe9b7ae-7b46-4e44-a507-02a343cf7230
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-punk-api
   githubIssueLabel: source-punk-api
   icon: punkapi.svg
@@ -12,11 +12,11 @@ data:
     pypi:
       enabled: true
       packageName: airbyte-source-punk-api
-  registries:
+  registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/punk-api
   tags:
@@ -25,8 +25,12 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
   connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: punk-api_config_dev_null
+          id: 061efb1b-1c03-4d1e-b31a-aebcc85e3ecd
     - suite: acceptanceTests
       testSecrets:
         - name: SECRET_SOURCE-PUNK-API__CREDS
@@ -35,5 +39,5 @@ data:
             type: GSM
             alias: airbyte-connector-testing-secret-store
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:1.2.0@sha256:c22a9d97464b69d6ef01898edf3f8612dc11614f05a84984451dde195f337db9
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
 metadataSpecVersion: "1.0"

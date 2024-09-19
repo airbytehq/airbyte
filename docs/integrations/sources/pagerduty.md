@@ -48,8 +48,24 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                                   | Subject                              |
 | :------ | :--------- | :------------------------------------------------------------- | :----------------------------------- |
+| 0.2.12 | 2024-08-03 | [43061](https://github.com/airbytehq/airbyte/pull/43061) | Update dependencies |
+| 0.2.11 | 2024-07-27 | [42713](https://github.com/airbytehq/airbyte/pull/42713) | Update dependencies |
+| 0.2.10 | 2024-07-20 | [42267](https://github.com/airbytehq/airbyte/pull/42267) | Update dependencies |
+| 0.2.9 | 2024-07-13 | [41725](https://github.com/airbytehq/airbyte/pull/41725) | Update dependencies |
+| 0.2.8 | 2024-07-10 | [41501](https://github.com/airbytehq/airbyte/pull/41501) | Update dependencies |
+| 0.2.7 | 2024-07-09 | [41240](https://github.com/airbytehq/airbyte/pull/41240) | Update dependencies |
+| 0.2.6 | 2024-07-06 | [40803](https://github.com/airbytehq/airbyte/pull/40803) | Update dependencies |
+| 0.2.5 | 2024-06-25 | [40303](https://github.com/airbytehq/airbyte/pull/40303) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [39985](https://github.com/airbytehq/airbyte/pull/39985) | Update dependencies |
+| 0.2.3 | 2024-06-12 | [39115](https://github.com/airbytehq/airbyte/pull/39115) | Make compatible with builder |
+| 0.2.2 | 2024-06-06 | [39169](https://github.com/airbytehq/airbyte/pull/39169) | [autopull] Upgrade base image to v1.2.2 |
 | 0.2.1 | 2024-05-20 | [38429](https://github.com/airbytehq/airbyte/pull/38429) | [autopull] base image + poetry + up_to_date |
 | 0.2.0 | 2023-10-20 | [31160](https://github.com/airbytehq/airbyte/pull/31160) | Migrate to low code |
 | 0.1.23  | 2021-11-12 | [125](https://github.com/faros-ai/airbyte-connectors/pull/125) | Add Pagerduty source and destination |
+
+</details>

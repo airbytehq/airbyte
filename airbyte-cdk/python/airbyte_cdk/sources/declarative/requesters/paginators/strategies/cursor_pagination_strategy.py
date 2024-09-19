@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Mapping, Optional, Union
 
 import requests
@@ -32,7 +32,7 @@ class CursorPaginationStrategy(PaginationStrategy):
     parameters: InitVar[Mapping[str, Any]]
     page_size: Optional[int] = None
     stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._initial_cursor = None
@@ -50,7 +50,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         return self._initial_cursor
 
     def next_page_token(self, response: requests.Response, last_page_size: int, last_record: Optional[Record]) -> Optional[Any]:
-        decoded_response = self.decoder.decode(response)
+        decoded_response = next(self.decoder.decode(response))
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links

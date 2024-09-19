@@ -31,7 +31,7 @@ import DocCardList from '@theme/DocCardList';
     
     *Note:* you were already logged into your company’s Okta account you might not see any login screen and directly get forwarded back to Airbyte Cloud.
   </TabItem>
-  <TabItem value="self-managed" label="Self Hosted">
+  <TabItem value="self-managed" label="Self-Managed">
     Accessing your self hosted Airbyte will automatically forward you to your IdP's login page (e.g. Okta login page). Log into your work account and you’ll be forwarded back to your Airbyte and be logged in.
   </TabItem>
 </Tabs>
