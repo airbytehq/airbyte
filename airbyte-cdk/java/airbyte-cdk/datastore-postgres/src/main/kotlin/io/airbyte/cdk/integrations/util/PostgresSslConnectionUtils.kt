@@ -62,7 +62,7 @@ object PostgresSslConnectionUtils {
             if (encryption.has(PARAM_CLIENT_KEY_PASSWORD))
                 encryption[PARAM_CLIENT_KEY_PASSWORD].asText()
             else ""
-        var keyStorePassword = RandomStringUtils.randomAlphanumeric(10)
+        var keyStorePassword = RandomStringUtils.insecure().nextAlphanumeric(10)
         if (sslPassword.isEmpty()) {
             val file = File(ENCRYPT_FILE_NAME)
             if (file.exists()) {

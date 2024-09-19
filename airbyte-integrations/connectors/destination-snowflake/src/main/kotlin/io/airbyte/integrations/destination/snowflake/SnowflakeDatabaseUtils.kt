@@ -57,7 +57,7 @@ object SnowflakeDatabaseUtils {
     private const val IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake"
 
     @JvmStatic
-    fun createDataSource(config: JsonNode, airbyteEnvironment: String?): HikariDataSource {
+    fun createDataSource(config: JsonNode, airbyteEnvironment: String?): DataSource {
 
         val dataSource = HikariDataSource()
 
