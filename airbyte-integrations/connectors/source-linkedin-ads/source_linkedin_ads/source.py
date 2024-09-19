@@ -114,7 +114,7 @@ class SourceLinkedinAds(YamlDeclarativeSource):
                     )
 
                     # TODO: to avoid breaking changes left as is, but need to update to more adaptive way to avoid words merging
-                    update_specific_key(updated_config, "name", f"Custom{ad_report.get('name')}")
+                    update_specific_key(updated_config, "name", f"custom_{ad_report.get('name')}")
                     update_specific_key(updated_config, "timeGranularity", f"(value:{ad_report.get('time_granularity')})")
 
                     custom_stream_configs.append(updated_config)

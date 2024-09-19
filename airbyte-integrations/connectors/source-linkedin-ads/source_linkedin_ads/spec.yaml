@@ -72,58 +72,58 @@ connectionSpecification:
       examples:
         - 123456789
       default: []
-      ad_analytics_reports:
-        title: Custom Ad Analytics Reports
-        type: array
-        items:
-          type: object
-          title: Ad Analytics Report Configuration
-          description: "Config for custom ad Analytics Report"
-          required:
-            - name
-            - pivot_by
-            - time_granularity
-          properties:
-            name:
-              title: Report Name
-              description: "The name for the custom report."
-              type: string
-            pivot_by:
-              title: Pivot Category
-              description: "Choose a category to pivot your analytics report around. This selection will organize your data based on the chosen attribute, allowing you to analyze trends and performance from different perspectives."
-              type: string
-              enum:
-                - COMPANY
-                - ACCOUNT
-                - SHARE
-                - CAMPAIGN
-                - CREATIVE
-                - CAMPAIGN_GROUP
-                - CONVERSION
-                - CONVERSATION_NODE
-                - CONVERSATION_NODE_OPTION_INDEX
-                - SERVING_LOCATION
-                - CARD_INDEX
-                - MEMBER_COMPANY_SIZE
-                - MEMBER_INDUSTRY
-                - MEMBER_SENIORITY
-                - MEMBER_JOB_TITLE
-                - MEMBER_JOB_FUNCTION
-                - MEMBER_COUNTRY_V2
-                - MEMBER_REGION_V2
-                - MEMBER_COMPANY
-                - PLACEMENT_NAME
-                - IMPRESSION_DEVICE_TYPE
-            time_granularity:
-              title: Time Granularity
-              description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
-              type: string
-              enum:
-                - ALL
-                - DAILY
-                - MONTHLY
-                - YEARLY
-        default: []
+    ad_analytics_reports:
+      title: Custom Ad Analytics Reports
+      type: array
+      items:
+        type: object
+        title: Ad Analytics Report Configuration
+        description: "Config for custom ad Analytics Report"
+        required:
+          - name
+          - pivot_by
+          - time_granularity
+        properties:
+          name:
+            title: Report Name
+            description: "The name for the custom report."
+            type: string
+          pivot_by:
+            title: Pivot Category
+            description: "Choose a category to pivot your analytics report around. This selection will organize your data based on the chosen attribute, allowing you to analyze trends and performance from different perspectives."
+            type: string
+            enum:
+              - COMPANY
+              - ACCOUNT
+              - SHARE
+              - CAMPAIGN
+              - CREATIVE
+              - CAMPAIGN_GROUP
+              - CONVERSION
+              - CONVERSATION_NODE
+              - CONVERSATION_NODE_OPTION_INDEX
+              - SERVING_LOCATION
+              - CARD_INDEX
+              - MEMBER_COMPANY_SIZE
+              - MEMBER_INDUSTRY
+              - MEMBER_SENIORITY
+              - MEMBER_JOB_TITLE
+              - MEMBER_JOB_FUNCTION
+              - MEMBER_COUNTRY_V2
+              - MEMBER_REGION_V2
+              - MEMBER_COMPANY
+              - PLACEMENT_NAME
+              - IMPRESSION_DEVICE_TYPE
+          time_granularity:
+            title: Time Granularity
+            description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
+            type: string
+            enum:
+              - ALL
+              - DAILY
+              - MONTHLY
+              - YEARLY
+      default: []
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
