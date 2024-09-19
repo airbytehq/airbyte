@@ -3,8 +3,7 @@ package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.StreamNamePair
-import io.airbyte.cdk.asStreamNamePair
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
@@ -49,7 +48,7 @@ class InputStateFactory {
                     if (msg.stream == null) {
                         msg.type.toString()
                     } else {
-                        msg.stream.streamDescriptor.asStreamNamePair().toString()
+                        StreamIdentifier.from(msg.stream.streamDescriptor).toString()
                     }
                 }
                 .mapNotNull { (groupKey, groupValues) ->
@@ -61,7 +60,7 @@ class InputStateFactory {
                     }
                     groupValues.last()
                 }
-        val nonGlobalStreams: Map<StreamNamePair, OpaqueStateValue> =
+        val nonGlobalStreams: Map<StreamIdentifier, OpaqueStateValue> =
             streamStates(deduped.mapNotNull { it.stream })
         val globalState: AirbyteGlobalState? =
             deduped.find { it.type == AirbyteStateMessage.AirbyteStateType.GLOBAL }?.global
@@ -73,18 +72,18 @@ class InputStateFactory {
                 globalState.sharedState,
                 OpaqueStateValue::class.java,
             )
-        val globalStreams: Map<StreamNamePair, OpaqueStateValue> =
+        val globalStreams: Map<StreamIdentifier, OpaqueStateValue> =
             streamStates(globalState.streamStates)
         return GlobalInputState(globalStateValue, globalStreams, nonGlobalStreams)
     }
 
     private fun streamStates(
         streamStates: List<AirbyteStreamState>?,
-    ): Map<StreamNamePair, OpaqueStateValue> =
+    ): Map<StreamIdentifier, OpaqueStateValue> =
         (streamStates ?: listOf()).associate { msg: AirbyteStreamState ->
-            val key: StreamNamePair = msg.streamDescriptor.asStreamNamePair()
+            val streamID: StreamIdentifier = StreamIdentifier.from(msg.streamDescriptor)
             val jsonValue: JsonNode = msg.streamState ?: Jsons.objectNode()
-            key to ValidatedJsonUtils.parseUnvalidated(jsonValue, OpaqueStateValue::class.java)
+            streamID to ValidatedJsonUtils.parseUnvalidated(jsonValue, OpaqueStateValue::class.java)
         }
 
     private fun validateStateMessage(message: AirbyteStateMessage) {

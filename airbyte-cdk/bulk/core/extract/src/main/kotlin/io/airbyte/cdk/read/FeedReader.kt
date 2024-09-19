@@ -306,7 +306,7 @@ class FeedReader(
         if (feed is Stream) {
             root.outputConsumer.accept(
                 AirbyteStreamStatusTraceMessage()
-                    .withStreamDescriptor(feed.namePair.asProtocolStreamDescriptor())
+                    .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
                     .withStatus(status),
             )
         }

@@ -64,17 +64,19 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
         var n = 0
         val namespaces: List<String?> = listOf<String?>(null) + metadataQuerier.streamNamespaces()
         for (namespace in namespaces) {
-            for (name in metadataQuerier.streamNames(namespace)) {
+            for (streamID in metadataQuerier.streamNames(namespace)) {
                 try {
-                    metadataQuerier.fields(name, namespace)
+                    metadataQuerier.fields(streamID)
                 } catch (e: Exception) {
                     log.info(e) {
-                        "Query failed on stream '$name' in '${namespace ?: ""}': ${e.message}"
+                        "Query failed on stream '${streamID.name}' in '${namespace ?: ""}': ${e.message}"
                     }
                     n++
                     continue
                 }
-                log.info { "Query successful on stream '$name' in '${namespace ?: ""}'." }
+                log.info {
+                    "Query successful on stream '${streamID.name}' in '${namespace ?: ""}'."
+                }
                 return
             }
         }
