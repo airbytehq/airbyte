@@ -375,19 +375,20 @@ class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
         self._source = source
 
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        try:
-            if hasattr(self._stream, "check_availability"):
-                available, message = self._stream.check_availability(logger, self._source)
+        stream_check_avail = getattr(self._stream, "check_availability", None)
+        if stream_check_avail is not None:
+            try:
+                available, message = stream_check_avail(logger, self._source)
                 if available:
                     return StreamAvailable()
                 else:
                     return StreamUnavailable(str(message))
-            else:
-                # Given no availability strategy, we will assume the stream is available
-                return StreamAvailable()
-        except Exception as e:
-            display_message = self._stream.get_error_display_message(e)
-            if display_message:
-                raise ExceptionWithDisplayMessage(display_message)
-            else:
-                raise e
+            except Exception as e:
+                display_message = self._stream.get_error_display_message(e)
+                if display_message:
+                    raise ExceptionWithDisplayMessage(display_message)
+                else:
+                    raise e
+        else:
+            # Given no availability strategy, we will assume the stream is available
+            return StreamAvailable()
