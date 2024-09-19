@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.SparkSession.Builder;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class IcebergDestination extends BaseConnector implements Destination {
@@ -43,7 +44,7 @@ public class IcebergDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteConnectionStatus check(JsonNode config) {
+  public AirbyteConnectionStatus check(@NotNull JsonNode config) {
     try {
       IcebergCatalogConfig icebergCatalogConfig = icebergCatalogConfigFactory.fromJsonNodeConfig(config);
       icebergCatalogConfig.check();

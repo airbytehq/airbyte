@@ -1,4 +1,4 @@
-# GCS
+# Google Cloud Storage (GCS)
 
 This page guides you through the process of setting up the GCS source connector. This connector supports loading multiple CSV files (non compressed) from a GCS directory. The conntector will check for all files ending in `.csv`, even nested files.
 
@@ -23,7 +23,7 @@ First, you need to select existing or create a new project in the Google Cloud C
 3. Click `Create service account`.
 4. Create a JSON key file for the service user. The contents of this file will be provided as the `service_account` in the UI.
 
-### Grant permisison to GCS
+### Grant permission to GCS
 
 Use the service account ID from above, grant read access to your target bucket. Click [here](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) for more details.
 
