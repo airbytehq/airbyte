@@ -6,7 +6,6 @@ import logging
 from copy import deepcopy
 from typing import Any, List, Mapping, Optional, Tuple
 
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -114,7 +113,7 @@ class SourceLinkedinAds(YamlDeclarativeSource):
                         updated_config, "value", f"{ad_report.get('pivot_by')}", condition_func=lambda d: d.get("path") == ["pivot"]
                     )
 
-
+                    # TODO: to avoid breaking changes left as is, but need to update to more adaptive way to avoid words merging
                     update_specific_key(updated_config, "name", f"custom_{ad_report.get('name')}")
                     update_specific_key(updated_config, "timeGranularity", f"(value:{ad_report.get('time_granularity')})")
 
