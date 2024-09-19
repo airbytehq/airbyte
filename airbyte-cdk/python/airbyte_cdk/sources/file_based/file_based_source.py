@@ -66,7 +66,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         cursor_cls: Type[Union[AbstractConcurrentFileBasedCursor, AbstractFileBasedCursor]] = FileBasedConcurrentCursor,
-        check_all_streams: Optional[bool] = False
+        check_all_streams: bool = False
     ):
         self.stream_reader = stream_reader
         self.spec_class = spec_class
