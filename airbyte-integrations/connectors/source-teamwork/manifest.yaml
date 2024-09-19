@@ -1,0 +1,4206 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  Authentication Docs:
+  https://apidocs.teamwork.com/guides/teamwork/authentication
+
+  API Docs: https://apidocs.teamwork.com/docs/teamwork/v3/
+
+  Website: https://www.teamwork.com/
+
+check:
+  type: CheckStream
+  stream_names:
+    - latestactivity
+
+definitions:
+  streams:
+    latestactivity:
+      type: DeclarativeStream
+      name: latestactivity
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: latestactivity.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - activities
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: dateTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/latestactivity"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projects
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    projects_active:
+      type: DeclarativeStream
+      name: projects_active
+      primary_key:
+        - value
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/metrics/active.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects_active"
+    projects_billable:
+      type: DeclarativeStream
+      name: projects_billable
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projects/metrics/billable.json
+          http_method: GET
+          request_parameters:
+            endDate: "{{ today_utc() }}"
+            startDate: "{{ format_datetime(config.start_date, '%Y-%m-%d') }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects_billable"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: companies.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - companies
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    me_timers:
+      type: DeclarativeStream
+      name: me_timers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: me/timers.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timers
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/me_timers"
+    time_entries:
+      type: DeclarativeStream
+      name: time_entries
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: time.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timelogs
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_entries"
+    timelog_totals:
+      type: DeclarativeStream
+      name: timelog_totals
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: time/total.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timelog_totals"
+    dashboards:
+      type: DeclarativeStream
+      name: dashboards
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: dashboards.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - dashboards
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/dashboards"
+    forms:
+      type: DeclarativeStream
+      name: forms
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: forms.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - forms
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/forms"
+    milestones:
+      type: DeclarativeStream
+      name: milestones
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: milestones.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - milestones
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdOn
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones"
+    milestones_deadlines:
+      type: DeclarativeStream
+      name: milestones_deadlines
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: milestones/metrics/deadlines.json
+          http_method: GET
+          request_parameters:
+            startDate: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            endDate: "{{ today_utc() }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/milestones_deadlines"
+    notebooks:
+      type: DeclarativeStream
+      name: notebooks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: notebooks.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notebooks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notebooks"
+    people:
+      type: DeclarativeStream
+      name: people
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: people.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - people
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/people"
+    notebooks_comments.json:
+      type: DeclarativeStream
+      name: notebooks_comments.json
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: notebooks/{{ stream_partition.notebookId }}/comments.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - comments
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: notebookId
+              stream:
+                $ref: "#/definitions/streams/notebooks"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/notebooks_comments.json"
+    projectcategories:
+      type: DeclarativeStream
+      name: projectcategories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: projectcategories.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - projectCategories
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projectcategories"
+    tasklists:
+      type: DeclarativeStream
+      name: tasklists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tasklists
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasklists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasklists"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tasks.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tags.json
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tags
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    timesheets:
+      type: DeclarativeStream
+      name: timesheets
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: timesheets.json
+          http_method: GET
+          request_parameters:
+            startDate: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            endDate: "{{ today_utc() }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - timesheets
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timesheets"
+    workload_planners:
+      type: DeclarativeStream
+      name: workload_planners
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workload/planners.json
+          http_method: GET
+          request_parameters:
+            startDate: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            endDate: "{{ today_utc() }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: FAIL
+                    http_codes:
+                      - 422
+                    error_message: >-
+                      Some configuration error, Make sure your configurations
+                      are correct
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    error_message: Rate limit hit
+                    error_message_contains: "429"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - planners
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: pageSize
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workload_planners"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config.site_name }}.teamwork.com/projects/api/v3/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/latestactivity"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/projects_active"
+  - $ref: "#/definitions/streams/projects_billable"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/me_timers"
+  - $ref: "#/definitions/streams/time_entries"
+  - $ref: "#/definitions/streams/timelog_totals"
+  - $ref: "#/definitions/streams/dashboards"
+  - $ref: "#/definitions/streams/forms"
+  - $ref: "#/definitions/streams/milestones"
+  - $ref: "#/definitions/streams/milestones_deadlines"
+  - $ref: "#/definitions/streams/notebooks"
+  - $ref: "#/definitions/streams/people"
+  - $ref: "#/definitions/streams/notebooks_comments.json"
+  - $ref: "#/definitions/streams/projectcategories"
+  - $ref: "#/definitions/streams/tasklists"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/timesheets"
+  - $ref: "#/definitions/streams/workload_planners"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - site_name
+      - start_date
+    properties:
+      username:
+        type: string
+        order: 0
+        title: Username
+      password:
+        type: string
+        order: 1
+        title: Password
+        always_show: true
+        airbyte_secret: true
+      site_name:
+        type: string
+        description: The teamwork site name appearing at the url
+        order: 2
+        title: Site Name
+      start_date:
+        type: string
+        order: 3
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    latestactivity: true
+    projects: true
+    projects_active: true
+    projects_billable: true
+    companies: true
+    me_timers: true
+    time_entries: true
+    timelog_totals: true
+    dashboards: true
+    forms: true
+    milestones: true
+    milestones_deadlines: true
+    notebooks: true
+    people: true
+    notebooks_comments.json: true
+    projectcategories: true
+    tasklists: true
+    tasks: true
+    tags: true
+    timesheets: true
+    workload_planners: true
+  testedStreams:
+    latestactivity:
+      hasRecords: true
+      streamHash: eb82b4761f58a4ddf1f995f890348f7e2300e325
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: 920c710a081fc8642ea900ca623971810a67ed33
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects_active:
+      hasRecords: true
+      streamHash: 4a4b914611388e9bb9647e3ae14368c682920222
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    projects_billable:
+      hasRecords: true
+      streamHash: f769d9a52c9a3fa54e4d172cde3d9132b09ac0b3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    companies:
+      hasRecords: true
+      streamHash: afd855a26ffdf47c60d18a3d71d26f519b58fef1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    me_timers:
+      streamHash: 3397d66c554cd0f9d7a5671120d75a81202996fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    time_entries:
+      streamHash: d8ed17ee42111bbda0d6c7b065d900abf0cfce44
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timelog_totals:
+      streamHash: 1f2ccc45d2d4e4c04b571b9d5a9a2b70af3eb495
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    dashboards:
+      streamHash: d01e9ec1c30fbeb0856abc41bd6de0458402f0b3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    forms:
+      streamHash: 5c0107ab64076c18fc7b33a4469644a93de76466
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    milestones:
+      streamHash: 3b4ea7b1dde0392e7d06831a9e9ed27c7c73ad6e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    milestones_deadlines:
+      streamHash: 9ea8bfd106f846402c6de4a813db6c6a23e6cbd5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    notebooks:
+      streamHash: b6be3eacdcda8dfaae87c987d61107916482d6a8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    people:
+      streamHash: 1be0e69dce3e4ff32963e0e5a176492c277f58f3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    notebooks_comments.json:
+      streamHash: 5def6e36ece7c925303d73a85573e3feea3f4b87
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    projectcategories:
+      streamHash: 243ad36422d287fcb8412191a0b77d644628bb98
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasklists:
+      streamHash: 297304f40042d5a2a28877c2a19e0b0f2618a6fc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: 47af917079289525dd1ed21ca0528ec7ea52defb
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tags:
+      streamHash: ed97a8cb7523baad68cd932e21eaf2effe50ab29
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timesheets:
+      streamHash: f80e457a2671f8cdb09f5ff659edf060d675bdd9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    workload_planners:
+      streamHash: c8b4e43cd7275608ac93768c83de8f25e58ade8c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  latestactivity:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      activityType:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      companyId:
+        type:
+          - number
+          - "null"
+      dateTime:
+        type: string
+      dueDate:
+        type:
+          - string
+          - "null"
+      extraDescription:
+        type:
+          - string
+          - "null"
+      forUser:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      forUserId:
+        type:
+          - number
+          - "null"
+      forUserName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isPrivate:
+        type:
+          - number
+          - "null"
+      item:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      itemId:
+        type:
+          - number
+          - "null"
+      itemLink:
+        type:
+          - string
+          - "null"
+      latestActivityType:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      publicInfo:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - dateTime
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      activePages:
+        type:
+          - object
+          - "null"
+        properties:
+          billing:
+            type:
+              - boolean
+              - "null"
+          board:
+            type:
+              - boolean
+              - "null"
+          comments:
+            type:
+              - boolean
+              - "null"
+          files:
+            type:
+              - boolean
+              - "null"
+          finance:
+            type:
+              - boolean
+              - "null"
+          forms:
+            type:
+              - boolean
+              - "null"
+          gantt:
+            type:
+              - boolean
+              - "null"
+          links:
+            type:
+              - boolean
+              - "null"
+          list:
+            type:
+              - boolean
+              - "null"
+          messages:
+            type:
+              - boolean
+              - "null"
+          milestones:
+            type:
+              - boolean
+              - "null"
+          notebooks:
+            type:
+              - boolean
+              - "null"
+          proofs:
+            type:
+              - boolean
+              - "null"
+          riskRegister:
+            type:
+              - boolean
+              - "null"
+          table:
+            type:
+              - boolean
+              - "null"
+          tasks:
+            type:
+              - boolean
+              - "null"
+          tickets:
+            type:
+              - boolean
+              - "null"
+          time:
+            type:
+              - boolean
+              - "null"
+      allowNotifyAnyone:
+        type:
+          - boolean
+          - "null"
+      announcement:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      companyId:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      customFieldValues:
+        type:
+          - array
+          - "null"
+      customfieldValues:
+        type:
+          - array
+          - "null"
+      defaultPrivacy:
+        type:
+          - string
+          - "null"
+      directFileUploadsEnabled:
+        type:
+          - boolean
+          - "null"
+      endAt:
+        type:
+          - string
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      financialBudget:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      financialBudgetId:
+        type:
+          - number
+          - "null"
+      harvestTimersEnabled:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      integrations:
+        type:
+          - object
+          - "null"
+        properties:
+          googleDrive:
+            type:
+              - object
+              - "null"
+            properties:
+              access:
+                type:
+                  - string
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              folder:
+                type:
+                  - string
+                  - "null"
+              folderName:
+                type:
+                  - string
+                  - "null"
+          oneDriveBusiness:
+            type:
+              - object
+              - "null"
+            properties:
+              account:
+                type:
+                  - string
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              folder:
+                type:
+                  - string
+                  - "null"
+              folderName:
+                type:
+                  - string
+                  - "null"
+          sharepoint:
+            type:
+              - object
+              - "null"
+            properties:
+              account:
+                type:
+                  - string
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              folder:
+                type:
+                  - string
+                  - "null"
+              folderName:
+                type:
+                  - string
+                  - "null"
+          xero:
+            type:
+              - object
+              - "null"
+            properties:
+              baseCurrency:
+                type:
+                  - string
+                  - "null"
+              connected:
+                type:
+                  - boolean
+                  - "null"
+              countryCode:
+                type:
+                  - string
+                  - "null"
+              enabled:
+                type:
+                  - boolean
+                  - "null"
+              organisation:
+                type:
+                  - string
+                  - "null"
+      isBillable:
+        type:
+          - boolean
+          - "null"
+      isOnBoardingProject:
+        type:
+          - boolean
+          - "null"
+      isSampleProject:
+        type:
+          - boolean
+          - "null"
+      logo:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notifyCommentIncludeCreator:
+        type:
+          - boolean
+          - "null"
+      notifyEveryone:
+        type:
+          - boolean
+          - "null"
+      notifyTaskAssignee:
+        type:
+          - boolean
+          - "null"
+      overviewStartPage:
+        type:
+          - string
+          - "null"
+      ownedBy:
+        type:
+          - number
+          - "null"
+      ownerId:
+        type:
+          - number
+          - "null"
+      privacyEnabled:
+        type:
+          - boolean
+          - "null"
+      projectOwner:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectOwnerId:
+        type:
+          - number
+          - "null"
+      replyByEmailEnabled:
+        type:
+          - boolean
+          - "null"
+      showAnnouncement:
+        type:
+          - boolean
+          - "null"
+      skipWeekends:
+        type:
+          - boolean
+          - "null"
+      startAt:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      startPage:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subStatus:
+        type:
+          - string
+          - "null"
+      tagIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      tasksStartPage:
+        type:
+          - string
+          - "null"
+      timeBudget:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      timeBudgetId:
+        type:
+          - number
+          - "null"
+      update:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      updateId:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type: string
+      updatedBy:
+        type:
+          - number
+          - "null"
+      workflows:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+    required:
+      - id
+      - updatedAt
+  projects_active:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      value:
+        type: number
+    required:
+      - value
+  projects_billable:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - name
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accounts:
+        type:
+          - number
+          - "null"
+      addressOne:
+        type:
+          - string
+          - "null"
+      addressTwo:
+        type:
+          - string
+          - "null"
+      canSeePrivate:
+        type:
+          - boolean
+          - "null"
+      cid:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      clients:
+        type:
+          - number
+          - "null"
+      collaborators:
+        type:
+          - number
+          - "null"
+      companyNameUrl:
+        type:
+          - string
+          - "null"
+      contacts:
+        type:
+          - number
+          - "null"
+      countryCode:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      emailOne:
+        type:
+          - string
+          - "null"
+      emailThree:
+        type:
+          - string
+          - "null"
+      emailTwo:
+        type:
+          - string
+          - "null"
+      fax:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isOwner:
+        type:
+          - boolean
+          - "null"
+      logoUrl:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      updatedAt:
+        type: string
+      website:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updatedAt
+  me_timers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      intervals:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            duration:
+              type:
+                - number
+                - "null"
+            from:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            to:
+              type:
+                - string
+                - "null"
+      lastStartedAt:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      running:
+        type:
+          - boolean
+          - "null"
+      serverTime:
+        type:
+          - string
+          - "null"
+      task:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      taskId:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updatedAt
+  time_entries:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      billable:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type: string
+      dateCreated:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      hasStartTime:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      isBillable:
+        type:
+          - boolean
+          - "null"
+      loggedBy:
+        type:
+          - number
+          - "null"
+      loggedByUserId:
+        type:
+          - number
+          - "null"
+      minutes:
+        type:
+          - number
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      task:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      taskId:
+        type:
+          - number
+          - "null"
+      timeLogged:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - createdAt
+  timelog_totals:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      subTasks:
+        type:
+          - object
+          - "null"
+        properties:
+          estimatedMinutes:
+            type:
+              - number
+              - "null"
+          minutes:
+            type:
+              - number
+              - "null"
+          minutesBillable:
+            type:
+              - number
+              - "null"
+      time-totals:
+        type:
+          - object
+          - "null"
+        properties:
+          estimatedMinutes:
+            type:
+              - number
+              - "null"
+          estimatedMinutesActive:
+            type:
+              - number
+              - "null"
+          estimatedMinutesCompleted:
+            type:
+              - number
+              - "null"
+          estimatedMinutesFiltered:
+            type:
+              - number
+              - "null"
+          estimatedMinutesWithLoggedTime:
+            type:
+              - number
+              - "null"
+          minutes:
+            type:
+              - number
+              - "null"
+          minutesBillable:
+            type:
+              - number
+              - "null"
+          minutesBilled:
+            type:
+              - number
+              - "null"
+          minutesNonBillable:
+            type:
+              - number
+              - "null"
+          minutesNonBilled:
+            type:
+              - number
+              - "null"
+  dashboards:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      displayOrder:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      isDefault:
+        type:
+          - boolean
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      userId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updatedAt
+  forms:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      allowTeamworkBranding:
+        type:
+          - boolean
+          - "null"
+      confirmationMessage:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - object
+          - "null"
+        properties:
+          version:
+            type:
+              - number
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          banner:
+            type:
+              - object
+              - "null"
+            properties:
+              primaryColor:
+                type:
+                  - string
+                  - "null"
+              x:
+                type:
+                  - number
+                  - "null"
+              "y":
+                type:
+                  - number
+                  - "null"
+          definition:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                conditionalLogic:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    actions:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          name:
+                            type:
+                              - string
+                              - "null"
+                    conditions:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          conditions:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties: {}
+                          operator:
+                            type:
+                              - string
+                              - "null"
+                    enabled:
+                      type:
+                        - boolean
+                        - "null"
+                help:
+                  type:
+                    - string
+                    - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                tw_id:
+                  type:
+                    - string
+                    - "null"
+                tw_type:
+                  type:
+                    - string
+                    - "null"
+                validation:
+                  type:
+                    - string
+                    - "null"
+          logo:
+            type:
+              - object
+              - "null"
+            properties: {}
+          name:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+      createFormTask:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      hostObject:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      id:
+        type: number
+      installation:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      isShared:
+        type:
+          - boolean
+          - "null"
+      promptAdditionalSubmissions:
+        type:
+          - boolean
+          - "null"
+      showProgressBar:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      token:
+        type:
+          - object
+          - "null"
+        properties:
+          canonicalURL:
+            type:
+              - string
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+      totalSubmissions:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type: string
+      updatedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+    required:
+      - id
+      - updatedAt
+  milestones:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      canComplete:
+        type:
+          - boolean
+          - "null"
+      canEdit:
+        type:
+          - boolean
+          - "null"
+      commentsCount:
+        type:
+          - number
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdOn:
+        type: string
+      creatorUserId:
+        type:
+          - number
+          - "null"
+      deadline:
+        type:
+          - string
+          - "null"
+      descriptionHTML:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isDeleted:
+        type:
+          - boolean
+          - "null"
+      lastChangedOn:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      originalDueDate:
+        type:
+          - string
+          - "null"
+      private:
+        type:
+          - boolean
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      reminder:
+        type:
+          - boolean
+          - "null"
+      responsibleParties:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      responsiblePartyIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - number
+          - "null"
+      userFollowingChanges:
+        type:
+          - boolean
+          - "null"
+      userFollowingComments:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - createdOn
+  milestones_deadlines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      date:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+  notebooks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      changeFollowers:
+        type:
+          - object
+          - "null"
+        properties:
+          userIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          users:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+      commentFollowers:
+        type:
+          - object
+          - "null"
+        properties:
+          userIds:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          users:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+      commentsCount:
+        type:
+          - number
+          - "null"
+      contents:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdByUserID:
+        type:
+          - number
+          - "null"
+      dateCreated:
+        type:
+          - string
+          - "null"
+      dateUpdated:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      isFullWidth:
+        type:
+          - boolean
+          - "null"
+      isPrivate:
+        type:
+          - boolean
+          - "null"
+      latestVersionNo:
+        type:
+          - number
+          - "null"
+      lockdownId:
+        type:
+          - number
+          - "null"
+      locked:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notebookVersion:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      notebookVersionCreatedDateTime:
+        type:
+          - string
+          - "null"
+      notebookVersionID:
+        type:
+          - number
+          - "null"
+      notebookVersionUpdatedDateTime:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      readCommentsCount:
+        type:
+          - number
+          - "null"
+      secureContent:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type: string
+      updatedBy:
+        type:
+          - number
+          - "null"
+      updatedByUserID:
+        type:
+          - number
+          - "null"
+      userFollowingChanges:
+        type:
+          - boolean
+          - "null"
+      userFollowingComments:
+        type:
+          - boolean
+          - "null"
+      versionCount:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - updatedAt
+  people:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      avatarUrl:
+        type:
+          - string
+          - "null"
+      canAddProjects:
+        type:
+          - boolean
+          - "null"
+      company:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      companyId:
+        type:
+          - number
+          - "null"
+      companyRoleId:
+        type:
+          - number
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isAdmin:
+        type:
+          - boolean
+          - "null"
+      isClientUser:
+        type:
+          - boolean
+          - "null"
+      isServiceAccount:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      lengthOfDay:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      userCost:
+        type:
+          - number
+          - "null"
+      userRate:
+        type:
+          - number
+          - "null"
+      workingHour:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      workingHoursId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  notebooks_comments.json:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      body:
+        type:
+          - string
+          - "null"
+      commentLink:
+        type:
+          - string
+          - "null"
+      contentType:
+        type:
+          - string
+          - "null"
+      dateLastEdited:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      deletedByUserId:
+        type:
+          - number
+          - "null"
+      fileCount:
+        type:
+          - number
+          - "null"
+      files:
+        type:
+          - array
+          - "null"
+      htmlBody:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      installation:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      installationId:
+        type:
+          - number
+          - "null"
+      isPrivate:
+        type:
+          - number
+          - "null"
+      lastEditedBy:
+        type:
+          - number
+          - "null"
+      lastEditedByUserId:
+        type:
+          - number
+          - "null"
+      lockdownID:
+        type:
+          - number
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          isRead:
+            type:
+              - boolean
+              - "null"
+          permissions:
+            type:
+              - object
+              - "null"
+            properties:
+              canDelete:
+                type:
+                  - boolean
+                  - "null"
+              canEdit:
+                type:
+                  - boolean
+                  - "null"
+      object:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      objectId:
+        type:
+          - number
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      peopleNotifiedCount:
+        type:
+          - number
+          - "null"
+      postedBy:
+        type:
+          - number
+          - "null"
+      postedByUserId:
+        type:
+          - number
+          - "null"
+      postedDateTime:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      reactionsCount:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  projectcategories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      parent:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      parentId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  tasklists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      displayOrder:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      isPinned:
+        type:
+          - boolean
+          - "null"
+      isPrivate:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type: string
+    required:
+      - id
+      - updatedAt
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      accumulatedEstimatedMinutes:
+        type:
+          - number
+          - "null"
+      assigneeCompanies:
+        type:
+          - array
+          - "null"
+      assigneeTeams:
+        type:
+          - array
+          - "null"
+      assigneeUserIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      assigneeUsers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      assignees:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      changeFollowers:
+        type:
+          - array
+          - "null"
+      commentFollowers:
+        type:
+          - array
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - number
+          - "null"
+      createdByUserId:
+        type:
+          - number
+          - "null"
+      dateUpdated:
+        type:
+          - string
+          - "null"
+      decimalDisplayOrder:
+        type:
+          - number
+          - "null"
+      descriptionContentType:
+        type:
+          - string
+          - "null"
+      displayOrder:
+        type:
+          - number
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      estimateMinutes:
+        type:
+          - number
+          - "null"
+      hasDeskTickets:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      isPrivate:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notify:
+        type:
+          - boolean
+          - "null"
+      originalDueDate:
+        type:
+          - string
+          - "null"
+      parentTaskId:
+        type:
+          - number
+          - "null"
+      priority:
+        type:
+          - string
+          - "null"
+      progress:
+        type:
+          - number
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      tagIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      tasklist:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      tasklistId:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type: string
+      updatedBy:
+        type:
+          - number
+          - "null"
+      userPermissions:
+        type:
+          - object
+          - "null"
+        properties:
+          canAddSubtasks:
+            type:
+              - boolean
+              - "null"
+          canComplete:
+            type:
+              - boolean
+              - "null"
+          canEdit:
+            type:
+              - boolean
+              - "null"
+          canLogTime:
+            type:
+              - boolean
+              - "null"
+          canViewEstTime:
+            type:
+              - boolean
+              - "null"
+      workflowStages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            stageId:
+              type:
+                - number
+                - "null"
+            stageTaskDisplayOrder:
+              type:
+                - number
+                - "null"
+            workflowId:
+              type:
+                - number
+                - "null"
+    required:
+      - id
+      - updatedAt
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      projectId:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  timesheets:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      dates:
+        type:
+          - object
+          - "null"
+        properties:
+          "2024-09-01":
+            type:
+              - object
+              - "null"
+            properties:
+              totalMinutes:
+                type:
+                  - number
+                  - "null"
+          "2024-09-02":
+            type:
+              - object
+              - "null"
+            properties:
+              totalMinutes:
+                type:
+                  - number
+                  - "null"
+          "2024-09-03":
+            type:
+              - object
+              - "null"
+            properties:
+              totalMinutes:
+                type:
+                  - number
+                  - "null"
+          "2024-09-04":
+            type:
+              - object
+              - "null"
+            properties:
+              totalMinutes:
+                type:
+                  - number
+                  - "null"
+          "2024-09-05":
+            type:
+              - object
+              - "null"
+            properties:
+              totalMinutes:
+                type:
+                  - number
+                  - "null"
+      entity:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      isCustomRow:
+        type:
+          - boolean
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+  workload_planners:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      capacities:
+        type:
+          - object
+          - "null"
+        properties:
+          "2024-09-02":
+            type:
+              - object
+              - "null"
+            properties:
+              capacity:
+                type:
+                  - number
+                  - "null"
+              estimateMinutesTotal:
+                type:
+                  - number
+                  - "null"
+              lengthOfDayMinutes:
+                type:
+                  - number
+                  - "null"
+              tasks:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    estimateMinutes:
+                      type:
+                        - number
+                        - "null"
+                    taskId:
+                      type:
+                        - number
+                        - "null"
+          "2024-09-03":
+            type:
+              - object
+              - "null"
+            properties:
+              capacity:
+                type:
+                  - number
+                  - "null"
+              estimateMinutesTotal:
+                type:
+                  - number
+                  - "null"
+              lengthOfDayMinutes:
+                type:
+                  - number
+                  - "null"
+              tasks:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    estimateMinutes:
+                      type:
+                        - number
+                        - "null"
+                    taskId:
+                      type:
+                        - number
+                        - "null"
+          "2024-09-04":
+            type:
+              - object
+              - "null"
+            properties:
+              capacity:
+                type:
+                  - number
+                  - "null"
+              estimateMinutesTotal:
+                type:
+                  - number
+                  - "null"
+              lengthOfDayMinutes:
+                type:
+                  - number
+                  - "null"
+              tasks:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    estimateMinutes:
+                      type:
+                        - number
+                        - "null"
+                    taskId:
+                      type:
+                        - number
+                        - "null"
+          "2024-09-05":
+            type:
+              - object
+              - "null"
+            properties:
+              capacity:
+                type:
+                  - number
+                  - "null"
+              estimateMinutesTotal:
+                type:
+                  - number
+                  - "null"
+              lengthOfDayMinutes:
+                type:
+                  - number
+                  - "null"
+              tasks:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    estimateMinutes:
+                      type:
+                        - number
+                        - "null"
+                    taskId:
+                      type:
+                        - number
+                        - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+      userId:
+        type:
+          - number
+          - "null"
