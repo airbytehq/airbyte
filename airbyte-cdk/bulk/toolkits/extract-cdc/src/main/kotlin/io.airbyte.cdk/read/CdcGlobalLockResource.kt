@@ -11,9 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @Singleton
 @Replaces(GlobalLockResource::class)
-class CdcGlobalLockResource(
-    configuration: SourceConfiguration
-) : GlobalLockResource {
+class CdcGlobalLockResource(configuration: SourceConfiguration) : GlobalLockResource {
 
     private val isCdcComplete = AtomicBoolean(configuration.global.not())
 
