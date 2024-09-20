@@ -8,9 +8,10 @@ The Connection Timeline displays information about several types of relevant con
 - Sync
 - Refresh
 - Clear
-- Connector Version changes (coming soon)
+- Connection configuration changes
 - Schema changes (coming soon)
-- Connection configuration changes (coming soon)
+- Connector Version changes (coming soon)
+- Connector configuration changes (coming soon)
 
 To review the Connection Timeline, click a connection in the list and navigate to the "Timeline" tab to view its event history. The page displays recent events and their statuses. Where relevant, the event will also show the user who took the action.
 
