@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
-package io.airbyte.integrations.destination.e2e_test
+package io.airbyte.integrations.destination.dev_null
 
 import com.google.common.collect.ImmutableMap
 import io.airbyte.commons.json.Jsons

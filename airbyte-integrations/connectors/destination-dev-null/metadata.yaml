@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.6.0
   dockerRepository: airbyte/destination-dev-null
   githubIssueLabel: destination-dev-null
   icon: airbyte.svg
@@ -14,7 +14,7 @@ data:
     oss:
       enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/e2e-test
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
   tags:
     - language:java
   ab_internal:
