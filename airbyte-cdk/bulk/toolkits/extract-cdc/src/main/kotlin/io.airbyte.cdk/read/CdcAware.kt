@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.read
 
+import com.google.common.annotations.VisibleForTesting
+
 interface CdcAware {
     fun cdcReadyToRun(): Boolean {
         return when (this) {
@@ -14,10 +16,9 @@ interface CdcAware {
         }
     }
 
-    fun isCdcDoneRunning(): Boolean {
-        // Are all cdc runs done for this session
-        return mutex.isLocked.not() && mutex.canLock().not()
-    }
+    // Are all cdc runs done for this session
+    val isCdcDoneRunning: Boolean
+        get() = mutex.isLocked.not() && mutex.canLock().not()
 
     // Release cdc mutex
     fun cdcRunEnded() = mutex.unlock()
@@ -25,5 +26,8 @@ interface CdcAware {
     companion object {
         // We can currenly run cdc only once per session
         private val mutex = LimitedLockMutex(1)
+
+        @VisibleForTesting
+        fun rollback() = mutex.rollback()
     }
 }

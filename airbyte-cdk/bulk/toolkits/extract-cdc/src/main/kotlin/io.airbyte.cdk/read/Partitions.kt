@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.sync.Mutex
 
 /** A [Mutex] wrapper that only allows locking n times */
-internal class LimitedLockMutex(maxCount: Int) {
+internal class LimitedLockMutex(private val maxCount: Int) {
     private val mutex = Mutex()
     private var locksLeft = AtomicInteger(maxCount)
 
@@ -29,6 +29,8 @@ internal class LimitedLockMutex(maxCount: Int) {
     }
 
     @Synchronized fun unlock() = mutex.unlock()
+
+    @Synchronized fun rollback() = locksLeft.set(maxCount)
 
     val isLocked: Boolean
         get() = mutex.isLocked
