@@ -18,6 +18,7 @@ from pydash.objects import get
 class ValidatorOptions:
     docs_path: str
     prerelease_tag: Optional[str] = None
+    disable_dockerhub_checks: bool = False
 
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
@@ -29,6 +30,9 @@ _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID = "64a2f99c-542f-4af8-9a6f-355f1217b4
 def validate_metadata_images_in_dockerhub(
     metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if validator_opts.disable_dockerhub_checks:
+        return True, None
+
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
     base_docker_version = get(metadata_definition_dict, "data.dockerImageTag")
