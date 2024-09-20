@@ -1,65 +1,33 @@
-# Gong source connector
-
+# Gong
 This directory contains the manifest-only connector for `source-gong`.
-This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
 
-For information about how to configure and use this connector within Airbyte, see [the connector's full documentation](https://docs.airbyte.com/integrations/sources/gong).
+I changed it and hope that things get updated now
 
-## Local development
+## Usage
+There are multiple ways to use this connector:
+- You can use this connector as any other connector in Airbyte Marketplace.
+- You can load this connector in `pyairbyte` using `get_source`!
+- You can open this connector in Connector Builder, edit it, and publish to your workspaces.
 
-We recommend using the Connector Builder to edit this connector.
-Using either Airbyte Cloud or your local Airbyte OSS instance, navigate to the **Builder** tab and select **Import a YAML**.
-Then select the connector's `manifest.yaml` file to load the connector into the Builder. You're now ready to make changes to the connector!
+Please refer to the manifest-only connector documentation for more details.
 
-If you prefer to develop locally, you can follow the instructions below.
+## Local Development
+We recommend you use the Connector Builder to edit this connector.
 
-### Building the docker image
+But, if you want to develop this connector locally, you can use the following steps.
 
-You can build any manifest-only connector with `airbyte-ci`:
+### Environment Setup
+You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
 
-1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
-2. Run the following command to build the docker image:
-
+### Build
+This will create a dev image (`source-gong:dev`) that you can use to test the connector locally.
 ```bash
 airbyte-ci connectors --name=source-gong build
 ```
 
-An image will be available on your host with the tag `airbyte/source-gong:dev`.
-
-### Creating credentials
-
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/gong)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec` object in the connector's `manifest.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-
-### Running as a docker container
-
-Then run any of the standard source connector commands:
-
-```bash
-docker run --rm airbyte/source-gong:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-gong:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-gong:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-gong:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
-```
-
-### Running the CI test suite
-
-You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
-
+### Test
+This will run the acceptance tests for the connector.
 ```bash
 airbyte-ci connectors --name=source-gong test
 ```
 
-## Publishing a new version of the connector
-
-If you want to contribute changes to `source-gong`, here's how you can do that:
-1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
-2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-gong test`
-3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
-    - bump the `dockerImageTag` value in in `metadata.yaml`
-4. Make sure the connector documentation and its changelog is up to date (`docs/integrations/sources/gong.md`).
-5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
-6. Pat yourself on the back for being an awesome contributor.
-7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
-8. Once your PR is merged, the new version of the connector will be automatically published to Docker Hub and our connector registry.
