@@ -79,6 +79,8 @@ class SalesforceErrorHandler(ErrorHandler):
         elif isinstance(response, requests.Response):
             if response.ok:
                 if self._is_bulk_job_status_check(response) and response.json().get("state") == "Failed":
+                    # Important: this means that there are no retry for Salesforce jobs that once they fail. If we want to enable retry,
+                    # we will need to be more granular by reading the `errorMessage`
                     raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
@@ -137,10 +139,7 @@ class SalesforceErrorHandler(ErrorHandler):
     @staticmethod
     def _is_bulk_job_creation(response: requests.Response) -> bool:
         # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
-        return (
-            response.request.method == "POST"
-            and bool(re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url))
-        )
+        return response.request.method == "POST" and bool(re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url))
 
     def _handle_bulk_job_creation_endpoint_specific_errors(
         self, response: requests.Response, error_code: Optional[str], error_message: str
