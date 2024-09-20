@@ -554,6 +554,8 @@ class SourceStripe(ConcurrentSourceAdapter):
                     slice_range=slice_range,
                 ),
             )
+            if self._SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION.get(type(stream))
+            else stream
             for stream in streams
         ]
 
