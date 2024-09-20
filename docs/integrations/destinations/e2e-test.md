@@ -49,6 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.5.1   | 2024-09-18 | [45702](https://github.com/airbytehq/airbyte/pull/45702) | removing destination-e2e. Use destination-dev-null instead                               |
 | 0.5.0   | 2024-09-18 | [45650](https://github.com/airbytehq/airbyte/pull/45650) | upgrade cdk                               |
 | 0.4.1   | 2024-09-18 | [45649](https://github.com/airbytehq/airbyte/pull/45649) | convert test code to kotlin                               |
 | 0.4.0   | 2024-09-18 | [45648](https://github.com/airbytehq/airbyte/pull/45648) | convert production code to kotlin                         |
