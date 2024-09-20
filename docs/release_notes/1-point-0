@@ -2,7 +2,7 @@
 
 ## airbyte v1.0.0
 
-This page includes new features and improvements to the Airbyte products as of v1.0. We are excited to share the release of v1.0 with you, which contains many improvements and additions to enhance the reliability and transparency of Airbyte.
+This page includes new features and improvements to the Airbyte products we're excited to share as a part of the 1.0 release. Airbyte v1.0 contains many improvements and additions to enhance the reliability, scalability, and uses of Airbyte.
 
 ## Ease of deployment
 
@@ -20,7 +20,7 @@ This page includes new features and improvements to the Airbyte products as of v
 
 ![Status Page](./assets/full-status-page.png)
 
-- Many sources, in particular S3, have become faster! With CDK 2.0, the protocol now uses Pydantic V2 and removes the serialization of each record. We also improved Databricks and S3 destinations to enable faster sync speeds, checkpointing, and modernization to our Destinations V2 framework
+- Many sources, in particular S3, have become faster. With CDK 2.0, the protocol now uses Pydantic V2 and removes the serialization of each record. We also improved Databricks and S3 destinations to enable faster sync speeds, checkpointing, and modernization to our Destinations V2 framework.
 
 ## Resiliency at Scale
 
@@ -42,6 +42,8 @@ This page includes new features and improvements to the Airbyte products as of v
 - AI Assist now builds connectors from scratch for you with just a link to the API docs. 
 
 - Anyone can now contribute new connectors directly from the builder to add a new connector directly to Airbyte's Marketplace. Additionally, connectors can be forked directly from the UI for faster edits, ensuring our connectors stay up-to-date.
+
+- Airbyte supports writing to several vector store destinations, including pgVector, Pinecone, and Snowflake Cortex.
 
 ## Self-Managed Enterprise
 
