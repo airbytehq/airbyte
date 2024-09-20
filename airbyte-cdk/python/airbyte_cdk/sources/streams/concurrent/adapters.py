@@ -327,6 +327,55 @@ class StreamPartitionGenerator(PartitionGenerator):
             )
 
 
+class CursorPartitionGenerator(PartitionGenerator):
+    """
+    This class generates partitions using the concurrent cursor and iterates through state slices to generate partitions.
+
+    It is used when synchronizing a stream in incremental or full-refresh mode where state information is maintained
+    across partitions. Each partition represents a subset of the stream's data and is determined by the cursor's state.
+    """
+
+    def __init__(
+            self,
+            stream: Stream,
+            sync_mode: SyncMode,
+            cursor: Cursor,
+    ):
+        """
+        Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
+
+        :param stream: The stream to delegate to for partition generation.
+        :param sync_mode: The synchronization mode.
+        :param cursor: A Cursor object that maintains the state and the cursor field.
+        """
+        self._stream = stream
+        self._sync_mode = sync_mode
+        self._cursor = cursor
+        self._cursor_field = self._cursor.cursor_field
+        self._state = self._cursor.state
+        self.message_repository = self._cursor.message_repository
+
+    def generate(self) -> Iterable[Partition]:
+        """
+        Generate partitions based on the slices in the cursor's state.
+
+        This method iterates through the list of slices found in the cursor's state, and for each slice, it generates
+        a `StreamPartition` object.
+
+        :return: An iterable of StreamPartition objects.
+        """
+        for state_slice in self._cursor.state.get("slices", []):
+            yield StreamPartition(
+                self._stream,
+                copy.deepcopy(state_slice),
+                self.message_repository,
+                self._sync_mode,
+                self._cursor_field,
+                self._state,
+                self._cursor
+            )
+
+
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):

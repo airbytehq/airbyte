@@ -11,6 +11,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.adapters import (
     AvailabilityStrategyFacade,
+    CursorPartitionGenerator,
     StreamAvailabilityStrategy,
     StreamFacade,
     StreamPartition,
@@ -378,3 +379,33 @@ def test_get_error_display_message(exception, expected_display_message):
     display_message = facade.get_error_display_message(exception)
 
     assert display_message == expected_display_message
+
+
+@pytest.mark.parametrize(
+    "sync_mode",
+    [
+        pytest.param(SyncMode.full_refresh, id="test_full_refresh"),
+        pytest.param(SyncMode.incremental, id="test_incremental"),
+    ],
+)
+def test_cursor_partition_generator(sync_mode):
+    stream = Mock()
+    cursor = Mock()
+    message_repository = Mock()
+
+    state_slices = [{"slice": 1}, {"slice": 2}]
+    cursor.state = {"slices": state_slices}
+    cursor.cursor_field = "cursor_field"
+    cursor.message_repository = message_repository
+
+    partition_generator = CursorPartitionGenerator(stream, sync_mode, cursor)
+
+    partitions = list(partition_generator.generate())
+
+    generated_slices = []
+
+    for partition in partitions:
+        assert isinstance(partition, StreamPartition)
+        generated_slices.append(partition.to_slice())
+
+    assert generated_slices == state_slices

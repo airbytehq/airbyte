@@ -148,7 +148,7 @@ class ConcurrentCursor(Cursor):
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
-        self._message_repository = message_repository
+        self.message_repository = message_repository
         self._connector_state_converter = connector_state_converter
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
@@ -166,6 +166,10 @@ class ConcurrentCursor(Cursor):
     @property
     def state(self) -> MutableMapping[str, Any]:
         return self._concurrent_state
+
+    @property
+    def cursor_field(self) -> CursorField:
+        return self._cursor_field
 
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[CursorValueType, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
@@ -236,7 +240,7 @@ class ConcurrentCursor(Cursor):
             self._connector_state_converter.convert_to_state_message(self._cursor_field, self.state),
         )
         state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
-        self._message_repository.emit_message(state_message)
+        self.message_repository.emit_message(state_message)
 
     def _merge_partitions(self) -> None:
         self.state["slices"] = self._connector_state_converter.merge_intervals(self.state["slices"])
