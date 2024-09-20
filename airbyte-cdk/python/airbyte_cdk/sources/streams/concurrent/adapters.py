@@ -336,11 +336,11 @@ class CursorPartitionGenerator(PartitionGenerator):
     """
 
     def __init__(
-            self,
-            stream: Stream,
-            message_repository: MessageRepository,
-            sync_mode: SyncMode,
-            cursor: Cursor,
+        self,
+        stream: Stream,
+        message_repository: MessageRepository,
+        sync_mode: SyncMode,
+        cursor: Cursor,
     ):
         """
         Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
@@ -374,7 +374,7 @@ class CursorPartitionGenerator(PartitionGenerator):
                 self._sync_mode,
                 [self._cursor_field.cursor_field_key],
                 self._state,
-                self._cursor
+                self._cursor,
             )
 
 
