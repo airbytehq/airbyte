@@ -50,3 +50,7 @@ def run():
 
     if source:
         launch(source, _args)
+
+
+if __name__ == "__main__":
+    run()
