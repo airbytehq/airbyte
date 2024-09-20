@@ -33,10 +33,10 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 <CardWithIcon title="Start Syncing Data" description="Deploy locally or sign up for Airbyte Cloud to sync data in minutes" ctaText="Get Started" ctaLink="./using-airbyte/getting-started/" icon="enterprise" />
 
-<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 350+ sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="cloud" variant="secondary" />
+<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 350+ sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="cloud" ctaVariant="secondary" />
 
 <CardWithIcon title="Contribute to Airbyte" description="Learn how to contribute to Airbyte's code, connectors or documentation
-" ctaText="Learn More" ctaLink="./contributing-to-airbyte/" icon="oss" variant="secondary" />
+" ctaText="Learn More" ctaLink="./contributing-to-airbyte/" icon="oss" ctaVariant="secondary" />
 
 </Grid>
 
