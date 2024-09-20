@@ -12,19 +12,20 @@ def test_transform_record(zip_file, mocked_reader, logger):
         config=Mock(), catalog_schema=Mock(), stream_reader=Mock(), availability_strategy=Mock(), discovery_policy=Mock(),parsers=Mock(),
         validation_policy=Mock(), errors_collector=Mock(), cursor=Mock()
     )
-
+    last_updated = zip_file.last_modified.isoformat()
     unzipped_file = mocked_reader.unzip_files(zip_file, logger)
-    transformed_record = stream.transform_record({"field1": 1}, unzipped_file)
+    transformed_record = stream.transform_record({"field1": 1}, unzipped_file, last_updated)
 
     assert transformed_record["_ab_source_file_url"] == unzipped_file.displayed_uri
     assert transformed_record["_ab_source_file_url"] != unzipped_file.uri
 
+    last_updated = datetime.today().isoformat()
     csv_file = GCSRemoteFile(
         uri="https://storage.googleapis.com/test/test",
-        last_modified=datetime.today(),
+        last_modified=last_updated,
         mime_type = "csv"
     )
-    transformed_record = stream.transform_record({"field1": 1}, csv_file)
+    transformed_record = stream.transform_record({"field1": 1}, csv_file, last_updated)
 
     assert transformed_record["_ab_source_file_url"] == csv_file.uri
     assert transformed_record["_ab_source_file_url"] != csv_file.displayed_uri
