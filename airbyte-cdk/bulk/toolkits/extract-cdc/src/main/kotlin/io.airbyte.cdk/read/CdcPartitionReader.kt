@@ -37,7 +37,7 @@ class CdcPartitionReader<S : CdcSharedState>(
 ) : PartitionReader, CdcAware, CdcResourceTaker {
 
     private val log = KotlinLogging.logger {}
-    private var engine: DebeziumEngine<ChangeEvent<String?, String?>>? = null
+    private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
     private var numRecords = 0L
     private var initialOpaqueStateValue: OpaqueStateValue = ObjectMapper().createObjectNode()
     private val outputConsumer = cdcContext.outputConsumer
@@ -69,7 +69,7 @@ class CdcPartitionReader<S : CdcSharedState>(
         // running the debezium engine (as there are no new changes) and build the initial offset
         if (opaqueStateValue != null) {
             engine = createDebeziumEngine()
-            engine?.run()
+            engine.run()
         } else {
             initialOpaqueStateValue = initialCdcStateCreatorFactory.make()
         }
@@ -89,7 +89,7 @@ class CdcPartitionReader<S : CdcSharedState>(
         // Release global CDC lock
     }
 
-    fun createDebeziumEngine(): DebeziumEngine<ChangeEvent<String?, String?>>? {
+    fun createDebeziumEngine(): DebeziumEngine<ChangeEvent<String?, String?>> {
         log.info {
             "Using DBZ version: ${DebeziumEngine::class.java.getPackage().implementationVersion}"
         }
@@ -209,6 +209,6 @@ class CdcPartitionReader<S : CdcSharedState>(
         // TODO : send close analytics message
         // TODO : Close the engine. Note that engine must be closed in a different thread
         // than the running engine.
-        CoroutineScope(Dispatchers.IO).launch { engine?.close() }
+        CoroutineScope(Dispatchers.IO).launch { engine.close() }
     }
 }
