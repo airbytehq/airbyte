@@ -2,7 +2,7 @@ data:
   connectorSubtype: unknown
   connectorType: destination
   definitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
-  dockerImageTag: 0.5.0
+  dockerImageTag: 0.5.1
   dockerRepository: airbyte/destination-e2e-test
   githubIssueLabel: destination-e2e-test
   icon: airbyte.svg
@@ -12,7 +12,7 @@ data:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/e2e-test
   tags:
