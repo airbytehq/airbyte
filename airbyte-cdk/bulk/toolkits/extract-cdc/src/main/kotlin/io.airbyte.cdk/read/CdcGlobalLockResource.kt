@@ -4,14 +4,18 @@
 
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.command.SourceConfiguration
 import io.micronaut.context.annotation.Replaces
+import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Singleton
 @Replaces(GlobalLockResource::class)
-class CdcGlobalLockResource : GlobalLockResource {
+class CdcGlobalLockResource(
+    configuration: SourceConfiguration
+) : GlobalLockResource {
 
-    private val isCdcComplete = AtomicBoolean()
+    private val isCdcComplete = AtomicBoolean(configuration.global.not())
 
     fun markCdcAsComplete() {
         isCdcComplete.set(true)
