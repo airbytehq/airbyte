@@ -14,9 +14,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class TestingSilentDestinationAcceptanceTest : DestinationAcceptanceTest() {
-    override fun getImageName(): String {
-        return "airbyte/destination-e2e-test:dev"
-    }
+    override val imageName = "airbyte/destination-e2e-test:dev"
 
     override fun getConfig(): JsonNode {
         return Jsons.jsonNode(
@@ -38,9 +36,9 @@ class TestingSilentDestinationAcceptanceTest : DestinationAcceptanceTest() {
 
     override fun retrieveRecords(
         testEnv: TestDestinationEnv?,
-        streamName: String?,
-        namespace: String?,
-        streamSchema: JsonNode?
+        streamName: String,
+        namespace: String,
+        streamSchema: JsonNode
     ): List<JsonNode> {
         return emptyList()
     }
@@ -61,8 +59,14 @@ class TestingSilentDestinationAcceptanceTest : DestinationAcceptanceTest() {
         Assertions.assertEquals(0, actual.size)
     }
 
+    open override fun getDefaultSchema(config: JsonNode): String? {
+        return super.getDefaultSchema(config) ?: "default_schema"
+    }
+
     // Skip because `retrieveRecords` returns an empty list at all times.
     @Disabled @Test override fun testSyncNotFailsWithNewFields() {}
+
+    @Disabled @Test override fun testAirbyteTimeTypes() {}
 
     // This test assumes that dedup support means normalization support.
     // Override it to do nothing.

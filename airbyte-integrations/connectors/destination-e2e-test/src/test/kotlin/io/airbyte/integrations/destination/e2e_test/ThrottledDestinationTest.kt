@@ -12,6 +12,7 @@ import java.util.*
 import java.util.function.Consumer
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
 
 /**
  * This source is designed to be a switch statement for our suite of highly-specific test sources.
@@ -30,7 +31,7 @@ class ThrottledDestinationTest {
                 )
             )
 
-        val consumer = ThrottledDestination().getConsumer(config, null, outputRecordCollector)
+        val consumer = ThrottledDestination().getConsumer(config, mock(), outputRecordCollector)
 
         consumer.accept(anotherRecord)
         consumer.accept(anotherRecord)

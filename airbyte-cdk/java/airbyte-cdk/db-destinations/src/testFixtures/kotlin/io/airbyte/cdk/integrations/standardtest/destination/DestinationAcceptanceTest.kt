@@ -1041,6 +1041,7 @@ abstract class DestinationAcceptanceTest(
                     )
                 )
                 .lines()
+                .filter { it.isNotEmpty() }
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val config = getConfig()
         runSyncAndVerifyStateOutput(
@@ -1486,7 +1487,7 @@ abstract class DestinationAcceptanceTest(
      */
     @Test
     @Throws(Exception::class)
-    fun testSyncNotFailsWithNewFields() {
+    open fun testSyncNotFailsWithNewFields() {
         if (!implementsOverwrite()) {
             LOGGER.info { "Destination's spec.json does not support overwrite sync mode." }
             return
@@ -1724,7 +1725,7 @@ abstract class DestinationAcceptanceTest(
     }
 
     @Test
-    fun testAirbyteTimeTypes() {
+    open fun testAirbyteTimeTypes() {
         val configuredCatalog =
             Jsons.deserialize(
                 MoreResources.readResource("v0/every_time_type_configured_catalog.json"),
@@ -2171,7 +2172,7 @@ abstract class DestinationAcceptanceTest(
     }
 
     // ignores emitted at.
-    protected fun assertSameMessages(
+    open protected fun assertSameMessages(
         expected: List<AirbyteMessage>,
         actual: List<AirbyteRecordMessage>,
         pruneAirbyteInternalFields: Boolean
