@@ -197,9 +197,7 @@ class JsonSchemaTransformerTest {
             ) as ObjectNode
         val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
         assertEquals(
-            Jsons.deserialize(
-                """{"oneOf":[{"type":"string"},{"type":"integer"}]}"""
-            ),
+            Jsons.deserialize("""{"oneOf":[{"type":"string"},{"type":"integer"}]}"""),
             mapped
         )
     }
