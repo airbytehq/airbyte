@@ -17,7 +17,7 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core')
 
-    api 'com.google.cloud:google-cloud-bigquery:2.37.0'
+    api 'com.google.cloud:google-cloud-bigquery:2.42.2'
 
     testFixturesApi testFixtures(project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core'))
 }

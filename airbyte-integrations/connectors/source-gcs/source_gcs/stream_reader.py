@@ -123,6 +123,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         except OSError as oe:
             logger.warning(ERROR_MESSAGE_ACCESS.format(uri=file.uri, bucket=self.config.bucket))
             logger.exception(oe)
+            raise oe
         return result
 
     def unzip_files(self, file: GCSRemoteFile, logger: logging.Logger) -> GCSRemoteFile:

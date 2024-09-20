@@ -1,6 +1,5 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
-
+import logging
 import time
 from datetime import datetime
 from enum import Enum
@@ -9,11 +8,17 @@ from http import HTTPStatus
 from airbyte_cdk import AirbyteTracedException, FailureType
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
+LOGGER = logging.getLogger("airbyte")
+
 
 class SearchScope(Enum):
     OWN_DRIVES = "OWN_DRIVES"
     SHARED_ITEMS = "SHARED_ITEMS"
     BOTH = "BOTH"
+
+
+class FolderNotFoundException(Exception):
+    pass
 
 
 class MicrosoftSharePointRemoteFile(RemoteFile):
@@ -77,6 +82,10 @@ def execute_query_with_retry(obj, max_retries=5, initial_retry_after=5, max_retr
                 time.sleep(retry_after)
                 retries += 1
                 retry_after = min(retry_after * 2, max_retry_after)  # Double the wait time for next retry, up to a max limit
+            elif hasattr(ex, "response") and ex.response.status_code == HTTPStatus.NOT_FOUND:
+                error_message = f"Requested item/folder could not be found: url: {ex.response.url}"
+                LOGGER.warning(error_message)
+                raise FolderNotFoundException(error_message)
             else:
                 # Re-raise exceptions that are not related to rate limits or service availability
                 raise AirbyteTracedException.from_exception(ex, message="Caught unexpected exception")

@@ -1,8 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import datetime
+from unittest.mock import Mock
+
 import pytest
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
-from source_gcs import Config
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from source_gcs import Config, SourceGCSStreamReader
 
 
 def test_get_matching_files_with_no_prefix(logger, mocked_reader):
@@ -19,6 +24,32 @@ def test_get_matching_files_with_no_prefix(logger, mocked_reader):
     # Assert there is a valid prefix:glob pair, so for loop enters execution.
     assert mocked_reader._gcs_client.get_bucket.called == 1
 
+
+def test_open_file_with_compression(logger):
+    reader = SourceGCSStreamReader()
+    reader._config = Config(
+        service_account='{"type": "service_account"}',
+        bucket="test_bucket",
+        streams=[],
+    )
+    file = RemoteFile(uri="http://some.uri/file.gz?query=param", last_modified=datetime.datetime.now())
+    file.mime_type = "file.gz"
+
+    with pytest.raises(OSError):
+        reader.open_file(file, FileReadMode.READ_BINARY, None, logger)
+
+
+def test_open_file_without_compression(remote_file, logger):
+    reader = SourceGCSStreamReader()
+    reader._config = Config(
+        service_account='{"type": "service_account"}',
+        bucket="test_bucket",
+        streams=[],
+    )
+
+    with pytest.raises(OSError):
+        reader.open_file(remote_file, FileReadMode.READ, None, logger)
+
 def test_unzip_files(mocked_reader, zip_file, logger, caplog):
     unzipped_file = mocked_reader.unzip_files(zip_file, logger)
 
@@ -26,4 +57,3 @@ def test_unzip_files(mocked_reader, zip_file, logger, caplog):
     assert unzipped_file.displayed_uri
     assert unzipped_file.uri
     assert "Picking up first file test.csv from zip archive" in caplog.text
-
