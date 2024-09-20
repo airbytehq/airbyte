@@ -91,7 +91,7 @@ class AbstractFileBasedStream(Stream):
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Iterable[Mapping[str, Any] | AirbyteMessage]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         This method acts as an adapter between the generic Stream interface and the file-based's
