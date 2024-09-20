@@ -68,9 +68,8 @@ interface DebeziumEventConverter {
 
 @Singleton
 @Secondary
-class NoOpDebeziumEventConverted: DebeziumEventConverter {
+class NoOpDebeziumEventConverted : DebeziumEventConverter {
     override fun toAirbyteMessage(record: DebeziumRecord): AirbyteMessage {
         TODO("Not yet implemented")
     }
-
 }

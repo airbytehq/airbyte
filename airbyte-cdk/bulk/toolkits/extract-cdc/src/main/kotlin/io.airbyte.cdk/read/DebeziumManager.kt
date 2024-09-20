@@ -22,7 +22,7 @@ interface DebeziumManager {
 
 @Singleton
 @Secondary
-class NoOpDebeziumManager: DebeziumManager {
+class NoOpDebeziumManager : DebeziumManager {
     override fun getPropertiesForSync(opaqueStateValue: OpaqueStateValue?): Properties {
         TODO("Not yet implemented")
     }
@@ -34,5 +34,4 @@ class NoOpDebeziumManager: DebeziumManager {
     override fun readOffsetState(): OpaqueStateValue {
         TODO("Not yet implemented")
     }
-
 }
