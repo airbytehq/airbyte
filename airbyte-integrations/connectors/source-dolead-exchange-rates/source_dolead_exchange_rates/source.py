@@ -3,6 +3,7 @@
 #
 import json
 from abc import ABC
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -28,7 +29,9 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Basic full refresh stream
 class DoleadExchangeRatesStream(HttpStream, ABC):
-    url_base = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/"
+    # Get the current date in YYYY-MM-DD format
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    url_base = f"https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@{current_date}/v1/currencies/"
     primary_key = None
 
     def __init__(self, **kwargs):
