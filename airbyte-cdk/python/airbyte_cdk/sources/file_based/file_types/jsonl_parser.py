@@ -89,6 +89,7 @@ class JsonlParser(FileTypeParser):
         logger: logging.Logger,
         read_limit: bool = False,
     ) -> Iterable[Dict[str, Any]]:
+        """Parse records and emit as iterable of dictionaries."""
         with stream_reader.open_file(file, self.file_read_mode, self.ENCODING, logger) as fp:
             read_bytes = 0
 
@@ -149,24 +150,28 @@ class JsonlParser(FileTypeParser):
         # instance the 's3://' protocol, bucket name, etc.
         fully_qualified_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
         storage_options = stream_reader.polars_storage_options
+        logger.info("Using bulk processing mode to read JSONL file: %s", fully_qualified_uri)
 
-        dataframe: pl.DataFrame | pl.LazyFrame
-        match config.bulk_mode.resolve():
-            case BulkMode.LAZY:
-                # Define the lazy dataframe but don't load it into memory.
-                logger.info("Using lazy bulk mode to read JSONL file.")
-                dataframe = pl.scan_ndjson(fully_qualified_uri, storage_options=storage_options)
-            case BulkMode.INMEM:
-                # Load the entire file into memory. In the future, we may avoid memory overflow
-                # by forcing a match batch size and returning an iterator of DataFrames.
-                logger.info("Using in-mem bulk mode to read JSONL file.")
-                dataframe = pl.read_ndjson(fully_qualified_uri, storage_options=storage_options)
-            case _:
-                raise ValueError(f"Unsupported bulk mode: {config.bulk_mode}")
-
-        # Add columns containing file name and last modified date.
-        dataframe = dataframe.with_columns(
+        lazyframe: pl.LazyFrame = pl.scan_ndjson(
+            fully_qualified_uri,
+            storage_options=storage_options,
+            row_index_name="_ab_record_index",
+            infer_schema_length=10_000,
+        ).with_columns(
             pl.lit(file.uri).alias("_ab_source_file_url"),
             pl.lit(file.last_modified).alias("_ab_source_file_last_modified")
         )
-        yield dataframe
+
+        def slice_generator(
+            lazyframe: pl.LazyFrame,
+            batch_size: int = 50_000,
+        ) -> Iterable[pl.DataFrame]:
+            offset = 0
+            while True:
+                slice = lazyframe.slice(offset=offset, length=batch_size).collect(streaming=True)
+                height = slice.height
+                if height == 0:
+                    break
+                yield slice
+
+        yield from slice_generator(lazyframe)

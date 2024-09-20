@@ -6,22 +6,41 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any, MutableMapping
 
+from airbyte_cdk import ConnectorStateManager, CursorField, MessageRepository
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.concurrent.cursor import FileBasedConcurrentCursor
 from airbyte_cdk.sources.file_based.types import StreamState
 
 logger = logging.Logger("source-S3")
 
 
-class Cursor(DefaultFileBasedCursor):
+class Cursor(FileBasedConcurrentCursor):
     _DATE_FORMAT = "%Y-%m-%d"
     _LEGACY_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     _V4_MIGRATION_BUFFER = timedelta(hours=1)
     _V3_MIN_SYNC_DATE_FIELD = "v3_min_sync_date"
 
-    def __init__(self, stream_config: FileBasedStreamConfig, **_: Any):
-        super().__init__(stream_config)
+    def __init__(
+        self,
+        stream_config: FileBasedStreamConfig,
+        stream_name: str,
+        stream_namespace: str | None,
+        stream_state: MutableMapping[str, Any],
+        message_repository: MessageRepository,
+        connector_state_manager: ConnectorStateManager,
+        cursor_field: CursorField,
+    ) -> None:
+        super().__init__(
+            stream_config=stream_config,
+            stream_name=stream_name,
+            stream_namespace=stream_namespace,
+            stream_state=stream_state,
+            message_repository=message_repository,
+            connector_state_manager=connector_state_manager,
+            cursor_field=cursor_field,
+        )
         self._running_migration = False
         self._v3_migration_start_datetime = None
 
@@ -32,7 +51,7 @@ class Cursor(DefaultFileBasedCursor):
         else:
             self._running_migration = False
         self._v3_migration_start_datetime = (
-            datetime.strptime(value.get(Cursor._V3_MIN_SYNC_DATE_FIELD), DefaultFileBasedCursor.DATE_TIME_FORMAT)
+            datetime.strptime(value.get(Cursor._V3_MIN_SYNC_DATE_FIELD), FileBasedConcurrentCursor.DATE_TIME_FORMAT)
             if Cursor._V3_MIN_SYNC_DATE_FIELD in value
             else None
         )
@@ -45,7 +64,7 @@ class Cursor(DefaultFileBasedCursor):
                 **state,
                 **{
                     Cursor._V3_MIN_SYNC_DATE_FIELD: datetime.strftime(
-                        self._v3_migration_start_datetime, DefaultFileBasedCursor.DATE_TIME_FORMAT
+                        self._v3_migration_start_datetime, FileBasedConcurrentCursor.DATE_TIME_FORMAT
                     )
                 },
             }
@@ -55,7 +74,7 @@ class Cursor(DefaultFileBasedCursor):
     def _should_sync_file(self, file: RemoteFile, logger: logging.Logger) -> bool:
         """
         Never sync files earlier than the v3 migration start date. V3 purged the history from the state, so we assume all files were already synced
-        Else if the currenty sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
+        Else if the currently sync is migrating from v3 to v4, sync all files that were modified within one hour of the last sync
         Else sync according to the default logic
         """
         if self._v3_migration_start_datetime and file.last_modified < self._v3_migration_start_datetime:
@@ -77,7 +96,7 @@ class Cursor(DefaultFileBasedCursor):
                 datetime.strptime(item, Cursor._DATE_FORMAT)
 
             # verify the format of the last_modified cursor
-            last_modified_at_cursor = value.get(DefaultFileBasedCursor.CURSOR_FIELD)
+            last_modified_at_cursor = value.get(FileBasedConcurrentCursor.CURSOR_FIELD)
             if not last_modified_at_cursor:
                 return False
             datetime.strptime(last_modified_at_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
@@ -105,7 +124,7 @@ class Cursor(DefaultFileBasedCursor):
         }
         """
         converted_history = {}
-        legacy_cursor = legacy_state[DefaultFileBasedCursor.CURSOR_FIELD]
+        legacy_cursor = legacy_state[FileBasedConcurrentCursor.CURSOR_FIELD]
         cursor_datetime = datetime.strptime(legacy_cursor, Cursor._LEGACY_DATE_TIME_FORMAT)
         logger.info(f"Converting v3 -> v4 state. v3_cursor={legacy_cursor} v3_history={legacy_state.get('history')}")
 
@@ -116,14 +135,14 @@ class Cursor(DefaultFileBasedCursor):
                 if filename in converted_history:
                     if datetime_obj > datetime.strptime(
                         converted_history[filename],
-                        DefaultFileBasedCursor.DATE_TIME_FORMAT,
+                        FileBasedConcurrentCursor.DATE_TIME_FORMAT,
                     ):
-                        converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
+                        converted_history[filename] = datetime_obj.strftime(FileBasedConcurrentCursor.DATE_TIME_FORMAT)
                     else:
                         # If the file was already synced with a later timestamp, ignore
                         pass
                 else:
-                    converted_history[filename] = datetime_obj.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT)
+                    converted_history[filename] = datetime_obj.strftime(FileBasedConcurrentCursor.DATE_TIME_FORMAT)
 
         if converted_history:
             filename, _ = max(converted_history.items(), key=lambda x: (x[1], x[0]))
@@ -141,8 +160,8 @@ class Cursor(DefaultFileBasedCursor):
         v3_migration_start_datetime = cursor_datetime - Cursor._V4_MIGRATION_BUFFER
         return {
             "history": converted_history,
-            DefaultFileBasedCursor.CURSOR_FIELD: cursor,
-            Cursor._V3_MIN_SYNC_DATE_FIELD: v3_migration_start_datetime.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT),
+            FileBasedConcurrentCursor.CURSOR_FIELD: cursor,
+            Cursor._V3_MIN_SYNC_DATE_FIELD: v3_migration_start_datetime.strftime(FileBasedConcurrentCursor.DATE_TIME_FORMAT),
         }
 
     @staticmethod

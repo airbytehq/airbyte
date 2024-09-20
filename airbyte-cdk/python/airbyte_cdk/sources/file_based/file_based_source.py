@@ -187,43 +187,61 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 )
                 self._validate_input_schema(stream_config)
 
-                sync_mode = self._get_sync_mode_from_catalog(stream_config.name)
+                sync_mode: SyncMode | None = self._get_sync_mode_from_catalog(stream_config.name)
+                # Note: sync_mode may be `None` in `check` and `discover` modes.
 
-                if sync_mode == SyncMode.full_refresh and hasattr(self, "_concurrency_level") and self._concurrency_level is not None:
+                # Incremental sync but non-concurrent cursor. This is not allowed.
+                if (
+                    hasattr(self, "_concurrency_level") and self._concurrency_level is not None
+                    and not issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
+                ):
+                    self.logger.warning(
+                        "An internal error occurred. The cursor class must be a concurrent "
+                        "cursor if concurrency level is set. "
+                        "Falling back to non-concurrent execution, which may be slower."
+                    )
+                    self._concurrency_level = None
+
+                if not hasattr(self, "_concurrency_level") or self._concurrency_level is None:
+                    # Concurrency not supported for this stream.
+                    cursor = self.cursor_cls(stream_config)
+                    stream = self._make_default_stream(stream_config, cursor)
+                    streams.append(stream)
+                    continue
+
+                # Else, we have a concurrency level set and a valid concurrent cursor class.
+
+                if sync_mode == SyncMode.full_refresh or sync_mode is None:
                     cursor = FileBasedFinalStateCursor(
                         stream_config=stream_config, stream_namespace=None, message_repository=self.message_repository
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
                         self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
                     )
+                    streams.append(stream)
+                    continue
 
-                elif (
-                    sync_mode == SyncMode.incremental
-                    and issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)
-                    and hasattr(self, "_concurrency_level")
-                    and self._concurrency_level is not None
-                ):
-                    assert (
-                        state_manager is not None
-                    ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."
+                # Else, incremental sync with concurrent cursor:
 
-                    cursor = self.cursor_cls(
-                        stream_config,
-                        stream_config.name,
-                        None,
-                        stream_state,
-                        self.message_repository,
-                        state_manager,
-                        CursorField(DefaultFileBasedStream.ab_last_mod_col),
-                    )
-                    stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
-                    )
-                else:
-                    cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor)
+                assert (
+                    state_manager is not None
+                ), "No ConnectorStateManager was created, but it is required for incremental syncs. This is unexpected. Please contact Support."
 
+                cursor = self.cursor_cls(
+                    stream_config,
+                    stream_config.name,
+                    None,
+                    stream_state,
+                    self.message_repository,
+                    state_manager,
+                    CursorField(DefaultFileBasedStream.ab_last_mod_col),
+                )
+                stream = FileBasedStreamFacade.create_from_stream(
+                    self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                )
                 streams.append(stream)
+                continue
+
             return streams
 
         except ValidationError as exc:

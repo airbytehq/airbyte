@@ -28,18 +28,15 @@ class ValidationPolicy(Enum):
 
 
 # TODO: Consider defaulting to DISABLED if unstable
-DEFAULT_BULK_MODE = "LAZY"
+DEFAULT_BULK_MODE = "DISABLED"
 
 
-class ResolvedBulkMode(str, Enum):
+class ResolvedBulkMode(Enum):
     DISABLED = "DISABLED"
-
-    # TODO: Consider dropping INMEM and LAZY in favor of ENABLED and DISABLED
-    INMEM = "INMEM"
-    LAZY = "LAZY"
+    ENABLED = "ENABLED"
 
 
-class BulkMode(str, Enum):
+class BulkMode(Enum):
     """Enabled bulk processing for file-based streams.
 
     The in-memory mode is the fastest but requires enough memory to store all the records in memory.
@@ -51,19 +48,11 @@ class BulkMode(str, Enum):
     ENABLED = "ENABLED"
     AUTO = "AUTO"
 
-    # TODO: Consider dropping INMEM and LAZY in favor of ENABLED and DISABLED
-    INMEM = "INMEM"
-    LAZY = "LAZY"
-
     def resolve(bulk_mode: BulkMode) -> ResolvedBulkMode:
         if bulk_mode == BulkMode.AUTO:
             return ResolvedBulkMode(DEFAULT_BULK_MODE)
 
-        if bulk_mode == BulkMode.ENABLED:
-            return ResolvedBulkMode.INMEM
-
-        return ResolvedBulkMode(bulk_mode)
-
+        return ResolvedBulkMode.DISABLED if bulk_mode == BulkMode.DISABLED else ResolvedBulkMode.ENABLED
 
 
 class FileBasedStreamConfig(BaseModel):
