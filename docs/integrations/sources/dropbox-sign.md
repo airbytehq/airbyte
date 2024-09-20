@@ -8,6 +8,8 @@ Dropbox Sign is a simple, easy-to-use way to get documents signed securely onlin
 | `api_key` | `string` | API Key. API key to use. Find it at https://app.hellosign.com/home/myAccount#api |  |
 | `start_date` | `string` | Start date.  |  |
 
+See the [API docs](https://developers.hellosign.com/api/reference/authentication/#api-key-management) for details on generating an API Key.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
