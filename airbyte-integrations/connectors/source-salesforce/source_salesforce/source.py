@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta, timezone
-from typing import Any, Callable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import isodate
 import pendulum
@@ -15,9 +15,9 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.source import TState
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, CursorValueType, FinalStateCursor, GapType
-from airbyte_cdk.sources.streams.concurrent.state_converters.abstract_stream_state_converter import AbstractStreamStateConverter
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -170,24 +170,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         schemas = sf_object.generate_schemas(stream_objects)
         default_args = [sf_object, authenticator, config]
         streams = []
-
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self.state)
-        start = datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc)
-        lookback_window = timedelta(seconds=LOOKBACK_SECONDS)
-        slice_range = isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30)
-
-        describe_stream = Describe(sf_api=sf_object, catalog=self.catalog)
-        describe_stream_cursor = self._initialize_cursor(
-            describe_stream,
-            state_manager,
-            describe_stream.state_converter,
-            self._get_slice_boundary_fields(describe_stream, state_manager),
-            start,
-            describe_stream.state_converter.get_end_provider(),
-            lookback_window=lookback_window,
-            slice_range=slice_range,
-        )
-
         for stream_name, sobject_options in stream_objects.items():
             json_schema = schemas.get(stream_name, {})
 
@@ -210,23 +193,29 @@ class SourceSalesforce(ConcurrentSourceAdapter):
                 )
                 continue
 
-            converter = stream.state_converter
-
-            cursor = self.initialize_cursor(
-                stream,
-                state_manager,
-                converter,
-                self._get_slice_boundary_fields(stream, state_manager),
-                start,
-                converter.get_end_provider(),
-                lookback_window=lookback_window,
-                slice_range=slice_range,
-            )
-
-            streams.append(self.convert_to_concurrent_stream(logger, stream, cursor=cursor))
-
-        streams.append(self.convert_to_concurrent_stream(logger, describe_stream, cursor=describe_stream_cursor))
+            streams.append(self._wrap_for_concurrency(config, stream, state_manager))
+        streams.append(self._wrap_for_concurrency(config, Describe(sf_api=sf_object, catalog=self.catalog), state_manager))
         return streams
+
+    def _wrap_for_concurrency(self, config, stream, state_manager):
+        stream_slicer_cursor = None
+        if stream.cursor_field:
+            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
+            if hasattr(stream, "set_cursor"):
+                stream.set_cursor(stream_slicer_cursor)
+        if hasattr(stream, "parent") and hasattr(stream.parent, "set_cursor"):
+            stream_slicer_cursor = self._create_stream_slicer_cursor(config, state_manager, stream)
+            stream.parent.set_cursor(stream_slicer_cursor)
+
+        if not stream_slicer_cursor or self._get_sync_mode_from_catalog(stream) == SyncMode.full_refresh:
+            cursor = FinalStateCursor(
+                stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
+            )
+            state = None
+        else:
+            cursor = stream_slicer_cursor
+            state = cursor.state
+        return StreamFacade.create_from_stream(stream, self, logger, state, cursor)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         if not config.get("start_date"):
@@ -235,6 +224,32 @@ class SourceSalesforce(ConcurrentSourceAdapter):
         stream_objects = sf.get_validated_streams(config=config, catalog=self.catalog)
         streams = self.generate_streams(config, stream_objects, sf)
         return streams
+
+    def _create_stream_slicer_cursor(
+        self, config: Mapping[str, Any], state_manager: ConnectorStateManager, stream: Stream
+    ) -> ConcurrentCursor:
+        """
+        We have moved the generation of stream slices to the concurrent CDK cursor
+        """
+        cursor_field_key = stream.cursor_field or ""
+        if not isinstance(cursor_field_key, str):
+            raise AssertionError(f"Nested cursor field are not supported hence type str is expected but got {cursor_field_key}.")
+        cursor_field = CursorField(cursor_field_key)
+        stream_state = state_manager.get_stream_state(stream.name, stream.namespace)
+        return ConcurrentCursor(
+            stream.name,
+            stream.namespace,
+            stream_state,
+            self.message_repository,
+            state_manager,
+            stream.state_converter,
+            cursor_field,
+            self._get_slice_boundary_fields(stream, state_manager),
+            datetime.fromtimestamp(pendulum.parse(config["start_date"]).timestamp(), timezone.utc),
+            stream.state_converter.get_end_provider(),
+            timedelta(seconds=LOOKBACK_SECONDS),
+            isodate.parse_duration(config["stream_slice_step"]) if "stream_slice_step" in config else timedelta(days=30),
+        )
 
     def _get_slice_boundary_fields(self, stream: Stream, state_manager: ConnectorStateManager) -> Optional[Tuple[str, str]]:
         return ("start_date", "end_date")
