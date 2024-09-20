@@ -84,7 +84,8 @@ object TestFixtures {
             BufferingOutputConsumer(ClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
             constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
-            ConcurrencyResource(configuration)
+            ConcurrencyResource(configuration),
+            NoOpGlobalLockResource()
         )
     }
 

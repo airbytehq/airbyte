@@ -30,16 +30,13 @@ sealed class JdbcPartitionsCreatorFactory<
                 if (partition == null) {
                     CreateNoPartitions
                 } else {
-                    partitionsCreator(partition, stateQuerier)
+                    partitionsCreator(partition)
                 }
             }
         }
     }
 
-    abstract fun partitionsCreator(
-        partition: P,
-        stateQuerier: StateQuerier
-    ): JdbcPartitionsCreator<A, S, P>
+    abstract fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P>
 }
 
 /** Sequential JDBC implementation of [PartitionsCreatorFactory]. */
@@ -53,11 +50,8 @@ class JdbcSequentialPartitionsCreatorFactory<
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
 
-    override fun partitionsCreator(
-        partition: P,
-        stateQuerier: StateQuerier
-    ): JdbcPartitionsCreator<A, S, P> =
-        JdbcSequentialPartitionsCreator(partition, stateQuerier, partitionFactory)
+    override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
+        JdbcSequentialPartitionsCreator(partition, partitionFactory)
 }
 
 /** Concurrent JDBC implementation of [PartitionsCreatorFactory]. */
@@ -71,11 +65,8 @@ class JdbcConcurrentPartitionsCreatorFactory<
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
 
-    override fun partitionsCreator(
-        partition: P,
-        stateQuerier: StateQuerier
-    ): JdbcPartitionsCreator<A, S, P> =
-        JdbcConcurrentPartitionsCreator(partition, stateQuerier, partitionFactory)
+    override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
+        JdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }
 
 private const val MODE_PROPERTY = "${JDBC_PROPERTY_PREFIX}.mode"

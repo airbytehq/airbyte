@@ -78,6 +78,7 @@ class CdcPartitionReader(
 
     override fun releaseResources() {
         acquiredThread.getAndSet(null)?.close()
+        cdcContext.cdcGlobalLockResource.markCdcAsComplete()
     }
 
     fun createDebeziumEngine(): DebeziumEngine<ChangeEvent<String?, String?>> {

@@ -13,5 +13,6 @@ data class CdcContext(
     val debeziumManager: DebeziumManager,
     val positionMapperFactory: CdcPositionMapper.Factory,
     val eventConverter: DebeziumEventConverter,
-    val initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory
+    val initialCdcStateCreatorFactory: InitialCdcStateCreatorFactory,
+    val cdcGlobalLockResource: CdcGlobalLockResource,
 )

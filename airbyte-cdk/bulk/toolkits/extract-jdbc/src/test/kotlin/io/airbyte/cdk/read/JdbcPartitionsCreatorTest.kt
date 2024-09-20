@@ -88,13 +88,7 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition = factory.create(stream, opaqueStateValue = null).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcConcurrentPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
         val partitions: List<DefaultJdbcSplittableSnapshotWithCursorPartition> =
             concurrentPartitions(stream, factory, readers)
         val streamState: DefaultJdbcStreamState = partitions.first().streamState
@@ -169,13 +163,7 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcConcurrentPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
         val partitions: List<DefaultJdbcSplittableSnapshotPartition> =
             concurrentPartitions(stream, factory, readers)
         val streamState: DefaultJdbcStreamState = partitions.first().streamState
@@ -198,13 +186,7 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcConcurrentPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcConcurrentPartitionsCreator(initialPartition, factory).runInTest()
         val partitions: List<DefaultJdbcSplittableSnapshotPartition> =
             concurrentPartitions(stream, factory, readers)
         // No sampling means no splitting.
@@ -224,13 +206,7 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcSequentialPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcSplittableSnapshotPartition =
             sequentialPartition(stream, factory, readers)
         Assertions.assertNull(readerPartition.streamState.cursorUpperBound)
@@ -296,13 +272,7 @@ class JdbcPartitionsCreatorTest {
         val factory = sharedState.factory()
         val initialPartition = factory.create(stream, opaqueStateValue(pk = 22)).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcSequentialPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcSplittableSnapshotPartition =
             sequentialPartition(stream, factory, readers)
         Assertions.assertNull(readerPartition.streamState.cursorUpperBound)
@@ -334,13 +304,7 @@ class JdbcPartitionsCreatorTest {
         val initialPartition =
             factory.create(stream, opaqueStateValue(cursor = cursorCheckpoint)).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcSequentialPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcCursorIncrementalPartition =
             sequentialPartition(stream, factory, readers)
         Assertions.assertEquals(
@@ -378,13 +342,7 @@ class JdbcPartitionsCreatorTest {
         val initialPartition =
             factory.create(stream, opaqueStateValue(cursor = cursorCheckpoint)).asPartition()
         factory.assertFailures()
-        val readers =
-            JdbcSequentialPartitionsCreator(
-                    initialPartition,
-                    TestFixtures.MockStateQuerier,
-                    factory
-                )
-                .runInTest()
+        val readers = JdbcSequentialPartitionsCreator(initialPartition, factory).runInTest()
         val readerPartition: DefaultJdbcCursorIncrementalPartition =
             sequentialPartition(stream, factory, readers)
         Assertions.assertEquals(ts, readerPartition.cursor)

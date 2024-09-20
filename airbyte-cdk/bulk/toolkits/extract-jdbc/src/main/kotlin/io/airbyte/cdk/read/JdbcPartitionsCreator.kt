@@ -18,7 +18,6 @@ sealed class JdbcPartitionsCreator<
     P : JdbcPartition<S>,
 >(
     val partition: P,
-    val stateQuerier: StateQuerier,
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : PartitionsCreator {
     private val log = KotlinLogging.logger {}
@@ -36,14 +35,6 @@ sealed class JdbcPartitionsCreator<
     fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
-        if (configuration.global) {
-            for (global in stateQuerier.feeds.filterIsInstance<Global>()) {
-                // When CDC is involved, wait for CDC to make progress before snapshotting.
-                if (stateQuerier.current(global) == null) {
-                    return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
-                }
-            }
-        }
         val acquiredResources: AcquiredResources =
             partition.tryAcquireResourcesForCreator()
                 ?: return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
@@ -129,9 +120,8 @@ class JdbcSequentialPartitionsCreator<
     P : JdbcPartition<S>,
 >(
     partition: P,
-    stateQuerier: StateQuerier,
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreator<A, S, P>(partition, stateQuerier, partitionFactory) {
+) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
 
     override suspend fun run(): List<PartitionReader> {
@@ -180,9 +170,8 @@ class JdbcConcurrentPartitionsCreator<
     P : JdbcPartition<S>,
 >(
     partition: P,
-    stateQuerier: StateQuerier,
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-) : JdbcPartitionsCreator<A, S, P>(partition, stateQuerier, partitionFactory) {
+) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
 
     override suspend fun run(): List<PartitionReader> {
