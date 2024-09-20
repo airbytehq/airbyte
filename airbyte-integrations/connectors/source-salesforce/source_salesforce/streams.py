@@ -51,11 +51,7 @@ from requests import exceptions
 
 from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
-from .rate_limiting import (
-    BulkNotSupportedException,
-    SalesforceErrorHandler,
-    default_backoff_handler,
-)
+from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
@@ -740,7 +736,11 @@ class BulkSalesforceStream(SalesforceStream):
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
                 job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                    job_repository, stream_slices, self._job_tracker, self._message_repository, exceptions_to_break_on=[BulkNotSupportedException]
+                    job_repository,
+                    stream_slices,
+                    self._job_tracker,
+                    self._message_repository,
+                    exceptions_to_break_on=[BulkNotSupportedException],
                 ),
             ),
             config={},

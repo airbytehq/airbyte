@@ -1,14 +1,15 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
 from typing import Any
 from unittest import TestCase
 
 import pytest
 import requests
 import requests_mock
-from requests.exceptions import ChunkedEncodingError
-
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
-from source_salesforce.rate_limiting import SalesforceErrorHandler, BulkNotSupportedException
+from requests.exceptions import ChunkedEncodingError
+from source_salesforce.rate_limiting import BulkNotSupportedException, SalesforceErrorHandler
 
 _ANY = "any"
 _ANY_BASE_URL = "https://any-base-url.com"

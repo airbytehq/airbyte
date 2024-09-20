@@ -9,7 +9,15 @@ from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 import isodate
 import pendulum
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, FailureType, Level, SyncMode
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteStateMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    FailureType,
+    Level,
+    SyncMode,
+)
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager

@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Optional
 from unittest import TestCase
 
 import freezegun
-
 from airbyte_cdk.models import AirbyteStateBlob
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
