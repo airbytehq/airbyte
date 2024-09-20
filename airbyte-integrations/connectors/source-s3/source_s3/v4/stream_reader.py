@@ -263,6 +263,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
     @property
     def polars_storage_options(self) -> dict[str, Any]:
+        """Defines the storage options for Polars.
+
+        Reference:
+        - https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html
+        """
         options = {
             "aws_access_key_id": self.config.aws_access_key_id,
             "aws_secret_access_key": self.config.aws_secret_access_key,
