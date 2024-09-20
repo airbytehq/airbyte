@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
 import io.airbyte.cdk.output.ResetStream
@@ -51,7 +52,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                 )
             )
@@ -87,7 +88,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                 )
             )
@@ -132,7 +133,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     NoWhere,
                     OrderBy(id),
@@ -202,7 +203,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     NoWhere,
                     OrderBy(id)
@@ -240,8 +241,8 @@ class DefaultJdbcPartitionFactoryTest {
         val factory = sharedState().factory()
         val result = factory.create(stream, opaqueStateValue(pk = 22))
         factory.assertFailures(
-            InvalidPrimaryKey(stream.name, stream.namespace, listOf(id.id)),
-            ResetStream(stream.name, stream.namespace),
+            InvalidPrimaryKey(stream.id, listOf(id.id)),
+            ResetStream(stream.id),
         )
         Assertions.assertTrue(result is DefaultJdbcUnsplittableSnapshotPartition)
         val partition = result as DefaultJdbcUnsplittableSnapshotPartition
@@ -255,8 +256,8 @@ class DefaultJdbcPartitionFactoryTest {
         val factory = sharedState().factory()
         val result = factory.create(stream, opaqueStateValue(cursor = cursorValue))
         factory.assertFailures(
-            InvalidCursor(stream.name, stream.namespace, ts.id),
-            ResetStream(stream.name, stream.namespace),
+            InvalidCursor(stream.id, ts.id),
+            ResetStream(stream.id),
         )
         Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotPartition)
         val partition = result as DefaultJdbcSplittableSnapshotPartition
@@ -308,7 +309,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
@@ -365,7 +366,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id)
@@ -446,7 +447,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.name,
                         stream.namespace,
                         sampleRateInvPow2 = 8,
-                        DefaultJdbcSharedState.Constants.TABLE_SAMPLE_SIZE,
+                        DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
                     ),
                     Where(
                         And(
