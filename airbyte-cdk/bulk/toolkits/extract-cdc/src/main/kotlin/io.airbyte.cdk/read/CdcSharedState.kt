@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.cdc.CdcPartitionReader
-import io.airbyte.cdk.command.SourceConfiguration
 
 interface CdcSharedState {
     fun tryAcquireResourcesForCreator(): CdcPartitionCreator.AcquiredResources?

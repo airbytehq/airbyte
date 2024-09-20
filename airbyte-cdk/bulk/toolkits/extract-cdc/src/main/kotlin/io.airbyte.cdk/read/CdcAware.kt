@@ -27,7 +27,6 @@ interface CdcAware {
         // We can currenly run cdc only once per session
         private val mutex = LimitedLockMutex(1)
 
-        @VisibleForTesting
-        fun rollback() = mutex.rollback()
+        @VisibleForTesting fun rollback() = mutex.rollback()
     }
 }
