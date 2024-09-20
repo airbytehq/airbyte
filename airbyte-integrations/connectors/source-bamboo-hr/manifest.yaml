@@ -215,7 +215,7 @@ schemas:
         "pronouns": { "type": ["null", "string"] },
         "workEmail": { "type": ["null", "string"] },
         "workPhone": { "type": ["null", "string"] },
-        "workPhoneExtension": { "type": ["null", "string"] }
+        "workPhoneExtension": { "type": ["null", "string"] },
       }
   meta_fields_stream:
     type: object
