@@ -122,7 +122,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
             // Denormalize the (non-type) properties from the parent onto each type
             schema.fields().forEach { (key, value) ->
                 if (key != "type") {
-                    newTypeObj.set<ObjectNode>(key, value as ObjectNode)
+                    newTypeObj.set<ObjectNode>(key, value)
                 }
             }
 
