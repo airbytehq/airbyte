@@ -10,6 +10,8 @@ displayed_sidebar: docs
 
 </Grid>
 
+<Arcade id="8UUaeQOILatZ38Rjh8cs" title="Airbyte Demo: Get Started Creating Connections" paddingBottom="calc(61.416666666666664% + 41px)" />
+
 ### Why Airbyte?
  
 Today, teams and organizations require efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open-source approach enables your data stack to adapt as your data needs evolve.
@@ -23,9 +25,6 @@ Today, teams and organizations require efficient and timely data access to an ev
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
 
-### Airbyte Demo: Creating Connections
-
-<Arcade id="8UUaeQOILatZ38Rjh8cs" title="Airbyte Demo: Get Started Creating Connections" paddingBottom="calc(61.416666666666664% + 41px)" />
 
 ## Get Started
 
@@ -33,17 +32,13 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 <CardWithIcon title="Start Syncing Data" description="Deploy locally or sign up for Airbyte Cloud to sync data in minutes" ctaText="Get Started" ctaLink="./using-airbyte/getting-started/" icon="enterprise" />
 
-<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 350+ sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="cloud" ctaVariant="secondary" />
+<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 350+ sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="oss" ctaVariant="secondary" />
 
-<CardWithIcon title="Contribute to Airbyte" description="Learn how to contribute to Airbyte's code, connectors or documentation
-" ctaText="Learn More" ctaLink="./contributing-to-airbyte/" icon="oss" ctaVariant="secondary" />
+<CardWithIcon title="Connector Development Guide" description="Learn how to build and customize connectors
+" ctaText="Learn More" ctaLink="./connector-development/" icon="cloud" ctaVariant="secondary" />
 
 </Grid>
 
-### Additional Resources
-
-- [Core Concepts](./using-airbyte/core-concepts/)
-- [Connector Development Guide](./connector-development/)
-- [Reach out to us](./community/getting-support)
+<br/><br/>
 
 [![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
