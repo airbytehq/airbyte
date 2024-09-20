@@ -7,6 +7,7 @@ package io.airbyte.cdk.read
 import io.micronaut.context.annotation.Replaces
 import java.util.concurrent.atomic.AtomicBoolean
 
+@Singleton
 @Replaces(GlobalLockResource::class)
 class CdcGlobalLockResource : GlobalLockResource {
 
