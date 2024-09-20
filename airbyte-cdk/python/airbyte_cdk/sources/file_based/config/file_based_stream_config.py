@@ -20,7 +20,6 @@ from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonsc
 PrimaryKeyType = Optional[Union[str, List[str]]]
 
 
-
 class ValidationPolicy(Enum):
     emit_record = "Emit Record"
     skip_record = "Skip Record"
