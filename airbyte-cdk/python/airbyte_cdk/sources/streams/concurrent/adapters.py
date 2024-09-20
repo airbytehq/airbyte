@@ -338,6 +338,7 @@ class CursorPartitionGenerator(PartitionGenerator):
     def __init__(
             self,
             stream: Stream,
+            message_repository: MessageRepository,
             sync_mode: SyncMode,
             cursor: Cursor,
     ):
@@ -345,15 +346,16 @@ class CursorPartitionGenerator(PartitionGenerator):
         Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
 
         :param stream: The stream to delegate to for partition generation.
+        :param message_repository: The message repository to use to emit non-record messages.
         :param sync_mode: The synchronization mode.
         :param cursor: A Cursor object that maintains the state and the cursor field.
         """
         self._stream = stream
+        self.message_repository = message_repository
         self._sync_mode = sync_mode
         self._cursor = cursor
         self._cursor_field = self._cursor.cursor_field
         self._state = self._cursor.state
-        self.message_repository = self._cursor.message_repository
 
     def generate(self) -> Iterable[Partition]:
         """
@@ -370,7 +372,7 @@ class CursorPartitionGenerator(PartitionGenerator):
                 copy.deepcopy(state_slice),
                 self.message_repository,
                 self._sync_mode,
-                self._cursor_field,
+                [self._cursor_field.cursor_field_key],
                 self._state,
                 self._cursor
             )

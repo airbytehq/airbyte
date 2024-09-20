@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import (
     StreamPartitionGenerator,
 )
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
@@ -395,10 +395,9 @@ def test_cursor_partition_generator(sync_mode):
 
     state_slices = [{"slice": 1}, {"slice": 2}]
     cursor.state = {"slices": state_slices}
-    cursor.cursor_field = "cursor_field"
-    cursor.message_repository = message_repository
+    cursor.cursor_field = CursorField("cursor_field")
 
-    partition_generator = CursorPartitionGenerator(stream, sync_mode, cursor)
+    partition_generator = CursorPartitionGenerator(stream, message_repository, sync_mode, cursor)
 
     partitions = list(partition_generator.generate())
 
