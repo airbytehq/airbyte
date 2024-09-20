@@ -1,5 +1,5 @@
 # Gong
-changed it!
+I changed it and hope that things get updated now
 
 ## Configuration
 

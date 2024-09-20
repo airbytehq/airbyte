@@ -1,7 +1,7 @@
 # Gong
 This directory contains the manifest-only connector for `source-gong`.
 
-changed it!
+I changed it and hope that things get updated now
 
 ## Usage
 There are multiple ways to use this connector:

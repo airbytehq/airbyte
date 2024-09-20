@@ -2,7 +2,7 @@ version: 4.6.2
 
 type: DeclarativeSource
 
-description: changed it!
+description: I changed it and hope that things get updated now
 
 check:
   type: CheckStream
