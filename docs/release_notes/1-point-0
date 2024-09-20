@@ -53,8 +53,7 @@ Self-Managed Enterprise extends on Airbyte 1.0 by introducing new classes of fun
 
 - Support for Okta and OpenID Connect (OIDC) SSO
 - Availability of [Role-based Access Control](/access-management/rbac) and multitenancy
-- Columns can now be hashed to protect sensitive data 
-- Built Enterprise-specific connectors (Oracle and Workday)
+- Columns can now be hashed to protect sensitive data
 
 ## Announcements
 
