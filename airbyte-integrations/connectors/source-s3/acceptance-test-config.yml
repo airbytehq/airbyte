@@ -284,6 +284,9 @@ acceptance_tests:
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
         timeout_seconds: 1800
       - config_path: secrets/v4_jsonl_newlines_config.json
+        # Note: This is not valid JSONL file because each line is not a valid json object.
+        # This config may not be parsable with the bulk processor.
+        # https://jsonlines.org/#each-line-is-a-valid-json-value
         configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
         timeout_seconds: 1800
       - config_path: secrets/zip_config_csv.json
@@ -366,5 +369,13 @@ acceptance_tests:
           disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - spec_path: integration_tests/cloud_spec.json
         deployment_mode: "cloud"
+
+  performance:
+    tests:
+      - config_path: secrets/bulk_jsonl_perf_test_singlefile_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
+      - config_path: secrets/bulk_jsonl_perf_test_config.json
+        configured_catalog_path: integration_tests/configured_catalogs/bulk_jsonl_perf_test.json
+
 connector_image: airbyte/source-s3:dev
 test_strictness_level: high

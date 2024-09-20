@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 import sys
 import traceback
@@ -25,7 +26,7 @@ def get_source(args: List[str]):
             SourceS3.read_state(state_path) if state_path else None,
             cursor_cls=Cursor,
         )
-    except Exception:
+    except Exception as ex:
         print(
             AirbyteMessage(
                 type=Type.TRACE,
@@ -34,6 +35,7 @@ def get_source(args: List[str]):
                     emitted_at=int(datetime.now().timestamp() * 1000),
                     error=AirbyteErrorTraceMessage(
                         message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                        internal_message=str(ex),
                         stack_trace=traceback.format_exc(),
                     ),
                 ),

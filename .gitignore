@@ -1,3 +1,6 @@
+venv
+.venv
+.venv-*
 .gradle
 .idea
 *.iml

@@ -1,9 +1,12 @@
 #
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
 from enum import Enum
 from typing import Any, List, Mapping, Optional, Union
+
+from pydantic.v1 import BaseModel, Field, validator
 
 from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
@@ -13,15 +16,54 @@ from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
 from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
-from pydantic.v1 import BaseModel, Field, validator
 
 PrimaryKeyType = Optional[Union[str, List[str]]]
+
 
 
 class ValidationPolicy(Enum):
     emit_record = "Emit Record"
     skip_record = "Skip Record"
     wait_for_discover = "Wait for Discover"
+
+
+# TODO: Consider defaulting to DISABLED if unstable
+DEFAULT_BULK_MODE = "LAZY"
+
+
+class ResolvedBulkMode(str, Enum):
+    DISABLED = "DISABLED"
+
+    # TODO: Consider dropping INMEM and LAZY in favor of ENABLED and DISABLED
+    INMEM = "INMEM"
+    LAZY = "LAZY"
+
+
+class BulkMode(str, Enum):
+    """Enabled bulk processing for file-based streams.
+
+    The in-memory mode is the fastest but requires enough memory to store all the records in memory.
+    The lazy mode is the slowest but requires the least amount of memory.
+    When bulk-mode is disabled, records are processed individually.
+    """
+
+    DISABLED = "DISABLED"
+    ENABLED = "ENABLED"
+    AUTO = "AUTO"
+
+    # TODO: Consider dropping INMEM and LAZY in favor of ENABLED and DISABLED
+    INMEM = "INMEM"
+    LAZY = "LAZY"
+
+    def resolve(bulk_mode: BulkMode) -> ResolvedBulkMode:
+        if bulk_mode == BulkMode.AUTO:
+            return ResolvedBulkMode(DEFAULT_BULK_MODE)
+
+        if bulk_mode == BulkMode.ENABLED:
+            return ResolvedBulkMode.INMEM
+
+        return ResolvedBulkMode(bulk_mode)
+
 
 
 class FileBasedStreamConfig(BaseModel):
@@ -70,6 +112,11 @@ class FileBasedStreamConfig(BaseModel):
         description="The number of resent files which will be used to discover the schema for this stream.",
         default=None,
         gt=0,
+    )
+    bulk_mode: BulkMode = Field(
+        title="Bulk Processing Optimizations",
+        description="The bulk processing mode for this stream.",
+        default=BulkMode.AUTO,
     )
 
     @validator("input_schema", pre=True)
