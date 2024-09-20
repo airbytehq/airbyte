@@ -9,7 +9,6 @@ import io.airbyte.cdk.output.CatalogValidationFailure
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.v0.SyncMode
 import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -20,7 +19,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.host", value = "localhost")
 @Property(name = "airbyte.connector.config.database", value = "testdb")
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "cdc")
-@Property(name = "metadata.resource", value = "read/metadata.json")
+@Property(name = "metadata.resource", value = "discover/metadata-valid.json")
 class StateManagerGlobalStatesTest {
     @Inject lateinit var config: SourceConfiguration
 
@@ -37,7 +36,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -55,7 +54,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(name = "airbyte.connector.state.json", value = "[]")
     fun testColdStart() {
         val streams: Streams = prelude()
@@ -98,7 +97,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -147,7 +146,7 @@ class StateManagerGlobalStatesTest {
     }
 
     @Test
-    @Property(name = "airbyte.connector.catalog.resource", value = "read/cdc-catalog.json")
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
         value =
@@ -205,12 +204,12 @@ class StateManagerGlobalStatesTest {
         Assertions.assertEquals("KV", kv.name)
         Assertions.assertEquals(listOf("V", "K"), kv.fields.map { it.id })
         Assertions.assertEquals(listOf("K"), kv.configuredPrimaryKey?.map { it.id })
-        Assertions.assertEquals(SyncMode.INCREMENTAL, kv.configuredSyncMode)
-        val events: Stream = streams.filter { it.namePair != kv.namePair }.first()
+        Assertions.assertEquals(ConfiguredSyncMode.INCREMENTAL, kv.configuredSyncMode)
+        val events: Stream = streams.filter { it.id != kv.id }.first()
         Assertions.assertEquals("EVENTS", events.name)
         Assertions.assertEquals(listOf("MSG", "ID", "TS"), events.fields.map { it.id })
         Assertions.assertEquals(listOf("ID"), events.configuredPrimaryKey?.map { it.id })
-        Assertions.assertEquals(SyncMode.FULL_REFRESH, events.configuredSyncMode)
+        Assertions.assertEquals(ConfiguredSyncMode.FULL_REFRESH, events.configuredSyncMode)
         return Streams(global, kv, events)
     }
 

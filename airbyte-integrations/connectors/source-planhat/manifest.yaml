@@ -1,0 +1,2432 @@
+version: 4.5.4
+
+type: DeclarativeSource
+
+description: >-
+  This source can sync data for the [general Planhat
+  API](https://docs.planhat.com/)
+
+
+  This Source is capable of syncing the following core Streams:
+
+
+  - [companies](https://docs.planhat.com/#companies)
+
+  - [conversations](https://docs.planhat.com/#conversations)
+
+  - [custom_fields](https://docs.planhat.com/#custom_fields)
+
+  - [endusers](https://docs.planhat.com/#endusers)
+
+  - [invoices](https://docs.planhat.com/#invoices)
+
+  - [issues](https://docs.planhat.com/#issues)
+
+  - [licenses](https://docs.planhat.com/#licenses)
+
+  - [nps](https://docs.planhat.com/#nps)
+
+  - [opportunities](https://docs.planhat.com/#opportunities)
+
+  - [objectives](https://docs.planhat.com/#objectives)
+
+  - [sales](https://docs.planhat.com/#sales)
+
+  - [tasks](https://docs.planhat.com/#tasks)
+
+  - [tickets](https://docs.planhat.com/#tickets)
+
+  - [users](https://docs.planhat.com/#users)
+
+check:
+  type: CheckStream
+  stream_names:
+    - companies
+    - endusers
+
+definitions:
+  streams:
+    nps:
+      type: DeclarativeStream
+      name: nps
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /nps
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/nps"
+    churn:
+      type: DeclarativeStream
+      name: churn
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /churn
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/churn"
+    sales:
+      type: DeclarativeStream
+      name: sales
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sales
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sales"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    assets:
+      type: DeclarativeStream
+      name: assets
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /assets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assets"
+    issues:
+      type: DeclarativeStream
+      name: issues
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /issues
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issues"
+    tickets:
+      type: DeclarativeStream
+      name: tickets
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 10000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tickets
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+    endusers:
+      type: DeclarativeStream
+      name: endusers
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /endusers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/endusers"
+    invoices:
+      type: DeclarativeStream
+      name: invoices
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /invoices
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/invoices"
+    licenses:
+      type: DeclarativeStream
+      name: licenses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /licenses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/licenses"
+    companies:
+      type: DeclarativeStream
+      name: companies
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 5000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    workflows:
+      type: DeclarativeStream
+      name: workflows
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workflows
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workflows"
+    objectives:
+      type: DeclarativeStream
+      name: objectives
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /objectives
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/objectives"
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /conversations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/conversations"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /customfields
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    opportunities:
+      type: DeclarativeStream
+      name: opportunities
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: offset
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2000
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /opportunities
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - _id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/opportunities"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.planhat.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["api_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/assets"
+  - $ref: "#/definitions/streams/churn"
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/conversations"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/endusers"
+  - $ref: "#/definitions/streams/invoices"
+  - $ref: "#/definitions/streams/issues"
+  - $ref: "#/definitions/streams/licenses"
+  - $ref: "#/definitions/streams/nps"
+  - $ref: "#/definitions/streams/workflows"
+  - $ref: "#/definitions/streams/opportunities"
+  - $ref: "#/definitions/streams/objectives"
+  - $ref: "#/definitions/streams/sales"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/users"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        description: >-
+          Your Planhat <a href="https://docs.planhat.com/#authentication">API
+          Access Token</a>
+        order: 0
+        title: API Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams: {}
+  autoImportSchema:
+    nps: false
+    churn: false
+    sales: false
+    tasks: false
+    users: false
+    assets: false
+    issues: false
+    tickets: false
+    endusers: false
+    invoices: false
+    licenses: false
+    companies: false
+    workflows: false
+    objectives: false
+    conversations: false
+    custom_fields: false
+    opportunities: false
+
+schemas:
+  nps:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      cId:
+        type:
+          - string
+          - "null"
+      euId:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      score:
+        type:
+          - integer
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      comment:
+        type:
+          - string
+          - "null"
+      dateSent:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      campaignId:
+        type:
+          - string
+          - "null"
+      dateAnswered:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  churn:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      arr:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      comment:
+        type:
+          - object
+          - "null"
+      reasons:
+        type:
+          - array
+        items:
+          type: string
+      snoozed:
+        type:
+          - boolean
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      products:
+        type:
+          - array
+        items:
+          type: string
+      sourceId:
+        type:
+          - string
+          - "null"
+      churnDate:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      onlyDowngrade:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  sales:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      product:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      _currency:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      salesDate:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      users:
+        type:
+          - array
+        items:
+          type: string
+      action:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      doneBy:
+        type:
+          - string
+          - "null"
+      repeat:
+        type:
+          - string
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      snippet:
+        type:
+          - string
+          - "null"
+      dateDone:
+        type:
+          - string
+          - "null"
+      endusers:
+        type:
+          - array
+        items:
+          type: string
+      mainType:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      checklist:
+        type:
+          - array
+        items:
+          type: string
+      companyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      ownerName:
+        type:
+          - string
+          - "null"
+      startTime:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      repeatDays:
+        type:
+          - integer
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      activityTags:
+        type:
+          - array
+        items:
+          type: string
+      noSpecificTime:
+        type:
+          - boolean
+          - "null"
+      overdueNotified:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      arr:
+        type:
+          - number
+          - "null"
+      mrr:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      image:
+        type:
+          - object
+          - "null"
+      roles:
+        type:
+          - array
+        items:
+          type: string
+      teams:
+        type:
+          - array
+        items:
+          type: string
+      arrAvg:
+        type:
+          - number
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      mrrAvg:
+        type:
+          - number
+          - "null"
+      npsAvg:
+        type:
+          - number
+          - "null"
+      createAt:
+        type:
+          - string
+          - "null"
+      inactive:
+        type:
+          - boolean
+          - "null"
+      isHidden:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      managers:
+        type:
+          - array
+        items:
+          type: string
+      nickName:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      healthAvg:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      lastTouch7:
+        type:
+          - number
+          - "null"
+      taskFilter:
+        type:
+          - object
+          - "null"
+      lastActive7:
+        type:
+          - number
+          - "null"
+      lastTouch30:
+        type:
+          - number
+          - "null"
+      lastTouch90:
+        type:
+          - number
+          - "null"
+      nrOpenTasks:
+        type:
+          - number
+          - "null"
+      permissions:
+        type:
+          - array
+        items:
+          type: string
+      lastActive30:
+        type:
+          - number
+          - "null"
+      lastActive90:
+        type:
+          - number
+          - "null"
+      radarOneLine:
+        type:
+          - boolean
+          - "null"
+      revenueShare:
+        type:
+          - number
+          - "null"
+      companyFilter:
+        type:
+          - string
+          - "null"
+      customerCount:
+        type:
+          - number
+          - "null"
+      compressedView:
+        type:
+          - boolean
+          - "null"
+      healthAvgRound:
+        type:
+          - number
+          - "null"
+      nrOverDueTasks:
+        type:
+          - number
+          - "null"
+      nrTasksDue7Days:
+        type:
+          - number
+          - "null"
+      nrTasksDue14Days:
+        type:
+          - number
+          - "null"
+      nrTasksDue30Days:
+        type:
+          - number
+          - "null"
+      nrTasksDue90Days:
+        type:
+          - number
+          - "null"
+      defaultCurrencyId:
+        type:
+          - string
+          - "null"
+      payingCustomerCount:
+        type:
+          - number
+          - "null"
+      defaultMeetingLength:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  assets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      followers:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      updatedAt:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  issues:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      endusers:
+        type:
+          - array
+        items:
+          type: string
+      sourceId:
+        type:
+          - string
+          - "null"
+      companies:
+        type:
+          - array
+        items:
+          type: string
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      companyIds:
+        type:
+          - array
+        items:
+          type: string
+      enduserIds:
+        type:
+          - array
+        items:
+          type: string
+      arrCombined:
+        type:
+          - integer
+          - "null"
+      mrrCombined:
+        type:
+          - integer
+          - "null"
+      conversationIds:
+        type:
+          - array
+        items:
+          type: string
+      companyMatchingValue:
+        type:
+          - array
+        items:
+          type: string
+    additionalProperties: true
+  tickets:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+        items:
+          type: string
+      email:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+        items:
+          type: string
+      history:
+        type:
+          - array
+        items:
+          type: string
+      product:
+        type:
+          - string
+          - "null"
+      severity:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      timeSpent:
+        type:
+          - integer
+          - "null"
+      companyExternalId:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  endusers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      nps:
+        type:
+          - integer
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+        items:
+          type: string
+      beats:
+        type:
+          - number
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      usage:
+        type:
+          - object
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      convs14:
+        type:
+          - number
+          - "null"
+      npsDate:
+        type:
+          - string
+          - "null"
+      npsSent:
+        type:
+          - string
+          - "null"
+      primary:
+        type:
+          - boolean
+          - "null"
+      featured:
+        type:
+          - boolean
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      beatTrend:
+        type:
+          - number
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      lastTouch:
+        type:
+          - string
+          - "null"
+      relevance:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      convsTotal:
+        type:
+          - number
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      npsComment:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      otherEmails:
+        type:
+          - array
+        items:
+          type: string
+      lastTouchTime:
+        type:
+          - string
+          - "null"
+      lastActivities:
+        type:
+          - array
+        items:
+          type: string
+      lastTouchByType:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
+  invoices:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      cId:
+        type:
+          - string
+          - "null"
+      cName:
+        type:
+          - string
+          - "null"
+      extId:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      emails:
+        type:
+          - array
+        items:
+          type: string
+      status:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - integer
+          - "null"
+      product:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      paidDate:
+        type:
+          - integer
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      invoiceNo:
+        type:
+          - integer
+          - "null"
+      lineItems:
+        type:
+          - array
+        items:
+          type: string
+      amountTotal:
+        type:
+          - number
+          - "null"
+      invoiceDate:
+        type:
+          - integer
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      invoiceCycle:
+        type:
+          - string
+          - "null"
+      addressCountry:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  licenses:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      arr:
+        type:
+          - number
+          - "null"
+      mrr:
+        type:
+          - number
+          - "null"
+      value:
+        type:
+          - number
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      length:
+        type:
+          - number
+          - "null"
+      parent:
+        type:
+          - string
+          - "null"
+      toDate:
+        type:
+          - string
+          - "null"
+      product:
+        type:
+          - string
+          - "null"
+      fcNewArr:
+        type:
+          - number
+          - "null"
+      fcNewMrr:
+        type:
+          - number
+          - "null"
+      fromDate:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      _currency:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      isOverdue:
+        type:
+          - boolean
+          - "null"
+      autoRenews:
+        type:
+          - boolean
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      noticeUnit:
+        type:
+          - string
+          - "null"
+      renewalArr:
+        type:
+          - number
+          - "null"
+      renewalMrr:
+        type:
+          - number
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      fixedPeriod:
+        type:
+          - boolean
+          - "null"
+      renewalDate:
+        type:
+          - string
+          - "null"
+      renewalUnit:
+        type:
+          - string
+          - "null"
+      invoiceCycle:
+        type:
+          - string
+          - "null"
+      invoiceMuted:
+        type:
+          - boolean
+          - "null"
+      noticePeriod:
+        type:
+          - integer
+          - "null"
+      renewalPeriod:
+        type:
+          - integer
+          - "null"
+      renewalStatus:
+        type:
+          - string
+          - "null"
+      toDateIncluded:
+        type:
+          - boolean
+          - "null"
+      invoicesGenerated:
+        type:
+          - boolean
+          - "null"
+      fcNewArrOptimistic:
+        type:
+          - number
+          - "null"
+      fcNewMrrOptimistic:
+        type:
+          - number
+          - "null"
+      renewalDaysFromNow:
+        type:
+          - integer
+          - "null"
+      fcNewArrPessimistic:
+        type:
+          - number
+          - "null"
+      fcNewMrrPessimistic:
+        type:
+          - number
+          - "null"
+      invoiceCycleInterval:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true
+  companies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      h:
+        type:
+          - number
+          - "null"
+      mr:
+        type:
+          - number
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      arr:
+        type:
+          - number
+          - "null"
+      mrr:
+        type:
+          - number
+          - "null"
+      web:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+        items:
+          type: string
+      hDiff:
+        type:
+          - number
+          - "null"
+      nrr30:
+        type:
+          - number
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      phase:
+        type:
+          - string
+          - "null"
+      usage:
+        type:
+          - object
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      headId:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      sunits:
+        type:
+          - object
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      domains:
+        type:
+          - array
+        items:
+          type: string
+      mrTotal:
+        type:
+          - number
+          - "null"
+      orgPath:
+        type:
+          - string
+          - "null"
+      csmScore:
+        type:
+          - number
+          - "null"
+      hProfile:
+        type:
+          - string
+          - "null"
+      mrrTotal:
+        type:
+          - number
+          - "null"
+      nrrTotal:
+        type:
+          - number
+          - "null"
+      orgLevel:
+        type:
+          - string
+          - "null"
+      orgUnits:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      hDiffDate:
+        type:
+          - string
+          - "null"
+      lastTouch:
+        type:
+          - string
+          - "null"
+      nextTouch:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      customerTo:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      lastActive:
+        type:
+          - string
+          - "null"
+      phaseSince:
+        type:
+          - string
+          - "null"
+      renewalArr:
+        type:
+          - number
+          - "null"
+      renewalMrr:
+        type:
+          - number
+          - "null"
+      csmScoreLog:
+        type:
+          - array
+        items:
+          type: string
+      lastRenewal:
+        type:
+          - string
+          - "null"
+      lastUpdated:
+        type:
+          - string
+          - "null"
+      orgArrTotal:
+        type:
+          - number
+          - "null"
+      customerFrom:
+        type:
+          - string
+          - "null"
+      lastTouchTime:
+        type:
+          - string
+          - "null"
+      lastTouchType:
+        type:
+          - string
+          - "null"
+      nextTouchDate:
+        type:
+          - string
+          - "null"
+      lastActiveTime:
+        type:
+          - string
+          - "null"
+      lastActivities:
+        type:
+          - array
+        items:
+          type: string
+      lastTouchByType:
+        type:
+          - object
+          - "null"
+      renewalDaysFromNow:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  workflows:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      openRate:
+        type:
+          - number
+          - "null"
+      targetId:
+        type:
+          - string
+          - "null"
+      clickRate:
+        type:
+          - number
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      replyRate:
+        type:
+          - number
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      actualDays:
+        type:
+          - number
+          - "null"
+      bounceRate:
+        type:
+          - number
+          - "null"
+      isArchived:
+        type:
+          - boolean
+          - "null"
+      targetName:
+        type:
+          - string
+          - "null"
+      templateId:
+        type:
+          - object
+          - "null"
+      archiveDate:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      percentDone:
+        type:
+          - number
+          - "null"
+      targetModel:
+        type:
+          - string
+          - "null"
+      endUserEmail:
+        type:
+          - string
+          - "null"
+      expectedDays:
+        type:
+          - number
+          - "null"
+      nextStartTime:
+        type:
+          - string
+          - "null"
+      expectedEndDate:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  objectives:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      health:
+        type:
+          - number
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  conversations:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      date:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+        items:
+          type: string
+      users:
+        type:
+          - array
+        items:
+          type: string
+      custom:
+        type:
+          - object
+          - "null"
+      isOpen:
+        type:
+          - boolean
+          - "null"
+      isSeen:
+        type:
+          - boolean
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      sender:
+        type:
+          - array
+        items:
+          type: string
+      hasMore:
+        type:
+          - boolean
+          - "null"
+      history:
+        type:
+          - array
+        items:
+          type: string
+      outDate:
+        type:
+          - string
+          - "null"
+      snippet:
+        type:
+          - string
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      subject:
+        type:
+          - string
+          - "null"
+      userIds:
+        type:
+          - array
+        items:
+          type: string
+      archived:
+        type:
+          - boolean
+          - "null"
+      endusers:
+        type:
+          - array
+        items:
+          type: string
+      companyId:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      createDate:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      timeBucket:
+        type:
+          - array
+        items:
+          type: string
+      companyName:
+        type:
+          - string
+          - "null"
+      activityTags:
+        type:
+          - array
+        items:
+          type: string
+      assigneeName:
+        type:
+          - string
+          - "null"
+      isCustomType:
+        type:
+          - boolean
+          - "null"
+      numberOfParts:
+        type:
+          - integer
+          - "null"
+      hasAttachments:
+        type:
+          - boolean
+          - "null"
+      emailTemplateIds:
+        type:
+          - array
+        items:
+          type: string
+      waitsToBeFiltered:
+        type:
+          - boolean
+          - "null"
+      numberOfRelevantParts:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      _id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      filter:
+        type:
+          - array
+        items:
+          type: string
+      parent:
+        type:
+          - string
+          - "null"
+      formula:
+        type:
+          - string
+          - "null"
+      isHidden:
+        type:
+          - boolean
+          - "null"
+      isLocked:
+        type:
+          - boolean
+          - "null"
+      isShared:
+        type:
+          - boolean
+          - "null"
+      isFormula:
+        type:
+          - boolean
+          - "null"
+      isFeatured:
+        type:
+          - boolean
+          - "null"
+      listValues:
+        type:
+          - array
+        items:
+          type: string
+      formulaRefs:
+        type:
+          - array
+        items:
+          type: string
+      isMandatory:
+        type:
+          - boolean
+          - "null"
+      numberFormat:
+        type:
+          - string
+          - "null"
+      treatUndefinedAsZero:
+        type:
+          - boolean
+          - "null"
+    additionalProperties: true
+  opportunities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _id:
+        type:
+          - string
+          - "null"
+      arr:
+        type:
+          - number
+          - "null"
+      mrr:
+        type:
+          - number
+          - "null"
+      nrr:
+        type:
+          - number
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      dealDate:
+        type:
+          - string
+          - "null"
+      sourceId:
+        type:
+          - string
+          - "null"
+      _currency:
+        type:
+          - string
+          - "null"
+      closeDate:
+        type:
+          - string
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      externalId:
+        type:
+          - string
+          - "null"
+      salesStage:
+        type:
+          - string
+          - "null"
+      companyName:
+        type:
+          - string
+          - "null"
+      landingDate:
+        type:
+          - string
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      stageHistory:
+        type:
+          - array
+        items:
+          type: string
+      contractLength:
+        type:
+          - integer
+          - "null"
+    additionalProperties: true

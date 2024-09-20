@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -41,6 +42,9 @@ class FeedReader(
                 log.info {
                     "no more partitions to read for '${feed.label}' in round $partitionsCreatorID"
                 }
+                // Publish a checkpoint if applicable.
+                maybeCheckpoint()
+                // Publish stream completion.
                 emitStreamStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
                 break
             }
@@ -279,11 +283,7 @@ class FeedReader(
                 }
             } finally {
                 // Publish a checkpoint if applicable.
-                val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
-                if (stateMessages.isNotEmpty()) {
-                    log.info { "checkpoint of ${stateMessages.size} state message(s)" }
-                    stateMessages.forEach(root.outputConsumer::accept)
-                }
+                maybeCheckpoint()
             }
         }
     }
@@ -291,11 +291,22 @@ class FeedReader(
     private suspend fun ctx(nameSuffix: String): CoroutineContext =
         coroutineContext + ThreadRenamingCoroutineName("${feed.label}-$nameSuffix") + Dispatchers.IO
 
+    private fun maybeCheckpoint() {
+        val stateMessages: List<AirbyteStateMessage> = root.stateManager.checkpoint()
+        if (stateMessages.isEmpty()) {
+            return
+        }
+        log.info { "checkpoint of ${stateMessages.size} state message(s)" }
+        for (stateMessage in stateMessages) {
+            root.outputConsumer.accept(stateMessage)
+        }
+    }
+
     private fun emitStreamStatus(status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) {
         if (feed is Stream) {
             root.outputConsumer.accept(
                 AirbyteStreamStatusTraceMessage()
-                    .withStreamDescriptor(feed.streamDescriptor)
+                    .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
                     .withStatus(status),
             )
         }

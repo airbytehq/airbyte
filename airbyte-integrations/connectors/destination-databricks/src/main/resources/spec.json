@@ -46,8 +46,8 @@
         "order": 4
       },
       "database": {
-        "title": "Databricks Unity Catalog",
-        "description": "The name of the unity catalog",
+        "title": "Databricks Unity Catalog Name",
+        "description": "The name of the unity catalog for the database",
         "type": "string",
         "order": 5
       },

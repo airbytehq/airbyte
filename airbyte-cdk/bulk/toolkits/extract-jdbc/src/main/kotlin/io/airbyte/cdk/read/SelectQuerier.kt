@@ -21,6 +21,9 @@ interface SelectQuerier {
     ): Result
 
     data class Parameters(
+        /** When set, the [ObjectNode] in the [Result] is reused; take care with this! */
+        val reuseResultObject: Boolean = false,
+        /** JDBC fetchSize value. */
         val fetchSize: Int? = null,
     )
 
@@ -46,6 +49,7 @@ class JdbcSelectQuerier(
         var conn: Connection? = null
         var stmt: PreparedStatement? = null
         var rs: ResultSet? = null
+        val reusable: ObjectNode? = Jsons.objectNode().takeIf { parameters.reuseResultObject }
 
         init {
             log.info { "Querying ${q.sql}" }
@@ -71,12 +75,17 @@ class JdbcSelectQuerier(
 
         var isReady = false
         var hasNext = false
+        var hasLoggedResultsReceived = false
 
         override fun hasNext(): Boolean {
             // hasNext() is idempotent
             if (isReady) return hasNext
             // Advance to the next row to become ready again.
             hasNext = rs!!.next()
+            if (!hasLoggedResultsReceived) {
+                log.info { "Received results from server." }
+                hasLoggedResultsReceived = true
+            }
             if (!hasNext) {
                 close()
             }
@@ -89,7 +98,7 @@ class JdbcSelectQuerier(
             // necessary.
             if (!hasNext()) throw NoSuchElementException()
             // Read the current row in the ResultSet
-            val record: ObjectNode = Jsons.objectNode()
+            val record: ObjectNode = reusable ?: Jsons.objectNode()
             var colIdx = 1
             for (column in q.columns) {
                 log.debug { "Getting value #$colIdx for $column." }
@@ -107,7 +116,10 @@ class JdbcSelectQuerier(
             isReady = true
             hasNext = false
             try {
-                rs?.close()
+                if (rs != null) {
+                    log.info { "Closing ${q.sql}" }
+                    rs!!.close()
+                }
             } finally {
                 rs = null
                 try {

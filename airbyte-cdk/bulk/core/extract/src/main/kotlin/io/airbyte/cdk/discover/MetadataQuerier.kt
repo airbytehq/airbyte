@@ -1,29 +1,26 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.SourceConfiguration
 
-/** A very thin abstraction around JDBC metadata queries. */
+/** An abstraction for a catalog discovery session. */
 interface MetadataQuerier : AutoCloseable {
-    /**
-     * Queries the information_schema for all table names in the schemas specified by the connector
-     * configuration.
-     */
+
+    /** Returns all available namespaces. */
     fun streamNamespaces(): List<String>
 
-    fun streamNames(streamNamespace: String?): List<String>
+    /** Returns all available stream names in the given namespace. */
+    fun streamNames(streamNamespace: String?): List<StreamIdentifier>
 
-    /** Executes a SELECT * on the table, discards the results, and extracts all column metadata. */
-    fun fields(
-        streamName: String,
-        streamNamespace: String?,
-    ): List<Field>
+    /** Returns all available fields in the given stream. */
+    fun fields(streamID: StreamIdentifier): List<Field>
 
-    /** Queries the information_schema for any primary key on the given table. */
-    fun primaryKey(
-        streamName: String,
-        streamNamespace: String?,
-    ): List<List<String>>
+    /** Returns the primary key for the given stream, if it exists; empty list otherwise. */
+    fun primaryKey(streamID: StreamIdentifier): List<List<String>>
+
+    /** Executes extra checks which throw a [io.airbyte.cdk.ConfigErrorException] on failure. */
+    fun extraChecks()
 
     /** Factory for [MetadataQuerier] instances. */
     fun interface Factory<T : SourceConfiguration> {

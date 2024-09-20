@@ -1,11 +1,12 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.StreamIdentifier
+import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.airbyte.protocol.models.v0.AirbyteStreamState
 
 /** A [StateQuerier] is like a read-only [StateManager]. */
@@ -24,7 +25,7 @@ class StateManager(
     initialStreamStates: Map<Stream, OpaqueStateValue?> = mapOf(),
 ) : StateQuerier {
     private val global: GlobalStateManager?
-    private val nonGlobal: Map<AirbyteStreamNameNamespacePair, NonGlobalStreamStateManager>
+    private val nonGlobal: Map<StreamIdentifier, NonGlobalStreamStateManager>
 
     init {
         if (global == null) {
@@ -32,7 +33,7 @@ class StateManager(
             nonGlobal =
                 initialStreamStates
                     .mapValues { NonGlobalStreamStateManager(it.key, it.value) }
-                    .mapKeys { it.key.namePair }
+                    .mapKeys { it.key.id }
         } else {
             val globalStreams: Map<Stream, OpaqueStateValue?> =
                 global.streams.associateWith { initialStreamStates[it] }
@@ -46,7 +47,7 @@ class StateManager(
                 initialStreamStates
                     .filterKeys { !globalStreams.containsKey(it) }
                     .mapValues { NonGlobalStreamStateManager(it.key, it.value) }
-                    .mapKeys { it.key.namePair }
+                    .mapKeys { it.key.id }
         }
     }
 
@@ -61,9 +62,8 @@ class StateManager(
     fun scoped(feed: Feed): StateManagerScopedToFeed =
         when (feed) {
             is Global -> global ?: throw IllegalArgumentException("unknown global key")
-            is Stream -> global?.streamStateManagers?.get(feed.namePair)
-                    ?: nonGlobal[feed.namePair]
-                        ?: throw IllegalArgumentException("unknown stream key")
+            is Stream -> global?.streamStateManagers?.get(feed.id)
+                    ?: nonGlobal[feed.id] ?: throw IllegalArgumentException("unknown stream key")
         }
 
     interface StateManagerScopedToFeed {
@@ -96,9 +96,19 @@ class StateManager(
         initialState: OpaqueStateValue?,
         private val isCheckpointUnique: Boolean = true,
     ) : StateManagerScopedToFeed {
-        private var current: OpaqueStateValue? = initialState
-        private var pending: OpaqueStateValue? = initialState
-        private var pendingNumRecords: Long = 0L
+        private var current: OpaqueStateValue?
+        private var pending: OpaqueStateValue?
+        private var isPending: Boolean
+        private var pendingNumRecords: Long
+
+        init {
+            synchronized(this) {
+                current = initialState
+                pending = initialState
+                isPending = initialState != null
+                pendingNumRecords = 0L
+            }
+        }
 
         override fun current(): OpaqueStateValue? = synchronized(this) { current }
 
@@ -108,13 +118,14 @@ class StateManager(
         ) {
             synchronized(this) {
                 pending = state
+                isPending = true
                 pendingNumRecords += numRecords
             }
         }
 
         fun swap(): Pair<OpaqueStateValue?, Long>? {
             synchronized(this) {
-                if (isCheckpointUnique && pendingNumRecords == 0L && pending == current) {
+                if (isCheckpointUnique && !isPending) {
                     return null
                 }
                 val returnValue: Pair<OpaqueStateValue?, Long> = pending to pendingNumRecords
@@ -130,10 +141,10 @@ class StateManager(
         initialGlobalState: OpaqueStateValue?,
         initialStreamStates: Map<Stream, OpaqueStateValue?>,
     ) : BaseStateManager<Global>(global, initialGlobalState) {
-        val streamStateManagers: Map<AirbyteStreamNameNamespacePair, GlobalStreamStateManager> =
+        val streamStateManagers: Map<StreamIdentifier, GlobalStreamStateManager> =
             initialStreamStates
                 .mapValues { GlobalStreamStateManager(it.key, it.value) }
-                .mapKeys { it.key.namePair }
+                .mapKeys { it.key.id }
 
         fun checkpoint(): AirbyteStateMessage? {
             var numSwapped = 0
@@ -154,9 +165,10 @@ class StateManager(
                     streamStateValue = globalStreamSwapped.first
                     totalNumRecords += globalStreamSwapped.second
                 }
+                val streamID: StreamIdentifier = streamStateManager.feed.id
                 streamStates.add(
                     AirbyteStreamState()
-                        .withStreamDescriptor(streamStateManager.feed.streamDescriptor)
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withStreamState(streamStateValue),
                 )
             }
@@ -184,7 +196,7 @@ class StateManager(
             val (opaqueStateValue: OpaqueStateValue?, numRecords: Long) = swap() ?: return null
             val airbyteStreamState =
                 AirbyteStreamState()
-                    .withStreamDescriptor(feed.streamDescriptor)
+                    .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
                     .withStreamState(opaqueStateValue)
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)

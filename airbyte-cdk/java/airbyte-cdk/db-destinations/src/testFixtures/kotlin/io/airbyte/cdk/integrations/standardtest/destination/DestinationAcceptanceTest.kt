@@ -1602,7 +1602,7 @@ abstract class DestinationAcceptanceTest(
 
     @Test
     @Throws(Exception::class)
-    fun testAirbyteFields() {
+    open fun testAirbyteFields() {
         val configuredCatalog =
             Jsons.deserialize(
                 MoreResources.readResource("v0/users_with_generation_id_configured_catalog.json"),
