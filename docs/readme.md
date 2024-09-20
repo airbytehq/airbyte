@@ -25,7 +25,7 @@ Airbyte is suitable for a wide range of data integration use cases, including AI
 
 ### Airbyte Demo: Creating Connections
 
-<Arcade id="0k75Pa9c9EvrJb8zFsuU" title="Airbyte Demo: Get Started Creating Connections" paddingBottom="calc(61.416666666666664% + 41px)" />
+<Arcade id="8UUaeQOILatZ38Rjh8cs" title="Airbyte Demo: Get Started Creating Connections" paddingBottom="calc(61.416666666666664% + 41px)" />
 
 ## Get Started
 
