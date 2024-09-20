@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Singleton
 import java.time.Instant
 
 /*
@@ -62,4 +64,13 @@ interface DebeziumEventConverter {
         const val OPERATION_FIELD: String = "op"
         const val SOURCE_EVENT: String = "source"
     }
+}
+
+@Singleton
+@Secondary
+class NoOpDebeziumEventConverted: DebeziumEventConverter {
+    override fun toAirbyteMessage(record: DebeziumRecord): AirbyteMessage {
+        TODO("Not yet implemented")
+    }
+
 }

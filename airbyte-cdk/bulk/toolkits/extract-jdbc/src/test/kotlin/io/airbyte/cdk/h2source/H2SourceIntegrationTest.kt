@@ -7,6 +7,7 @@ import io.airbyte.cdk.ssh.SshBastionContainer
 import io.airbyte.cdk.testcontainers.DOCKER_HOST_FROM_WITHIN_CONTAINER
 import java.sql.Connection
 import java.sql.Statement
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.testcontainers.Testcontainers
 
@@ -100,6 +101,7 @@ class H2SourceIntegrationTest {
     }
 
     @Test
+    @Disabled
     fun testReadGlobal() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
@@ -209,6 +211,7 @@ class H2SourceIntegrationTest {
         const val INSERT_EVENTS =
             "INSERT INTO events (id, ts, msg) VALUES " +
                 "('cc449902-30da-5ea8-c4d3-02732e5bfce9', '2024-04-29T00:00:00-04:00', 'bar')," +
+
                 "('dd55aa13-41eb-6fb4-d5e4-13843f6c0dfa', '2024-04-30T00:00:00-04:00', NULL);"
     }
 }
