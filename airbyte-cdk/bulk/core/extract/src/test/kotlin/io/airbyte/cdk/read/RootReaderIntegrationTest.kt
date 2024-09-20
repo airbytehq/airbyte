@@ -117,7 +117,9 @@ class RootReaderIntegrationTest {
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
+                listOf(
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                ),
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -160,7 +162,9 @@ class RootReaderIntegrationTest {
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
+                listOf(
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                ),
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -223,7 +227,7 @@ data class TestCase(
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(resource), this),
+                listOf(TestPartitionsCreatorFactory(Semaphore(resource), this)),
             )
         try {
             runBlocking(Dispatchers.Default) { rootReader.read() }

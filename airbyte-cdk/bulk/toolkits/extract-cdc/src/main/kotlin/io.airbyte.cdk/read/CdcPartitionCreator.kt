@@ -8,31 +8,28 @@ import io.airbyte.cdk.cdc.CdcPartitionReader
 import io.airbyte.cdk.command.OpaqueStateValue
 import java.util.concurrent.atomic.AtomicReference
 
-class CdcPartitionCreator<
-    A : CdcSharedState,
->(val sharedState: A, val cdcContext: CdcContext, val opaqueStateValue: OpaqueStateValue?) :
-    PartitionsCreator, CdcAware {
-    private val acquiredResources = AtomicReference<AcquiredResources>()
+class CdcPartitionCreator(
+    val concurrencyResource: ConcurrencyResource,
+    val cdcContext: CdcContext,
+    val opaqueStateValue: OpaqueStateValue?
+) : PartitionsCreator {
+    private val acquiredThread = AtomicReference<ConcurrencyResource.AcquiredThread>()
 
     /** Calling [close] releases the resources acquired for the [JdbcPartitionsCreator]. */
     fun interface AcquiredResources : AutoCloseable
 
     override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
-        val acquiredResources: AcquiredResources =
-            sharedState.tryAcquireResourcesForCreator()
+        val acquiredThread: ConcurrencyResource.AcquiredThread =
+            concurrencyResource.tryAcquire()
                 ?: return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
-        this.acquiredResources.set(acquiredResources)
+        this.acquiredThread.set(acquiredThread)
         return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
     }
     override suspend fun run(): List<PartitionReader> {
-        if (cdcReadyToRun().not()) {
-            return emptyList()
-        }
-
-        return listOf(CdcPartitionReader(sharedState, cdcContext, opaqueStateValue))
+        return listOf(CdcPartitionReader(concurrencyResource, cdcContext, opaqueStateValue))
     }
 
     override fun releaseResources() {
-        acquiredResources.getAndSet(null)?.close()
+        acquiredThread.getAndSet(null)?.close()
     }
 }

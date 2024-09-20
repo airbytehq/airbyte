@@ -7,7 +7,6 @@ import io.airbyte.cdk.ssh.SshBastionContainer
 import io.airbyte.cdk.testcontainers.DOCKER_HOST_FROM_WITHIN_CONTAINER
 import java.sql.Connection
 import java.sql.Statement
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.testcontainers.Testcontainers
 
@@ -97,30 +96,6 @@ class H2SourceIntegrationTest {
                     database = h2.database
                 }
             SyncsTestFixture.testDiscover(configPojo, "h2source/expected-cursor-catalog.json")
-        }
-    }
-
-    @Test
-    @Disabled
-    fun testReadGlobal() {
-        H2TestFixture().use { h2: H2TestFixture ->
-            val configPojo =
-                H2SourceConfigurationJsonObject().apply {
-                    port = h2.port
-                    database = h2.database
-                    setCursorMethodValue(CdcCursor)
-                    resumablePreferred = false
-                }
-            SyncsTestFixture.testSyncs(
-                configPojo,
-                h2::createConnection,
-                Companion::prelude,
-                "h2source/expected-cdc-catalog.json",
-                "h2source/cdc-catalog.json",
-                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-global-cold-start.json",
-                ),
-            )
         }
     }
 

@@ -6,7 +6,6 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
-import io.airbyte.cdk.read.cdc.toCdcSharedState
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
@@ -17,38 +16,30 @@ sealed class JdbcPartitionsCreatorFactory<
     P : JdbcPartition<S>,
 >(
     val partitionFactory: JdbcPartitionFactory<A, S, P>,
-    val cdcContext: CdcContext,
 ) : PartitionsCreatorFactory {
 
     override fun make(
         stateQuerier: StateQuerier,
         feed: Feed,
-    ): PartitionsCreator {
+    ): PartitionsCreator? {
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
-        val isGlobal = partitionFactory.sharedState.configuration.global
         return when (feed) {
-            is Global ->
-                when (isGlobal) {
-                    true ->
-                        CdcPartitionCreator(
-                            partitionFactory.sharedState.toCdcSharedState(),
-                            cdcContext,
-                            opaqueStateValue
-                        )
-                    false -> CreateNoPartitions
-                }
+            is Global -> null
             is Stream -> {
                 val partition: P? = partitionFactory.create(feed, opaqueStateValue)
                 if (partition == null) {
                     CreateNoPartitions
                 } else {
-                    partitionsCreator(partition)
+                    partitionsCreator(partition, stateQuerier)
                 }
             }
         }
     }
 
-    abstract fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P>
+    abstract fun partitionsCreator(
+        partition: P,
+        stateQuerier: StateQuerier
+    ): JdbcPartitionsCreator<A, S, P>
 }
 
 /** Sequential JDBC implementation of [PartitionsCreatorFactory]. */
@@ -60,15 +51,13 @@ class JdbcSequentialPartitionsCreatorFactory<
     P : JdbcPartition<S>,
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-    cdcContext: CdcContext,
-) :
-    JdbcPartitionsCreatorFactory<A, S, P>(
-        partitionFactory,
-        cdcContext,
-    ) {
+) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
 
-    override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
-        JdbcSequentialPartitionsCreator(partition, partitionFactory)
+    override fun partitionsCreator(
+        partition: P,
+        stateQuerier: StateQuerier
+    ): JdbcPartitionsCreator<A, S, P> =
+        JdbcSequentialPartitionsCreator(partition, stateQuerier, partitionFactory)
 }
 
 /** Concurrent JDBC implementation of [PartitionsCreatorFactory]. */
@@ -80,15 +69,13 @@ class JdbcConcurrentPartitionsCreatorFactory<
     P : JdbcPartition<S>,
 >(
     partitionFactory: JdbcPartitionFactory<A, S, P>,
-    cdcContext: CdcContext,
-) :
-    JdbcPartitionsCreatorFactory<A, S, P>(
-        partitionFactory,
-        cdcContext,
-    ) {
+) : JdbcPartitionsCreatorFactory<A, S, P>(partitionFactory) {
 
-    override fun partitionsCreator(partition: P): JdbcPartitionsCreator<A, S, P> =
-        JdbcConcurrentPartitionsCreator(partition, partitionFactory)
+    override fun partitionsCreator(
+        partition: P,
+        stateQuerier: StateQuerier
+    ): JdbcPartitionsCreator<A, S, P> =
+        JdbcConcurrentPartitionsCreator(partition, stateQuerier, partitionFactory)
 }
 
 private const val MODE_PROPERTY = "${JDBC_PROPERTY_PREFIX}.mode"

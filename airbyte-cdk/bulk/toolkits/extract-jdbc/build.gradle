@@ -1,7 +1,6 @@
 dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-    implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-extract-cdc')
 
     api 'org.bouncycastle:bcpkix-jdk18on:1.77'
     api 'org.bouncycastle:bcprov-jdk18on:1.77'
