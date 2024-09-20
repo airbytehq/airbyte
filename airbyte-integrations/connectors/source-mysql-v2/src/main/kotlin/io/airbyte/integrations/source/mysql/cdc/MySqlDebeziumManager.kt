@@ -42,8 +42,8 @@ class MySqlDebeziumManager(
     val dbName = config.namespaces.first().toString()
     val jdbcConnectionFactory = jdbcConnectionFactory
 
-    lateinit var offsetManager: AirbyteFileOffsetBackingStore
-    lateinit var schemaHistoryStorage: AirbyteSchemaHistoryStorage
+    private lateinit var offsetManager: AirbyteFileOffsetBackingStore
+    private lateinit var schemaHistoryStorage: AirbyteSchemaHistoryStorage
 
     override fun getPropertiesForSync(opaqueStateValue: OpaqueStateValue?): Properties {
         val props = Properties()
