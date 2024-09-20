@@ -35,6 +35,7 @@
   --color-green-50: hsl(184, 67%, 92%);
   --color-blue-30: hsl(240, 100%, 98%);
   --color-dark-blue-700: hsl(236, 43%, 31%);
+  --color-red-400: hsl(0, 73%, 50%);
 }
 
 /* For readability concerns, you should choose a lighter palette in dark mode. */
