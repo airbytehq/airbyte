@@ -7,7 +7,6 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_gcs import Cursor, SourceGCSStreamReader
 from source_gcs.helpers import GCSRemoteFile
 
@@ -23,21 +22,21 @@ def _file_uri() -> str:
 
 @pytest.fixture
 def remote_file():
-    return RemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv")
+    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv")
 
 @pytest.fixture
 def remote_file_older():
-    return RemoteFile(uri=_file_uri(), last_modified=datetime.now() - timedelta(days=1))
+    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now() - timedelta(days=1))
 
 
 @pytest.fixture
 def remote_file_future():
-    return RemoteFile(uri=_file_uri(), last_modified=datetime.now() + timedelta(days=1))
+    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now() + timedelta(days=1))
 
 
 @pytest.fixture
 def remote_file_b():
-    return RemoteFile(uri=_file_uri().replace("a.csv", "b.csv"), last_modified=datetime.now())
+    return GCSRemoteFile(uri=_file_uri().replace("a.csv", "b.csv"), last_modified=datetime.now())
 
 
 @pytest.fixture
