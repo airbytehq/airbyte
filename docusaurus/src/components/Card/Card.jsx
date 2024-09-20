@@ -32,7 +32,7 @@ const Icon = ({ name }) => {
   const IconComponent = FA_ICONS[name] || CUSTOM_ICONS[name];
   if (name in FA_ICONS) {
     return (
-      <FontAwesomeIcon icon={ICONS[name]} />
+      <FontAwesomeIcon icon={FA_ICONS[name]} />
     );
   }
   if (name in CUSTOM_ICONS) {
