@@ -6,6 +6,7 @@ package io.airbyte.cdk.data
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -213,5 +214,24 @@ class JsonSchemaToAirbyteTypeTest {
         Assertions.assertTrue(arrayOption is ArrayType)
         val arrayItems = (arrayOption as ArrayType).items
         Assertions.assertEquals(FieldType(IntegerType, true), arrayItems)
+    }
+
+    @Test
+    fun testHandleNonstandardFields() {
+        val inputSchema =
+            Jsons.readTree(
+                """
+                    {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "description": "foo",
+                      "some_random_other_property": "lol, lmao, isn't jsonschema great"
+                    }
+                """.trimIndent()
+            ) as ObjectNode
+        val airbyteType = JsonSchemaToAirbyteType().convert(inputSchema)
+        Assertions.assertEquals(UnionType(listOf(StringType, IntegerType)), airbyteType)
     }
 }
