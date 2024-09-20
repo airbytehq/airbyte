@@ -146,8 +146,8 @@ class JsonlParser(FileTypeParser):
         be updated in the future to return an iterator with multiple DataFrames.
         """
 
-        # The URI isn't actually one; it's a relative path. It needs the absolute reference, for
-        # instance the 's3://' protocol, bucket name, etc.
+        # The incoming URI is actually a relative path. We need the absolute ref, for
+        # instance: including the 's3://' protocol, bucket name, etc.
         fully_qualified_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
         storage_options = stream_reader.polars_storage_options
         logger.info("Using bulk processing mode to read JSONL file: %s", fully_qualified_uri)
