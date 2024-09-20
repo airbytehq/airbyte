@@ -718,6 +718,7 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/1-point-0",
         "release_notes/aug_2024",
         "release_notes/july_2024",
         "release_notes/june_2024",
