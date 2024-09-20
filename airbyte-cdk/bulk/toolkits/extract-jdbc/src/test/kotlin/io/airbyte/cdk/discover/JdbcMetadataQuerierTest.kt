@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.discover
 
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.h2.H2TestFixture
 import io.airbyte.cdk.h2source.H2SourceConfiguration
@@ -8,6 +9,7 @@ import io.airbyte.cdk.h2source.H2SourceConfigurationFactory
 import io.airbyte.cdk.h2source.H2SourceConfigurationJsonObject
 import io.airbyte.cdk.h2source.H2SourceOperations
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import java.sql.JDBCType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -37,7 +39,10 @@ class JdbcMetadataQuerierTest {
         val config: H2SourceConfiguration = H2SourceConfigurationFactory().make(configPojo)
         factory.session(config).use { mdq: MetadataQuerier ->
             Assertions.assertEquals(listOf("PUBLIC"), mdq.streamNamespaces())
-            Assertions.assertEquals(listOf("KV"), mdq.streamNames("PUBLIC"))
+            Assertions.assertEquals(
+                listOf("PUBLIC.KV"),
+                mdq.streamNames("PUBLIC").map { it.toString() },
+            )
             val expectedColumnMetadata: List<JdbcMetadataQuerier.ColumnMetadata> =
                 listOf(
                     JdbcMetadataQuerier.ColumnMetadata(
@@ -77,10 +82,12 @@ class JdbcMetadataQuerierTest {
                         nullable = true,
                     ),
                 )
-            val tableName = (mdq as JdbcMetadataQuerier).findTableName("KV", "PUBLIC")
+            val desc = StreamDescriptor().withNamespace("PUBLIC").withName("KV")
+            val streamID: StreamIdentifier = StreamIdentifier.from(desc)
+            val tableName = (mdq as JdbcMetadataQuerier).findTableName(streamID)
             Assertions.assertNotNull(tableName)
             Assertions.assertEquals(expectedColumnMetadata, mdq.columnMetadata(tableName!!))
-            Assertions.assertEquals(listOf(listOf("K")), mdq.primaryKey("KV", "PUBLIC"))
+            Assertions.assertEquals(listOf(listOf("K")), mdq.primaryKey(streamID))
         }
     }
 }

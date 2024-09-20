@@ -241,8 +241,8 @@ class DefaultJdbcPartitionFactoryTest {
         val factory = sharedState().factory()
         val result = factory.create(stream, opaqueStateValue(pk = 22))
         factory.assertFailures(
-            InvalidPrimaryKey(stream.name, stream.namespace, listOf(id.id)),
-            ResetStream(stream.name, stream.namespace),
+            InvalidPrimaryKey(stream.id, listOf(id.id)),
+            ResetStream(stream.id),
         )
         Assertions.assertTrue(result is DefaultJdbcUnsplittableSnapshotPartition)
         val partition = result as DefaultJdbcUnsplittableSnapshotPartition
@@ -256,8 +256,8 @@ class DefaultJdbcPartitionFactoryTest {
         val factory = sharedState().factory()
         val result = factory.create(stream, opaqueStateValue(cursor = cursorValue))
         factory.assertFailures(
-            InvalidCursor(stream.name, stream.namespace, ts.id),
-            ResetStream(stream.name, stream.namespace),
+            InvalidCursor(stream.id, ts.id),
+            ResetStream(stream.id),
         )
         Assertions.assertTrue(result is DefaultJdbcSplittableSnapshotPartition)
         val partition = result as DefaultJdbcSplittableSnapshotPartition

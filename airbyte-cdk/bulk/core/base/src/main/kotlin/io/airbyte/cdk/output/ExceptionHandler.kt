@@ -5,6 +5,7 @@
 package io.airbyte.cdk.output
 
 import io.airbyte.cdk.util.ApmTraceUtils
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage
 import jakarta.inject.Singleton
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -44,5 +45,24 @@ class ExceptionHandler(val classifiers: List<ExceptionClassifier>) {
                     .withFailureType(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
                     .withMessage(classified.displayMessage ?: e.message)
         }
+    }
+
+    fun handleCheckFailure(e: Throwable): Pair<AirbyteErrorTraceMessage, AirbyteConnectionStatus> {
+        val errorTraceMessage: AirbyteErrorTraceMessage = handle(e)
+        errorTraceMessage.failureType = AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR
+        val connectionStatusMessage: String =
+            String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, errorTraceMessage.message)
+
+        return Pair(
+            errorTraceMessage,
+            AirbyteConnectionStatus()
+                .withMessage(connectionStatusMessage)
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+        )
+    }
+
+    companion object {
+        const val COMMON_EXCEPTION_MESSAGE_TEMPLATE: String =
+            "Could not connect with provided configuration. Error: %s"
     }
 }

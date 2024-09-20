@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.7.0
+concurrent-cdk: add cursor definition based on sync mode to ConcurrentSourceAdapter
+
 ## 5.6.0
 Decouple low-code request_parameter_provider from cursor, add optional cursor_granularity to ConcurrentCursor
 
