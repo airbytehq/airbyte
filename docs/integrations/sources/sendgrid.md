@@ -88,7 +88,9 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.1 | 2024-09-14 | [45525](https://github.com/airbytehq/airbyte/pull/45525) | Update dependencies |
+| 1.1.0 | 2024-09-11 | [45191](https://github.com/airbytehq/airbyte/pull/45191) | Move Contacts stream to declarative async job |
 | 1.0.18 | 2024-09-07 | [45239](https://github.com/airbytehq/airbyte/pull/45239) | Update dependencies |
 | 1.0.17 | 2024-08-31 | [44953](https://github.com/airbytehq/airbyte/pull/44953) | Update dependencies |
 | 1.0.16 | 2024-08-24 | [44753](https://github.com/airbytehq/airbyte/pull/44753) | Update dependencies |

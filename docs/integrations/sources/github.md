@@ -138,6 +138,9 @@ This connector outputs the following incremental streams:
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Notes
 
 1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:
@@ -222,6 +225,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.10 | 2024-09-14 | [45557](https://github.com/airbytehq/airbyte/pull/45557) | Update dependencies |
 | 1.8.9 | 2024-09-07 | [45320](https://github.com/airbytehq/airbyte/pull/45320) | Update dependencies |
 | 1.8.8 | 2024-08-23 | [44592](https://github.com/airbytehq/airbyte/pull/44592) | Fix state handling for stream WorkflowRuns |
 | 1.8.7 | 2024-08-31 | [45061](https://github.com/airbytehq/airbyte/pull/45061) | Update dependencies |
