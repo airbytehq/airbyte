@@ -30,6 +30,6 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 
 | Version          | Date       |PR| Subject        |
 |------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-21 |[45654](https://github.com/airbytehq/airbyte/pull/45654)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| 0.0.1 | 2024-09-21 |[45839](https://github.com/airbytehq/airbyte/pull/45839)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
