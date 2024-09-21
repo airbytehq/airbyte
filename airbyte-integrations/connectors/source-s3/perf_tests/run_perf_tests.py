@@ -29,7 +29,7 @@ S3_OBJECTS_PREFIX = "profiling-input-files/json/no_op_source/stream1/"
 SCRIPT_DIR = Path(__file__).resolve().absolute().parent
 CONNECTOR_DIR = SCRIPT_DIR.parent
 LOCAL_TARGET_DIR = SCRIPT_DIR / Path(".test-data/perf-profile-dataset")
-SECRETS_FILE_NAME = SCRIPT_DIR / Path("../secrets/bulk_jsonl_perf_test_bigfile_config.json")
+SECRETS_FILE_NAME = SCRIPT_DIR / Path("../secrets/bulk_jsonl_perf_test_config.json")
 
 # This always runs the live (editable) version of the connector from the Poetry venv:
 CONNECTOR_EXECUTABLE = SCRIPT_DIR / Path("source-s3-hook.sh")
