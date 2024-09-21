@@ -26,7 +26,6 @@ urllib3 = "<2"
 
 # TODO: Remove these after the CDK is published.
 # This is needed because `airbyte-ci` otherwise won't pick up the new dependencies.
-polars = "^1.5.0"
 polars-lts-cpu = "^1.7.1"
 
 [tool.poetry.dependencies.smart-open]

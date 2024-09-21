@@ -2,7 +2,7 @@
 
 [[package]]
 name = "airbyte-cdk"
-version = "5.6.0"
+version = "5.8.0"
 description = "A framework for writing Airbyte Connectors."
 optional = false
 python-versions = "^3.10"
@@ -3503,4 +3503,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.12"
-content-hash = "e9fd8d68e63c74faf16d10b8af45f0002cc86504eb633b6f5b35ed115f5d8dac"
+content-hash = "f8635687eff36ec38cd5aaa5e1a8e29361b86ace1a48aa085c5c7c17f40303e1"
