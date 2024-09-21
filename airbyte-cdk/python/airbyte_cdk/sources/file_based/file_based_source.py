@@ -190,7 +190,6 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                 sync_mode: SyncMode | None = self._get_sync_mode_from_catalog(stream_config.name)
                 # Note: sync_mode may be `None` in `check` and `discover` modes.
 
-                # Incremental sync but non-concurrent cursor. This is not allowed.
                 if (
                     hasattr(self, "_concurrency_level") and self._concurrency_level is not None
                     and not issubclass(self.cursor_cls, AbstractConcurrentFileBasedCursor)

@@ -6,7 +6,7 @@ from __future__ import annotations
 from datetime import datetime
 from io import IOBase
 from os import getenv
-from typing import TYPE_CHECKING, Any, List, Optional, Set
+from typing import TYPE_CHECKING, List, Optional, Set
 
 import boto3.session
 import pendulum
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
-DEFAULT_BUFFER_SIZE = 1024 * 1024 * 20  # 20MB buffer
+DEFAULT_BUFFER_SIZE = 1024 * 1024 * 40  # 40MB buffer
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
@@ -276,22 +276,6 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def _handle_regular_file(self, file):
         remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
         return remote_file
-
-    @property
-    def polars_storage_options(self) -> dict[str, Any]:
-        """Defines the storage options for Polars.
-
-        Reference:
-        - https://docs.rs/object_store/latest/object_store/aws/enum.AmazonS3ConfigKey.html
-        """
-        options = {
-            "aws_access_key_id": self.config.aws_access_key_id,
-            "aws_secret_access_key": self.config.aws_secret_access_key,
-        }
-        if self.config.region_name:
-            options["aws_region"] = self.config.region_name
-
-        return options
 
     def get_fully_qualified_uri(
         self,

@@ -2,23 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import copy
-import datetime
-import logging
-import sys
 from abc import abstractmethod
-from collections.abc import MutableMapping
 from functools import cache, cached_property, lru_cache
-from typing import Any, Dict, Iterable, List, Mapping, Optional, TextIO, Type
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 
-import polars as pl
-from deprecated import deprecated
-
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteStream, SyncMode
-from airbyte_cdk.models import Type as _AirbyteMessageType
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, FileBasedStreamConfig, PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import FileBasedErrorsCollector, FileBasedSourceError, RecordParseError, UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -29,9 +19,7 @@ from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.checkpoint import Cursor
-from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from deprecated import deprecated
 
 
 class AbstractFileBasedStream(Stream):
@@ -96,40 +84,6 @@ class AbstractFileBasedStream(Stream):
         """
         ...
 
-    def _records_df_to_record_messages(
-        self,
-        dataframe: pl.DataFrame | pl.LazyFrame,
-    ) -> Iterable[AirbyteMessage]:
-        if isinstance(dataframe, pl.LazyFrame):
-            # Stream from the LazyFrame in chunks
-            # TODO: This is cheating for now. We just put it in a single dataframe.
-            # Note that this will fail if there is not enough memory.
-            stream = [dataframe.collect()]
-
-            for chunk in stream:
-                # Recursively process each chunk as a DataFrame
-                yield from self._records_df_to_record_messages(
-                    dataframe=chunk,
-                )
-            return
-
-        # If DataFrame, iterate over rows and create AirbyteMessages
-        record_generator = (
-            AirbyteMessage(
-                type=_AirbyteMessageType.RECORD,
-                record=AirbyteRecordMessage(
-                    stream=self.name,
-                    data=record_data,
-                    emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
-                ),
-            )
-            # TODO: Consider named=False for better performance (but we need to manually map field names)
-            for record_data in dataframe.iter_rows(named=True)
-        )
-        # Uncomment for debugging:
-        # all_records = list(record_generator)
-        yield from record_generator
-
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -146,37 +100,10 @@ class AbstractFileBasedStream(Stream):
             raise ValueError("stream_slice must be set")
         return self.read_records_from_slice(stream_slice)
 
-    def read_records_as_dataframes(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
-        """
-        Yield dataframes from from all remote files in `list_files_for_this_sync`.
-        This method acts as an adapter between the generic Stream interface and the file-based's
-        stream since file-based streams manage their own states.
-        """
-        if stream_slice is None:
-            raise ValueError("stream_slice must be set")
-
-        return self.read_records_from_slice_as_dataframes(stream_slice)
-
     @abstractmethod
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
-        """
-        ...
-
-    @abstractmethod
-    def read_records_from_slice_as_dataframes(
-        self,
-        stream_slice: StreamSlice,
-    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
-        """
-        Yield dataframes from from all remote files in `list_files_for_this_sync`.
         """
         ...
 

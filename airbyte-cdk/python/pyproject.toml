@@ -68,7 +68,6 @@ cryptography = "^42.0.5"
 pytz = "2024.1"
 orjson = "^3.10.7"
 serpyco-rs = "^1.10.2"
-polars-lts-cpu = "^1.7.1"
 
 [tool.poetry.group.dev.dependencies]
 freezegun = "*"
@@ -85,7 +84,7 @@ requests-mock = "*"
 codeflash = "*"
 
 [tool.poetry.extras]
-file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine", "polars"]
+file-based = ["avro", "fastavro", "pyarrow", "unstructured", "pdf2image", "pdfminer.six", "unstructured.pytesseract", "pytesseract", "markdown", "python-calamine"]
 sphinx-docs = ["Sphinx", "sphinx-rtd-theme"]
 vector-db-based = ["langchain", "openai", "cohere", "tiktoken"]
 

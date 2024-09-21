@@ -3,16 +3,10 @@
 #
 
 import copy
-import datetime
 import logging
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import polars as pl
-from deprecated.classic import deprecated
-
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteStream, SyncMode
-from airbyte_cdk.models import Type as _AirbyteMessageType
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, ConfiguredAirbyteStream, Level, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
@@ -20,7 +14,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import (
     AbstractFileBasedAvailabilityStrategy,
     AbstractFileBasedAvailabilityStrategyWrapper,
 )
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import BulkMode, ResolvedBulkMode, PrimaryKeyType
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import PrimaryKeyType
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -39,6 +33,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from deprecated.classic import deprecated
 
 if TYPE_CHECKING:
     from airbyte_cdk.sources.file_based.stream.concurrent.cursor import AbstractConcurrentFileBasedCursor
@@ -154,12 +149,6 @@ class FileBasedStreamFacade(AbstractStreamFacade[DefaultStream], AbstractFileBas
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         yield from self._legacy_stream.read_records_from_slice(stream_slice)
 
-    def read_records_from_slice_as_dataframes(
-        self,
-        stream_slice: StreamSlice,
-    ) -> Iterable[pl.DataFrame | pl.LazyFrame]:
-        return self._legacy_stream.read_records_from_slice_as_dataframes(stream_slice)
-
     def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         return self._legacy_stream.compute_slices()
 
@@ -229,19 +218,6 @@ class FileBasedStreamPartition(Partition):
         self._is_closed = False
 
     def read(self) -> Iterable[Record]:
-        if self._stream.config.bulk_mode.resolve() == ResolvedBulkMode.ENABLED:
-            self._stream.logger.info("Bulk mode is enabled for this stream. Processing records as dataframes.")
-            for df in self._stream.read_records_as_dataframes(
-                sync_mode=self._sync_mode,
-                cursor_field=self._cursor_field,
-                stream_slice=self._slice,
-                stream_state=self._state,
-            ):
-                yield from self._records_df_to_record_messages(df)
-
-            return
-
-        self._stream.logger.info("Bulk mode is disabled for this stream. Processing records one-by-one.")
         try:
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
@@ -264,36 +240,6 @@ class FileBasedStreamPartition(Partition):
                 raise ExceptionWithDisplayMessage(display_message) from e
             else:
                 raise e
-
-    def _records_df_to_record_messages(
-        self,
-        dataframe: pl.DataFrame | pl.LazyFrame,
-    ) -> Iterable[AirbyteMessage]:
-        if isinstance(dataframe, pl.LazyFrame):
-            # Stream from the LazyFrame in chunks. For now, just collect into a single dataframe.
-            # Note that this will fail if there is not enough memory.
-            dataframes: list[pl.DataFrame] = [dataframe.collect()]
-
-            for df in dataframes:
-                # Recursively process each chunk as a DataFrame
-                yield from self._records_df_to_record_messages(
-                    dataframe=df,
-                )
-            return
-
-        # If DataFrame, iterate over rows and create AirbyteMessages
-        record_generator = (
-            AirbyteMessage(
-                type=_AirbyteMessageType.RECORD,
-                record=AirbyteRecordMessage(
-                    stream=self._stream.name,
-                    data=record_data,
-                    emitted_at=int(datetime.datetime.now().timestamp()) * 1000,
-                ),
-            )
-            for record_data in dataframe.iter_rows(named=True)
-        )
-        yield from record_generator
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         if self._slice is None:

@@ -84,12 +84,8 @@ def main() -> None:
         # Truncate to the specific number of files to test
         config_dict["streams"][0]["globs"] = config_dict["streams"][0]["globs"][:NUM_FILES_LIMIT]
 
-    assert config_dict["streams"][0]["bulk_mode"] == "ENABLED"
     new_config = copy.deepcopy(config_dict)
-
-    # Baseline is same as new config, but with `bulk_mode` disabled
     baseline_config = copy.deepcopy(config_dict)
-    baseline_config["streams"][0]["bulk_mode"] = "DISABLED"
 
     new_source = get_s3_source(
         config=new_config,
@@ -111,7 +107,7 @@ def main() -> None:
     if INCLUDE_BASELINE:
         baseline_source = get_s3_source(
             config=baseline_config,
-            local=True,
+            local=False,
         )
         for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
             print(f"======Starting baseline test iteration #{i+1}======")

@@ -6,19 +6,16 @@ import argparse
 import importlib
 import ipaddress
 import logging
-import os
 import os.path
 import socket
 import sys
 import tempfile
 from collections import defaultdict
 from functools import wraps
-from typing import Any, DefaultDict, Iterable, List, Mapping, Optional, TextIO
+from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
 from urllib.parse import urlparse
 
 import requests
-from requests import PreparedRequest, Response, Session
-
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -238,33 +235,14 @@ class AirbyteEntrypoint(object):
         return
 
 
-def launch(
-    source: Source,
-    args: List[str],
-    output_stream: TextIO = None,
-) -> None:
-    """Launch the source connector with the given arguments.
-
-    Optionally, you can provide an output stream to redirect the output of the source connector.
-    The default is `sys.stdout` but you can also send to `os.devnull` to suppress output,
-    or any other file-like object.
-    """
-    output_stream = output_stream or sys.stdout
+def launch(source: Source, args: List[str]) -> None:
     source_entrypoint = AirbyteEntrypoint(source)
     parsed_args = source_entrypoint.parse_args(args)
-    record_iterator = source_entrypoint.run(parsed_args)
-
-    if output_stream is os.devnull:
-        # Skip printing:
-        for _ in record_iterator:
-            pass
-        return
-
     with PrintBuffer():
-        for message in record_iterator:
+        for message in source_entrypoint.run(parsed_args):
             # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
             # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-            print(f"{message}\n", end="", flush=True, file=output_stream)
+            print(f"{message}\n", end="", flush=True)
 
 
 def _init_internal_request_filter() -> None:
