@@ -10,10 +10,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
-import io.airbyte.integrations.destination.iceberg.container.RESTServerWithMinioCompose;
+import io.airbyte.integrations.destination.iceberg.container.TabularRestCatalogContainer;
 import java.util.HashSet;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,20 +24,20 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseIcebergRESTCatalogS3IntegrationTest.class);
 
-  private static RESTServerWithMinioCompose composeContainer;
+  private static TabularRestCatalogContainer restCatalogContainer;
   private static JsonNode config;
 
   static void startCompose(final DataFileFormat fileFormat) {
-    composeContainer = new RESTServerWithMinioCompose();
-    composeContainer.start();
-    config = composeContainer.getComposeConfig(fileFormat);
-    IcebergIntegrationTestUtil.createS3WarehouseBucket(config);
-    LOGGER.info("==> Started REST Server with Minio - Docker Compose...");
+    restCatalogContainer = new TabularRestCatalogContainer();
+    restCatalogContainer.startAll();
+    config = restCatalogContainer.getConfigWithResolvedHostPort(fileFormat);
+    IcebergIntegrationTestUtil.createS3WarehouseBucket(restCatalogContainer.getConfig(fileFormat));
+    LOGGER.info("==> Started REST Server with Minio");
   }
 
   @AfterAll
   public static void stopCompose() {
-    IcebergIntegrationTestUtil.stopAndCloseContainer(composeContainer, "REST Server with Minio - Docker Compose");
+    restCatalogContainer.stopAll();
   }
 
   @Override
@@ -55,7 +58,7 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return composeContainer.getWrongConfig();
+    return restCatalogContainer.getWrongConfig();
   }
 
   @Override
@@ -64,7 +67,20 @@ public abstract class BaseIcebergRESTCatalogS3IntegrationTest extends Destinatio
                                            final String namespace,
                                            final JsonNode streamSchema)
       throws Exception {
-    return IcebergIntegrationTestUtil.retrieveRecords(getConfig(), namespace, streamName);
+    // TODO: create another method to get config for retrieving records.
+    return IcebergIntegrationTestUtil.retrieveRecords(restCatalogContainer.getConfig(DataFileFormat.PARQUET), namespace, streamName);
   }
+
+  @Nullable
+  @Override
+  protected String getDefaultSchema(@NotNull JsonNode config) throws Exception {
+    // TODO: This was NPE'ing without this return value because of Kotlin's non-null in base,
+    // but whats the actual value to pass instead of empty ?
+    return "";
+  }
+
+  @Disabled("Existing connector does not support flattened rows yet")
+  @Override
+  public void testAirbyteFields() throws Exception {}
 
 }

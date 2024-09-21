@@ -108,6 +108,10 @@ poe lint
 
 ## Changelog
 
+### 1.8.0
+
+Added minimum sl threshold value to documentation checks to skip them for connectors for which sl is 0.
+
 ### 1.7.0
 
 Added  `CheckDocumentationLinks`, `CheckDocumentationHeadersOrder`, `CheckPrerequisitesSectionDescribesRequiredFieldsFromSpec`, 

@@ -5,10 +5,12 @@
 package io.airbyte.cdk.state
 
 import com.google.common.collect.Range
+import io.airbyte.cdk.command.Append
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
+import io.airbyte.cdk.data.NullType
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SimpleBatch
@@ -70,7 +72,14 @@ class StreamsManagerTest {
         val streamsManager = StreamsManagerFactory(catalog).make()
         Assertions.assertThrows(IllegalArgumentException::class.java) {
             streamsManager.getManager(
-                DestinationStream(DestinationStream.Descriptor("test", "non-existent"))
+                DestinationStream(
+                    DestinationStream.Descriptor("test", "non-existent"),
+                    importType = Append,
+                    schema = NullType,
+                    generationId = 42,
+                    minimumGenerationId = 0,
+                    syncId = 42,
+                )
             )
         }
     }

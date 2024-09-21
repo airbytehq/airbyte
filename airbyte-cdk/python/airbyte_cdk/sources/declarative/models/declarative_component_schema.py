@@ -613,6 +613,11 @@ class JsonlDecoder(BaseModel):
     type: Literal['JsonlDecoder']
 
 
+class KeysToLower(BaseModel):
+    type: Literal['KeysToLower']
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class IterableDecoder(BaseModel):
     type: Literal['IterableDecoder']
 
@@ -879,6 +884,14 @@ class LegacySessionTokenAuthenticator(BaseModel):
         title='Validate Session Path',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
+class AsyncJobStatusMap(BaseModel):
+    type: Optional[Literal['AsyncJobStatusMap']] = None
+    running: List[str]
+    completed: List[str]
+    failed: List[str]
+    timeout: List[str]
 
 
 class ValueType(Enum):
@@ -1360,7 +1373,7 @@ class DeclarativeStream(BaseModel):
         extra = Extra.allow
 
     type: Literal['DeclarativeStream']
-    retriever: Union[CustomRetriever, SimpleRetriever] = Field(
+    retriever: Union[AsyncRetriever, CustomRetriever, SimpleRetriever] = Field(
         ...,
         description='Component used to coordinate how records are extracted across stream slices and request pages.',
         title='Retriever',
@@ -1386,7 +1399,7 @@ class DeclarativeStream(BaseModel):
         title='Schema Loader',
     )
     transformations: Optional[
-        List[Union[AddFields, CustomTransformation, RemoveFields]]
+        List[Union[AddFields, CustomTransformation, RemoveFields, KeysToLower]]
     ] = Field(
         None,
         description='A list of transformations to be applied to each output record.',
@@ -1612,6 +1625,58 @@ class SimpleRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class AsyncRetriever(BaseModel):
+    type: Literal['AsyncRetriever']
+    record_selector: RecordSelector = Field(
+        ...,
+        description='Component that describes how to extract records from a HTTP response.',
+    )
+    status_mapping: AsyncJobStatusMap = Field(
+        ..., description='Async Job Status to Airbyte CDK Async Job Status mapping.'
+    )
+    status_extractor: Optional[Union[CustomRecordExtractor, DpathExtractor]] = Field(
+        None, description='Responsible for fetching the actual status of the async job.'
+    )
+    urls_extractor: Optional[Union[CustomRecordExtractor, DpathExtractor]] = Field(
+        None,
+        description='Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.',
+    )
+    creation_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.',
+    )
+    polling_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.',
+    )
+    download_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.',
+    )
+    partition_router: Optional[
+        Union[
+            CustomPartitionRouter,
+            ListPartitionRouter,
+            SubstreamPartitionRouter,
+            List[
+                Union[
+                    CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter
+                ]
+            ],
+        ]
+    ] = Field(
+        [],
+        description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
+        title='Partition Router',
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class SubstreamPartitionRouter(BaseModel):
     type: Literal['SubstreamPartitionRouter']
     parent_stream_configs: List[ParentStreamConfig] = Field(
@@ -1628,3 +1693,4 @@ SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()
+AsyncRetriever.update_forward_refs()

@@ -214,6 +214,9 @@ See more info about user-defined pk [here](https://docs.airbyte.com/understandin
 
 :::
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Custom Reports
 
 You can build your own report by providing:

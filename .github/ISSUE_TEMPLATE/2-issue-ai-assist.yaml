@@ -1,0 +1,51 @@
+name: 🤖 [AI Assist] Report an issue using the AI Assist
+description: Use this template when you have a problem creating a connector using the AI Connector Assist.
+labels: [type/bug, area/connector-builder, needs-triage, ai-assist]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        <p align="center">
+          <a target="_blank" href="https://airbyte.com">
+            <image>
+              <source srcset="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg">
+              <img alt="octavia-welcome" src="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
+            </image>
+          </a>
+        </p>
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report...
+        Make sure to update this issue with a concise title and provide all information you have to
+        help us debug the problem together.
+  - type: input
+    id: connector-url-link
+    attributes:
+      label: Connector Documentation URL
+      description: Share the documentation URL you used to create the connector.
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What error are you seeing?
+      description: Please give any information you have and steps to reproduce the problem.
+  - type: textarea
+    id: replicate
+    attributes:
+      label: How to replicate
+      description: Please provide what steps you made so far
+  - type: textarea
+    id: expect
+    attributes:
+      label: What do you expect to happen?
+      description: What output were you expecting?
+  - type: checkboxes
+    id: alpha-release
+    attributes:
+      label: Is this in the Alpha Release?
+      description: Are you noticing this issue in the alpha release of AI Assist?
+      options:
+        - label: Yes, the issue is in the AI Assist Alpha Release.
+          required: false

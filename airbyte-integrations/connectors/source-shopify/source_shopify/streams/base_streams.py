@@ -12,11 +12,11 @@ from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, HttpStatusErrorHandler
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_protocol.models import SyncMode
 from requests.exceptions import RequestException
 from source_shopify.http_request import ShopifyErrorHandler
 from source_shopify.shopify_graphql.bulk.job import ShopifyBulkManager
