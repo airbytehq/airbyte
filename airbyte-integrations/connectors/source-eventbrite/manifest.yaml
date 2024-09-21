@@ -41,8 +41,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created
@@ -51,7 +51,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -91,8 +91,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 10
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -109,7 +109,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -144,8 +144,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -162,7 +162,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -201,8 +201,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,8 +232,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -263,8 +263,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -281,7 +281,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_time_option:
           type: RequestOption
@@ -320,8 +320,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -359,8 +359,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -399,8 +399,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -444,8 +444,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -509,8 +509,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -548,8 +548,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -587,8 +587,8 @@ definitions:
             field_name: continuation
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
-            stop_condition: "{{ not response.get(\"pagination\", {}).get(\"continuation\", {}) }}"
+            cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -606,7 +606,7 @@ definitions:
     url_base: https://www.eventbriteapi.com
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"private_token\"] }}"
+      api_token: '{{ config["private_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/organizations"
