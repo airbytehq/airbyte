@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 AWS_EXTERNAL_ID = getenv("AWS_ASSUME_ROLE_EXTERNAL_ID")
-
+DEFAULT_BUFFER_SIZE = 1024 * 1024 * 20  # 20MB buffer
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
@@ -165,21 +165,37 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             endpoint=self.config.endpoint,
         ) from exc
 
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(
+        self,
+        file: RemoteFile,
+        mode: FileReadMode,
+        encoding: Optional[str],
+        logger: logging.Logger,
+    ) -> IOBase:
         try:
             params = {"client": self.s3_client}
         except Exception as exc:
             raise exc
 
+        fully_qualified_uri = self.get_fully_qualified_uri(file.uri)
         logger.debug(f"try to open {file.uri}")
         try:
             if isinstance(file, RemoteFileInsideArchive):
-                s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
+                s3_file_object = smart_open.open(
+                    fully_qualified_uri,
+                    transport_params=params,
+                    mode="rb",
+                    buffering=DEFAULT_BUFFER_SIZE,
+                )
                 decompressed_stream = DecompressedStream(s3_file_object, file)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
                 result = smart_open.open(
-                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
+                    fully_qualified_uri,
+                    transport_params=params,
+                    mode=mode.value,
+                    encoding=encoding,
+                    buffering=DEFAULT_BUFFER_SIZE,
                 )
         except OSError:
             logger.warning(
@@ -285,7 +301,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         if "://" in file_uri:
             return file_uri
 
-        return f"s3://{self.config.bucket}/{file_uri}"
+        return f"s3://{self.config.bucket}/{file_uri.split('#')[0]}"
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:

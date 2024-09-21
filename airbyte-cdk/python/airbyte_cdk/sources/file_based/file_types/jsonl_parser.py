@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from io import StringIO
 import json
 import logging
-from typing import Any, Dict, Iterable, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Mapping, Optional, TextIO, Tuple, Union
 
 import polars as pl
 
@@ -145,33 +146,82 @@ class JsonlParser(FileTypeParser):
         Currently this only returns an iterator containing a single data frame. This may
         be updated in the future to return an iterator with multiple DataFrames.
         """
+        with stream_reader.open_file(
+            file=file,
+            mode=self.file_read_mode,
+            encoding=None,
+            logger=logger,
+        ) as s3_file:
 
-        # The incoming URI is actually a relative path. We need the absolute ref, for
-        # instance: including the 's3://' protocol, bucket name, etc.
-        fully_qualified_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
-        storage_options = stream_reader.polars_storage_options
-        logger.info("Using bulk processing mode to read JSONL file: %s", fully_qualified_uri)
+            def batch_read_lines(
+                file_obj: TextIO,
+                batch_size: int = 500_000,
+            ) -> Iterable[StringIO]:
+                buffer = StringIO()  # Initialize StringIO buffer
+                count = 0
 
-        lazyframe: pl.LazyFrame = pl.scan_ndjson(
-            fully_qualified_uri,
-            storage_options=storage_options,
-            row_index_name="_ab_record_index",
-            infer_schema_length=10_000,
-        ).with_columns(
-            pl.lit(file.uri).alias("_ab_source_file_url"),
-            pl.lit(file.last_modified).alias("_ab_source_file_last_modified")
-        )
+                for line in file_obj:
+                    buffer.write(line)  # Write each line directly to the StringIO buffer
+                    count += 1
+                    if count >= batch_size:
+                        buffer.seek(0)  # Move the pointer to the start of the buffer for reading
+                        yield buffer  # Yield the buffer
+                        buffer = StringIO()  # Reset the buffer for the next batch
+                        count = 0
 
-        def slice_generator(
-            lazyframe: pl.LazyFrame,
-            batch_size: int = 50_000,
-        ) -> Iterable[pl.DataFrame]:
-            offset = 0
-            while True:
-                slice = lazyframe.slice(offset=offset, length=batch_size).collect(streaming=True)
-                height = slice.height
-                if height == 0:
+                if count > 0:  # Yield any remaining lines in the buffer
+                    buffer.seek(0)
+                    yield buffer
+                # buffer: list[str] = []
+                # for line in s3_file:
+                #     buffer.append(line)
+                #     if len(buffer) >= batch_size:
+                #         # Yield the batch as a single string
+                #         yield StringIO("\n".join(buffer))
+                #         buffer = []
+
+            for batch in batch_read_lines(s3_file):
+                df: pl.DataFrame = pl.read_ndjson(
+                    source=batch,
+                    # schema=schema,  # TODO: Add detected schema
+                    infer_schema_length=10,
+                    # low_memory=True,
+                )
+                if df.height == 0:  # No more rows to read
                     break
-                yield slice
 
-        yield from slice_generator(lazyframe)
+                transformed_df = df.with_columns(
+                    pl.lit(file.uri).alias("_ab_source_file_url"),
+                    pl.lit(file.last_modified).alias("_ab_source_file_last_modified")
+                )
+                yield transformed_df
+
+        # # The incoming URI is actually a relative path. We need the absolute ref, for
+        # # instance: including the 's3://' protocol, bucket name, etc.
+        # fully_qualified_uri = stream_reader.get_fully_qualified_uri(file.uri.split("#")[0])
+        # storage_options = stream_reader.polars_storage_options
+        # logger.info("Using bulk processing mode to read JSONL file: %s", fully_qualified_uri)
+
+        # lazyframe: pl.LazyFrame = pl.scan_ndjson(
+        #     fully_qualified_uri,
+        #     storage_options=storage_options,
+        #     row_index_name="_ab_record_index",
+        #     infer_schema_length=10_000,
+        # ).with_columns(
+        #     pl.lit(file.uri).alias("_ab_source_file_url"),
+        #     pl.lit(file.last_modified).alias("_ab_source_file_last_modified")
+        # )
+
+        # def slice_generator(
+        #     lazyframe: pl.LazyFrame,
+        #     batch_size: int = 50_000,
+        # ) -> Iterable[pl.DataFrame]:
+        #     offset = 0
+        #     while True:
+        #         slice = lazyframe.slice(offset=offset, length=batch_size).collect(streaming=True)
+        #         height = slice.height
+        #         if height == 0:
+        #             break
+        #         yield slice
+
+        # yield from slice_generator(lazyframe)
