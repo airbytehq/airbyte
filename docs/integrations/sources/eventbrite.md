@@ -8,6 +8,10 @@ Eventbrite is a global self-service ticketing platform for live experiences that
 | `private_token` | `string` | Private Token. The private token to use for authenticating API requests. |  |
 | `start_date` | `string` | Start date.  |  |
 
+To get a Private Token:
+- Log in to your Eventbrite account and visit your [API Keys page](https://www.eventbrite.com/platform/api-keys).
+- Copy your private token.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
