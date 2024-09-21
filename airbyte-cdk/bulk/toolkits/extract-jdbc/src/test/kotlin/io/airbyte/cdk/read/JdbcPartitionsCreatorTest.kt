@@ -401,7 +401,7 @@ class JdbcPartitionsCreatorTest {
         // Acquire resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         Assertions.assertEquals(
             PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -409,19 +409,19 @@ class JdbcPartitionsCreatorTest {
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         // Run
         val partitionReaders: List<PartitionReader> = runBlocking { run() }
         // Release resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         releaseResources()
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            sharedState.semaphore.availablePermits,
+            sharedState.concurrencyResource.available,
         )
         // Return result
         return partitionReaders
