@@ -2435,6 +2435,21 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
+      download_paginator:
+        description: Paginator component that describes how to navigate through the API's pages during download.
+        anyOf:
+          - "$ref": "#/definitions/DefaultPaginator"
+          - "$ref": "#/definitions/NoPagination"
+      abort_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to abort a job once it is timed out from the source's perspective.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      delete_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to delete a job once the records are extracted.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.

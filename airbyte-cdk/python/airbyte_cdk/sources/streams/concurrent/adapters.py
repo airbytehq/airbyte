@@ -199,6 +199,14 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         return self._abstract_stream
 
 
+class SliceEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, "__json_serializable__"):
+            return obj.__json_serializable__()
+        # Let the base class default method raise the TypeError
+        return super().default(obj)
+
+
 class StreamPartition(Partition):
     """
     This class acts as an adapter between the new Partition interface and the Stream's stream_slice interface
@@ -273,7 +281,7 @@ class StreamPartition(Partition):
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
-            s = json.dumps(self._slice, sort_keys=True)
+            s = json.dumps(self._slice, sort_keys=True, cls=SliceEncoder)
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)
