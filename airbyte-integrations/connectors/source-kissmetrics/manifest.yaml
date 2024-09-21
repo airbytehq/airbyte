@@ -235,8 +235,8 @@ definitions:
     url_base: https://query.kissmetrics.io/v3/
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
-      username: "{{ config[\"username\"] }}"
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
 
 streams:
   - $ref: "#/definitions/streams/products"
