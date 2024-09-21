@@ -121,8 +121,6 @@ global:
 
 <TabItem label="Azure Key Vault" value="Azure">
 
-Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
-
 ```yaml
 global:
   secretsManager:
