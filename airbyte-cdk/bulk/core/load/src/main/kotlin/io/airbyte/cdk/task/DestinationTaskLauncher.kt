@@ -5,8 +5,11 @@
 package io.airbyte.cdk.task
 
 import io.airbyte.cdk.command.DestinationCatalog
+import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.BatchEnvelope
+import io.airbyte.cdk.message.CheckpointMessage
 import io.airbyte.cdk.message.SpooledRawMessagesLocalFile
+import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -24,6 +27,7 @@ import jakarta.inject.Singleton
 class DestinationTaskLauncher(
     private val catalog: DestinationCatalog,
     override val taskRunner: TaskRunner,
+    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
@@ -74,6 +78,7 @@ class DestinationTaskLauncher(
 
     suspend fun startTeardownTask() {
         log.info { "Starting teardown task" }
+        checkpointManager.flushReadyCheckpointMessages()
         taskRunner.enqueue(teardownTaskFactory.make(this))
     }
 }
@@ -82,6 +87,7 @@ class DestinationTaskLauncher(
 class DestinationTaskLauncherFactory(
     private val catalog: DestinationCatalog,
     private val taskRunner: TaskRunner,
+    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
@@ -96,6 +102,7 @@ class DestinationTaskLauncherFactory(
         return DestinationTaskLauncher(
             catalog,
             taskRunner,
+            checkpointManager,
             setupTaskFactory,
             openStreamTaskFactory,
             spillToDiskTaskFactory,

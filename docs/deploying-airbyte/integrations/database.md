@@ -35,6 +35,8 @@ postgresql:
 
 global:
   database:
+    type: external
+
     # -- Secret name where database credentials are stored
     secretName: "" # e.g. "airbyte-config-secrets"
 

@@ -451,6 +451,10 @@ const deployAirbyte = {
       label: "Creating a Secret",
       id: "deploying-airbyte/creating-secrets",
     },
+    {
+      type: "doc",
+      id: "deploying-airbyte/troubleshoot-deploy",
+    },
   ],
 };
 
@@ -654,6 +658,7 @@ module.exports = {
         "operator-guides/using-prefect-task",
         "operator-guides/using-dagster-integration",
         "operator-guides/using-kestra-plugin",
+        "operator-guides/using-orchestra-task",
       ],
     },
     {

@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions
 data object SyncsTestFixture {
     fun testSpec(expectedSpec: ConnectorSpecification) {
         val expected: String = Jsons.writeValueAsString(expectedSpec)
-        val output: BufferingOutputConsumer = CliRunner.runSource("spec")
+        val output: BufferingOutputConsumer = CliRunner.source("spec").run()
         val actual: String = Jsons.writeValueAsString(output.specs().last())
 
         val jsonMatcher: JsonMatcher =
@@ -52,7 +52,7 @@ data object SyncsTestFixture {
         configPojo: ConfigurationJsonObjectBase,
         expectedFailure: String? = null,
     ) {
-        val checkOutput: BufferingOutputConsumer = CliRunner.runSource("check", configPojo)
+        val checkOutput: BufferingOutputConsumer = CliRunner.source("check", configPojo).run()
         Assertions.assertEquals(1, checkOutput.statuses().size, checkOutput.statuses().toString())
         if (expectedFailure == null) {
             Assertions.assertEquals(
@@ -73,7 +73,7 @@ data object SyncsTestFixture {
         configPojo: ConfigurationJsonObjectBase,
         expectedCatalog: AirbyteCatalog,
     ) {
-        val discoverOutput: BufferingOutputConsumer = CliRunner.runSource("discover", configPojo)
+        val discoverOutput: BufferingOutputConsumer = CliRunner.source("discover", configPojo).run()
         Assertions.assertEquals(listOf(expectedCatalog), discoverOutput.catalogs())
     }
 
@@ -102,7 +102,7 @@ data object SyncsTestFixture {
         var state: List<AirbyteStateMessage> = initialState
         for (step in afterRead) {
             val readOutput: BufferingOutputConsumer =
-                CliRunner.runSource("read", configPojo, configuredCatalog, state)
+                CliRunner.source("read", configPojo, configuredCatalog, state).run()
             step.validate(readOutput)
             connectionSupplier.get().use(step::update)
             state = readOutput.states()
@@ -141,7 +141,7 @@ data object SyncsTestFixture {
         var state: List<AirbyteStateMessage> = listOf()
         for (step in afterRead) {
             val readOutput: BufferingOutputConsumer =
-                CliRunner.runSource("read", configPojo, configuredCatalog, state)
+                CliRunner.source("read", configPojo, configuredCatalog, state).run()
             step.validate(readOutput)
             connectionSupplier.get().use(step::update)
             state = readOutput.states()
