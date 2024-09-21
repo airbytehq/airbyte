@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "query.kissmetrics.io"
   registryOverrides:
     oss:
       enabled: true

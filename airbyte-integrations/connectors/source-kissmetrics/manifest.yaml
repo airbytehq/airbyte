@@ -29,15 +29,15 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -77,15 +77,15 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -133,15 +133,15 @@ definitions:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
                 response_filters:
                   - type: HttpResponseFilter
                     action: RATE_LIMITED
                     http_codes:
                       - 429
                     error_message: Rate limits hit
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 2
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,6 +174,62 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/events"
+    properties:
+      type: DeclarativeStream
+      name: properties
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: products/{{ stream_partition.product_id }}/properties
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 50
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: product_id
+              stream:
+                $ref: "#/definitions/streams/products"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/properties"
   base_requester:
     type: HttpRequester
     url_base: https://query.kissmetrics.io/v3/
@@ -186,6 +242,7 @@ streams:
   - $ref: "#/definitions/streams/products"
   - $ref: "#/definitions/streams/reports"
   - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/properties"
 
 spec:
   type: Spec
@@ -212,6 +269,7 @@ metadata:
     products: true
     reports: true
     events: true
+    properties: true
   testedStreams:
     products:
       hasRecords: true
@@ -234,6 +292,13 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    properties:
+      streamHash: 6fae71fa57dc747f5c16a520ca37e2316e9f9bb1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://support.kissmetrics.io/reference/overview-1
 
@@ -313,3 +378,8 @@ schemas:
           - "null"
     required:
       - id
+  properties:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}

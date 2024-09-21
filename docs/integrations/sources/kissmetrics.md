@@ -1,7 +1,12 @@
 # Kissmetrics
-Website: https://app.kissmetrics.io/
-API docs: https://support.kissmetrics.io/reference/overview-1
-Auth Docs: https://support.kissmetrics.io/reference/authorization
+This page contains the setup guide and reference information for the [Kissmetrics](https://app.kissmetrics.io/) source connector.
+
+## Documentation reference:
+Visit `https://support.kissmetrics.io/reference/overview-1` for API documentation
+
+## Authentication setup
+`Kissmetrics` uses Basic Http authentication which uses your username and password,
+Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 
 ## Configuration
 
@@ -16,14 +21,15 @@ Auth Docs: https://support.kissmetrics.io/reference/authorization
 | products | id | DefaultPaginator | ✅ |  ❌  |
 | reports | id | DefaultPaginator | ✅ |  ❌  |
 | events | id | DefaultPaginator | ✅ |  ❌  |
+| properties | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-21 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-21 |[45654](https://github.com/airbytehq/airbyte/pull/45654)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

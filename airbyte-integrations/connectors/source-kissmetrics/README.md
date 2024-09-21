@@ -1,9 +1,12 @@
 # Kissmetrics
 This directory contains the manifest-only connector for `source-kissmetrics`.
 
-Website: https://app.kissmetrics.io/
-API docs: https://support.kissmetrics.io/reference/overview-1
-Auth Docs: https://support.kissmetrics.io/reference/authorization
+## Documentation reference:
+Visit `https://support.kissmetrics.io/reference/overview-1` for API documentation
+
+## Authentication setup
+`Kissmetrics` uses Basic Http authentication which uses your username and password,
+Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 
 ## Usage
 There are multiple ways to use this connector:
