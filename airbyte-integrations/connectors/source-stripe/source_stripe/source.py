@@ -35,6 +35,9 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeSubStream,
 )
 
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+
 logger = logging.getLogger("airbyte")
 
 _MAX_CONCURRENCY = 20
@@ -544,6 +547,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             self.convert_to_concurrent_stream(
                 logger,
                 stream,
+                state_manager,
                 cursor=self.initialize_cursor(
                     stream,
                     state_manager,
