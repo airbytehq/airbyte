@@ -1,0 +1,212 @@
+-- To remove comments, spaces, and line feeds, use: https://codebeautify.org/sql-minifier
+-- Main query for the majority of the records. 
+SELECT	
+	-- Unique key for Airbyte sync.
+	ml.InternalId AS Id	
+	-- Try to retrieve a reasonable item name. It can be missing for shipping, so a hardcoded name.
+	,COALESCE(i.description, i.displayname, tl.memo, CASE WHEN tl.itemtype = 'ShipItem' THEN 'Shipping' ELSE NULL END) AS ItemName
+	-- Do not include gift cards. Shipping and discount amounts show up on separate columns, so exclude them here.
+	,CASE WHEN (LOWER(COALESCE(i.description, i.displayname)) LIKE '%gift card%') OR tl.itemtype IN ('Discount', 'ShipItem') THEN NULL ELSE tl.netamount * -1 END AS SalesAmount
+	-- Same as above.
+	,CASE WHEN (LOWER(COALESCE(i.description, i.displayname)) LIKE '%gift card%') OR tl.itemtype IN ('Discount', 'ShipItem') THEN NULL ELSE tl.quantity * -1 END AS Quantity
+	,CASE WHEN tl.itemtype = 'ShipItem' THEN tl.rateamount ELSE NULL END AS ShippingCost
+	,CASE WHEN tl.itemtype = 'Discount' THEN tl.rateamount ELSE NULL END AS Discount
+	,tl.ItemType
+	,ml.TranDate	
+	,ml.InternalId
+	,ml.DocumentNumber
+	,ml.CustomerName
+	,ml.CustomerInternalId
+	,ml.SalesRep
+	,tl.linesequencenumber AS LineIndex
+	,ml.OriginalSalesOrderInternalId	
+	,BUILTIN.DF(tl.class) AS Class
+	,ml.Market
+	,ml.Segment
+FROM (	
+	-- NetSuite does not fully support CTE, so using inner queries. This part focuses on
+	-- retrieving the header info and everything that's common to the lines.
+	SELECT
+		trandate AS TranDate	
+		,t.id AS InternalId
+		,t.tranid AS DocumentNumber
+		,c.entitytitle AS CustomerName
+		,tl.entity AS CustomerInternalId
+		,e.entityid AS SalesRep
+		,tl.createdfrom AS OriginalSalesOrderInternalId
+		,BUILTIN.DF(c.custentity32) AS Market
+		,BUILTIN.DF(c.custentity33) AS Segment	
+	FROM transaction t
+	INNER JOIN transactionline tl ON
+		tl.transaction = t.id
+	LEFT JOIN customer c ON	
+		t.entity = c.id
+	LEFT JOIN employee e ON 
+		c.salesrep = e.id	
+	WHERE
+		tl.mainline = 'T'	
+		AND t.type IN ('CashRfnd', 'CashSale', 'CustCred', 'Deposit', 'CustInvc', 'Journal', 'CustPymt')	
+		AND BUILTIN.DF(tl.class) = '6 Wholesale'			
+	) ml
+INNER JOIN transactionline tl ON
+	tl.transaction = ml.InternalId 
+	AND tl.mainline = 'F'
+	-- Exclude a lot of miscellaneous lines that are not meant to be displayed on the UI.
+	AND tl.donotdisplayline = 'F'
+	-- Tax has been excluded previously, so doing the same here.
+	AND tl.itemtype <> 'TaxGroup'
+	-- If the type is "ship item", make sure it has a rate.
+	AND (tl.itemtype <> 'ShipItem' OR tl.rateamount > 0)	
+LEFT JOIN item i ON
+	tl.item = i.id
+WHERE
+	-- For performance, limit amount of historical data.
+	ml.trandate >= '1/1/2022'
+--
+--
+UNION
+--
+--
+-- There could be sales coming through as a journal entry.
+-- Some more discounts under "50500 Discounts Allowed".
+SELECT
+	-- Make sure these miscellenous cases are separated from the main entries. 
+	t.id * 1000 AS Id	
+	-- Try to retrieve a reasonable item name. It can be missing for shipping, so a hardcoded name.
+	,COALESCE(i.description, i.displayname, tl.memo, CASE WHEN tl.itemtype = 'ShipItem' THEN 'Shipping' ELSE NULL END) AS ItemName
+	-- Do not include gift cards. Shipping and discount amounts show up on separate columns, so exclude them here.
+	,CASE WHEN BUILTIN.DF(tal.account) = '40100 Bulk Coffee Sales' THEN debitforeignamount * -1 ELSE NULL END AS SalesAmount
+	-- Same as above.
+	,NULL AS Quantity
+	,NULL AS ShippingCost
+	,CASE WHEN BUILTIN.DF(tal.account) = '50500 Discounts Allowed' THEN tl.netamount * -1 ELSE NULL END AS Discount
+	,tl.ItemType
+	,t.trandate AS TranDate	
+	,t.id AS InternalId
+	,t.tranid AS DocumentNumber
+	,c.entitytitle AS CustomerName
+	,tl.entity AS CustomerInternalId
+	,e.entityid AS SalesRep
+	,tl.linesequencenumber AS LineIndex
+	,tl.createdfrom AS OriginalSalesOrderInternalId
+	,BUILTIN.DF(tl.class) AS Class
+	,BUILTIN.DF(c.custentity32) AS Market
+	,BUILTIN.DF(c.custentity33) AS Segment
+FROM transaction t
+INNER JOIN transactionline tl ON
+	tl.transaction = t.id
+INNER JOIN transactionaccountingline tal ON 
+	tal.transaction = t.id 
+	AND tal.transactionline = tl.id 
+	AND tal.posting = 'T'
+LEFT JOIN customer c ON	
+	tl.entity = c.id
+LEFT JOIN employee e ON 
+	c.salesrep = e.id	
+LEFT JOIN item i ON
+	tl.item = i.id	
+WHERE
+	tl.mainline = 'T'	
+	AND t.type = 'Journal'	
+	AND BUILTIN.DF(tl.class) = '6 Wholesale'	
+	AND BUILTIN.DF(tal.account) IN ('40100 Bulk Coffee Sales', '50500 Discounts Allowed')
+	-- No historical record of this type.
+	AND t.trandate >= '1/1/2022'
+--
+--
+UNION
+--
+--
+-- There could be deposit amounts hiding under the "other" list.
+SELECT
+	-- Make sure these miscellenous cases are separated from the main entries. 
+	t.id * 1000 AS Id	
+	-- Try to retrieve a reasonable item name. It can be missing for shipping, so a hardcoded name.
+	,COALESCE(i.description, i.displayname, tl.memo, CASE WHEN tl.itemtype = 'ShipItem' THEN 'Shipping' ELSE NULL END) AS ItemName
+	-- Do not include gift cards. Shipping and discount amounts show up on separate columns, so exclude them here.
+	,CASE WHEN (LOWER(COALESCE(i.description, i.displayname)) LIKE '%gift card%') OR tl.itemtype IN ('Discount', 'ShipItem') THEN NULL ELSE tl.netamount * -1 END AS SalesAmount
+	-- Same as above.
+	,CASE WHEN (LOWER(COALESCE(i.description, i.displayname)) LIKE '%gift card%') OR tl.itemtype IN ('Discount', 'ShipItem') THEN NULL ELSE tl.quantity * -1 END AS Quantity
+	,CASE WHEN tl.itemtype = 'ShipItem' THEN tl.rateamount ELSE NULL END AS ShippingCost
+	,CASE WHEN tl.itemtype = 'Discount' THEN tl.rateamount ELSE NULL END AS Discount
+	,tl.ItemType
+	,t.trandate AS TranDate	
+	,t.id AS InternalId
+	,t.tranid AS DocumentNumber
+	,c.entitytitle AS CustomerName
+	,tl.entity AS CustomerInternalId
+	,e.entityid AS SalesRep
+	,tl.linesequencenumber AS LineIndex
+	,tl.createdfrom AS OriginalSalesOrderInternalId
+	,BUILTIN.DF(tl.class) AS Class
+	,BUILTIN.DF(c.custentity32) AS Market
+	,BUILTIN.DF(c.custentity33) AS Segment
+FROM transaction t
+INNER JOIN transactionline tl ON
+	tl.transaction = t.id
+INNER JOIN transactionaccountingline tal ON 
+	tal.transaction = t.id 
+	AND tal.transactionline = tl.id 
+	AND tal.posting = 'T'
+LEFT JOIN customer c ON	
+	tl.entity = c.id
+LEFT JOIN employee e ON 
+	c.salesrep = e.id	
+LEFT JOIN item i ON
+	tl.item = i.id	
+WHERE	
+	t.type = 'Deposit'	
+	AND BUILTIN.DF(tl.class) = '6 Wholesale'	
+	AND BUILTIN.DF(tal.account) = '40100 Bulk Coffee Sales'	
+	-- No historical record of this type.
+	AND t.trandate >= '1/1/2022'	
+--
+--
+UNION
+--
+--
+-- Some other discounts applied that we need to include (discounts applied directly to the Payment).
+-- Subtract credits from sales (amount from credit memo).
+SELECT
+	-- Make sure these miscellenous cases are separated from the main entries. 
+	t.id * 1000 AS Id	
+	-- Try to retrieve a reasonable item name. It can be missing for shipping, so a hardcoded name.
+	,COALESCE(i.description, i.displayname, tl.memo, CASE WHEN tl.itemtype = 'ShipItem' THEN 'Shipping' ELSE NULL END) AS ItemName
+	-- Do not include gift cards. Shipping and discount amounts show up on separate columns, so exclude them here.
+	,NULL AS SalesAmount
+	-- Same as above.
+	,NULL AS Quantity
+	,NULL ShippingCost
+	,CASE WHEN t.type = 'CustPymt' THEN tl.netamount * -1 ELSE tl.rateamount * -1 END AS Discount
+	,tl.ItemType
+	,t.trandate AS TranDate	
+	,t.id AS InternalId
+	,t.tranid AS DocumentNumber
+	,c.entitytitle AS CustomerName
+	,tl.entity AS CustomerInternalId
+	,e.entityid AS SalesRep
+	,tl.linesequencenumber AS LineIndex
+	,tl.createdfrom AS OriginalSalesOrderInternalId
+	,BUILTIN.DF(tl.class) AS Class
+	,BUILTIN.DF(c.custentity32) AS Market
+	,BUILTIN.DF(c.custentity33) AS Segment		
+FROM transaction t
+INNER JOIN transactionline tl ON
+	tl.transaction = t.id
+INNER JOIN transactionaccountingline tal ON 
+	tal.transaction = t.id 
+	AND tal.transactionline = tl.id 
+	AND tal.posting = 'T'
+LEFT JOIN customer c ON	
+	tl.entity = c.id
+LEFT JOIN employee e ON 
+	c.salesrep = e.id	
+LEFT JOIN item i ON
+	tl.item = i.id	
+WHERE	
+	t.type IN ('CustPymt', 'CustCred')
+	AND BUILTIN.DF(tl.class) = '6 Wholesale'	
+	AND BUILTIN.DF(tal.account) = '50500 Discounts Allowed'	
+	-- No historical record of this type.
+	AND t.trandate >= '1/1/2022'	
+	

@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "supported_sync_modes": ["full_refresh", "incremental"],
+    "properties": {
+      "id": {
+        "type": ["number"]
+      },
+      "trandate": {
+        "type": ["null", "string"],
+        "format": "date"
+      },
+      "salesamount": {
+        "type": ["null", "number"]
+      },
+      "quantity": {
+        "type": ["null", "number"]
+      },
+      "shippingcost": {
+        "type": ["null", "number"]
+      },
+      "discount": {
+        "type": ["null", "number"]
+      },
+      "internalid": {
+        "type": ["number"]
+      },
+      "documentnumber": {
+        "type": ["null", "string"]
+      },
+      "customername": {
+        "type": ["null", "string"]
+      },
+      "customerinternalid": {
+        "type": ["null", "number"]
+      },
+      "salesrep": {
+        "type": ["null", "string"]
+      },
+      "itemname": {
+        "type": ["null", "string"]
+      },
+      "market": {
+        "type": ["null", "string"]
+      },
+      "segment": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+  
