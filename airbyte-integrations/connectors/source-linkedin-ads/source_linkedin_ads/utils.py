@@ -12,20 +12,129 @@ import pendulum as pdm
 # on behalf of https://github.com/airbytehq/airbyte/issues/13018,
 # expand this list, if required.
 DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
+# List of Reporting Metrics fields available for fetch
+ANALYTICS_FIELDS_V2: List = [
+    "actionClicks",
+    "adUnitClicks",
+    "approximateUniqueImpressions",
+    "cardClicks",
+    "cardImpressions",
+    "clicks",
+    "commentLikes",
+    "comments",
+    "companyPageClicks",
+    "conversionValueInLocalCurrency",
+    "costInLocalCurrency",
+    "costInUsd",
+    "dateRange",
+    "documentCompletions",
+    "documentFirstQuartileCompletions",
+    "documentMidpointCompletions",
+    "documentThirdQuartileCompletions",
+    "downloadClicks",
+    "externalWebsiteConversions",
+    "externalWebsitePostClickConversions",
+    "externalWebsitePostViewConversions",
+    "follows",
+    "fullScreenPlays",
+    "impressions",
+    "jobApplications",
+    "jobApplyClicks",
+    "landingPageClicks",
+    "leadGenerationMailContactInfoShares",
+    "leadGenerationMailInterestedClicks",
+    "likes",
+    "oneClickLeadFormOpens",
+    "oneClickLeads",
+    "opens",
+    "otherEngagements",
+    "pivotValues",
+    "postClickJobApplications",
+    "postClickJobApplyClicks",
+    "postClickRegistrations",
+    "postViewJobApplications",
+    "postViewJobApplyClicks",
+    "postViewRegistrations",
+    "reactions",
+    "registrations",
+    "sends",
+    "shares",
+    "talentLeads",
+    "textUrlClicks",
+    "totalEngagements",
+    "validWorkEmailLeads",
+    "videoCompletions",
+    "videoFirstQuartileCompletions",
+    "videoMidpointCompletions",
+    "videoStarts",
+    "videoThirdQuartileCompletions",
+    "videoViews",
+    "viralCardClicks",
+    "viralCardImpressions",
+    "viralClicks",
+    "viralCommentLikes",
+    "viralComments",
+    "viralCompanyPageClicks",
+    "viralDocumentCompletions",
+    "viralDocumentFirstQuartileCompletions",
+    "viralDocumentMidpointCompletions",
+    "viralDocumentThirdQuartileCompletions",
+    "viralDownloadClicks",
+    "viralExternalWebsiteConversions",
+    "viralExternalWebsitePostClickConversions",
+    "viralExternalWebsitePostViewConversions",
+    "viralFollows",
+    "viralFullScreenPlays",
+    "viralImpressions",
+    "viralJobApplications",
+    "viralJobApplyClicks",
+    "viralLandingPageClicks",
+    "viralLikes",
+    "viralOneClickLeadFormOpens",
+    "viralOneClickLeads",
+    "viralOtherEngagements",
+    "viralPostClickJobApplications",
+    "viralPostClickJobApplyClicks",
+    "viralPostClickRegistrations",
+    "viralPostViewJobApplications",
+    "viralPostViewJobApplyClicks",
+    "viralPostViewRegistrations",
+    "viralReactions",
+    "viralRegistrations",
+    "viralShares",
+    "viralTotalEngagements",
+    "viralVideoCompletions",
+    "viralVideoFirstQuartileCompletions",
+    "viralVideoMidpointCompletions",
+    "viralVideoStarts",
+    "viralVideoThirdQuartileCompletions",
+    "viralVideoViews",
+]
+FIELDS_CHUNK_SIZE = 18
 
 
-def get_parent_stream_values(record: Mapping[str, Any], key_value_map: Mapping[str, str]) -> Mapping[str, Any]:
-    """
-    :param record: Mapping[str, Any]
-    :param key_value_map: Mapping[str, str] {<slice_key_name>: <key inside record>}
-    :return: Mapping[str, str] {<slice_key_name> : records.<key inside record>.value}
-    """
-    result = {}
-    for key in key_value_map:
-        value = record.get(key_value_map[key])
-        if value:
-            result[key] = value
-    return result
+def update_specific_key(target_dict, target_key, target_value, condition_func=None, excluded_keys=None):
+    if excluded_keys is None:
+        excluded_keys = []
+
+    for key, value in target_dict.items():
+        # Skip any keys that are in excluded_keys
+        if key in excluded_keys:
+            continue
+        # Apply the condition function if provided, and only update if the condition is true
+        if key == target_key and (condition_func is None or condition_func(target_dict)):
+            target_dict[key] = target_value
+        elif isinstance(value, dict):
+            # Recursively update nested dictionaries
+            target_dict[key] = update_specific_key(value, target_key, target_value, condition_func, excluded_keys)
+        elif isinstance(value, list):
+            # Recursively update lists
+            target_dict[key] = [
+                update_specific_key(item, target_key, target_value, condition_func, excluded_keys) if isinstance(item, dict) else item
+                for item in value
+            ]
+
+    return target_dict
 
 
 def transform_change_audit_stamps(
@@ -39,7 +148,6 @@ def transform_change_audit_stamps(
                 "lastModified": {"time": 1629664544760}
             }
         }
-
     :: EXAMPLE output:
         {
             "created": "2021-08-21 21:27:55",
@@ -60,18 +168,15 @@ def transform_change_audit_stamps(
 def date_str_from_date_range(record: Dict, prefix: str) -> str:
     """
     Makes the ISO8601 format date string from the input <prefix>.<part of the date>
-
     EXAMPLE:
         Input: record
         {
             "start.year": 2021, "start.month": 8, "start.day": 1,
             "end.year": 2021, "end.month": 9, "end.day": 31
         }
-
     EXAMPLE output:
         With `prefix` = "start"
             str:  "2021-08-13",
-
         With `prefix` = "end"
             str: "2021-09-31",
     """
@@ -121,14 +226,49 @@ def transform_date_range(
 
 def transform_targeting_criteria(record: Dict, dict_key: str = "targetingCriteria") -> Mapping[str, Any]:
     """
-    :: EXAMPLE `targetingCriteria` input structure:
-        {
-            "targetingCriteria": {
-                "include": {
-                    "and": [
-                        {
-                            "or": {
-                                "urn:li:adTargetingFacet:titles": [
+        :: EXAMPLE `targetingCriteria` input structure:
+            {
+                "targetingCriteria": {
+                    "include": {
+                        "and": [
+                            {
+                                "or": {
+                                    "urn:li:adTargetingFacet:titles": [
+                                        "urn:li:title:100",
+                                        "urn:li:title:10326",
+                                        "urn:li:title:10457",
+                                        "urn:li:title:10738",
+                                        "urn:li:title:10966",
+                                        "urn:li:title:11349",
+                                        "urn:li:title:1159",
+    ]
+                                }
+                            },
+                            {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
+                            {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
+                        ]
+                    },
+                    "exclude": {
+                        "or": {
+                            "urn:li:adTargetingFacet:facet_Key1": [
+                                "facet_test1",
+                                "facet_test2",
+                            ],
+                            "urn:li:adTargetingFacet:facet_Key2": [
+                                "facet_test3",
+                                "facet_test4",
+                            ],
+                    }
+                }
+            }
+        :: EXAMPLE output:
+            {
+                "targetingCriteria": {
+                    "include": {
+                        "and": [
+                            {
+                                "type": "urn:li:adTargetingFacet:titles",
+                                "values": [
                                     "urn:li:title:100",
                                     "urn:li:title:10326",
                                     "urn:li:title:10457",
@@ -136,74 +276,36 @@ def transform_targeting_criteria(record: Dict, dict_key: str = "targetingCriteri
                                     "urn:li:title:10966",
                                     "urn:li:title:11349",
                                     "urn:li:title:1159",
-                                ]
-                            }
-                        },
-                        {"or": {"urn:li:adTargetingFacet:locations": ["urn:li:geo:103644278"]}},
-                        {"or": {"urn:li:adTargetingFacet:interfaceLocales": ["urn:li:locale:en_US"]}},
-                    ]
-                },
-                "exclude": {
-                    "or": {
-                        "urn:li:adTargetingFacet:facet_Key1": [
-                            "facet_test1",
-                            "facet_test2",
-                        ],
-                        "urn:li:adTargetingFacet:facet_Key2": [
-                            "facet_test3",
-                            "facet_test4",
-                        ],
+                                ],
+                            },
+                            {
+                                "type": "urn:li:adTargetingFacet:locations",
+                                "values": ["urn:li:geo:103644278"],
+                            },
+                            {
+                                "type": "urn:li:adTargetingFacet:interfaceLocales",
+                                "values": ["urn:li:locale:en_US"],
+                            },
+                        ]
+                    },
+                    "exclude": {
+                        "or": [
+                            {
+                                "type": "urn:li:adTargetingFacet:facet_Key1",
+                                "values": ["facet_test1", "facet_test2"],
+                            },
+                            {
+                                "type": "urn:li:adTargetingFacet:facet_Key2",
+                                "values": ["facet_test3", "facet_test4"],
+                            },
+                        ]
+                    },
                 }
-            }
-        }
-
-    :: EXAMPLE output:
-        {
-            "targetingCriteria": {
-                "include": {
-                    "and": [
-                        {
-                            "type": "urn:li:adTargetingFacet:titles",
-                            "values": [
-                                "urn:li:title:100",
-                                "urn:li:title:10326",
-                                "urn:li:title:10457",
-                                "urn:li:title:10738",
-                                "urn:li:title:10966",
-                                "urn:li:title:11349",
-                                "urn:li:title:1159",
-                            ],
-                        },
-                        {
-                            "type": "urn:li:adTargetingFacet:locations",
-                            "values": ["urn:li:geo:103644278"],
-                        },
-                        {
-                            "type": "urn:li:adTargetingFacet:interfaceLocales",
-                            "values": ["urn:li:locale:en_US"],
-                        },
-                    ]
-                },
-                "exclude": {
-                    "or": [
-                        {
-                            "type": "urn:li:adTargetingFacet:facet_Key1",
-                            "values": ["facet_test1", "facet_test2"],
-                        },
-                        {
-                            "type": "urn:li:adTargetingFacet:facet_Key2",
-                            "values": ["facet_test3", "facet_test4"],
-                        },
-                    ]
-                },
-            }
-
     """
 
     def unnest_dict(nested_dict: Dict) -> Iterable[Dict]:
         """
         Unnest the nested dict to simplify the normalization
-
         EXAMPLE OUTPUT:
             [
                 {"type": "some_key", "values": "some_values"},
@@ -265,7 +367,6 @@ def transform_variables(record: Dict, dict_key: str = "variables") -> Mapping[st
             }
         }
     }
-
     :: EXAMPLE output:
     {
         "variables": {

@@ -21,8 +21,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import EpochValueConcurrentStreamStateConverter
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import NeverLogSliceLogger
@@ -61,33 +60,13 @@ class StreamFacadeSource(ConcurrentSourceAdapter):
         state_manager = ConnectorStateManager(
             state=self._state,
         )  # The input values into the AirbyteStream are dummy values; the connector state manager only uses `name` and `namespace`
-
         state_converter = StreamFacadeConcurrentConnectorStateConverter()
-        stream_states = [state_manager.get_stream_state(stream.name, stream.namespace) for stream in self._streams]
+
         return [
-            StreamFacade.create_from_stream(
-                stream,
-                self,
-                stream.logger,
-                state,
-                ConcurrentCursor(
-                    stream.name,
-                    stream.namespace,
-                    state,
-                    self.message_repository,  # type: ignore  # for this source specifically, we always return `InMemoryMessageRepository`
-                    state_manager,
-                    state_converter,
-                    self._cursor_field,
-                    self._cursor_boundaries,
-                    None,
-                    EpochValueConcurrentStreamStateConverter.get_end_provider(),
-                )
-                if self._cursor_field
-                else FinalStateCursor(
-                    stream_name=stream.name, stream_namespace=stream.namespace, message_repository=self.message_repository
-                ),
+            self.convert_to_concurrent_stream(stream.logger, stream, self.initialize_cursor(
+                stream, state_manager, state_converter, self._cursor_boundaries, None, EpochValueConcurrentStreamStateConverter.get_end_provider())
             )
-            for stream, state in zip(self._streams, stream_states)
+            for stream in self._streams
         ]
 
     @property

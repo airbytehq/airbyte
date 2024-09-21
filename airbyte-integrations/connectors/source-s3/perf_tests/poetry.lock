@@ -2,13 +2,13 @@
 
 [[package]]
 name = "airbyte"
-version = "0.17.7"
+version = "0.17.8"
 description = "PyAirbyte"
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "airbyte-0.17.7-py3-none-any.whl", hash = "sha256:83d797f6a2c5faaef2182a50a883664d6b21cf001150c9f645c6ca3baacbe523"},
-    {file = "airbyte-0.17.7.tar.gz", hash = "sha256:c0eeecf9fed35953a0f2dd5a597adea72ecd93035ee2e17af09ca10869d012bb"},
+    {file = "airbyte-0.17.8-py3-none-any.whl", hash = "sha256:d32a4f9d40a5192d2b5cf699b66a5afa1ff599d3e0249b0f083d9d123ea61f27"},
+    {file = "airbyte-0.17.8.tar.gz", hash = "sha256:f53b3269ee0e3bbad8720a14ada97a6b6edbc1577acb1ccbafc3ae37ea11a39f"},
 ]
 
 [package.dependencies]
@@ -33,12 +33,12 @@ pydantic = ">=2.0,<=3.0"
 pyiceberg = ">=0.6.1,<0.7.0"
 python-dotenv = ">=1.0.1,<2.0.0"
 python-ulid = ">=2.2.0,<3.0.0"
-requests = "<=2.31.0"
+requests = "<=2.32.2"
 rich = ">=13.7.0,<14.0.0"
 snowflake-connector-python = ">=3.10.0,<4.0.0"
 snowflake-sqlalchemy = ">=1.5.1,<2.0.0"
 sqlalchemy = "1.4.51"
-sqlalchemy-bigquery = {version = "1.9.0", markers = "python_version < \"3.13\""}
+sqlalchemy-bigquery = {version = "1.11.0", markers = "python_version < \"3.13\""}
 structlog = ">=24.4.0,<25.0.0"
 types-pyyaml = ">=6.0.12.12,<7.0.0.0"
 uuid7 = ">=0.1.0,<0.2.0"
@@ -142,13 +142,13 @@ files = [
 
 [[package]]
 name = "anyio"
-version = "4.4.0"
+version = "4.5.0"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "anyio-4.4.0-py3-none-any.whl", hash = "sha256:c1b2d8f46a8a812513012e1107cb0e68c17159a7a594208005a57dc776e1bdc7"},
-    {file = "anyio-4.4.0.tar.gz", hash = "sha256:5aadc6a1bbb7cdb0bede386cac5e2940f5e2ff3aa20277e991cf028e0585ce94"},
+    {file = "anyio-4.5.0-py3-none-any.whl", hash = "sha256:fdeb095b7cc5a5563175eedd926ec4ae55413bb4be5770c424af0ba46ccb4a78"},
+    {file = "anyio-4.5.0.tar.gz", hash = "sha256:c5a275fe5ca0afd788001f58fca1e69e29ce706d746e317d660e21f70c530ef9"},
 ]
 
 [package.dependencies]
@@ -158,9 +158,9 @@ sniffio = ">=1.1"
 typing-extensions = {version = ">=4.1", markers = "python_version < \"3.11\""}
 
 [package.extras]
-doc = ["Sphinx (>=7)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme"]
-test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypothesis (>=4.0)", "psutil (>=5.9)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (>=0.17)"]
-trio = ["trio (>=0.23)"]
+doc = ["Sphinx (>=7.4,<8.0)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme"]
+test = ["anyio[trio]", "coverage[toml] (>=7)", "exceptiongroup (>=1.2.0)", "hypothesis (>=4.0)", "psutil (>=5.9)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (>=0.21.0b1)"]
+trio = ["trio (>=0.26.1)"]
 
 [[package]]
 name = "asn1crypto"
@@ -710,13 +710,13 @@ files = [
 
 [[package]]
 name = "google-api-core"
-version = "2.19.2"
+version = "2.20.0"
 description = "Google API client core library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google_api_core-2.19.2-py3-none-any.whl", hash = "sha256:53ec0258f2837dd53bbd3d3df50f5359281b3cc13f800c941dd15a9b5a415af4"},
-    {file = "google_api_core-2.19.2.tar.gz", hash = "sha256:ca07de7e8aa1c98a8bfca9321890ad2340ef7f2eb136e558cee68f24b94b0a8f"},
+    {file = "google_api_core-2.20.0-py3-none-any.whl", hash = "sha256:ef0591ef03c30bb83f79b3d0575c3f31219001fc9c5cf37024d08310aeffed8a"},
+    {file = "google_api_core-2.20.0.tar.gz", hash = "sha256:f74dff1889ba291a4b76c5079df0711810e2d9da81abfdc99957bc961c1eb28f"},
 ]
 
 [package.dependencies]
@@ -741,13 +741,13 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-auth"
-version = "2.34.0"
+version = "2.35.0"
 description = "Google Authentication Library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google_auth-2.34.0-py2.py3-none-any.whl", hash = "sha256:72fd4733b80b6d777dcde515628a9eb4a577339437012874ea286bca7261ee65"},
-    {file = "google_auth-2.34.0.tar.gz", hash = "sha256:8eb87396435c19b20d32abd2f984e31c191a15284af72eb922f10e5bde9c04cc"},
+    {file = "google_auth-2.35.0-py2.py3-none-any.whl", hash = "sha256:25df55f327ef021de8be50bad0dfd4a916ad0de96da86cd05661c9297723ad3f"},
+    {file = "google_auth-2.35.0.tar.gz", hash = "sha256:f4c64ed4e01e8e8b646ef34c018f8bf3338df0c8e37d8b3bba40e7f574a3278a"},
 ]
 
 [package.dependencies]
@@ -931,77 +931,84 @@ grpc = ["grpcio (>=1.44.0,<2.0.0.dev0)"]
 
 [[package]]
 name = "greenlet"
-version = "3.1.0"
+version = "3.1.1"
 description = "Lightweight in-process concurrent programming"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "greenlet-3.1.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:a814dc3100e8a046ff48faeaa909e80cdb358411a3d6dd5293158425c684eda8"},
-    {file = "greenlet-3.1.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a771dc64fa44ebe58d65768d869fcfb9060169d203446c1d446e844b62bdfdca"},
-    {file = "greenlet-3.1.0-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:0e49a65d25d7350cca2da15aac31b6f67a43d867448babf997fe83c7505f57bc"},
-    {file = "greenlet-3.1.0-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:2cd8518eade968bc52262d8c46727cfc0826ff4d552cf0430b8d65aaf50bb91d"},
-    {file = "greenlet-3.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:76dc19e660baea5c38e949455c1181bc018893f25372d10ffe24b3ed7341fb25"},
-    {file = "greenlet-3.1.0-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:c0a5b1c22c82831f56f2f7ad9bbe4948879762fe0d59833a4a71f16e5fa0f682"},
-    {file = "greenlet-3.1.0-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:2651dfb006f391bcb240635079a68a261b227a10a08af6349cba834a2141efa1"},
-    {file = "greenlet-3.1.0-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:3e7e6ef1737a819819b1163116ad4b48d06cfdd40352d813bb14436024fcda99"},
-    {file = "greenlet-3.1.0-cp310-cp310-win_amd64.whl", hash = "sha256:ffb08f2a1e59d38c7b8b9ac8083c9c8b9875f0955b1e9b9b9a965607a51f8e54"},
-    {file = "greenlet-3.1.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:9730929375021ec90f6447bff4f7f5508faef1c02f399a1953870cdb78e0c345"},
-    {file = "greenlet-3.1.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:713d450cf8e61854de9420fb7eea8ad228df4e27e7d4ed465de98c955d2b3fa6"},
-    {file = "greenlet-3.1.0-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4c3446937be153718250fe421da548f973124189f18fe4575a0510b5c928f0cc"},
-    {file = "greenlet-3.1.0-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:1ddc7bcedeb47187be74208bc652d63d6b20cb24f4e596bd356092d8000da6d6"},
-    {file = "greenlet-3.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:44151d7b81b9391ed759a2f2865bbe623ef00d648fed59363be2bbbd5154656f"},
-    {file = "greenlet-3.1.0-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6cea1cca3be76c9483282dc7760ea1cc08a6ecec1f0b6ca0a94ea0d17432da19"},
-    {file = "greenlet-3.1.0-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:619935a44f414274a2c08c9e74611965650b730eb4efe4b2270f91df5e4adf9a"},
-    {file = "greenlet-3.1.0-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:221169d31cada333a0c7fd087b957c8f431c1dba202c3a58cf5a3583ed973e9b"},
-    {file = "greenlet-3.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:01059afb9b178606b4b6e92c3e710ea1635597c3537e44da69f4531e111dd5e9"},
-    {file = "greenlet-3.1.0-cp312-cp312-macosx_11_0_universal2.whl", hash = "sha256:24fc216ec7c8be9becba8b64a98a78f9cd057fd2dc75ae952ca94ed8a893bf27"},
-    {file = "greenlet-3.1.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3d07c28b85b350564bdff9f51c1c5007dfb2f389385d1bc23288de51134ca303"},
-    {file = "greenlet-3.1.0-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:243a223c96a4246f8a30ea470c440fe9db1f5e444941ee3c3cd79df119b8eebf"},
-    {file = "greenlet-3.1.0-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:26811df4dc81271033a7836bc20d12cd30938e6bd2e9437f56fa03da81b0f8fc"},
-    {file = "greenlet-3.1.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c9d86401550b09a55410f32ceb5fe7efcd998bd2dad9e82521713cb148a4a15f"},
-    {file = "greenlet-3.1.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:26d9c1c4f1748ccac0bae1dbb465fb1a795a75aba8af8ca871503019f4285e2a"},
-    {file = "greenlet-3.1.0-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:cd468ec62257bb4544989402b19d795d2305eccb06cde5da0eb739b63dc04665"},
-    {file = "greenlet-3.1.0-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:a53dfe8f82b715319e9953330fa5c8708b610d48b5c59f1316337302af5c0811"},
-    {file = "greenlet-3.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:28fe80a3eb673b2d5cc3b12eea468a5e5f4603c26aa34d88bf61bba82ceb2f9b"},
-    {file = "greenlet-3.1.0-cp313-cp313-macosx_11_0_universal2.whl", hash = "sha256:76b3e3976d2a452cba7aa9e453498ac72240d43030fdc6d538a72b87eaff52fd"},
-    {file = "greenlet-3.1.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:655b21ffd37a96b1e78cc48bf254f5ea4b5b85efaf9e9e2a526b3c9309d660ca"},
-    {file = "greenlet-3.1.0-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c6f4c2027689093775fd58ca2388d58789009116844432d920e9147f91acbe64"},
-    {file = "greenlet-3.1.0-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:76e5064fd8e94c3f74d9fd69b02d99e3cdb8fc286ed49a1f10b256e59d0d3a0b"},
-    {file = "greenlet-3.1.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6a4bf607f690f7987ab3291406e012cd8591a4f77aa54f29b890f9c331e84989"},
-    {file = "greenlet-3.1.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:037d9ac99540ace9424cb9ea89f0accfaff4316f149520b4ae293eebc5bded17"},
-    {file = "greenlet-3.1.0-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:90b5bbf05fe3d3ef697103850c2ce3374558f6fe40fd57c9fac1bf14903f50a5"},
-    {file = "greenlet-3.1.0-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:726377bd60081172685c0ff46afbc600d064f01053190e4450857483c4d44484"},
-    {file = "greenlet-3.1.0-cp313-cp313-win_amd64.whl", hash = "sha256:d46d5069e2eeda111d6f71970e341f4bd9aeeee92074e649ae263b834286ecc0"},
-    {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:81eeec4403a7d7684b5812a8aaa626fa23b7d0848edb3a28d2eb3220daddcbd0"},
-    {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:4a3dae7492d16e85ea6045fd11cb8e782b63eac8c8d520c3a92c02ac4573b0a6"},
-    {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4b5ea3664eed571779403858d7cd0a9b0ebf50d57d2cdeafc7748e09ef8cd81a"},
-    {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a22f4e26400f7f48faef2d69c20dc055a1f3043d330923f9abe08ea0aecc44df"},
-    {file = "greenlet-3.1.0-cp37-cp37m-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:13ff8c8e54a10472ce3b2a2da007f915175192f18e6495bad50486e87c7f6637"},
-    {file = "greenlet-3.1.0-cp37-cp37m-musllinux_1_1_aarch64.whl", hash = "sha256:f9671e7282d8c6fcabc32c0fb8d7c0ea8894ae85cee89c9aadc2d7129e1a9954"},
-    {file = "greenlet-3.1.0-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:184258372ae9e1e9bddce6f187967f2e08ecd16906557c4320e3ba88a93438c3"},
-    {file = "greenlet-3.1.0-cp37-cp37m-win32.whl", hash = "sha256:a0409bc18a9f85321399c29baf93545152d74a49d92f2f55302f122007cfda00"},
-    {file = "greenlet-3.1.0-cp37-cp37m-win_amd64.whl", hash = "sha256:9eb4a1d7399b9f3c7ac68ae6baa6be5f9195d1d08c9ddc45ad559aa6b556bce6"},
-    {file = "greenlet-3.1.0-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:a8870983af660798dc1b529e1fd6f1cefd94e45135a32e58bd70edd694540f33"},
-    {file = "greenlet-3.1.0-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cfcfb73aed40f550a57ea904629bdaf2e562c68fa1164fa4588e752af6efdc3f"},
-    {file = "greenlet-3.1.0-cp38-cp38-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f9482c2ed414781c0af0b35d9d575226da6b728bd1a720668fa05837184965b7"},
-    {file = "greenlet-3.1.0-cp38-cp38-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:d58ec349e0c2c0bc6669bf2cd4982d2f93bf067860d23a0ea1fe677b0f0b1e09"},
-    {file = "greenlet-3.1.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd65695a8df1233309b701dec2539cc4b11e97d4fcc0f4185b4a12ce54db0491"},
-    {file = "greenlet-3.1.0-cp38-cp38-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:665b21e95bc0fce5cab03b2e1d90ba9c66c510f1bb5fdc864f3a377d0f553f6b"},
-    {file = "greenlet-3.1.0-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:d3c59a06c2c28a81a026ff11fbf012081ea34fb9b7052f2ed0366e14896f0a1d"},
-    {file = "greenlet-3.1.0-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:5415b9494ff6240b09af06b91a375731febe0090218e2898d2b85f9b92abcda0"},
-    {file = "greenlet-3.1.0-cp38-cp38-win32.whl", hash = "sha256:1544b8dd090b494c55e60c4ff46e238be44fdc472d2589e943c241e0169bcea2"},
-    {file = "greenlet-3.1.0-cp38-cp38-win_amd64.whl", hash = "sha256:7f346d24d74c00b6730440f5eb8ec3fe5774ca8d1c9574e8e57c8671bb51b910"},
-    {file = "greenlet-3.1.0-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:db1b3ccb93488328c74e97ff888604a8b95ae4f35f4f56677ca57a4fc3a4220b"},
-    {file = "greenlet-3.1.0-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:44cd313629ded43bb3b98737bba2f3e2c2c8679b55ea29ed73daea6b755fe8e7"},
-    {file = "greenlet-3.1.0-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:fad7a051e07f64e297e6e8399b4d6a3bdcad3d7297409e9a06ef8cbccff4f501"},
-    {file = "greenlet-3.1.0-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:c3967dcc1cd2ea61b08b0b276659242cbce5caca39e7cbc02408222fb9e6ff39"},
-    {file = "greenlet-3.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d45b75b0f3fd8d99f62eb7908cfa6d727b7ed190737dec7fe46d993da550b81a"},
-    {file = "greenlet-3.1.0-cp39-cp39-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2d004db911ed7b6218ec5c5bfe4cf70ae8aa2223dffbb5b3c69e342bb253cb28"},
-    {file = "greenlet-3.1.0-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:b9505a0c8579899057cbefd4ec34d865ab99852baf1ff33a9481eb3924e2da0b"},
-    {file = "greenlet-3.1.0-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:5fd6e94593f6f9714dbad1aaba734b5ec04593374fa6638df61592055868f8b8"},
-    {file = "greenlet-3.1.0-cp39-cp39-win32.whl", hash = "sha256:d0dd943282231480aad5f50f89bdf26690c995e8ff555f26d8a5b9887b559bcc"},
-    {file = "greenlet-3.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:ac0adfdb3a21dc2a24ed728b61e72440d297d0fd3a577389df566651fcd08f97"},
-    {file = "greenlet-3.1.0.tar.gz", hash = "sha256:b395121e9bbe8d02a750886f108d540abe66075e61e22f7353d9acb0b81be0f0"},
+    {file = "greenlet-3.1.1-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:0bbae94a29c9e5c7e4a2b7f0aae5c17e8e90acbfd3bf6270eeba60c39fce3563"},
+    {file = "greenlet-3.1.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0fde093fb93f35ca72a556cf72c92ea3ebfda3d79fc35bb19fbe685853869a83"},
+    {file = "greenlet-3.1.1-cp310-cp310-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:36b89d13c49216cadb828db8dfa6ce86bbbc476a82d3a6c397f0efae0525bdd0"},
+    {file = "greenlet-3.1.1-cp310-cp310-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:94b6150a85e1b33b40b1464a3f9988dcc5251d6ed06842abff82e42632fac120"},
+    {file = "greenlet-3.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:93147c513fac16385d1036b7e5b102c7fbbdb163d556b791f0f11eada7ba65dc"},
+    {file = "greenlet-3.1.1-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:da7a9bff22ce038e19bf62c4dd1ec8391062878710ded0a845bcf47cc0200617"},
+    {file = "greenlet-3.1.1-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:b2795058c23988728eec1f36a4e5e4ebad22f8320c85f3587b539b9ac84128d7"},
+    {file = "greenlet-3.1.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:ed10eac5830befbdd0c32f83e8aa6288361597550ba669b04c48f0f9a2c843c6"},
+    {file = "greenlet-3.1.1-cp310-cp310-win_amd64.whl", hash = "sha256:77c386de38a60d1dfb8e55b8c1101d68c79dfdd25c7095d51fec2dd800892b80"},
+    {file = "greenlet-3.1.1-cp311-cp311-macosx_11_0_universal2.whl", hash = "sha256:e4d333e558953648ca09d64f13e6d8f0523fa705f51cae3f03b5983489958c70"},
+    {file = "greenlet-3.1.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:09fc016b73c94e98e29af67ab7b9a879c307c6731a2c9da0db5a7d9b7edd1159"},
+    {file = "greenlet-3.1.1-cp311-cp311-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d5e975ca70269d66d17dd995dafc06f1b06e8cb1ec1e9ed54c1d1e4a7c4cf26e"},
+    {file = "greenlet-3.1.1-cp311-cp311-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:3b2813dc3de8c1ee3f924e4d4227999285fd335d1bcc0d2be6dc3f1f6a318ec1"},
+    {file = "greenlet-3.1.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e347b3bfcf985a05e8c0b7d462ba6f15b1ee1c909e2dcad795e49e91b152c383"},
+    {file = "greenlet-3.1.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9e8f8c9cb53cdac7ba9793c276acd90168f416b9ce36799b9b885790f8ad6c0a"},
+    {file = "greenlet-3.1.1-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:62ee94988d6b4722ce0028644418d93a52429e977d742ca2ccbe1c4f4a792511"},
+    {file = "greenlet-3.1.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:1776fd7f989fc6b8d8c8cb8da1f6b82c5814957264d1f6cf818d475ec2bf6395"},
+    {file = "greenlet-3.1.1-cp311-cp311-win_amd64.whl", hash = "sha256:48ca08c771c268a768087b408658e216133aecd835c0ded47ce955381105ba39"},
+    {file = "greenlet-3.1.1-cp312-cp312-macosx_11_0_universal2.whl", hash = "sha256:4afe7ea89de619adc868e087b4d2359282058479d7cfb94970adf4b55284574d"},
+    {file = "greenlet-3.1.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f406b22b7c9a9b4f8aa9d2ab13d6ae0ac3e85c9a809bd590ad53fed2bf70dc79"},
+    {file = "greenlet-3.1.1-cp312-cp312-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c3a701fe5a9695b238503ce5bbe8218e03c3bcccf7e204e455e7462d770268aa"},
+    {file = "greenlet-3.1.1-cp312-cp312-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:2846930c65b47d70b9d178e89c7e1a69c95c1f68ea5aa0a58646b7a96df12441"},
+    {file = "greenlet-3.1.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:99cfaa2110534e2cf3ba31a7abcac9d328d1d9f1b95beede58294a60348fba36"},
+    {file = "greenlet-3.1.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:1443279c19fca463fc33e65ef2a935a5b09bb90f978beab37729e1c3c6c25fe9"},
+    {file = "greenlet-3.1.1-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:b7cede291382a78f7bb5f04a529cb18e068dd29e0fb27376074b6d0317bf4dd0"},
+    {file = "greenlet-3.1.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:23f20bb60ae298d7d8656c6ec6db134bca379ecefadb0b19ce6f19d1f232a942"},
+    {file = "greenlet-3.1.1-cp312-cp312-win_amd64.whl", hash = "sha256:7124e16b4c55d417577c2077be379514321916d5790fa287c9ed6f23bd2ffd01"},
+    {file = "greenlet-3.1.1-cp313-cp313-macosx_11_0_universal2.whl", hash = "sha256:05175c27cb459dcfc05d026c4232f9de8913ed006d42713cb8a5137bd49375f1"},
+    {file = "greenlet-3.1.1-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:935e943ec47c4afab8965954bf49bfa639c05d4ccf9ef6e924188f762145c0ff"},
+    {file = "greenlet-3.1.1-cp313-cp313-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:667a9706c970cb552ede35aee17339a18e8f2a87a51fba2ed39ceeeb1004798a"},
+    {file = "greenlet-3.1.1-cp313-cp313-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b8a678974d1f3aa55f6cc34dc480169d58f2e6d8958895d68845fa4ab566509e"},
+    {file = "greenlet-3.1.1-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:efc0f674aa41b92da8c49e0346318c6075d734994c3c4e4430b1c3f853e498e4"},
+    {file = "greenlet-3.1.1-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:0153404a4bb921f0ff1abeb5ce8a5131da56b953eda6e14b88dc6bbc04d2049e"},
+    {file = "greenlet-3.1.1-cp313-cp313-musllinux_1_1_aarch64.whl", hash = "sha256:275f72decf9932639c1c6dd1013a1bc266438eb32710016a1c742df5da6e60a1"},
+    {file = "greenlet-3.1.1-cp313-cp313-musllinux_1_1_x86_64.whl", hash = "sha256:c4aab7f6381f38a4b42f269057aee279ab0fc7bf2e929e3d4abfae97b682a12c"},
+    {file = "greenlet-3.1.1-cp313-cp313-win_amd64.whl", hash = "sha256:b42703b1cf69f2aa1df7d1030b9d77d3e584a70755674d60e710f0af570f3761"},
+    {file = "greenlet-3.1.1-cp313-cp313t-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f1695e76146579f8c06c1509c7ce4dfe0706f49c6831a817ac04eebb2fd02011"},
+    {file = "greenlet-3.1.1-cp313-cp313t-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:7876452af029456b3f3549b696bb36a06db7c90747740c5302f74a9e9fa14b13"},
+    {file = "greenlet-3.1.1-cp313-cp313t-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4ead44c85f8ab905852d3de8d86f6f8baf77109f9da589cb4fa142bd3b57b475"},
+    {file = "greenlet-3.1.1-cp313-cp313t-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8320f64b777d00dd7ccdade271eaf0cad6636343293a25074cc5566160e4de7b"},
+    {file = "greenlet-3.1.1-cp313-cp313t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:6510bf84a6b643dabba74d3049ead221257603a253d0a9873f55f6a59a65f822"},
+    {file = "greenlet-3.1.1-cp313-cp313t-musllinux_1_1_aarch64.whl", hash = "sha256:04b013dc07c96f83134b1e99888e7a79979f1a247e2a9f59697fa14b5862ed01"},
+    {file = "greenlet-3.1.1-cp313-cp313t-musllinux_1_1_x86_64.whl", hash = "sha256:411f015496fec93c1c8cd4e5238da364e1da7a124bcb293f085bf2860c32c6f6"},
+    {file = "greenlet-3.1.1-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:47da355d8687fd65240c364c90a31569a133b7b60de111c255ef5b606f2ae291"},
+    {file = "greenlet-3.1.1-cp37-cp37m-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:98884ecf2ffb7d7fe6bd517e8eb99d31ff7855a840fa6d0d63cd07c037f6a981"},
+    {file = "greenlet-3.1.1-cp37-cp37m-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:f1d4aeb8891338e60d1ab6127af1fe45def5259def8094b9c7e34690c8858803"},
+    {file = "greenlet-3.1.1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:db32b5348615a04b82240cc67983cb315309e88d444a288934ee6ceaebcad6cc"},
+    {file = "greenlet-3.1.1-cp37-cp37m-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:dcc62f31eae24de7f8dce72134c8651c58000d3b1868e01392baea7c32c247de"},
+    {file = "greenlet-3.1.1-cp37-cp37m-musllinux_1_1_aarch64.whl", hash = "sha256:1d3755bcb2e02de341c55b4fca7a745a24a9e7212ac953f6b3a48d117d7257aa"},
+    {file = "greenlet-3.1.1-cp37-cp37m-musllinux_1_1_x86_64.whl", hash = "sha256:b8da394b34370874b4572676f36acabac172602abf054cbc4ac910219f3340af"},
+    {file = "greenlet-3.1.1-cp37-cp37m-win32.whl", hash = "sha256:a0dfc6c143b519113354e780a50381508139b07d2177cb6ad6a08278ec655798"},
+    {file = "greenlet-3.1.1-cp37-cp37m-win_amd64.whl", hash = "sha256:54558ea205654b50c438029505def3834e80f0869a70fb15b871c29b4575ddef"},
+    {file = "greenlet-3.1.1-cp38-cp38-macosx_11_0_universal2.whl", hash = "sha256:346bed03fe47414091be4ad44786d1bd8bef0c3fcad6ed3dee074a032ab408a9"},
+    {file = "greenlet-3.1.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:dfc59d69fc48664bc693842bd57acfdd490acafda1ab52c7836e3fc75c90a111"},
+    {file = "greenlet-3.1.1-cp38-cp38-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:d21e10da6ec19b457b82636209cbe2331ff4306b54d06fa04b7c138ba18c8a81"},
+    {file = "greenlet-3.1.1-cp38-cp38-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:37b9de5a96111fc15418819ab4c4432e4f3c2ede61e660b1e33971eba26ef9ba"},
+    {file = "greenlet-3.1.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6ef9ea3f137e5711f0dbe5f9263e8c009b7069d8a1acea822bd5e9dae0ae49c8"},
+    {file = "greenlet-3.1.1-cp38-cp38-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:85f3ff71e2e60bd4b4932a043fbbe0f499e263c628390b285cb599154a3b03b1"},
+    {file = "greenlet-3.1.1-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:95ffcf719966dd7c453f908e208e14cde192e09fde6c7186c8f1896ef778d8cd"},
+    {file = "greenlet-3.1.1-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:03a088b9de532cbfe2ba2034b2b85e82df37874681e8c470d6fb2f8c04d7e4b7"},
+    {file = "greenlet-3.1.1-cp38-cp38-win32.whl", hash = "sha256:8b8b36671f10ba80e159378df9c4f15c14098c4fd73a36b9ad715f057272fbef"},
+    {file = "greenlet-3.1.1-cp38-cp38-win_amd64.whl", hash = "sha256:7017b2be767b9d43cc31416aba48aab0d2309ee31b4dbf10a1d38fb7972bdf9d"},
+    {file = "greenlet-3.1.1-cp39-cp39-macosx_11_0_universal2.whl", hash = "sha256:396979749bd95f018296af156201d6211240e7a23090f50a8d5d18c370084dc3"},
+    {file = "greenlet-3.1.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ca9d0ff5ad43e785350894d97e13633a66e2b50000e8a183a50a88d834752d42"},
+    {file = "greenlet-3.1.1-cp39-cp39-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f6ff3b14f2df4c41660a7dec01045a045653998784bf8cfcb5a525bdffffbc8f"},
+    {file = "greenlet-3.1.1-cp39-cp39-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:94ebba31df2aa506d7b14866fed00ac141a867e63143fe5bca82a8e503b36437"},
+    {file = "greenlet-3.1.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:73aaad12ac0ff500f62cebed98d8789198ea0e6f233421059fa68a5aa7220145"},
+    {file = "greenlet-3.1.1-cp39-cp39-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:63e4844797b975b9af3a3fb8f7866ff08775f5426925e1e0bbcfe7932059a12c"},
+    {file = "greenlet-3.1.1-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:7939aa3ca7d2a1593596e7ac6d59391ff30281ef280d8632fa03d81f7c5f955e"},
+    {file = "greenlet-3.1.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:d0028e725ee18175c6e422797c407874da24381ce0690d6b9396c204c7f7276e"},
+    {file = "greenlet-3.1.1-cp39-cp39-win32.whl", hash = "sha256:5e06afd14cbaf9e00899fae69b24a32f2196c19de08fcb9f4779dd4f004e5e7c"},
+    {file = "greenlet-3.1.1-cp39-cp39-win_amd64.whl", hash = "sha256:3319aa75e0e0639bc15ff54ca327e8dc7a6fe404003496e3c6925cd3142e0e22"},
+    {file = "greenlet-3.1.1.tar.gz", hash = "sha256:4ce3ac6cdb6adf7946475d7ef31777c26d94bccc377e070a7986bd2d5c515467"},
 ]
 
 [package.extras]
@@ -1303,13 +1310,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.121"
+version = "0.1.125"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.121-py3-none-any.whl", hash = "sha256:fdb1ac8a671d3904201bfeea197d87bded46a10d08f1034af464211872e29893"},
-    {file = "langsmith-0.1.121.tar.gz", hash = "sha256:e9381b82a5bd484af9a51c3e96faea572746b8d617b070c1cda40cbbe48e33df"},
+    {file = "langsmith-0.1.125-py3-none-any.whl", hash = "sha256:74ce8eb2663e1ed20bfcfc88d41e0712879306956c9938d1cdbab7d60458bdca"},
+    {file = "langsmith-0.1.125.tar.gz", hash = "sha256:2c0eb0c3cbf22cff55bf519b8e889041f9a591bcf97af5152c8e130333c5940e"},
 ]
 
 [package.dependencies]
@@ -1793,22 +1800,22 @@ testing = ["google-api-core (>=1.31.5)"]
 
 [[package]]
 name = "protobuf"
-version = "5.28.1"
+version = "5.28.2"
 description = ""
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "protobuf-5.28.1-cp310-abi3-win32.whl", hash = "sha256:fc063acaf7a3d9ca13146fefb5b42ac94ab943ec6e978f543cd5637da2d57957"},
-    {file = "protobuf-5.28.1-cp310-abi3-win_amd64.whl", hash = "sha256:4c7f5cb38c640919791c9f74ea80c5b82314c69a8409ea36f2599617d03989af"},
-    {file = "protobuf-5.28.1-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:4304e4fceb823d91699e924a1fdf95cde0e066f3b1c28edb665bda762ecde10f"},
-    {file = "protobuf-5.28.1-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:0dfd86d2b5edf03d91ec2a7c15b4e950258150f14f9af5f51c17fa224ee1931f"},
-    {file = "protobuf-5.28.1-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:51f09caab818707ab91cf09cc5c156026599cf05a4520779ccbf53c1b352fb25"},
-    {file = "protobuf-5.28.1-cp38-cp38-win32.whl", hash = "sha256:1b04bde117a10ff9d906841a89ec326686c48ececeb65690f15b8cabe7149495"},
-    {file = "protobuf-5.28.1-cp38-cp38-win_amd64.whl", hash = "sha256:cabfe43044ee319ad6832b2fda332646f9ef1636b0130186a3ae0a52fc264bb4"},
-    {file = "protobuf-5.28.1-cp39-cp39-win32.whl", hash = "sha256:4b4b9a0562a35773ff47a3df823177ab71a1f5eb1ff56d8f842b7432ecfd7fd2"},
-    {file = "protobuf-5.28.1-cp39-cp39-win_amd64.whl", hash = "sha256:f24e5d70e6af8ee9672ff605d5503491635f63d5db2fffb6472be78ba62efd8f"},
-    {file = "protobuf-5.28.1-py3-none-any.whl", hash = "sha256:c529535e5c0effcf417682563719e5d8ac8d2b93de07a56108b4c2d436d7a29a"},
-    {file = "protobuf-5.28.1.tar.gz", hash = "sha256:42597e938f83bb7f3e4b35f03aa45208d49ae8d5bcb4bc10b9fc825e0ab5e423"},
+    {file = "protobuf-5.28.2-cp310-abi3-win32.whl", hash = "sha256:eeea10f3dc0ac7e6b4933d32db20662902b4ab81bf28df12218aa389e9c2102d"},
+    {file = "protobuf-5.28.2-cp310-abi3-win_amd64.whl", hash = "sha256:2c69461a7fcc8e24be697624c09a839976d82ae75062b11a0972e41fd2cd9132"},
+    {file = "protobuf-5.28.2-cp38-abi3-macosx_10_9_universal2.whl", hash = "sha256:a8b9403fc70764b08d2f593ce44f1d2920c5077bf7d311fefec999f8c40f78b7"},
+    {file = "protobuf-5.28.2-cp38-abi3-manylinux2014_aarch64.whl", hash = "sha256:35cfcb15f213449af7ff6198d6eb5f739c37d7e4f1c09b5d0641babf2cc0c68f"},
+    {file = "protobuf-5.28.2-cp38-abi3-manylinux2014_x86_64.whl", hash = "sha256:5e8a95246d581eef20471b5d5ba010d55f66740942b95ba9b872d918c459452f"},
+    {file = "protobuf-5.28.2-cp38-cp38-win32.whl", hash = "sha256:87317e9bcda04a32f2ee82089a204d3a2f0d3c8aeed16568c7daf4756e4f1fe0"},
+    {file = "protobuf-5.28.2-cp38-cp38-win_amd64.whl", hash = "sha256:c0ea0123dac3399a2eeb1a1443d82b7afc9ff40241433296769f7da42d142ec3"},
+    {file = "protobuf-5.28.2-cp39-cp39-win32.whl", hash = "sha256:ca53faf29896c526863366a52a8f4d88e69cd04ec9571ed6082fa117fac3ab36"},
+    {file = "protobuf-5.28.2-cp39-cp39-win_amd64.whl", hash = "sha256:8ddc60bf374785fb7cb12510b267f59067fa10087325b8e1855b898a0d81d276"},
+    {file = "protobuf-5.28.2-py3-none-any.whl", hash = "sha256:52235802093bd8a2811abbe8bf0ab9c5f54cca0a751fdd3f6ac2a21438bffece"},
+    {file = "protobuf-5.28.2.tar.gz", hash = "sha256:59379674ff119717404f7454647913787034f03fe7049cbef1d74a97bb4593f0"},
 ]
 
 [[package]]
@@ -2534,13 +2541,13 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.31.0"
+version = "2.32.2"
 description = "Python HTTP for Humans."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "requests-2.31.0-py3-none-any.whl", hash = "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f"},
-    {file = "requests-2.31.0.tar.gz", hash = "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"},
+    {file = "requests-2.32.2-py3-none-any.whl", hash = "sha256:fc06670dd0ed212426dfeb94fc1b983d917c4f9847c863f313c9dfaaffb7c23c"},
+    {file = "requests-2.32.2.tar.gz", hash = "sha256:dd951ff5ecf3e3b3aa26b40703ba77495dab41da839ae72ef3c8e5d8e2433289"},
 ]
 
 [package.dependencies]
@@ -2617,29 +2624,29 @@ pyasn1 = ">=0.1.3"
 
 [[package]]
 name = "ruff"
-version = "0.6.5"
+version = "0.6.6"
 description = "An extremely fast Python linter and code formatter, written in Rust."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "ruff-0.6.5-py3-none-linux_armv6l.whl", hash = "sha256:7e4e308f16e07c95fc7753fc1aaac690a323b2bb9f4ec5e844a97bb7fbebd748"},
-    {file = "ruff-0.6.5-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:932cd69eefe4daf8c7d92bd6689f7e8182571cb934ea720af218929da7bd7d69"},
-    {file = "ruff-0.6.5-py3-none-macosx_11_0_arm64.whl", hash = "sha256:3a8d42d11fff8d3143ff4da41742a98f8f233bf8890e9fe23077826818f8d680"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a50af6e828ee692fb10ff2dfe53f05caecf077f4210fae9677e06a808275754f"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:794ada3400a0d0b89e3015f1a7e01f4c97320ac665b7bc3ade24b50b54cb2972"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:381413ec47f71ce1d1c614f7779d88886f406f1fd53d289c77e4e533dc6ea200"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:52e75a82bbc9b42e63c08d22ad0ac525117e72aee9729a069d7c4f235fc4d276"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:09c72a833fd3551135ceddcba5ebdb68ff89225d30758027280968c9acdc7810"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:800c50371bdcb99b3c1551d5691e14d16d6f07063a518770254227f7f6e8c178"},
-    {file = "ruff-0.6.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8e25ddd9cd63ba1f3bd51c1f09903904a6adf8429df34f17d728a8fa11174253"},
-    {file = "ruff-0.6.5-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:7291e64d7129f24d1b0c947ec3ec4c0076e958d1475c61202497c6aced35dd19"},
-    {file = "ruff-0.6.5-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:9ad7dfbd138d09d9a7e6931e6a7e797651ce29becd688be8a0d4d5f8177b4b0c"},
-    {file = "ruff-0.6.5-py3-none-musllinux_1_2_i686.whl", hash = "sha256:005256d977021790cc52aa23d78f06bb5090dc0bfbd42de46d49c201533982ae"},
-    {file = "ruff-0.6.5-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:482c1e6bfeb615eafc5899127b805d28e387bd87db38b2c0c41d271f5e58d8cc"},
-    {file = "ruff-0.6.5-py3-none-win32.whl", hash = "sha256:cf4d3fa53644137f6a4a27a2b397381d16454a1566ae5335855c187fbf67e4f5"},
-    {file = "ruff-0.6.5-py3-none-win_amd64.whl", hash = "sha256:3e42a57b58e3612051a636bc1ac4e6b838679530235520e8f095f7c44f706ff9"},
-    {file = "ruff-0.6.5-py3-none-win_arm64.whl", hash = "sha256:51935067740773afdf97493ba9b8231279e9beef0f2a8079188c4776c25688e0"},
-    {file = "ruff-0.6.5.tar.gz", hash = "sha256:4d32d87fab433c0cf285c3683dd4dae63be05fd7a1d65b3f5bf7cdd05a6b96fb"},
+    {file = "ruff-0.6.6-py3-none-linux_armv6l.whl", hash = "sha256:f5bc5398457484fc0374425b43b030e4668ed4d2da8ee7fdda0e926c9f11ccfb"},
+    {file = "ruff-0.6.6-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:515a698254c9c47bb84335281a170213b3ee5eb47feebe903e1be10087a167ce"},
+    {file = "ruff-0.6.6-py3-none-macosx_11_0_arm64.whl", hash = "sha256:6bb1b4995775f1837ab70f26698dd73852bbb82e8f70b175d2713c0354fe9182"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:69c546f412dfae8bb9cc4f27f0e45cdd554e42fecbb34f03312b93368e1cd0a6"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:59627e97364329e4eae7d86fa7980c10e2b129e2293d25c478ebcb861b3e3fd6"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:94c3f78c3d32190aafbb6bc5410c96cfed0a88aadb49c3f852bbc2aa9783a7d8"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:704da526c1e137f38c8a067a4a975fe6834b9f8ba7dbc5fd7503d58148851b8f"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:efeede5815a24104579a0f6320660536c5ffc1c91ae94f8c65659af915fb9de9"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:e368aef0cc02ca3593eae2fb8186b81c9c2b3f39acaaa1108eb6b4d04617e61f"},
+    {file = "ruff-0.6.6-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2653fc3b2a9315bd809725c88dd2446550099728d077a04191febb5ea79a4f79"},
+    {file = "ruff-0.6.6-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:bb858cd9ce2d062503337c5b9784d7b583bcf9d1a43c4df6ccb5eab774fbafcb"},
+    {file = "ruff-0.6.6-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:488f8e15c01ea9afb8c0ba35d55bd951f484d0c1b7c5fd746ce3c47ccdedce68"},
+    {file = "ruff-0.6.6-py3-none-musllinux_1_2_i686.whl", hash = "sha256:aefb0bd15f1cfa4c9c227b6120573bb3d6c4ee3b29fb54a5ad58f03859bc43c6"},
+    {file = "ruff-0.6.6-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:a4c0698cc780bcb2c61496cbd56b6a3ac0ad858c966652f7dbf4ceb029252fbe"},
+    {file = "ruff-0.6.6-py3-none-win32.whl", hash = "sha256:aadf81ddc8ab5b62da7aae78a91ec933cbae9f8f1663ec0325dae2c364e4ad84"},
+    {file = "ruff-0.6.6-py3-none-win_amd64.whl", hash = "sha256:0adb801771bc1f1b8cf4e0a6fdc30776e7c1894810ff3b344e50da82ef50eeb1"},
+    {file = "ruff-0.6.6-py3-none-win_arm64.whl", hash = "sha256:4b4d32c137bc781c298964dd4e52f07d6f7d57c03eae97a72d97856844aa510a"},
+    {file = "ruff-0.6.6.tar.gz", hash = "sha256:0fc030b6fd14814d69ac0196396f6761921bd20831725c7361e1b8100b818034"},
 ]
 
 [[package]]
@@ -2853,21 +2860,21 @@ sqlcipher = ["sqlcipher3_binary"]
 
 [[package]]
 name = "sqlalchemy-bigquery"
-version = "1.9.0"
+version = "1.11.0"
 description = "SQLAlchemy dialect for BigQuery"
 optional = false
-python-versions = ">=3.8, <3.13"
+python-versions = "<3.13,>=3.8"
 files = [
-    {file = "sqlalchemy-bigquery-1.9.0.tar.gz", hash = "sha256:549b250ad4c75fe9efaff4ee32e08deb488f1886affbb159d8c149b6b537524f"},
-    {file = "sqlalchemy_bigquery-1.9.0-py2.py3-none-any.whl", hash = "sha256:b1a4c2f5b672ca7bb02e1357d6f3aeabbb19a67e986f2ccd2654fb005705e98e"},
+    {file = "sqlalchemy-bigquery-1.11.0.tar.gz", hash = "sha256:09a2b99b8591d441eef66d34d13057d0f09423fe259fef98c0502df61419d242"},
+    {file = "sqlalchemy_bigquery-1.11.0-py2.py3-none-any.whl", hash = "sha256:99f868cfdd103b13f921ec1c1b748826b4b1187457dda48040da5ab5ba63c705"},
 ]
 
 [package.dependencies]
 google-api-core = ">=1.31.5,<2.0.dev0 || >2.3.0,<3.0.0dev"
 google-auth = ">=1.25.0,<3.0.0dev"
-google-cloud-bigquery = ">=2.25.2,<4.0.0dev"
+google-cloud-bigquery = ">=3.3.6,<4.0.0dev"
 packaging = "*"
-sqlalchemy = ">=1.2.0,<2.0.0dev"
+sqlalchemy = ">=1.4.16,<3.0.0dev"
 
 [package.extras]
 alembic = ["alembic"]

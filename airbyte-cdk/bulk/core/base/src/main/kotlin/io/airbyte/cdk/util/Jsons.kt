@@ -3,7 +3,9 @@ package io.airbyte.cdk.util
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.BinaryNode
@@ -14,6 +16,7 @@ import com.fasterxml.jackson.databind.node.TextNode
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import java.io.IOException
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.nio.ByteBuffer
@@ -55,4 +58,32 @@ object Jsons : ObjectMapper() {
     }
 
     fun booleanNode(boolean: Boolean): BooleanNode = nodeFactory.booleanNode(boolean)
+
+    fun <T> `object`(jsonNode: JsonNode?, klass: Class<T>?): T? {
+        return convertValue(jsonNode, klass)
+    }
+
+    fun <T> serialize(`object`: T): String {
+        try {
+            return writeValueAsString(`object`)
+        } catch (e: JsonProcessingException) {
+            throw RuntimeException(e)
+        }
+    }
+
+    fun <T> deserialize(jsonString: String?, klass: Class<T>?): T {
+        try {
+            return readValue(jsonString, klass)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
+        }
+    }
+
+    fun deserialize(jsonString: String?): JsonNode {
+        try {
+            return readTree(jsonString)
+        } catch (e: IOException) {
+            throw RuntimeException(e)
+        }
+    }
 }

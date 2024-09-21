@@ -103,5 +103,12 @@
       "stream_state": { "end_date": "2050-01-01" },
       "stream_descriptor": { "name": "ad_member_company_analytics" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModified": 2524608000000 },
+      "stream_descriptor": { "name": "conversions" }
+    }
   }
 ]

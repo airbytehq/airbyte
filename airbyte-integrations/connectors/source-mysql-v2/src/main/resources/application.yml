@@ -5,9 +5,9 @@ airbyte:
       jdbc:
         mode: sequential
         throughput-bytes-per-second: 10000000
-        min-fetch-size: -2147483648
-        default-fetch-size: -2147483648
-        max-fetch-size: -2147483648
+        min-fetch-size: 5
+        default-fetch-size: 5
+        max-fetch-size: 5
         memory-capacity-ratio: 0.6
         estimated-record-overhead-bytes: 16
         estimated-field-overhead-bytes: 16
