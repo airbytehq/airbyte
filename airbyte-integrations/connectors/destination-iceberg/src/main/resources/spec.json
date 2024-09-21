@@ -154,6 +154,28 @@
                 "order": 3
               }
             }
+          },
+          {
+            "title": "GlueCatalog",
+            "description": "The GlueCatalog connects to a AWS Glue Catalog",
+            "required": ["catalog_type"],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "Glue",
+                "enum": ["Glue"],
+                "order": 0
+              },
+              "database": {
+                "title": "Default schema",
+                "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
+                "type": "string",
+                "default": "public",
+                "examples": ["public"],
+                "order": 1
+              }
+            }
           }
         ],
         "order": 0
