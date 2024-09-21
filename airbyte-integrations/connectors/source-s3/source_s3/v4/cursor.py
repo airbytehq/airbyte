@@ -58,7 +58,7 @@ class Cursor(FileBasedConcurrentCursor):
         super().set_initial_state(value)
 
     def get_state(self) -> StreamState:
-        state = {"history": self._file_to_datetime_history, self.CURSOR_FIELD: self._get_cursor()}
+        state = {"history": self._file_to_datetime_history, self.CURSOR_FIELD: self._get_new_cursor_value()}
         if self._v3_migration_start_datetime:
             return {
                 **state,
