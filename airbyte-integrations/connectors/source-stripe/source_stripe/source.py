@@ -535,7 +535,7 @@ class SourceStripe(ConcurrentSourceAdapter):
             ),
         ]
 
-        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+        state_manager = ConnectorStateManager(state=self._state)
         converter = EpochValueConcurrentStreamStateConverter()
         start = datetime.fromtimestamp(self._start_date_to_timestamp(config), timezone.utc)
         slice_range = timedelta(days=config["slice_range"])
