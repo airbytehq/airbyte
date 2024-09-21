@@ -22,8 +22,6 @@ import io.airbyte.cdk.integrations.util.ApmTraceUtils.addExceptionToTrace
 import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil
 import io.airbyte.commons.exceptions.ConfigErrorException
 import io.airbyte.commons.exceptions.ConnectionErrorException
-import io.airbyte.commons.features.EnvVariableFeatureFlags
-import io.airbyte.commons.features.FeatureFlags
 import io.airbyte.commons.functional.CheckedConsumer
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.stream.AirbyteStreamUtils
@@ -49,8 +47,6 @@ private val LOGGER = KotlinLogging.logger {}
 abstract class AbstractDbSource<DataType, Database : AbstractDatabase?>
 protected constructor(driverClassName: String) :
     JdbcConnector(driverClassName), Source, AutoCloseable {
-    // TODO: Remove when the flag is not use anymore
-    var featureFlags: FeatureFlags = EnvVariableFeatureFlags()
 
     @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
     @Throws(Exception::class)

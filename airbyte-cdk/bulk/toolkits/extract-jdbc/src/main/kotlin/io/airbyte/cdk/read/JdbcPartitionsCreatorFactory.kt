@@ -21,10 +21,10 @@ sealed class JdbcPartitionsCreatorFactory<
     override fun make(
         stateQuerier: StateQuerier,
         feed: Feed,
-    ): PartitionsCreator {
+    ): PartitionsCreator? {
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return when (feed) {
-            is Global -> CreateNoPartitions
+            is Global -> null
             is Stream -> {
                 val partition: P? = partitionFactory.create(feed, opaqueStateValue)
                 if (partition == null) {
