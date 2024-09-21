@@ -1,6 +1,6 @@
-# Destination Dev Null
+# Dev Null Testing Destination
 
-This destination is a "safe" version of the [E2E Test destination](https://docs.airbyte.io/integrations/destinations/e2e-test). It only allows the "silent" mode.
+This is the repository for the Null destination connector in Java. For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/dev-null).
 
 ## Local development
 
@@ -11,6 +11,10 @@ From the Airbyte repository root, run:
 ```
 ./gradlew :airbyte-integrations:connectors:destination-dev-null:build
 ```
+
+#### Create credentials
+
+No credential is needed for this connector.
 
 ### Locally running the connector docker image
 
@@ -36,6 +40,23 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-dev-null:dev disc
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-dev-null:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
+#### Cloud variant
+
+The cloud variant of this connector is Dev Null Destination. It only allows the "silent" mode. When this mode is changed, please make sure that the Dev Null Destination is updated and published accordingly as well.
+
+## Testing
+
+We use `JUnit` for Java tests.
+
+### Unit and Integration Tests
+
+Place unit tests under `src/test/io/airbyte/integrations/destinations/dev-null`.
+
+#### Acceptance Tests
+
+Airbyte has a standard test suite that all destination connectors must pass. See example(s) in
+`src/test-integration/java/io/airbyte/integrations/destinations/dev-null/`.
+
 ### Using gradle to run tests
 
 All commands should be run from airbyte project root.
@@ -60,7 +81,7 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=destination-dev-null test`
 2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
 3. Make sure the `metadata.yaml` content is up to date.
-4. Make the connector documentation and its changelog is up to date (`docs/integrations/destinations/e2e-test.md`).
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/destinations/dev-null.md`).
 5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
 6. Pat yourself on the back for being an awesome contributor.
 7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
