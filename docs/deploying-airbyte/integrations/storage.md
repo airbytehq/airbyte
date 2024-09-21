@@ -53,6 +53,8 @@ stringData:
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
 }
 ```
+</TabItem>
+
 <TabItem value="Azure Blob" label="Azure" default>
 
 ```yaml
@@ -66,7 +68,6 @@ stringData:
   azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
 ```
 
-</TabItem>
 </TabItem>
 
 
