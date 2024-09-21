@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
-import os
 from pathlib import Path
 
 import pytest
@@ -11,7 +9,7 @@ import yaml
 from pydantic import BaseModel
 from source_s3.run import get_source
 
-from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
+from airbyte_cdk import launch
 
 
 class AcceptanceTestExpectRecords(BaseModel):

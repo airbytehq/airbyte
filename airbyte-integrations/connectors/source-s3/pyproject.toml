@@ -24,9 +24,6 @@ dill = "==0.3.4"
 transformers = "4.38.2"
 urllib3 = "<2"
 
-# TODO: Remove these after the CDK is published.
-# This is needed because `airbyte-ci` otherwise won't pick up the new dependencies.
-polars-lts-cpu = "^1.7.1"
 
 [tool.poetry.dependencies.smart-open]
 extras = [ "s3",]
@@ -34,12 +31,12 @@ version = "==5.1.0"
 
 [tool.poetry.dependencies.airbyte-cdk]
 extras = ["file-based",]
-# # version = "^5"
+version = "^5"
 
-# TODO: Toggle on/off the following sections to switch between the local CDK or the published version.
+# Toggle on/off the following to switch between local CDK or the published version.
 # Use `path` and `develop` for local CDK dev, or `version` for release.
-path = "../../../airbyte-cdk/python"
-develop = true
+# path = "../../../airbyte-cdk/python"
+# develop = true
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^6.1"
