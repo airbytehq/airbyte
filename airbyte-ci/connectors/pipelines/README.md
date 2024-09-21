@@ -663,7 +663,9 @@ Generates a couple of files and publish a new ERD to dbdocs. The generated files
 * `<source code_directory>/erd/source.dbml`: the file used the upload the ERDs to dbdocs
 
 Pre-requisites:
-* The config file use to discover the catalog should be available in `<source code_directory>/secrets/config.json`
+* The config file used to discover the catalog should be available in `<source code_directory>/secrets/config.json`. If some of the streams are not available to the connector using this config, there will be tables missing in the ERD.
+
+Note that we exclude any stream where the schema is not defined in the schemas folder or inlined in the manifest as we consider these dynamic and, therefore, usually customer specific.
 
 #### Create initial diagram workflow or on connector's schema change
 
