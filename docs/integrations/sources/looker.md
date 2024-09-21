@@ -85,6 +85,7 @@ Please read the "API3 Key" section in [Looker's information for users docs](http
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| 1.0.10 | 2024-09-21 | [45762](https://github.com/airbytehq/airbyte/pull/45762) | Update dependencies |
 | 1.0.9 | 2024-09-14 | [45564](https://github.com/airbytehq/airbyte/pull/45564) | Update dependencies |
 | 1.0.8 | 2024-09-07 | [45305](https://github.com/airbytehq/airbyte/pull/45305) | Update dependencies |
 | 1.0.7 | 2024-09-05 | [45161](https://github.com/airbytehq/airbyte/pull/45161) | Enable connector in Cloud registry |
