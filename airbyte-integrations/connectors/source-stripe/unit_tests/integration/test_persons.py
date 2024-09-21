@@ -442,8 +442,7 @@ class PersonsTest(TestCase):
                 FailureType.system_error,
                 FailureType.config_error,
             ]
-
-            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.message
+            assert "Request rate limit exceeded" in actual_messages.errors[0].trace.error.internal_message
 
     @HttpMocker()
     def test_incremental_rate_limit_max_attempts_exceeded(self, http_mocker: HttpMocker) -> None:
