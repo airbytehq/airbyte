@@ -7,12 +7,13 @@ connectionSpecification:
     - api_key
     - app_id
     - start_date
+    - project_space
   properties:
     api_key:
       type: string
-      title: API Key
+      title: "Username:API Key"
       description: >-
-        Commcare API Key
+        Commcare username with API Key, colon-separated
       airbyte_secret: true
       order: 0
     project_space:
@@ -36,3 +37,8 @@ connectionSpecification:
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Only records after this date will be replicated.
       order: 3
+    form_fields_to_exclude:
+      type: array
+      title: Form Fields to be Excluded
+      description: Forms field which you don't want to pull
+      order: 4

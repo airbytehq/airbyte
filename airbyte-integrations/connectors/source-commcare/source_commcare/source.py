@@ -1,8 +1,7 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import re
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -14,14 +13,31 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from flatten_json import flatten
+
+
+def ensure_single_trailing_Z(dtstr: str):
+    """return the dtstr with a trailing Z, appending one if it's missing"""
+    if dtstr.endswith("Z"):
+        return dtstr
+    return dtstr + "Z"
+
+
+def parse_datetime_with_microseconds(dtstr: str):
+    """parse a datetime string with or without microseconds"""
+    for date_format in ["%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S.%f"]:
+        try:
+            return datetime.strptime(dtstr, date_format)
+        except ValueError:
+            pass
+    raise ValueError(f"Could not parse datetime string {dtstr}")
 
 
 # Basic full refresh stream
 class CommcareStream(HttpStream, ABC):
-    def __init__(self, project_space, **kwargs):
+    def __init__(self, project_space, form_fields_to_exclude, **kwargs):
         super().__init__(**kwargs)
         self.project_space = project_space
+        self.form_fields_to_exclude = form_fields_to_exclude
 
     @property
     def url_base(self) -> str:
@@ -33,15 +49,23 @@ class CommcareStream(HttpStream, ABC):
     forms = set()
     last_form_date = None
     schemas = {}
-    unwantedfields = re.compile(r"^(case_|update_|meta|create_|commcare_).*$")
 
     @property
-    def dateformat(self):
+    def dateformat_for_query(self) -> str:
         return "%Y-%m-%dT%H:%M:%S.%f"
 
-    def scrubUnwantedFields(self, form):
-        newform = {k: v for k, v in form.items() if not self.unwantedfields.match(k)}
-        return newform
+    def scrubUnwantedFields(self, form: dict[str, str]) -> dict:
+        new_dict = {}
+        for key, value in form.items():
+            if key in self.form_fields_to_exclude:
+                continue
+            if any(key.startswith(prefix) for prefix in self.form_fields_to_exclude):
+                continue
+            if isinstance(value, dict):
+                new_dict[key] = self.scrubUnwantedFields(value)
+            else:
+                new_dict[key] = value
+        return new_dict
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
@@ -56,7 +80,6 @@ class CommcareStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"format": "json"}
         return params
 
@@ -79,7 +102,6 @@ class Application(CommcareStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"format": "json", "extras": "true"}
         return params
 
@@ -93,12 +115,12 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        if self._cursor_value:
-            return {self.cursor_field: self._cursor_value}
+        return {self.cursor_field: self._cursor_value}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], self.dateformat)
+        if self.cursor_field in value:
+            self._cursor_value = parse_datetime_with_microseconds(value[self.cursor_field])
 
     @property
     def sync_mode(self):
@@ -123,7 +145,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         params = {"format": "json"}
         if next_page_token:
             params.update(next_page_token)
@@ -136,7 +157,6 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
 
 
 class Case(IncrementalStream):
-
     """
     docs: https://www.commcarehq.org/a/[domain]/api/[version]/case/
     """
@@ -144,9 +164,9 @@ class Case(IncrementalStream):
     cursor_field = "indexed_on"
     primary_key = "id"
 
-    def __init__(self, start_date, app_id, schema, **kwargs):
+    def __init__(self, start_date, schema, app_id, **kwargs):
         super().__init__(**kwargs)
-        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
+        self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.schema = schema
 
     def get_json_schema(self):
@@ -167,32 +187,29 @@ class Case(IncrementalStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         # start date is what we saved for forms
         # if self.cursor_field in self.state else (CommcareStream.last_form_date or self.initial_date)
-        ix = self.state[self.cursor_field]
-        params = {"format": "json", "indexed_on_start": ix.strftime(self.dateformat), "order_by": "indexed_on", "limit": "5000"}
+        ix: datetime = self.state[self.cursor_field]
+        params = {"format": "json", "indexed_on_start": ix.strftime(self.dateformat_for_query), "order_by": "indexed_on", "limit": "5000"}
         if next_page_token:
             params.update(next_page_token)
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
-            found = False
-            for f in record["xform_ids"]:
-                if f in CommcareStream.forms:
-                    found = True
-                    break
-            if found:
-                self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
+            if any(f in CommcareStream.forms for f in record["xform_ids"]):
+                self._cursor_value = parse_datetime_with_microseconds(record[self.cursor_field])
                 # Make indexed_on tz aware
-                record.update({"streamname": "case", "indexed_on": record["indexed_on"] + "Z"})
+                record.update({"streamname": "case", "indexed_on": ensure_single_trailing_Z(record["indexed_on"])})
                 # convert xform_ids field from array to comma separated list so flattening won't create
                 # one field per item. This is because some cases have up to 2000 xform_ids and we don't want 2000 extra
                 # fields in the schema
                 record["xform_ids"] = ",".join(record["xform_ids"])
-                frec = flatten(record)
-                yield frec
+                retval = {}
+                retval["id"] = record["id"]
+                retval["indexed_on"] = ensure_single_trailing_Z(record["indexed_on"])
+                retval["data"] = record
+                yield retval
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
             # our state setter parses the saved state with a format that contains microseconds
@@ -214,7 +231,7 @@ class Form(IncrementalStream):
     def __init__(self, start_date, app_id, name, xmlns, schema, **kwargs):
         super().__init__(**kwargs)
         self.app_id = app_id
-        self._cursor_value = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%SZ")
+        self._cursor_value = parse_datetime_with_microseconds(start_date)
         self.streamname = name
         self.xmlns = xmlns
         self.schema = schema
@@ -234,13 +251,12 @@ class Form(IncrementalStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-
         # if self.cursor_field in self.state else self.initial_date
-        ix = self.state[self.cursor_field]
+        ix: datetime = self.state[self.cursor_field]
         params = {
             "format": "json",
             "app_id": self.app_id,
-            "indexed_on_start": ix.strftime(self.dateformat),
+            "indexed_on_start": ix.strftime(self.dateformat_for_query),
             "order_by": "indexed_on",
             "limit": "1000",
             "xmlns": self.xmlns,
@@ -250,16 +266,16 @@ class Form(IncrementalStream):
         return params
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
-        upd = {"streamname": self.streamname, "xmlns": self.xmlns}
         for record in super().read_records(*args, **kwargs):
-            self._cursor_value = datetime.strptime(record[self.cursor_field], self.dateformat)
+            self._cursor_value = parse_datetime_with_microseconds(record[self.cursor_field])
             CommcareStream.forms.add(record["id"])
-            form = record["form"]
-            form.update(upd)
-            # Append Z to make it timezone aware
-            form.update({"id": record["id"], "indexed_on": record["indexed_on"] + "Z"})
-            newform = self.scrubUnwantedFields(form)
-            yield flatten(newform)
+            newform = self.scrubUnwantedFields(record)
+            retval = {}
+            retval["id"] = newform["id"]
+            newform[self.cursor_field] = ensure_single_trailing_Z(newform[self.cursor_field])
+            retval[self.cursor_field] = newform[self.cursor_field]
+            retval["data"] = newform
+            yield retval
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
             # our state setter parses the saved state with a format that contains microseconds
@@ -271,15 +287,32 @@ class Form(IncrementalStream):
 # Source
 class SourceCommcare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        if "api_key" not in config:
-            return False, None
-        return True, None
+        try:
+            auth = TokenAuthenticator(config["api_key"], auth_method="ApiKey")
+            args = {
+                "authenticator": auth,
+            }
+            Application(
+                **{
+                    **args,
+                    "app_id": config["app_id"],
+                    "form_fields_to_exclude": config["form_fields_to_exclude"],
+                    "project_space": config["project_space"],
+                }
+            ).check_availability(logger=logger)
+            return True, None
+        except Exception as error:
+            return False, " Invalid apikey, project_space or app_id : " + str(error)
 
     def base_schema(self):
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {"id": {"type": "string"}, "indexed_on": {"type": "string", "format": "date-time"}},
+            "properties": {
+                "id": {"type": "string"},
+                "indexed_on": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
+                "data": {"type": "object"},
+            },
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -287,16 +320,27 @@ class SourceCommcare(AbstractSource):
         args = {
             "authenticator": auth,
         }
-        appdata = Application(**{**args, "app_id": config["app_id"], "project_space": config["project_space"]}).read_records(
-            sync_mode=SyncMode.full_refresh
-        )
+        appdata = Application(
+            **{
+                **args,
+                "app_id": config["app_id"],
+                "form_fields_to_exclude": config["form_fields_to_exclude"],
+                "project_space": config["project_space"],
+            }
+        ).read_records(sync_mode=SyncMode.full_refresh)
 
         # Generate streams for forms, one per xmlns and one stream for cases.
         streams = self.generate_streams(args, config, appdata)
         return streams
 
     def generate_streams(self, args, config, appdata):
-        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "project_space": config["project_space"], **args}
+        form_args = {
+            "app_id": config["app_id"],
+            "start_date": config["start_date"],
+            "form_fields_to_exclude": config["form_fields_to_exclude"],
+            "project_space": config["project_space"],
+            **args,
+        }
         streams = []
         name2xmlns = {}
 
@@ -311,7 +355,7 @@ class SourceCommcare(AbstractSource):
                     if "en" in f["name"]:
                         formname = f["name"]["en"].strip()
                     else:
-                        # Unknown forms are named UNNAMED_xxxxx where xxxxx are the last 5 difits of the XMLNS
+                        # Unknown forms are named UNNAMED_xxxxx where xxxxx are the last 5 digits of the XMLNS
                         # This convention gives us repeatable names
                         formname = f"Unnamed_{xmlns[-5:]}"
 
@@ -330,8 +374,10 @@ class SourceCommcare(AbstractSource):
             start_date=config["start_date"],
             schema=self.base_schema(),
             project_space=config["project_space"],
+            form_fields_to_exclude=config["form_fields_to_exclude"],
             **args,
         )
+
         streams.append(stream)
 
         return streams
