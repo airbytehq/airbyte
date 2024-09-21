@@ -457,8 +457,6 @@ class Stream(ABC):
         self.has_multiple_slices = self.has_multiple_slices or stream_classification.has_multiple_slices
 
         cursor = self.get_cursor()
-        print(cursor)
-        print(self.name)
         if cursor:
             cursor.set_initial_state(stream_state=stream_state)
 
