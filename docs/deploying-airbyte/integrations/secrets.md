@@ -58,6 +58,20 @@ stringData:
 ```
 </TabItem>
 
+<TabItem label="Azure Key Vault" value="Azure">
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  azure-key-vault-client-id: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+  azure-key-vault-client-secret: ## KWP6egqixiQeQoKqFZuZq2weRbYoVxMH
+```
+</TabItem>
+
 </Tabs>
 
 ## Values
@@ -97,11 +111,33 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   secretsManager:
     type: googleSecretManager
-    storageSecretName: gcp-cred-secrets
+    secretManagerSecretName: airbyte-config-secrets
     googleSecretManager:
       projectId: <project-id>
       credentialsSecretKey: gcp.json
 ```
 
 </TabItem>
+
+<TabItem label="GCP" value="GCP">
+
+Ensure you've already created a Kubernetes secret containing the credentials blob for the service account to be assumed by the cluster. By default, secrets are expected in the `airbyte-config-secrets` Kubernetes secret, under a `gcp.json` file. Steps to configure these are in the above [prerequisites](#secrets). For simplicity, we recommend provisioning a single service account with access to both GCS and GSM.
+
+```yaml
+global:
+  secretsManager:
+    type: azureKeyVault
+    secretManagerSecretName: airbyte-config-secrets
+    azureKeyVault:
+      vaultUrl: ## https://my-vault.vault.azure.net/
+      tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e
+      tags: ## Optional - You may add tags to new secrets created by Airbyte.
+        - key: ## e.g. team
+          value: ## e.g. deployments
+        - key: business-unit
+          value: engineering
+```
+
+</TabItem>
+
 </Tabs>
