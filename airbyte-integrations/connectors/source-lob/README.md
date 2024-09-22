@@ -1,10 +1,11 @@
 # Lob
 This directory contains the manifest-only connector for `source-lob`.
 
-Website: https://dashboard.lob.com/
-API docs: https://docs.lob.com/
-Auth Docs: https://docs.lob.com/#tag/Authentication
-Auth page: https://dashboard.lob.com/settings/api-keys
+## Documentation reference:
+Visit `https://docs.lob.com/` for API documentation
+
+## Authentication setup
+`Lob` uses Basic Http authentication via api key, Visit `https://dashboard.lob.com/settings/api-keys` for getting your api keys. Refer `https://docs.lob.com/#tag/Authentication` for more details.
 
 ## Usage
 There are multiple ways to use this connector:

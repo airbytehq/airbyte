@@ -1,8 +1,11 @@
 # Lob
-Website: https://dashboard.lob.com/
-API docs: https://docs.lob.com/
-Auth Docs: https://docs.lob.com/#tag/Authentication
-Auth page: https://dashboard.lob.com/settings/api-keys
+This page contains the setup guide and reference information for the [Lob](https://dashboard.lob.com/) source connector.
+
+## Documentation reference:
+Visit `https://docs.lob.com/` for API documentation
+
+## Authentication setup
+`Lob` uses Basic Http authentication via api key, Visit `https://dashboard.lob.com/settings/api-keys` for getting your api keys. Refer `https://docs.lob.com/#tag/Authentication` for more details.
 
 ## Configuration
 
@@ -29,8 +32,8 @@ Auth page: https://dashboard.lob.com/settings/api-keys
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-22 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-22 |[45843](https://github.com/airbytehq/airbyte/pull/45843)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
