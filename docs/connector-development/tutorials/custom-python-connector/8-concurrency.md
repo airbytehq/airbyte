@@ -10,6 +10,7 @@ requires a little bit of boilerplate:
 ```python
 # import the following libraries
 import logging
+import pendulum
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import Level
 from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import ConcurrentSourceAdapter, ConcurrentSource
@@ -74,7 +75,8 @@ from airbyte_cdk.sources.streams.concurrent.cursor import CursorField, Concurren
                     stream.state_converter,
                     cursor_field,
                     self._get_slice_boundary_fields(stream, state_manager),
-                    _START_DATE,
+                    pendulum.from_timestamp(_START_DATE),
+                    EpochValueConcurrentStreamStateConverter.get_end_provider()
                 )
             else:
                 cursor = FinalStateCursor(stream.name, stream.namespace, self.message_repository)
