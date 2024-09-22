@@ -9,6 +9,12 @@ Freshchat is a cloud based messaging solution that allows you to effectively int
 | `start_date` | `string` | Start date.  |  |
 | `account_name` | `string` | Account Name. The unique account name for your Freshchat instance |  |
 
+To get started, and obtain the API key;
+- navigate to Admin > CONFIGURE > API Tokens page
+- click the Generate Token button. The authentication server returns the access token.
+
+See more in the [API doc](https://developers.freshchat.com/api/#authentication)
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
