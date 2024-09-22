@@ -1,7 +1,11 @@
 # Missive
-Website: https://missiveapp.com/
-API Docs: https://missiveapp.com/help/api-documentation/rest-endpoints
-Auth Docs: https://missiveapp.com/help/api-documentation/getting-started
+This page contains the setup guide and reference information for the [Missive](https://missiveapp.com/) source connector.
+
+## Documentation reference:
+Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API documentation
+
+## Authentication setup
+`Missive` uses Bearer token authentication authentication, Visit your profile settings for getting your api keys. Refer `https://missiveapp.com/help/api-documentation/getting-started` for more details.
 
 ## Configuration
 
@@ -28,8 +32,8 @@ Auth Docs: https://missiveapp.com/help/api-documentation/getting-started
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-22 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-22 |[45844](https://github.com/airbytehq/airbyte/pull/45844)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

@@ -1,9 +1,11 @@
 # Missive
 This directory contains the manifest-only connector for `source-missive`.
 
-Website: https://missiveapp.com/
-API Docs: https://missiveapp.com/help/api-documentation/rest-endpoints
-Auth Docs: https://missiveapp.com/help/api-documentation/getting-started
+## Documentation reference:
+Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API documentation
+
+## Authentication setup
+`Missive` uses Bearer token authentication authentication, Visit your profile settings for getting your api keys. Refer `https://missiveapp.com/help/api-documentation/getting-started` for more details.
 
 ## Usage
 There are multiple ways to use this connector:
