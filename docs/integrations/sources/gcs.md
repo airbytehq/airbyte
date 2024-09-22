@@ -1,4 +1,4 @@
-# GCS
+# Google Cloud Storage (GCS)
 
 This page guides you through the process of setting up the GCS source connector. This connector supports loading multiple CSV files (non compressed) from a GCS directory. The conntector will check for all files ending in `.csv`, even nested files.
 
@@ -23,7 +23,7 @@ First, you need to select existing or create a new project in the Google Cloud C
 3. Click `Create service account`.
 4. Create a JSON key file for the service user. The contents of this file will be provided as the `service_account` in the UI.
 
-### Grant permisison to GCS
+### Grant permission to GCS
 
 Use the service account ID from above, grant read access to your target bucket. Click [here](https://cloud.google.com/storage/docs/access-control/using-iam-permissions) for more details.
 
@@ -151,6 +151,8 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.6.9 | 2024-09-21 | [45798](https://github.com/airbytehq/airbyte/pull/45798) | Update dependencies |
+| 0.6.8 | 2024-09-19 | [45092](https://github.com/airbytehq/airbyte/pull/45092) | Update CDK v5; Fix OSError not raised in stream_reader.open_file |
 | 0.6.7 | 2024-09-14 | [45492](https://github.com/airbytehq/airbyte/pull/45492) | Update dependencies |
 | 0.6.6 | 2024-09-07 | [45232](https://github.com/airbytehq/airbyte/pull/45232) | Update dependencies |
 | 0.6.5 | 2024-08-31 | [45010](https://github.com/airbytehq/airbyte/pull/45010) | Update dependencies |

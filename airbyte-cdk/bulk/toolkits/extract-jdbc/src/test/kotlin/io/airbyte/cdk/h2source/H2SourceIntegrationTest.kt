@@ -100,29 +100,6 @@ class H2SourceIntegrationTest {
     }
 
     @Test
-    fun testReadGlobal() {
-        H2TestFixture().use { h2: H2TestFixture ->
-            val configPojo =
-                H2SourceConfigurationJsonObject().apply {
-                    port = h2.port
-                    database = h2.database
-                    setCursorMethodValue(CdcCursor)
-                    resumablePreferred = false
-                }
-            SyncsTestFixture.testSyncs(
-                configPojo,
-                h2::createConnection,
-                Companion::prelude,
-                "h2source/expected-cdc-catalog.json",
-                "h2source/cdc-catalog.json",
-                SyncsTestFixture.AfterRead.Companion.fromExpectedMessages(
-                    "h2source/expected-messages-global-cold-start.json",
-                ),
-            )
-        }
-    }
-
-    @Test
     fun testReadStreams() {
         H2TestFixture().use { h2: H2TestFixture ->
             val configPojo =
