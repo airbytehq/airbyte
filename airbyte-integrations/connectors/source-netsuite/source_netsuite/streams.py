@@ -157,7 +157,7 @@ class NetsuiteStream(HttpStream, ABC):
         (requests.exceptions.RequestException, requests.exceptions.HTTPError),
         max_tries=10,
         factor=5,
-        max_time=300, # 5 minutes
+        max_time=300,  # 5 minutes
     )
     def _send_request_with_backoff(self, args, request_kwargs):
         prep_req = self._session.prepare_request(requests.Request(**args))
