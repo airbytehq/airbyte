@@ -4,50 +4,40 @@
 
 package io.airbyte.cdk.task
 
-import io.airbyte.cdk.state.StreamsManager
 import io.airbyte.cdk.write.DestinationWriteOperation
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.util.concurrent.atomic.AtomicBoolean
+
+interface TeardownTask : Task
 
 /**
  * Wraps @[DestinationWriteOperation.teardown] and stops the task launcher.
  *
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
-class TeardownTask(
+class DefaultTeardownTask(
     private val destination: DestinationWriteOperation,
-    private val streamsManager: StreamsManager,
     private val taskLauncher: DestinationTaskLauncher
-) : Task {
+) : TeardownTask {
     val log = KotlinLogging.logger {}
 
-    companion object {
-        val exactlyOnce = AtomicBoolean(false)
-    }
-
     override suspend fun execute() {
-        /** Guard against running this more than once */
-        if (exactlyOnce.getAndSet(true)) {
-            return
-        }
-
-        /** Ensure we don't run until all streams have completed */
-        streamsManager.awaitAllStreamsClosed()
-
         destination.teardown()
-        taskLauncher.stop()
+        taskLauncher.handleTeardownComplete()
     }
+}
+
+interface TeardownTaskFactory {
+    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask
 }
 
 @Singleton
 @Secondary
-class TeardownTaskFactory(
+class DefaultTeardownTaskFactory(
     private val destination: DestinationWriteOperation,
-    private val streamsManager: StreamsManager,
 ) {
     fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
-        return TeardownTask(destination, streamsManager, taskLauncher)
+        return DefaultTeardownTask(destination, taskLauncher)
     }
 }
