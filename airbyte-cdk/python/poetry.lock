@@ -3231,47 +3231,6 @@ tomli = ">=1.2.2"
 poetry-plugin = ["poetry (>=1.0,<2.0)"]
 
 [[package]]
-name = "polars-lts-cpu"
-version = "1.7.1"
-description = "Blazingly fast DataFrame library"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "polars_lts_cpu-1.7.1-cp38-abi3-macosx_10_12_x86_64.whl", hash = "sha256:cd91367a3a3eaeb617b2ff3eb2b37f6df07b408d1a89b2404bbe643bc351017c"},
-    {file = "polars_lts_cpu-1.7.1-cp38-abi3-macosx_11_0_arm64.whl", hash = "sha256:c88ca12bb8e6abfb48976bd058eeae3d77f8205224f941498ae071e17b9ffc0d"},
-    {file = "polars_lts_cpu-1.7.1-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:59e9c3ef8036ae68eb80e368d13b968c59fc8b180882d2e5e1d2e8855bfdef04"},
-    {file = "polars_lts_cpu-1.7.1-cp38-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:1ace3d633b22fe2558b486e38b157c2b6bd270ecba3829a57e21569f961f9979"},
-    {file = "polars_lts_cpu-1.7.1-cp38-abi3-win_amd64.whl", hash = "sha256:463537d7bf9b47b004495131a2acf4c4de0d6679b9e61d86ccceeb6a03ff528e"},
-    {file = "polars_lts_cpu-1.7.1.tar.gz", hash = "sha256:27ec71a2c7cf367e2d8d1b1a6c9694600ca3a5e06fe11a18c434e2ba40073999"},
-]
-
-[package.extras]
-adbc = ["adbc-driver-manager[dbapi]", "adbc-driver-sqlite[dbapi]"]
-all = ["polars-lts-cpu[async,cloudpickle,database,deltalake,excel,fsspec,graph,iceberg,numpy,pandas,plot,pyarrow,pydantic,style,timezone]"]
-async = ["gevent"]
-calamine = ["fastexcel (>=0.9)"]
-cloudpickle = ["cloudpickle"]
-connectorx = ["connectorx (>=0.3.2)"]
-database = ["nest-asyncio", "polars-lts-cpu[adbc,connectorx,sqlalchemy]"]
-deltalake = ["deltalake (>=0.15.0)"]
-excel = ["polars-lts-cpu[calamine,openpyxl,xlsx2csv,xlsxwriter]"]
-fsspec = ["fsspec"]
-gpu = ["cudf-polars-cu12"]
-graph = ["matplotlib"]
-iceberg = ["pyiceberg (>=0.5.0)"]
-numpy = ["numpy (>=1.16.0)"]
-openpyxl = ["openpyxl (>=3.0.0)"]
-pandas = ["pandas", "polars-lts-cpu[pyarrow]"]
-plot = ["altair (>=5.4.0)"]
-pyarrow = ["pyarrow (>=7.0.0)"]
-pydantic = ["pydantic"]
-sqlalchemy = ["polars-lts-cpu[pandas]", "sqlalchemy"]
-style = ["great-tables (>=0.8.0)"]
-timezone = ["backports-zoneinfo", "tzdata"]
-xlsx2csv = ["xlsx2csv (>=0.8.0)"]
-xlsxwriter = ["xlsxwriter"]
-
-[[package]]
 name = "posthog"
 version = "3.6.6"
 description = "Integrate PostHog into any python application."
@@ -5503,4 +5462,4 @@ vector-db-based = ["cohere", "langchain", "openai", "tiktoken"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "fb0d0a7b838dbc91fc2eefa88f837e07b9ff65385ca9091d967c926c14e836fb"
+content-hash = "6e5a25dc4116b4e6e574f5170b23ab6eedf07255a139a6aaa9416e147aee716e"
