@@ -494,9 +494,19 @@ class Tickets(SourceZendeskIncrementalExportStream):
         return super().validate_start_time(requested_start_time, value=3)
 
 
-class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
+class TicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
 
+    response_list_name = "ticket_metric"
     cursor_field = "generated_timestamp"
+
+    def path(
+        self,
+        *,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return f"tickets/{stream_slice['ticket_id']}/metrics"
 
     def request_params(
         self,
@@ -541,6 +551,25 @@ class TicketSubstream(HttpSubStream, IncrementalZendeskSupportStream):
             ),
         }
         return HttpStatusErrorHandler(logger=self.logger, max_retries=10, error_mapping=error_mapping)
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        """try to select relevant data only"""
+
+        try:
+            data = response.json().get(self.response_list_name or self.name) or {}
+        except requests.exceptions.JSONDecodeError:
+            data = {}
+
+        # no data in case of http errors
+        if data:
+            data[self.cursor_field] = (stream_slice or {}).get(self.cursor_field)
+            yield data
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -605,41 +634,6 @@ class TicketFields(SourceZendeskSupportStream):
 
 class TicketForms(TimeBasedPaginationZendeskSupportStream):
     """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
-
-
-class TicketMetrics(TicketSubstream):
-    """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/#show-ticket-metrics"""
-
-    response_list_name = "ticket_metric"
-    cursor_field = "generated_timestamp"
-
-    def path(
-        self,
-        *,
-        stream_state: Optional[Mapping[str, Any]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> str:
-        return f"tickets/{stream_slice['ticket_id']}/metrics"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        **kwargs,
-    ) -> Iterable[Mapping]:
-        """try to select relevant data only"""
-
-        try:
-            data = response.json().get(self.response_list_name or self.name) or {}
-        except requests.exceptions.JSONDecodeError:
-            data = {}
-
-        # no data in case of http errors
-        if data:
-            data[self.cursor_field] = (stream_slice or {}).get(self.cursor_field)
-            yield data
 
 
 class TicketSkips(CursorPaginationZendeskSupportStream):
