@@ -9,12 +9,10 @@ import docker
 import google
 import pytest
 import source_gcs
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from google.auth.credentials import AnonymousCredentials
 from google.cloud import storage
-from source_gcs import SourceGCS
 
-from .utils import get_docker_ip, load_config
+from .utils import get_docker_ip
 
 LOCAL_GCP_PORT = 4443
 
@@ -80,13 +78,3 @@ def connector_setup_fixture(docker_client) -> None:
     container.kill()
     container.remove()
 
-
-@pytest.fixture(name="config_csv", scope="function")
-def config_csv_fixture() -> Mapping[str, Any]:
-    config = load_config("config_integration_csv.json")
-    yield config
-
-
-@pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
-    return SourceGCS.read_catalog(f"{os.path.dirname(__file__)}/configured_catalogs/configured_catalog_csv.json")
