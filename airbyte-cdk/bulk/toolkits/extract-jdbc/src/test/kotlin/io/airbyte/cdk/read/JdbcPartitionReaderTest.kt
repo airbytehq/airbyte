@@ -68,7 +68,7 @@ class JdbcPartitionReaderTest {
         // Acquire resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -76,7 +76,7 @@ class JdbcPartitionReaderTest {
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
         // Run
         runBlocking { reader.run() }
@@ -96,12 +96,12 @@ class JdbcPartitionReaderTest {
         // Release resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
         reader.releaseResources()
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
     }
 
@@ -147,7 +147,7 @@ class JdbcPartitionReaderTest {
         // Acquire resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
         Assertions.assertEquals(
             PartitionReader.TryAcquireResourcesStatus.READY_TO_RUN,
@@ -155,7 +155,7 @@ class JdbcPartitionReaderTest {
         )
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
         // Run and simulate timing out
         runBlocking {
@@ -184,12 +184,12 @@ class JdbcPartitionReaderTest {
         // Release resources
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency - 1,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
         reader.releaseResources()
         Assertions.assertEquals(
             sharedState.configuration.maxConcurrency,
-            factory.sharedState.semaphore.availablePermits,
+            factory.sharedState.concurrencyResource.available,
         )
     }
 }

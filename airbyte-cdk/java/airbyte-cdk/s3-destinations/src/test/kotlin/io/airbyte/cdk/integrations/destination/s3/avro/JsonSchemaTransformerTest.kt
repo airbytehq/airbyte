@@ -179,4 +179,26 @@ class JsonSchemaTransformerTest {
             mapped
         )
     }
+
+    @Test
+    fun testUnionHandlesNonstandardProperties() {
+        val inputSchema =
+            Jsons.deserialize(
+                """
+                    {
+                      "type": [
+                        "string",
+                        "integer"
+                      ],
+                      "description": "foo",
+                      "some_random_other_property": "lol, lmao, isn't jsonschema great"
+                    }
+                """.trimIndent()
+            ) as ObjectNode
+        val mapped = JsonSchemaAvroPreprocessor().mapSchema(inputSchema)
+        assertEquals(
+            Jsons.deserialize("""{"oneOf":[{"type":"string"},{"type":"integer"}]}"""),
+            mapped
+        )
+    }
 }
