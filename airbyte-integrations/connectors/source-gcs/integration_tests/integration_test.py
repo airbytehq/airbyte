@@ -19,7 +19,7 @@ def get_configured_catalog(file_format: str) -> ConfiguredAirbyteCatalog:
         ("csv", 2),
         ("jsonl", 25),
         ("parquet", 366),
-        # "config_avro",
+        ("avro", 5),
     ],
 )
 def test_read_files(file_format: str, expected_num_of_records: int):
