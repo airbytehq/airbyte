@@ -1,19 +1,17 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
-import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -27,84 +25,27 @@ class MysqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
 
-    override fun fields(
-        streamName: String,
-        streamNamespace: String?,
-    ): List<Field> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+    override fun fields(streamID: StreamIdentifier): List<Field> {
+        val table: TableName = findTableName(streamID) ?: return listOf()
         if (table !in base.memoizedColumnMetadata) return listOf()
-        if (base.config.global) {
-            // more discover!
-            /**
-             *           .map(MySqlSource::overrideSyncModes)
-             *           .map(MySqlSource::removeIncrementalWithoutPk)
-             *           .map(MySqlSource::setIncrementalToSourceDefined)
-             *           .map(MySqlSource::setDefaultCursorFieldForCdc)
-             *           .map(MySqlSource::addCdcMetadataColumns)
-             */
-
-        }
-        val memoizedColumnMetadata : List<Field> = base.memoizedColumnMetadata[table]!!.map {
+        return base.memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
         }
-        if (base.config.global) {
-          addCdcMetadataColumns()
-        }
-        return memoizedColumnMetadata
-    }
-
-
-    // Note: in place mutation.
-    private fun addCdcMetadataColumns(stream: AirbyteStream): AirbyteStream {
-        val cdcLogFile: Field = Field(CDC_LOG_FILE, FieldType.STRING)
-        val jsonSchema = stream.jsonSchema as ObjectNode
-        val properties = jsonSchema["properties"] as ObjectNode
-
-        val numberType: JsonNode =
-            io.airbyte.commons.json.Jsons.jsonNode<com.google.common.collect.ImmutableMap<String, String>>(
-                com.google.common.collect.ImmutableMap.of<String, String>("type", "number"),
-            )
-        val airbyteIntegerType: JsonNode =
-            io.airbyte.commons.json.Jsons.jsonNode<com.google.common.collect.ImmutableMap<String, String>>(
-                com.google.common.collect.ImmutableMap.of<String, String>(
-                    "type",
-                    "number",
-                    "airbyte_type",
-                    "integer",
-                ),
-            )
-        val stringType: JsonNode =
-            io.airbyte.commons.json.Jsons.jsonNode<com.google.common.collect.ImmutableMap<String, String>>(
-                com.google.common.collect.ImmutableMap.of<String, String>("type", "string"),
-            )
-        properties.set<JsonNode>(MySqlSource.CDC_LOG_FILE, stringType)
-        properties.set<JsonNode>(MySqlSource.CDC_LOG_POS, numberType)
-        properties.set<JsonNode>(
-            io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_UPDATED_AT,
-            stringType,
-        )
-        properties.set<JsonNode>(
-            io.airbyte.cdk.integrations.debezium.internals.DebeziumEventConverter.CDC_DELETED_AT,
-            stringType,
-        )
-        properties.set<JsonNode>(MySqlSource.CDC_DEFAULT_CURSOR, airbyteIntegerType)
-
-        return stream
     }
 
     override fun streamNamespaces(): List<String> = base.config.namespaces.toList()
 
-    override fun streamNames(streamNamespace: String?): List<String> =
+    override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
         base.memoizedTableNames
             .filter { (it.schema ?: it.catalog) == streamNamespace }
-            .map { it.name }
+            .map { StreamDescriptor().withName(it.name).withNamespace(streamNamespace) }
+            .map(StreamIdentifier::from)
 
     fun findTableName(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): TableName? =
         base.memoizedTableNames.find {
-            it.name == streamName && (it.schema ?: it.catalog) == streamNamespace
+            it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
         }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
@@ -131,7 +72,13 @@ class MysqlSourceMetadataQuerier(
             }
             log.info { "Discovered all primary keys in ${schemas.size} Mysql schema(s)." }
             return@lazy results
-                .groupBy { findTableName(it.tableName, "public") }
+                .groupBy {
+                    findTableName(
+                        StreamIdentifier.from(
+                            StreamDescriptor().withName(it.tableName).withNamespace("public")
+                        )
+                    )
+                }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
                     val pkRows: List<AllPrimaryKeysRow> =
@@ -157,10 +104,9 @@ class MysqlSourceMetadataQuerier(
     }
 
     override fun primaryKey(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 

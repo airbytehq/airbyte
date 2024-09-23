@@ -1,0 +1,2673 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: |-
+  Chameleon
+  Website: https://app.chameleon.io/
+  API docs: https://developers.chameleon.io/#/apis/overview
+  API page: https://app.chameleon.io/settings/tokens
+
+check:
+  type: CheckStream
+  stream_names:
+    - helpbars
+
+definitions:
+  streams:
+    helpbars:
+      type: DeclarativeStream
+      name: helpbars
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/searches
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - searches
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/helpbars"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/segments
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - segments
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
+    urls:
+      type: DeclarativeStream
+      name: urls
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/urls
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - urls
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/urls"
+    url_groups:
+      type: DeclarativeStream
+      name: url_groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/url_groups
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - url_groups
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/url_groups"
+    changes:
+      type: DeclarativeStream
+      name: changes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/changes
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - changes
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/changes"
+    launchers:
+      type: DeclarativeStream
+      name: launchers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/launchers
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - launchers
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/launchers"
+    tooltips:
+      type: DeclarativeStream
+      name: tooltips
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/tooltips
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tooltips
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tooltips"
+    tours:
+      type: DeclarativeStream
+      name: tours
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/tours
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tours
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tours"
+    surveys:
+      type: DeclarativeStream
+      name: surveys
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: edit/surveys
+          http_method: GET
+          request_parameters:
+            limit: '{{ config["limit"] }}'
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - surveys
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/surveys"
+    survey_responses:
+      type: DeclarativeStream
+      name: survey_responses
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: analyze/responses
+          http_method: GET
+          request_parameters:
+            id: "{{ stream_partition.suvey_id }}"
+            limit: '{{ config["limit"] }}'
+            expand.company: all
+            expand.profile: all
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - responses
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: suvey_id
+              stream:
+                $ref: "#/definitions/streams/surveys"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updated_at
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["end_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/survey_responses"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.chameleon.io/v3/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: '{{ config["api_key"] }}'
+      inject_into:
+        type: RequestOption
+        field_name: X-Account-Secret
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/helpbars"
+  - $ref: "#/definitions/streams/segments"
+  - $ref: "#/definitions/streams/urls"
+  - $ref: "#/definitions/streams/url_groups"
+  - $ref: "#/definitions/streams/changes"
+  - $ref: "#/definitions/streams/launchers"
+  - $ref: "#/definitions/streams/tooltips"
+  - $ref: "#/definitions/streams/tours"
+  - $ref: "#/definitions/streams/surveys"
+  - $ref: "#/definitions/streams/survey_responses"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+      - end_date
+    properties:
+      api_key:
+        type: string
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      limit:
+        type: string
+        description: Max records per page limit
+        order: 2
+        title: Limit
+        default: "50"
+      filter:
+        type: string
+        description: Filter for using in the `segments_experiences` stream
+        enum:
+          - tour
+          - survey
+          - launcher
+        order: 3
+        title: Filter
+        default: tour
+      end_date:
+        type: string
+        order: 4
+        title: End date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    helpbars: true
+    segments: true
+    urls: true
+    url_groups: true
+    changes: true
+    launchers: true
+    tooltips: true
+    tours: true
+    surveys: true
+    survey_responses: true
+  testedStreams:
+    helpbars:
+      hasRecords: true
+      streamHash: b9ea73495fde3f0f73571085b607de666db18fff
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    segments:
+      hasRecords: true
+      streamHash: c2ce4f31f6b73f42468d5601733d8951055e433a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    urls:
+      hasRecords: true
+      streamHash: b0d903a033ecaaf03f7d894f5c9c72581aad5bf1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    url_groups:
+      hasRecords: true
+      streamHash: a37bb5fafd5d8718e5d9796cd698067c1761aa18
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    changes:
+      hasRecords: true
+      streamHash: 77c1c0a055652a17fad8d4c9fadeddd2b353fc64
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    launchers:
+      hasRecords: true
+      streamHash: 7eec7fcbf4b47cbf3392037be4b68be9c4f41f15
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tooltips:
+      hasRecords: true
+      streamHash: 017f9ad94fe66430a97ab66c0b79f06e8278f972
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tours:
+      hasRecords: true
+      streamHash: 93258663f88cd04bf6dbf7f95e98b9817566efef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    surveys:
+      hasRecords: true
+      streamHash: 7afb0ea9e227b6d8778458032e230a21e577b0e5
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    survey_responses:
+      streamHash: efc5062dc7aa55f23f7db5617f047c89291feb91
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: false
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.chameleon.io/#/
+
+schemas:
+  helpbars:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      components:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      inline_position:
+        type:
+          - string
+          - "null"
+      key_meta:
+        type:
+          - boolean
+          - "null"
+      key_uid:
+        type:
+          - string
+          - "null"
+      oids:
+        type:
+          - object
+          - "null"
+        properties:
+          search_groups:
+            type:
+              - object
+              - "null"
+            properties:
+              actions:
+                type:
+                  - string
+                  - "null"
+              default:
+                type:
+                  - string
+                  - "null"
+              experiences:
+                type:
+                  - string
+                  - "null"
+              pinned:
+                type:
+                  - string
+                  - "null"
+      placeholder:
+        type:
+          - string
+          - "null"
+      position_element:
+        type:
+          - object
+          - "null"
+      style_color_background:
+        type:
+          - string
+          - "null"
+      style_color_text:
+        type:
+          - string
+          - "null"
+      style_trigger_offset_x:
+        type:
+          - string
+          - "null"
+      style_trigger_offset_y:
+        type:
+          - string
+          - "null"
+      style_widget_background_color:
+        type:
+          - string
+          - "null"
+      style_widget_border_color:
+        type:
+          - string
+          - "null"
+      style_widget_border_radius:
+        type:
+          - string
+          - "null"
+      style_widget_icon_color:
+        type:
+          - string
+          - "null"
+      style_widget_offset_x:
+        type:
+          - string
+          - "null"
+      style_widget_offset_y:
+        type:
+          - string
+          - "null"
+      style_widget_text_color:
+        type:
+          - string
+          - "null"
+      title_recent:
+        type:
+          - string
+          - "null"
+      trigger_element:
+        type:
+          - object
+          - "null"
+      trigger_position:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+      url_group_ids:
+        type:
+          - array
+          - "null"
+      widget_attachment_size:
+        type:
+          - string
+          - "null"
+      widget_css_syntax_errors:
+        type:
+          - array
+          - "null"
+      widget_icon_uid:
+        type:
+          - string
+          - "null"
+      widget_position:
+        type:
+          - string
+          - "null"
+      widget_screen_position:
+        type:
+          - string
+          - "null"
+      widget_text:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - updated_at
+  segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created_at:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            op:
+              type:
+                - string
+                - "null"
+            prop:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      name:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  urls:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      domain:
+        type:
+          - string
+          - "null"
+      enabled:
+        type:
+          - string
+          - "null"
+      host:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  url_groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      short_name:
+        type:
+          - string
+          - "null"
+      style_short_name_color:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  changes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      experience_id:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      model_id:
+        type:
+          - string
+          - "null"
+      model_type:
+        type:
+          - string
+          - "null"
+      object:
+        type:
+          - object
+          - "null"
+        properties:
+          account_id:
+            type:
+              - string
+              - "null"
+          autoscroll:
+            type:
+              - boolean
+              - "null"
+          background_type:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - string
+              - "null"
+          body_alignment:
+            type:
+              - string
+              - "null"
+          buttons:
+            type:
+              - object
+              - "null"
+            properties:
+              66e8a3799660ed0020b9f4b7:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  action_element:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      button_id:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      kind:
+                        type:
+                          - string
+                          - "null"
+                      step_id:
+                        type:
+                          - string
+                          - "null"
+                      use:
+                        type:
+                          - array
+                          - "null"
+                  additional_actions:
+                    type:
+                      - array
+                      - "null"
+                  copied_button_id:
+                    type:
+                      - string
+                      - "null"
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  position:
+                    type:
+                      - string
+                      - "null"
+                  step_id:
+                    type:
+                      - string
+                      - "null"
+                  style_button_roundness:
+                    type:
+                      - string
+                      - "null"
+                  style_color_border:
+                    type:
+                      - string
+                      - "null"
+                  style_color_fill:
+                    type:
+                      - string
+                      - "null"
+                  style_color_text:
+                    type:
+                      - string
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+              66e8a3799660ed0020b9f4bb:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  action_element:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      button_id:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+                      kind:
+                        type:
+                          - string
+                          - "null"
+                      step_id:
+                        type:
+                          - string
+                          - "null"
+                      use:
+                        type:
+                          - array
+                          - "null"
+                  additional_actions:
+                    type:
+                      - array
+                      - "null"
+                  copied_button_id:
+                    type:
+                      - string
+                      - "null"
+                  enabled:
+                    type:
+                      - boolean
+                      - "null"
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  order:
+                    type:
+                      - number
+                      - "null"
+                  position:
+                    type:
+                      - string
+                      - "null"
+                  step_id:
+                    type:
+                      - string
+                      - "null"
+                  style_button_roundness:
+                    type:
+                      - string
+                      - "null"
+                  style_color_border:
+                    type:
+                      - string
+                      - "null"
+                  style_color_fill:
+                    type:
+                      - string
+                      - "null"
+                  style_color_text:
+                    type:
+                      - string
+                      - "null"
+                  text:
+                    type:
+                      - string
+                      - "null"
+          campaign_positions:
+            type:
+              - object
+              - "null"
+          capture_id:
+            type:
+              - string
+              - "null"
+          checklist_progressbar:
+            type:
+              - boolean
+              - "null"
+          completed_count:
+            type:
+              - number
+              - "null"
+          completed_unpublish_count:
+            type:
+              - number
+              - "null"
+          components:
+            type:
+              - array
+              - "null"
+            items:
+              anyOf:
+                - type: string
+                - type: array
+                  items:
+                    type: string
+          copied_list_id:
+            type:
+              - string
+              - "null"
+          copied_step_id:
+            type:
+              - string
+              - "null"
+          copied_template_id:
+            type:
+              - string
+              - "null"
+          count_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          cover_full_width:
+            type:
+              - boolean
+              - "null"
+          cover_height:
+            type:
+              - string
+              - "null"
+          cover_position:
+            type:
+              - string
+              - "null"
+          cover_type:
+            type:
+              - string
+              - "null"
+          created_user_id:
+            type:
+              - string
+              - "null"
+          css_syntax_errors:
+            type:
+              - array
+              - "null"
+          cta:
+            type:
+              - string
+              - "null"
+          cta_op:
+            type:
+              - string
+              - "null"
+          cta_position:
+            type:
+              - string
+              - "null"
+          cta_previous:
+            type:
+              - string
+              - "null"
+          cta_previous_position:
+            type:
+              - string
+              - "null"
+          dismiss_behavior:
+            type:
+              - string
+              - "null"
+          dismiss_later_amount:
+            type:
+              - number
+              - "null"
+          dismiss_later_behavior:
+            type:
+              - string
+              - "null"
+          dismiss_later_limit:
+            type:
+              - number
+              - "null"
+          dismiss_text:
+            type:
+              - string
+              - "null"
+          dismiss_type:
+            type:
+              - string
+              - "null"
+          display_animation:
+            type:
+              - string
+              - "null"
+          displayed_count:
+            type:
+              - number
+              - "null"
+          dropdown_items:
+            type:
+              - array
+              - "null"
+          dropdown_items2:
+            type:
+              - array
+              - "null"
+          element_match_operator:
+            type:
+              - string
+              - "null"
+          element_match_time:
+            type:
+              - number
+              - "null"
+          element_match_time_additional:
+            type:
+              - number
+              - "null"
+          embed_height:
+            type:
+              - number
+              - "null"
+          embed_width:
+            type:
+              - number
+              - "null"
+          empty_capture_id:
+            type:
+              - string
+              - "null"
+          empty_cover_full_width:
+            type:
+              - boolean
+              - "null"
+          empty_css_syntax_errors:
+            type:
+              - array
+              - "null"
+          empty_embed_height:
+            type:
+              - number
+              - "null"
+          empty_embed_width:
+            type:
+              - number
+              - "null"
+          empty_media_position:
+            type:
+              - string
+              - "null"
+          empty_state:
+            type:
+              - boolean
+              - "null"
+          engagement_options:
+            type:
+              - object
+              - "null"
+          excluded_segment_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+          exit_any_click:
+            type:
+              - boolean
+              - "null"
+          exit_any_click_behavior:
+            type:
+              - string
+              - "null"
+          exit_element:
+            type:
+              - object
+              - "null"
+          exited_count:
+            type:
+              - number
+              - "null"
+          experiment_range:
+            type:
+              - string
+              - "null"
+          faded_description:
+            type:
+              - boolean
+              - "null"
+          feedback_zero:
+            type:
+              - object
+              - "null"
+          first_published_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          floating_dismiss:
+            type:
+              - boolean
+              - "null"
+          follow_up_delay:
+            type:
+              - number
+              - "null"
+          has_title:
+            type:
+              - boolean
+              - "null"
+          hero_cta:
+            type:
+              - string
+              - "null"
+          highlight_click_through:
+            type:
+              - boolean
+              - "null"
+          highlight_type:
+            type:
+              - string
+              - "null"
+          icon_size:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          iframe_embed_height:
+            type:
+              - number
+              - "null"
+          inline_position:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          input_type:
+            type:
+              - string
+              - "null"
+          input_type2:
+            type:
+              - string
+              - "null"
+          item_segment_ids:
+            type:
+              - array
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - string
+                    - "null"
+                copied_list_item_id:
+                  type:
+                    - string
+                    - "null"
+                created_user_id:
+                  type:
+                    - string
+                    - "null"
+                has_description:
+                  type:
+                    - boolean
+                    - "null"
+                hide:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                kind:
+                  type:
+                    - string
+                    - "null"
+                list_id:
+                  type:
+                    - string
+                    - "null"
+                new_tab:
+                  type:
+                    - boolean
+                    - "null"
+                position:
+                  type:
+                    - number
+                    - "null"
+                redirect:
+                  type:
+                    - boolean
+                    - "null"
+                redirect_url:
+                  type:
+                    - string
+                    - "null"
+                style_color_divider:
+                  type:
+                    - string
+                    - "null"
+                style_divider_size:
+                  type:
+                    - string
+                    - "null"
+                style_font_size:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                user_id:
+                  type:
+                    - string
+                    - "null"
+          key_meta:
+            type:
+              - boolean
+              - "null"
+          key_uid:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          label_themes:
+            type:
+              - array
+              - "null"
+          last_count:
+            type:
+              - number
+              - "null"
+          last_count_elapsed:
+            type:
+              - number
+              - "null"
+          last_dropdown_items:
+            type:
+              - array
+              - "null"
+          last_edited_css_at:
+            type:
+              - string
+              - "null"
+          last_edited_css_user_id:
+            type:
+              - string
+              - "null"
+          last_reviewer_ids:
+            type:
+              - array
+              - "null"
+          list_placement:
+            type:
+              - string
+              - "null"
+          list_type:
+            type:
+              - string
+              - "null"
+          margin_bottom:
+            type:
+              - number
+              - "null"
+          margin_left:
+            type:
+              - number
+              - "null"
+          margin_right:
+            type:
+              - number
+              - "null"
+          margin_top:
+            type:
+              - number
+              - "null"
+          media_position:
+            type:
+              - string
+              - "null"
+          modal_width:
+            type:
+              - string
+              - "null"
+          modal_width_exact:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          opts:
+            type:
+              - object
+              - "null"
+          persist_hotspot_trigger:
+            type:
+              - boolean
+              - "null"
+          placeholder:
+            type:
+              - string
+              - "null"
+          pointer_anchor:
+            type:
+              - string
+              - "null"
+          pointer_highlight:
+            type:
+              - boolean
+              - "null"
+          position:
+            type:
+              - number
+              - "null"
+          position_element:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              kind:
+                type:
+                  - string
+                  - "null"
+              list_id:
+                type:
+                  - string
+                  - "null"
+              use:
+                type:
+                  - array
+                  - "null"
+          position_type:
+            type:
+              - string
+              - "null"
+          previous_redirect_disabled:
+            type:
+              - boolean
+              - "null"
+          progress_bar_position:
+            type:
+              - string
+              - "null"
+          progress_position:
+            type:
+              - string
+              - "null"
+          progress_type:
+            type:
+              - string
+              - "null"
+          publish_note:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          published_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          published_at_count:
+            anyOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+          published_completed_unpublish_count:
+            type:
+              - number
+              - "null"
+          published_run_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          published_run_at_count:
+            anyOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
+          published_segment_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+          published_updated_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          published_url_group_ids:
+            type:
+              - array
+              - "null"
+          published_user_id:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          quantifier_op:
+            type:
+              - string
+              - "null"
+          quantifier_urls:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                match_type:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          recurrence_frequency:
+            type:
+              - number
+              - "null"
+          recurrence_kind:
+            type:
+              - string
+              - "null"
+          recurrence_unit:
+            type:
+              - string
+              - "null"
+          screen_position:
+            type:
+              - string
+              - "null"
+          search:
+            type:
+              - boolean
+              - "null"
+          secondary_trigger:
+            type:
+              - string
+              - "null"
+          secondary_trigger_position:
+            type:
+              - string
+              - "null"
+          segment_at:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          segment_ids:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+          segments_op:
+            type:
+              - string
+              - "null"
+          show_timed_dismiss:
+            type:
+              - boolean
+              - "null"
+          skip_trigger:
+            type:
+              - boolean
+              - "null"
+          snap_position:
+            type:
+              - string
+              - "null"
+          started_count:
+            type:
+              - number
+              - "null"
+          step_additional_trigger:
+            type:
+              - string
+              - "null"
+          step_trigger:
+            type:
+              - string
+              - "null"
+          steps_counts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - number
+                - "null"
+          style_button_corner_radius:
+            type:
+              - string
+              - "null"
+          style_canvas_width_setting:
+            type:
+              - string
+              - "null"
+          style_checklist_progressbar_position:
+            type:
+              - string
+              - "null"
+          style_color_background:
+            type:
+              - string
+              - "null"
+          style_color_button_border:
+            type:
+              - string
+              - "null"
+          style_color_button_highlight:
+            type:
+              - string
+              - "null"
+          style_color_button_text:
+            type:
+              - string
+              - "null"
+          style_color_checkmark:
+            type:
+              - string
+              - "null"
+          style_color_dismiss:
+            type:
+              - string
+              - "null"
+          style_color_gradient:
+            type:
+              - string
+              - "null"
+          style_color_gradient2:
+            type:
+              - string
+              - "null"
+          style_color_icon:
+            type:
+              - string
+              - "null"
+          style_color_icon_background:
+            type:
+              - string
+              - "null"
+          style_color_link:
+            type:
+              - string
+              - "null"
+          style_color_name:
+            type:
+              - string
+              - "null"
+          style_color_secondary_button_border:
+            type:
+              - string
+              - "null"
+          style_color_secondary_button_highlight:
+            type:
+              - string
+              - "null"
+          style_color_secondary_button_text:
+            type:
+              - string
+              - "null"
+          style_color_text:
+            type:
+              - string
+              - "null"
+          style_corner_radius:
+            type:
+              - string
+              - "null"
+          style_cover_corner_radius:
+            type:
+              - string
+              - "null"
+          style_custom_css:
+            type:
+              - string
+              - "null"
+          style_empty_cover_corner_radius:
+            type:
+              - string
+              - "null"
+          style_font:
+            type:
+              - string
+              - "null"
+          style_font_size:
+            type:
+              - string
+              - "null"
+          style_item_color_highlight:
+            type:
+              - string
+              - "null"
+          style_position_dismiss:
+            type:
+              - string
+              - "null"
+          style_spacing_canvas:
+            type:
+              - string
+              - "null"
+          style_title_background_color:
+            type:
+              - string
+              - "null"
+          style_title_font_size:
+            type:
+              - string
+              - "null"
+          style_title_height:
+            type:
+              - string
+              - "null"
+          style_trigger_color_highlight:
+            type:
+              - string
+              - "null"
+          style_trigger_color_highlight2:
+            type:
+              - string
+              - "null"
+          style_trigger_color_highlight3:
+            type:
+              - string
+              - "null"
+          style_trigger_offset_x:
+            anyOf:
+              - type: string
+              - type: array
+                items:
+                  type:
+                    - "null"
+                    - string
+          style_trigger_offset_y:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_welcome_cover_corner_radius:
+            type:
+              - string
+              - "null"
+          style_welcome_cta_border_color:
+            type:
+              - string
+              - "null"
+          style_welcome_cta_fill_color:
+            type:
+              - string
+              - "null"
+          style_widget_background_color:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_widget_border_color:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_widget_border_radius:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_widget_icon_color:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_widget_offset_x:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_widget_offset_y:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          style_widget_text_color:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          survey_alignment:
+            type:
+              - string
+              - "null"
+          tag_ids:
+            type:
+              - array
+              - "null"
+          template_id:
+            type:
+              - string
+              - "null"
+          time_on_page_amount:
+            type:
+              - number
+              - "null"
+          time_on_page_behavior:
+            type:
+              - string
+              - "null"
+          timed_dismiss:
+            type:
+              - boolean
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          title_recent:
+            type:
+              - string
+              - "null"
+          to:
+            type:
+              - string
+              - "null"
+          tooltip_id:
+            type:
+              - string
+              - "null"
+          tour_link_first_step:
+            type:
+              - boolean
+              - "null"
+          translations:
+            type:
+              - object
+              - "null"
+          trigger:
+            type:
+              - string
+              - "null"
+          trigger_additional_element:
+            type:
+              - object
+              - "null"
+          trigger_element:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - string
+                  - "null"
+              kind:
+                type:
+                  - string
+                  - "null"
+              list_id:
+                type:
+                  - string
+                  - "null"
+              use:
+                type:
+                  - array
+                  - "null"
+          trigger_placement:
+            type:
+              - string
+              - "null"
+          trigger_position:
+            type:
+              - string
+              - "null"
+          trigger_secondary_element:
+            type:
+              - object
+              - "null"
+            properties:
+              attr_class:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              kind:
+                type:
+                  - string
+                  - "null"
+              path:
+                type:
+                  - string
+                  - "null"
+              selector:
+                type:
+                  - string
+                  - "null"
+              step_id:
+                type:
+                  - string
+                  - "null"
+              tag:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              use:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          trigger_secondary_type:
+            type:
+              - string
+              - "null"
+          trigger_text:
+            type:
+              - string
+              - "null"
+          trigger_type:
+            type:
+              - string
+              - "null"
+          updated_any_at:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          url_group_ids:
+            type:
+              - array
+              - "null"
+          url_match_all:
+            type:
+              - boolean
+              - "null"
+          url_match_type:
+            type:
+              - string
+              - "null"
+          user_id:
+            type:
+              - string
+              - "null"
+          welcome_capture_id:
+            type:
+              - string
+              - "null"
+          welcome_cover_full_width:
+            type:
+              - boolean
+              - "null"
+          welcome_css_syntax_errors:
+            type:
+              - array
+              - "null"
+          welcome_cta_position:
+            type:
+              - string
+              - "null"
+          welcome_embed_height:
+            type:
+              - number
+              - "null"
+          welcome_embed_width:
+            type:
+              - number
+              - "null"
+          welcome_media_position:
+            type:
+              - string
+              - "null"
+          welcome_state:
+            type:
+              - boolean
+              - "null"
+          widget_attachment_size:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          widget_css_syntax_errors:
+            type:
+              - array
+              - "null"
+          widget_icon_uid:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          widget_position:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          widget_screen_position:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          widget_text:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          width_with_units:
+            type:
+              - string
+              - "null"
+      options:
+        type:
+          - object
+          - "null"
+      path:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          created_at:
+            type:
+              - string
+              - "null"
+          email:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+    required:
+      - id
+  launchers:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      excluded_segment_ids:
+        type:
+          - array
+          - "null"
+      icon_size:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            hide:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+      list_type:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position_type:
+        type:
+          - string
+          - "null"
+      quantifier_urls:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            match_type:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      screen_position:
+        type:
+          - string
+          - "null"
+      segment_ids:
+        type:
+          - array
+          - "null"
+      segments_op:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          displayed_count:
+            type:
+              - number
+              - "null"
+          started_count:
+            type:
+              - number
+              - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      trigger:
+        type:
+          - string
+          - "null"
+      trigger_text:
+        type:
+          - string
+          - "null"
+      trigger_type:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  tooltips:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      published_at:
+        type:
+          - string
+          - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  tours:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      excluded_segment_ids:
+        type:
+          - array
+          - "null"
+      experiment_range:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      segment_ids:
+        type:
+          - array
+          - "null"
+      segments_op:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          completed_count:
+            type:
+              - number
+              - "null"
+          exited_count:
+            type:
+              - number
+              - "null"
+          started_count:
+            type:
+              - number
+              - "null"
+      style:
+        type:
+          - string
+          - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  surveys:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - string
+          - "null"
+      excluded_segment_ids:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      last_dropdown_items:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      published_at:
+        type:
+          - string
+          - "null"
+      segment_id:
+        type:
+          - string
+          - "null"
+      segment_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      segments_op:
+        type:
+          - string
+          - "null"
+      stats:
+        type:
+          - object
+          - "null"
+        properties:
+          completed_count:
+            type:
+              - number
+              - "null"
+          exited_count:
+            type:
+              - number
+              - "null"
+          started_count:
+            type:
+              - number
+              - "null"
+      tag_ids:
+        type:
+          - array
+          - "null"
+      updated_at:
+        type: string
+    required:
+      - id
+      - updated_at
+  survey_responses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cursor:
+        type:
+          - object
+          - "null"
+        properties:
+          limit:
+            type:
+              - number
+              - "null"
+      responses:
+        type:
+          - array
+          - "null"
