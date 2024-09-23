@@ -1,10 +1,11 @@
 # VWO
-This directory contains the manifest-only connector for `source-vwo`.
+This directory contains the manifest-only connector for [`source-vwo`](https://app.vwo.com/).
 
-Website: https://app.vwo.com/
-API Docs: https://developers.vwo.com/reference/introduction-1
-Auth doc: https://developers.vwo.com/reference/authentication-for-personal-use-of-api-1
-Auth page: https://app.vwo.com/#/developers/tokens
+## Documentation reference:
+Visit `https://developers.vwo.com/reference/introduction-1` for API documentation
+
+## Authentication setup
+`VWO` uses API token authentication, Visit `https://app.vwo.com/#/developers/tokens` for getting your api token. Refer `https://developers.vwo.com/reference/authentication-for-personal-use-of-api-1`.
 
 ## Usage
 There are multiple ways to use this connector:

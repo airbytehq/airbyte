@@ -1,8 +1,11 @@
 # VWO
-Website: https://app.vwo.com/
-API Docs: https://developers.vwo.com/reference/introduction-1
-Auth doc: https://developers.vwo.com/reference/authentication-for-personal-use-of-api-1
-Auth page: https://app.vwo.com/#/developers/tokens
+This directory contains the manifest-only connector for [`source-vwo`](https://app.vwo.com/).
+
+## Documentation reference:
+Visit `https://developers.vwo.com/reference/introduction-1` for API documentation
+
+## Authentication setup
+`VWO` uses API token authentication, Visit `https://app.vwo.com/#/developers/tokens` for getting your api token. Refer `https://developers.vwo.com/reference/authentication-for-personal-use-of-api-1`.
 
 ## Configuration
 
@@ -29,8 +32,8 @@ Auth page: https://app.vwo.com/#/developers/tokens
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-23 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-23 |[45851](https://github.com/airbytehq/airbyte/pull/45851)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
