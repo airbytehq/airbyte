@@ -18,7 +18,7 @@ def get_configured_catalog(file_format: str) -> ConfiguredAirbyteCatalog:
     [
         ("csv", 2),
         ("jsonl", 25),
-        # "config_parquet",
+        ("parquet", 366),
         # "config_avro",
     ],
 )
