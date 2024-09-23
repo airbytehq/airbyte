@@ -79,6 +79,9 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_config_limit_for_inference,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_stream_csv_and_jsonl_scenario,
+    multi_stream_csv_with_one_invalid_file_scenario,
+    multi_stream_csv_with_two_invalid_streams_scenario,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
     schemaless_csv_scenario,
@@ -163,6 +166,7 @@ from unit_tests.sources.file_based.test_scenarios import verify_check, verify_di
 
 discover_failure_scenarios = [
     empty_schema_inference_scenario,
+    multi_stream_csv_with_two_invalid_streams_scenario
 ]
 
 discover_success_scenarios = [
@@ -277,6 +281,8 @@ discover_success_scenarios = [
     single_csv_no_input_state_scenario_concurrent,
     earlier_csv_scenario,
     csv_no_files_scenario,
+    multi_stream_csv_and_jsonl_scenario,
+    multi_stream_csv_with_one_invalid_file_scenario,
 ]
 
 discover_scenarios = discover_failure_scenarios + discover_success_scenarios

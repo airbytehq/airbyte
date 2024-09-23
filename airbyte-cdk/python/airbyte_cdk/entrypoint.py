@@ -15,6 +15,7 @@ from functools import wraps
 from typing import Any, DefaultDict, Iterable, List, Mapping, Optional
 from urllib.parse import urlparse
 
+import orjson
 import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -35,7 +36,6 @@ from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from orjson import orjson
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
@@ -157,8 +157,17 @@ class AirbyteEntrypoint(object):
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
-        catalog = self.source.discover(self.logger, config)
-
+        try:
+            catalog = self.source.discover(self.logger, config)
+        except AirbyteTracedException as traced_exc:
+            raise traced_exc
+        except Exception as exc:
+            raise AirbyteTracedException(
+                internal_message="An error occurred while discovering the source schema. Please check the logged errors for more information.",
+                failure_type=FailureType.system_error,
+                message=f"An error occurred while discovering the source schema: {exc}",
+                exception=exc,
+            )
         yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 

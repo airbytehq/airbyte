@@ -1,0 +1,39 @@
+#
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+#
+
+import logging
+from unittest.mock import MagicMock
+
+import pytest
+from airbyte_cdk.sources.file_based.error_handlers.file_based_discover_error_handler import FileBasedDiscoverErrorHandler
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, InvalidSchemaError, SchemaInferenceError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+
+file_based_discover_error_handler = FileBasedDiscoverErrorHandler(
+    exceptions_to_log=[InvalidSchemaError, SchemaInferenceError, ConfigValidationError],
+    underlying_exceptions_to_log=[FileBasedSourceError.INVALID_SCHEMA_ERROR.value, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value]
+    )
+
+
+@pytest.mark.parametrize(
+    ["exception", "exception_expected"],
+    [
+        (InvalidSchemaError(FileBasedSourceError.INVALID_SCHEMA_ERROR.value), False),
+        (SchemaInferenceError(FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value), False),
+        (ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR.value), False),
+        (AirbyteTracedException(message=FileBasedSourceError.INVALID_SCHEMA_ERROR.value), False),
+        (AirbyteTracedException(message="Not a valid underlying exception message"), True),
+        (Exception(), True),
+    ]
+
+)
+def test_handle_discover_error(exception, exception_expected):
+    mocked_logger = MagicMock(spec=logging.Logger)
+
+    if exception_expected:
+        with pytest.raises(type(exception)):
+            file_based_discover_error_handler.handle_discover_error(mocked_logger, exception)
+    else:
+        assert file_based_discover_error_handler.handle_discover_error(mocked_logger, exception) is None
+        mocked_logger.error.assert_called_with(f"Error occurred while discovering stream and therefore stream will not be added to the configured catalog: {exception}")

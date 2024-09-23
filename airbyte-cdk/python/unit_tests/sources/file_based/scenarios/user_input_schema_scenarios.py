@@ -6,6 +6,7 @@
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -122,7 +123,7 @@ single_stream_user_input_schema_scenario_schema_is_invalid = (
     .set_catalog(CatalogBuilder().with_stream("stream1", SyncMode.full_refresh).build())
     .set_expected_check_status("FAILED")
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
-    .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
 ).build()
 
@@ -457,7 +458,7 @@ multi_stream_user_input_schema_scenario_schema_is_invalid = (
     )
     .set_expected_check_status("FAILED")
     .set_expected_check_error(None, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
-    .set_expected_discover_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA.value)
 ).build()
 

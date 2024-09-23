@@ -26,7 +26,14 @@ from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBas
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedErrorsCollector, FileBasedSourceError
+from airbyte_cdk.sources.file_based.error_handlers.file_based_discover_error_handler import FileBasedDiscoverErrorHandler
+from airbyte_cdk.sources.file_based.exceptions import (
+    ConfigValidationError,
+    FileBasedErrorsCollector,
+    FileBasedSourceError,
+    InvalidSchemaError,
+    SchemaInferenceError,
+)
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -42,6 +49,7 @@ from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
+from airbyte_cdk.sources.utils.discover_error_handler import AbstractDiscoverErrorHandler
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic.v1.error_wrappers import ValidationError
@@ -93,6 +101,16 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
         if self._message_repository is None:
             self._message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[self.logger.level]))
         return self._message_repository
+
+    def discover_error_handler(self) -> AbstractDiscoverErrorHandler:
+        return FileBasedDiscoverErrorHandler(
+            exceptions_to_log=[ConfigValidationError, InvalidSchemaError, SchemaInferenceError],
+            underlying_exceptions_to_log=[
+                FileBasedSourceError.INVALID_SCHEMA_ERROR,
+                FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
+                FileBasedSourceError.CONFIG_VALIDATION_ERROR,
+            ],
+        )
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """

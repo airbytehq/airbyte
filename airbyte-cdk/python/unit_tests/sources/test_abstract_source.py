@@ -305,6 +305,32 @@ def test_discover(mocker):
     assert src.discover(logger, {}) == expected
 
 
+def test_discover_raises_exception_by_default_when_error_occurs_during_discover(mocker):
+    class CustomException(Exception):
+        pass
+
+    stream1 = MockStream()
+    mocker.patch.object(stream1, "as_airbyte_stream", side_effect=CustomException())
+
+    src = MockSource(check_lambda=lambda: (True, None), streams=[stream1])
+
+    with pytest.raises(CustomException) as exc_info:
+        src.discover(logger, {})
+        assert isinstance(exc_info, CustomException)
+
+
+def test_discover_raises_exception_when_configured_catalog_is_empty(mocker):
+    stream1 = MockStream()
+
+    src = MockSource(check_lambda=lambda: (True, None), streams=[stream1])
+    mocker.patch.object(src, "streams", return_value=[])
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        src.discover(logger, {})
+        assert exc_info.failure_type == FailureType.config_error
+        assert "No streams were returned from the source." in exc_info.internal_message
+
+
 def test_read_nonexistent_stream_raises_exception(mocker):
     """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
     s1 = MockStream(name="s1")
