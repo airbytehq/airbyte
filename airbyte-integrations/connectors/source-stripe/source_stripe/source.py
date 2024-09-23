@@ -206,13 +206,21 @@ class SourceStripe(ConcurrentSourceAdapter):
             ],
             **args,
         )
-        subscription_items = StripeLazySubStream(
+        subscription_items = UpdatedCursorIncrementalStripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice["parent"]["id"]},
             parent=subscriptions,
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {
+                "subscription": stream_slice["parent"]["id"],
+                "created": stream_slice["parent"]["created"],
+                "updated": stream_slice["parent"]["updated"]
+            },
             use_cache=USE_CACHE,
             sub_items_attr="items",
+            event_types=[
+                "customer.subscription.created",
+                "customer.subscription.updated"
+            ],
             **args,
         )
         transfers = IncrementalStripeStream(

@@ -1169,6 +1169,7 @@ Table "subscription_items" {
     "billing_thresholds" object
     "tax_rates" array
     "price" object
+    "updated" integer
 }
 
 Table "transfer_reversals" {
