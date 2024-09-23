@@ -5,7 +5,8 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.streams.checkpoint.cursor import Cursor
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
@@ -52,7 +53,7 @@ class CustomFieldTransformation(RecordTransformation):
 
 
 @dataclass
-class IncrementalSingleSliceCursor(Cursor):
+class IncrementalSingleSliceCursor(Cursor, StreamSlicer):
 
     cursor_field: Union[InterpolatedString, str]
     config: Config
@@ -159,3 +160,6 @@ class IncrementalSingleSliceCursor(Cursor):
             return True
         else:
             return False
+
+    def select_state(self, stream_slice: Optional[StreamSlice] = None) -> Optional[StreamState]:
+        return self.get_stream_state()
