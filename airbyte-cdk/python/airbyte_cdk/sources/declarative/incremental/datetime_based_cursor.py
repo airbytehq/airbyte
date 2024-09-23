@@ -378,3 +378,18 @@ class DatetimeBasedCursor(DeclarativeCursor):
         # Check if the new runtime lookback window is greater than the current config lookback
         if parse_duration(runtime_lookback_window) > config_lookback:
             self._lookback_window = InterpolatedString.create(runtime_lookback_window, parameters={})
+
+    def get_start_datetime(self) -> MinMaxDatetime:
+        return self._start_datetime
+
+    def get_end_datetime(self) -> MinMaxDatetime:
+        return self._end_datetime
+
+    def get_step(self) -> Union[timedelta, Duration]:
+        return self._step
+
+    def get_partition_field_start(self) -> InterpolatedString:
+        return self._partition_field_start
+
+    def get_partition_field_end(self) -> InterpolatedString:
+        return self._partition_field_end

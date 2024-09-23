@@ -28,7 +28,7 @@ class CheckStream(ConnectionChecker):
         self._parameters = parameters
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        streams = source.streams(config)  # type: ignore # source is always a DeclarativeSource, but this parameter type adheres to the outer interface
+        streams = source.all_streams(config)  # type: ignore # source is always a DeclarativeSource, but this parameter type adheres to the outer interface
         stream_name_to_stream = {s.name: s for s in streams}
         if len(streams) == 0:
             return False, f"No streams to connect to from source {source}"

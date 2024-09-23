@@ -4,10 +4,11 @@
 
 import logging
 from abc import abstractmethod
-from typing import Any, Mapping, Tuple
+from typing import Any, Mapping, Tuple, List
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
+from airbyte_cdk.sources.streams import Stream
 
 
 class DeclarativeSource(AbstractSource):
@@ -32,3 +33,6 @@ class DeclarativeSource(AbstractSource):
           The error object will be cast to string to display the problem to the user.
         """
         return self.connection_checker.check_connection(self, logger, config)
+
+    def all_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        return self.streams(config=config)
