@@ -122,8 +122,9 @@ class ConcurrentReadProcessor:
         1. Convert the record to an AirbyteMessage
         2. If this is the first record for the stream, mark the stream as RUNNING
         3. Increment the record counter for the stream
-        4. Emit the message
-        5. Emit messages that were added to the message repository
+        4. Ensures the cursor knows the record has been successfully emitted
+        5. Emit the message
+        6. Emit messages that were added to the message repository
         """
         # Do not pass a transformer or a schema
         # AbstractStreams are expected to return data as they are expected.
@@ -136,6 +137,7 @@ class ConcurrentReadProcessor:
                 self._logger.info(f"Marking stream {stream.name} as RUNNING")
                 yield stream_status_as_airbyte_message(stream.as_airbyte_stream(), AirbyteStreamStatus.RUNNING)
             self._record_counter[stream.name] += 1
+            stream.cursor.observe(record)
         yield message
         yield from self._message_repository.consume_queue()
 
