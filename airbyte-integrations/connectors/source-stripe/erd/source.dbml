@@ -1141,6 +1141,8 @@ Table "invoice_line_items" {
     "discounts" array
     "tax_rates" array
     "tax_amounts" array
+    "created" integer
+    "updated" integer
 }
 
 Table "subscription_items" {
