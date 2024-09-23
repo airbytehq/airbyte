@@ -188,7 +188,7 @@ class AsyncJobOrchestratorTest(TestCase):
         with pytest.raises(ValueError):
             # assert that orchestrator exits on expected error
             list(orchestrator.create_and_get_completed_partitions())
-        assert len(orchestrator._running_partitions) == 0
+        assert len(orchestrator._job_tracker._jobs) == 0
         self._job_repository.abort.assert_called_once_with(self._job_for_a_slice)
 
     def test_given_traced_config_error_when_start_job_and_raise_this_exception_and_abort_jobs(self) -> None:

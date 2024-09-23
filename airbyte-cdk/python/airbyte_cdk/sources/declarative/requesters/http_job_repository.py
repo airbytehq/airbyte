@@ -147,6 +147,8 @@ class AsyncHttpJobRepository(AsyncJobRepository):
 
             if job_status != job.status():
                 lazy_log(LOGGER, logging.DEBUG, lambda: f"Status of job {job.api_job_id()} changed from {job.status()} to {job_status}")
+            else:
+                lazy_log(LOGGER, logging.DEBUG, lambda: f"Status of job {job.api_job_id()} is still {job.status()}")
 
             job.update_status(job_status)
             if job_status == AsyncJobStatus.COMPLETED:

@@ -1,8 +1,13 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
+import logging
 import threading
 import uuid
 from typing import Set
+
+from airbyte_cdk.logger import lazy_log
+
+LOGGER = logging.getLogger("airbyte")
 
 
 class ConcurrentJobLimitReached(Exception):
@@ -16,10 +21,12 @@ class JobTracker:
         self._lock = threading.Lock()
 
     def try_to_get_intent(self) -> str:
+        lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Trying to acquire lock by thread {threading.get_native_id()}...")
         with self._lock:
             if self._has_reached_limit():
                 raise ConcurrentJobLimitReached("Can't allocate more jobs right now: limit already reached")
             intent = f"intent_{str(uuid.uuid4())}"
+            lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} has acquired {intent}!")
             self._jobs.add(intent)
             return intent
 
@@ -31,6 +38,7 @@ class JobTracker:
             # Nothing to do here as the ID to replace is the same
             return
 
+        lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} replacing job {intent_or_job_id} by {job_id}!")
         # It is important here that we add the job before removing the other. Given the opposite, `_has_reached_limit` could return `False`
         # for a very brief moment while we don't want to allocate for more jobs.
         self._jobs.add(job_id)
@@ -40,6 +48,7 @@ class JobTracker:
         """
         If the job is not allocated as a running job, this method does nothing and it won't raise.
         """
+        lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} removing job {job_id}")
         self._jobs.discard(job_id)
 
     def _has_reached_limit(self) -> bool:

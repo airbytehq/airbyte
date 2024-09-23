@@ -1,6 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import logging
+import threading
 import time
 import traceback
 import uuid
@@ -88,6 +89,7 @@ class AsyncPartition:
 class AsyncJobOrchestrator:
     _WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS = 5
     _KNOWN_JOB_STATUSES = {AsyncJobStatus.COMPLETED, AsyncJobStatus.FAILED, AsyncJobStatus.RUNNING, AsyncJobStatus.TIMED_OUT}
+    _RUNNING_ON_API_SIDE_STATUS = {AsyncJobStatus.RUNNING, AsyncJobStatus.TIMED_OUT}
 
     def __init__(
         self,
@@ -150,6 +152,7 @@ class AsyncJobOrchestrator:
     def _start_job(self, _slice: StreamSlice, previous_job_id: Optional[str] = None) -> AsyncJob:
         if previous_job_id:
             id_to_replace = previous_job_id
+            lazy_log(LOGGER, logging.DEBUG, lambda: f"Attempting to replace job {id_to_replace}...")
         else:
             id_to_replace = self._job_tracker.try_to_get_intent()
 
@@ -157,25 +160,11 @@ class AsyncJobOrchestrator:
             job = self._job_repository.start(_slice)
             self._job_tracker.add_job(id_to_replace, job.api_job_id())
             return job
-        except self._exceptions_to_break_on as exception:
-            LOGGER.warning(f"Caught exception that stops the processing of the jobs: {exception}")
-            self._stop_orchestrator(id_to_replace)
-            raise exception
-        except AirbyteTracedException as exception:
-            if exception.failure_type == FailureType.config_error:
-                LOGGER.error(
-                    f"Failed to start the Job because of a config error. Breaking the stream because of: {exception}, traceback: {traceback.format_exc()}"
-                )
-                self._stop_orchestrator(id_to_replace)
-                raise exception
-
-            return self._keep_api_budget_with_failed_job(_slice, exception, id_to_replace)
         except Exception as exception:
+            if self._is_breaking_exception(exception):
+                self._job_tracker.remove_job(id_to_replace)
+                raise exception
             return self._keep_api_budget_with_failed_job(_slice, exception, id_to_replace)
-
-    def _stop_orchestrator(self, id_to_release_budget: str) -> None:
-        self._abort_all_running_jobs()
-        self._job_tracker.remove_job(id_to_release_budget)
 
     def _keep_api_budget_with_failed_job(self, _slice: StreamSlice, exception: Exception, intent: str) -> AsyncJob:
         """
@@ -208,15 +197,6 @@ class AsyncJobOrchestrator:
         """
         return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.RUNNING}
 
-    def _get_timeout_jobs(self) -> Set[AsyncJob]:
-        """
-        Returns a set of timeouted AsyncJob objects.
-
-        Returns:
-            Set[AsyncJob]: A set of AsyncJob objects that are currently running.
-        """
-        return {job for partition in self._running_partitions for job in partition.jobs if job.status() == AsyncJobStatus.TIMED_OUT}
-
     def _update_jobs_status(self) -> None:
         """
         Update the status of all running jobs in the repository.
@@ -243,14 +223,12 @@ class AsyncJobOrchestrator:
             lambda: f"Polling status in progress. There are currently {len(self._running_partitions)} running partitions.",
         )
 
-        # wait only when there are running partitions
-        if self._running_partitions:
-            lazy_log(
-                LOGGER,
-                logging.DEBUG,
-                lambda: f"Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll...",
-            )
-            time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
+        lazy_log(
+            LOGGER,
+            logging.DEBUG,
+            lambda: f"Waiting for {self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS} seconds before next poll...",
+        )
+        time.sleep(self._WAIT_TIME_BETWEEN_STATUS_UPDATE_IN_SECONDS)
 
     def _process_completed_partition(self, partition: AsyncPartition) -> None:
         """
@@ -260,6 +238,11 @@ class AsyncJobOrchestrator:
         """
         job_ids = list(map(lambda job: job.api_job_id(), {job for job in partition.jobs}))
         LOGGER.info(f"The following jobs for stream slice {partition.stream_slice} have been completed: {job_ids}.")
+
+        # It is important to remove the jobs from the job tracker before yielding the partition as the caller might try to schedule jobs
+        # but won't be able to as all jobs slots are taken even though job is done.
+        for job in partition.jobs:
+            self._job_tracker.remove_job(job.api_job_id())
 
     def _process_running_partitions_and_yield_completed_ones(self) -> Generator[AsyncPartition, Any, None]:
         """
@@ -348,13 +331,22 @@ class AsyncJobOrchestrator:
             Each partition is wrapped in an Optional, allowing for None values.
         """
         while True:
-            self._start_jobs()
-            if self._has_started_a_job and not self._running_partitions:
-                break
+            try:
+                lazy_log(LOGGER, logging.DEBUG, lambda: f"JobOrchestrator loop - Thread {threading.get_native_id()} is starting the async job loop")
+                self._start_jobs()
+                if self._has_started_a_job and not self._running_partitions:
+                    break
 
-            self._update_jobs_status()
-            yield from self._process_running_partitions_and_yield_completed_ones()
-            self._wait_on_status_update()
+                self._update_jobs_status()
+                yield from self._process_running_partitions_and_yield_completed_ones()
+                self._wait_on_status_update()
+            except Exception as exception:
+                if self._is_breaking_exception(exception):
+                    LOGGER.warning(f"Caught exception that stops the processing of the jobs: {exception}")
+                    self._abort_all_running_jobs()
+                    raise exception
+
+                self._non_breaking_exceptions.append(exception)
 
         if self._non_breaking_exceptions:
             # We emitted traced message but we didn't break on non_breaking_exception. We still need to raise an exception so that the
@@ -370,11 +362,16 @@ class AsyncJobOrchestrator:
         self._non_breaking_exceptions.append(exception)
 
     def _abort_all_running_jobs(self) -> None:
-        for job in self._get_running_jobs() | self._get_timeout_jobs():
-            self._job_repository.abort(job)
-            self._job_tracker.remove_job(job.api_job_id())
+        for partition in self._running_partitions:
+            for job in partition.jobs:
+                if job.status() in self._RUNNING_ON_API_SIDE_STATUS:
+                    self._abort_job(job, free_job_allocation=True)
+                self._job_tracker.remove_job(job.api_job_id())
 
         self._running_partitions = []
+
+    def _is_breaking_exception(self, exception: Exception) -> bool:
+        return isinstance(exception, self._exceptions_to_break_on) or (isinstance(exception, AirbyteTracedException) and exception.failure_type == FailureType.config_error)
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:
         """
