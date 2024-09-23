@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta
 from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
+import backoff
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests_oauthlib import OAuth1
@@ -41,6 +42,7 @@ class NetsuiteStream(HttpStream, ABC):
         self.window_in_days = window_in_days
         self.schemas = {}  # store subschemas to reduce API calls
         super().__init__(authenticator=auth)
+        self._exit_on_rate_limit = True
 
     primary_key = "id"
 
@@ -143,13 +145,28 @@ class NetsuiteStream(HttpStream, ABC):
     def fetch_record(self, record: Mapping[str, Any], request_kwargs: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         url = record["links"][0]["href"]
         args = {"method": "GET", "url": url, "params": {"expandSubResources": True}}
-        prep_req = self._session.prepare_request(requests.Request(**args))
-        response = self._send_request(prep_req, request_kwargs)
+        response = self._send_request_with_backoff(args, request_kwargs)
         # sometimes response.status_code == 400,
         # but contains json elements with error description,
         # to avoid passing it as {TYPE: RECORD}, we filter response by status
         if response.status_code == requests.codes.ok:
             yield response.json()
+
+    @backoff.on_exception(
+        backoff.expo,
+        (requests.exceptions.RequestException, requests.exceptions.HTTPError),
+        max_tries=10,
+        factor=5,
+        max_time=300, # 5 minutes
+    )
+    def _send_request_with_backoff(self, args, request_kwargs):
+        prep_req = self._session.prepare_request(requests.Request(**args))
+        response = self._send_request(prep_req, request_kwargs)
+
+        if response.status_code == 429 or response.status_code == 401:
+            response.raise_for_status()
+
+        return response
 
     def parse_response(
         self,
