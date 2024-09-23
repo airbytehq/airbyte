@@ -54,6 +54,70 @@
                 "enum": ["cdc"],
                 "type": "string",
                 "default": "cdc"
+              },
+              "server_timezone": {
+                "type": "string",
+                "order": 2,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "always_show": true,
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
+              },
+              "invalid_cdc_behavior": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "title": "Fail sync",
+                    "required": ["invalid_cdc_cursor_position_behavior"],
+                    "properties": {
+                      "invalid_cdc_cursor_position_behavior": {
+                        "enum": ["fail_sync"],
+                        "type": "string",
+                        "default": "fail_sync"
+                      }
+                    },
+                    "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "title": "Re-sync data",
+                    "required": ["invalid_cdc_cursor_position_behavior"],
+                    "properties": {
+                      "invalid_cdc_cursor_position_behavior": {
+                        "enum": ["resync"],
+                        "type": "string",
+                        "default": "resync"
+                      }
+                    },
+                    "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+                    "additionalProperties": true
+                  }
+                ],
+                "order": 3,
+                "title": "Invalid CDC position behavior (Advanced)",
+                "always_show": true,
+                "description": "The encryption method with is used when communicating with the database."
+              },
+              "initial_waiting_seconds": {
+                "max": 1200,
+                "min": 120,
+                "type": "integer",
+                "order": 1,
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "default": 300,
+                "always_show": true,
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
+              },
+              "initial_load_timeout_hours": {
+                "max": 24,
+                "min": 4,
+                "type": "integer",
+                "order": 4,
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "default": 8,
+                "always_show": true,
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs."
               }
             },
             "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",

@@ -338,7 +338,94 @@ data object UserDefinedCursor : CursorConfiguration
         "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
-data object CdcCursor : CursorConfiguration
+class CdcCursor : CursorConfiguration {
+    @JsonProperty("initial_waiting_seconds")
+    @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
+    @JsonSchemaDefault("300")
+    @JsonPropertyDescription(
+        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n" +
+            "        \"\\\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\\\"\" +\n" +
+            "        \"> initial waiting time</a>.",
+    )
+    @JsonSchemaInject(json = """{"order":1, "max": 1200, "min": 120, "always_show": true}""")
+    var initialWaitTimeInSeconds: Int? = 300
+
+    @JsonProperty("server_timezone")
+    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
+    @JsonPropertyDescription(
+        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    var serverTimezone: String? = null
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "invalid_cdc_behavior")
+    var invalidCdcBehavior = MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration()
+
+    @JsonIgnore var invalidCdcPositionBehaviorJson: InvalidCdcPositionBehavior? = null
+
+    @JsonSetter("invalid_cdc_behavior")
+    fun setInvalidCdcBehaviorValue(value: InvalidCdcPositionBehavior) {
+        invalidCdcPositionBehaviorJson = value
+    }
+
+    @JsonGetter("invalid_cdc_behavior")
+    @JsonSchemaTitle("Invalid CDC position behavior (Advanced)")
+    @JsonPropertyDescription(
+        "The encryption method with is used when communicating with the database.",
+    )
+    @JsonSchemaInject(json = """{"order":3, "always_show": true}""")
+    fun getInvalidCdcBehaviorValue(): InvalidCdcPositionBehavior? =
+        invalidCdcPositionBehaviorJson ?: invalidCdcBehavior.asInvalidCdcPositionBehavior()
+
+    @JsonProperty("initial_load_timeout_hours")
+    @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+    )
+    @JsonSchemaDefault("8")
+    @JsonSchemaInject(json = """{"order":4, "max": 24, "min": 4,"always_show": true}""")
+    var initialLoadTimeoutHours: Int? = 8
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "invalid_cdc_cursor_position_behavior")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = FailSync::class, name = "fail_sync"),
+    JsonSubTypes.Type(value = ResyncData::class, name = "resync")
+)
+@JsonSchemaTitle("Update Method")
+@JsonSchemaDescription("Configures how data is extracted from the database.")
+sealed interface InvalidCdcPositionBehavior
+
+@JsonSchemaTitle("Fail sync")
+@JsonSchemaDescription(
+    "Incrementally detects new inserts and updates using the " +
+        "<a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/" +
+        "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
+        "(e.g. created_at, updated_at).",
+)
+data object FailSync : InvalidCdcPositionBehavior
+
+@JsonSchemaTitle("Re-sync data")
+@JsonSchemaDescription(
+    "Incrementally detects new inserts and updates using the " +
+        "<a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/" +
+        "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
+        "(e.g. created_at, updated_at).",
+)
+data object ResyncData : InvalidCdcPositionBehavior
+
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.invalid_cdc_cursor_position_behavior")
+class MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration {
+    var invalidCdcBehavior: String = "fail_sync"
+
+    fun asInvalidCdcPositionBehavior(): InvalidCdcPositionBehavior =
+        when (invalidCdcBehavior) {
+            "fail_sync" -> FailSync
+            "resync" -> ResyncData
+            else -> throw ConfigErrorException("invalid value $invalidCdcBehavior")
+        }
+}
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")
 class MicronautPropertiesFriendlyCursorConfiguration {
@@ -347,7 +434,7 @@ class MicronautPropertiesFriendlyCursorConfiguration {
     fun asCursorConfiguration(): CursorConfiguration =
         when (cursorMethod) {
             "user_defined" -> UserDefinedCursor
-            "cdc" -> CdcCursor
+            "cdc" -> CdcCursor()
             else -> throw ConfigErrorException("invalid value $cursorMethod")
         }
 }
