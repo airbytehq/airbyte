@@ -518,12 +518,12 @@ module.exports = {
     },
     {
       type: "doc",
-      id: "using-airbyte/core-concepts/readme",
+      label: "Quickstart",
+      id: "using-airbyte/getting-started/oss-quickstart",
     },
     {
       type: "doc",
-      label: "Quickstart",
-      id: "using-airbyte/getting-started/oss-quickstart",
+      id: "using-airbyte/core-concepts/readme",
     },
     {
       type: "category",
