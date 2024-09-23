@@ -32,5 +32,3 @@ def test_read_files(configured_catalog: ConfiguredAirbyteCatalog, config: Mappin
     )
     output = read(source=source, config=config, catalog=configured_catalog)
     assert sum(x.state.sourceStats.recordCount for x in output.state_messages) == 2
-
-
