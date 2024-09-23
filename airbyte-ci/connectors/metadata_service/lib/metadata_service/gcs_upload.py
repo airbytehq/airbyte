@@ -76,8 +76,8 @@ class MaybeUpload(NamedTuple):
 
 @dataclass
 class ManifestOnlyFilePaths:
-    zip_file_path: Path
-    sha256_file_path: Path
+    zip_file_path: Path | None
+    sha256_file_path: Path | None
     sha256: str | None
     manifest_file_path: Path
 
@@ -85,7 +85,7 @@ class ManifestOnlyFilePaths:
 # 🛣️ FILES AND PATHS
 
 
-def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Path:
+def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Optional[Path]:
     pattern = re.compile(r"^https://docs\.airbyte\.com/(.+)$")
     match = pattern.search(metadata.data.documentationUrl)
     if match:
@@ -211,7 +211,7 @@ def _get_git_info_for_file(original_metadata_file_path: Path) -> Optional[GitInf
 # 🚀 UPLOAD
 
 
-def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:
+def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: Path, disable_cache: bool = False) -> bool:
     """Uploads a file to the bucket."""
     print(f"Uploading {file_path} to {blob_to_save.name}...")
 
@@ -402,7 +402,6 @@ def _apply_modifications_to_metadata_file(
     metadata = _apply_prerelease_overrides(metadata, validator_opts)
     metadata = _apply_author_info_to_metadata_file(metadata, original_metadata_file_path)
     metadata = _apply_python_components_sha_to_metadata_file(metadata, components_zip_sha256)
-
     metadata = _apply_sbom_url_to_metadata_file(metadata)
     return _write_metadata_to_tmp_file(metadata)
 
