@@ -120,7 +120,7 @@ tables are replaced with underscores.
 
 :::note
 
-- The schema names are case sensitive.
+The schema names are case sensitive. The 'public' schema is set by default.
 
 :::
 
@@ -189,6 +189,7 @@ All streams will be indexed/stored into a table with the same name. The table wi
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.1   | 2024-09-23 | [#45636](https://github.com/airbytehq/airbyte/pull/45636)     | Add default values for default_schema and port.
 | 0.1.0   | 2024-09-16 | [#45428](https://github.com/airbytehq/airbyte/pull/45428)     | Add support for PGVector as a Vector destination.
 
 </details>
