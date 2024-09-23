@@ -8,6 +8,18 @@ RevenueCat is a powerful and reliable in-app purchase server that makes it easy 
 | `api_key` | `string` | API Key. API key or access token |  |
 | `start_date` | `string` | Start date.  |  |
 
+To get started;
+- You can create a new secret API key in your project settings page > API keys. Select + New.
+- Give it a name, select V2 as the version, and set the following permissions:
+  - `project_configuration:projects:read`
+  - `project_configuration:apps:read`
+  - `charts_metrics:overview:read`
+  - `customer_information:customers:read`
+  - `project_configuration:entitlements:read`
+  - `project_configuration:offerings:read`
+  - `project_configuration:products:read`
+- Be sure to select Generate at the top right corner.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
