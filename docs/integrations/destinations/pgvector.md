@@ -120,7 +120,7 @@ tables are replaced with underscores.
 
 :::note
 
-git The schema names are case sensitive.
+- The schema names are case sensitive.
 
 :::
 
