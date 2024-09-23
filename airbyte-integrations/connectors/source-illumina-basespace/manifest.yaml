@@ -346,7 +346,7 @@ definitions:
     url_base: https://api.euw2.sh.basespace.illumina.com/v1pre3
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"access_token\"] }}"
+      api_token: '{{ config["access_token"] }}'
 
 streams:
   - $ref: "#/definitions/streams/projects"
