@@ -15,6 +15,8 @@ from google.api_core.exceptions import InternalServerError, ServerError, TooMany
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
+from google.protobuf import json_format
+
 from .utils import logger
 
 API_VERSION = "v17"
@@ -160,6 +162,18 @@ class GoogleAds:
         return query_template
 
     @staticmethod
+    def serialize_protobuf_message(message) -> str:
+        """
+        This method tryies to serialize a given object into JSON if the given object is a protocol bugger message.
+        If not, the normal str() is applied. That helps keep the complex objects written as parsable structures.
+        """
+
+        try:
+            return json_format.MessageToJson(message._pb).replace('\n', '')
+        except:
+            return str(message)
+
+    @staticmethod
     def get_field_value(field_value: GoogleAdsRow, field: str, schema_type: Mapping[str, Any]) -> str:
         field_name = field.split(".")
         for level_attr in field_name:
@@ -211,7 +225,7 @@ class GoogleAds:
             if isinstance(field_value, Enum):
                 field_value = field_value.name
             elif isinstance(field_value, (Repeated, RepeatedComposite)):
-                field_value = [str(value) for value in field_value]
+                field_value = [GoogleAds.serialize_protobuf_message(value) for value in field_value]
 
         # Google Ads has a lot of entities inside itself, and we cannot process them all separately, because:
         # 1. It will take a long time
