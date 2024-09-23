@@ -3,21 +3,18 @@ import os
 import shutil
 import time
 import uuid
-from typing import Mapping, Any
+from typing import Any, Mapping
 
-import pytest
+import docker
 import google
-import requests
-
+import pytest
+import source_gcs
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from google.auth.credentials import AnonymousCredentials
-
-import source_gcs
 from google.cloud import storage
-
 from source_gcs import SourceGCS
+
 from .utils import get_docker_ip, load_config
-import docker
 
 LOCAL_GCP_PORT = 4443
 

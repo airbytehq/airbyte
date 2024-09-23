@@ -1,8 +1,9 @@
-import re
-from typing import Union, Mapping, Any
-import os
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import json
+import os
+import re
+from typing import Any, Mapping, Union
 
 
 def get_docker_ip() -> Union[str, Any]:

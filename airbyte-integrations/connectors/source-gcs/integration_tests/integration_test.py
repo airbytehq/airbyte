@@ -4,10 +4,10 @@
 from typing import Any, Mapping
 
 import pytest
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from source_gcs import SourceGCS, Config, SourceGCSStreamReader
+from source_gcs import Config, SourceGCS, SourceGCSStreamReader
 
 
 @pytest.mark.parametrize(
