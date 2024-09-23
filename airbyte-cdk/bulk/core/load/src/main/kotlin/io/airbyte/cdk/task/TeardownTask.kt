@@ -36,8 +36,8 @@ interface TeardownTaskFactory {
 @Secondary
 class DefaultTeardownTaskFactory(
     private val destination: DestinationWriteOperation,
-) {
-    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
+) : TeardownTaskFactory {
+    override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
         return DefaultTeardownTask(destination, taskLauncher)
     }
 }

@@ -15,8 +15,8 @@ import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.state.StreamsManager
 import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
@@ -24,6 +24,18 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+
+interface DestinationTaskLauncher : TaskLauncher {
+    suspend fun handleSetupComplete()
+    suspend fun handleStreamOpen(streamLoader: StreamLoader)
+    suspend fun handleNewSpilledFile(
+        stream: DestinationStream,
+        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
+    )
+    suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>)
+    suspend fun handleStreamClosed(stream: DestinationStream)
+    suspend fun handleTeardownComplete()
+}
 
 /**
  * Governs the task workflow for the entire destination life-cycle.
@@ -59,7 +71,7 @@ import kotlinx.coroutines.sync.withLock
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
-class DestinationTaskLauncher(
+class DefaultDestinationTaskLauncher(
     private val catalog: DestinationCatalog,
     private val streamsManager: StreamsManager,
     override val taskRunner: TaskRunner,
@@ -71,7 +83,7 @@ class DestinationTaskLauncher(
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory
-) : TaskLauncher {
+) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
     private val runTeardownOnce = AtomicBoolean(false)
@@ -97,7 +109,7 @@ class DestinationTaskLauncher(
     }
 
     /** Called when the initial destination setup completes. */
-    suspend fun handleSetupComplete() {
+    override suspend fun handleSetupComplete() {
         catalog.streams.forEach {
             log.info { "Starting open stream task for $it" }
             val openStreamTask = openStreamTaskFactory.make(this, it)
@@ -106,13 +118,13 @@ class DestinationTaskLauncher(
     }
 
     /** Called when a stream is ready for loading. */
-    suspend fun handleStreamOpen(streamLoader: StreamLoader) {
+    override suspend fun handleStreamOpen(streamLoader: StreamLoader) {
         log.info { "Registering stream open and loader available for ${streamLoader.stream}" }
         streamLoaders[streamLoader.stream]!!.complete(streamLoader)
     }
 
     /** Called for each new spilled file. */
-    suspend fun handleNewSpilledFile(
+    override suspend fun handleNewSpilledFile(
         stream: DestinationStream,
         wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
     ) {
@@ -128,7 +140,7 @@ class DestinationTaskLauncher(
      * Called for each new batch. Enqueues processing for any incomplete batch, and enqueues closing
      * the stream if all batches are complete.
      */
-    suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>) {
+    override suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>) {
         batchUpdateLock.withLock {
             val streamManager = streamsManager.getManager(streamLoader.stream)
             streamManager.updateBatchState(wrapped)
@@ -156,7 +168,7 @@ class DestinationTaskLauncher(
     }
 
     /** Called when a stream is closed. */
-    suspend fun handleStreamClosed(stream: DestinationStream) {
+    override suspend fun handleStreamClosed(stream: DestinationStream) {
         streamsManager.getManager(stream).markClosed()
         checkpointManager.flushReadyCheckpointMessages()
         if (runTeardownOnce.compareAndSet(false, true)) {
@@ -167,12 +179,13 @@ class DestinationTaskLauncher(
     }
 
     /** Called exactly once when all streams are closed. */
-    suspend fun handleTeardownComplete() {
+    override suspend fun handleTeardownComplete() {
         stop()
     }
 }
 
 @Factory
+@DefaultImplementation(DefaultDestinationTaskLauncher::class)
 class DestinationTaskLauncherFactory(
     private val catalog: DestinationCatalog,
     private val streamsManager: StreamsManager,
@@ -187,9 +200,8 @@ class DestinationTaskLauncherFactory(
     private val teardownTaskFactory: TeardownTaskFactory
 ) : Provider<DestinationTaskLauncher> {
     @Singleton
-    @Secondary
     override fun get(): DestinationTaskLauncher {
-        return DestinationTaskLauncher(
+        return DefaultDestinationTaskLauncher(
             catalog,
             streamsManager,
             taskRunner,

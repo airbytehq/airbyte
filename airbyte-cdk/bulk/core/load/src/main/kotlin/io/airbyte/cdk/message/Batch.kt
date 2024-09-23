@@ -7,7 +7,7 @@ package io.airbyte.cdk.message
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
-import java.nio.file.Path
+import io.airbyte.cdk.file.LocalFile
 
 /**
  * Represents an accumulated batch of records in some stage of processing.
@@ -61,7 +61,7 @@ data class SimpleBatch(override val state: Batch.State) : Batch
 
 /** Represents a file of records locally staged. */
 abstract class StagedLocalFile() : Batch {
-    abstract val localPath: Path
+    abstract val localFile: LocalFile
     abstract val totalSizeBytes: Long
     override val state: Batch.State = Batch.State.LOCAL
 }
@@ -77,7 +77,7 @@ abstract class RemoteObject() : Batch {
  * framework
  */
 data class SpilledRawMessagesLocalFile(
-    override val localPath: Path,
+    override val localFile: LocalFile,
     override val totalSizeBytes: Long,
     override val state: Batch.State = Batch.State.SPILLED
 ) : StagedLocalFile()

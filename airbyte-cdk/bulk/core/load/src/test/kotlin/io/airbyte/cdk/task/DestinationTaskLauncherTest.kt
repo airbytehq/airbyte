@@ -10,6 +10,7 @@ import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
+import io.airbyte.cdk.file.DefaultLocalFile
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.CheckpointMessage
@@ -263,7 +264,9 @@ class DestinationTaskLauncherTest {
         launch {
             launcher.handleNewSpilledFile(
                 stream1,
-                BatchEnvelope(SpilledRawMessagesLocalFile(Path("not/a/real/file"), 100L))
+                BatchEnvelope(
+                    SpilledRawMessagesLocalFile(DefaultLocalFile(Path("not/a/real/file")), 100L)
+                )
             )
         }
 
@@ -326,7 +329,6 @@ class DestinationTaskLauncherTest {
         val hasRun = teardownTaskFactory.hasRun.tryReceive()
         Assertions.assertTrue(hasRun.isFailure)
         checkpointManager.hasBeenFlushed.receive() // Stream1 close triggered flush
-
         streamsManager.getManager(stream1).markClosed()
         delay(1000)
         val hasRun2 = teardownTaskFactory.hasRun.tryReceive()
