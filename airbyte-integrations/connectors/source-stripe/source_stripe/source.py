@@ -213,14 +213,11 @@ class SourceStripe(ConcurrentSourceAdapter):
             extra_request_params=lambda self, stream_slice, *args, **kwargs: {
                 "subscription": stream_slice["parent"]["id"],
                 "created": stream_slice["parent"]["created"],
-                "updated": stream_slice["parent"]["updated"]
+                "updated": stream_slice["parent"]["updated"],
             },
             use_cache=USE_CACHE,
             sub_items_attr="items",
-            event_types=[
-                "customer.subscription.created",
-                "customer.subscription.updated"
-            ],
+            event_types=["customer.subscription.created", "customer.subscription.updated"],
             **args,
         )
         transfers = IncrementalStripeStream(
@@ -538,7 +535,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "invoice_id": stream_slice["parent"]["id"],
                     "created": stream_slice["parent"]["created"],
                     "updated": stream_slice["parent"]["updated"],
-                    **record
+                    **record,
                 },
                 **args,
             ),
