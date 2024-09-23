@@ -41,15 +41,20 @@ class JobTracker:
         lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} replacing job {intent_or_job_id} by {job_id}!")
         # It is important here that we add the job before removing the other. Given the opposite, `_has_reached_limit` could return `False`
         # for a very brief moment while we don't want to allocate for more jobs.
-        self._jobs.add(job_id)
-        self._jobs.remove(intent_or_job_id)
+        with self._lock:
+            self._jobs.add(job_id)
+            self._jobs.remove(intent_or_job_id)
 
     def remove_job(self, job_id: str) -> None:
         """
         If the job is not allocated as a running job, this method does nothing and it won't raise.
         """
         lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} removing job {job_id}")
-        self._jobs.discard(job_id)
+        with self._lock:
+            self._jobs.discard(job_id)
 
     def _has_reached_limit(self) -> bool:
         return len(self._jobs) >= self._limit
+
+    def has_job(self, job_id: str) -> bool:
+        return job_id in self._jobs

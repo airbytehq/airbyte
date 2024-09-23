@@ -521,7 +521,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         pass
 
-    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer) -> None:
+    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer, has_bulk_parent: bool) -> None:
         """
         For streams with a replication key and where filtering is supported, we need to have the cursor in order to instantiate the
         DeclarativeStream hence why this isn't called in the __init__
@@ -743,6 +743,7 @@ class BulkSalesforceStream(SalesforceStream):
                     self._job_tracker,
                     self._message_repository,
                     exceptions_to_break_on=[BulkNotSupportedException],
+                    has_bulk_parent=has_bulk_parent,
                 ),
             ),
             config={},
@@ -817,7 +818,7 @@ class BulkSalesforceStream(SalesforceStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor))
+        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False)
         try:
             yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         except BulkNotSupportedException:
@@ -856,7 +857,8 @@ class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
         self._instantiate_declarative_stream(
             BulkParentStreamStreamSlicer(
                 super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]
-            )
+            ),
+            has_bulk_parent=True,
         )
         yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
