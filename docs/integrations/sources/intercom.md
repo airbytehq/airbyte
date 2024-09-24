@@ -70,15 +70,15 @@ The Intercom source connector supports the following [sync modes](https://docs.a
 
 The Intercom source connector supports the following streams:
 
-- [Admins](https://developers.intercom.com/intercom-api-reference/reference/listadmins) \(Full table\)
+- [Admins](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/admins/listadmins) \(Full table\)
 - [Companies](https://developers.intercom.com/intercom-api-reference/reference/listallcompanies) \(Incremental\)
   - [Company Segments](https://developers.intercom.com/intercom-api-reference/reference/listattachedsegmentsforcompanies) \(Incremental\)
-- [Conversations](https://developers.intercom.com/intercom-api-reference/reference/listconversations) \(Incremental\)
-  - [Conversation Parts](https://developers.intercom.com/intercom-api-reference/reference/retrieveconversation) \(Incremental\)
-- [Data Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-  - [Customer Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-  - [Company Attributes](https://developers.intercom.com/intercom-api-reference/reference/lisdataattributes) \(Full table\)
-- [Contacts](https://developers.intercom.com/intercom-api-reference/reference/listcontacts) \(Incremental\)
+- [Conversations](https://developers.intercom.com/docs/references/2.9/rest-api/api.intercom.io/conversations/listconversations) \(Incremental\)
+  - [Conversation Parts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/conversations/retrieveconversation) \(Incremental\)
+- [Data Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Customer Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+  - [Company Attributes](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/data-attributes/lisdataattributes) \(Full table\)
+- [Contacts](https://developers.intercom.com/docs/references/2.10/rest-api/api.intercom.io/contacts/listcontacts) \(Incremental\)
 - [Segments](https://developers.intercom.com/intercom-api-reference/reference/listsegments) \(Incremental\)
 - [Tags](https://developers.intercom.com/intercom-api-reference/reference/listtags) \(Full table\)
 - [Teams](https://developers.intercom.com/intercom-api-reference/reference/listteams) \(Full table\)
