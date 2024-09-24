@@ -26,6 +26,10 @@ class CdcPartitionCreator(
         return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
     }
     override suspend fun run(): List<PartitionReader> {
+        if (opaqueStateValue != null) {
+            // For the time being, only do one round
+            return listOf()
+        }
         return listOf(CdcPartitionReader(concurrencyResource, cdcContext, opaqueStateValue))
     }
 
