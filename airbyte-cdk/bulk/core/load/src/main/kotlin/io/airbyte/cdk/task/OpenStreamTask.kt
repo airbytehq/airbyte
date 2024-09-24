@@ -10,27 +10,36 @@ import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
+interface OpenStreamTask : Task
+
 /**
  * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.
  *
  * TODO: There's no reason to wait on initialization to start spilling to disk.
  */
-class OpenStreamTask(
+class DefaultOpenStreamTask(
     private val streamLoader: StreamLoader,
     private val taskLauncher: DestinationTaskLauncher
-) : Task {
+) : OpenStreamTask {
     override suspend fun execute() {
         streamLoader.start()
-        taskLauncher.startSpillToDiskTasks(streamLoader)
+        taskLauncher.handleStreamOpen(streamLoader)
     }
+}
+
+interface OpenStreamTaskFactory {
+    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): OpenStreamTask
 }
 
 @Singleton
 @Secondary
-class OpenStreamTaskFactory(
+class DefaultOpenStreamTaskFactory(
     private val destination: DestinationWriteOperation,
-) {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): OpenStreamTask {
-        return OpenStreamTask(destination.getStreamLoader(stream), taskLauncher)
+) : OpenStreamTaskFactory {
+    override fun make(
+        taskLauncher: DestinationTaskLauncher,
+        stream: DestinationStream
+    ): OpenStreamTask {
+        return DefaultOpenStreamTask(destination.getStreamLoader(stream), taskLauncher)
     }
 }

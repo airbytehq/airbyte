@@ -24,7 +24,7 @@ import java.util.function.Consumer
 interface CheckpointManager<K, T> {
     fun addStreamCheckpoint(key: K, index: Long, checkpointMessage: T)
     fun addGlobalCheckpoint(keyIndexes: List<Pair<K, Long>>, checkpointMessage: T)
-    fun flushReadyCheckpointMessages()
+    suspend fun flushReadyCheckpointMessages()
 }
 
 /**
@@ -116,7 +116,7 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
         log.info { "Added global checkpoint with stream indexes: $keyIndexes" }
     }
 
-    override fun flushReadyCheckpointMessages() {
+    override suspend fun flushReadyCheckpointMessages() {
         /*
            Iterate over the checkpoints in order, evicting each that passes
            the persistence check. If a checkpoint is not persisted, then
