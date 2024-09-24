@@ -18,6 +18,7 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.function.Consumer
 import java.util.stream.Stream
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -345,9 +346,14 @@ class CheckpointManagerTest {
 
     @ParameterizedTest
     @ArgumentsSource(CheckpointManagerTestArgumentsProvider::class)
-    fun testAddingAndFlushingCheckpoints(testCase: TestCase) {
+    suspend fun testAddingAndFlushingCheckpoints(testCase: TestCase) = runTest {
         if (testCase.expectedException != null) {
-            Assertions.assertThrows(testCase.expectedException) { runTestCase(testCase) }
+            try {
+                runTestCase(testCase)
+                Assertions.fail<Unit>("Expected exception ${testCase.expectedException}")
+            } catch (e: Throwable) {
+                Assertions.assertEquals(testCase.expectedException, e::class.java)
+            }
         } else {
             runTestCase(testCase)
             Assertions.assertEquals(
@@ -363,7 +369,7 @@ class CheckpointManagerTest {
         }
     }
 
-    private fun runTestCase(testCase: TestCase) {
+    private suspend fun runTestCase(testCase: TestCase) {
         testCase.events.forEach {
             when (it) {
                 is TestStreamMessage -> {

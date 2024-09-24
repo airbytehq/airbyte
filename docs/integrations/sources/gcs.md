@@ -151,7 +151,8 @@ Leaving this field blank (default option) will disallow escaping.
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.6.10  | 2024-09-21 | [45850](https://github.com/airbytehq/airbyte/pull/45850) | Add integration tests                                                   |
+| 0.7.1   | 2024-09-24 | [45850](https://github.com/airbytehq/airbyte/pull/45850) | Add integration tests                                                   |
+| 0.7.0   | 2024-09-24 | [45671](https://github.com/airbytehq/airbyte/pull/45671) | Add .zip files support                                                  |
 | 0.6.9   | 2024-09-21 | [45798](https://github.com/airbytehq/airbyte/pull/45798) | Update dependencies                                                     |
 | 0.6.8   | 2024-09-19 | [45092](https://github.com/airbytehq/airbyte/pull/45092) | Update CDK v5; Fix OSError not raised in stream_reader.open_file        |
 | 0.6.7   | 2024-09-14 | [45492](https://github.com/airbytehq/airbyte/pull/45492) | Update dependencies                                                     |
