@@ -3,28 +3,6 @@
     "type": "STREAM",
     "stream": {
       "stream_descriptor": {
-        "name": "adaccounts",
-        "namespace": null
-      },
-      "stream_state": {
-        "states": [
-          {
-            "partition": {
-              "organization_id": "7f064d90-52a1-42db-b25b-7539e663e926",
-              "parent_slice": {}
-            },
-            "cursor": {
-              "updated_at": "2221-01-01T00:00:00.000Z"
-            }
-          }
-        ]
-      }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
-      "stream_descriptor": {
         "name": "creatives",
         "namespace": null
       },
