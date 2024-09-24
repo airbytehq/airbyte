@@ -130,8 +130,8 @@ class AbstractStreamStateConverter(ABC):
 
             if self.increment(last_interval_end) >= current_interval_start:
                 last_interval[self.END_KEY] = max(last_interval_end, current_interval[self.END_KEY])
-                current_interval_cursor_value = last_interval.get("most_recent_cursor_value")
-                last_interval_cursor_value = current_interval.get("most_recent_cursor_value")
+                last_interval_cursor_value = last_interval.get("most_recent_cursor_value")
+                current_interval_cursor_value = current_interval.get("most_recent_cursor_value")
 
                 last_interval["most_recent_cursor_value"] = (
                     max(current_interval_cursor_value, last_interval_cursor_value)
