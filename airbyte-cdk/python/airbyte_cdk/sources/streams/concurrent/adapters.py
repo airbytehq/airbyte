@@ -322,7 +322,9 @@ class StreamPartitionGenerator(PartitionGenerator):
 
     def generate(self) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
-            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor)
+            yield StreamPartition(
+                self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
+            )
 
 
 class CursorPartitionGenerator(PartitionGenerator):
@@ -364,7 +366,15 @@ class CursorPartitionGenerator(PartitionGenerator):
         :return: An iterable of StreamPartition objects.
         """
         for state_slice in self._cursor.generate_slices():
-            yield StreamPartition(self._stream, copy.deepcopy(state_slice), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor)
+            yield StreamPartition(
+                self._stream,
+                copy.deepcopy(state_slice),
+                self.message_repository,
+                self._sync_mode,
+                self._cursor_field,
+                self._state,
+                self._cursor,
+            )
 
 
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
