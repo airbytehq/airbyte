@@ -1,10 +1,11 @@
 # Factorial
 This directory contains the manifest-only connector for `source-factorial`.
 
-Website: https://app.factorialhr.com/
-API Docs: https://apidoc.factorialhr.com/reference
-Auth Docs: https://apidoc.factorialhr.com/docs/api-keys
-API Keys: https://app.factorialhr.com/settings/api-keys
+## Documentation reference:
+Visit `https://apidoc.factorialhr.com/reference` for API documentation
+
+## Authentication setup
+`Factorial` uses API token authentication, Visit `https://app.factorialhr.com/settings/api-keys` for getting your api token. Refer `https://apidoc.factorialhr.com/docs/api-keys`.
 
 ## Usage
 There are multiple ways to use this connector:

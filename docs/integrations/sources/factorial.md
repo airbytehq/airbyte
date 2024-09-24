@@ -1,8 +1,11 @@
 # Factorial
-Website: https://app.factorialhr.com/
-API Docs: https://apidoc.factorialhr.com/reference
-Auth Docs: https://apidoc.factorialhr.com/docs/api-keys
-API Keys: https://app.factorialhr.com/settings/api-keys
+This directory contains the manifest-only connector for [`source-factorial`](https://app.factorialhr.com/).
+
+## Documentation reference:
+Visit `https://apidoc.factorialhr.com/reference` for API documentation
+
+## Authentication setup
+`Factorial` uses API token authentication, Visit `https://app.factorialhr.com/settings/api-keys` for getting your api token. Refer `https://apidoc.factorialhr.com/docs/api-keys`.
 
 ## Configuration
 
@@ -48,8 +51,8 @@ API Keys: https://app.factorialhr.com/settings/api-keys
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-24 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-24 |[45882](https://github.com/airbytehq/airbyte/pull/45882)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
