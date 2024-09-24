@@ -381,23 +381,17 @@ def test_get_error_display_message(exception, expected_display_message):
     assert display_message == expected_display_message
 
 
-@pytest.mark.parametrize(
-    "sync_mode",
-    [
-        pytest.param(SyncMode.full_refresh, id="test_full_refresh"),
-        pytest.param(SyncMode.incremental, id="test_incremental"),
-    ],
-)
-def test_cursor_partition_generator(sync_mode):
+def test_cursor_partition_generator():
     stream = Mock()
     cursor = Mock()
     message_repository = Mock()
 
     state_slices = [{"slice": 1}, {"slice": 2}]
+    cursor.generate_slices.return_value = state_slices
     cursor.state = {"slices": state_slices}
     cursor.cursor_field = CursorField("cursor_field")
 
-    partition_generator = CursorPartitionGenerator(stream, message_repository, sync_mode, cursor)
+    partition_generator = CursorPartitionGenerator(stream, message_repository, cursor)
 
     partitions = list(partition_generator.generate())
 

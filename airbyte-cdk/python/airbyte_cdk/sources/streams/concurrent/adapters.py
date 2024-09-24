@@ -214,10 +214,10 @@ class StreamPartition(Partition):
         stream: Stream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
+        sync_mode: SyncMode,
         cursor_field: Optional[List[str]],
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
-        sync_mode: SyncMode = SyncMode.full_refresh,
     ):
         """
         :param stream: The stream to delegate to
@@ -248,7 +248,7 @@ class StreamPartition(Partition):
             #  `if not stream_state` to know if it calls the Event stream or not
             for record_data in self._stream.read_records(
                 cursor_field=self._cursor_field,
-                sync_mode=self._sync_mode,
+                sync_mode=SyncMode.full_refresh,
                 stream_slice=copy.deepcopy(self._slice),
                 stream_state=self._state,
             ):
@@ -322,15 +322,7 @@ class StreamPartitionGenerator(PartitionGenerator):
 
     def generate(self) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
-            yield StreamPartition(
-                self._stream,
-                copy.deepcopy(s),
-                self.message_repository,
-                self._cursor_field,
-                self._state,
-                self._cursor,
-                sync_mode=self._sync_mode,
-            )
+            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor)
 
 
 class CursorPartitionGenerator(PartitionGenerator):
@@ -345,7 +337,6 @@ class CursorPartitionGenerator(PartitionGenerator):
         self,
         stream: Stream,
         message_repository: MessageRepository,
-        sync_mode: SyncMode,
         cursor: Cursor,
     ):
         """
@@ -358,7 +349,7 @@ class CursorPartitionGenerator(PartitionGenerator):
         """
         self._stream = stream
         self.message_repository = message_repository
-        self._sync_mode = sync_mode
+        self._sync_mode = SyncMode.full_refresh
         self._cursor = cursor
         self._cursor_field = self._cursor.cursor_field
         self._state = self._cursor.state
@@ -373,15 +364,7 @@ class CursorPartitionGenerator(PartitionGenerator):
         :return: An iterable of StreamPartition objects.
         """
         for state_slice in self._cursor.generate_slices():
-            yield StreamPartition(
-                self._stream,
-                copy.deepcopy(state_slice),
-                self.message_repository,
-                [self._cursor_field.cursor_field_key],
-                self._state,
-                self._cursor,
-                genera,
-            )
+            yield StreamPartition(self._stream, copy.deepcopy(state_slice), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor)
 
 
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
