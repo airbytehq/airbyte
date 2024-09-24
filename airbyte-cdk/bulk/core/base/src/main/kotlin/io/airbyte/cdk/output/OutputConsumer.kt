@@ -25,9 +25,7 @@ import io.micronaut.context.annotation.Value
 import io.micronaut.context.env.Environment
 import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
-import java.io.FileOutputStream
 import java.io.PrintStream
-import java.nio.file.Path
 import java.time.Clock
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
@@ -103,9 +101,6 @@ interface OutputConsumer : Consumer<AirbyteMessage>, AutoCloseable {
 
 /** Configuration properties prefix for [StdoutOutputConsumer]. */
 const val CONNECTOR_OUTPUT_PREFIX = "airbyte.connector.output"
-
-// Used for integration tests.
-const val CONNECTOR_OUTPUT_FILE = "$CONNECTOR_OUTPUT_PREFIX.file"
 
 /** Default implementation of [OutputConsumer]. */
 @Singleton
@@ -293,10 +288,4 @@ private class RecordTemplate(
 private class PrintStreamFactory {
 
     @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
-
-    @Singleton
-    @Requires(env = [Environment.TEST])
-    @Requires(property = CONNECTOR_OUTPUT_FILE)
-    fun file(@Value("\${$CONNECTOR_OUTPUT_FILE}") filePath: Path): PrintStream =
-        PrintStream(FileOutputStream(filePath.toFile()), false, Charsets.UTF_8)
 }

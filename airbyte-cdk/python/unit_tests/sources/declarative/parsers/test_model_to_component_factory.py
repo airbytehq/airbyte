@@ -24,7 +24,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -70,7 +70,11 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    DatetimeBasedRequestOptionsProvider,
+    DefaultRequestOptionsProvider,
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
@@ -180,6 +184,14 @@ list_stream:
     step: "P10D"
     cursor_field: "created"
     cursor_granularity: "PT0.000001S"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: after
+    end_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: before
     $parameters:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 check:
@@ -259,6 +271,14 @@ spec:
     assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester._path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester._path.default == "{{ next_page_token['next_page_url'] }}"
+
+    assert isinstance(stream.retriever.request_option_provider, DatetimeBasedRequestOptionsProvider)
+    assert stream.retriever.request_option_provider.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream.retriever.request_option_provider.start_time_option.field_name.eval(config=input_config) == "after"
+    assert stream.retriever.request_option_provider.end_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream.retriever.request_option_provider.end_time_option.field_name.eval(config=input_config) == "before"
+    assert stream.retriever.request_option_provider._partition_field_start.string == "start_time"
+    assert stream.retriever.request_option_provider._partition_field_end.string == "end_time"
 
     assert isinstance(stream.retriever.requester.authenticator, BearerAuthenticator)
     assert stream.retriever.requester.authenticator.token_provider.get_token() == "verysecrettoken"
@@ -2314,3 +2334,174 @@ def test_create_jwt_authenticator(config, manifest, expected):
         }
     )
     assert authenticator._get_jwt_payload() == jwt_payload
+
+
+def test_use_request_options_provider_for_datetime_based_cursor():
+    config = {
+        "start_time": "2024-01-01T00:00:00.000000+0000",
+    }
+
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        step="P5D",
+        cursor_field="updated_at",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        cursor_granularity="PT1S",
+        is_compare_strictly=True,
+        config=config,
+        parameters={},
+    )
+
+    datetime_based_request_options_provider = DatetimeBasedRequestOptionsProvider(
+        start_time_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter,
+            field_name="after",
+            parameters={},
+        ),
+        end_time_option=RequestOption(
+            inject_into=RequestOptionType.request_parameter,
+            field_name="before",
+            parameters={},
+        ),
+        config=config,
+        parameters={},
+    )
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=datetime_based_cursor,
+        request_options_provider=datetime_based_request_options_provider,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.cursor, DatetimeBasedCursor)
+    assert isinstance(retriever.stream_slicer, DatetimeBasedCursor)
+
+    assert isinstance(retriever.request_option_provider, DatetimeBasedRequestOptionsProvider)
+    assert retriever.request_option_provider.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert retriever.request_option_provider.start_time_option.field_name.eval(config=input_config) == "after"
+    assert retriever.request_option_provider.end_time_option.inject_into == RequestOptionType.request_parameter
+    assert retriever.request_option_provider.end_time_option.field_name.eval(config=input_config) == "before"
+    assert retriever.request_option_provider._partition_field_start.string == "start_time"
+    assert retriever.request_option_provider._partition_field_end.string == "end_time"
+
+
+def test_do_not_separate_request_options_provider_for_non_datetime_based_cursor():
+    # This test validates that we're only using the dedicated RequestOptionsProvider for DatetimeBasedCursor and using the
+    # existing StreamSlicer for other types of cursors and partition routing. Once everything is migrated this test can be deleted
+
+    config = {
+        "start_time": "2024-01-01T00:00:00.000000+0000",
+    }
+
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    datetime_based_cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="{{ config.start_time }}", parameters={}),
+        step="P5D",
+        cursor_field="updated_at",
+        datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
+        cursor_granularity="PT1S",
+        is_compare_strictly=True,
+        config=config,
+        parameters={},
+    )
+
+    list_partition_router = ListPartitionRouter(
+        cursor_field="id",
+        values=["four", "oh", "eight"],
+        config=config,
+        parameters={},
+    )
+
+    per_partition_cursor = PerPartitionCursor(
+        cursor_factory=CursorFactory(lambda: datetime_based_cursor),
+        partition_router=list_partition_router,
+    )
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=per_partition_cursor,
+        request_options_provider=None,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.cursor, PerPartitionCursor)
+    assert isinstance(retriever.stream_slicer, PerPartitionCursor)
+
+    assert isinstance(retriever.request_option_provider, PerPartitionCursor)
+    assert isinstance(retriever.request_option_provider._cursor_factory, CursorFactory)
+    assert retriever.request_option_provider._partition_router == list_partition_router
+
+
+def test_use_default_request_options_provider():
+    simple_retriever_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(emit_connector_builder_messages=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=simple_retriever_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+        request_options_provider=None,
+        transformations=[],
+    )
+
+    assert isinstance(retriever, SimpleRetriever)
+    assert retriever.primary_key == "id"
+    assert retriever.name == "Test"
+
+    assert isinstance(retriever.stream_slicer, SinglePartitionRouter)
+    assert isinstance(retriever.request_option_provider, DefaultRequestOptionsProvider)

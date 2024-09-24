@@ -4,22 +4,22 @@
 
 package io.airbyte.cdk.task
 
-import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.Deserializer
 import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.DestinationRecord
-import io.airbyte.cdk.message.DestinationRecordMessage
+import io.airbyte.cdk.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.message.DestinationStreamComplete
-import io.airbyte.cdk.message.SpooledRawMessagesLocalFile
-import io.airbyte.cdk.state.StreamManager
-import io.airbyte.cdk.state.StreamsManager
+import io.airbyte.cdk.message.DestinationStreamIncomplete
+import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import kotlin.io.path.bufferedReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+interface ProcessRecordsTask : Task
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -29,61 +29,71 @@ import kotlinx.coroutines.withContext
  * TODO: The batch handling logic here is identical to that in @[ProcessBatchTask]. Both should be
  * moved to the task launcher.
  */
-class ProcessRecordsTask(
+class DefaultProcessRecordsTask(
     private val streamLoader: StreamLoader,
-    private val streamManager: StreamManager,
     private val taskLauncher: DestinationTaskLauncher,
-    private val fileEnvelope: BatchEnvelope<SpooledRawMessagesLocalFile>,
+    private val fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     private val deserializer: Deserializer<DestinationMessage>,
-) : Task {
+) : ProcessRecordsTask {
     override suspend fun execute() {
+        val log = KotlinLogging.logger {}
+
+        log.info { "Processing records from ${fileEnvelope.batch.localFile}" }
         val nextBatch =
-            withContext(Dispatchers.IO) {
-                val records =
-                    fileEnvelope.batch.localPath
-                        .bufferedReader(Charsets.UTF_8)
-                        .lineSequence()
-                        .map {
-                            when (val record = deserializer.deserialize(it)) {
-                                is DestinationRecordMessage -> record
-                                else ->
-                                    throw IllegalStateException(
-                                        "Expected record message, got ${record::class}"
-                                    )
-                            }
-                        }
-                        .takeWhile { it !is DestinationStreamComplete }
-                        .map { it as DestinationRecord }
-                        .iterator()
-                streamLoader.processRecords(records, fileEnvelope.batch.totalSizeBytes)
+            try {
+                withContext(Dispatchers.IO) {
+                    fileEnvelope.batch.localFile.toFileReader().use { reader ->
+                        val records =
+                            reader
+                                .lines()
+                                .map {
+                                    when (val message = deserializer.deserialize(it)) {
+                                        is DestinationStreamAffinedMessage -> message
+                                        else ->
+                                            throw IllegalStateException(
+                                                "Expected record message, got ${message::class}"
+                                            )
+                                    }
+                                }
+                                .takeWhile {
+                                    it !is DestinationStreamComplete &&
+                                        it !is DestinationStreamIncomplete
+                                }
+                                .map { it as DestinationRecord }
+                                .iterator()
+                        streamLoader.processRecords(records, fileEnvelope.batch.totalSizeBytes)
+                    }
+                }
+            } finally {
+                log.info { "Processing completed, deleting ${fileEnvelope.batch.localFile}" }
+                fileEnvelope.batch.localFile.delete()
             }
 
         val wrapped = fileEnvelope.withBatch(nextBatch)
-        streamManager.updateBatchState(wrapped)
-
-        // TODO: Move this logic into the task launcher
-        if (nextBatch.state != Batch.State.COMPLETE) {
-            taskLauncher.startProcessBatchTask(streamLoader, wrapped)
-        } else if (streamManager.isBatchProcessingComplete()) {
-            taskLauncher.startCloseStreamTasks(streamLoader)
-        }
+        taskLauncher.handleNewBatch(streamLoader, wrapped)
     }
+}
+
+interface ProcessRecordsTaskFactory {
+    fun make(
+        taskLauncher: DestinationTaskLauncher,
+        streamLoader: StreamLoader,
+        fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
+    ): ProcessRecordsTask
 }
 
 @Singleton
 @Secondary
-class ProcessRecordsTaskFactory(
-    private val streamsManager: StreamsManager,
+class DefaultProcessRecordsTaskFactory(
     private val deserializer: Deserializer<DestinationMessage>,
-) {
-    fun make(
+) : ProcessRecordsTaskFactory {
+    override fun make(
         taskLauncher: DestinationTaskLauncher,
         streamLoader: StreamLoader,
-        fileEnvelope: BatchEnvelope<SpooledRawMessagesLocalFile>,
+        fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask {
-        return ProcessRecordsTask(
+        return DefaultProcessRecordsTask(
             streamLoader,
-            streamsManager.getManager(streamLoader.stream),
             taskLauncher,
             fileEnvelope,
             deserializer,
