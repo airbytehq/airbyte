@@ -108,13 +108,11 @@ def test_get_files_to_sync_with_different_file_as_initial_state(cursor, remote_f
 
 
 def test_add_file_zip_files(mocked_reader, zip_file, logger):
-    unzipped_file = mocked_reader.unzip_files(zip_file, logger)
-
     cursor = Cursor(stream_config=FileBasedStreamConfig(name="test", globs=["**/*.zip"], format={"filetype": "csv"}))
-    cursor.add_file(unzipped_file)
+    cursor.add_file(zip_file)
 
     saved_history_cursor = datetime.strptime(
-        cursor._file_to_datetime_history[unzipped_file.displayed_uri],
+        cursor._file_to_datetime_history[zip_file.displayed_uri],
         cursor.DATE_TIME_FORMAT
     )
 

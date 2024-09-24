@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 import datetime
-from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles
@@ -49,11 +48,3 @@ def test_open_file_without_compression(remote_file, logger):
 
     with pytest.raises(OSError):
         reader.open_file(remote_file, FileReadMode.READ, None, logger)
-
-def test_unzip_files(mocked_reader, zip_file, logger, caplog):
-    unzipped_file = mocked_reader.unzip_files(zip_file, logger)
-
-    assert unzipped_file
-    assert unzipped_file.displayed_uri
-    assert unzipped_file.uri
-    assert "Picking up first file test.csv from zip archive" in caplog.text

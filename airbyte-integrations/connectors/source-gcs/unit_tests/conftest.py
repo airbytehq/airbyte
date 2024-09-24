@@ -61,5 +61,15 @@ def zip_file():
     return GCSRemoteFile(
         uri=str(Path(__file__).parent / "resource/files/test.csv.zip"),
         last_modified=datetime.today(),
-        mime_type=".zip"
+        mime_type=".zip",
+        displayed_uri="resource/files/test.csv.zip"
     )
+
+@pytest.fixture
+def mocked_blob():
+    blob = Mock()
+    with open(Path(__file__).parent / "resource/files/test.csv.zip", "rb") as f:
+        blob.download_as_bytes.return_value = f.read()
+        blob.size = f.tell()
+
+    return blob

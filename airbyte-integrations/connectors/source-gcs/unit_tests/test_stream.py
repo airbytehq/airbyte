@@ -13,11 +13,10 @@ def test_transform_record(zip_file, mocked_reader, logger):
         validation_policy=Mock(), errors_collector=Mock(), cursor=Mock()
     )
     last_updated = zip_file.last_modified.isoformat()
-    unzipped_file = mocked_reader.unzip_files(zip_file, logger)
-    transformed_record = stream.transform_record({"field1": 1}, unzipped_file, last_updated)
+    transformed_record = stream.transform_record({"field1": 1}, zip_file, last_updated)
 
-    assert transformed_record["_ab_source_file_url"] == unzipped_file.displayed_uri
-    assert transformed_record["_ab_source_file_url"] != unzipped_file.uri
+    assert transformed_record["_ab_source_file_url"] == zip_file.displayed_uri
+    assert transformed_record["_ab_source_file_url"] != zip_file.uri
 
     last_updated = datetime.today().isoformat()
     csv_file = GCSRemoteFile(
