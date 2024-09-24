@@ -33,7 +33,7 @@ acceptance_tests:
           path: "integration_tests/expected_records_jsonl.jsonl"
       - config_path: "secrets/config_glob.json"
         expect_records:
-          path: "integration_tests/expected_records_glob.jsonl
+          path: "integration_tests/expected_records_glob.jsonl"
   incremental:
     tests:
       - config_path: "secrets/config.json"
