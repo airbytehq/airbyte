@@ -24,6 +24,7 @@ def _file_uri() -> str:
 def remote_file():
     return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv")
 
+
 @pytest.fixture
 def remote_file_older():
     return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now() - timedelta(days=1))
