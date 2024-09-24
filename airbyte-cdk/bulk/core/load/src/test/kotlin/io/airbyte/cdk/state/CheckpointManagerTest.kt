@@ -5,23 +5,20 @@
 package io.airbyte.cdk.state
 
 import com.google.common.collect.Range
-import com.google.common.collect.RangeSet
-import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
-import io.airbyte.cdk.message.Batch
-import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.MessageConverter
+import io.airbyte.cdk.message.MockStreamsManager
 import io.micronaut.context.annotation.Prototype
-import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.function.Consumer
 import java.util.stream.Stream
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
@@ -29,10 +26,9 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-@MicronautTest(environments = ["StateManagerTest"])
+@MicronautTest(environments = ["MockStreamsManager"])
 class CheckpointManagerTest {
     @Inject lateinit var checkpointManager: TestCheckpointManager
-
     /**
      * Test state messages.
      *
@@ -70,70 +66,6 @@ class CheckpointManagerTest {
                     collectedStreamOutput.getOrPut(t.stream) { mutableListOf() }.add(t.payload)
                 is MockGlobalCheckpointOut -> collectedGlobalOutput.add(t.payload)
             }
-        }
-    }
-
-    /**
-     * The only thing we really need is `areRecordsPersistedUntil`. (Technically we're emulating the
-     * @[StreamManager] behavior here, since the state manager doesn't actually know what ranges are
-     * closed, but less than that would make the test unrealistic.)
-     */
-    class MockStreamManager : StreamManager {
-        var persistedRanges: RangeSet<Long> = TreeRangeSet.create()
-
-        override fun countRecordIn(): Long {
-            throw NotImplementedError()
-        }
-
-        override fun countEndOfStream(): Long {
-            throw NotImplementedError()
-        }
-
-        override fun markCheckpoint(): Pair<Long, Long> {
-            throw NotImplementedError()
-        }
-
-        override fun <B : Batch> updateBatchState(batch: BatchEnvelope<B>) {
-            throw NotImplementedError()
-        }
-
-        override fun isBatchProcessingComplete(): Boolean {
-            throw NotImplementedError()
-        }
-
-        override fun areRecordsPersistedUntil(index: Long): Boolean {
-            return persistedRanges.encloses(Range.closedOpen(0, index))
-        }
-
-        override fun markClosed() {
-            throw NotImplementedError()
-        }
-
-        override fun streamIsClosed(): Boolean {
-            throw NotImplementedError()
-        }
-
-        override suspend fun awaitStreamClosed() {
-            throw NotImplementedError()
-        }
-    }
-
-    @Prototype
-    @Requires(env = ["StateManagerTest"])
-    class MockStreamsManager(@Named("mockCatalog") catalog: DestinationCatalog) : StreamsManager {
-        private val mockManagers = catalog.streams.associateWith { MockStreamManager() }
-
-        fun addPersistedRanges(stream: DestinationStream, ranges: List<Range<Long>>) {
-            mockManagers[stream]!!.persistedRanges.addAll(ranges)
-        }
-
-        override fun getManager(stream: DestinationStream): StreamManager {
-            return mockManagers[stream]
-                ?: throw IllegalArgumentException("Stream not found: $stream")
-        }
-
-        override suspend fun awaitAllStreamsClosed() {
-            throw NotImplementedError()
         }
     }
 
@@ -414,9 +346,14 @@ class CheckpointManagerTest {
 
     @ParameterizedTest
     @ArgumentsSource(CheckpointManagerTestArgumentsProvider::class)
-    fun testAddingAndFlushingCheckpoints(testCase: TestCase) {
+    suspend fun testAddingAndFlushingCheckpoints(testCase: TestCase) = runTest {
         if (testCase.expectedException != null) {
-            Assertions.assertThrows(testCase.expectedException) { runTestCase(testCase) }
+            try {
+                runTestCase(testCase)
+                Assertions.fail<Unit>("Expected exception ${testCase.expectedException}")
+            } catch (e: Throwable) {
+                Assertions.assertEquals(testCase.expectedException, e::class.java)
+            }
         } else {
             runTestCase(testCase)
             Assertions.assertEquals(
@@ -432,7 +369,7 @@ class CheckpointManagerTest {
         }
     }
 
-    private fun runTestCase(testCase: TestCase) {
+    private suspend fun runTestCase(testCase: TestCase) {
         testCase.events.forEach {
             when (it) {
                 is TestStreamMessage -> {
