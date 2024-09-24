@@ -159,7 +159,7 @@ class ConcurrentCursor(Cursor):
         self.start, self._concurrent_state = self._get_concurrent_state(stream_state)
         self._lookback_window = lookback_window
         self._slice_range = slice_range
-        self._most_recent_cursor_value_per_partition: MutableMapping[Partition, Record] = {}
+        self._most_recent_cursor_value_per_partition: MutableMapping[Partition, Any] = {}
         self._has_closed_at_least_one_slice = False
         self._cursor_granularity = cursor_granularity
 
