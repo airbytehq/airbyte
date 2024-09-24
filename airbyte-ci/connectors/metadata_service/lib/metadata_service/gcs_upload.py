@@ -606,7 +606,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket. ")
     if rc_blob.md5_hash != version_blob.md5_hash:
         raise ValueError(
-            f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete."
+            f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete. Please check the Remote Release Candidate to confirm its the version you would like to remove and rerun with --force"
         )
 
     deleted_files = []
