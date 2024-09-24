@@ -16,6 +16,7 @@ from metadata_service.gcs_upload import (
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 from pydantic import ValidationError
 
+
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
     """Log the results of the metadata upload."""
     for file in metadata_upload_info.uploaded_files:
