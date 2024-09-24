@@ -1,11 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import calendar
 import logging
 import re
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
@@ -22,6 +21,9 @@ from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping impor
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -493,11 +495,118 @@ class Tickets(SourceZendeskIncrementalExportStream):
         """
         return super().validate_start_time(requested_start_time, value=3)
 
+class StreamSelector:
 
-class TicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
+    def __init__(self, stateless_stream: SourceZendeskSupportStream, stateful_stream: SourceZendeskSupportStream):
+        self._stateless_stream = stateless_stream
+        self._stateful_stream = stateful_stream
+
+    def get_parent_stream(self, stream_state: Mapping[str, Any]) -> SourceZendeskSupportStream:
+        return self._stateful_stream if stream_state else self._stateless_stream
+
+class TicketMetrics(SourceZendeskSupportStream):
+
+    name = "ticket_metrics"
+    cursor_field = "generated_timestamp"
+
+    def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
+        super().__init__(subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs)
+        self._cursor_field: str = self.cursor_field
+        self._parent_stream: SourceZendeskSupportStream = None
+        stateless_ticket_metrics = StatelessTicketMetrics(
+            subdomain=subdomain,
+            start_date=start_date,
+            ignore_pagination=ignore_pagination,
+            **kwargs
+        )
+        stateful_ticket_metrics = StatefulTicketMetrics(
+            parent=Tickets(
+                subdomain=subdomain,
+                start_date=start_date,
+                ignore_pagination=ignore_pagination,
+                **kwargs),
+            subdomain=subdomain,
+            start_date=start_date,
+            ignore_pagination=ignore_pagination,
+            **kwargs
+        )
+        self.stream_selector = StreamSelector(stateless_stream=stateless_ticket_metrics, stateful_stream=stateful_ticket_metrics)
+
+    @property
+    def parent_stream(self):
+        return self._parent_stream
+
+    @parent_stream.setter
+    def parent_stream(self, stream):
+        self._parent_stream = stream
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        start_date_timestamp: int = self.str2unixtime(self._start_date)
+        if self.parent_stream.most_recently_updated_record:
+            record = self.parent_stream.most_recently_updated_record
+            old_value: int = (current_stream_state or {}).get("generated_timestamp", start_date_timestamp)
+            new_value: int = (record or {}).get("_ab_updated_at", start_date_timestamp)
+            return {self.cursor_field: max(new_value, old_value)}
+        else:
+            return self.parent_stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
+        yield from self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self.parent_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        yield self.parent_stream.parse_response(response=response, stream_state=stream_state)
+
+
+class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
+
+    response_list_name: str = "ticket_metrics"
+    most_recently_updated_record: Mapping[str, Any] = None
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs) -> str:
+        return "ticket_metrics"
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """try to select relevant data only"""
+
+        records = response.json().get(self.response_list_name) or []
+
+        for record in records:
+            updated_at = record[self.cursor_field]
+            record["_ab_updated_at"] = self.str2unixtime(updated_at)
+            if updated_at > self._start_date:
+                if not self.most_recently_updated_record:
+                    self.most_recently_updated_record = record
+                elif updated_at > self.most_recently_updated_record[self.cursor_field]:
+                    self.most_recently_updated_record = record
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self._ignore_pagination:
+            return None
+
+        meta = response.json().get("meta", {}) if response.content else {}
+        return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
+
+
+class StatefulTicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
 
     response_list_name = "ticket_metric"
-    cursor_field = "generated_timestamp"
+    cursor_field = "_ab_updated_at"
+    legacy_cursor_field = "generated_timestamp"
+    most_recently_updated_record: Mapping[str, Any] = None
 
     def path(
         self,
@@ -519,8 +628,7 @@ class TicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        parent_stream_state = None
-        cursor_value = (stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
+        cursor_value = (stream_state or {}).get(self.legacy_cursor_field, self.str2unixtime(self._start_date))
         parent_stream_state = {self.parent.cursor_field: cursor_value}
         parent_records = self.parent.read_records(
             sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=None, stream_state=parent_stream_state
@@ -529,13 +637,13 @@ class TicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
         for record in parent_records:
             yield {
                 "ticket_id": record["id"],
-                self.cursor_field: record.get(self.cursor_field),
+                self.cursor_field: record.get(self.legacy_cursor_field),
             }
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        old_value = (current_stream_state or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
-        new_value = (latest_record or {}).get(self.cursor_field, pendulum.parse(self._start_date).int_timestamp)
-        return {self.cursor_field: max(new_value, old_value)}
+        old_value = (current_stream_state or {}).get(self.legacy_cursor_field, self.str2unixtime(self._start_date))
+        new_value = (latest_record or {}).get(self.cursor_field, self.str2unixtime(self._start_date))
+        return {self.legacy_cursor_field: max(new_value, old_value)}
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
         error_mapping = DEFAULT_ERROR_MAPPING | {
@@ -560,13 +668,7 @@ class TicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
         **kwargs,
     ) -> Iterable[Mapping]:
         """try to select relevant data only"""
-
-        try:
-            data = response.json().get(self.response_list_name or self.name) or {}
-        except requests.exceptions.JSONDecodeError:
-            data = {}
-
-        # no data in case of http errors
+        data = response.json().get(self.response_list_name) or {}
         if data:
             data[self.cursor_field] = (stream_slice or {}).get(self.cursor_field)
             yield data

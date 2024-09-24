@@ -167,6 +167,10 @@
       "description": "Timestamp when the ticket was last updated, either by a system update or by a ticket event.",
       "type": ["null", "integer"]
     },
+    "_ab_updated_at": {
+        "description": "Cursor field managed by Airbyte to enable incremental mode for the stream",
+        "type": ["null", "integer"]
+    },
     "url": {
       "description": "URL link to the ticket details",
       "type": ["null", "string"]
