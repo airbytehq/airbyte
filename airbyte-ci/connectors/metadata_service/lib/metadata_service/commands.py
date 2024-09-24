@@ -7,7 +7,7 @@ import pathlib
 import click
 from pydantic import ValidationError
 
-from metadata_service.constants import METADATA_FILE_NAME, RELEASE_CANDIDATE_GCS_FOLDER_NAME
+from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import (
     MetadataDeleteInfo,
     MetadataUploadInfo,

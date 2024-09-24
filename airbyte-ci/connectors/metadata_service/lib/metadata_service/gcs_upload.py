@@ -9,7 +9,7 @@ import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Literal, NamedTuple, Optional, Tuple
+from typing import List, NamedTuple, Optional, Tuple
 
 import git
 import requests
@@ -32,7 +32,7 @@ from metadata_service.constants import (
     METADATA_FOLDER,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
-from metadata_service.helpers.files import compute_gcs_md5, compute_sha256, create_zip_and_get_sha256
+from metadata_service.helpers.files import compute_gcs_md5, create_zip_and_get_sha256
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
