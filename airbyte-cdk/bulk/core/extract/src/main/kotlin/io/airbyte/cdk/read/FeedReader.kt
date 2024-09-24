@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
+import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
@@ -71,8 +72,15 @@ class FeedReader(
     }
 
     private suspend fun createPartitions(partitionsCreatorID: Long): List<PartitionReader> {
-        val partitionsCreator: PartitionsCreator =
-            root.partitionsCreatorFactory.make(root.stateManager, feed)
+        val partitionsCreator: PartitionsCreator = run {
+            for (factory in root.partitionsCreatorFactories) {
+                log.info { "Attempting bootstrap using ${factory::class}." }
+                return@run factory.make(root.stateManager, feed) ?: continue
+            }
+            throw SystemErrorException(
+                "Unable to bootstrap for feed $feed with ${root.partitionsCreatorFactories}"
+            )
+        }
         withContext(ctx("round-$partitionsCreatorID-acquire-resources")) {
             acquirePartitionsCreatorResources(partitionsCreatorID, partitionsCreator)
         }

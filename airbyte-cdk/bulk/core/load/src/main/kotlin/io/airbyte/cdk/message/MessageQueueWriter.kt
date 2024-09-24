@@ -22,11 +22,11 @@ interface MessageQueueWriter<T : Any> {
  *
  * TODO: Handle other message types.
  */
-@Singleton
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
+@Singleton
 class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
     private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>,
