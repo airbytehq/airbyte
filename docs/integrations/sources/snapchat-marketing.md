@@ -144,6 +144,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
 | 1.3.0 | 2024-09-09 | [44170](https://github.com/airbytehq/airbyte/pull/44170) | Added Optional filters - Organization & Ad Account IDs  |
+| 1.2.9 | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
 | 1.2.8 | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
 | 1.2.7 | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
 | 1.2.6 | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |

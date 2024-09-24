@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.iceberg;
@@ -8,13 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
-import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;
-import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfigFactory;
+import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Map;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -23,18 +23,24 @@ import org.apache.spark.sql.SparkSession.Builder;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
-public class IcebergDestination extends BaseConnector implements Destination {
+public abstract class BaseIcebergDestination extends BaseConnector implements Destination {
 
-  public IcebergDestination() {}
+  public BaseIcebergDestination() {}
 
-  public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new IcebergDestination()).run(args);
+  public abstract String getSpecJsonString() throws Exception;
+
+  public abstract IcebergCatalogConfig getCatalogConfig(@NotNull JsonNode config);
+
+  @NotNull
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    return Jsons.deserialize(getSpecJsonString(), ConnectorSpecification.class);
   }
 
   @Override
   public AirbyteConnectionStatus check(@NotNull JsonNode config) {
     try {
-      IcebergCatalogConfig icebergCatalogConfig = IcebergCatalogConfigFactory.fromJsonNodeConfig(config);
+      IcebergCatalogConfig icebergCatalogConfig = getCatalogConfig(config);
       icebergCatalogConfig.check();
 
       // getting here means Iceberg catalog check success
@@ -46,7 +52,7 @@ public class IcebergDestination extends BaseConnector implements Destination {
           "Could not connect to the Iceberg catalog with the provided configuration. \n" + e.getMessage()
               + ", root cause: " + rootCause.getClass().getSimpleName() + "(" + rootCause.getMessage() + ")";
       return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withStatus(Status.FAILED)
           .withMessage(errMessage);
     }
   }
@@ -61,13 +67,12 @@ public class IcebergDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    final IcebergCatalogConfig icebergCatalogConfig = IcebergCatalogConfigFactory.fromJsonNodeConfig(config);
-    Map<String, String> sparkConfMap = icebergCatalogConfig.sparkConfigMap();
-
-    Builder sparkBuilder = SparkSession.builder()
+  public AirbyteMessageConsumer getConsumer(@NotNull JsonNode config,
+                                            @NotNull ConfiguredAirbyteCatalog catalog,
+                                            @NotNull Consumer<AirbyteMessage> outputRecordCollector) {
+    final IcebergCatalogConfig icebergCatalogConfig = getCatalogConfig(config);
+    final Map<String, String> sparkConfMap = icebergCatalogConfig.sparkConfigMap();
+    final Builder sparkBuilder = SparkSession.builder()
         .master("local")
         .appName("Airbyte->Iceberg-" + System.currentTimeMillis());
     sparkConfMap.forEach(sparkBuilder::config);
