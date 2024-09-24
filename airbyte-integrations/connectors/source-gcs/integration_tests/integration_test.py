@@ -18,7 +18,7 @@ def get_configured_catalog(file_format: str) -> ConfiguredAirbyteCatalog:
     "file_format, expected_num_of_records",
     [
         ("csv", 4),
-        ("jsonl", 25),
+        ("jsonl", 50),
         ("parquet", 366),
         ("avro", 5),
     ],
