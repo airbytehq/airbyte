@@ -17,7 +17,7 @@ def get_configured_catalog(file_format: str) -> ConfiguredAirbyteCatalog:
 @pytest.mark.parametrize(
     "file_format, expected_num_of_records",
     [
-        ("csv", 2),
+        ("csv", 4),
         ("jsonl", 25),
         ("parquet", 366),
         ("avro", 5),
