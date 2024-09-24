@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "expiration": {
+          "type": ["integer", "null"]
+        },
+        "flags": {
+          "type": "integer"
+        },
+        "cas": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

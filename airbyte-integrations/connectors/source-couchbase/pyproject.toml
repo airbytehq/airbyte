@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 version = "0.1.0"
 name = "source-couchbase"
 description = "Source implementation for couchbase."
-authors = [ "Airbyte <contact@airbyte.io>",]
+authors = [ "Kaustav Ghosh <kaustav.ghosh@couchbase.com>",]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/couchbase"
@@ -16,7 +16,11 @@ packages = [ { include = "source_couchbase" }, {include = "main.py" } ]
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.12"
-airbyte-cdk = "^0"
+airbyte-cdk = "0.80.0"
+couchbase = "^4.3.1"
+pendulum = "==2.1.2"
+pytest = "^8.3.3"
+requests = "^2.32.3"
 
 [tool.poetry.scripts]
 source-couchbase = "source_couchbase.run:run"

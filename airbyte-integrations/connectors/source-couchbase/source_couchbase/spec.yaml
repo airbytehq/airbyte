@@ -4,31 +4,24 @@ connectionSpecification:
   title: Couchbase Source Spec
   type: object
   required:
-    - host
-    - port
+    - connection_string
     - username
     - password
   additionalProperties: true
   properties:
-    host:
+    connection_string:
       type: string
-      title: Host
-      description: The IP address or hostname of the Couchbase server
+      title: Connection String
+      description: The connection string for the Couchbase server (e.g., couchbase://localhost or couchbases://example.com)
       order: 0
-    port:
-      type: integer
-      title: Port
-      description: The port of the Couchbase server
-      default: 8091
-      order: 1
     username:
       type: string
       title: Username
       description: The username to use for authentication
-      order: 2
+      order: 1
     password:
       type: string
       title: Password
       description: The password to use for authentication
       airbyte_secret: true
-      order: 3
+      order: 2

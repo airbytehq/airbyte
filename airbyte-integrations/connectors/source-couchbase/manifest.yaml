@@ -1,215 +1,112 @@
-version: "0.1.0"
+# For Low code Connector builder
+version: 4.6.2
+
 type: DeclarativeSource
+
 check:
   type: CheckStream
-  stream_names:
-    - cluster_info
+  stream_names: []
 
 definitions:
+  streams: {}
   base_requester:
     type: HttpRequester
-    url_base: "http://{{ config['host'] }}:{{ config['port'] }}"
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['username'] }}"
       password: "{{ config['password'] }}"
-  streams:
-    cluster_info:
-      type: DeclarativeStream
-      name: cluster_info
-      primary_key: []
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /pools/default
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path: []
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/cluster_info"
-    bucket_info:
-      $ref: "#/definitions/streams/cluster_info"
-      name: bucket_info
-      primary_key: 
-        - name
-      retriever:
-        $ref: "#/definitions/streams/cluster_info/retriever"
-        requester:
-          path: /pools/default/buckets
-    node_info:
-      $ref: "#/definitions/streams/cluster_info"
-      name: node_info
-      primary_key: 
-        - hostname
-      retriever:
-        $ref: "#/definitions/streams/cluster_info/retriever"
-        record_selector:
-          extractor:
-            field_path: ["nodes"]
-    index_info:
-      $ref: "#/definitions/streams/cluster_info"
-      name: index_info
-      primary_key: 
-        - name
-      retriever:
-        $ref: "#/definitions/streams/cluster_info/retriever"
-        requester:
-          path: /indexStatus
-        record_selector:
-          extractor:
-            field_path: ["indexes"]
-    xdcr_info:
-      $ref: "#/definitions/streams/cluster_info"
-      name: xdcr_info
-      primary_key: 
-        - name
-      retriever:
-        $ref: "#/definitions/streams/cluster_info/retriever"
-        requester:
-          path: /pools/default/remoteClusters
 
 streams:
-  - $ref: "#/definitions/streams/cluster_info"
-  - $ref: "#/definitions/streams/bucket_info"
-  - $ref: "#/definitions/streams/node_info"
-  - $ref: "#/definitions/streams/index_info"
-  - $ref: "#/definitions/streams/xdcr_info"
+  - name: clusters
+    type: DeclarativeStream
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}"
+        path: "/pools/default"
+        http_method: GET
+        request_options_provider:
+          type: RequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+          request_body_data: {}
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['username'] }}"
+            password: "{{ config['password'] }}"
+
+  - name: nodes
+    type: DeclarativeStream
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['base_url'] }}"
+        path: "/pools/default/nodes"
+        http_method: GET
+        request_options_provider:
+          type: RequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+          request_body_data: {}
+          authenticator:
+            type: BasicHttpAuthenticator
+            username: "{{ config['username'] }}"
+            password: "{{ config['password'] }}"
 
 spec:
   type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/couchbase
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: Couchbase Source Spec
     type: object
+    $schema: http://json-schema.org/draft-07/schema#
     required:
-      - host
-      - port
       - username
-      - password
-    additionalProperties: true
+      - base_url
     properties:
-      host:
-        type: string
-        title: Host
-        description: The IP address or hostname of the Couchbase server
-        order: 0
-      port:
-        type: integer
-        title: Port
-        description: The port of the Couchbase server
-        default: 8091
-        order: 1
       username:
         type: string
         title: Username
-        description: The username to use for authentication
-        order: 2
+        order: 0
       password:
         type: string
         title: Password
-        description: The password to use for authentication
+        always_show: true
         airbyte_secret: true
-        order: 3
-
-schemas:
-  cluster_info:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      nodes:
-        type: array
-        items:
-          type: object
-      services:
-        type: array
-        items:
-          type: string
-      balanced:
-        type: boolean
-    additionalProperties: true
-  bucket_info:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      name:
+        order: 1
+      base_url:
         type: string
-      bucketType:
-        type: string
-      numReplicas:
-        type: integer
-      ramQuota:
-        type: integer
-      storageBackend:
-        type: string
-    additionalProperties: true
-  node_info:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      hostname:
-        type: string
-      status:
-        type: string
-      services:
-        type: array
-        items:
-          type: string
-      memoryTotal:
-        type: integer
-      memoryFree:
-        type: integer
-      mcdMemoryReserved:
-        type: integer
-      mcdMemoryAllocated:
-        type: integer
-    additionalProperties: true
-  index_info:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      name:
-        type: string
-      bucket:
-        type: string
-      scope:
-        type: string
-      collection:
-        type: string
-      indexType:
-        type: string
-      status:
-        type: string
-      definition:
-        type: string
-    additionalProperties: true
-  xdcr_info:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties:
-      name:
-        type: string
-      sourceBucket:
-        type: string
-      targetBucket:
-        type: string
-      targetCluster:
-        type: string
-      status:
-        type: string
-      pauseRequested:
-        type: boolean
+        title: Base URL
+        order: 2
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    cluster_info: false
-    bucket_info: false
-    node_info: false
-    index_info: false
-    xdcr_info: false
+  autoImportSchema: {}
+  testedStreams: {}
+  assist: {}
+
+schemas: {}
