@@ -60,7 +60,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -111,7 +111,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -162,7 +162,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -213,7 +213,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -301,7 +301,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -352,7 +352,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -403,7 +403,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -454,7 +454,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -516,7 +516,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
-          datetime: '{{ config["end_date"] }}'
+          datetime: '{{ config["end_date"] or now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -553,7 +553,6 @@ spec:
     required:
       - api_key
       - start_date
-      - end_date
     properties:
       api_key:
         type: string
@@ -585,6 +584,7 @@ spec:
         default: tour
       end_date:
         type: string
+        description: End date for incremental sync
         order: 4
         title: End date
         format: date-time
@@ -605,33 +605,33 @@ metadata:
     survey_responses: true
   testedStreams:
     helpbars:
-      hasRecords: true
-      streamHash: b9ea73495fde3f0f73571085b607de666db18fff
+      streamHash: 0a7ba26cd962134338003ca12b90666fcd13e713
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     segments:
-      hasRecords: true
-      streamHash: c2ce4f31f6b73f42468d5601733d8951055e433a
+      streamHash: 75dd1415744ffd11e6bb57284f1c3e7875d166dd
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     urls:
-      hasRecords: true
-      streamHash: b0d903a033ecaaf03f7d894f5c9c72581aad5bf1
+      streamHash: b25c587581096cafecc49d148bab28052783ddd4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     url_groups:
-      hasRecords: true
-      streamHash: a37bb5fafd5d8718e5d9796cd698067c1761aa18
+      streamHash: ee7e5cc175e211db97347bee383dc98e7f779dee
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     changes:
       hasRecords: true
       streamHash: 77c1c0a055652a17fad8d4c9fadeddd2b353fc64
@@ -640,40 +640,40 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     launchers:
-      hasRecords: true
-      streamHash: 7eec7fcbf4b47cbf3392037be4b68be9c4f41f15
+      streamHash: f80cae968df5fcd35ccd8a354fee13489134ddbf
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tooltips:
-      hasRecords: true
-      streamHash: 017f9ad94fe66430a97ab66c0b79f06e8278f972
+      streamHash: 6d719a0f3e67e8990aa8777481cc912a5a41d0ee
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tours:
-      hasRecords: true
-      streamHash: 93258663f88cd04bf6dbf7f95e98b9817566efef
+      streamHash: ad41bd55706c5c0df68a1f90ee8133a18ca66a43
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     surveys:
+      streamHash: 19fe636d735af502037ae6f017c3fb41ee3bf49e
+      hasResponse: true
+      responsesAreSuccessful: true
       hasRecords: true
-      streamHash: 7afb0ea9e227b6d8778458032e230a21e577b0e5
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     survey_responses:
-      streamHash: efc5062dc7aa55f23f7db5617f047c89291feb91
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: false
-      primaryKeysArePresent: true
+      streamHash: 7484f1ba08160ff8c3ca2c4f2f0c41ccf935f8f1
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developers.chameleon.io/#/
 
@@ -2655,19 +2655,33 @@ schemas:
       - updated_at
   survey_responses:
     type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - id
     properties:
-      cursor:
-        type:
-          - object
-          - "null"
+      id:
+        type: string
+      href:
+        type: string
+      button_text:
+        type: string
+      button_order:
+        type: integer
+      input_text:
+        type: string
+      finished_at:
+        type: string
+      profile:
+        type: object
         properties:
-          limit:
-            type:
-              - number
-              - "null"
-      responses:
-        type:
-          - array
-          - "null"
+          id:
+            type: string
+          uid:
+            type: string
+          company:
+            type: object
+            properties:
+              id:
+                type: string
+              uid:
+                type: string
