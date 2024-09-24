@@ -16,6 +16,7 @@ from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 from google.protobuf import json_format
+from google.protobuf.message import Message
 
 from .utils import logger
 
@@ -162,19 +163,23 @@ class GoogleAds:
         return query_template
 
     @staticmethod
-    def serialize_protobuf_message(message) -> str:
+    def serialize_protobuf_message(message: Message) -> str:
         """
         This method tryies to serialize a given object into JSON if the given object is a protocol bugger message.
         If not, the normal str() is applied. That helps keep the complex objects written as parsable structures.
         """
-
         try:
-            return json_format.MessageToJson(message._pb).replace('\n', '')
-        except:
+            # The code is accessing "private" _pb value, because the message itself does not
+            # contain public PB attribute and for google ads message-based classes, like AdTextAd,
+            # that's apparently the only way to get the actual protobuf message that cab be serialzied
+            # into json.
+            return json_format.MessageToJson(message._pb, indent=0).replace('\n', '')
+        except AttributeError:
+            # This is a fallback for the cases when '_pb' attribute is not available.
             return str(message)
 
     @staticmethod
-    def get_field_value(field_value: GoogleAdsRow, field: str, schema_type: Mapping[str, Any]) -> str:
+    def get_field_value(field_value: GoogleAdsRow, field: str, schema_type: Mapping[str, Any]) -> str | list[str]:
         field_name = field.split(".")
         for level_attr in field_name:
             """
