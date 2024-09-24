@@ -76,13 +76,18 @@ object TestFixtures {
         maxMemoryBytesForTesting: Long = 1_000_000L,
         constants: DefaultJdbcConstants = DefaultJdbcConstants(),
         vararg mockedQueries: MockedQuery,
-    ) =
-        DefaultJdbcSharedState(
-            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency),
+    ): DefaultJdbcSharedState {
+        val configuration =
+            StubbedJdbcSourceConfiguration(global, checkpointTargetInterval, maxConcurrency)
+        return DefaultJdbcSharedState(
+            configuration,
             BufferingOutputConsumer(ClockFactory().fixed()),
             MockSelectQuerier(ArrayDeque(mockedQueries.toList())),
-            constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting)
+            constants.copy(maxMemoryBytesForTesting = maxMemoryBytesForTesting),
+            ConcurrencyResource(configuration),
+            NoOpGlobalLockResource()
         )
+    }
 
     fun DefaultJdbcSharedState.factory() =
         DefaultJdbcPartitionFactory(
@@ -171,5 +176,10 @@ object TestFixtures {
     object MockSelectQueryGenerator : SelectQueryGenerator {
         override fun generate(ast: SelectQuerySpec): SelectQuery =
             SelectQuery(ast.toString(), listOf(), listOf())
+    }
+
+    object MockStateQuerier : StateQuerier {
+        override val feeds: List<Feed> = listOf()
+        override fun current(feed: Feed): OpaqueStateValue? = null
     }
 }
