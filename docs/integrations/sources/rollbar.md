@@ -9,6 +9,12 @@ Rollbar is a comprehensive code improvement platform that helps developers to im
 | `start_date` | `string` | Start date.  |  |
 | `account_access_token` | `string` | Account Access Token.  |  |
 
+To get started you need two access tokens;
+- `Account Access Token` for Account level streams (`projects`, `teams`, `users`) and,
+- `Project Access Token` for Project level streams.
+
+Follow [this guide](https://docs.rollbar.com/reference/getting-started-1#authentication) to retrieve them.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
