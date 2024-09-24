@@ -1,12 +1,34 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/couchbase
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Couchbase Spec
+  title: Couchbase Source Spec
   type: object
   required:
-    - TODO
+    - host
+    - port
+    - username
+    - password
+  additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    host:
       type: string
-      description: describe me
+      title: Host
+      description: The IP address or hostname of the Couchbase server
+      order: 0
+    port:
+      type: integer
+      title: Port
+      description: The port of the Couchbase server
+      default: 8091
+      order: 1
+    username:
+      type: string
+      title: Username
+      description: The username to use for authentication
+      order: 2
+    password:
+      type: string
+      title: Password
+      description: The password to use for authentication
+      airbyte_secret: true
+      order: 3
