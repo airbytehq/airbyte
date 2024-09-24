@@ -30,6 +30,7 @@ data:
     - cdk:python-file-based
   connectorTestSuitesOptions:
     - suite: unitTests
+    - suite: integrationTests
     - suite: liveTests
       testConnections:
         - name: gcs_old_config_dev_null
