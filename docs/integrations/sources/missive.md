@@ -26,6 +26,7 @@ Visit `https://missiveapp.com/help/api-documentation/rest-endpoints` for API doc
 | teams | id | DefaultPaginator | ✅ |  ❌  |
 | shared_labels | id | DefaultPaginator | ✅ |  ❌  |
 | organizations | id | DefaultPaginator | ✅ |  ❌  |
+| conversations | id | No pagination | ✅ |  ✅  |
 
 ## Changelog
 
