@@ -52,7 +52,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -96,7 +96,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -172,7 +172,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -249,7 +249,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -304,7 +304,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         is_data_feed: true
       schema_loader:
@@ -359,7 +359,7 @@ definitions:
     url_base: https://api.rollbar.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"project_access_token\"] }}"
+      api_token: '{{ config["project_access_token"] }}'
       inject_into:
         type: RequestOption
         field_name: X-Rollbar-Access-Token
@@ -369,7 +369,7 @@ definitions:
     url_base: https://api.rollbar.com
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config[\"account_access_token\"] }}"
+      api_token: '{{ config["account_access_token"] }}'
       inject_into:
         type: RequestOption
         field_name: X-Rollbar-Access-Token
