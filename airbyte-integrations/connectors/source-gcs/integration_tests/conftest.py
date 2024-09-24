@@ -24,7 +24,7 @@ def generate_signed_url(self, *args, **kwargs):
     parsed_url = urlparse(self.media_link)
     new_netloc = parsed_url.netloc.replace("0.0.0.0", get_docker_ip())
     modified_url = urlunparse(parsed_url._replace(netloc=new_netloc))
-
+    self._properties["mediaLink"] = modified_url
     return modified_url
 
 
