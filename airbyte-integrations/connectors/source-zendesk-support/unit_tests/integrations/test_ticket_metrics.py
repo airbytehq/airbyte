@@ -5,10 +5,10 @@ from unittest import TestCase
 
 import freezegun
 import pendulum
+from airbyte_cdk.models import AirbyteStateBlob, SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, SyncMode
 
 from .config import ConfigBuilder
 from .helpers import given_tickets, given_tickets_with_state
@@ -56,7 +56,7 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob.model_validate({
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({
             "generated_timestamp": ticket["generated_timestamp"]
         })
 
@@ -84,6 +84,6 @@ class TestTicketMetricsIncremental(TestCase):
 
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob.model_validate({
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({
             "generated_timestamp": record_cursor_value.int_timestamp
         })

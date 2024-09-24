@@ -183,6 +183,11 @@ The traffic recorded on the control connector is passed to the target connector 
 
 Delete the `debug`command.
 
+### 0.18.8
+
+Improve error message when failing to retrieve connection. 
+Ask to double-check that a sync ran with the control version on the selected connection.
+
 ### 0.18.7
 
 Improve error message when failing to retrieve connection.

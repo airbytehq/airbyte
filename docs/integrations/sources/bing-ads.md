@@ -214,6 +214,9 @@ See more info about user-defined pk [here](https://docs.airbyte.com/understandin
 
 :::
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ### Custom Reports
 
 You can build your own report by providing:
@@ -258,6 +261,9 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                        |
 | :------ | :--------- | :------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.7.6 | 2024-09-21 | [45512](https://github.com/airbytehq/airbyte/pull/45512) | Update dependencies |
+| 2.7.5 | 2024-09-07 | [45246](https://github.com/airbytehq/airbyte/pull/45246) | Update dependencies |
+| 2.7.4 | 2024-08-31 | [44276](https://github.com/airbytehq/airbyte/pull/44276) | Update dependencies |
 | 2.7.3 | 2024-08-12 | [43742](https://github.com/airbytehq/airbyte/pull/43742) | Update dependencies |
 | 2.7.2 | 2024-08-10 | [43591](https://github.com/airbytehq/airbyte/pull/43591) | Update dependencies |
 | 2.7.1 | 2024-08-03 | [43245](https://github.com/airbytehq/airbyte/pull/43245) | Update dependencies |

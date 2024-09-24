@@ -38,17 +38,19 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     }
 
     fun out(record: ObjectNode) {
-        val recordMessageData: ObjectNode = Jsons.objectNode()
         for (fieldName in streamFieldNames) {
-            recordMessageData.set<JsonNode>(fieldName, record[fieldName] ?: Jsons.nullNode())
+            outData.set<JsonNode>(fieldName, record[fieldName] ?: Jsons.nullNode())
         }
-        outputConsumer.accept(
-            AirbyteRecordMessage()
-                .withStream(stream.name)
-                .withNamespace(stream.namespace)
-                .withData(recordMessageData),
-        )
+        outputConsumer.accept(msg)
     }
+
+    private val outData: ObjectNode = Jsons.objectNode()
+
+    private val msg =
+        AirbyteRecordMessage()
+            .withStream(stream.name)
+            .withNamespace(stream.namespace)
+            .withData(outData)
 
     val streamFieldNames: List<String> = stream.fields.map { it.id }
 
@@ -58,7 +60,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
-class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
+open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
@@ -69,7 +71,11 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
         selectQuerier
             .executeQuery(
                 q = partition.nonResumableQuery,
-                parameters = SelectQuerier.Parameters(streamState.fetchSize),
+                parameters =
+                    SelectQuerier.Parameters(
+                        reuseResultObject = true,
+                        fetchSize = streamState.fetchSize
+                    ),
             )
             .use { result: SelectQuerier.Result ->
                 for (record in result) {
@@ -93,7 +99,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
+open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
@@ -109,7 +115,8 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
         selectQuerier
             .executeQuery(
                 q = partition.resumableQuery(limit),
-                parameters = SelectQuerier.Parameters(fetchSize),
+                parameters =
+                    SelectQuerier.Parameters(reuseResultObject = true, fetchSize = fetchSize),
             )
             .use { result: SelectQuerier.Result ->
                 for (record in result) {

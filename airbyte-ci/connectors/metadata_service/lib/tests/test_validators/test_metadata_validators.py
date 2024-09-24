@@ -71,10 +71,8 @@ def test_validation_fail_on_docker_image_tag_decrement(metadata_definition, decr
     metadata_definition.data.dockerImageTag = decremented_version
     success, error_message = metadata_validator.validate_docker_image_tag_is_not_decremented(metadata_definition, None)
     assert not success
-    assert (
-        error_message
-        == f"The dockerImageTag value ({decremented_version}) can't be decremented: it should be equal to or above {current_version}."
-    )
+    expected_prefix = f"The dockerImageTag value ({decremented_version}) can't be decremented: it should be equal to or above"
+    assert error_message.startswith(expected_prefix), error_message
 
 
 def test_validation_pass_on_docker_image_tag_increment(metadata_definition, incremented_version):

@@ -41,6 +41,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.postgresql.PGProperty.CURRENT_SCHEMA;
 import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
+import static org.postgresql.PGProperty.TCP_KEEP_ALIVE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -158,7 +159,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
       // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
       // https://github.com/airbytehq/airbyte/issues/24796
-      PREPARE_THRESHOLD, "0");
+      PREPARE_THRESHOLD, "0", TCP_KEEP_ALIVE, "true");
 
   private List<String> schemas;
 

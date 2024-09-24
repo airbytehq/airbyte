@@ -233,8 +233,8 @@ auth:
     secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
     oidc:
       domain: ## e.g. company.example
-      app-name: ## e.g. airbyte
-      display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+      appName: ## e.g. airbyte
+      display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
       clientIdSecretKey: client-id
       clientSecretSecretKey: client-secret
 ```
@@ -265,8 +265,8 @@ global:
       secretName: airbyte-config-secrets ## Name of your Kubernetes secret.
       oidc:
         domain: ## e.g. company.example
-        app-name: ## e.g. airbyte
-        display-name: ## e.g. Company SSO - optional, falls back to app-name if not provided
+        appName: ## e.g. airbyte
+        display-name: ## e.g. Company SSO - optional, falls back to appName if not provided
         clientIdSecretKey: client-id
         clientSecretSecretKey: client-secret
 ```

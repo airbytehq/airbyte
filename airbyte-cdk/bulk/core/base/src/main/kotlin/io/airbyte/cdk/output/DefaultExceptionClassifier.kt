@@ -22,24 +22,12 @@ class DefaultExceptionClassifier(
 ) : ExceptionClassifier {
 
     override fun classify(e: Throwable): ConnectorError? {
-        return when (val connectorErrorException: ConnectorErrorException? = unwind(e)) {
-            is ConfigErrorException -> ConfigError(connectorErrorException.message!!)
-            is TransientErrorException -> TransientError(connectorErrorException.message!!)
-            is SystemErrorException -> SystemError(connectorErrorException.message)
-            null -> null
+        val unwound: Throwable? = ExceptionClassifier.unwind(e) { it is ConnectorErrorException }
+        return when (unwound) {
+            is ConfigErrorException -> ConfigError(unwound.message!!)
+            is TransientErrorException -> TransientError(unwound.message!!)
+            is SystemErrorException -> SystemError(unwound.message)
+            else -> null
         }
-    }
-
-    /** Recursively walks the causes of [e] and returns the last [ConnectorErrorException]. */
-    fun unwind(e: Throwable): ConnectorErrorException? {
-        var connectorErrorException: ConnectorErrorException? = null
-        var unwound: Throwable? = e
-        while (unwound != null) {
-            if (unwound is ConnectorErrorException) {
-                connectorErrorException = unwound
-            }
-            unwound = unwound.cause
-        }
-        return connectorErrorException
     }
 }

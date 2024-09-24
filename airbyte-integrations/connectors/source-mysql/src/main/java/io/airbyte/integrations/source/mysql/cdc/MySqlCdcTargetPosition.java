@@ -73,12 +73,12 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
   public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
     if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.getSnapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final String eventFileName = changeEventWithMetadata.eventValueAsJson().get("source").get("file").asText();
-      final long eventPosition = changeEventWithMetadata.eventValueAsJson().get("source").get("pos").asLong();
+      final String eventFileName = changeEventWithMetadata.getEventValueAsJson().get("source").get("file").asText();
+      final long eventPosition = changeEventWithMetadata.getEventValueAsJson().get("source").get("pos").asLong();
       final boolean isEventPositionAfter =
           eventFileName.compareTo(targetPosition.fileName) > 0 || (eventFileName.compareTo(
               targetPosition.fileName) == 0 && eventPosition >= targetPosition.position);
@@ -110,8 +110,8 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
       return false;
     }
 
-    final String eventFileName = event.eventValueAsJson().get("source").get("file").asText();
-    final long eventPosition = event.eventValueAsJson().get("source").get("pos").asLong();
+    final String eventFileName = event.getEventValueAsJson().get("source").get("file").asText();
+    final long eventPosition = event.getEventValueAsJson().get("source").get("pos").asLong();
 
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 

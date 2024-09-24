@@ -168,7 +168,7 @@ public class MongoDbCdcInitializer {
         .toList());
     final var startedCdcStreamList = incrementalOnlyStreamsCatalog.getStreams().stream()
         .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
-        .map(stream -> stream.getStream().getNamespace() + "." + stream.getStream().getName()).toList();
+        .map(stream -> stream.getStream().getNamespace() + "\\." + stream.getStream().getName()).toList();
 
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),

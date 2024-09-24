@@ -566,7 +566,9 @@ class TestConcurrentReadProcessor(unittest.TestCase):
             handler.is_done()
 
     @freezegun.freeze_time("2020-01-01T00:00:00")
-    def test_given_underlying_exception_is_traced_exception_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(self):
+    def test_given_underlying_exception_is_traced_exception_on_exception_return_trace_message_and_on_stream_complete_return_stream_status(
+        self,
+    ):
         stream_instances_to_read_from = [self._stream, self._another_stream]
 
         handler = ConcurrentReadProcessor(

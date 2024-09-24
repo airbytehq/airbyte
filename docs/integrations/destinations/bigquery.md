@@ -210,7 +210,9 @@ tutorials:
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.9.0   | 2024-09-18 | [45433](https://github.com/airbytehq/airbyte/pull/45433)   | upgrade all dependencies                                                                                                                                          |
+| 2.8.9   | 2024-08-20 | [44476](https://github.com/airbytehq/airbyte/pull/44476)   | Increase message parsing limit to 100mb                                                                                                                                          |
 | 2.8.8   | 2024-08-22 | [44526](https://github.com/airbytehq/airbyte/pull/44526)   | Revert protocol compliance fix                                                                                                                                                   |
 | 2.8.7   | 2024-08-15 | [42504](https://github.com/airbytehq/airbyte/pull/42504)   | Fix bug in refreshes logic (already mitigated in platform, just fixing protocol compliance)                                                                                      |
 | 2.8.6   | 2024-07-30 | [42511](https://github.com/airbytehq/airbyte/pull/42511)   | Added a copy operation to validate copy permissions in the check function                                                                                                        |

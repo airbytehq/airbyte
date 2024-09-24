@@ -47,12 +47,14 @@ def setup_parser(remote_file):
     parser = ExcelParser()
 
     # Sample data for the mock Excel file
-    data = pd.DataFrame({
-        "column1": [1, 2, 3],
-        "column2": ["a", "b", "c"],
-        "column3": [True, False, True],
-        "column4": pd.to_datetime(["2021-01-01", "2022-01-01", "2023-01-01"]),
-    })
+    data = pd.DataFrame(
+        {
+            "column1": [1, 2, 3],
+            "column2": ["a", "b", "c"],
+            "column3": [True, False, True],
+            "column4": pd.to_datetime(["2021-01-01", "2022-01-01", "2023-01-01"]),
+        }
+    )
 
     # Convert the DataFrame to an Excel byte stream
     excel_bytes = BytesIO()

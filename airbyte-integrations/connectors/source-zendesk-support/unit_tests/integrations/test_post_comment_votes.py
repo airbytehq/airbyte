@@ -6,12 +6,12 @@ from unittest.mock import patch
 
 import freezegun
 import pendulum
+from airbyte_cdk.models import AirbyteStateBlob
+from airbyte_cdk.models import Level as LogLevel
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob
-from airbyte_protocol.models import Level as LogLevel
-from airbyte_protocol.models import SyncMode
 
 from .config import ConfigBuilder
 from .helpers import given_post_comments, given_posts, given_ticket_forms
@@ -209,7 +209,7 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 1
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob.model_validate({"updated_at": post_comment_votes["updated_at"]})
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": post_comment_votes["updated_at"]})
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker):
@@ -267,4 +267,4 @@ class TestPostsCommentsStreamIncremental(TestCase):
         assert len(output.records) == 2
 
         assert output.most_recent_state.stream_descriptor.name == "post_comment_votes"
-        assert output.most_recent_state.stream_state == AirbyteStateBlob.model_validate({"updated_at": datetime_to_string(last_page_record_updated_at)})
+        assert output.most_recent_state.stream_state == AirbyteStateBlob({"updated_at": datetime_to_string(last_page_record_updated_at)})

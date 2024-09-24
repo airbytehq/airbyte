@@ -415,7 +415,7 @@ def test_send_request_params(provider_params, param_params, authenticator_params
             {"k": [1, 2]},
             "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
             id="test-key-with-list-to-be-interpolated",
-        )
+        ),
     ],
 )
 def test_request_param_interpolation(request_parameters, config, expected_query_params):
@@ -464,8 +464,7 @@ def test_request_param_interpolation_with_incorrect_values(request_parameters, c
         requester.send_request()
 
     assert (
-        error.value.args[0]
-        == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
+        error.value.args[0] == f"Invalid value for `{invalid_value_for_key}` parameter. The values of request params cannot be an object."
     )
 
 

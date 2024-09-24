@@ -14,11 +14,11 @@ class RelationalDbDebeziumEventConverter(
     private val emittedAt: Instant
 ) : DebeziumEventConverter {
     override fun toAirbyteMessage(event: ChangeEventWithMetadata): AirbyteMessage {
-        val debeziumEvent = event.eventValueAsJson()
-        val before: JsonNode? = debeziumEvent.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
-        val after: JsonNode? = debeziumEvent.get(DebeziumEventConverter.Companion.AFTER_EVENT)
+        val debeziumEvent = event.eventValueAsJson
+        val before: JsonNode? = debeziumEvent?.get(DebeziumEventConverter.Companion.BEFORE_EVENT)
+        val after: JsonNode? = debeziumEvent?.get(DebeziumEventConverter.Companion.AFTER_EVENT)
         val source: JsonNode =
-            checkNotNull(debeziumEvent.get(DebeziumEventConverter.Companion.SOURCE_EVENT)) {
+            checkNotNull(debeziumEvent?.get(DebeziumEventConverter.Companion.SOURCE_EVENT)) {
                 "ChangeEvent contains no source record $debeziumEvent"
             }
 

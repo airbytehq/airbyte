@@ -10,7 +10,14 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 import requests
 import requests_cache
-from airbyte_cdk.models import AirbyteStreamStatus, AirbyteStreamStatusReason, AirbyteStreamStatusReasonType, Level, StreamDescriptor
+from airbyte_cdk.models import (
+    AirbyteMessageSerializer,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusReason,
+    AirbyteStreamStatusReasonType,
+    Level,
+    StreamDescriptor,
+)
 from airbyte_cdk.sources.http_config import MAX_CONNECTION_POOL_SIZE
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
@@ -38,6 +45,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import (
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from orjson import orjson
 from requests.auth import AuthBase
 
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -281,9 +289,11 @@ class HttpClient:
         if error_resolution.response_action == ResponseAction.RATE_LIMITED:
             # TODO: Update to handle with message repository when concurrent message repository is ready
             reasons = [AirbyteStreamStatusReason(type=AirbyteStreamStatusReasonType.RATE_LIMITED)]
-            message = stream_status_as_airbyte_message(
-                StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons
-            ).model_dump_json(exclude_unset=True)
+            message = orjson.dumps(
+                AirbyteMessageSerializer.dump(
+                    stream_status_as_airbyte_message(StreamDescriptor(name=self._name), AirbyteStreamStatus.RUNNING, reasons)
+                )
+            ).decode()
 
             # Simply printing the stream status is a temporary solution and can cause future issues. Currently, the _send method is
             # wrapped with backoff decorators, and we can only emit messages by iterating record_iterator in the abstract source at the

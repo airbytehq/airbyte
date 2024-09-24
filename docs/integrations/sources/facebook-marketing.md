@@ -195,6 +195,9 @@ For more information, see the [Facebook Insights API documentation.](https://dev
 Please be aware that some fields, such as `conversions` and `conversion_values`, may not be directly accessible when querying Ad Insights. For comprehensive access to all available fields, we recommend using a Custom Insight and specifying the necessary **breakdowns**.
 ::: -->
 
+### Entity-Relationship Diagram (ERD)
+<EntityRelationshipDiagram></EntityRelationshipDiagram>
+
 ## Facebook Marketing Attribution Reporting
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).

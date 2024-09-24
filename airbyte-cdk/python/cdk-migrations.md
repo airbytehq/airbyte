@@ -1,5 +1,48 @@
 # CDK Migration Guide
 
+## Upgrading to 5.0.0
+
+Version 5.0.0 of the CDK updates the `airbyte_cdk.models` dependency to replace Pydantic v2 models with Python `dataclasses`. It also
+updates the `airbyte-protocol-models` dependency to a version that uses dataclasses models.
+
+The changes to Airbyte CDK itself are backwards-compatible, but some changes are required if the connector:
+- uses the `airbyte_protocol` models directly, or `airbyte_cdk.models`, which points to `airbyte_protocol` models
+- uses third-party libraries, such as `pandas`, to read data from sources, which output non-native Python objects that cannot be serialized by the [orjson](https://github.com/ijl/orjson) library.
+
+> [!NOTE]
+> All Serializers have omit_none=True parameter that is applied recursively. Thus, all None values are excluded from output. 
+> This is expected behaviour and does not break anything in protocol.
+
+### Updating direct usage of Pydantic based Airbyte Protocol Models
+
+If the connector uses Pydantic based Airbyte Protocol Models, the code will need to be updated to reflect the changes `pydantic`.
+It is recommended to import protocol classes not directly by `import airbyte_protocol` statement, but from `airbyte_cdk.models` package.
+It is also recommended to use *-`Serializer` from `airbyte_cdk.models` to manipulate the data or convert to/from JSON, e.g.
+```python3
+# Before (pydantic model message serialization) 
+AirbyteMessage().model_dump_json()
+
+# After (dataclass model serialization)
+orjson.dumps(AirbyteMessageSerializer.dump(AirbyteMessage())).decode()
+
+```
+
+### Updating third-party libraries
+
+For example, if `pandas` outputs data from the source, which has date-time `pandas.Timestamp` object in
+it, [Orjson supported Types](https://github.com/ijl/orjson?tab=readme-ov-file#types), these fields should be transformed to native JSON
+objects.
+
+```python3
+# Before
+yield from df.to_dict(orient="records")
+
+# After - Option 1
+yield orjson.loads(df.to_json(orient="records", date_format="iso", date_unit="us"))
+
+```
+
+
 ## Upgrading to 4.5.0
 
 In this release, we are no longer supporting the legacy state format in favor of the current per-stream state
