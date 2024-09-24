@@ -13,6 +13,7 @@ import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -28,6 +29,7 @@ interface StreamsManager {
     suspend fun awaitAllStreamsClosed()
 }
 
+@Secondary
 class DefaultStreamsManager(
     private val streamManagers: ConcurrentHashMap<DestinationStream, StreamManager>
 ) : StreamsManager {

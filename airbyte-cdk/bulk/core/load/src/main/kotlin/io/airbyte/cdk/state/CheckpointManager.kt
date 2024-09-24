@@ -10,6 +10,7 @@ import io.airbyte.cdk.message.CheckpointMessage
 import io.airbyte.cdk.message.MessageConverter
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Secondary
 import io.micronaut.core.util.clhm.ConcurrentLinkedHashMap
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
@@ -167,6 +168,7 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
     }
 }
 
+@Secondary
 @Singleton
 class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,

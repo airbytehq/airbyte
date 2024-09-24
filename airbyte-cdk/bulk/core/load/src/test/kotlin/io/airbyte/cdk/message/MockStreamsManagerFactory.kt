@@ -11,9 +11,10 @@ import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.StreamManager
 import io.airbyte.cdk.state.StreamsManager
-import io.micronaut.context.annotation.Prototype
+import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
+import javax.inject.Singleton
 
 class MockStreamManager : StreamManager {
     var persistedRanges: RangeSet<Long> = TreeRangeSet.create()
@@ -67,8 +68,9 @@ class MockStreamManager : StreamManager {
     }
 }
 
-@Prototype
+@Singleton
 @Requires(env = ["MockStreamsManager"])
+@Replaces(StreamsManager::class)
 class MockStreamsManager(@Named("mockCatalog") catalog: DestinationCatalog) : StreamsManager {
     private val mockManagers = catalog.streams.associateWith { MockStreamManager() }
 
