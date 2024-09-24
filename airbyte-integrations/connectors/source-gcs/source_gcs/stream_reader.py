@@ -1,14 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
 import itertools
 import json
 import logging
-import os
 import tempfile
-import zipfile
 from datetime import datetime, timedelta
 from io import IOBase
 from typing import Iterable, List, Optional
@@ -21,6 +17,7 @@ from google.cloud import storage
 from google.oauth2 import service_account
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
+from source_gcs.zip_helper import ZipHelper
 
 ERROR_MESSAGE_ACCESS = (
     "We don't have access to {uri}. The file appears to have become unreachable during sync."
@@ -90,7 +87,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                         remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
 
                         if file_extension == "zip":
-                            yield self.unzip_files(remote_file, logger)
+                            yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
                         else:
                             yield remote_file
         except Exception as exc:
@@ -125,20 +122,3 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             logger.exception(oe)
             raise oe
         return result
-
-    def unzip_files(self, file: GCSRemoteFile, logger: logging.Logger) -> GCSRemoteFile:
-        with smart_open.open(file.uri, "rb") as fin:
-            with zipfile.ZipFile(fin) as zip:
-                zip.extractall(self.tmp_dir.name)
-
-        unzipped_file = os.listdir(self.tmp_dir.name)[0]
-        file_extension = unzipped_file.split(".")[-1]
-
-        logger.info(f"Picking up first file {unzipped_file.split('/')[-1]} from zip archive {file.uri}.")
-
-        return GCSRemoteFile(
-            uri=os.path.join(self.tmp_dir.name, unzipped_file),  # uri to temporal local file
-            last_modified=file.last_modified,
-            mime_type=file_extension,
-            displayed_uri=file.uri,  # uri to remote file .zip
-        )
