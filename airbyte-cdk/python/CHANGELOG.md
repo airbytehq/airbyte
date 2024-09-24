@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.7.2
+add transform_record() to class DefaultFileBasedStream
+
 ## 5.7.1
 add python-snappy to file-based dependencies
 
