@@ -9,7 +9,7 @@ import re
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Literal, NamedTuple, Optional, Tuple
+from typing import List, NamedTuple, Optional, Tuple
 
 import git
 import requests
@@ -32,7 +32,7 @@ from metadata_service.constants import (
     METADATA_FOLDER,
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
-from metadata_service.helpers.files import compute_gcs_md5, compute_sha256, create_zip_and_get_sha256
+from metadata_service.helpers.files import compute_gcs_md5, create_zip_and_get_sha256
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
@@ -134,14 +134,6 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 
 
 # 🛠️ HELPERS
-
-
-def _delete_blob_from_gcs(blob_to_delete: storage.blob.Blob) -> bool:
-    """Deletes a blob from the bucket."""
-    print(f"Deleting {blob_to_delete.name}...")
-    blob_to_delete.delete()
-
-    return True
 
 
 def _get_storage_client() -> storage.Client:
@@ -606,7 +598,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
         raise FileNotFoundError(f"Release candidate metadata file {rc_path} does not exist in the bucket. ")
     if rc_blob.md5_hash != version_blob.md5_hash:
         raise ValueError(
-            f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete."
+            f"Release candidate metadata file {rc_path} hash does not match the version metadata file {version_path} hash. Unsafe to delete. Please check the Remote Release Candidate to confirm its the version you would like to remove and rerun with --force"
         )
 
     deleted_files = []

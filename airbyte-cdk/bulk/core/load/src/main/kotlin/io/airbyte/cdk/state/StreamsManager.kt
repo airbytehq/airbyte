@@ -159,6 +159,7 @@ class DefaultStreamManager(
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
     }
 
+    /** TODO: Handle conflating PERSISTED w/ COMPLETE upstream, to allow for overlap? */
     override fun areRecordsPersistedUntil(index: Long): Boolean {
         return isProcessingCompleteForState(index, Batch.State.PERSISTED) ||
             isProcessingCompleteForState(index, Batch.State.COMPLETE) // complete => persisted
