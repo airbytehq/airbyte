@@ -136,14 +136,6 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 # 🛠️ HELPERS
 
 
-def _delete_blob_from_gcs(blob_to_delete: storage.blob.Blob) -> bool:
-    """Deletes a blob from the bucket."""
-    print(f"Deleting {blob_to_delete.name}...")
-    blob_to_delete.delete()
-
-    return True
-
-
 def _get_storage_client() -> storage.Client:
     """Get the GCS storage client using credentials form GCS_CREDENTIALS env variable."""
     gcs_creds = os.environ.get("GCS_CREDENTIALS")
