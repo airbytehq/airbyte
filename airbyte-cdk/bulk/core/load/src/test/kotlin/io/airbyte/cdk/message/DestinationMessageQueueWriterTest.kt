@@ -103,7 +103,7 @@ class DestinationMessageQueueWriterTest {
             globalStates.add(keyIndexes to checkpointMessage)
         }
 
-        override fun flushReadyCheckpointMessages() {
+        override suspend fun flushReadyCheckpointMessages() {
             TODO("Not yet implemented")
         }
     }
