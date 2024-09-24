@@ -1,11 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
+from typing import Callable, Dict, Iterable, List
 
 import asyncclick as click
+
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
@@ -20,13 +19,9 @@ from pipelines.cli.confirm_prompt import confirm
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.cli.secrets import wrap_gcp_credentials_in_secret, wrap_in_secret
 from pipelines.consts import DEFAULT_PYTHON_PACKAGE_REGISTRY_CHECK_URL, DEFAULT_PYTHON_PACKAGE_REGISTRY_URL, ContextState
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 from pipelines.models.secrets import Secret
-
-if TYPE_CHECKING:
-    from typing import Callable, Dict, Iterable, List
-
-    from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 
 ROLLOUT_MODE_TO_PIPELINE_FUNCTION: Dict[RolloutMode, Callable] = {
     RolloutMode.PUBLISH: run_connector_publish_pipeline,
@@ -35,9 +30,15 @@ ROLLOUT_MODE_TO_PIPELINE_FUNCTION: Dict[RolloutMode, Callable] = {
 }
 
 
+# Third-party connectors can't be published with this pipeline, skip them.
+# This is not the same as partner connectors. Partner connectors use our tech stack and can
+# be published just fine. Third-party connectors are in their own subdirectory.
 def filter_out_third_party_connectors(
     selected_connectors_with_modified_files: Iterable[ConnectorWithModifiedFiles],
 ) -> List[ConnectorWithModifiedFiles]:
+    """
+    Return the list of connectors filtering out the connectors stored in connectors/third-party directory.
+    """
     filtered_connectors = []
     for connector in selected_connectors_with_modified_files:
         if connector.is_third_party:
@@ -136,7 +137,6 @@ async def publish(
     promote_release_candidate: bool,
     rollback_release_candidate: bool,
 ) -> bool:
-
     if promote_release_candidate and rollback_release_candidate:
         raise click.UsageError("You can't promote and rollback a release candidate at the same time.")
     elif promote_release_candidate:

@@ -12,6 +12,8 @@ import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification  # type: ignore
 from connector_ops.utils import ConnectorLanguage  # type: ignore
 from dagger import Container, ExecError, File, ImageLayerCompression, Platform, QueryError
+from pydantic import BaseModel, ValidationError
+
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext, RolloutMode
@@ -28,7 +30,6 @@ from pipelines.dagger.actions.remote_storage import upload_to_gcs
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.pip import is_package_published
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pydantic import BaseModel, ValidationError
 
 
 class InvalidSpecOutputError(Exception):
@@ -422,7 +423,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     async with semaphore:
         async with context:
-
             results = []
 
             metadata_validation_results = await MetadataValidation(context).run()
@@ -554,14 +554,15 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext) -> C
         ConnectorReport: The reports holding rollback results.
     """
 
+    results = []
     async with context:
         assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
         assert context.connector.metadata.get("releases", {}).get(
-            "isReleaseCandidate", False
+            "isReleaseCandidate", True
         ), "This pipeline can only run for release candidates."
-        results = [
+        results.append(
             await MetadataRollbackReleaseCandidate(context, context.metadata_bucket_name, context.metadata_service_gcs_credentials).run()
-        ]
+        )
 
     return ConnectorReport(context, results, name="ROLLBACK RESULTS")
 
@@ -575,14 +576,12 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext) -> Co
     Returns:
         ConnectorReport: The reports holding promote results.
     """
-
+    results = []
     async with context:
         assert context.rollout_mode == RolloutMode.PROMOTE, "This pipeline can only run in promote mode."
         assert context.connector.metadata.get("releases", {}).get(
-            "isReleaseCandidate", False
+            "isReleaseCandidate", True
         ), "This pipeline can only run for release candidates."
-
-        results = []
         metadata_promote_result = await MetadataPromoteReleaseCandidate(
             context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
         ).run()
