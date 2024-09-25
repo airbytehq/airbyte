@@ -843,6 +843,7 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 
 | Version | PR                                                         | Description                                                                                                                  |
 | ------- | ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| 4.35.6  | [#45632](https://github.com/airbytehq/airbyte/pull/45632)  | Add entry to format file ignore list (`destination-*/expected-spec.json`)                                                    |
 | 4.35.5  | [#45672](https://github.com/airbytehq/airbyte/pull/45672)  | Fix docs mount during publish                                                                                         |
 | 4.35.4  | [#42584](https://github.com/airbytehq/airbyte/pull/42584)  | Mount connector directory to metadata validation                                                                                         |
 | 4.35.3  | [#45393](https://github.com/airbytehq/airbyte/pull/45393)  | Resolve symlinks in `SimpleDockerStep`.                                                                        |
