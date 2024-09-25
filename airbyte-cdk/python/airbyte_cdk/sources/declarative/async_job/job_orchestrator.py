@@ -86,8 +86,9 @@ class AsyncPartition:
 
 
 T = TypeVar("T")
-class LookaheadIterator(Generic[T]):
 
+
+class LookaheadIterator(Generic[T]):
     def __init__(self, iterable: Iterable[T]) -> None:
         self._iterator = iter(iterable)
         self._buffer: List[T] = []
@@ -176,7 +177,9 @@ class AsyncJobOrchestrator:
                 self._replace_failed_jobs(partition)
 
             if self._has_bulk_parent and self._running_partitions and self._slice_iterator.has_next():
-                LOGGER.debug("This AsyncJobOrchestrator is operating as a child of a bulk stream hence we limit the number of concurrent jobs on the child until there are no more parent slices to avoid the child taking all the API job budget")
+                LOGGER.debug(
+                    "This AsyncJobOrchestrator is operating as a child of a bulk stream hence we limit the number of concurrent jobs on the child until there are no more parent slices to avoid the child taking all the API job budget"
+                )
                 return
 
             for _slice in self._slice_iterator:
@@ -375,7 +378,11 @@ class AsyncJobOrchestrator:
         """
         while True:
             try:
-                lazy_log(LOGGER, logging.DEBUG, lambda: f"JobOrchestrator loop - (Thread {threading.get_native_id()}, AsyncJobOrchestrator {self}) is starting the async job loop")
+                lazy_log(
+                    LOGGER,
+                    logging.DEBUG,
+                    lambda: f"JobOrchestrator loop - (Thread {threading.get_native_id()}, AsyncJobOrchestrator {self}) is starting the async job loop",
+                )
                 self._start_jobs()
                 if not self._slice_iterator.has_next() and not self._running_partitions:
                     break
@@ -391,7 +398,9 @@ class AsyncJobOrchestrator:
 
                 self._non_breaking_exceptions.append(exception)
 
-        LOGGER.info(f"JobOrchestrator loop - Thread (Thread {threading.get_native_id()}, AsyncJobOrchestrator {self}) completed! Errors during creation were {self._non_breaking_exceptions}")
+        LOGGER.info(
+            f"JobOrchestrator loop - Thread (Thread {threading.get_native_id()}, AsyncJobOrchestrator {self}) completed! Errors during creation were {self._non_breaking_exceptions}"
+        )
         if self._non_breaking_exceptions:
             # We emitted traced message but we didn't break on non_breaking_exception. We still need to raise an exception so that the
             # call of `create_and_get_completed_partitions` knows that there was an issue with some partitions and the sync is incomplete.
@@ -415,7 +424,9 @@ class AsyncJobOrchestrator:
         self._running_partitions = []
 
     def _is_breaking_exception(self, exception: Exception) -> bool:
-        return isinstance(exception, self._exceptions_to_break_on) or (isinstance(exception, AirbyteTracedException) and exception.failure_type == FailureType.config_error)
+        return isinstance(exception, self._exceptions_to_break_on) or (
+            isinstance(exception, AirbyteTracedException) and exception.failure_type == FailureType.config_error
+        )
 
     def fetch_records(self, partition: AsyncPartition) -> Iterable[Mapping[str, Any]]:
         """
