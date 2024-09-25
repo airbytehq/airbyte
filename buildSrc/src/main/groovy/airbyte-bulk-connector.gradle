@@ -165,6 +165,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             classpath = project.sourceSets.integrationTest.runtimeClasspath
             useJUnitPlatform()
             mustRunAfter project.tasks.check
+            dependsOn project.tasks.matching { it.name == 'assemble' }
         }
 
         project.tasks.named('build').configure {
