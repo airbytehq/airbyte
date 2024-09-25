@@ -169,11 +169,11 @@ class AsyncHttpJobRepository(AsyncJobRepository):
         for url in self.urls_extractor.extract_records(self._polling_job_response_by_id[job.api_job_id()]):
             stream_slice: StreamSlice = StreamSlice(partition={"url": url}, cursor_slice={})
             for message in self.download_retriever.read_records({}, stream_slice):
-                if isinstance(message, AirbyteMessage):
+                if isinstance(message, Record):
+                    yield message.data
+                elif isinstance(message, AirbyteMessage):
                     if message.type == Type.RECORD:
                         yield message.record.data  # type: ignore  # message.record won't be None here as the message is a record
-                elif isinstance(message, Record):
-                    yield message.data
                 elif isinstance(message, (dict, Mapping)):
                     yield message
                 else:
