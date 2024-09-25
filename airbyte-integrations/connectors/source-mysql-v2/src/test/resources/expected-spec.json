@@ -8,6 +8,7 @@
       "host",
       "port",
       "username",
+      "database",
       "encryption",
       "tunnel_method",
       "cursor"
@@ -127,16 +128,12 @@
         "description": "Configures how data is extracted from the database.",
         "display_type": "radio"
       },
-      "schemas": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
+      "database": {
+        "type": "string",
         "order": 6,
-        "title": "Schemas",
+        "title": "Database",
         "always_show": true,
-        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
-        "uniqueItems": true
+        "description": "The database name."
       },
       "password": {
         "type": "string",

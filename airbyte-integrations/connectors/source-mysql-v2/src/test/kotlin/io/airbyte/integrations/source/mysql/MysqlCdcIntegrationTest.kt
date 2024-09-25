@@ -67,7 +67,7 @@ class MysqlCdcIntegrationTest {
         lateinit var dbContainer: MySQLContainer<*>
 
         fun config(): MysqlSourceConfigurationJsonObject =
-            MysqlContainerFactory.config(dbContainer).apply { setCursorMethodValue(CdcCursor) }
+            MysqlContainerFactory.config(dbContainer).apply { setCursorMethodValue(CdcCursor()) }
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))
