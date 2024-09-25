@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.7.3
+fix connector builder output serialization 
+
 ## 5.7.2
 add transform_record() to class DefaultFileBasedStream
 

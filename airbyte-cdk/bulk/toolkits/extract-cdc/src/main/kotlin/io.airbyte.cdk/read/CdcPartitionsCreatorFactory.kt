@@ -19,12 +19,6 @@ class CdcPartitionsCreatorFactory(
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return when (feed) {
             is Global -> {
-                // TODO: remove the following if-block
-                if (opaqueStateValue != null) {
-                    // For the time being, only do one round
-                    return null
-                }
-
                 CdcPartitionCreator(concurrencyResource, cdcContext, opaqueStateValue)
             }
             is Stream -> null
