@@ -567,6 +567,8 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
     response_list_name: str = "ticket_metrics"
     most_recently_updated_record: Mapping[str, Any] = None
     cursor_field = "updated_at"
+    legacy_cursor_field = "generated_timestamp"
+    record_cursor_field = "_ab_updated_at"
 
     def path(self, **kwargs) -> str:
         return "ticket_metrics"
@@ -576,7 +578,7 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
 
         for record in records:
             updated_at = record[self.cursor_field]
-            record["_ab_updated_at"] = self.str2unixtime(updated_at)
+            record[self.record_cursor_field] = self.str2unixtime(updated_at)
             if updated_at > self._start_date:
                 if not self.most_recently_updated_record:
                     self.most_recently_updated_record = record
@@ -595,9 +597,9 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
         start_date_timestamp: int = self.str2unixtime(self._start_date)
         if self.most_recently_updated_record:
             record = self.most_recently_updated_record
-            old_value: int = (current_stream_state or {}).get("generated_timestamp", start_date_timestamp)
-            new_value: int = (record or {}).get("_ab_updated_at", start_date_timestamp)
-            return {self.cursor_field: max(new_value, old_value)}
+            old_value: int = (current_stream_state or {}).get(self.legacy_cursor_field, start_date_timestamp)
+            new_value: int = (record or {}).get(self.record_cursor_field, start_date_timestamp)
+            return {self.legacy_cursor_field: max(new_value, old_value)}
         else:
             return {}
 
@@ -605,7 +607,7 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
 class StatefulTicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
 
     response_list_name = "ticket_metric"
-    cursor_field = "_ab_updated_at"
+    record_cursor_field = "_ab_updated_at"
     legacy_cursor_field = "generated_timestamp"
     most_recently_updated_record: Mapping[str, Any] = None
 
@@ -638,12 +640,12 @@ class StatefulTicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
         for record in parent_records:
             yield {
                 "ticket_id": record["id"],
-                self.cursor_field: record.get(self.legacy_cursor_field),
+                self.record_cursor_field: record.get(self.legacy_cursor_field),
             }
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         old_value = (current_stream_state or {}).get(self.legacy_cursor_field, self.str2unixtime(self._start_date))
-        new_value = (latest_record or {}).get(self.cursor_field, self.str2unixtime(self._start_date))
+        new_value = (latest_record or {}).get(self.record_cursor_field, self.str2unixtime(self._start_date))
         return {self.legacy_cursor_field: max(new_value, old_value)}
 
     def get_error_handler(self) -> Optional[ErrorHandler]:
