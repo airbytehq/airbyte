@@ -8,28 +8,34 @@ import io.airbyte.cdk.write.DestinationWriteOperation
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
+interface SetupTask : Task
+
 /**
  * Wraps @[DestinationWriteOperation.setup] and starts the open stream tasks.
  *
  * TODO: This should call something like "TaskLauncher.setupComplete" and let it decide what to do
  * next.
  */
-class SetupTask(
+class DefaultSetupTask(
     private val destination: DestinationWriteOperation,
     private val taskLauncher: DestinationTaskLauncher
-) : Task {
+) : SetupTask {
     override suspend fun execute() {
         destination.setup()
-        taskLauncher.startOpenStreamTasks()
+        taskLauncher.handleSetupComplete()
     }
+}
+
+interface SetupTaskFactory {
+    fun make(taskLauncher: DestinationTaskLauncher): SetupTask
 }
 
 @Singleton
 @Secondary
-class SetupTaskFactory(
+class DefaultSetupTaskFactory(
     private val destination: DestinationWriteOperation,
-) {
-    fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
-        return SetupTask(destination, taskLauncher)
+) : SetupTaskFactory {
+    override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
+        return DefaultSetupTask(destination, taskLauncher)
     }
 }
