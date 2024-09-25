@@ -344,7 +344,7 @@ class CdcCursor : CursorConfiguration {
     @JsonSchemaDefault("300")
     @JsonPropertyDescription(
         "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n" +
-            "        \"\\\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\\\"\" +\n" +
+            "        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n" +
             "        \"> initial waiting time</a>.",
     )
     @JsonSchemaInject(json = """{"order":1, "max": 1200, "min": 120, "always_show": true}""")
@@ -372,7 +372,7 @@ class CdcCursor : CursorConfiguration {
     @JsonGetter("invalid_cdc_behavior")
     @JsonSchemaTitle("Invalid CDC position behavior (Advanced)")
     @JsonPropertyDescription(
-        "The encryption method with is used when communicating with the database.",
+        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
     )
     @JsonSchemaInject(json = """{"order":3, "always_show": true}""")
     fun getInvalidCdcBehaviorValue(): InvalidCdcPositionBehavior? =
@@ -394,26 +394,11 @@ class CdcCursor : CursorConfiguration {
     JsonSubTypes.Type(value = ResyncData::class, name = "resync")
 )
 @JsonSchemaTitle("Update Method")
-@JsonSchemaDescription("Configures how data is extracted from the database.")
 sealed interface InvalidCdcPositionBehavior
 
-@JsonSchemaTitle("Fail sync")
-@JsonSchemaDescription(
-    "Incrementally detects new inserts and updates using the " +
-        "<a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/" +
-        "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
-        "(e.g. created_at, updated_at).",
-)
-data object FailSync : InvalidCdcPositionBehavior
+@JsonSchemaTitle("Fail sync") data object FailSync : InvalidCdcPositionBehavior
 
-@JsonSchemaTitle("Re-sync data")
-@JsonSchemaDescription(
-    "Incrementally detects new inserts and updates using the " +
-        "<a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/" +
-        "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
-        "(e.g. created_at, updated_at).",
-)
-data object ResyncData : InvalidCdcPositionBehavior
+@JsonSchemaTitle("Re-sync data") data object ResyncData : InvalidCdcPositionBehavior
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.invalid_cdc_cursor_position_behavior")
 class MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration {

@@ -76,7 +76,6 @@
                         "default": "fail_sync"
                       }
                     },
-                    "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
                     "additionalProperties": true
                   },
                   {
@@ -90,14 +89,13 @@
                         "default": "resync"
                       }
                     },
-                    "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
                     "additionalProperties": true
                   }
                 ],
                 "order": 3,
                 "title": "Invalid CDC position behavior (Advanced)",
                 "always_show": true,
-                "description": "The encryption method with is used when communicating with the database."
+                "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss."
               },
               "initial_waiting_seconds": {
                 "max": 1200,
@@ -107,7 +105,7 @@
                 "title": "Initial Waiting Time in Seconds (Advanced)",
                 "default": 300,
                 "always_show": true,
-                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
               },
               "initial_load_timeout_hours": {
                 "max": 24,
