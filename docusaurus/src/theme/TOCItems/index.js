@@ -71,6 +71,7 @@ export default function TOCItemsWrapper(props) {
   return (
     <>
       <TOCItems {...props} />
+      <RequestERD />
       <div className={styles.pageRate}>
         <div>Was this page helpful?</div>
         {!voted ? (
@@ -99,7 +100,6 @@ export default function TOCItemsWrapper(props) {
           <div className={styles.thanks}>Thank you!</div>
         )}
       </div>
-      <RequestERD />
     </>
   );
 }
