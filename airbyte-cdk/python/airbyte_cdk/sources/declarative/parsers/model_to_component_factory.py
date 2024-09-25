@@ -1348,9 +1348,10 @@ class ModelToComponentFactory:
             job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
                 job_repository,
                 stream_slices,
-                JobTracker(1),
+                JobTracker(1),  # FIXME eventually make the number of concurrent jobs in the API configurable. Until then, we limit to 1
                 self._message_repository,
-            ),  # FIXME eventually make the number of concurrent jobs in the API configurable. Until then, we limit to 1
+                has_bulk_parent=False,  # FIXME work would need to be done here in order to detect if a stream as a parent stream that is bulk
+            ),
             record_selector=record_selector,
             stream_slicer=stream_slicer,
             config=config,
