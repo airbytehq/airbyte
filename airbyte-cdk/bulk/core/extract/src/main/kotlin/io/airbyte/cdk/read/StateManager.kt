@@ -91,48 +91,53 @@ class StateManager(
     fun checkpoint(): List<AirbyteStateMessage> =
         listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
 
+    private sealed interface StateForCheckpoint {
+        val opaqueStateValue: OpaqueStateValue?
+        val numRecords: Long
+    }
+
+    private data class Fresh(
+        override val opaqueStateValue: OpaqueStateValue,
+        override val numRecords: Long,
+    ) : StateForCheckpoint
+
+    private data class Stale(
+        override val opaqueStateValue: OpaqueStateValue?,
+    ) : StateForCheckpoint {
+        override val numRecords: Long
+            get() = 0L
+    }
+
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
         initialState: OpaqueStateValue?,
-        private val isCheckpointUnique: Boolean = true,
     ) : StateManagerScopedToFeed {
-        private var current: OpaqueStateValue?
-        private var pending: OpaqueStateValue?
-        private var isPending: Boolean
-        private var pendingNumRecords: Long
+        private var currentStateValue: OpaqueStateValue? = initialState
+        private var pendingStateValue: OpaqueStateValue? = initialState
+        private var pendingNumRecords: Long = 0L
 
-        init {
-            synchronized(this) {
-                current = initialState
-                pending = initialState
-                isPending = initialState != null
-                pendingNumRecords = 0L
-            }
-        }
+        @Synchronized override fun current(): OpaqueStateValue? = currentStateValue
 
-        override fun current(): OpaqueStateValue? = synchronized(this) { current }
-
+        @Synchronized
         override fun set(
             state: OpaqueStateValue,
             numRecords: Long,
         ) {
-            synchronized(this) {
-                pending = state
-                isPending = true
-                pendingNumRecords += numRecords
-            }
+            pendingStateValue = state
+            pendingNumRecords += numRecords
         }
 
-        fun swap(): Pair<OpaqueStateValue?, Long>? {
-            synchronized(this) {
-                if (isCheckpointUnique && !isPending) {
-                    return null
+        @Synchronized
+        fun takeForCheckpoint(): StateForCheckpoint {
+            val stateForCheckpoint: StateForCheckpoint =
+                when (val pending = pendingStateValue) {
+                    null -> Stale(currentStateValue)
+                    else -> Fresh(pending, pendingNumRecords)
                 }
-                val returnValue: Pair<OpaqueStateValue?, Long> = pending to pendingNumRecords
-                current = pending
-                pendingNumRecords = 0L
-                return returnValue
-            }
+            currentStateValue = pendingStateValue
+            pendingStateValue = null
+            pendingNumRecords = 0L
+            return stateForCheckpoint
         }
     }
 
@@ -147,34 +152,30 @@ class StateManager(
                 .mapKeys { it.key.id }
 
         fun checkpoint(): AirbyteStateMessage? {
-            var numSwapped = 0
-            var totalNumRecords: Long = 0L
-            var globalStateValue: OpaqueStateValue? = current()
-            val globalSwapped: Pair<OpaqueStateValue?, Long>? = swap()
-            if (globalSwapped != null) {
-                numSwapped++
-                globalStateValue = globalSwapped.first
-                totalNumRecords += globalSwapped.second
-            }
+            var shouldCheckpoint = false
+            var totalNumRecords = 0L
+            val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
+            totalNumRecords += globalStateForCheckpoint.numRecords
+            if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
             val streamStates = mutableListOf<AirbyteStreamState>()
             for ((_, streamStateManager) in streamStateManagers) {
-                var streamStateValue: OpaqueStateValue? = streamStateManager.current()
-                val globalStreamSwapped: Pair<OpaqueStateValue?, Long>? = streamStateManager.swap()
-                if (globalStreamSwapped != null) {
-                    numSwapped++
-                    streamStateValue = globalStreamSwapped.first
-                    totalNumRecords += globalStreamSwapped.second
-                }
+                val streamStateForCheckpoint: StateForCheckpoint =
+                    streamStateManager.takeForCheckpoint()
+                totalNumRecords += streamStateForCheckpoint.numRecords
+                if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
                 val streamID: StreamIdentifier = streamStateManager.feed.id
                 streamStates.add(
                     AirbyteStreamState()
                         .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                        .withStreamState(streamStateValue),
+                        .withStreamState(streamStateForCheckpoint.opaqueStateValue),
                 )
+            }
+            if (!shouldCheckpoint) {
+                return null
             }
             val airbyteGlobalState =
                 AirbyteGlobalState()
-                    .withSharedState(globalStateValue)
+                    .withSharedState(globalStateForCheckpoint.opaqueStateValue)
                     .withStreamStates(streamStates)
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
@@ -186,22 +187,28 @@ class StateManager(
     private class GlobalStreamStateManager(
         stream: Stream,
         initialState: OpaqueStateValue?,
-    ) : BaseStateManager<Stream>(stream, initialState, isCheckpointUnique = false)
+    ) : BaseStateManager<Stream>(stream, initialState)
 
     private class NonGlobalStreamStateManager(
         stream: Stream,
         initialState: OpaqueStateValue?,
     ) : BaseStateManager<Stream>(stream, initialState) {
         fun checkpoint(): AirbyteStateMessage? {
-            val (opaqueStateValue: OpaqueStateValue?, numRecords: Long) = swap() ?: return null
+            val streamStateForCheckpoint: StateForCheckpoint = takeForCheckpoint()
+            if (streamStateForCheckpoint is Stale) {
+                return null
+            }
             val airbyteStreamState =
                 AirbyteStreamState()
                     .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStreamState(opaqueStateValue)
+                    .withStreamState(streamStateForCheckpoint.opaqueStateValue)
             return AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(airbyteStreamState)
-                .withSourceStats(AirbyteStateStats().withRecordCount(numRecords.toDouble()))
+                .withSourceStats(
+                    AirbyteStateStats()
+                        .withRecordCount(streamStateForCheckpoint.numRecords.toDouble())
+                )
         }
     }
 }
