@@ -2,13 +2,15 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.read
+package io.airbyte.cdk.read.cdc
 
-import io.airbyte.cdk.cdc.CdcPartitionReader
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.read.ConcurrencyResource
+import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.PartitionsCreator
 import java.util.concurrent.atomic.AtomicReference
 
-class CdcPartitionCreator(
+class CdcPartitionsCreator(
     val concurrencyResource: ConcurrencyResource,
     val cdcContext: CdcContext,
     val opaqueStateValue: OpaqueStateValue?

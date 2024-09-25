@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.mysql.cdc
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.read.AirbyteSchemaHistoryStorage
+import io.airbyte.cdk.read.cdc.AirbyteSchemaHistoryStorage
 import java.util.*
 
 class MySqlCdcState(opaqueStateValue: OpaqueStateValue) {

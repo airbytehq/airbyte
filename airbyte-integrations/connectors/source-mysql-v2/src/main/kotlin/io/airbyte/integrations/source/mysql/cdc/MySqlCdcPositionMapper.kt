@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mysql.cdc
 
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.read.CdcPositionMapper
-import io.airbyte.cdk.read.DebeziumRecord
+import io.airbyte.cdk.read.cdc.CdcPositionMapper
+import io.airbyte.cdk.read.cdc.DebeziumRecord
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton

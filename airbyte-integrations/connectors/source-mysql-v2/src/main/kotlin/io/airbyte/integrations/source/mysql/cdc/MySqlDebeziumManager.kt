@@ -9,10 +9,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore
+import io.airbyte.cdk.read.cdc.AirbyteFileOffsetBackingStore
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.read.AirbyteSchemaHistoryStorage
-import io.airbyte.cdk.read.DebeziumManager
+import io.airbyte.cdk.read.cdc.AirbyteSchemaHistoryStorage
+import io.airbyte.cdk.read.cdc.DebeziumManager
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcState.Companion.IS_COMPRESSED
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcState.Companion.MYSQL_CDC_OFFSET
 import io.airbyte.integrations.source.mysql.cdc.MySqlCdcState.Companion.MYSQL_DB_HISTORY

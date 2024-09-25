@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mysql.cdc
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.cdk.read.DebeziumEventConverter
-import io.airbyte.cdk.read.DebeziumRecord
+import io.airbyte.cdk.read.cdc.DebeziumEventConverter
+import io.airbyte.cdk.read.cdc.DebeziumRecord
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton

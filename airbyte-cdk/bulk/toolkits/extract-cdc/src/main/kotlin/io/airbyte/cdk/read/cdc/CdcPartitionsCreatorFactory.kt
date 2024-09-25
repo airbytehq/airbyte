@@ -2,9 +2,10 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.read
+package io.airbyte.cdk.read.cdc
 
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.read.*
 import io.micronaut.core.annotation.Order
 import jakarta.inject.Singleton
 
@@ -19,7 +20,7 @@ class CdcPartitionsCreatorFactory(
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return when (feed) {
             is Global -> {
-                CdcPartitionCreator(concurrencyResource, cdcContext, opaqueStateValue)
+                CdcPartitionsCreator(concurrencyResource, cdcContext, opaqueStateValue)
             }
             is Stream -> null
         }
