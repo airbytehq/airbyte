@@ -1521,10 +1521,10 @@ definitions:
     url_base: https://api.freeagent.com/v2
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
+      client_id: '{{ config["client_id"] }}'
       grant_type: refresh_token
-      client_secret: "{{ config[\"client_secret\"] }}"
-      refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["client_refresh_token_2"] }}'
       refresh_request_body: {}
       token_refresh_endpoint: https://api.freeagent.com/v2/token_endpoint
 
