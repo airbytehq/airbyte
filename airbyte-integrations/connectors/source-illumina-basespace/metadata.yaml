@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "api.euw2.sh.basespace.illumina.com"
   registryOverrides:
     oss:
       enabled: true
