@@ -17,16 +17,16 @@ interface MessageQueueWriter<T : Any> {
 }
 
 /**
- * Routes @[DestinationRecordMessage]s by stream to the appropriate channel and @
+ * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
  * [CheckpointMessage]s to the state manager.
  *
  * TODO: Handle other message types.
  */
-@Singleton
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
+@Singleton
 class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
     private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>,
@@ -41,7 +41,7 @@ class DestinationMessageQueueWriter(
     override suspend fun publish(message: DestinationMessage, sizeBytes: Long) {
         when (message) {
             /* If the input message represents a record. */
-            is DestinationRecordMessage -> {
+            is DestinationStreamAffinedMessage -> {
                 val manager = streamsManager.getManager(message.stream)
                 when (message) {
                     /* If a data record */
@@ -56,7 +56,8 @@ class DestinationMessageQueueWriter(
                     }
 
                     /* If an end-of-stream marker. */
-                    is DestinationStreamComplete -> {
+                    is DestinationStreamComplete,
+                    is DestinationStreamIncomplete -> {
                         val wrapped = StreamCompleteWrapped(index = manager.countEndOfStream())
                         messageQueue.getChannel(message.stream).send(wrapped)
                     }
@@ -70,7 +71,7 @@ class DestinationMessageQueueWriter(
                      * stats.
                      */
                     is StreamCheckpoint -> {
-                        val stream = message.streamCheckpoint.stream
+                        val stream = message.checkpoint.stream
                         val manager = streamsManager.getManager(stream)
                         val (currentIndex, countSinceLast) = manager.markCheckpoint()
                         val messageWithCount =

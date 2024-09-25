@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -42,7 +41,7 @@ import jakarta.inject.Singleton
             "port",
             "username",
             "password",
-            "schemas",
+            "database",
             "jdbc_url_params",
             "encryption",
             "tunnel_method",
@@ -80,12 +79,11 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
 
-    @JsonProperty("schemas")
-    @JsonSchemaTitle("Schemas")
-    @JsonSchemaArrayWithUniqueItems("schemas")
-    @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
-    var schemas: List<String>? = null
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    lateinit var database: String
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -199,8 +197,8 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 @JsonSubTypes(
     JsonSubTypes.Type(value = EncryptionPreferred::class, name = "preferred"),
     JsonSubTypes.Type(value = EncryptionRequired::class, name = "required"),
-    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "Verify CA"),
-    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "Verify Identity"),
+    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "verify_ca"),
+    JsonSubTypes.Type(value = SslVerifyIdentity::class, name = "verify_identity"),
 )
 @JsonSchemaTitle("Encryption")
 @JsonSchemaDescription("The encryption method which is used when communicating with the database.")
@@ -218,7 +216,7 @@ data object EncryptionPreferred : Encryption
 )
 data object EncryptionRequired : Encryption
 
-@JsonSchemaTitle("Verify CA")
+@JsonSchemaTitle("verify_ca")
 @JsonSchemaDescription(
     "To always require encryption and verify that the source has a valid SSL certificate."
 )
@@ -232,13 +230,13 @@ class SslVerifyCertificate : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     lateinit var sslCertificate: String
 
-    @JsonProperty("ssl_client_certificate")
+    @JsonProperty("ssl_client_certificate", required = false)
     @JsonSchemaTitle("Client certificate File")
     @JsonPropertyDescription(
         "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
-    lateinit var sslClientCertificate: String
+    var sslClientCertificate: String? = null
 
     @JsonProperty("ssl_client_key")
     @JsonSchemaTitle("Client Key")
@@ -246,7 +244,7 @@ class SslVerifyCertificate : Encryption {
         "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
-    lateinit var sslClientKey: String
+    var sslClientKey: String? = null
 
     @JsonProperty("ssl_client_key_password")
     @JsonSchemaTitle("Client key password")
@@ -254,7 +252,46 @@ class SslVerifyCertificate : Encryption {
         "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
-    lateinit var sslClientPassword: String
+    var sslClientPassword: String? = null
+}
+
+@JsonSchemaTitle("verify_identity")
+@JsonSchemaDescription(
+    "To always require encryption and verify that the source has a valid SSL certificate."
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class SslVerifyIdentity : Encryption {
+    @JsonProperty("ssl_certificate", required = true)
+    @JsonSchemaTitle("CA certificate")
+    @JsonPropertyDescription(
+        "CA certificate",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslCertificate: String
+
+    @JsonProperty("ssl_client_certificate", required = false)
+    @JsonSchemaTitle("Client certificate File")
+    @JsonPropertyDescription(
+        "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientCertificate: String? = null
+
+    @JsonProperty("ssl_client_key")
+    @JsonSchemaTitle("Client Key")
+    @JsonPropertyDescription(
+        "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientKey: String? = null
+
+    @JsonProperty("ssl_client_key_password")
+    @JsonSchemaTitle("Client key password")
+    @JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientPassword: String? = null
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.encryption")
@@ -268,8 +305,7 @@ class MicronautPropertiesFriendlyEncryption {
             "preferred" -> EncryptionPreferred
             "required" -> EncryptionRequired
             "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
-            "verify_identity" ->
-                SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
+            "verify_identity" -> SslVerifyIdentity().also { it.sslCertificate = sslCertificate!! }
             else -> throw ConfigErrorException("invalid value $encryptionMethod")
         }
 }

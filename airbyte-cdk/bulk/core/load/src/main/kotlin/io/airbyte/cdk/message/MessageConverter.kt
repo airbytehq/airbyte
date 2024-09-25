@@ -40,7 +40,7 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                                 )
                         )
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(fromStreamState(message.streamCheckpoint))
+                        .withStream(fromStreamState(message.checkpoint))
                 is GlobalCheckpoint ->
                     AirbyteStateMessage()
                         .withSourceStats(
@@ -56,23 +56,19 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                         .withGlobal(
                             AirbyteGlobalState()
                                 .withSharedState(message.state)
-                                .withStreamStates(
-                                    message.streamCheckpoints.map { fromStreamState(it) }
-                                )
+                                .withStreamStates(message.checkpoints.map { fromStreamState(it) })
                         )
             }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(state)
     }
 
-    private fun fromStreamState(
-        streamCheckpoint: CheckpointMessage.StreamCheckpoint
-    ): AirbyteStreamState {
+    private fun fromStreamState(checkpoint: CheckpointMessage.Checkpoint): AirbyteStreamState {
         return AirbyteStreamState()
             .withStreamDescriptor(
                 StreamDescriptor()
-                    .withNamespace(streamCheckpoint.stream.descriptor.namespace)
-                    .withName(streamCheckpoint.stream.descriptor.name)
+                    .withNamespace(checkpoint.stream.descriptor.namespace)
+                    .withName(checkpoint.stream.descriptor.name)
             )
-            .withStreamState(streamCheckpoint.state)
+            .withStreamState(checkpoint.state)
     }
 }
