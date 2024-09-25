@@ -53,6 +53,3 @@ class JobTracker:
 
     def _has_reached_limit(self) -> bool:
         return len(self._jobs) >= self._limit
-
-    def has_job(self, job_id: str) -> bool:
-        return job_id in self._jobs
