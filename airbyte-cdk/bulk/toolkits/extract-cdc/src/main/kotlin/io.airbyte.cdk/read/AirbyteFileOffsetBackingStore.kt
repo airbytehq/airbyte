@@ -4,7 +4,6 @@
 package io.airbyte.cdk.integrations.debezium.internals
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.base.Preconditions
 import io.airbyte.protocol.models.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.EOFException
@@ -207,12 +206,10 @@ class AirbyteFileOffsetBackingStore(
         }
 
         private fun byteBufferToString(byteBuffer: ByteBuffer?): String {
-            Preconditions.checkNotNull(byteBuffer)
             return String(byteBuffer!!.array(), StandardCharsets.UTF_8)
         }
 
         private fun stringToByteBuffer(s: String?): ByteBuffer {
-            Preconditions.checkNotNull(s)
             return ByteBuffer.wrap(s!!.toByteArray(StandardCharsets.UTF_8))
         }
 

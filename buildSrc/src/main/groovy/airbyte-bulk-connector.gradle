@@ -130,6 +130,26 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
+        project.sourceSets {
+            integrationTest {
+                kotlin {
+                    srcDir 'src/test-integration/kotlin'
+                }
+                resources {
+                    srcDir 'src/test-integration/resources'
+                }
+            }
+        }
+
+        project.kotlin {
+            sourceSets {
+                testIntegration {
+                    kotlin.srcDir 'src/test-integration/kotlin'
+                    resources.srcDir 'src/test-integration/resources'
+                }
+            }
+        }
+
         project.tasks.named('spotbugsTest').configure {
             enabled = false
         }
@@ -138,9 +158,25 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
 
+        project.tasks.register('integrationTest', Test) {
+            description = 'Runs the integration tests.'
+            group = 'verification'
+            testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
+            classpath = project.sourceSets.integrationTest.runtimeClasspath
+            useJUnitPlatform()
+            mustRunAfter project.tasks.check
+        }
+
+        project.tasks.named('build').configure {
+            dependsOn project.tasks.integrationTest
+        }
+
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
+
+            integrationTestImplementation.extendsFrom testImplementation
+            integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)

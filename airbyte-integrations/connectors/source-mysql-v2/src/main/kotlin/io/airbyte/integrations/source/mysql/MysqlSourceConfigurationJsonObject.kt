@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -42,7 +41,7 @@ import jakarta.inject.Singleton
             "port",
             "username",
             "password",
-            "schemas",
+            "database",
             "jdbc_url_params",
             "encryption",
             "tunnel_method",
@@ -80,12 +79,11 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
 
-    @JsonProperty("schemas")
-    @JsonSchemaTitle("Schemas")
-    @JsonSchemaArrayWithUniqueItems("schemas")
-    @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
-    var schemas: List<String>? = null
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    lateinit var database: String
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
