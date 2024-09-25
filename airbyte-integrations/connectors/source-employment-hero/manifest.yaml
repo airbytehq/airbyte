@@ -245,7 +245,7 @@ definitions:
             values: "{{ config['organization_configids'] }}"
             cursor_field: organization_configids
           - type: ListPartitionRouter
-            values: "{{ config[\"employees_configids\"] }}"
+            values: '{{ config["employees_configids"] }}'
             cursor_field: employees_configids
       schema_loader:
         type: InlineSchemaLoader
@@ -305,7 +305,7 @@ definitions:
             values: "{{ config['organization_configids'] }}"
             cursor_field: organization_configids
           - type: ListPartitionRouter
-            values: "{{ config[\"employees_configids\"] }}"
+            values: '{{ config["employees_configids"] }}'
             cursor_field: employees_configids
       schema_loader:
         type: InlineSchemaLoader
@@ -602,7 +602,7 @@ definitions:
             values: "{{ config['organization_configids'] }}"
             cursor_field: organization_configids
           - type: ListPartitionRouter
-            values: "{{ config[\"employees_configids\"] }}"
+            values: '{{ config["employees_configids"] }}'
             cursor_field: employees_configids
       schema_loader:
         type: InlineSchemaLoader
@@ -613,7 +613,7 @@ definitions:
     url_base: https://api.employmenthero.com/api/v1/
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
 
 streams:
   - $ref: "#/definitions/streams/organisations"
