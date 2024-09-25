@@ -11,9 +11,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v15.errors.types.request_error import RequestErrorEnum
-from google.ads.googleads.v15.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v17.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v17.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v17.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
 from .models import Customer

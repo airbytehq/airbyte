@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v15.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v17.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import parse, today
 
 from .custom_query_stream import CustomQuery, IncrementalCustomQuery
