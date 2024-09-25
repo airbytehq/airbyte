@@ -26,23 +26,27 @@ This connector supports **OAuth2.0** and **API Password** (for private applicati
 For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
 :::
 
+<HideInUI>
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Shopify from the Source type dropdown.
 4. Enter a name for the Shopify connector.
+</HideInUI>
 
 #### Connect using OAuth2.0
 
-1. Select a **Source name**.
+1. Choose a **Source name**.
 2. Click **Authenticate your Shopify account**.
-3. Click **Install** to install the Airbyte application.
-4. Log in to your account, if you are not already logged in.
-5. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
-6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
-7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
-8. Click **Set up source** and wait for the connection test to complete.
+3. Click **Install** to install the Airbyte application. Log in to your account, if you are not already logged in. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
+<FieldAnchor field="shop">
+4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
+</FieldAnchor>
+<FieldAnchor field="start_date">
+5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+</FieldAnchor>
+6. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -178,7 +182,6 @@ When a record is deleted, the connector outputs a record with the `ID` of that r
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2024-04/resources/event).
 
-
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
@@ -205,6 +208,7 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 
 ## Limitations & Troubleshooting
 
+</HideInUI>
 <details>
 <summary>
 
@@ -233,6 +237,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
+
 
 ## Changelog
 
@@ -348,5 +353,3 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                                                                                                                                                                                                                                                                                     |
 
 </details>
-
-</HideInUI>
