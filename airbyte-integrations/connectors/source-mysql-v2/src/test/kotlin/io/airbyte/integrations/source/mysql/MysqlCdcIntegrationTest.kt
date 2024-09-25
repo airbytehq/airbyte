@@ -37,7 +37,7 @@ class MysqlCdcIntegrationTest {
     fun test() {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config(), configuredCatalog).run()
-        // TODO: add assertions on run1 messages
+        // TODO: add assertions on run1 messages.
 
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
@@ -49,7 +49,7 @@ class MysqlCdcIntegrationTest {
         val run2InputState: List<AirbyteStateMessage> = listOf(run1.states().last())
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config(), configuredCatalog, run2InputState).run()
-        // TODO: add assertions on run2 messages
+        // TODO: add assertions on run2 messages.
 
         println()
         println()
