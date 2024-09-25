@@ -541,14 +541,7 @@ class TicketMetrics(SourceZendeskSupportStream):
         self._parent_stream = stream
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        start_date_timestamp: int = self.str2unixtime(self._start_date)
-        if self.parent_stream.most_recently_updated_record:
-            record = self.parent_stream.most_recently_updated_record
-            old_value: int = (current_stream_state or {}).get("generated_timestamp", start_date_timestamp)
-            new_value: int = (record or {}).get("_ab_updated_at", start_date_timestamp)
-            return {self.cursor_field: max(new_value, old_value)}
-        else:
-            return self.parent_stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
+        return self.parent_stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -579,8 +572,6 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
         return "ticket_metrics"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        """try to select relevant data only"""
-
         records = response.json().get(self.response_list_name) or []
 
         for record in records:
@@ -599,6 +590,16 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
 
         meta = response.json().get("meta", {}) if response.content else {}
         return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], **kwargs) -> Mapping[str, Any]:
+        start_date_timestamp: int = self.str2unixtime(self._start_date)
+        if self.most_recently_updated_record:
+            record = self.most_recently_updated_record
+            old_value: int = (current_stream_state or {}).get("generated_timestamp", start_date_timestamp)
+            new_value: int = (record or {}).get("_ab_updated_at", start_date_timestamp)
+            return {self.cursor_field: max(new_value, old_value)}
+        else:
+            return {}
 
 
 class StatefulTicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
