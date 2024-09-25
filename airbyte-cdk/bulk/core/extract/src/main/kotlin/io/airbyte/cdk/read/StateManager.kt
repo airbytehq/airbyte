@@ -91,23 +91,6 @@ class StateManager(
     fun checkpoint(): List<AirbyteStateMessage> =
         listOfNotNull(global?.checkpoint()) + nonGlobal.mapNotNull { it.value.checkpoint() }
 
-    private sealed interface StateForCheckpoint {
-        val opaqueStateValue: OpaqueStateValue?
-        val numRecords: Long
-    }
-
-    private data class Fresh(
-        override val opaqueStateValue: OpaqueStateValue,
-        override val numRecords: Long,
-    ) : StateForCheckpoint
-
-    private data class Stale(
-        override val opaqueStateValue: OpaqueStateValue?,
-    ) : StateForCheckpoint {
-        override val numRecords: Long
-            get() = 0L
-    }
-
     private sealed class BaseStateManager<K : Feed>(
         override val feed: K,
         initialState: OpaqueStateValue?,
@@ -127,18 +110,51 @@ class StateManager(
             pendingNumRecords += numRecords
         }
 
+        /**
+         * Called by [StateManager.checkpoint] to generate the Airbyte STATE messages for the
+         * checkpoint.
+         *
+         * The return value is either [Fresh] or [Stale] depending on whether [set] has been called
+         * since the last call to [takeForCheckpoint], or not, respectively.
+         *
+         * [Stale] messages are simply ignored when dealing only with [Stream] feeds, however these
+         * may be required when emitting Airbyte STATE messages of type GLOBAL.
+         */
         @Synchronized
         fun takeForCheckpoint(): StateForCheckpoint {
             val stateForCheckpoint: StateForCheckpoint =
-                when (val pending = pendingStateValue) {
-                    null -> Stale(currentStateValue)
-                    else -> Fresh(pending, pendingNumRecords)
-                }
+                pendingStateValue?.let { Fresh(it, pendingNumRecords) } ?: Stale(currentStateValue)
             currentStateValue = pendingStateValue
             pendingStateValue = null
             pendingNumRecords = 0L
             return stateForCheckpoint
         }
+    }
+
+    /** Return value type for [BaseStateManager.takeForCheckpoint]. */
+    private sealed interface StateForCheckpoint {
+        val opaqueStateValue: OpaqueStateValue?
+        val numRecords: Long
+    }
+
+    /**
+     * [StateForCheckpoint] implementation for when [StateManagerScopedToFeed.set] has been called
+     * since the last call to [BaseStateManager.takeForCheckpoint].
+     */
+    private data class Fresh(
+        override val opaqueStateValue: OpaqueStateValue,
+        override val numRecords: Long,
+    ) : StateForCheckpoint
+
+    /**
+     * [StateForCheckpoint] implementation for when [StateManagerScopedToFeed.set] has NOT been
+     * called since the last call to [BaseStateManager.takeForCheckpoint].
+     */
+    private data class Stale(
+        override val opaqueStateValue: OpaqueStateValue?,
+    ) : StateForCheckpoint {
+        override val numRecords: Long
+            get() = 0L
     }
 
     private class GlobalStateManager(
