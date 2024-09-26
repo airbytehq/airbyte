@@ -100,8 +100,16 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /1.1/{{ config["account_id"] }}/users
           http_method: GET
-          request_parameters:
-            filter: deleted
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - all
+            - deleted
+          cursor_field: filter
+          request_option:
+            type: RequestOption
+            field_name: filter
+            inject_into: request_parameter
         record_selector:
           type: RecordSelector
           extractor:
