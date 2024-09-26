@@ -9,6 +9,7 @@ import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.MessageQueueWriter
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -55,6 +56,7 @@ interface DeserializingInputStreamConsumer<T : Any> : InputConsumer<T> {
 }
 
 @Singleton
+@Secondary
 class DefaultInputConsumer(
     override val inputStream: InputStream,
     override val deserializer: Deserializer<DestinationMessage>,

@@ -17,6 +17,7 @@ import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
@@ -183,6 +184,13 @@ class DefaultDestinationTaskLauncher(
     override suspend fun handleTeardownComplete() {
         stop()
     }
+
+    override suspend fun handleException(t: Throwable) {
+        log.error(t) { "Task error: $t" }
+        stop()
+        // TODO: Execute stream cleanup and destination teardown tasks.
+        throw t
+    }
 }
 
 @Factory
@@ -202,6 +210,7 @@ class DestinationTaskLauncherFactory(
     private val teardownTaskFactory: TeardownTaskFactory
 ) : Provider<DestinationTaskLauncher> {
     @Singleton
+    @Secondary
     override fun get(): DestinationTaskLauncher {
         return DefaultDestinationTaskLauncher(
             catalog,

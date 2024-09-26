@@ -73,7 +73,7 @@ class TaskRunnerTest {
         runner.enqueue(task2)
         runner.enqueue(task3)
 
-        launch { runner.run() }
+        launch { runner.start() }
 
         task1ReportingChannel.receive() // wait for task1 to complete
         Assertions.assertTrue(task1Completed.get())

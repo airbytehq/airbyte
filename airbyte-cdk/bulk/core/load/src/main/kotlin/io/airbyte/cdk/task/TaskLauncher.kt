@@ -19,4 +19,5 @@ interface TaskLauncher {
     suspend fun stop() {
         taskRunner.close()
     }
+    suspend fun handleException(t: Throwable): Unit
 }

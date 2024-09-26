@@ -43,4 +43,8 @@ class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLau
     override suspend fun start() {
         throw NotImplementedError()
     }
+
+    override suspend fun handleException(t: Throwable) {
+        throw NotImplementedError()
+    }
 }

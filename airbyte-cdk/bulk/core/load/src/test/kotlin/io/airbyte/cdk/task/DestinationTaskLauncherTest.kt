@@ -240,7 +240,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testStart() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.run() }
+        launch { taskRunner.start() }
         launcher.start()
         mockSetupTaskFactory.hasRun.receive()
         mockSpillToDiskTaskFactory.streamHasRun.values.forEach { it.receive() }
@@ -250,7 +250,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleSetupComplete() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.run() }
+        launch { taskRunner.start() }
         launcher.handleSetupComplete()
         mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
         launcher.stop()
@@ -259,7 +259,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleJoinStreamOpenSpilledFileComplete() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.run() }
+        launch { taskRunner.start() }
 
         // This will block until the stream is done opening.
         launch {
@@ -289,7 +289,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleNewBatch() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.run() }
+        launch { taskRunner.start() }
 
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
 
@@ -325,7 +325,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleStreamClosed() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.run() }
+        launch { taskRunner.start() }
 
         // This should not run teardown until all streams are closed.
         launch { launcher.handleStreamClosed(stream1) }
