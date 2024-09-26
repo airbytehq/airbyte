@@ -5,7 +5,6 @@
 package io.airbyte.cdk.cdc
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.read.CdcContext
 import io.airbyte.cdk.read.ConcurrencyResource
@@ -97,7 +96,7 @@ class CdcPartitionReader(
                 if (event.value() == null) {
                     return@notifying
                 }
-                val record = DebeziumRecord(Jsons.deserialize(event.value()))
+                val record = DebeziumRecord(Jsons.readTree(event.value()))
                 // TODO : Migrate over all of the timeout/heartbeat timeout logic
                 if (!record.isHeartbeat) {
                     numRecords++
@@ -158,7 +157,6 @@ class CdcPartitionReader(
      * [DebeziumRecordIterator.heartbeatEventSourceField] acts as a cache so that we avoid using
      * reflection to setAccessible for each event
      */
-    @VisibleForTesting
     internal fun getSourceRecord(heartbeatEvent: ChangeEvent<String?, String?>): SourceRecord {
         try {
             val eventClass: Class<out ChangeEvent<*, *>?> = heartbeatEvent.javaClass

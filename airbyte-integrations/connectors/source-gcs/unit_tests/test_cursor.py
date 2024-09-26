@@ -75,8 +75,12 @@ def test_get_files_to_sync_with_existing_older_file(cursor, remote_file, remote_
 
 
 def test_get_files_to_sync_with_existing_initial_state_and_newer_file(cursor, remote_file, remote_file_older, remote_file_b, logger):
-    cursor.set_initial_state({"history": {remote_file.uri: remote_file_older.last_modified.replace().strftime(cursor.DATE_TIME_FORMAT)},
-                              cursor.CURSOR_FIELD: cursor._get_cursor()})
+    cursor.set_initial_state(
+        {
+            "history": {remote_file.uri: remote_file_older.last_modified.replace().strftime(cursor.DATE_TIME_FORMAT)},
+            cursor.CURSOR_FIELD: cursor._get_cursor(),
+        }
+    )
     DefaultFileBasedCursor.DEFAULT_MAX_HISTORY_SIZE = 1
 
     files_to_sync = list(cursor.get_files_to_sync([remote_file], logger))
@@ -91,7 +95,12 @@ def test_get_files_to_sync_with_no_history(cursor, remote_file, logger):
 
 
 def test_get_files_to_sync_with_same_time_as_initial_state(cursor, remote_file, logger):
-    cursor.set_initial_state({"history": {remote_file.uri: remote_file.last_modified.strftime(cursor.DATE_TIME_FORMAT)}, cursor.CURSOR_FIELD: cursor._get_cursor()})
+    cursor.set_initial_state(
+        {
+            "history": {remote_file.uri: remote_file.last_modified.strftime(cursor.DATE_TIME_FORMAT)},
+            cursor.CURSOR_FIELD: cursor._get_cursor(),
+        }
+    )
 
     files_to_sync = list(cursor.get_files_to_sync([remote_file], logger))
 
@@ -99,7 +108,12 @@ def test_get_files_to_sync_with_same_time_as_initial_state(cursor, remote_file, 
 
 
 def test_get_files_to_sync_with_different_file_as_initial_state(cursor, remote_file, remote_file_older, logger):
-    cursor.set_initial_state({"history": {remote_file.uri: remote_file.last_modified.strftime(cursor.DATE_TIME_FORMAT)}, cursor.CURSOR_FIELD: cursor._get_cursor()})
+    cursor.set_initial_state(
+        {
+            "history": {remote_file.uri: remote_file.last_modified.strftime(cursor.DATE_TIME_FORMAT)},
+            cursor.CURSOR_FIELD: cursor._get_cursor(),
+        }
+    )
     DefaultFileBasedCursor.DEFAULT_MAX_HISTORY_SIZE = 1
 
     files_to_sync = list(cursor.get_files_to_sync([remote_file_older], logger))
