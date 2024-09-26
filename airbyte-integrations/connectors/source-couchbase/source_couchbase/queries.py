@@ -1,49 +1,51 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from typing import List, Dict, Any
+from couchbase.cluster import Cluster
+from couchbase.options import ClusterOptions
+from couchbase.auth import PasswordAuthenticator
+
 
 def get_buckets_query() -> str:
     """
-    Returns the query for fetching bucket information.
+    Returns the query for fetching the list of buckets.
     """
-    return "SELECT name, bucketType, numReplicas, ramQuota, replicaNumber FROM system:buckets"
+    return "SELECT * FROM system:buckets"
+    
 
-def get_scopes_query() -> str:
+def get_scopes_query(bucket: str) -> str:
     """
-    Returns the query for fetching scope information across all buckets.
+    Returns the query for fetching scope information for a specific bucket.
     """
-    return "SELECT b.name as bucket, s.name, s.uid FROM system:buckets b JOIN system:scopes s ON META(b).id = s.bucket_uid"
+    return f"SELECT * FROM `{bucket}`._scopes"
 
-def get_collections_query() -> str:
+
+def get_collections_query(bucket: str, scope: str) -> str:
     """
-    Returns the query for fetching collection information across all buckets and scopes.
+    Returns the query for fetching collection information for a specific bucket and scope.
     """
-    return """
-    SELECT b.name as bucket, s.name as scope, c.name, c.uid
-    FROM system:buckets b
-    JOIN system:scopes s ON META(b).id = s.bucket_uid
-    JOIN system:collections c ON s.uid = c.scope_uid
+    return f"SELECT * FROM `{bucket}`.`{scope}`._collections"
+
+
+def get_documents_query(bucket: str, scope: str, collection: str) -> str:
+    """
+    Returns the query template for fetching documents for a specific bucket, scope, and collection.
+    """
+    return f"""
+    SELECT META(d).id AS `id`, d.*, META(d).expiration, META(d).flags, META(d).cas
+    FROM `{bucket}`.`{scope}`.`{collection}` d
     """
 
-def get_documents_query() -> str:
-    """
-    Returns the query template for fetching documents across all buckets, scopes, and collections.
-    """
-    return """
-    SELECT b.name AS bucket, s.name AS scope, c.name AS collection, META(d).id AS id, d.* AS content, META(d).expiration, META(d).flags, META(d).cas
-    FROM system:buckets b
-    JOIN system:scopes s ON META(b).id = s.bucket_uid
-    JOIN system:collections c ON s.uid = c.scope_uid
-    JOIN `{0}`.`{1}`.`{2}` d
-    """
 
 def get_buckets_list_query() -> str:
     """
     Returns the query for fetching the list of buckets.
     """
-    return "SELECT name FROM system:buckets"
+    return "SELECT * FROM system:buckets"
 
-def get_cluster_queries() -> List[Dict[str, Any]]:
+
+def get_cluster_queries(bucket: str, scope: str, collection: str) -> List[Dict[str, Any]]:
     """
     Returns a list of all cluster queries to be executed.
     Each query is represented as a dictionary with 'name' and 'query' keys.
@@ -55,20 +57,62 @@ def get_cluster_queries() -> List[Dict[str, Any]]:
         },
         {
             "name": "scopes",
-            "query": get_scopes_query()
+            "query": get_scopes_query(bucket)
         },
         {
             "name": "collections",
-            "query": get_collections_query()
+            "query": get_collections_query(bucket, scope)
         },
         {
-            "name": "documents_template",
-            "query": get_documents_query()
+            "name": "documents",
+            "query": get_documents_query(bucket, scope, collection)
         },
-        {
-            "name": "buckets_list",
-            "query": get_buckets_list_query()
-        }
     ]
 
-# Add more functions for different types of queries if necessary
+def demo_queries(cluster: Cluster, bucket: str, scope: str, collection: str):
+    queries = get_cluster_queries(bucket, scope, collection)
+    for query_info in queries:
+        query_name = query_info['name']
+        query = query_info['query']
+        print(f"Executing query: {query_name}")
+        try:
+            result = cluster.query(query)
+            for row in result:
+                print(row)
+        except Exception as e:
+            print(f"Error executing query {query_name}: {e}")
+
+    # Fetch and print all available keyspaces
+    print("\nFetching all available keyspaces:")
+    keyspaces_query = "SELECT * FROM system:keyspaces"
+    try:
+        result = cluster.query(keyspaces_query)
+        for row in result:
+            print(row)
+    except Exception as e:
+        print(f"Error fetching keyspaces: {e}")
+
+def read_config():
+    """
+    Reads the configuration from secrets/config.json
+    """
+    with open('secrets/config.json', 'r') as config_file:
+        return json.load(config_file)
+
+if __name__ == "__main__":
+    # Read configuration from secrets/config.json
+    config = read_config()
+    
+    # Use configuration values
+    connection_string = config['connection_string']
+    username = config['username']
+    password = config['password']
+    bucket = config['bucket']
+    scope = config['scope']
+    collection = config['collection']
+
+    try:
+        cluster = Cluster(connection_string, ClusterOptions(PasswordAuthenticator(username, password)))
+        demo_queries(cluster, bucket, scope, collection)
+    except Exception as e:
+        print(f"Error connecting to Couchbase cluster: {e}")

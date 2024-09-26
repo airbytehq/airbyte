@@ -2,14 +2,24 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "datastore_id": {
+      "type": "string"
+    },
+    "manifest_id": {
+      "type": "integer"
+    },
     "name": {
       "type": "string"
     },
-    "bucketType": {
+    "namespace": {
       "type": "string"
     },
-    "numReplicas": {
-      "type": "integer"
+    "namespace_id": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
     }
-  }
+  },
+  "required": ["datastore_id", "manifest_id", "name", "namespace", "namespace_id", "path"]
 }
