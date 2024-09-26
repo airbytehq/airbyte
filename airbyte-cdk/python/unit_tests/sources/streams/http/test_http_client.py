@@ -556,6 +556,7 @@ def test_backoff_strategy_endless(exit_on_rate_limit, expected_call_count, expec
             )
         assert mocked_send.call_count == expected_call_count
 
+
 def test_given_different_headers_then_response_is_not_cached(requests_mock):
     http_client = HttpClient(name="test", logger=MagicMock(), use_cache=True)
     first_request_headers = {"header_key": "first"}
