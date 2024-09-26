@@ -154,11 +154,22 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public JsonNode toDatabaseConfig(final JsonNode mssqlConfig) {
     final List<String> additionalParameters = new ArrayList<>();
 
-    final StringBuilder jdbcUrl = new StringBuilder(
+    StringBuilder jdbcUrl = null;
+    if(mssqlConfig.has(JdbcUtils.PORT_KEY)){
+
+       jdbcUrl = new StringBuilder(
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
             mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
             mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
             mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+    }
+    else{
+      jdbcUrl = new StringBuilder(
+        String.format("jdbc:sqlserver://%s;databaseName=%s;",
+            mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
+            mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    }
 
     if (mssqlConfig.has("schemas") && mssqlConfig.get("schemas").isArray()) {
       schemas = new ArrayList<>();
