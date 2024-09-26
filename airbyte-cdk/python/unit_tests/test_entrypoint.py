@@ -257,7 +257,7 @@ def test_run_check_with_config_error(entrypoint: AirbyteEntrypoint, mocker, spec
     expected_messages = [orjson.dumps(AirbyteMessageSerializer.dump(MESSAGE_FROM_REPOSITORY)).decode(),
                          orjson.dumps(AirbyteMessageSerializer.dump(expected_trace)).decode(),
                          _wrap_message(AirbyteConnectionStatus(status=Status.FAILED, message=AirbyteTracedException.from_exception(exception).message))
-    ]
+                        ]
     assert messages == expected_messages
 
 
