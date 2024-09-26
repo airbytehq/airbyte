@@ -130,7 +130,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
-        // The name integrationTestJava is required by airbyte-ci.
         project.sourceSets {
             integrationTestJava {
                 kotlin {

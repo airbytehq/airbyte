@@ -4,17 +4,20 @@
 
 package io.airbyte.cdk.file
 
-import io.micronaut.context.annotation.DefaultImplementation
+import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Singleton
 import java.nio.file.Files
 import java.nio.file.Path
 
-@DefaultImplementation(DefaultTempFileProvider::class)
 interface TempFileProvider {
     fun createTempFile(directory: Path, prefix: String, suffix: String): LocalFile
 }
 
+@Singleton
+@Secondary
 class DefaultTempFileProvider : TempFileProvider {
     override fun createTempFile(directory: Path, prefix: String, suffix: String): LocalFile {
+        Files.createDirectories(directory)
         return DefaultLocalFile(Files.createTempFile(directory, prefix, suffix))
     }
 }

@@ -68,7 +68,7 @@ class ProcessRecordsTaskTest {
     class MockDeserializer : Deserializer<DestinationMessage> {
         override fun deserialize(serialized: String): DestinationMessage {
             return DestinationRecord(
-                stream = stream1,
+                stream = stream1.descriptor,
                 data = IntegerValue(serialized.toLong()),
                 emittedAtMs = 0L,
                 meta = null,

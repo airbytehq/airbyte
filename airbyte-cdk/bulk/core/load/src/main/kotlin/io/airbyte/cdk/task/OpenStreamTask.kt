@@ -5,7 +5,7 @@
 package io.airbyte.cdk.task
 
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.write.DestinationWriteOperation
+import io.airbyte.cdk.write.DestinationWriter
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -34,7 +34,7 @@ interface OpenStreamTaskFactory {
 @Singleton
 @Secondary
 class DefaultOpenStreamTaskFactory(
-    private val destination: DestinationWriteOperation,
+    private val destination: DestinationWriter,
 ) : OpenStreamTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
