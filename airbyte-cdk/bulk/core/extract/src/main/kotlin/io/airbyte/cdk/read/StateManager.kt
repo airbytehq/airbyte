@@ -122,12 +122,28 @@ class StateManager(
          */
         @Synchronized
         fun takeForCheckpoint(): StateForCheckpoint {
-            val stateForCheckpoint: StateForCheckpoint =
-                pendingStateValue?.let { Fresh(it, pendingNumRecords) } ?: Stale(currentStateValue)
-            currentStateValue = pendingStateValue
+            // Check if there is a pending state value or not.
+            // If not, then set() HASN'T been called since the last call to takeForCheckpoint(),
+            // because set() can only accept non-null state values.
+            //
+            // This means that there is nothing worth checkpointing for this particular feed.
+            // In that case, exit early with the current state value.
+            val freshStateValue: OpaqueStateValue =
+                pendingStateValue ?: return Stale(currentStateValue)
+            // This point is reached in the case where there is a pending state value.
+            // This means that set() HAS been called since the last call to takeForCheckpoint().
+            //
+            // Keep a copy of the total number of records registered in all calls to set() since the
+            // last call to takeForCheckpoint(), this number will be returned.
+            val freshNumRecords: Long = pendingNumRecords
+            // Update current state value.
+            currentStateValue = freshStateValue
+            // Reset the pending state, which will be overwritten by the next call to set().
             pendingStateValue = null
             pendingNumRecords = 0L
-            return stateForCheckpoint
+            // Return the latest state value as well as the total number of records seen since the
+            // last call to takeForCheckpoint().
+            return Fresh(freshStateValue, freshNumRecords)
         }
     }
 
