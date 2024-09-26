@@ -220,7 +220,7 @@ definitions:
     url_base: https://api.ynab.com/v1
     authenticator:
       type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      api_token: '{{ config["api_key"] }}'
 
 streams:
   - $ref: "#/definitions/streams/Budgets"
