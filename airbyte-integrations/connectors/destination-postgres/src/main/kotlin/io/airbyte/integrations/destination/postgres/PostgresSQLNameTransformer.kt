@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.postgres
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import java.util.*
 import kotlin.math.min
+import kotlin.math.abs
 
 class PostgresSQLNameTransformer : StandardNameTransformer() {
     // I _think_ overriding these two methods is sufficient to apply the truncation logic everywhere
@@ -37,6 +38,7 @@ class PostgresSQLNameTransformer : StandardNameTransformer() {
      * truncation explicitly, so that we can detect e.g. name collisions.
      */
     private fun truncate(str: String): String {
-        return str.substring(0, min(str.length.toDouble(), 63.0).toInt())
+        // return str.substring(0, min(str.length.toDouble(), 63.0).toInt())
+        return if (str.length > 63.0) str.substring(0, min(str.length.toDouble(), 52.0).toInt()).plus(abs(str.hashCode()).toString(36)) else str
     }
 }
