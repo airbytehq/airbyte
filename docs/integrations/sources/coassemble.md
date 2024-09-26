@@ -17,6 +17,8 @@ See the [Coassemble API docs](https://developers.coassemble.com/get-started) for
 | screen_types | - | NoPaginator | ✅ |  ❌  |
 | trackings | - | DefaultPaginator | ✅ |  ❌  |
 
+⚠️⚠️ Note: The `screen_types` and `trackings` streams are **Available on request only** as per the [API docs](https://developers.coassemble.com/get-started). Hence, enabling them without having them enabled on the API side would result in errors. ⚠️⚠️
+
 ## Changelog
 
 <details>
