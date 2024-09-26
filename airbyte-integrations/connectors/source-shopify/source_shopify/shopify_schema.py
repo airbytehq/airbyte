@@ -10218,6 +10218,13 @@ class MediaConnection(sgqlc.types.relay.Connection):
     page_info = sgqlc.types.Field(sgqlc.types.non_null("PageInfo"), graphql_name="pageInfo")
 
 
+class MediaCount(sgqlc.types.Type):
+    __schema__ = shopify_schema
+    __fields_names = ("count", "precision")
+    count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="count")
+    precision = sgqlc.types.Field(sgqlc.types.non_null(String), graphql_name="precision")
+
+
 class MediaEdge(sgqlc.types.Type):
     __schema__ = shopify_schema
     __field_names__ = ("cursor", "node")
@@ -23486,7 +23493,10 @@ class Product(
             )
         ),
     )
-    media_count = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="mediaCount")
+    media_count = sgqlc.types.Field(
+        sgqlc.types.non_null(MediaCount),
+        graphql_name="mediaCount",
+    )
     online_store_url = sgqlc.types.Field(URL, graphql_name="onlineStoreUrl")
     options = sgqlc.types.Field(
         sgqlc.types.non_null(sgqlc.types.list_of(sgqlc.types.non_null("ProductOption"))),
