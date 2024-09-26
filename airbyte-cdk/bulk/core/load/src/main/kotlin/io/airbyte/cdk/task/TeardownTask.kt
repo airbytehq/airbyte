@@ -4,50 +4,40 @@
 
 package io.airbyte.cdk.task
 
-import io.airbyte.cdk.state.StreamsManager
-import io.airbyte.cdk.write.DestinationWrite
+import io.airbyte.cdk.write.DestinationWriteOperation
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.util.concurrent.atomic.AtomicBoolean
+
+interface TeardownTask : Task
 
 /**
- * Wraps @[DestinationWrite.teardown] and stops the task launcher.
+ * Wraps @[DestinationWriteOperation.teardown] and stops the task launcher.
  *
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
-class TeardownTask(
-    private val destination: DestinationWrite,
-    private val streamsManager: StreamsManager,
+class DefaultTeardownTask(
+    private val destination: DestinationWriteOperation,
     private val taskLauncher: DestinationTaskLauncher
-) : Task {
+) : TeardownTask {
     val log = KotlinLogging.logger {}
 
-    companion object {
-        val exactlyOnce = AtomicBoolean(false)
-    }
-
     override suspend fun execute() {
-        /** Guard against running this more than once */
-        if (exactlyOnce.getAndSet(true)) {
-            return
-        }
-
-        /** Ensure we don't run until all streams have completed */
-        streamsManager.awaitAllStreamsClosed()
-
         destination.teardown()
-        taskLauncher.stop()
+        taskLauncher.handleTeardownComplete()
     }
+}
+
+interface TeardownTaskFactory {
+    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask
 }
 
 @Singleton
 @Secondary
-class TeardownTaskFactory(
-    private val destination: DestinationWrite,
-    private val streamsManager: StreamsManager,
-) {
-    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
-        return TeardownTask(destination, streamsManager, taskLauncher)
+class DefaultTeardownTaskFactory(
+    private val destination: DestinationWriteOperation,
+) : TeardownTaskFactory {
+    override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
+        return DefaultTeardownTask(destination, taskLauncher)
     }
 }

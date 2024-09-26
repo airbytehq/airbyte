@@ -292,7 +292,7 @@ mv source_survey_monkey_demo/schemas/customers.json source_survey_monkey_demo/sc
 rm source_survey_monkey_demo/schemas/employees.json
 ```
 
-The two tests should now pass
+The test should now pass
 
 ```
 poetry run pytest unit_tests/

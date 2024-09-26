@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.message
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.Append
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.data.ObjectTypeWithEmptySchema
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -33,7 +33,7 @@ class DestinationMessageTest {
                     DestinationStream(
                         descriptor,
                         Append,
-                        Jsons.deserialize("{}") as ObjectNode,
+                        ObjectTypeWithEmptySchema,
                         generationId = 42,
                         minimumGenerationId = 0,
                         syncId = 42,

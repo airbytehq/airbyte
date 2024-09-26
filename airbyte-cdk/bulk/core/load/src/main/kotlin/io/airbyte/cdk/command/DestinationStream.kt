@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.command
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.AirbyteTypeToJsonSchema
+import io.airbyte.cdk.data.JsonSchemaToAirbyteType
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
@@ -22,7 +24,7 @@ import jakarta.inject.Singleton
 data class DestinationStream(
     val descriptor: Descriptor,
     val importType: ImportType,
-    val schema: ObjectNode,
+    val schema: AirbyteType,
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
@@ -44,7 +46,7 @@ data class DestinationStream(
                 AirbyteStream()
                     .withNamespace(descriptor.namespace)
                     .withName(descriptor.name)
-                    .withJsonSchema(schema)
+                    .withJsonSchema(AirbyteTypeToJsonSchema().convert(schema))
             )
             .withGenerationId(generationId)
             .withMinimumGenerationId(minimumGenerationId)
@@ -83,10 +85,10 @@ class DestinationStreamFactory {
                     DestinationSyncMode.APPEND_DEDUP ->
                         Dedupe(primaryKey = stream.primaryKey, cursor = stream.cursorField)
                 },
-            schema = stream.stream.jsonSchema as ObjectNode,
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
+            schema = JsonSchemaToAirbyteType().convert(stream.stream.jsonSchema)
         )
     }
 }

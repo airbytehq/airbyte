@@ -8,8 +8,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 
 /**
  * A Task is a unit of work that can be executed concurrently. Even though we aren't scheduling
@@ -22,6 +22,8 @@ import kotlinx.coroutines.yield
  */
 @Singleton
 class TaskRunner {
+    val log = KotlinLogging.logger {}
+
     private val queue = Channel<Task>(Channel.UNLIMITED)
 
     suspend fun enqueue(task: Task) {
@@ -29,23 +31,15 @@ class TaskRunner {
     }
 
     suspend fun run() = coroutineScope {
-        val log = KotlinLogging.logger {}
-
-        while (true) {
-            val task = queue.receive()
-
-            if (task is Done) {
-                log.info { "Task queue received Done() task, exiting" }
-                return@coroutineScope
-            }
-
-            /** Launch the task concurrently and update counters. */
+        queue.consumeAsFlow().collect { task ->
             launch {
                 log.info { "Executing task: $task" }
                 task.execute()
             }
-
-            yield()
         }
+    }
+
+    fun close() {
+        queue.close()
     }
 }

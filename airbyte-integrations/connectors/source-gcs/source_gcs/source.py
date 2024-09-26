@@ -3,14 +3,17 @@
 #
 
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
-from airbyte_cdk.models import AdvancedAuth, OAuthConfigSpecification
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
-from airbyte_protocol.models import ConnectorSpecification
+from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
+from airbyte_cdk.models import AdvancedAuth, OAuthConfigSpecification, ConnectorSpecification
 from source_gcs.legacy_config_transformer import LegacyConfigTransformer
 from source_gcs.spec import SourceGCSSpec
+from source_gcs.stream import GCSStream
 
 
 class SourceGCS(FileBasedSource):
@@ -61,4 +64,19 @@ class SourceGCS(FileBasedSource):
                     },
                 ),
             ),
+        )
+
+    def _make_default_stream(
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+    ) -> AbstractFileBasedStream:
+        return GCSStream(
+            config=stream_config,
+            catalog_schema=self.stream_schemas.get(stream_config.name),
+            stream_reader=self.stream_reader,
+            availability_strategy=self.availability_strategy,
+            discovery_policy=self.discovery_policy,
+            parsers=self.parsers,
+            validation_policy=self._validate_and_get_validation_policy(stream_config),
+            errors_collector=self.errors_collector,
+            cursor=cursor,
         )
