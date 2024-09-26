@@ -6,11 +6,11 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
+from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
-from airbyte_cdk.models import AdvancedAuth, OAuthConfigSpecification, ConnectorSpecification
 from source_gcs.legacy_config_transformer import LegacyConfigTransformer
 from source_gcs.spec import SourceGCSSpec
 from source_gcs.stream import GCSStream
