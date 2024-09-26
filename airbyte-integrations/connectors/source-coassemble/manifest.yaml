@@ -1,4 +1,4 @@
-version: 4.6.2
+version: 5.7.3
 
 type: DeclarativeSource
 
@@ -37,17 +37,68 @@ definitions:
             field_name: page
           page_size_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: length
+            inject_into: request_parameter
           pagination_strategy:
             type: PageIncrement
-            start_from_page: 1
             page_size: 20
+            start_from_page: 1
             inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/courses"
+    screen_types:
+      type: DeclarativeStream
+      name: screen_types
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/headless/screen/types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/screen_types"
+    trackings:
+      type: DeclarativeStream
+      name: trackings
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/headless/trackings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: length
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 20
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/trackings"
   base_requester:
     type: HttpRequester
     url_base: https://api.coassemble.com
@@ -63,6 +114,8 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/courses"
+  - $ref: "#/definitions/streams/screen_types"
+  - $ref: "#/definitions/streams/trackings"
 
 spec:
   type: Spec
@@ -89,17 +142,23 @@ spec:
 metadata:
   autoImportSchema:
     courses: true
+    screen_types: false
+    trackings: false
   yamlComponents:
     global:
       - authenticator
   testedStreams:
     courses:
+      hasRecords: true
       streamHash: e525c6075f62d30a2f08bf4f97fe3eada75513cd
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    screen_types:
+      streamHash: null
+    trackings:
+      streamHash: null
   assist:
     docsUrl: https://developers.coassemble.com/
 
@@ -422,3 +481,13 @@ schemas:
           - "null"
     required:
       - id
+  screen_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  trackings:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
