@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from unittest.mock import MagicMock, patch
 from source_commcare.source import SourceCommcare
 
 
