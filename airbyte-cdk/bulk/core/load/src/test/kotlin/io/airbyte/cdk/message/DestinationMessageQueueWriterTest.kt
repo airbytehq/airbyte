@@ -5,40 +5,25 @@
 package io.airbyte.cdk.message
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
-import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
 import io.airbyte.cdk.data.NullValue
 import io.airbyte.cdk.state.CheckpointManager
-import io.micronaut.context.annotation.Prototype
+import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Named
+import javax.inject.Singleton
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = ["MockStreamsManager"])
+@MicronautTest(environments = ["MockStreamsManager"], rebuildContext = true)
 class DestinationMessageQueueWriterTest {
-    @Inject lateinit var queueWriterFactory: TestDestinationMessageQueueWriterFactory
-
-    @Prototype
-    class TestDestinationMessageQueueWriterFactory(
-        @Named("mockCatalog") private val catalog: DestinationCatalog,
-        val messageQueue: MockMessageQueue,
-        val streamsManager: MockStreamsManager,
-        val checkpointManager: MockCheckpointManager
-    ) {
-        fun make(): DestinationMessageQueueWriter {
-            return DestinationMessageQueueWriter(
-                catalog,
-                messageQueue,
-                streamsManager,
-                checkpointManager
-            )
-        }
-    }
+    @Inject lateinit var writer: DestinationMessageQueueWriter
+    @Inject lateinit var messageQueue: MockMessageQueue
+    @Inject lateinit var streamsManager: MockStreamsManager
+    @Inject lateinit var checkpointManager: MockCheckpointManager
 
     class MockQueueChannel : QueueChannel<DestinationRecordWrapped> {
         val messages = mutableListOf<DestinationRecordWrapped>()
@@ -61,7 +46,8 @@ class DestinationMessageQueueWriterTest {
         }
     }
 
-    @Prototype
+    @Singleton
+    @Requires(env = ["MockStreamsManager"])
     class MockMessageQueue : MessageQueue<DestinationStream, DestinationRecordWrapped> {
         private val channels =
             mutableMapOf<DestinationStream, QueueChannel<DestinationRecordWrapped>>()
@@ -73,15 +59,16 @@ class DestinationMessageQueueWriterTest {
         }
 
         override suspend fun acquireQueueBytesBlocking(bytes: Long) {
-            TODO("Not yet implemented")
+            throw NotImplementedError()
         }
 
         override suspend fun releaseQueueBytes(bytes: Long) {
-            TODO("Not yet implemented")
+            throw NotImplementedError()
         }
     }
 
-    @Prototype
+    @Singleton
+    @Requires(env = ["MockStreamsManager"])
     class MockCheckpointManager : CheckpointManager<DestinationStream, CheckpointMessage> {
         val streamStates =
             mutableMapOf<DestinationStream, MutableList<Pair<Long, CheckpointMessage>>>()
@@ -104,7 +91,7 @@ class DestinationMessageQueueWriterTest {
         }
 
         override suspend fun flushReadyCheckpointMessages() {
-            TODO("Not yet implemented")
+            throw NotImplementedError()
         }
     }
 
@@ -140,13 +127,11 @@ class DestinationMessageQueueWriterTest {
 
     @Test
     fun testSendRecords() = runTest {
-        val writer = queueWriterFactory.make()
+        val channel1 = messageQueue.getChannel(stream1) as MockQueueChannel
+        val channel2 = messageQueue.getChannel(stream2) as MockQueueChannel
 
-        val channel1 = queueWriterFactory.messageQueue.getChannel(stream1) as MockQueueChannel
-        val channel2 = queueWriterFactory.messageQueue.getChannel(stream2) as MockQueueChannel
-
-        val manager1 = queueWriterFactory.streamsManager.getManager(stream1) as MockStreamManager
-        val manager2 = queueWriterFactory.streamsManager.getManager(stream2) as MockStreamManager
+        val manager1 = streamsManager.getManager(stream1) as MockStreamManager
+        val manager2 = streamsManager.getManager(stream2) as MockStreamManager
 
         (0 until 10).forEach { writer.publish(makeRecord(stream1, "test${it}"), it * 2L) }
         Assertions.assertEquals(10, channel1.messages.size)
@@ -177,8 +162,6 @@ class DestinationMessageQueueWriterTest {
 
     @Test
     fun testSendStreamState() = runTest {
-        val writer = queueWriterFactory.make()
-
         data class TestEvent(
             val stream: DestinationStream,
             val count: Int,
@@ -198,7 +181,7 @@ class DestinationMessageQueueWriterTest {
             repeat(count) { writer.publish(makeRecord(stream, "test"), 1L) }
             writer.publish(makeStreamState(stream, count.toLong()), 0L)
             val state =
-                queueWriterFactory.checkpointManager.streamStates[stream]!![stateLookupIndex]
+                checkpointManager.streamStates[stream]!![stateLookupIndex]
             Assertions.assertEquals(expectedCount, state.first)
             Assertions.assertEquals(count.toLong(), state.second.destinationStats?.recordCount)
         }
@@ -206,8 +189,6 @@ class DestinationMessageQueueWriterTest {
 
     @Test
     fun testSendGlobalState() = runTest {
-        val writer = queueWriterFactory.make()
-
         open class TestEvent
         data class AddRecords(val stream: DestinationStream, val count: Int) : TestEvent()
         data class SendState(
@@ -237,7 +218,7 @@ class DestinationMessageQueueWriterTest {
                 is SendState -> {
                     writer.publish(makeGlobalState(event.expectedStream1Count), 0L)
                     val state =
-                        queueWriterFactory.checkpointManager.globalStates[event.stateLookupIndex]
+                        checkpointManager.globalStates[event.stateLookupIndex]
                     val stream1State = state.first.find { it.first == stream1 }!!
                     val stream2State = state.first.find { it.first == stream2 }!!
                     Assertions.assertEquals(event.expectedStream1Count, stream1State.second)

@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.WriteConfiguration
 import io.airbyte.cdk.state.MemoryManager
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
@@ -48,6 +49,7 @@ data class StreamCompleteWrapped(
  * This maximum is expected to be low, as the assumption is that data will be spooled to disk as
  * quickly as possible.
  */
+@Secondary
 @Singleton
 class DestinationMessageQueue(
     catalog: DestinationCatalog,
