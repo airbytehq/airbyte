@@ -15,6 +15,9 @@ To get started;
   - `project_configuration:apps:read`
   - `charts_metrics:overview:read`
   - `customer_information:customers:read`
+  - `customer_information:subscriptions:read`
+  - `customer_information:purchases:read`
+  - `customer_information:invoices:read`
   - `project_configuration:entitlements:read`
   - `project_configuration:offerings:read`
   - `project_configuration:products:read`
@@ -27,6 +30,11 @@ To get started;
 | apps | id | No pagination | ✅ |  ✅  |
 | metrics_overview | id | No pagination | ✅ |  ❌  |
 | customers | id | No pagination | ✅ |  ✅  |
+| customers_subscriptions | id | No pagination | ✅ |  ✅  |
+| customers_purchases | id | No pagination | ✅ |  ✅  |
+| customers_active_entitlements | entitlement_id | No pagination | ✅ |  ✅  |
+| customers_aliases | id | No pagination | ✅ |  ✅  |
+| customers_invoices | id | No pagination | ✅ |  ✅  |
 | entitlements | id | No pagination | ✅ |  ✅  |
 | entitlements_products | id.entitlement_id | No pagination | ✅ |  ✅  |
 | offerings | id | No pagination | ✅ |  ✅  |
