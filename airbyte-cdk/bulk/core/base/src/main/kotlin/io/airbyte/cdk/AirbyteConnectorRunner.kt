@@ -9,6 +9,7 @@ import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
+import io.micronaut.context.env.MapPropertySource
 import java.nio.file.Path
 import kotlin.system.exitProcess
 import picocli.CommandLine
@@ -35,9 +36,10 @@ class AirbyteSourceRunner(
 class AirbyteDestinationRunner(
     /** CLI args. */
     args: Array<out String>,
+    testEnvironments: Map<String, String>? = null,
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
-) : AirbyteConnectorRunner("destination", args, testBeanDefinitions) {
+) : AirbyteConnectorRunner("destination", args, testBeanDefinitions, testEnvironments) {
     companion object {
         @JvmStatic
         fun run(vararg args: String) {
@@ -54,6 +56,7 @@ sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
+    val testProperties: Map<String, String>? = null,
 ) {
     val envs: Array<String> = arrayOf(Environment.CLI, connectorType)
 
@@ -69,9 +72,12 @@ sealed class AirbyteConnectorRunner(
         val ctx: ApplicationContext =
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
-                    airbytePropertySource,
-                    commandLinePropertySource,
-                    MetadataYamlPropertySource(),
+                    *listOfNotNull(
+                        testProperties?.let { MapPropertySource("additional_properties", it) },
+                        airbytePropertySource,
+                        commandLinePropertySource,
+                        MetadataYamlPropertySource(),
+                    ).toTypedArray(),
                 )
                 .beanDefinitions(*testBeanDefinitions)
                 .start()

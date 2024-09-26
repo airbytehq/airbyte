@@ -52,6 +52,7 @@ data object CliRunner {
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
+        testProperties: Map<String, String>? = null,
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
             RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
@@ -60,7 +61,7 @@ data object CliRunner {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteDestinationRunner(args, inputBeanDefinition, out.beanDefinition)
+                AirbyteDestinationRunner(args, testProperties, inputBeanDefinition, out.beanDefinition)
             }
         return CliRunnable(runnable, out.results)
     }
