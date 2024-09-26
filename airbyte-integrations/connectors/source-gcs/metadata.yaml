@@ -1,7 +1,7 @@
 data:
   ab_internal:
     ql: 200
-    sl: 100
+    sl: 300
   allowedHosts:
     hosts:
       - storage.googleapis.com
@@ -29,7 +29,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportLevel: community
+  supportLevel: certified
   tags:
     - language:python
     - cdk:python-file-based
