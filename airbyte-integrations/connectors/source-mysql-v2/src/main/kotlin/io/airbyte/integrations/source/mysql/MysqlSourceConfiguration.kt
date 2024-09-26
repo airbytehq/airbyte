@@ -24,13 +24,13 @@ data class MysqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
-    val cursorConfiguration: CursorConfiguration,
+    val cursorMethodConfiguration: CursorMethodConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
 ) : JdbcSourceConfiguration {
-    override val global = cursorConfiguration is CdcCursor
+    override val global = cursorMethodConfiguration is CdcCursor
 }
 
 @Singleton
@@ -111,7 +111,7 @@ class MysqlSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            cursorConfiguration = pojo.getCursorConfigurationValue(),
+            cursorMethodConfiguration = pojo.getCursorMethodConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
