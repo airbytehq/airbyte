@@ -40,7 +40,25 @@ class MysqlSourceMetadataQuerier(
                 )
 
             cdcVariableCheckQueries.forEach { runVariableCheckSql(it.first, it.second, base.conn) }
-            runCheckSqlWithoutError("SHOW MASTER STATUS", base.conn)
+
+            // Note: SHOW MASTER STATUS has been deprecated in latest mysql (8.4) and going forward
+            // it should be SHOW BINARY LOG STATUS. We will run both - if both have been failed we
+            // will throw exception.
+            try {
+                base.conn.createStatement().use { stmt: Statement ->
+                    stmt.execute("SHOW MASTER STATUS")
+                }
+            } catch (e: SQLException) {
+                try {
+                    base.conn.createStatement().use { stmt: Statement ->
+                        stmt.execute("SHOW BINARY LOG STATUS")
+                    }
+                } catch (ex: SQLException) {
+                    throw ConfigErrorException(
+                        "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
+                    )
+                }
+            }
         }
     }
 
@@ -68,18 +86,6 @@ class MysqlSourceMetadataQuerier(
             }
         } catch (e: Exception) {
             throw ConfigErrorException("Check query failed with: ${e.message}")
-        }
-    }
-
-    private fun runCheckSqlWithoutError(sql: String, conn: Connection) {
-        try {
-            conn.createStatement().use { stmt: Statement ->
-                stmt.executeQuery(sql).use { rs: ResultSet -> rs }
-            }
-        } catch (e: SQLException) {
-            throw ConfigErrorException(
-                "Please grant REPLICATION CLIENT privilege, so that binary log files are available for CDC mode."
-            )
         }
     }
 

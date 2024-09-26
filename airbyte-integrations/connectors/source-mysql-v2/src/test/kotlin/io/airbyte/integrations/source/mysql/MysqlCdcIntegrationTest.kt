@@ -46,28 +46,37 @@ class MysqlCdcIntegrationTest {
             AirbyteConnectionStatus.Status.SUCCEEDED
         )
 
-        val nonCdcDbContainer =
-            MysqlContainerFactory.exclusive(
+        MysqlContainerFactory.exclusive(
                 imageName = "mysql:8.0",
                 MysqlContainerFactory.WithCdcOff,
             )
+            .use { nonCdcDbContainer ->
+                {
+                    val invalidConfig: MysqlSourceConfigurationJsonObject =
+                        MysqlContainerFactory.config(nonCdcDbContainer).apply {
+                            setCursorMethodValue(CdcCursor())
+                        }
 
-        val invalidConfig: MysqlSourceConfigurationJsonObject =
-            MysqlContainerFactory.config(nonCdcDbContainer).apply {
-                setCursorMethodValue(CdcCursor())
+                    val nonCdcConnectionFactory =
+                        JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(invalidConfig))
+
+                    provisionTestContainer(nonCdcDbContainer, nonCdcConnectionFactory)
+
+                    val run2: BufferingOutputConsumer =
+                        CliRunner.source("check", invalidConfig, null).run()
+
+                    val messageInRun2 =
+                        run2
+                            .messages()
+                            .filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
+                            .first()
+
+                    assertEquals(
+                        AirbyteConnectionStatus.Status.FAILED,
+                        messageInRun2.connectionStatus.status
+                    )
+                }
             }
-
-        val nonCdcConnectionFactory =
-            JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(invalidConfig))
-
-        provisionTestContainer(nonCdcDbContainer, nonCdcConnectionFactory)
-
-        val run2: BufferingOutputConsumer = CliRunner.source("check", invalidConfig, null).run()
-
-        val messageInRun2 =
-            run2.messages().filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }.first()
-
-        assertEquals(AirbyteConnectionStatus.Status.FAILED, messageInRun2.connectionStatus.status)
     }
 
     @Test
@@ -148,8 +157,6 @@ class MysqlCdcIntegrationTest {
                     "ON *.* TO '${targetContainer.username}'@'%';"
             targetContainer.execAsRoot(grant)
             targetContainer.execAsRoot("FLUSH PRIVILEGES;")
-
-            targetContainer.execAsRoot("show variables where Variable_name = 'log_bin';")
 
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
