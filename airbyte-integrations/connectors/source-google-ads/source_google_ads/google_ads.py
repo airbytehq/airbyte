@@ -171,8 +171,9 @@ class GoogleAds:
         try:
             # The code is accessing "private" _pb value, because the message itself does not
             # contain public PB attribute and for google ads message-based classes, like AdTextAd,
-            # that's apparently the only way to get the actual protobuf message that cab be serialzied
+            # that's apparently the only way to get the actual protobuf message that can be serialzied
             # into json.
+            # type: ignore[union-attr]
             return json_format.MessageToJson(message._pb, indent=0).replace('\n', '')
         except AttributeError:
             # This is a fallback for the cases when '_pb' attribute is not available.
