@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.16.0"
+version = "0.17.0"
 description = ""
 authors = ["Ben Church <ben@airbyte.io>"]
 readme = "README.md"
-packages = [{include = "metadata_service"}]
+packages = [{ include = "metadata_service" }]
 
 [tool.poetry.dependencies]
 python = "~3.10"
@@ -17,7 +17,6 @@ google-cloud-storage = "^2.8.0"
 pydash = "^6.0.2"
 semver = "^3.0.1"
 gitpython = "^3.1.40"
-
 
 
 [tool.poetry.group.dev.dependencies]
@@ -44,3 +43,7 @@ poe_tasks = ["test"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 140

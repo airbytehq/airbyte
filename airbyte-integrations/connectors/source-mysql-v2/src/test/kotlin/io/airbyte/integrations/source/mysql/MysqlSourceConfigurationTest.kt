@@ -28,7 +28,7 @@ class MysqlSourceConfigurationTest {
 
         Assertions.assertEquals(config.realHost, "localhost")
         Assertions.assertEquals(config.realPort, 12345)
-        Assertions.assertEquals(config.namespaces, setOf("FOO", "SYSTEM"))
+        Assertions.assertEquals(config.namespaces, setOf("SYSTEM"))
 
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
@@ -51,10 +51,7 @@ const val CONFIG: String =
   "port": 12345,
   "username": "FOO",
   "password": "BAR",
-  "schemas": [
-    "FOO",
-    "SYSTEM"
-  ],
+  "database": "SYSTEM",
   "encryption": {
     "encryption_method": "preferred"
   },
