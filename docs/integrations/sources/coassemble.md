@@ -14,6 +14,8 @@ See the [Coassemble API docs](https://developers.coassemble.com/get-started) for
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | courses | id | DefaultPaginator | ✅ |  ❌  |
+| screen_types | - | NoPaginator | ✅ |  ❌  |
+| trackings | - | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
