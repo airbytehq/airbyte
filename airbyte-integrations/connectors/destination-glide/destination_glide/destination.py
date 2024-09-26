@@ -95,7 +95,7 @@ class DestinationGlide(Destination):
             columns = []
             properties = configured_stream.stream.json_schema["properties"]
             for (prop_name, prop) in properties.items():
-                prop_type = prop["type"]
+                prop_type = prop["type"] if "type" in prop else ""
                 logger.debug(f"Found column/property '{prop_name}' with type '{prop_type}' in stream {configured_stream.stream.name}.")  # nopep8
                 columns.append(
                     Column(prop_name, airbyteTypeToGlideType(prop_type))
