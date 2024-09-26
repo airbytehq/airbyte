@@ -8,7 +8,7 @@ import copy
 import logging
 import re
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 from urllib.parse import parse_qsl, urlparse
 
 import freezegun
@@ -54,16 +54,17 @@ from source_zendesk_support.streams import (
     TicketMetrics,
     Tickets,
     TicketSkips,
-    TicketSubstream,
     Topics,
     UserFields,
     Users,
     UserSettingsStream,
+    StatefulTicketMetrics,
+    StatelessTicketMetrics
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
 
-TICKET_SUBSTREAMS = [TicketSubstream, TicketMetrics]
+TICKET_SUBSTREAMS = [TicketMetrics]
 
 # prepared config
 STREAM_ARGS = {
@@ -111,9 +112,6 @@ def snake_case(name):
 
 
 def get_stream_instance(stream_class, args):
-    if stream_class in TICKET_SUBSTREAMS:
-        parent = Tickets(**args)
-        return stream_class(parent=parent, **args)
     return stream_class(**args)
 
 
@@ -303,7 +301,6 @@ class TestAllStreams:
             (TicketComments, "incremental/ticket_events.json"),
             (TicketFields, "ticket_fields"),
             (TicketForms, "ticket_forms"),
-            (TicketMetrics, "tickets/13/metrics"),
             (TicketSkips, "skips.json"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets/cursor.json"),
@@ -331,7 +328,6 @@ class TestAllStreams:
             "TicketComments",
             "TicketFields",
             "TicketForms",
-            "TicketMetrics",
             "TicketSkips",
             "TicketMetricEvents",
             "Tickets",
@@ -349,6 +345,23 @@ class TestAllStreams:
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
         result = stream.path(stream_slice={"ticket_id": "13"})
         assert result == expected
+
+    @pytest.mark.parametrize(
+            "with_state, expected",
+            [(True, "tickets/13/metrics"), (False, "ticket_metrics")]
+    )
+    def test_ticket_metrics_path(self, with_state, expected):
+        if with_state:
+            tickets = get_stream_instance(Tickets, STREAM_ARGS)
+            stateful_ticket_metrics = StatefulTicketMetrics(parent=tickets, subdomain="sandbox", start_date="2021-06-01T00:00:00Z")
+            stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+            stream.parent_stream = stateful_ticket_metrics
+            result = stream.parent_stream.path(stream_state=None, stream_slice={"ticket_id": 13}, next_page_token=None)
+            assert result == expected
+        else:
+            stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+            result = stream.path()
+            assert result == expected
 
 
 class TestSourceZendeskSupportStream:
@@ -370,19 +383,22 @@ class TestSourceZendeskSupportStream:
         expected = expected if isinstance(expected, list) else [expected]
         assert expected == output
 
-    def test_ticket_metrics_parse_response(self, requests_mock):
-        parent = Tickets(**STREAM_ARGS)
-        stream = TicketMetrics(parent=parent, **STREAM_ARGS)
-        expected = {"ticket_id": 13, "generated_timestamp": 1647532987}
+    @pytest.mark.parametrize(
+            "parent_stream",
+            [StatefulTicketMetrics, StatelessTicketMetrics]
+    )
+    def test_ticket_metrics_parse_response(self, requests_mock, parent_stream):
+        stream = TicketMetrics(**STREAM_ARGS)
+        expected = {"ticket_id": 13, "_ab_updated_at": 1647532987}
         response_field = stream.response_list_name
-
+        stream.parent_stream = MagicMock(spec=parent_stream)
+        stream.parent_stream.parse_response.return_value = expected
         requests_mock.get(STREAM_URL, json={response_field: expected})
         test_response = requests.get(STREAM_URL)
-
         stream_slice = {"ticket_id": 13, "generated_timestamp": 1647532987}
         output = list(stream.parse_response(response=test_response, stream_state=None, stream_slice=stream_slice))
-
         expected = expected if isinstance(expected, list) else [expected]
+        stream.parent_stream.parse_response.assert_called()
         assert expected == output
 
     def test_attribute_definition_parse_response(self, requests_mock):
@@ -423,15 +439,28 @@ class TestSourceZendeskSupportStream:
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (TicketMetrics, {}, {"generated_timestamp": 1622505600}, {"generated_timestamp": 1622505600}),
             (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
-        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "TicketMetrics", "Topics"],
+        ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "Topics"],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
         stream = get_stream_instance(stream_cls, STREAM_ARGS)
         result = stream.get_updated_state(current_state, last_record)
         assert expected == result
+
+    @pytest.mark.parametrize(
+            "parent_stream",
+            [StatefulTicketMetrics, StatelessTicketMetrics]
+    )
+    def test_ticket_metrics_get_updated_state_calls_parent(self, parent_stream):
+        stream_args = copy.deepcopy(STREAM_ARGS)
+        stream = get_stream_instance(TicketMetrics, stream_args)
+        if parent_stream == StatefulTicketMetrics:
+            stream_args.update({"parent": get_stream_instance(Tickets, stream_args)})
+        stream.parent_stream = get_stream_instance(parent_stream, stream_args)
+        with patch.object(stream.parent_stream, 'get_updated_state') as mock_get_updated_state:
+            stream.get_updated_state({}, {})
+            assert mock_get_updated_state.assert_called()
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
