@@ -22,11 +22,10 @@ class DefaultDestinationMessageDeserializer(private val messageFactory: Destinat
 
     override fun deserialize(serialized: String): DestinationMessage {
         try {
-            val node = Jsons.readTree(serialized)
-            val airbyteMessage = Jsons.treeToValue(node, AirbyteMessage::class.java)
+            val airbyteMessage = Jsons.readValue(serialized, AirbyteMessage::class.java)
             return messageFactory.fromAirbyteMessage(airbyteMessage, serialized)
         } catch (t: Throwable) {
-            throw RuntimeException("Failed to deserialize AirbyteMessage")
+            throw RuntimeException("Failed to deserialize AirbyteMessage: $serialized")
         }
     }
 }

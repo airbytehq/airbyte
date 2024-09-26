@@ -22,16 +22,16 @@ import kotlinx.coroutines.channels.Channel
 /** Manages the state of all streams in the destination. */
 interface StreamsManager {
     /** Get the manager for the given stream. Throws an exception if the stream is not found. */
-    fun getManager(stream: DestinationStream): StreamManager
+    fun getManager(stream: DestinationStream.Descriptor): StreamManager
 
     /** Suspend until all streams are closed. */
     suspend fun awaitAllStreamsClosed()
 }
 
 class DefaultStreamsManager(
-    private val streamManagers: ConcurrentHashMap<DestinationStream, StreamManager>
+    private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager>
 ) : StreamsManager {
-    override fun getManager(stream: DestinationStream): StreamManager {
+    override fun getManager(stream: DestinationStream.Descriptor): StreamManager {
         return streamManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
     }
 
@@ -159,6 +159,7 @@ class DefaultStreamManager(
         return isProcessingCompleteForState(recordCount.get(), Batch.State.COMPLETE)
     }
 
+    /** TODO: Handle conflating PERSISTED w/ COMPLETE upstream, to allow for overlap? */
     override fun areRecordsPersistedUntil(index: Long): Boolean {
         return isProcessingCompleteForState(index, Batch.State.PERSISTED) ||
             isProcessingCompleteForState(index, Batch.State.COMPLETE) // complete => persisted
@@ -191,8 +192,8 @@ class StreamsManagerFactory(
 ) {
     @Singleton
     fun make(): StreamsManager {
-        val hashMap = ConcurrentHashMap<DestinationStream, StreamManager>()
-        catalog.streams.forEach { hashMap[it] = DefaultStreamManager(it) }
+        val hashMap = ConcurrentHashMap<DestinationStream.Descriptor, StreamManager>()
+        catalog.streams.forEach { hashMap[it.descriptor] = DefaultStreamManager(it) }
         return DefaultStreamsManager(hashMap)
     }
 }
