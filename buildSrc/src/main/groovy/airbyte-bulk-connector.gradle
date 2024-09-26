@@ -130,8 +130,9 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             ]
         }
 
+        // The name integrationTestJava is required by airbyte-ci.
         project.sourceSets {
-            integrationTest {
+            integrationTestJava {
                 kotlin {
                     srcDir 'src/test-integration/kotlin'
                 }
@@ -158,25 +159,25 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
         }
 
-        project.tasks.register('integrationTest', Test) {
+        project.tasks.register('integrationTestJava', Test) {
             description = 'Runs the integration tests.'
             group = 'verification'
-            testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
-            classpath = project.sourceSets.integrationTest.runtimeClasspath
+            testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
+            classpath = project.sourceSets.integrationTestJava.runtimeClasspath
             useJUnitPlatform()
             mustRunAfter project.tasks.check
         }
 
         project.tasks.named('build').configure {
-            dependsOn project.tasks.integrationTest
+            dependsOn project.tasks.integrationTestJava
         }
 
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
 
-            integrationTestImplementation.extendsFrom testImplementation
-            integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+            integrationTestJavaImplementation.extendsFrom testImplementation
+            integrationTesJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
