@@ -174,6 +174,7 @@ corresponds to that version.
 
 | Version    | Date       | Pull Request                                                | Subject                                                                                                                                                        |
 |:-----------|:-----------|:------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.46.2     | 2024-09-26 | [\#45650](https://github.com/airbytehq/airbyte/pull/45650) (published in [45935](https://github.com/airbytehq/airbyte/pull/45935)) | Destinations: open functions in DestinationAcceptanceTest |
 | 0.46.1     | 2024-09-20 | [\#45700](https://github.com/airbytehq/airbyte/pull/45700)  | Destinations: Fix bug in parsing jsonschema |
 | 0.46.0     | 2024-09-18 | [\#45432](https://github.com/airbytehq/airbyte/pull/45432)  | upgrade all libraries to latest version |
 | 0.45.1     | 2024-09-17 | [\#45638](https://github.com/airbytehq/airbyte/pull/45638)  | upgrade apache mina sshd to 2.13.2 to handle openssh tcpkeepalive requests |
