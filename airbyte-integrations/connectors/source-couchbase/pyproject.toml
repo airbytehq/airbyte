@@ -19,13 +19,13 @@ python = "^3.9,<3.12"
 airbyte-cdk = "0.80.0"
 couchbase = "^4.3.1"
 pendulum = "==2.1.2"
-pytest = "^8.3.3"
 requests = "^2.32.3"
 
 [tool.poetry.scripts]
 source-couchbase = "source_couchbase.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "*"
-pytest-mock = "*"
-pytest = "*"
+pytest = "^8.3.3"
+requests-mock = "^1.9.3"
+pytest-mock = "^3.6.1"
+pendulum = "==2.1.2"

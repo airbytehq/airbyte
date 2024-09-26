@@ -1,7 +1,7 @@
-FROM python:3.9.13-alpine3.15 as base
+FROM python:3.9.13-alpine3.15 AS base
 
 # build and load all requirements
-FROM base as builder
+FROM base AS builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version and install poetry
@@ -34,7 +34,7 @@ RUN apk --no-cache add bash libstdc++
 COPY main.py ./
 COPY source_couchbase ./source_couchbase
 
-ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENV AIRBYTE_ENTRYPOINT="python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.1

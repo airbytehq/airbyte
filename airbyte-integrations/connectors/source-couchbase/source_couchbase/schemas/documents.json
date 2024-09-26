@@ -5,6 +5,15 @@
     "id": {
       "type": "string"
     },
+    "bucket": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string"
+    },
+    "collection": {
+      "type": "string"
+    },
     "content": {
       "type": "object",
       "additionalProperties": true
