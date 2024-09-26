@@ -8,61 +8,35 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.DestinationRecord
 import io.airbyte.cdk.message.SimpleBatch
-import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
 
 /**
  * Implementor interface. The framework calls open and close once per stream at the beginning and
  * end of processing. The framework calls processRecords once per batch of records as batches of the
  * configured size become available. (Specified in @
- * [io.airbyte.cdk.command.WriteConfiguration.recordBatchSizeBytes]
+ * [io.airbyte.cdk.command.WriteConfiguration.recordBatchSizeBytes])
  *
- * processBatch is called once per incomplete batch returned by either processRecords or
- * processBatch itself. See @[io.airbyte.cdk.message.Batch] for more details.
+ * [start] is called once before any records are processed.
+ *
+ * [processRecords] is called whenever a batch of records is available for processing, and only
+ * after [start] has returned successfully. The return value is a client-defined implementation of @
+ * [Batch] that the framework may pass to [processBatch] and/or [finalize]. (See @[Batch] for more
+ * details.)
+ *
+ * [processBatch] is called once per incomplete batch returned by either [processRecords] or
+ * [processBatch] itself.
+ *
+ * [finalize] is called once after all records and batches have been processed successfully.
+ *
+ * [close] is called once after all records have been processed, regardless of success or failure.
+ * If there are failed batches, they are passed in as an argument.
  */
 interface StreamLoader {
     val stream: DestinationStream
 
-    suspend fun open() {}
+    suspend fun start() {}
     suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch
-    suspend fun processBatch(batch: Batch): Batch = SimpleBatch(state = Batch.State.COMPLETE)
-    suspend fun close() {}
-}
+    suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
+    suspend fun finalize() {}
 
-/**
- * Default stream loader (Not yet implemented) will process the records into a locally staged file
- * of a format specified in the configuration.
- */
-class DefaultStreamLoader(
-    override val stream: DestinationStream,
-) : StreamLoader {
-    val log = KotlinLogging.logger {}
-
-    override suspend fun processRecords(
-        records: Iterator<DestinationRecord>,
-        totalSizeBytes: Long
-    ): Batch {
-        TODO(
-            "Default implementation adds airbyte metadata, maybe flattens, no-op maps, and converts to destination format"
-        )
-    }
-}
-
-/**
- * If you do not need to perform initialization and teardown across all streams, or if your
- * per-stream operations do not need shared global state, implement this interface instead of @
- * [Destination]. The framework will call it exactly once per stream to create instances that will
- * be used for the life cycle of the stream.
- */
-interface StreamLoaderFactory {
-    fun make(stream: DestinationStream): StreamLoader
-}
-
-@Singleton
-@Secondary
-class DefaultStreamLoaderFactory() : StreamLoaderFactory {
-    override fun make(stream: DestinationStream): StreamLoader {
-        TODO("See above")
-    }
+    suspend fun close(failedBatches: List<Batch> = emptyList()) {}
 }

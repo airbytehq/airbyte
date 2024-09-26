@@ -9,7 +9,6 @@ import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.MessageQueueWriter
 import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -62,13 +61,4 @@ class DefaultInputConsumer(
     override val messageQueue: MessageQueueWriter<DestinationMessage>
 ) : DeserializingInputStreamConsumer<DestinationMessage> {
     override val log = KotlinLogging.logger {}
-}
-
-/** Override to provide a custom input stream. */
-@Factory
-class InputStreamFactory {
-    @Singleton
-    fun make(): InputStream {
-        return System.`in`
-    }
 }

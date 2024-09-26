@@ -709,6 +709,7 @@ def test_create_source():
     assert isinstance(source, ManifestDeclarativeSource)
     assert source._constructor._limit_pages_fetched_per_slice == limits.max_pages_per_slice
     assert source._constructor._limit_slices_fetched == limits.max_slices
+    assert source._constructor._disable_cache
 
 
 def request_log_message(request: dict) -> AirbyteMessage:

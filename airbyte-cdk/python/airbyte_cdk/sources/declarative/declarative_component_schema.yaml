@@ -1156,6 +1156,7 @@ definitions:
         title: Retriever
         description: Component used to coordinate how records are extracted across stream slices and request pages.
         anyOf:
+          - "$ref": "#/definitions/AsyncRetriever"
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
       incremental_sync:
@@ -1194,6 +1195,7 @@ definitions:
             - "$ref": "#/definitions/AddFields"
             - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
+            - "$ref": "#/definitions/KeysToLower"
       state_migrations:
         title: State Migrations
         description: Array of state migrations to be applied on the input state
@@ -1690,6 +1692,19 @@ definitions:
       type:
         type: string
         enum: [JsonlDecoder]
+  KeysToLower:
+    title: Keys to Lower Case
+    description: A transformation that renames all keys to lower case.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [KeysToLower]
+      $parameters:
+        type: object
+        additionalProperties: true
   IterableDecoder:
     title: Iterable Decoder
     description: Use this if the response consists of strings separated by new lines (`\n`). The Decoder will wrap each row into a JSON object with the `record` key.
@@ -2322,6 +2337,104 @@ definitions:
         description: If true, the partition router and incremental request options will be ignored when paginating requests. Request options set directly on the requester will not be ignored.
         type: boolean
         default: false
+      partition_router:
+        title: Partition Router
+        description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.
+        default: []
+        anyOf:
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
+      decoder:
+        title: Decoder
+        description: Component decoding the response so records can be extracted.
+        anyOf:
+          - "$ref": "#/definitions/JsonDecoder"
+          - "$ref": "#/definitions/JsonlDecoder"
+          - "$ref": "#/definitions/IterableDecoder"
+      $parameters:
+        type: object
+        additionalProperties: true
+  AsyncJobStatusMap:
+    description: Matches the api job status to Async Job Status.
+    type: object
+    required:
+      - running
+      - completed
+      - failed
+      - timeout
+    properties:
+      type:
+        type: string
+        enum: [AsyncJobStatusMap]
+      running:
+        type: array
+        items:
+          type: string
+      completed:
+        type: array
+        items:
+          type: string
+      failed:
+        type: array
+        items:
+          type: string
+      timeout:
+        type: array
+        items:
+          type: string
+  AsyncRetriever:
+    description: Retrieves records by Asynchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
+    type: object
+    required:
+      - type
+      - record_selector
+      - status_mapping
+      - creation_requester
+      - polling_requester
+      - download_requester
+    properties:
+      type:
+        type: string
+        enum: [AsyncRetriever]
+      record_selector:
+        description: Component that describes how to extract records from a HTTP response.
+        "$ref": "#/definitions/RecordSelector"
+      status_mapping:
+        description: Async Job Status to Airbyte CDK Async Job Status mapping.
+        anyOf:
+          - "$ref": "#/definitions/AsyncJobStatusMap"
+      status_extractor:
+        description: Responsible for fetching the actual status of the async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      urls_extractor:
+        description: Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
+      creation_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      polling_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
+      download_requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       partition_router:
         title: Partition Router
         description: PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.

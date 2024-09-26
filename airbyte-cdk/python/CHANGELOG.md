@@ -1,5 +1,35 @@
 # Changelog
 
+## 5.7.3
+fix connector builder output serialization 
+
+## 5.7.2
+add transform_record() to class DefaultFileBasedStream
+
+## 5.7.1
+add python-snappy to file-based dependencies
+
+## 5.7.0
+concurrent-cdk: add cursor definition based on sync mode to ConcurrentSourceAdapter
+
+## 5.6.0
+Decouple low-code request_parameter_provider from cursor, add optional cursor_granularity to ConcurrentCursor
+
+## 5.5.2
+Fix pandas missing dependency
+
+## 5.5.1
+Bug fix: Return a connection status failure on an expected check failure
+
+## 5.5.0
+Declarative async job components
+
+## 5.4.0
+add migration of global stream_state to per_partition format
+
+## 5.3.0
+Connector builder: add flag to disable cache 
+
 ## 5.2.1
 Fix error in incremental sync docs
 

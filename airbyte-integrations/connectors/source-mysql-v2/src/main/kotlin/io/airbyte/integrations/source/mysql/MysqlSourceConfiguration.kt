@@ -63,15 +63,36 @@ class MysqlSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        if (encryption is SslVerifyCertificate) {
-            // TODO: reuse JdbcSSLCOnnectionUtils; parse the input into properties
-        }
+        val sslMode = SSLMode.fromJdbcPropertyName(pojo.encryption.encryptionMethod)
+        val jdbcEncryption =
+            when (encryption) {
+                is EncryptionPreferred,
+                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = sslMode)
+                is SslVerifyCertificate ->
+                    MysqlJdbcEncryption(
+                        sslMode = sslMode,
+                        caCertificate = encryption.sslCertificate,
+                        clientCertificate = encryption.sslClientCertificate,
+                        clientKey = encryption.sslClientKey,
+                        clientKeyPassword = encryption.sslClientPassword
+                    )
+                is SslVerifyIdentity ->
+                    MysqlJdbcEncryption(
+                        sslMode = sslMode,
+                        caCertificate = encryption.sslCertificate,
+                        clientCertificate = encryption.sslClientCertificate,
+                        clientKey = encryption.sslClientKey,
+                        clientKeyPassword = encryption.sslClientPassword
+                    )
+            }
+        val sslJdbcParameters = jdbcEncryption.parseSSLConfig()
+        jdbcProperties.putAll(sslJdbcParameters)
+
         // Build JDBC URL
         val address = "%s:%d"
         val jdbcUrlFmt = "jdbc:mysql://${address}"
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
-        val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
@@ -89,7 +110,7 @@ class MysqlSourceConfigurationFactory :
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
-            namespaces = pojo.schemas?.toSet() ?: setOf(defaultSchema),
+            namespaces = setOf(pojo.database),
             cursorConfiguration = pojo.getCursorConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

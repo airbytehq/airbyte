@@ -12,9 +12,7 @@ import jakarta.inject.Singleton
  * Internal representation of destination streams. This is intended to be a case class specialized
  * for usability.
  */
-data class DestinationCatalog(
-    val streams: List<DestinationStream> = emptyList(),
-) {
+data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()) {
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
         streams.associateBy { it.descriptor }
 
@@ -23,6 +21,9 @@ data class DestinationCatalog(
         return byDescriptor[descriptor]
             ?: throw IllegalArgumentException("Stream not found: namespace=$namespace, name=$name")
     }
+
+    fun asProtocolObject(): ConfiguredAirbyteCatalog =
+        ConfiguredAirbyteCatalog().withStreams(streams.map { it.asProtocolObject() })
 }
 
 interface DestinationCatalogFactory {

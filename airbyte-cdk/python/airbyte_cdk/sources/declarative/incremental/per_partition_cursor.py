@@ -6,12 +6,10 @@ import logging
 from collections import OrderedDict
 from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.incremental.declarative_cursor import DeclarativeCursor
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
-from airbyte_cdk.utils import AirbyteTracedException
 
 
 class CursorFactory:
@@ -48,6 +46,7 @@ class PerPartitionCursor(DeclarativeCursor):
     _NO_CURSOR_STATE: Mapping[str, Any] = {}
     _KEY = 0
     _VALUE = 1
+    _state_to_migrate_from: Mapping[str, Any] = {}
 
     def __init__(self, cursor_factory: CursorFactory, partition_router: PartitionRouter):
         self._cursor_factory = cursor_factory
@@ -65,7 +64,8 @@ class PerPartitionCursor(DeclarativeCursor):
 
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition.partition))
             if not cursor:
-                cursor = self._create_cursor(self._NO_CURSOR_STATE)
+                partition_state = self._state_to_migrate_from if self._state_to_migrate_from else self._NO_CURSOR_STATE
+                cursor = self._create_cursor(partition_state)
                 self._cursor_per_partition[self._to_partition_key(partition.partition)] = cursor
 
             for cursor_slice in cursor.stream_slices():
@@ -113,15 +113,13 @@ class PerPartitionCursor(DeclarativeCursor):
             return
 
         if "states" not in stream_state:
-            raise AirbyteTracedException(
-                internal_message=f"Could not sync parse the following state: {stream_state}",
-                message="The state for is format invalid. Validate that the migration steps included a reset and that it was performed "
-                "properly. Otherwise, please contact Airbyte support.",
-                failure_type=FailureType.config_error,
-            )
+            # We assume that `stream_state` is in a global format that can be applied to all partitions.
+            # Example: {"global_state_format_key": "global_state_format_value"}
+            self._state_to_migrate_from = stream_state
 
-        for state in stream_state["states"]:
-            self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+        else:
+            for state in stream_state["states"]:
+                self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
         # Set parent state for partition routers based on parent streams
         self._partition_router.set_initial_state(stream_state)
