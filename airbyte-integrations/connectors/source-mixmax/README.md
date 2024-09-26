@@ -1,9 +1,11 @@
 # MixMax
-This directory contains the manifest-only connector for `source-mixmax`.
+This directory contains the manifest-only connector for [`source-mixmax`](https://app.mixmax.com/).
 
-Website: https://app.mixmax.com/
-API Docs: https://developer.mixmax.com/reference/getting-started-with-the-api
-Auth Keys: https://app.mixmax.com/dashboard/settings/personal/integrations
+## Documentation reference:
+Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for API documentation
+
+## Authentication setup
+`Mixmax` uses API key authentication, Visit `https://app.mixmax.com/dashboard/settings/personal/integrations` for getting your API keys.
 
 ## Usage
 There are multiple ways to use this connector:

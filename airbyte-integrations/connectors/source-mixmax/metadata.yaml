@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "api.mixmax.com"
   registryOverrides:
     oss:
       enabled: true

@@ -1,7 +1,11 @@
 # MixMax
-Website: https://app.mixmax.com/
-API Docs: https://developer.mixmax.com/reference/getting-started-with-the-api
-Auth Keys: https://app.mixmax.com/dashboard/settings/personal/integrations
+This directory contains the manifest-only connector for [`source-mixmax`](https://app.mixmax.com/).
+
+## Documentation reference:
+Visit `https://developer.mixmax.com/reference/getting-started-with-the-api` for API documentation
+
+## Authentication setup
+`Mixmax` uses API key authentication, Visit `https://app.mixmax.com/dashboard/settings/personal/integrations` for getting your API keys.
 
 ## Configuration
 
@@ -38,8 +42,8 @@ Auth Keys: https://app.mixmax.com/dashboard/settings/personal/integrations
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-26 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-26 |[45888](https://github.com/airbytehq/airbyte/pull/45888)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
