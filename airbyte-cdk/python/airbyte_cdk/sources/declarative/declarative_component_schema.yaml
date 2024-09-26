@@ -28,6 +28,8 @@ properties:
     type: object
   spec:
     "$ref": "#/definitions/Spec"
+  concurrency_level:
+    "$ref": "#/definitions/ConcurrencyLevel"
   metadata:
     type: object
     description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
@@ -312,6 +314,37 @@ definitions:
           anyOf:
             - "$ref": "#/definitions/CompositeErrorHandler"
             - "$ref": "#/definitions/DefaultErrorHandler"
+      $parameters:
+        type: object
+        additionalProperties: true
+  ConcurrencyLevel:
+    title: Concurrency Level
+    description: Defines the amount of parallelization for the streams that are being synced. The factor of parallelization is how many partitions or streams are synced at the same time. For example, with a concurrency_level of 10, ten streams or partitions of data will processed at the same time.
+    type: object
+    required:
+      - default_concurrency
+    properties:
+      type:
+        type: string
+        enum: [ConcurrencyLevel]
+      default_concurrency:
+        title: Default Concurrency
+        description: The amount of concurrency that will applied during a sync. This value can be hardcoded or user-defined in the config if different users have varying volume thresholds in the target API.
+        anyOf:
+          - type: integer
+          - type: string
+        interpolation_context:
+          - config
+        examples:
+          - 10
+          - "{{ config['num_workers'] or 10 }}"
+      max_concurrency:
+        title: Max Concurrency
+        description: The maximum level of concurrency that will be used during a sync. This becomes a required field when the default_concurrency derives from the config, because it serves as a safeguard against a user-defined threshold that is too high.
+        type: integer
+        examples:
+          - 20
+          - 100
       $parameters:
         type: object
         additionalProperties: true
