@@ -140,10 +140,10 @@ At this point you can run `airbyte-ci` commands.
   - [Cleaning the airbyte-ci install](#cleaning-the-airbyte-ci-install)
   - [Disabling telemetry](#disabling-telemetry)
   - [Installation for development](#installation-for-development)
-      - [Pre-requisites](#pre-requisites)
-      - [Installation](#installation)
-      - [Running Tests](#running-tests)
-      - [Checking Code Format (Pipelines)](#checking-code-format-pipelines)
+    - [Pre-requisites](#pre-requisites)
+    - [Installation](#installation)
+    - [Running Tests](#running-tests)
+    - [Checking Code Format (Pipelines)](#checking-code-format-pipelines)
   - [Commands reference](#commands-reference)
     - [`airbyte-ci` command group](#airbyte-ci-command-group)
       - [Options](#options)
@@ -341,14 +341,14 @@ flowchart TD
 #### Options
 
 | Option                                                  | Multiple | Default value | Description                                                                                                                                                                                              |
-| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | `--skip-step/-x`                                        | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                                                                            |
 | `--only-step/-k`                                        | True     |               | Only run specific steps by id e.g. `-k unit -k acceptance`                                                                                                                                               |
 | `--fail-fast`                                           | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only`                                     | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`                                      | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
 | `--<step-id>.<extra-parameter>=<extra-parameter-value>` | True     |               | You can pass extra parameters for specific test steps. More details in the extra parameters section below                                                                                                |
-| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use.
+| `--ci-requirements`                                     | False    |               |                                                                                                                                                                                                          | Output the CI requirements as a JSON payload. It is used to determine the CI runner to use. |
 
 Note:
 
@@ -460,6 +460,8 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | `--python-registry-token`            | False    |                                 | `PYTHON_REGISTRY_TOKEN`            | The API token to authenticate with the registry. For pypi, the `pypi-` prefix needs to be specified                                                                                       |
 | `--python-registry-url`              | False    | https://upload.pypi.org/legacy/ | `PYTHON_REGISTRY_URL`              | The python registry to publish to. Defaults to main pypi                                                                                                                                  |
 | `--python-registry-check-url`        | False    | https://pypi.org/pypi           | `PYTHON_REGISTRY_CHECK_URL`        | The python registry url to check whether a package is published already                                                                                                                   |
+| `--promote-release-candidate`        | False    | False                           |                                    | Promote the release candidate version of selected connectors as main version.                                                                                                             |
+| `--rollback-release-candidate`       | False    | False                           |                                    | Rollback the release candidate version of the selector connectors.                                                                                                                        |
 
 I've added an empty "Default" column, and you can fill in the default values as needed.
 
@@ -535,7 +537,6 @@ Get source-openweather up to date. If there are changes, bump the version and ad
 - `airbyte-ci connectors --name=source-openweather up-to-date`
 - `airbyte-ci connectors --name=source-openweather up-to-date --create-prs`: make a pull request for it
 - `airbyte-ci connectors --name=source-openweather up-to-date --no-bump`: don't change the version or changelog
-
 
 ### <a id="connectors-bump-version"></a>`connectors bump-version` command
 
@@ -658,30 +659,36 @@ You can also set or set/change the title or body of the PR:
 ### <a id="connectors-list-command"></a>`connectors generate-erd` command
 
 Generates a couple of files and publish a new ERD to dbdocs. The generated files are:
-* `<source code_directory>/erd/discovered_catalog.json`: the catalog used to generate the estimated relations and the dbml file
-* `<source code_directory>/erd/estimated_relationships.json`: the output of the LLM trying to figure out the relationships between the different streams
-* `<source code_directory>/erd/source.dbml`: the file used the upload the ERDs to dbdocs
+
+- `<source code_directory>/erd/discovered_catalog.json`: the catalog used to generate the estimated relations and the dbml file
+- `<source code_directory>/erd/estimated_relationships.json`: the output of the LLM trying to figure out the relationships between the different streams
+- `<source code_directory>/erd/source.dbml`: the file used the upload the ERDs to dbdocs
 
 Pre-requisites:
-* The config file use to discover the catalog should be available in `<source code_directory>/secrets/config.json`
+
+- The config file use to discover the catalog should be available in `<source code_directory>/secrets/config.json`
 
 #### Create initial diagram workflow or on connector's schema change
 
 Steps
-* Ensure the pre-requisites mentioned above are met
-* Run `DBDOCS_TOKEN=<token> GENAI_API_KEY=<api key> airbyte-ci connectors --name=<source name> generate-erd`
-* Create a PR with files `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
+
+- Ensure the pre-requisites mentioned above are met
+- Run `DBDOCS_TOKEN=<token> GENAI_API_KEY=<api key> airbyte-ci connectors --name=<source name> generate-erd`
+- Create a PR with files `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
 
 Expected Outcome
-* The diagram is available in dbdocs
-* `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` are updated on master
+
+- The diagram is available in dbdocs
+- `<source code_directory>/erd/estimated_relationships.json` and `<source code_directory>/erd/source.dbml` are updated on master
 
 #### On manual validation
 
 Steps
-* If not exists, create file `<source code_directory>/erd/confirmed_relationships.json` with the following format and add:
-  * `relations` describes the relationships that we know exist
-  * `false_positives` describes the relationships the LLM found that we know do not exist
+
+- If not exists, create file `<source code_directory>/erd/confirmed_relationships.json` with the following format and add:
+  - `relations` describes the relationships that we know exist
+  - `false_positives` describes the relationships the LLM found that we know do not exist
+
 ```
 {
     "streams": [
@@ -698,9 +705,10 @@ Steps
     ]
 }
 ```
-* Ensure the pre-requisites mentioned above are met
-* Run `DBDOCS_TOKEN=<token> airbyte-ci connectors --name=<source name> generate-erd -x llm_relationships`
-* Create a PR with files `<source code_directory>/erd/confirmed_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
+
+- Ensure the pre-requisites mentioned above are met
+- Run `DBDOCS_TOKEN=<token> airbyte-ci connectors --name=<source name> generate-erd -x llm_relationships`
+- Create a PR with files `<source code_directory>/erd/confirmed_relationships.json` and `<source code_directory>/erd/source.dbml` for documentation purposes
 
 #### Options
 
@@ -842,11 +850,12 @@ airbyte-ci connectors --language=low-code migrate-to-manifest-only
 ## Changelog
 
 | Version | PR                                                         | Description                                                                                                                  |
-| ------- | ---------------------------------------------------------- |------------------------------------------------------------------------------------------------------------------------------|
+| ------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.36.0  | [#44877](https://github.com/airbytehq/airbyte/pull/44877)  | Implement `--promote/rollback-release-candidate` in `connectors publish`.                                                    |
 | 4.35.6  | [#45632](https://github.com/airbytehq/airbyte/pull/45632)  | Add entry to format file ignore list (`destination-*/expected-spec.json`)                                                    |
-| 4.35.5  | [#45672](https://github.com/airbytehq/airbyte/pull/45672)  | Fix docs mount during publish                                                                                         |
-| 4.35.4  | [#42584](https://github.com/airbytehq/airbyte/pull/42584)  | Mount connector directory to metadata validation                                                                                         |
-| 4.35.3  | [#45393](https://github.com/airbytehq/airbyte/pull/45393)  | Resolve symlinks in `SimpleDockerStep`.                                                                        |
+| 4.35.5  | [#45672](https://github.com/airbytehq/airbyte/pull/45672)  | Fix docs mount during publish                                                                                                |
+| 4.35.4  | [#42584](https://github.com/airbytehq/airbyte/pull/42584)  | Mount connector directory to metadata validation                                                                             |
+| 4.35.3  | [#45393](https://github.com/airbytehq/airbyte/pull/45393)  | Resolve symlinks in `SimpleDockerStep`.                                                                                      |
 | 4.35.2  | [#45360](https://github.com/airbytehq/airbyte/pull/45360)  | Updated dependencies.                                                                                                        |
 | 4.35.1  | [#45160](https://github.com/airbytehq/airbyte/pull/45160)  | Remove deps.toml dependency for java connectors.                                                                             |
 | 4.35.0  | [#44879](https://github.com/airbytehq/airbyte/pull/44879)  | Mount `components.py` when building manifest-only connector image                                                            |

@@ -76,6 +76,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         slices = [{"files": list(group[1])} for group in itertools.groupby(sorted_files_to_read, lambda f: f.last_modified)]
         return slices
 
+    def transform_record(self, record: dict[str, Any], file: RemoteFile, last_updated: str) -> dict[str, Any]:
+        # adds _ab_source_file_last_modified and _ab_source_file_url to the record
+        record[self.ab_last_mod_col] = last_updated
+        record[self.ab_file_name_col] = file.uri
+        return record
+
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
@@ -102,8 +108,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     elif not self.record_passes_validation_policy(record):
                         n_skipped += 1
                         continue
-                    record[self.ab_last_mod_col] = file_datetime_string
-                    record[self.ab_file_name_col] = file.uri
+                    record = self.transform_record(record, file, file_datetime_string)
                     yield stream_data_to_airbyte_message(self.name, record)
                 self._cursor.add_file(file)
 

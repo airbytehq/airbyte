@@ -29,9 +29,10 @@ interface MessageQueueWriter<T : Any> {
 @Singleton
 class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
-    private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>,
+    private val messageQueue: MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped>,
     private val streamsManager: StreamsManager,
-    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>
+    private val checkpointManager:
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>
 ) : MessageQueueWriter<DestinationMessage> {
     /**
      * Deserialize and route the message to the appropriate channel.
@@ -89,14 +90,15 @@ class DestinationMessageQueueWriter(
                     is GlobalCheckpoint -> {
                         val streamWithIndexAndCount =
                             catalog.streams.map { stream ->
-                                val manager = streamsManager.getManager(stream)
+                                val manager = streamsManager.getManager(stream.descriptor)
                                 val (currentIndex, countSinceLast) = manager.markCheckpoint()
                                 Triple(stream, currentIndex, countSinceLast)
                             }
                         val totalCount = streamWithIndexAndCount.sumOf { it.third }
                         val messageWithCount =
                             message.withDestinationStats(CheckpointMessage.Stats(totalCount))
-                        val streamIndexes = streamWithIndexAndCount.map { it.first to it.second }
+                        val streamIndexes =
+                            streamWithIndexAndCount.map { it.first.descriptor to it.second }
                         checkpointManager.addGlobalCheckpoint(streamIndexes, messageWithCount)
                     }
                 }
