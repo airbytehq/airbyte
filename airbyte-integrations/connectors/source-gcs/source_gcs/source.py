@@ -6,7 +6,7 @@
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
-from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
+from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -40,7 +40,7 @@ class SourceGCS(FileBasedSource):
             documentationUrl=self.spec_class.documentation_url(),
             connectionSpecification=self.spec_class.schema(),
             advanced_auth=AdvancedAuth(
-                auth_flow_type="oauth2.0",
+                auth_flow_type=AuthFlowType.oauth2_0,
                 predicate_key=["credentials", "auth_type"],
                 predicate_value="Client",
                 oauth_config_specification=OAuthConfigSpecification(
