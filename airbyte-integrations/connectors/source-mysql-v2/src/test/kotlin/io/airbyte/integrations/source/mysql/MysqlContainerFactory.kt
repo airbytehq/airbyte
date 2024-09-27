@@ -25,6 +25,12 @@ object MysqlContainerFactory {
         }
     }
 
+    data object WithCdcOff : MysqlContainerModifier {
+        override fun modify(container: MySQLContainer<*>) {
+            container.withCommand("--skip-log-bin")
+        }
+    }
+
     fun exclusive(
         imageName: String,
         vararg modifiers: MysqlContainerModifier,
