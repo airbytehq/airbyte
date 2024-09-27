@@ -1,7 +1,7 @@
-import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+import json
 
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import Stream
 from couchbase.cluster import Cluster
 
 from .queries import (
@@ -9,7 +9,6 @@ from .queries import (
     get_scopes_query,
     get_collections_query,
     get_documents_query,
-    get_buckets_list_query
 )
 
 class CouchbaseStream(Stream):
@@ -51,8 +50,7 @@ class Buckets(CouchbaseStream):
     def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
         query = get_buckets_query()
         result = self.cluster.query(query)
-        for row in result:
-            yield row
+        yield from result
 
 class Scopes(CouchbaseStream):
     """
@@ -62,10 +60,13 @@ class Scopes(CouchbaseStream):
     name = "scopes"
 
     def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_scopes_query()
-        result = self.cluster.query(query)
-        for row in result:
-            yield row
+        buckets_result = self.cluster.query(get_buckets_list_query())
+        
+        for bucket_row in buckets_result:
+            bucket_name = bucket_row.get('name')
+            if bucket_name:
+                scopes_result = self.cluster.query(get_scopes_query(bucket_name))
+                yield from (row for row in scopes_result if 'name' in row)
 
 class Collections(CouchbaseStream):
     """
@@ -75,10 +76,22 @@ class Collections(CouchbaseStream):
     name = "collections"
 
     def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        query = get_collections_query()
-        result = self.cluster.query(query)
-        for row in result:
-            yield row
+        buckets_result = self.cluster.query(get_buckets_list_query())
+        
+        for bucket_row in buckets_result:
+            bucket_name = bucket_row.get('name')
+            if not bucket_name:
+                continue
+
+            scopes_result = self.cluster.query(get_scopes_query(bucket_name))
+            
+            for scope_row in scopes_result:
+                scope_name = scope_row.get('name')
+                if not scope_name:
+                    continue
+
+                collections_result = self.cluster.query(get_collections_query(bucket_name, scope_name))
+                yield from (row for row in collections_result if 'name' in row)
 
 class Documents(CouchbaseStream):
     """
@@ -94,25 +107,43 @@ class Documents(CouchbaseStream):
             return json.load(f)
 
     def read_records(self, sync_mode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        documents_query = get_documents_query()
-        buckets_query = get_buckets_list_query()
-        buckets_result = self.cluster.query(buckets_query)
+        buckets_result = self.cluster.query(get_buckets_list_query())
         
         for bucket_row in buckets_result:
-            bucket = self.cluster.bucket(bucket_row['name'])
-            for scope in bucket.collections().get_all_scopes():
-                for collection in scope.collections:
-                    result = self.cluster.query(documents_query.format(bucket.name, scope.name, collection.name))
-                    for row in result:
-                        yield {
-                            "id": row["id"],
-                            "bucket": row["bucket"],
-                            "scope": row["scope"],
-                            "collection": row["collection"],
-                            "content": row["content"],
-                            "metadata": {
-                                "expiration": row["expiration"],
-                                "flags": row["flags"],
-                                "cas": str(row["cas"])
-                            }
-                        }
+            bucket_name = bucket_row.get('name')
+            if not bucket_name:
+                continue
+
+            scopes_result = self.cluster.query(get_scopes_query(bucket_name))
+            
+            for scope_row in scopes_result:
+                scope_name = scope_row.get('name')
+                if not scope_name:
+                    continue
+
+                collections_result = self.cluster.query(get_collections_query(bucket_name, scope_name))
+                
+                for collection_row in collections_result:
+                    collection_name = collection_row.get('name')
+                    if not collection_name:
+                        continue
+
+                    documents_result = self.cluster.query(get_documents_query(bucket_name, scope_name, collection_name))
+                    for row in documents_result:
+                        if 'id' in row:
+                            yield self.format_document(row, bucket_name, scope_name, collection_name)
+
+    @staticmethod
+    def format_document(row, bucket_name, scope_name, collection_name):
+        return {
+            "id": row["id"],
+            "bucket": bucket_name,
+            "scope": scope_name,
+            "collection": collection_name,
+            "content": row,
+            "metadata": {
+                "expiration": row.get("expiration"),
+                "flags": row.get("flags"),
+                "cas": str(row.get("cas"))
+            }
+        }

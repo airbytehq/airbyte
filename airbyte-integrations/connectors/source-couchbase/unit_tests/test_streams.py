@@ -38,57 +38,55 @@ def test_buckets_read_records(mock_cluster):
     mock_cluster.query.assert_called_once_with(get_buckets_query())
 
 def test_scopes_read_records(mock_cluster):
-    mock_cluster.query.return_value = [
-        {"bucket": "bucket1", "name": "scope1", "uid": "uid1"},
-        {"bucket": "bucket1", "name": "scope2", "uid": "uid2"}
+    mock_cluster.query.side_effect = [
+        [{"name": "bucket1"}, {"name": "bucket2"}],  # Mocking buckets_list_query result
+        [{"name": "scope1", "uid": "uid1"}, {"name": "scope2", "uid": "uid2"}],  # Mocking scopes_query result for bucket1
+        [{"name": "scope3", "uid": "uid3"}]  # Mocking scopes_query result for bucket2
     ]
     
     scopes_stream = Scopes(mock_cluster)
     records = list(scopes_stream.read_records(sync_mode=None))
     
-    assert len(records) == 2
-    assert records[0]["bucket"] == "bucket1"
+    assert len(records) == 3
     assert records[0]["name"] == "scope1"
     assert records[1]["name"] == "scope2"
-    mock_cluster.query.assert_called_once_with(get_scopes_query())
+    assert records[2]["name"] == "scope3"
+    assert mock_cluster.query.call_count == 3
+    mock_cluster.query.assert_any_call(get_buckets_list_query())
+    mock_cluster.query.assert_any_call(get_scopes_query("bucket1"))
+    mock_cluster.query.assert_any_call(get_scopes_query("bucket2"))
 
 def test_collections_read_records(mock_cluster):
-    mock_cluster.query.return_value = [
-        {"bucket": "bucket1", "scope": "scope1", "name": "collection1", "uid": "uid1"},
-        {"bucket": "bucket1", "scope": "scope1", "name": "collection2", "uid": "uid2"}
+    mock_cluster.query.side_effect = [
+        [{"name": "bucket1"}],  # Mocking buckets_list_query result
+        [{"name": "scope1"}, {"name": "scope2"}],  # Mocking scopes_query result
+        [{"name": "collection1", "uid": "uid1"}],  # Mocking collections_query result for scope1
+        [{"name": "collection2", "uid": "uid2"}, {"name": "collection3", "uid": "uid3"}]  # Mocking collections_query result for scope2
     ]
     
     collections_stream = Collections(mock_cluster)
     records = list(collections_stream.read_records(sync_mode=None))
     
-    assert len(records) == 2
-    assert records[0]["bucket"] == "bucket1"
-    assert records[0]["scope"] == "scope1"
+    assert len(records) == 3
     assert records[0]["name"] == "collection1"
     assert records[1]["name"] == "collection2"
-    mock_cluster.query.assert_called_once_with(get_collections_query())
+    assert records[2]["name"] == "collection3"
+    assert mock_cluster.query.call_count == 4
+    mock_cluster.query.assert_any_call(get_buckets_list_query())
+    mock_cluster.query.assert_any_call(get_scopes_query("bucket1"))
+    mock_cluster.query.assert_any_call(get_collections_query("bucket1", "scope1"))
+    mock_cluster.query.assert_any_call(get_collections_query("bucket1", "scope2"))
 
 def test_documents_read_records(mock_cluster):
     mock_cluster.query.side_effect = [
         [{"name": "bucket1"}],  # Mocking buckets_list_query result
+        [{"name": "scope1"}],  # Mocking scopes_query result
+        [{"name": "collection1"}],  # Mocking collections_query result
         [  # Mocking documents_query result
-            {"id": "doc1", "bucket": "bucket1", "scope": "scope1", "collection": "collection1", "content": {"key": "value"}, "expiration": 0, "flags": 0, "cas": "123456"},
-            {"id": "doc2", "bucket": "bucket1", "scope": "scope1", "collection": "collection1", "content": {"key2": "value2"}, "expiration": 0, "flags": 0, "cas": "789012"}
+            {"id": "doc1", "content": {"key": "value"}, "expiration": 0, "flags": 0, "cas": "123456"},
+            {"id": "doc2", "content": {"key2": "value2"}, "expiration": 0, "flags": 0, "cas": "789012"}
         ]
     ]
-    
-    mock_bucket = MagicMock()
-    mock_scope = MagicMock()
-    mock_collection = MagicMock()
-    
-    # Set specific names for bucket, scope, and collection
-    mock_bucket.name = "bucket1"
-    mock_scope.name = "scope1"
-    mock_collection.name = "collection1"
-    
-    mock_bucket.collections.return_value.get_all_scopes.return_value = [mock_scope]
-    mock_scope.collections = [mock_collection]
-    mock_cluster.bucket.return_value = mock_bucket
     
     documents_stream = Documents(mock_cluster)
     records = list(documents_stream.read_records(sync_mode=None))
@@ -101,10 +99,11 @@ def test_documents_read_records(mock_cluster):
     assert records[0]["content"] == {"key": "value"}
     assert records[0]["metadata"]["cas"] == "123456"
     
-    assert mock_cluster.query.call_count == 2
+    assert mock_cluster.query.call_count == 4
     mock_cluster.query.assert_any_call(get_buckets_list_query())
-    expected_query = get_documents_query().format("bucket1", "scope1", "collection1")
-    mock_cluster.query.assert_any_call(expected_query)
+    mock_cluster.query.assert_any_call(get_scopes_query("bucket1"))
+    mock_cluster.query.assert_any_call(get_collections_query("bucket1", "scope1"))
+    mock_cluster.query.assert_any_call(get_documents_query("bucket1", "scope1", "collection1"))
 
 @pytest.mark.parametrize("stream_class", [Buckets, Scopes, Collections, Documents])
 def test_stream_primary_key(stream_class, mock_cluster):
