@@ -6,7 +6,8 @@ package io.airbyte.cdk.message
 
 import io.airbyte.cdk.command.DestinationStream
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.DefaultImplementation
+import io.micronaut.context.annotation.Secondary
+import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -14,18 +15,19 @@ import kotlinx.coroutines.flow.flow
  * A reader should provide a byte-limited flow of messages of the underlying type. The flow should
  * terminate when maxBytes has been read, or when the stream is complete.
  */
-@DefaultImplementation(DestinationMessageQueueReader::class)
 interface MessageQueueReader<K, T> {
     suspend fun readChunk(key: K, maxBytes: Long): Flow<T>
 }
 
+@Singleton
+@Secondary
 class DestinationMessageQueueReader(
     private val messageQueue: DestinationMessageQueue,
-) : MessageQueueReader<DestinationStream, DestinationRecordWrapped> {
+) : MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped> {
     private val log = KotlinLogging.logger {}
 
     override suspend fun readChunk(
-        key: DestinationStream,
+        key: DestinationStream.Descriptor,
         maxBytes: Long
     ): Flow<DestinationRecordWrapped> = flow {
         log.info { "Reading chunk of $maxBytes bytes from stream $key" }
