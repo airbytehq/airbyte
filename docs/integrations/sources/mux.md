@@ -1,8 +1,11 @@
 # Mux
-Website: https://www.mux.com/
-API Docs: https://docs.mux.com/api-reference
-Auth Docs: https://docs.mux.com/core/make-api-requests#http-basic-auth
+This directory contains the manifest-only connector for [`source-mux`](https://www.mux.com/).
 
+## Documentation reference:
+Visit `https://docs.mux.com/api-reference` for API documentation
+
+## Authentication setup
+`Mux` uses Http basic authentication, Visit `https://docs.mux.com/core/make-api-requests#http-basic-auth` for getting your API keys.
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -29,8 +32,8 @@ Auth Docs: https://docs.mux.com/core/make-api-requests#http-basic-auth
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-27 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-27 |[45921](https://github.com/airbytehq/airbyte/pull/45921)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>

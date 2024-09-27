@@ -1,9 +1,11 @@
 # Mux
-This directory contains the manifest-only connector for `source-mux`.
+This directory contains the manifest-only connector for [`source-mux`](https://www.mux.com/).
 
-Website: https://www.mux.com/
-API Docs: https://docs.mux.com/api-reference
-Auth Docs: https://docs.mux.com/core/make-api-requests#http-basic-auth
+## Documentation reference:
+Visit `https://docs.mux.com/api-reference` for API documentation
+
+## Authentication setup
+`Mux` uses Http basic authentication, Visit `https://docs.mux.com/core/make-api-requests#http-basic-auth` for getting your API keys.
 
 ## Usage
 There are multiple ways to use this connector:
