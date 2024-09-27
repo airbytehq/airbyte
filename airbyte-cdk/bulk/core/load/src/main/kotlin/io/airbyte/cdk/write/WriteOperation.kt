@@ -5,8 +5,9 @@
 package io.airbyte.cdk.write
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.task.TaskLauncher
-import io.airbyte.cdk.task.TaskRunner
+import io.airbyte.cdk.task.DestinationWriterCleanupWorkflow
+import io.airbyte.cdk.task.DestinationWriterWorkflow
+import io.airbyte.cdk.task.RunnableWorkflow
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -25,8 +26,8 @@ import kotlinx.coroutines.runBlocking
 @Requires(property = Operation.PROPERTY, value = "write")
 class WriteOperation(
     private val inputConsumer: InputConsumer<*>,
-    private val taskLauncher: TaskLauncher,
-    private val taskRunner: TaskRunner,
+    private val writerWorkflow: RunnableWorkflow<DestinationWriterWorkflow>,
+    private val cleanupWorkflow: RunnableWorkflow<DestinationWriterCleanupWorkflow>
 ) : Operation {
     val log = KotlinLogging.logger {}
 
@@ -42,15 +43,13 @@ class WriteOperation(
             try {
                 coroutineScope {
                     launch { inputConsumer.run() } // read messages
-                    launch { taskRunner.start() } // run enqueued tasks
-                    launch { taskLauncher.start() } // start the task workflow
+                    launch { writerWorkflow.run() } // start the task workflow
                 }
             } catch (t: Throwable) {
                 // Restart the task runner so the handler can launch tasks.
-                launch { taskRunner.restart() }
+                launch { cleanupWorkflow.run() }
                 // TODO: wrap any exceptions thrown here
                 //  in the fancy exception mapper.
-                taskLauncher.handleException(t)
             }
         }
     }

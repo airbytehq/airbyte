@@ -6,13 +6,15 @@ package io.airbyte.cdk.task
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Singleton
+import io.micronaut.context.annotation.Prototype
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+
+interface Task {
+    suspend fun execute()
+}
 
 /**
  * A Task is a unit of work that can be executed concurrently. Even though we aren't scheduling
@@ -23,25 +25,18 @@ import kotlinx.coroutines.sync.withLock
  *
  * TODO: Set concurrency for this scope from the configuration.
  */
-@Singleton
+@Prototype
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "task is guaranteed to be non-null by Kotlin's type system"
 )
-class TaskRunner {
+class TaskQueue {
     val log = KotlinLogging.logger {}
 
     private val queue = Channel<Task>(Channel.UNLIMITED)
-    private val enqueueLock = Mutex()
 
     suspend fun enqueue(task: Task) {
-        enqueueLock.withLock { queue.send(task) }
-    }
-
-    suspend fun restart() {
-        emptyQueue()
-        enqueueLock.unlock()
-        start()
+        queue.send(task)
     }
 
     suspend fun start() {
@@ -64,7 +59,6 @@ class TaskRunner {
             }
         } catch (t: Throwable) {
             log.error { "Exception in task runner, discarding remaining tasks: $t" }
-            enqueueLock.lock()
             emptyQueue()
             throw t
         }
@@ -74,6 +68,10 @@ class TaskRunner {
         queue.close()
     }
 
+    /**
+     * This isn't strictly speaking necessary, but it would be
+     * good to know what was enqueued when the failure happened.
+     */
     private suspend fun emptyQueue() {
         while (true) {
             val result = queue.tryReceive()

@@ -15,7 +15,7 @@ interface ProcessBatchTask : Task
 class DefaultProcessBatchTask(
     private val batchEnvelope: BatchEnvelope<*>,
     private val streamLoader: StreamLoader,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationWriterWorkflow
 ) : ProcessBatchTask {
     override suspend fun execute() {
         val nextBatch = streamLoader.processBatch(batchEnvelope.batch)
@@ -26,7 +26,7 @@ class DefaultProcessBatchTask(
 
 interface ProcessBatchTaskFactory {
     fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationWriterWorkflow,
         streamLoader: StreamLoader,
         batchEnvelope: BatchEnvelope<*>
     ): ProcessBatchTask
@@ -36,7 +36,7 @@ interface ProcessBatchTaskFactory {
 @Secondary
 class DefaultProcessBatchTaskFactory : ProcessBatchTaskFactory {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationWriterWorkflow,
         streamLoader: StreamLoader,
         batchEnvelope: BatchEnvelope<*>
     ): ProcessBatchTask {

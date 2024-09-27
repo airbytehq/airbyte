@@ -39,9 +39,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(rebuildContext = true, environments = ["DestinationTaskLauncherTest"])
-class DestinationTaskLauncherTest {
-    @Inject lateinit var taskRunner: TaskRunner
-    @Inject lateinit var taskLauncherFactory: DestinationTaskLauncherFactory
+class DestinationWriterWorkflowTest {
+    @Inject lateinit var taskQueue: TaskQueue
+    @Inject lateinit var taskLauncherFactory: DestinationWriterWorkflowFactory
     @Inject lateinit var streamsManager: StreamsManager
     @Inject lateinit var checkpointManager: MockCheckpointManager
 
@@ -59,7 +59,7 @@ class DestinationTaskLauncherTest {
     class MockSetupTaskFactory : SetupTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
+        override fun make(taskLauncher: DestinationWriterWorkflow): SetupTask {
             return object : SetupTask {
                 override suspend fun execute() {
                     hasRun.send(Unit)
@@ -79,7 +79,7 @@ class DestinationTaskLauncherTest {
         }
 
         override fun make(
-            taskLauncher: DestinationTaskLauncher,
+            taskLauncher: DestinationWriterWorkflow,
             stream: DestinationStream.Descriptor
         ): SpillToDiskTask {
             return object : SpillToDiskTask {
@@ -101,7 +101,7 @@ class DestinationTaskLauncherTest {
         }
 
         override fun make(
-            taskLauncher: DestinationTaskLauncher,
+            taskLauncher: DestinationWriterWorkflow,
             stream: DestinationStream
         ): OpenStreamTask {
             return object : OpenStreamTask {
@@ -119,7 +119,7 @@ class DestinationTaskLauncherTest {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
         override fun make(
-            taskLauncher: DestinationTaskLauncher,
+            taskLauncher: DestinationWriterWorkflow,
             streamLoader: StreamLoader,
             fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>
         ): ProcessRecordsTask {
@@ -138,7 +138,7 @@ class DestinationTaskLauncherTest {
         val hasRun: Channel<BatchEnvelope<*>> = Channel(Channel.UNLIMITED)
 
         override fun make(
-            taskLauncher: DestinationTaskLauncher,
+            taskLauncher: DestinationWriterWorkflow,
             streamLoader: StreamLoader,
             batchEnvelope: BatchEnvelope<*>
         ): ProcessBatchTask {
@@ -157,7 +157,7 @@ class DestinationTaskLauncherTest {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
         override fun make(
-            taskLauncher: DestinationTaskLauncher,
+            taskLauncher: DestinationWriterWorkflow,
             streamLoader: StreamLoader
         ): CloseStreamTask {
             return object : CloseStreamTask {
@@ -174,7 +174,7 @@ class DestinationTaskLauncherTest {
     class MockTeardownTaskFactory : TeardownTaskFactory {
         val hasRun: Channel<Unit> = Channel(Channel.UNLIMITED)
 
-        override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
+        override fun make(taskLauncher: DestinationWriterWorkflow): TeardownTask {
             return object : TeardownTask {
                 override suspend fun execute() {
                     hasRun.send(Unit)
@@ -240,7 +240,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testStart() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.start() }
+        launch { taskQueue.start() }
         launcher.start()
         mockSetupTaskFactory.hasRun.receive()
         mockSpillToDiskTaskFactory.streamHasRun.values.forEach { it.receive() }
@@ -250,7 +250,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleSetupComplete() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.start() }
+        launch { taskQueue.start() }
         launcher.handleSetupComplete()
         mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
         launcher.stop()
@@ -259,7 +259,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleJoinStreamOpenSpilledFileComplete() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.start() }
+        launch { taskQueue.start() }
 
         // This will block until the stream is done opening.
         launch {
@@ -289,7 +289,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleNewBatch() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.start() }
+        launch { taskQueue.start() }
 
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
 
@@ -325,7 +325,7 @@ class DestinationTaskLauncherTest {
     @Test
     fun testHandleStreamClosed() = runTest {
         val launcher = taskLauncherFactory.get()
-        launch { taskRunner.start() }
+        launch { taskQueue.start() }
 
         // This should not run teardown until all streams are closed.
         launch { launcher.handleStreamClosed(stream1) }

@@ -15,10 +15,7 @@ import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.state.StreamsManager
 import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.DefaultImplementation
-import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -26,7 +23,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-interface DestinationTaskLauncher : TaskLauncher {
+interface DestinationWriterWorkflow : Workflow {
     suspend fun handleSetupComplete()
     suspend fun handleStreamOpen(streamLoader: StreamLoader)
     suspend fun handleNewSpilledFile(
@@ -72,10 +69,10 @@ interface DestinationTaskLauncher : TaskLauncher {
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
-class DefaultDestinationTaskLauncher(
+class DefaultDestinationWriterWorkflow(
     private val catalog: DestinationCatalog,
     private val streamsManager: StreamsManager,
-    override val taskRunner: TaskRunner,
+    override val taskRunner: TaskQueue,
     private val checkpointManager:
         CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
@@ -85,7 +82,7 @@ class DefaultDestinationTaskLauncher(
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory
-) : DestinationTaskLauncher {
+) : DestinationWriterWorkflow {
     private val log = KotlinLogging.logger {}
 
     private val runTeardownOnce = AtomicBoolean(false)
@@ -184,21 +181,13 @@ class DefaultDestinationTaskLauncher(
     override suspend fun handleTeardownComplete() {
         stop()
     }
-
-    override suspend fun handleException(t: Throwable) {
-        log.error(t) { "Task error: $t" }
-        stop()
-        // TODO: Execute stream cleanup and destination teardown tasks.
-        throw t
-    }
 }
 
-@Factory
-@DefaultImplementation(DefaultDestinationTaskLauncher::class)
-class DestinationTaskLauncherFactory(
+@Singleton
+@Secondary
+class DestinationWriterWorkflowFactory(
     private val catalog: DestinationCatalog,
     private val streamsManager: StreamsManager,
-    private val taskRunner: TaskRunner,
     private val checkpointManager:
         CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
@@ -208,11 +197,11 @@ class DestinationTaskLauncherFactory(
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory
-) : Provider<DestinationTaskLauncher> {
-    @Singleton
-    @Secondary
-    override fun get(): DestinationTaskLauncher {
-        return DefaultDestinationTaskLauncher(
+) : WorkflowFactory<DestinationWriterWorkflow> {
+    override fun make(
+        taskRunner: TaskQueue
+    ): DestinationWriterWorkflow {
+        return DefaultDestinationWriterWorkflow(
             catalog,
             streamsManager,
             taskRunner,

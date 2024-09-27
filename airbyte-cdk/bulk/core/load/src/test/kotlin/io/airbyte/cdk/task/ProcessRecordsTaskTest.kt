@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["ProcessRecordsTaskTest"])
 class ProcessRecordsTaskTest {
-    @Inject lateinit var taskRunner: TaskRunner
+    @Inject lateinit var taskRunner: TaskQueue
     @Inject lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
 
     class MockBatch(
@@ -82,7 +82,7 @@ class ProcessRecordsTaskTest {
         val byteSize = 999L
         val recordCount = 1024L
 
-        val launcher = MockTaskLauncher(taskRunner)
+        val launcher = MockWriterWorkflow(taskRunner)
         val mockFile =
             MockTempFileProvider()
                 .createTempFile(directory = Path.of("tmp/"), prefix = "test", suffix = ".json")

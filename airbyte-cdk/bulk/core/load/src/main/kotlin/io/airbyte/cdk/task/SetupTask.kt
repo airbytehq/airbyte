@@ -18,7 +18,7 @@ interface SetupTask : Task
  */
 class DefaultSetupTask(
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationWriterWorkflow
 ) : SetupTask {
     override suspend fun execute() {
         destination.setup()
@@ -27,7 +27,7 @@ class DefaultSetupTask(
 }
 
 interface SetupTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher): SetupTask
+    fun make(taskLauncher: DestinationWriterWorkflow): SetupTask
 }
 
 @Singleton
@@ -35,7 +35,7 @@ interface SetupTaskFactory {
 class DefaultSetupTaskFactory(
     private val destination: DestinationWriter,
 ) : SetupTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher): SetupTask {
+    override fun make(taskLauncher: DestinationWriterWorkflow): SetupTask {
         return DefaultSetupTask(destination, taskLauncher)
     }
 }

@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = ["SpillToDiskTaskTest", "MockTempFileProvider"])
 class SpillToDiskTaskTest {
-    @Inject lateinit var taskRunner: TaskRunner
+    @Inject lateinit var taskRunner: TaskQueue
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject lateinit var mockTempFileProvider: MockTempFileProvider
 
@@ -38,8 +38,8 @@ class SpillToDiskTaskTest {
     @Requires(env = ["SpillToDiskTaskTest"])
     class MockDestinationTaskLauncherFactory {
         @Singleton
-        fun mockDestinationTaskLauncher(taskRunner: TaskRunner): DestinationTaskLauncher {
-            return MockTaskLauncher(taskRunner)
+        fun mockDestinationTaskLauncher(taskQueue: TaskQueue): DestinationWriterWorkflow {
+            return MockWriterWorkflow(taskQueue)
         }
     }
 
@@ -92,7 +92,7 @@ class SpillToDiskTaskTest {
 
     @Test
     fun testSpillToDiskTask() = runTest {
-        val mockTaskLauncher = MockTaskLauncher(taskRunner)
+        val mockTaskLauncher = MockWriterWorkflow(taskRunner)
         spillToDiskTaskFactory.make(mockTaskLauncher, stream1.descriptor).execute()
         Assertions.assertEquals(2, mockTaskLauncher.spilledFiles.size)
         Assertions.assertEquals(1024, mockTaskLauncher.spilledFiles[0].batch.totalSizeBytes)

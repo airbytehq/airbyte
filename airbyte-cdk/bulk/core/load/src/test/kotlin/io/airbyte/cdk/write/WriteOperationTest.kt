@@ -6,8 +6,8 @@ package io.airbyte.cdk.write
 
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.task.Task
-import io.airbyte.cdk.task.TaskLauncher
-import io.airbyte.cdk.task.TaskRunner
+import io.airbyte.cdk.task.Workflow
+import io.airbyte.cdk.task.TaskQueue
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -36,7 +36,7 @@ class WriteOperationTest {
 
     @Singleton
     @Requires(env = ["WriteOperationTest"])
-    class SimpleTaskLauncher(override val taskRunner: TaskRunner) : TaskLauncher {
+    class SimpleTaskLauncher(override val taskRunner: TaskQueue) : Workflow {
         val handledException = CompletableDeferred<Boolean>()
 
         override suspend fun start() {

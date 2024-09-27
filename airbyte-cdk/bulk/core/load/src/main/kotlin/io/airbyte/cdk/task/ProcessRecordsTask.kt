@@ -31,7 +31,7 @@ interface ProcessRecordsTask : Task
  */
 class DefaultProcessRecordsTask(
     private val streamLoader: StreamLoader,
-    private val taskLauncher: DestinationTaskLauncher,
+    private val taskLauncher: DestinationWriterWorkflow,
     private val fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     private val deserializer: Deserializer<DestinationMessage>,
 ) : ProcessRecordsTask {
@@ -76,7 +76,7 @@ class DefaultProcessRecordsTask(
 
 interface ProcessRecordsTaskFactory {
     fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationWriterWorkflow,
         streamLoader: StreamLoader,
         fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask
@@ -88,7 +88,7 @@ class DefaultProcessRecordsTaskFactory(
     private val deserializer: Deserializer<DestinationMessage>,
 ) : ProcessRecordsTaskFactory {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationWriterWorkflow,
         streamLoader: StreamLoader,
         fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask {

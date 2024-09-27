@@ -16,7 +16,7 @@ interface CloseStreamTask : Task
  */
 class DefaultCloseStreamTask(
     private val streamLoader: StreamLoader,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationWriterWorkflow
 ) : CloseStreamTask {
 
     override suspend fun execute() {
@@ -26,14 +26,14 @@ class DefaultCloseStreamTask(
 }
 
 interface CloseStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, streamLoader: StreamLoader): CloseStreamTask
+    fun make(taskLauncher: DestinationWriterWorkflow, streamLoader: StreamLoader): CloseStreamTask
 }
 
 @Singleton
 @Secondary
 class DefaultCloseStreamTaskFactory : CloseStreamTaskFactory {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationWriterWorkflow,
         streamLoader: StreamLoader
     ): CloseStreamTask {
         return DefaultCloseStreamTask(streamLoader, taskLauncher)

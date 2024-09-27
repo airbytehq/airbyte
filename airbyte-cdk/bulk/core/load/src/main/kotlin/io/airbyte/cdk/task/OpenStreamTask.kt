@@ -19,7 +19,7 @@ interface OpenStreamTask : Task
  */
 class DefaultOpenStreamTask(
     private val streamLoader: StreamLoader,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationWriterWorkflow
 ) : OpenStreamTask {
     override suspend fun execute() {
         streamLoader.start()
@@ -28,7 +28,7 @@ class DefaultOpenStreamTask(
 }
 
 interface OpenStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): OpenStreamTask
+    fun make(taskLauncher: DestinationWriterWorkflow, stream: DestinationStream): OpenStreamTask
 }
 
 @Singleton
@@ -37,7 +37,7 @@ class DefaultOpenStreamTaskFactory(
     private val destination: DestinationWriter,
 ) : OpenStreamTaskFactory {
     override fun make(
-        taskLauncher: DestinationTaskLauncher,
+        taskLauncher: DestinationWriterWorkflow,
         stream: DestinationStream
     ): OpenStreamTask {
         return DefaultOpenStreamTask(destination.getStreamLoader(stream), taskLauncher)

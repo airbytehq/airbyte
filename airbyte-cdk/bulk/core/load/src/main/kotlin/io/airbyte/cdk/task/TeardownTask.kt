@@ -18,7 +18,7 @@ interface TeardownTask : Task
  */
 class DefaultTeardownTask(
     private val destination: DestinationWriter,
-    private val taskLauncher: DestinationTaskLauncher
+    private val taskLauncher: DestinationWriterWorkflow
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
 
@@ -29,7 +29,7 @@ class DefaultTeardownTask(
 }
 
 interface TeardownTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask
+    fun make(taskLauncher: DestinationWriterWorkflow): TeardownTask
 }
 
 @Singleton
@@ -37,7 +37,7 @@ interface TeardownTaskFactory {
 class DefaultTeardownTaskFactory(
     private val destination: DestinationWriter,
 ) : TeardownTaskFactory {
-    override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
+    override fun make(taskLauncher: DestinationWriterWorkflow): TeardownTask {
         return DefaultTeardownTask(destination, taskLauncher)
     }
 }

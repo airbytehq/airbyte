@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class TaskRunnerTest {
+class TaskQueueTest {
     @Test
     fun testTasksCompleteAfterClose() = runTest {
         val task1Completed = AtomicBoolean(false)
@@ -34,7 +34,7 @@ class TaskRunnerTest {
         // - BUT the third one will not be blocked by the second
         // - AND the second one should still run after we close the runner
         // - BUT the second one tried to enqueue another after close, which throws
-        val runner = TaskRunner()
+        val runner = TaskQueue()
         val task1 =
             object : Task {
                 override suspend fun execute() {

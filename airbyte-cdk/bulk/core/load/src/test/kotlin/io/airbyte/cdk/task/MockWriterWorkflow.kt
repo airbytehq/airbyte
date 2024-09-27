@@ -9,7 +9,8 @@ import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.write.StreamLoader
 
-class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLauncher {
+class MockWriterWorkflow(override val taskRunner: TaskQueue) :
+    DestinationWriterWorkflow {
     val spilledFiles = mutableListOf<BatchEnvelope<SpilledRawMessagesLocalFile>>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 
