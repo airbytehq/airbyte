@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "ports": {
+          "type": "object",
+          "properties": {
+            "fts": {
+              "type": "integer"
+            },
+            "ftsGRPC": {
+              "type": "integer"
+            },
+            "ftsGRPCSSL": {
+              "type": "integer"
+            },
+            "ftsSSL": {
+              "type": "integer"
+            },
+            "indexAdmin": {
+              "type": "integer"
+            },
+            "indexHttp": {
+              "type": "integer"
+            },
+            "indexHttps": {
+              "type": "integer"
+            },
+            "indexScan": {
+              "type": "integer"
+            },
+            "indexStreamCatchup": {
+              "type": "integer"
+            },
+            "indexStreamInit": {
+              "type": "integer"
+            },
+            "indexStreamMaint": {
+              "type": "integer"
+            },
+            "kv": {
+              "type": "integer"
+            },
+            "kvSSL": {
+              "type": "integer"
+            },
+            "n1ql": {
+              "type": "integer"
+            },
+            "n1qlSSL": {
+              "type": "integer"
+            }
+          }
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "uuid": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

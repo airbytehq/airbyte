@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "user_info": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string"
+        },
+        "external_groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "password_change_date": {
+          "type": "string"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bucket_name": {
+                "type": ["string", "null"]
+              },
+              "collection_name": {
+                "type": ["string", "null"]
+              },
+              "origins": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "role": {
+                "type": "string"
+              },
+              "scope_name": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        },
+        "uuid": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

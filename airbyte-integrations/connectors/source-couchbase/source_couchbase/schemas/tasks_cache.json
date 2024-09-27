@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "tasks_cache": {
+      "type": "object",
+      "properties": {
+        "class": {
+          "type": "string"
+        },
+        "delay": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        },
+        "queryContext": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "state": {
+          "type": "string"
+        },
+        "stopTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "subClass": {
+          "type": "string"
+        },
+        "submitTime": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

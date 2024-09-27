@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "prepareds": {
+      "type": "object",
+      "properties": {
+        "avgElapsedTime": {
+          "type": "string"
+        },
+        "avgServiceTime": {
+          "type": "string"
+        },
+        "encoded_plan": {
+          "type": "string"
+        },
+        "featuresControl": {
+          "type": "integer"
+        },
+        "indexApiVersion": {
+          "type": "integer"
+        },
+        "lastUse": {
+          "type": "string"
+        },
+        "maxElapsedTime": {
+          "type": "string"
+        },
+        "maxServiceTime": {
+          "type": "string"
+        },
+        "minElapsedTime": {
+          "type": "string"
+        },
+        "minServiceTime": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "node": {
+          "type": "string"
+        },
+        "planPreparedTime": {
+          "type": "string"
+        },
+        "statement": {
+          "type": "string"
+        },
+        "uses": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

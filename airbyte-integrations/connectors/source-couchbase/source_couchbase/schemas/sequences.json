@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "sequences": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "collection": {
+          "type": "string"
+        },
+        "current_value": {
+          "type": "integer"
+        },
+        "initial_value": {
+          "type": "integer"
+        },
+        "increment": {
+          "type": "integer"
+        },
+        "cache": {
+          "type": "integer"
+        },
+        "min_value": {
+          "type": "integer"
+        },
+        "max_value": {
+          "type": "integer"
+        },
+        "cycle": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

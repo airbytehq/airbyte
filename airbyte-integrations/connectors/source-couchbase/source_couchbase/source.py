@@ -8,7 +8,33 @@ from couchbase.auth import PasswordAuthenticator
 from couchbase.cluster import Cluster
 from couchbase.options import ClusterOptions
 
-from .streams import Buckets, Collections, Documents, Scopes
+from .streams import (
+    ActiveRequests,
+    AllSequences,
+    ApplicableRoles,
+    Buckets,
+    CompletedRequests,
+    Datastores,
+    Dictionary,
+    DictionaryCache,
+    Documents,
+    Dual,
+    Functions,
+    FunctionsCache,
+    Indexes,
+    Keyspaces,
+    MyUserInfo,
+    Namespaces,
+    Nodes,
+    Prepareds,
+    Scopes,
+    Sequences,
+    TasksCache,
+    Transactions,
+    UserInfo,
+    Vitals,
+)
+
 
 class SourceCouchbase(AbstractSource):
     logger: logging.Logger = logging.getLogger("airbyte")
@@ -34,8 +60,28 @@ class SourceCouchbase(AbstractSource):
         return [
             Buckets(cluster),
             Scopes(cluster),
-            Collections(cluster),
-            Documents(cluster)
+            Keyspaces(cluster),
+            Documents(cluster),
+            Datastores(cluster),
+            Namespaces(cluster),
+            Indexes(cluster),
+            Dual(cluster),
+            Vitals(cluster),
+            ActiveRequests(cluster),
+            Prepareds(cluster),
+            CompletedRequests(cluster),
+            MyUserInfo(cluster),
+            UserInfo(cluster),
+            Nodes(cluster),
+            ApplicableRoles(cluster),
+            Dictionary(cluster),
+            DictionaryCache(cluster),
+            Functions(cluster),
+            FunctionsCache(cluster),
+            TasksCache(cluster),
+            Transactions(cluster),
+            Sequences(cluster),
+            AllSequences(cluster)
         ]
 
     @staticmethod
