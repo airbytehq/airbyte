@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.7.4
+Always return a connection status even if an exception was raised
+
 ## 5.7.3
 fix connector builder output serialization 
 
