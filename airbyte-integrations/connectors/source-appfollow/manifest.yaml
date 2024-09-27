@@ -1,6 +1,8 @@
-version: 4.5.4
+version: 5.7.3
 
 type: DeclarativeSource
+
+description: "its a change :) "
 
 check:
   type: CheckStream
@@ -131,9 +133,9 @@ definitions:
               - type: DefaultErrorHandler
                 response_filters:
                   - type: HttpResponseFilter
+                    action: IGNORE
                     http_codes:
                       - 400
-                    action: IGNORE
         record_selector:
           type: RecordSelector
           extractor:
@@ -176,9 +178,9 @@ spec:
       api_secret:
         type: string
         description: API Key provided by Appfollow
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
     additionalProperties: true
 
 metadata:
@@ -191,7 +193,17 @@ metadata:
   yamlComponents:
     global:
       - authenticator
-  testedStreams: {}
+  testedStreams:
+    users:
+      streamHash: 253737687a60cff0eff49c6d29be76f528971663
+    app_collections:
+      streamHash: fb87a006dce74e87f7024a30e3911b5e92532908
+    app_lists:
+      streamHash: 566454e01d19969e3a053d8db4cbb5e45ce076c5
+    stat_reviews:
+      streamHash: 4908660e01754c9aa4af2c88592b431a2ae618db
+    ratings:
+      streamHash: e9cb4baf2f62e6f75cb679b1532a4b743a58ef94
   assist: {}
 
 schemas:
