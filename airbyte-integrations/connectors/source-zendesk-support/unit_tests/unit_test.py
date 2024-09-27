@@ -1055,6 +1055,33 @@ def test_read_non_json_error(requests_mock, caplog):
     read_full_refresh(stream)
     assert expected_message in (record.message for record in caplog.records if record.levelname == "ERROR")
 
+class TestTicketMetrics:
+
+    @pytest.mark.parametrize(
+            "state, expected_parent_stream",
+            [
+                ({"generated_timestamp": 1727334000}, StatefulTicketMetrics),
+                ({}, StatelessTicketMetrics),
+            ]
+    )
+    def test_get_parent_stream(self, state, expected_parent_stream):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        parent_stream = stream._get_parent_stream(state)
+        assert isinstance(parent_stream, expected_parent_stream)
+
+    @pytest.mark.parametrize(
+            "sync_mode, state, expected_parent_stream",
+            [
+                (SyncMode.incremental, {"generated_timestamp": 1727334000}, StatefulTicketMetrics),
+                (SyncMode.full_refresh, {}, StatelessTicketMetrics),
+                (SyncMode.incremental, {}, StatelessTicketMetrics),
+            ]
+    )
+    def test_stream_slices(self, sync_mode, state, expected_parent_stream):
+        stream = get_stream_instance(TicketMetrics, STREAM_ARGS)
+        slices = list(stream.stream_slices(sync_mode=sync_mode, stream_state=state))
+        assert isinstance(stream.parent_stream, expected_parent_stream)
+
 
 class TestStatefulTicketMetrics:
     @pytest.mark.parametrize(

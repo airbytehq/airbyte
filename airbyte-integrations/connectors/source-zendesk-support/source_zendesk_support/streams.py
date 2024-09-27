@@ -494,35 +494,23 @@ class Tickets(SourceZendeskIncrementalExportStream):
         return super().validate_start_time(requested_start_time, value=3)
 
 
-class StreamSelector:
-    def __init__(self, stateless_stream: SourceZendeskSupportStream, stateful_stream: SourceZendeskSupportStream):
-        self._stateless_stream = stateless_stream
-        self._stateful_stream = stateful_stream
-
-    def get_parent_stream(self, stream_state: Mapping[str, Any]) -> SourceZendeskSupportStream:
-        return self._stateful_stream if stream_state else self._stateless_stream
-
-
 class TicketMetrics(SourceZendeskSupportStream):
 
     name = "ticket_metrics"
-    cursor_field = "generated_timestamp"
 
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs)
-        self._cursor_field: str = self.cursor_field
         self._parent_stream: SourceZendeskSupportStream = None
-        stateless_ticket_metrics = StatelessTicketMetrics(
+        self._stateless_ticket_metrics = StatelessTicketMetrics(
             subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs
         )
-        stateful_ticket_metrics = StatefulTicketMetrics(
+        self._stateful_ticket_metrics = StatefulTicketMetrics(
             parent=Tickets(subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs),
             subdomain=subdomain,
             start_date=start_date,
             ignore_pagination=ignore_pagination,
             **kwargs,
         )
-        self.stream_selector = StreamSelector(stateless_stream=stateless_ticket_metrics, stateful_stream=stateful_ticket_metrics)
 
     @property
     def parent_stream(self):
@@ -532,13 +520,16 @@ class TicketMetrics(SourceZendeskSupportStream):
     def parent_stream(self, stream):
         self._parent_stream = stream
 
+    def _get_parent_stream(self, stream_state: Mapping[str, Any]) -> SourceZendeskSupportStream:
+        return self._stateful_ticket_metrics if stream_state else self._stateless_ticket_metrics
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return self.parent_stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.parent_stream = self.stream_selector.get_parent_stream(stream_state)
+        self.parent_stream = self._get_parent_stream(stream_state)
         yield from self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def read_records(
