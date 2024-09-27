@@ -161,6 +161,17 @@ class MysqlSourceDatatypeIntegrationTest {
             JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))
         }
 
+        val bitValues =
+            mapOf(
+                "b'1'" to "true",
+                "b'0'" to "false",
+            )
+
+        val longBitValues =
+            mapOf(
+                "b'10101010'" to """-86""",
+            )
+
         val stringValues =
             mapOf(
                 "'abcdef'" to """"abcdef"""",
@@ -168,9 +179,149 @@ class MysqlSourceDatatypeIntegrationTest {
                 "'OXBEEF'" to """"OXBEEF"""",
             )
 
+        val jsonValues = mapOf("""'{"col1": "v1"}'""" to """"{\"col1\": \"v1\"}"""")
+
+        val yearValues =
+            mapOf(
+                "1992" to """1992""",
+                "2002" to """2002""",
+                "70" to """1970""",
+            )
+
+        val decimalValues =
+            mapOf(
+                "0.2" to """0.2""",
+            )
+
+        val zeroPrecisionDecimalValues =
+            mapOf(
+                "2" to """2""",
+            )
+
+        val tinyintValues =
+            mapOf(
+                "10" to "10",
+                "4" to "4",
+                "2" to "2",
+            )
+
+        val intValues =
+            mapOf(
+                "10" to "10",
+                "100000000" to "100000000",
+                "200000000" to "200000000",
+            )
+
+        val dateValues =
+            mapOf(
+                "'2022-01-01'" to """"2022-01-01"""",
+            )
+
+        val timeValues =
+            mapOf(
+                "'14:30:00'" to """"14:30:00.000000"""",
+            )
+
+        val dateTimeValues =
+            mapOf(
+                "'2024-09-13 14:30:00'" to """"2024-09-13T14:30:00.000000"""",
+                "'2024-09-13T14:40:00+00:00'" to """"2024-09-13T14:40:00.000000""""
+            )
+
+        val timestampValues =
+            mapOf(
+                "'2024-09-12 14:30:00'" to """"2024-09-12T14:30:00.000000Z"""",
+                "CONVERT_TZ('2024-09-12 14:30:00', 'America/Los_Angeles', 'UTC')" to
+                    """"2024-09-12T21:30:00.000000Z"""",
+            )
+
+        val booleanValues =
+            mapOf(
+                "TRUE" to "true",
+                "FALSE" to "false",
+            )
+
+        val enumValues =
+            mapOf(
+                "'a'" to """"a"""",
+                "'b'" to """"b"""",
+                "'c'" to """"c"""",
+            )
+
+        // Encoded into base64
+        val binaryValues =
+            mapOf(
+                "X'89504E470D0A1A0A0000000D49484452'" to """"iVBORw0KGgoAAAANSUhEUg=="""",
+            )
+
         val testCases: List<TestCase> =
             listOf(
-                TestCase("VARCHAR(10)", stringValues),
+                TestCase(
+                    "BOOLEAN",
+                    booleanValues,
+                    airbyteType = LeafAirbyteType.BOOLEAN,
+                    cursor = false
+                ),
+                TestCase("VARCHAR(10)", stringValues, airbyteType = LeafAirbyteType.STRING),
+                TestCase("DECIMAL(10,2)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase(
+                    "DECIMAL(10,2) UNSIGNED",
+                    decimalValues,
+                    airbyteType = LeafAirbyteType.NUMBER
+                ),
+                TestCase(
+                    "DECIMAL UNSIGNED",
+                    zeroPrecisionDecimalValues,
+                    airbyteType = LeafAirbyteType.INTEGER
+                ),
+                TestCase("FLOAT", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("FLOAT(7,4)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("FLOAT(53,8)", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("DOUBLE", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("DOUBLE UNSIGNED", decimalValues, airbyteType = LeafAirbyteType.NUMBER),
+                TestCase("TINYINT", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("TINYINT UNSIGNED", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("SMALLINT", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("MEDIUMINT", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("BIGINT", intValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("SMALLINT UNSIGNED", tinyintValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase(
+                    "MEDIUMINT UNSIGNED",
+                    tinyintValues,
+                    airbyteType = LeafAirbyteType.INTEGER
+                ),
+                TestCase("BIGINT UNSIGNED", intValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("INT", intValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("INT UNSIGNED", intValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("DATE", dateValues, airbyteType = LeafAirbyteType.DATE),
+                TestCase(
+                    "TIMESTAMP",
+                    timestampValues,
+                    airbyteType = LeafAirbyteType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                TestCase(
+                    "DATETIME",
+                    dateTimeValues,
+                    airbyteType = LeafAirbyteType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
+                TestCase("TIME", timeValues, airbyteType = LeafAirbyteType.TIME_WITHOUT_TIMEZONE),
+                TestCase("YEAR", yearValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase(
+                    "VARBINARY(255)",
+                    binaryValues,
+                    airbyteType = LeafAirbyteType.BINARY,
+                    cursor = false,
+                    noPK = true
+                ),
+                TestCase("BIT", bitValues, airbyteType = LeafAirbyteType.BOOLEAN, cursor = false),
+                TestCase("BIT(8)", longBitValues, airbyteType = LeafAirbyteType.INTEGER),
+                TestCase("JSON", jsonValues, airbyteType = LeafAirbyteType.STRING, noPK = true),
+                TestCase(
+                    "ENUM('a', 'b', 'c')",
+                    enumValues,
+                    airbyteType = LeafAirbyteType.STRING,
+                    noPK = true
+                ),
             )
 
         val allStreamNamesAndRecordData: Map<String, List<JsonNode>> =

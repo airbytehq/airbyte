@@ -232,9 +232,9 @@ data class TestCase(
         try {
             runBlocking(Dispatchers.Default) { rootReader.read() }
             log.info { "read completed for $name" }
-            Assertions.assertTrue(isSuccessful, name)
+            Assertions.assertTrue(isSuccessful, "Expected case $name to succeed, but it failed.")
         } catch (e: Exception) {
-            Assertions.assertFalse(isSuccessful, name)
+            Assertions.assertFalse(isSuccessful, "Expected case $name to fail, but it succeeded.")
             log.info(e) { "read failed for $name" }
         }
         for (msg in testOutputConsumer.messages()) {
@@ -280,11 +280,17 @@ data class TestCase(
                     when (trace.streamStatus.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED -> {
                             hasStarted = true
-                            Assertions.assertFalse(hasCompleted)
+                            Assertions.assertFalse(
+                                hasCompleted,
+                                "Case $name cannot emit a STARTED trace message because it already emitted a COMPLETE."
+                            )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE -> {
                             hasCompleted = true
-                            Assertions.assertTrue(hasStarted)
+                            Assertions.assertTrue(
+                                hasStarted,
+                                "Case $name cannot emit a COMPLETE trace message because it hasn't emitted a STARTED yet."
+                            )
                         }
                         else ->
                             Assertions.fail(
@@ -299,8 +305,21 @@ data class TestCase(
                     )
             }
         }
-        Assertions.assertTrue(hasStarted)
-        Assertions.assertEquals(isSuccessful, hasCompleted)
+        Assertions.assertTrue(
+            hasStarted,
+            "Case $name should have emitted a STARTED trace message, but hasn't."
+        )
+        if (isSuccessful) {
+            Assertions.assertTrue(
+                hasCompleted,
+                "Case $name should have emitted a COMPLETE trace message, but hasn't."
+            )
+        } else {
+            Assertions.assertFalse(
+                hasCompleted,
+                "Case $name should not have emitted a COMPLETE trace message, but did anyway."
+            )
+        }
     }
 
     fun verifyStates(stateMessages: List<AirbyteStateMessage>) {
@@ -329,18 +348,18 @@ data class TestCase(
             if (expected == null) {
                 Assertions.assertNull(
                     actual,
-                    "expected nothing in round $partitionsCreatorID, got $actual",
+                    "Case $name should not have emitted any state checkpoint in round $partitionsCreatorID, but did anyway: $actual",
                 )
                 break
             }
             Assertions.assertNotNull(
                 actual,
-                "expected $expected in round $partitionsCreatorID, got nothing",
+                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected"
             )
             for (actualState in actual!!) {
                 Assertions.assertTrue(
                     actualState.toString() in expected.map { it.toString() },
-                    "$actualState should be in $expected",
+                    "Case $name emitted more state checkpoints than were expected: actual $actualState vs expected $expected",
                 )
             }
         }

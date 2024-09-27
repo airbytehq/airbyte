@@ -29,7 +29,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
     suspend fun handleStreamOpen(streamLoader: StreamLoader)
     suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
     )
     suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>)
@@ -75,7 +75,8 @@ class DefaultDestinationTaskLauncher(
     private val catalog: DestinationCatalog,
     private val streamsManager: StreamsManager,
     override val taskRunner: TaskRunner,
-    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>,
+    private val checkpointManager:
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
@@ -90,11 +91,11 @@ class DefaultDestinationTaskLauncher(
     private val batchUpdateLock = Mutex()
 
     private val streamLoaders:
-        ConcurrentHashMap<DestinationStream, CompletableDeferred<StreamLoader>> =
+        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader>> =
         ConcurrentHashMap()
 
     init {
-        catalog.streams.forEach { streamLoaders[it] = CompletableDeferred() }
+        catalog.streams.forEach { streamLoaders[it.descriptor] = CompletableDeferred() }
     }
 
     override suspend fun start() {
@@ -103,7 +104,7 @@ class DefaultDestinationTaskLauncher(
         taskRunner.enqueue(setupTask)
         catalog.streams.forEach { stream ->
             log.info { "Starting spill-to-disk task for $stream" }
-            val spillTask = spillToDiskTaskFactory.make(this, stream)
+            val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
             taskRunner.enqueue(spillTask)
         }
     }
@@ -120,12 +121,12 @@ class DefaultDestinationTaskLauncher(
     /** Called when a stream is ready for loading. */
     override suspend fun handleStreamOpen(streamLoader: StreamLoader) {
         log.info { "Registering stream open and loader available for ${streamLoader.stream}" }
-        streamLoaders[streamLoader.stream]!!.complete(streamLoader)
+        streamLoaders[streamLoader.stream.descriptor]!!.complete(streamLoader)
     }
 
     /** Called for each new spilled file. */
     override suspend fun handleNewSpilledFile(
-        stream: DestinationStream,
+        stream: DestinationStream.Descriptor,
         wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
     ) {
         val streamLoader = streamLoaders[stream]!!.await()
@@ -142,7 +143,7 @@ class DefaultDestinationTaskLauncher(
      */
     override suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>) {
         batchUpdateLock.withLock {
-            val streamManager = streamsManager.getManager(streamLoader.stream)
+            val streamManager = streamsManager.getManager(streamLoader.stream.descriptor)
             streamManager.updateBatchState(wrapped)
 
             if (wrapped.batch.state != Batch.State.COMPLETE) {
@@ -169,7 +170,7 @@ class DefaultDestinationTaskLauncher(
 
     /** Called when a stream is closed. */
     override suspend fun handleStreamClosed(stream: DestinationStream) {
-        streamsManager.getManager(stream).markClosed()
+        streamsManager.getManager(stream.descriptor).markClosed()
         checkpointManager.flushReadyCheckpointMessages()
         if (runTeardownOnce.compareAndSet(false, true)) {
             streamsManager.awaitAllStreamsClosed()
@@ -190,7 +191,8 @@ class DestinationTaskLauncherFactory(
     private val catalog: DestinationCatalog,
     private val streamsManager: StreamsManager,
     private val taskRunner: TaskRunner,
-    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>,
+    private val checkpointManager:
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,

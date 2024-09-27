@@ -3,19 +3,18 @@
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Google Sheets](https://developers.google.com/sheets) source connector.
-
 </HideInUI>
 
 :::info
-The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be replicated. To replicate multiple spreadsheets, set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
+The Google Sheets source connector pulls data from a single Google Sheets spreadsheet. Each sheet within a spreadsheet can be synced. To sync multiple spreadsheets, use our Google Drive connector or set up multiple Google Sheets source connectors in your Airbyte instance. No other files in your Google Drive are accessed.
 :::
 
 ### Prerequisites
 
-- Spreadsheet Link - The link to the Google spreadsheet you want to sync.
+- **Spreadsheet Link** - The link to the Google spreadsheet you want to sync.
 <!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
-  <!-- /env:cloud -->
+<!-- /env:cloud -->
   <!-- env:oss -->
 - **For Airbyte Open Source:**
 - A GCP project
@@ -94,7 +93,6 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 <!-- /env:oss -->
 5. Select your authentication method:
 <!-- env:cloud -->
-
 - **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
   <!-- /env:cloud -->
   <!-- env:oss -->
@@ -111,8 +109,10 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
 <!-- /env:oss -->
-
+<FieldAnchor field="spreadsheet_id">
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
+</FieldAnchor>
+<FieldAnchor field="batch_size">
 7. For **Batch Size**, enter an integer which represents batch size when processing a Google Sheet. Default value is 200.
    Batch size is an integer representing row batch size for each sent request to Google Sheets API.
    Row batch size means how many rows are processed from the google sheet, for example default value 200
@@ -123,9 +123,11 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
    number of columns of the google sheet when deciding a batch_size value.
    Default value should cover most of the cases, but if a google sheet has over 100,000 records or more,
    consider increasing batch_size value.
+</FieldAnchor>
+<FieldAnchor field="names_conversion">
 8. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
 9. Click **Set up source** and wait for the tests to complete.
-
+</FieldAnchor>
 <HideInUI>
 
 ## Supported sync modes
@@ -176,6 +178,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 - Check out common troubleshooting issues for the Google Sheets source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
+
+</HideInUI>
 
 ## Changelog
 
@@ -259,5 +263,3 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                           |
 
 </details>
-
-</HideInUI>
