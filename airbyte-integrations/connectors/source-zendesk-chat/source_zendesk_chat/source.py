@@ -34,8 +34,9 @@ class ZendeskAuthentication:
 class SourceZendeskChat(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         authenticator = ZendeskAuthentication(config).get_auth()
+        subdomain = config.get("subdomain", None)
         try:
-            records = RoutingSettings(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)
+            records = RoutingSettings(authenticator=authenticator, subdomain=subdomain).read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
         except Exception as error:
@@ -43,19 +44,20 @@ class SourceZendeskChat(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = ZendeskAuthentication(config).get_auth()
+        subdomain = config.get("subdomain", None)
         return [
-            Accounts(authenticator=authenticator),
-            AgentTimelines(authenticator=authenticator, start_date=config["start_date"]),
-            Agents(authenticator=authenticator),
-            Bans(authenticator=authenticator),
-            Chats(authenticator=authenticator, start_date=config["start_date"]),
-            Conversions(authenticator=authenticator, start_date=config["start_date"]),
-            Departments(authenticator=authenticator),
-            DepartmentEvents(authenticator=authenticator, start_date=config["start_date"]),
-            Goals(authenticator=authenticator),
-            Roles(authenticator=authenticator),
-            RoutingSettings(authenticator=authenticator),
-            Shortcuts(authenticator=authenticator),
-            Skills(authenticator=authenticator),
-            Triggers(authenticator=authenticator),
+            Accounts(authenticator=authenticator, subdomain=subdomain),
+            AgentTimelines(authenticator=authenticator, subdomain=subdomain, start_date=config["start_date"]),
+            Agents(authenticator=authenticator, subdomain=subdomain),
+            Bans(authenticator=authenticator, subdomain=subdomain),
+            Chats(authenticator=authenticator, subdomain=subdomain, start_date=config["start_date"]),
+            Conversions(authenticator=authenticator, subdomain=subdomain, start_date=config["start_date"]),
+            Departments(authenticator=authenticator, subdomain=subdomain),
+            DepartmentEvents(authenticator=authenticator, subdomain=subdomain, start_date=config["start_date"]),
+            Goals(authenticator=authenticator, subdomain=subdomain),
+            Roles(authenticator=authenticator, subdomain=subdomain),
+            RoutingSettings(authenticator=authenticator, subdomain=subdomain),
+            Shortcuts(authenticator=authenticator, subdomain=subdomain),
+            Skills(authenticator=authenticator, subdomain=subdomain),
+            Triggers(authenticator=authenticator, subdomain=subdomain),
         ]

@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Zendesk Chat Spec",
     "type": "object",
-    "required": ["start_date"],
+    "required": ["start_date", "subdomain"],
     "additionalProperties": true,
     "properties": {
       "start_date": {
@@ -18,7 +18,7 @@
       "subdomain": {
         "type": "string",
         "title": "Subdomain",
-        "description": "Required if you access Zendesk Chat from a Zendesk Support subdomain.",
+        "description": "This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.",
         "default": ""
       },
       "credentials": {

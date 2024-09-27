@@ -14,12 +14,23 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class Stream(HttpStream, ABC):
-    url_base = "https://www.zopim.com/api/v2/"
+    def __init__(self, subdomain, **kwargs):
+        super().__init__(**kwargs)
+        self.subdomain = subdomain
+
     primary_key = "id"
 
     data_field = None
 
     limit = 100
+
+    @property
+    def url_base(self):
+        # We need to use the subdomain to build the URL. As the zopim API is deprecated and will phase out on 29/10/2024
+        # https://developer.zendesk.com/api-reference/live-chat/introduction/
+        if self.subdomain:
+            return f"https://{self.subdomain}.zendesk.com/api/v2/chat/"
+        return "https://www.zopim.com/api/v2/"
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
