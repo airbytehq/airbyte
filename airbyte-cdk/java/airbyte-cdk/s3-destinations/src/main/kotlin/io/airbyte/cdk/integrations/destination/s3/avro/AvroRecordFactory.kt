@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectWriter
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants.Companion.AVRO_EXTRA_PROPS_FIELD
 import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants.Companion.JSON_EXTRA_PROPS_FIELDS
@@ -81,7 +82,13 @@ class AvroRecordFactory(
         // Preprocess the client data to add features not supported by the converter
         val data = recordMessage.data as ObjectNode
         val preprocessed = recordPreprocessor.invoke(data)
-        jsonRecord.setAll<JsonNode>(preprocessed as ObjectNode)
+        if (preprocessed is ObjectNode) {
+            jsonRecord.setAll<JsonNode>(preprocessed)
+        } else if (preprocessed !is TextNode || preprocessed.asText() != "{}") {
+            throw (IllegalArgumentException(
+                "found data field of type ${preprocessed?.javaClass} and length ${preprocessed?.asText()?.length} (value=${preprocessed?.asText()}"
+            ))
+        }
 
         return converter!!.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema)
     }

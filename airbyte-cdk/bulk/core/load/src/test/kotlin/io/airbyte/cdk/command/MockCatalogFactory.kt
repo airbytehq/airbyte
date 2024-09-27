@@ -9,6 +9,7 @@ import io.airbyte.cdk.data.IntegerType
 import io.airbyte.cdk.data.ObjectType
 import io.airbyte.cdk.data.StringType
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
@@ -55,6 +56,7 @@ class MockCatalogFactory : DestinationCatalogFactory {
 
     @Singleton
     @Named("mockCatalog")
+    @Primary
     override fun make(): DestinationCatalog {
         return DestinationCatalog(streams = listOf(stream1, stream2))
     }

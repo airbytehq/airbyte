@@ -30,7 +30,7 @@ class RootReader(
     val resourceAcquisitionHeartbeat: Duration,
     val timeout: Duration,
     val outputConsumer: OutputConsumer,
-    val partitionsCreatorFactory: PartitionsCreatorFactory,
+    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) {
     private val log = KotlinLogging.logger {}
 
