@@ -716,21 +716,37 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         """
         updated_state = super().get_updated_state(current_stream_state, latest_record)
         if self.parent_stream_class:
+            parent_state = latest_record.get(self.parent_stream.name, {})
+            parent_state_value = (
+                parent_state.get(self.parent_stream.cursor_field) if parent_state else latest_record.get(self.parent_stream.cursor_field)
+            )
             # add parent_stream_state to `updated_state`
-            updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: latest_record.get(self.parent_stream.cursor_field)}
+            updated_state[self.parent_stream.name] = {self.parent_stream.cursor_field: parent_state_value}
         return updated_state
 
-    def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]]) -> str:
-        if self.parent_stream_class:
-            # get parent stream state from the stream_state object.
-            parent_state = stream_state.get(self.parent_stream.name, {})
-            if parent_state:
-                return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
-        else:
-            # get the stream state, if no `parent_stream_class` was assigned.
+    def _get_stream_cursor_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[str]:
+        if stream_state:
             return stream_state.get(self.cursor_field, self.default_state_comparison_value)
+        else:
+            return self.config.get("start_date")
 
-    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> Optional[Union[str, int]]:
+    def get_stream_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[str]:
+        if stream_state:
+            if self.parent_stream_class:
+                # get parent stream state from the stream_state object.
+                parent_state = stream_state.get(self.parent_stream.name, {})
+                if parent_state:
+                    return parent_state.get(self.parent_stream.cursor_field, self.default_state_comparison_value)
+                else:
+                    # use the streams cursor value, if no parent state available
+                    return self._get_stream_cursor_value(stream_state)
+            else:
+                # get the stream state, if no `parent_stream_class` was assigned.
+                return self._get_stream_cursor_value(stream_state)
+        else:
+            return self.config.get("start_date")
+
+    def get_state_value(self, stream_state: Optional[Mapping[str, Any]] = None) -> Optional[Union[str, int]]:
         if stream_state:
             return self.get_stream_state_value(stream_state)
         else:

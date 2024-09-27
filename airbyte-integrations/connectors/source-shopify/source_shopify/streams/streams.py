@@ -170,14 +170,17 @@ class ProductsGraphQl(IncrementalShopifyStream):
 
 
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Products
     bulk_query: MetafieldProduct = MetafieldProduct
 
 
 class ProductImages(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Products
     bulk_query: ProductImage = ProductImage
 
 
 class MetafieldProductImages(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Products
     bulk_query: MetafieldProductImage = MetafieldProductImage
 
 
