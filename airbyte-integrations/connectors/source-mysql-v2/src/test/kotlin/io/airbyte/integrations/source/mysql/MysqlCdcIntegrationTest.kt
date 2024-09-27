@@ -16,6 +16,8 @@ import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.MysqlContainerFactory.execAsRoot
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
@@ -26,12 +28,56 @@ import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import java.sql.Statement
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
 
 class MysqlCdcIntegrationTest {
+
+    @Test
+    fun testCheck() {
+        val run1: BufferingOutputConsumer = CliRunner.source("check", config(), null).run()
+
+        assertEquals(run1.messages().size, 1)
+        assertEquals(
+            run1.messages().first().connectionStatus.status,
+            AirbyteConnectionStatus.Status.SUCCEEDED
+        )
+
+        MysqlContainerFactory.exclusive(
+                imageName = "mysql:8.0",
+                MysqlContainerFactory.WithCdcOff,
+            )
+            .use { nonCdcDbContainer ->
+                {
+                    val invalidConfig: MysqlSourceConfigurationJsonObject =
+                        MysqlContainerFactory.config(nonCdcDbContainer).apply {
+                            setCursorMethodValue(CdcCursor())
+                        }
+
+                    val nonCdcConnectionFactory =
+                        JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(invalidConfig))
+
+                    provisionTestContainer(nonCdcDbContainer, nonCdcConnectionFactory)
+
+                    val run2: BufferingOutputConsumer =
+                        CliRunner.source("check", invalidConfig, null).run()
+
+                    val messageInRun2 =
+                        run2
+                            .messages()
+                            .filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
+                            .first()
+
+                    assertEquals(
+                        AirbyteConnectionStatus.Status.FAILED,
+                        messageInRun2.connectionStatus.status
+                    )
+                }
+            }
+    }
 
     @Test
     fun test() {
@@ -99,12 +145,20 @@ class MysqlCdcIntegrationTest {
                     imageName = "mysql:8.0",
                     MysqlContainerFactory.WithNetwork,
                 )
+            provisionTestContainer(dbContainer, connectionFactory)
+        }
+
+        fun provisionTestContainer(
+            targetContainer: MySQLContainer<*>,
+            targetConnectionFactory: JdbcConnectionFactory
+        ) {
             val grant =
                 "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
-                    "ON *.* TO '${dbContainer.username}'@'%';"
-            dbContainer.execAsRoot(grant)
-            dbContainer.execAsRoot("FLUSH PRIVILEGES;")
-            connectionFactory.get().use { connection: Connection ->
+                    "ON *.* TO '${targetContainer.username}'@'%';"
+            targetContainer.execAsRoot(grant)
+            targetContainer.execAsRoot("FLUSH PRIVILEGES;")
+
+            targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
                     stmt.execute("CREATE TABLE test.tbl(k INT PRIMARY KEY, v VARCHAR(80))")
