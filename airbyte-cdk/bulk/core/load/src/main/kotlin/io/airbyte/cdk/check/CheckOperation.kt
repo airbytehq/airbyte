@@ -22,15 +22,15 @@ import jakarta.inject.Singleton
 class CheckOperation<T : ConfigurationJsonObjectBase, C : DestinationConfiguration>(
     val configJsonObjectSupplier: ConfigurationJsonObjectSupplier<T>,
     val configFactory: DestinationConfigurationFactory<T, C>,
-    private val destinationCheckOperation: DestinationCheckOperation<C>,
+    private val destinationChecker: DestinationChecker<C>,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
     override fun execute() {
         try {
-            val pojo: T = configJsonObjectSupplier.get()
-            val config: C = configFactory.make(pojo)
-            destinationCheckOperation.check(config)
+            val pojo = configJsonObjectSupplier.get()
+            val config = configFactory.make(pojo)
+            destinationChecker.check(config)
             val successMessage =
                 AirbyteMessage()
                     .withType(AirbyteMessage.Type.CONNECTION_STATUS)
@@ -44,7 +44,7 @@ class CheckOperation<T : ConfigurationJsonObjectBase, C : DestinationConfigurati
             outputConsumer.accept(traceMessage)
             outputConsumer.accept(statusMessage)
         } finally {
-            destinationCheckOperation.cleanup()
+            destinationChecker.cleanup()
         }
     }
 }
