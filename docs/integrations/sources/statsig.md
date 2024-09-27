@@ -9,6 +9,8 @@ Statsig is the single platform to ship, test and analyze new features. Statsig p
 | `start_date` | `string` | Start date.  |  |
 | `end_date` | `string` | End date.  |  |
 
+See the [API docs](https://docs.statsig.com/http-api) for steps to generate the API key.
+
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
