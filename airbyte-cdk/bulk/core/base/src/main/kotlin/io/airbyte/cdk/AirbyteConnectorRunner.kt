@@ -36,7 +36,7 @@ class AirbyteSourceRunner(
 class AirbyteDestinationRunner(
     /** CLI args. */
     args: Array<out String>,
-    testEnvironments: Map<String, String>? = null,
+    testEnvironments: Map<String, String> = emptyMap(),
     /** Micronaut bean definition overrides, used only for tests. */
     vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
 ) : AirbyteConnectorRunner("destination", args, testBeanDefinitions, testEnvironments) {
@@ -56,7 +56,7 @@ sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
     val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
-    val testProperties: Map<String, String>? = null,
+    val testProperties: Map<String, String> = emptyMap(),
 ) {
     val envs: Array<String> = arrayOf(Environment.CLI, connectorType)
 
@@ -73,7 +73,7 @@ sealed class AirbyteConnectorRunner(
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
                     *listOfNotNull(
-                        testProperties?.let { MapPropertySource("additional_properties", it) },
+                        MapPropertySource("additional_properties", testProperties),
                         airbytePropertySource,
                         commandLinePropertySource,
                         MetadataYamlPropertySource(),
