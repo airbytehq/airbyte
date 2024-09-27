@@ -13,17 +13,15 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk import BackoffStrategy
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -495,14 +493,15 @@ class Tickets(SourceZendeskIncrementalExportStream):
         """
         return super().validate_start_time(requested_start_time, value=3)
 
-class StreamSelector:
 
+class StreamSelector:
     def __init__(self, stateless_stream: SourceZendeskSupportStream, stateful_stream: SourceZendeskSupportStream):
         self._stateless_stream = stateless_stream
         self._stateful_stream = stateful_stream
 
     def get_parent_stream(self, stream_state: Mapping[str, Any]) -> SourceZendeskSupportStream:
         return self._stateful_stream if stream_state else self._stateless_stream
+
 
 class TicketMetrics(SourceZendeskSupportStream):
 
@@ -514,21 +513,14 @@ class TicketMetrics(SourceZendeskSupportStream):
         self._cursor_field: str = self.cursor_field
         self._parent_stream: SourceZendeskSupportStream = None
         stateless_ticket_metrics = StatelessTicketMetrics(
-            subdomain=subdomain,
-            start_date=start_date,
-            ignore_pagination=ignore_pagination,
-            **kwargs
+            subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs
         )
         stateful_ticket_metrics = StatefulTicketMetrics(
-            parent=Tickets(
-                subdomain=subdomain,
-                start_date=start_date,
-                ignore_pagination=ignore_pagination,
-                **kwargs),
+            parent=Tickets(subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs),
             subdomain=subdomain,
             start_date=start_date,
             ignore_pagination=ignore_pagination,
-            **kwargs
+            **kwargs,
         )
         self.stream_selector = StreamSelector(stateless_stream=stateless_ticket_metrics, stateful_stream=stateful_ticket_metrics)
 
@@ -593,13 +585,13 @@ class StatelessTicketMetrics(FullRefreshZendeskSupportStream):
         meta = response.json().get("meta", {}) if response.content else {}
         return {"page[after]": meta.get("after_cursor")} if meta.get("has_more") else None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], **kwargs) -> Mapping[str, Any]:
-        start_date_timestamp: int = self.str2unixtime(self._start_date)
+    def get_updated_state(
+        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any], **kwargs
+    ) -> Mapping[str, Any]:
         if self.most_recently_updated_record:
             record = self.most_recently_updated_record
-            old_value: int = (current_stream_state or {}).get(self.legacy_cursor_field, start_date_timestamp)
-            new_value: int = (record or {}).get(self.record_cursor_field, start_date_timestamp)
-            return {self.legacy_cursor_field: max(new_value, old_value)}
+            new_state_value: int = (record or {}).get(self.record_cursor_field, self.str2unixtime(self._start_date))
+            return {self.legacy_cursor_field: new_state_value}
         else:
             return {}
 
@@ -673,7 +665,7 @@ class StatefulTicketMetrics(HttpSubStream, IncrementalZendeskSupportStream):
         """try to select relevant data only"""
         data = response.json().get(self.response_list_name) or {}
         if data:
-            data[self.cursor_field] = (stream_slice or {}).get(self.cursor_field)
+            data[self.record_cursor_field] = (stream_slice or {}).get(self.record_cursor_field)
             yield data
 
 
