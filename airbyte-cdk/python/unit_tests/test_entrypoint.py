@@ -259,7 +259,7 @@ def test_run_check_with_config_error(entrypoint: AirbyteEntrypoint, mocker, spec
         orjson.dumps(AirbyteMessageSerializer.dump(expected_trace)).decode(),
         _wrap_message(
             AirbyteConnectionStatus(
-                status=Status.FAILED, 
+                status=Status.FAILED,
                 message=AirbyteTracedException.from_exception(exception).message
             )
         ),
