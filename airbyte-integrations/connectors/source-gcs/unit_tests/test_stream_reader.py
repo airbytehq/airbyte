@@ -12,7 +12,10 @@ from source_gcs.config import ServiceAccountCredentials
 
 def test_get_matching_files_with_no_prefix(logger, mocked_reader):
     mocked_reader._config = Config(
-        service_account='{"type": "service_account"}',
+        credentials=ServiceAccountCredentials(
+            service_account='{"type": "service_account"}',
+            auth_type="Service"
+        ),
         bucket="test_bucket",
         streams=[],
     )
@@ -45,7 +48,10 @@ def test_open_file_with_compression(logger):
 def test_open_file_without_compression(remote_file, logger):
     reader = SourceGCSStreamReader()
     reader._config = Config(
-        service_account='{"type": "service_account"}',
+        credentials=ServiceAccountCredentials(
+            service_account='{"type": "service_account"}',
+            auth_type="Service"
+        ),
         bucket="test_bucket",
         streams=[],
     )
