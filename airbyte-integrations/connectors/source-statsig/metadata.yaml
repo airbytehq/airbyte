@@ -2,7 +2,7 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "*"
+      - "statsigapi.net"
   registryOverrides:
     oss:
       enabled: true
