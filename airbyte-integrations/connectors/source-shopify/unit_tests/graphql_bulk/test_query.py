@@ -168,6 +168,10 @@ def test_base_build_query(basic_config, query_name, fields, filter_field, start,
                                             "__typename",
                                             "id",
                                             Field(
+                                                name="updatedAt",
+                                                alias="product_updated_at",
+                                            ),
+                                            Field(
                                                 name="media",
                                                 fields=[
                                                     Field(
