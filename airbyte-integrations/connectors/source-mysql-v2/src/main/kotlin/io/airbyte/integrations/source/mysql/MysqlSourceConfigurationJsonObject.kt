@@ -86,7 +86,7 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "mode")
+    @ConfigurationBuilder(configurationPrefix = "ssl_mode")
     var encryption = MicronautPropertiesFriendlyEncryption()
 
     @JsonIgnore var encryptionJson: Encryption? = null
@@ -126,7 +126,7 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
     @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "method")
+    @ConfigurationBuilder(configurationPrefix = "replication_method")
     var replicationMethod = MicronautPropertiesFriendlyCursorMethodConfiguration()
 
     @JsonIgnore var replicationMethodJson: CursorMethodConfiguration? = null
@@ -304,8 +304,7 @@ class MicronautPropertiesFriendlyEncryption {
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
     JsonSubTypes.Type(value = CdcCursor::class, name = "CDC")
-    // TODO: port over additional Cdc options
-    )
+)
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
 sealed interface CursorMethodConfiguration
@@ -346,25 +345,16 @@ class CdcCursor : CursorMethodConfiguration {
     @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
     var serverTimezone: String? = null
 
-    @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "invalid_cdc_behavior")
-    var invalidCdcBehavior = MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration()
-
-    @JsonIgnore var invalidCdcPositionBehaviorJson: InvalidCdcPositionBehavior? = null
-
-    @JsonSetter("invalid_cdc_behavior")
-    fun setInvalidCdcBehaviorValue(value: InvalidCdcPositionBehavior) {
-        invalidCdcPositionBehaviorJson = value
-    }
-
-    @JsonGetter("invalid_cdc_behavior")
-    @JsonSchemaTitle("Invalid CDC position behavior (Advanced)")
+    @JsonProperty("invalid_cdc_cursor_position_behavior")
+    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
     @JsonPropertyDescription(
-        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
     )
-    @JsonSchemaInject(json = """{"order":3, "always_show": true}""")
-    fun getInvalidCdcBehaviorValue(): InvalidCdcPositionBehavior? =
-        invalidCdcPositionBehaviorJson ?: invalidCdcBehavior.asInvalidCdcPositionBehavior()
+    @JsonSchemaDefault("Fail sync")
+    @JsonSchemaInject(
+        json = """{"order":3,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
+    )
+    var invalidCdcCursorPositionBehavior: String? = "Fail Sync"
 
     @JsonProperty("initial_load_timeout_hours")
     @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
@@ -376,33 +366,9 @@ class CdcCursor : CursorMethodConfiguration {
     var initialLoadTimeoutHours: Int? = 8
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "invalid_cdc_cursor_position_behavior")
-@JsonSubTypes(
-    JsonSubTypes.Type(value = FailSync::class, name = "fail_sync"),
-    JsonSubTypes.Type(value = ResyncData::class, name = "resync")
-)
-@JsonSchemaTitle("Update Method")
-sealed interface InvalidCdcPositionBehavior
-
-@JsonSchemaTitle("Fail sync") data object FailSync : InvalidCdcPositionBehavior
-
-@JsonSchemaTitle("Re-sync data") data object ResyncData : InvalidCdcPositionBehavior
-
-@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.invalid_cdc_cursor_position_behavior")
-class MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration {
-    var invalidCdcBehavior: String = "fail_sync"
-
-    fun asInvalidCdcPositionBehavior(): InvalidCdcPositionBehavior =
-        when (invalidCdcBehavior) {
-            "fail_sync" -> FailSync
-            "resync" -> ResyncData
-            else -> throw ConfigErrorException("invalid value $invalidCdcBehavior")
-        }
-}
-
-@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.method")
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.replication_method")
 class MicronautPropertiesFriendlyCursorMethodConfiguration {
-    var method: String = "user_defined"
+    var method: String = "STANDARD"
 
     fun asCursorMethodConfiguration(): CursorMethodConfiguration =
         when (method) {

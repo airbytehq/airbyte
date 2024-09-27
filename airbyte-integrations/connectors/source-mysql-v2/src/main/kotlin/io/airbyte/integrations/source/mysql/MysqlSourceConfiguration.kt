@@ -63,14 +63,13 @@ class MysqlSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        val sslMode = SSLMode.fromJdbcPropertyName(pojo.encryption.encryptionMethod)
         val jdbcEncryption =
             when (encryption) {
-                is EncryptionPreferred,
-                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = sslMode)
+                is EncryptionPreferred -> MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = SSLMode.REQUIRED)
                 is SslVerifyCertificate ->
                     MysqlJdbcEncryption(
-                        sslMode = sslMode,
+                        sslMode = SSLMode.VERIFY_CA,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
@@ -78,7 +77,7 @@ class MysqlSourceConfigurationFactory :
                     )
                 is SslVerifyIdentity ->
                     MysqlJdbcEncryption(
-                        sslMode = sslMode,
+                        sslMode = SSLMode.VERIFY_IDENTITY,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
