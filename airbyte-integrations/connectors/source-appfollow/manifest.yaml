@@ -2,7 +2,7 @@ version: 5.7.3
 
 type: DeclarativeSource
 
-description: "its a change :) "
+description: a change pt 2
 
 check:
   type: CheckStream
@@ -29,25 +29,43 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
-    app_collections:
+    ratings:
       type: DeclarativeStream
-      name: app_collections
+      name: ratings
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /account/apps
+          path: /meta/ratings
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 400
+          request_parameters:
+            ext_id: "{{ stream_slice.ext_id }}"
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path:
-              - apps
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/app_lists"
+              parent_key: ext_id
+              partition_field: ext_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/app_collections"
+          $ref: "#/schemas/ratings"
     app_lists:
       type: DeclarativeStream
       name: app_lists
@@ -69,10 +87,14 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: id
-              partition_field: app_collection_id
               stream:
                 $ref: "#/definitions/streams/app_collections"
+              parent_key: id
+              partition_field: app_collection_id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/app_lists"
       transformations:
         - type: AddFields
           fields:
@@ -84,10 +106,6 @@ definitions:
             - path:
                 - ext_id
               value: "{{ record.app.ext_id }}"
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/app_lists"
     stat_reviews:
       type: DeclarativeStream
       name: stat_reviews
@@ -108,51 +126,33 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: ext_id
-              partition_field: ext_id
               stream:
                 $ref: "#/definitions/streams/app_lists"
+              parent_key: ext_id
+              partition_field: ext_id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/stat_reviews"
-    ratings:
+    app_collections:
       type: DeclarativeStream
-      name: ratings
+      name: app_collections
       retriever:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /meta/ratings
+          path: /account/apps
           http_method: GET
-          request_parameters:
-            ext_id: "{{ stream_slice.ext_id }}"
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    http_codes:
-                      - 400
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: ext_id
-              partition_field: ext_id
-              stream:
-                $ref: "#/definitions/streams/app_lists"
+            field_path:
+              - apps
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/ratings"
+          $ref: "#/schemas/app_collections"
   base_requester:
     type: HttpRequester
     url_base: https://api.appfollow.io/api/v2
@@ -184,38 +184,33 @@ spec:
     additionalProperties: true
 
 metadata:
-  autoImportSchema:
-    users: false
-    app_collections: false
-    app_lists: false
-    stat_reviews: false
-    ratings: false
-  yamlComponents:
-    global:
-      - authenticator
+  assist: {}
   testedStreams:
     users:
       streamHash: 253737687a60cff0eff49c6d29be76f528971663
-    app_collections:
-      streamHash: fb87a006dce74e87f7024a30e3911b5e92532908
+    ratings:
+      streamHash: e9cb4baf2f62e6f75cb679b1532a4b743a58ef94
     app_lists:
       streamHash: 566454e01d19969e3a053d8db4cbb5e45ce076c5
     stat_reviews:
       streamHash: 4908660e01754c9aa4af2c88592b431a2ae618db
-    ratings:
-      streamHash: e9cb4baf2f62e6f75cb679b1532a4b743a58ef94
-  assist: {}
+    app_collections:
+      streamHash: fb87a006dce74e87f7024a30e3911b5e92532908
+  yamlComponents:
+    global:
+      - authenticator
+  autoImportSchema:
+    users: false
+    ratings: false
+    app_lists: false
+    stat_reviews: false
+    app_collections: false
 
 schemas:
   users:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
-      email:
-        type:
-          - "null"
-          - string
       id:
         type:
           - "null"
@@ -228,6 +223,10 @@ schemas:
         type:
           - "null"
           - string
+      email:
+        type:
+          - "null"
+          - string
       status:
         type:
           - "null"
@@ -236,155 +235,12 @@ schemas:
         type:
           - "null"
           - string
-  app_collections:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
-    properties:
-      count_apps:
-        type:
-          - "null"
-          - integer
-      countries:
-        type:
-          - "null"
-          - string
-      created:
-        type:
-          - "null"
-          - string
-      id:
-        type:
-          - "null"
-          - integer
-      languages:
-        type:
-          - "null"
-          - string
-      tags:
-        type:
-          - "null"
-          - array
-        items:
-          type:
-            - "null"
-            - object
-          additionalProperties: true
-      title:
-        type:
-          - "null"
-          - string
-      title_normalized:
-        type:
-          - "null"
-          - string
-  app_lists:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      app:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-      app_collection_id:
-        type:
-          - "null"
-          - integer
-      app_id:
-        type:
-          - "null"
-          - integer
-      count_reviews:
-        type:
-          - "null"
-          - integer
-      count_whatsnew:
-        type:
-          - "null"
-          - integer
-      created:
-        type:
-          - "null"
-          - string
-      ext_id:
-        type:
-          - "null"
-          - string
-      has_reply_integration:
-        type:
-          - "null"
-          - integer
-      is_favorite:
-        type:
-          - "null"
-          - integer
-      store:
-        type:
-          - "null"
-          - string
-      watch_url:
-        type:
-          - "null"
-          - string
-  stat_reviews:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
-    properties:
-      ext_id:
-        type:
-          - "null"
-          - string
-      reviews_stat:
-        type:
-          - "null"
-          - object
-        additionalProperties: true
-        properties:
-          app_id:
-            type:
-              - "null"
-              - integer
-          from:
-            type:
-              - "null"
-              - string
-          replies:
-            type:
-              - "null"
-              - integer
-          reviews:
-            type:
-              - "null"
-              - integer
-          store:
-            type:
-              - "null"
-              - string
-          title:
-            type:
-              - "null"
-              - string
-          to:
-            type:
-              - "null"
-              - string
-      store:
-        type:
-          - "null"
-          - string
   ratings:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true
     properties:
       ratings:
-        ext_id:
-          type:
-            - "null"
-            - string
         list:
           type:
             - "null"
@@ -395,8 +251,6 @@ schemas:
               - object
             properties:
               version:
-                type: string
-              country:
                 type: string
               date:
                 type: string
@@ -412,9 +266,155 @@ schemas:
                 type: integer
               stars5:
                 type: integer
+              country:
+                type: string
               stars_total:
                 type: integer
         store:
           type:
             - "null"
             - string
+        ext_id:
+          type:
+            - "null"
+            - string
+    additionalProperties: true
+  app_lists:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      app:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      store:
+        type:
+          - "null"
+          - string
+      app_id:
+        type:
+          - "null"
+          - integer
+      ext_id:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - string
+      watch_url:
+        type:
+          - "null"
+          - string
+      is_favorite:
+        type:
+          - "null"
+          - integer
+      count_reviews:
+        type:
+          - "null"
+          - integer
+      count_whatsnew:
+        type:
+          - "null"
+          - integer
+      app_collection_id:
+        type:
+          - "null"
+          - integer
+      has_reply_integration:
+        type:
+          - "null"
+          - integer
+    additionalProperties: true
+  stat_reviews:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      store:
+        type:
+          - "null"
+          - string
+      ext_id:
+        type:
+          - "null"
+          - string
+      reviews_stat:
+        type:
+          - "null"
+          - object
+        properties:
+          to:
+            type:
+              - "null"
+              - string
+          from:
+            type:
+              - "null"
+              - string
+          store:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          app_id:
+            type:
+              - "null"
+              - integer
+          replies:
+            type:
+              - "null"
+              - integer
+          reviews:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+    additionalProperties: true
+  app_collections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      id:
+        type:
+          - "null"
+          - integer
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+      title:
+        type:
+          - "null"
+          - string
+      created:
+        type:
+          - "null"
+          - string
+      countries:
+        type:
+          - "null"
+          - string
+      languages:
+        type:
+          - "null"
+          - string
+      count_apps:
+        type:
+          - "null"
+          - integer
+      title_normalized:
+        type:
+          - "null"
+          - string
+    additionalProperties: true
