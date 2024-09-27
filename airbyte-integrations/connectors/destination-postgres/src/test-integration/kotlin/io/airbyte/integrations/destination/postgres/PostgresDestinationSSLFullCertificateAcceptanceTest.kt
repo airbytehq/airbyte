@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Disabled
 @Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 class PostgresDestinationSSLFullCertificateAcceptanceTest :
     AbstractPostgresDestinationAcceptanceTest() {
-    private var testDb: PostgresTestDatabase? = null
 
     override val imageName: String
         get() = "airbyte/destination-postgres:dev"
@@ -33,10 +32,6 @@ class PostgresDestinationSSLFullCertificateAcceptanceTest :
                     .build()
             )
             .build()
-    }
-
-    override fun getTestDb(): PostgresTestDatabase {
-        return testDb!!
     }
 
     @Throws(Exception::class)

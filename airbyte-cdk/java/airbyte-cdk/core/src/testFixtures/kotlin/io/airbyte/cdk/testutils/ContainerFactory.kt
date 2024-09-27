@@ -66,11 +66,11 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun getTestContainerLogMdcBuilder(
         imageName: DockerImageName,
-        containerModifiers: List<NamedContainerModifier<C>>
+        containerModifiers: List<Pair<String, Consumer<C>>>
     ): MdcScope.Builder {
         return MdcScope.Builder()
             .setLogPrefix(
-                "testcontainer ${containerId.incrementAndGet()} ($imageName[${containerModifiers.joinToString(",") { it.name() }}]):"
+                "testcontainer ${containerId.incrementAndGet()} ($imageName[${containerModifiers.joinToString(",") { it.first }}]):"
             )
             .setPrefixColor(LoggingHelper.Color.RED_BACKGROUND)
     }
@@ -87,26 +87,33 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      * @Deprecated use shared(String, NamedContainerModifier) instead
      */
     fun shared(imageName: String, vararg methods: String): C {
-        return shared(
-            imageName,
-            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-        )
+        return shared(imageName, methods.map { n: String -> Pair(n, resolveModifierByName(n)) })
     }
 
     fun shared(imageName: String, vararg namedContainerModifiers: NamedContainerModifier<C>): C {
-        return shared(imageName, listOf(*namedContainerModifiers))
+        return shared(
+            imageName,
+            listOf(*namedContainerModifiers).map { Pair(it.name(), it.modifier()) }
+        )
+    }
+
+    fun shared(imageName: String, vararg namedContainerModifiers: ContainerModifier<C>): C {
+        return shared(
+            imageName,
+            listOf(*namedContainerModifiers).map { Pair(it.name, it.modifier) }
+        )
     }
 
     @JvmOverloads
-    fun shared(
+    private fun shared(
         imageName: String,
-        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
+        namedContainerModifiers: List<Pair<String, Consumer<C>>> = ArrayList()
     ): C {
         val containerKey =
             ContainerKey<C>(
                 javaClass,
                 DockerImageName.parse(imageName),
-                namedContainerModifiers.map { it.name() }
+                namedContainerModifiers.map { it.first }
             )
         // We deliberately avoid creating the container itself eagerly during the evaluation of the
         // map
@@ -129,41 +136,43 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
      * @Deprecated use exclusive(String, NamedContainerModifier) instead
      */
     fun exclusive(imageName: String, vararg methods: String): C {
-        return exclusive(
-            imageName,
-            methods.map { n: String -> NamedContainerModifierImpl<C>(n, resolveModifierByName(n)) }
-        )
+        return exclusive(imageName, methods.map { n: String -> Pair(n, resolveModifierByName(n)) })
     }
 
     fun exclusive(imageName: String, vararg namedContainerModifiers: NamedContainerModifier<C>): C {
-        return exclusive(imageName, listOf(*namedContainerModifiers))
+        return exclusive(
+            imageName,
+            listOf(*namedContainerModifiers).map { Pair(it.name(), it.modifier()) }
+        )
+    }
+
+    fun exclusive(imageName: String, vararg namedContainerModifiers: ContainerModifier<C>): C {
+        return exclusive(
+            imageName,
+            listOf(*namedContainerModifiers).map { Pair(it.name, it.modifier) }
+        )
     }
 
     @JvmOverloads
-    fun exclusive(
+    private fun exclusive(
         imageName: String,
-        namedContainerModifiers: List<NamedContainerModifier<C>> = ArrayList()
+        namedContainerModifiers: List<Pair<String, Consumer<C>>> = ArrayList()
     ): C {
         return createAndStartContainer(DockerImageName.parse(imageName), namedContainerModifiers)
     }
 
+    interface ContainerModifier<C : GenericContainer<*>> {
+        val name: String
+        val modifier: Consumer<C>
+    }
+
+    @Deprecated(
+        message = "only use this in java. If in kotlin, implement ContainerModifier instead"
+    )
     interface NamedContainerModifier<C : GenericContainer<*>> {
         fun name(): String
 
         fun modifier(): Consumer<C>
-    }
-
-    class NamedContainerModifierImpl<C : GenericContainer<*>>(
-        val name: String,
-        val method: Consumer<C>
-    ) : NamedContainerModifier<C> {
-        override fun name(): String {
-            return name
-        }
-
-        override fun modifier(): Consumer<C> {
-            return method
-        }
     }
 
     private fun resolveModifierByName(methodName: String): Consumer<C> {
@@ -186,12 +195,12 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
 
     private fun createAndStartContainer(
         imageName: DockerImageName,
-        namedContainerModifiers: List<NamedContainerModifier<C>>
+        namedContainerModifiers: List<Pair<String, Consumer<C>>>
     ): C {
         LOGGER.info(
             "Creating new container based on {} with {}.",
             imageName,
-            Lists.transform(namedContainerModifiers) { c: NamedContainerModifier<C> -> c.name() }
+            Lists.transform(namedContainerModifiers) { it.first }
         )
         val container = createNewContainer(imageName)
         @Suppress("unchecked_cast")
@@ -212,11 +221,11 @@ abstract class ContainerFactory<C : GenericContainer<*>> {
         for (resolvedNamedContainerModifier in namedContainerModifiers) {
             LOGGER.info(
                 "Calling {} in {} on new container based on {}.",
-                resolvedNamedContainerModifier.name(),
+                resolvedNamedContainerModifier.first,
                 javaClass.name,
                 imageName
             )
-            resolvedNamedContainerModifier.modifier().accept(container)
+            resolvedNamedContainerModifier.second.accept(container)
         }
         container.start()
         return container

@@ -39,7 +39,7 @@ abstract class SshPostgresDestinationAcceptanceTest : AbstractPostgresDestinatio
     }
 
     @Throws(Exception::class)
-    override fun retrieveRecordsFromTable(tableName: String, schemaName: String): List<JsonNode> {
+    override fun retrieveRecordsFromTable(tableName: String?, schemaName: String?): List<JsonNode> {
         // Here we DO NOT use the inner address because the tunnel is created in the integration
         // test's java
         // process.
@@ -88,10 +88,6 @@ abstract class SshPostgresDestinationAcceptanceTest : AbstractPostgresDestinatio
     override fun tearDown(testEnv: TestDestinationEnv) {
         testdb!!.close()
         bastion!!.stopAndClose()
-    }
-
-    override fun getTestDb(): PostgresTestDatabase {
-        return testdb!!
     }
 
     companion object {

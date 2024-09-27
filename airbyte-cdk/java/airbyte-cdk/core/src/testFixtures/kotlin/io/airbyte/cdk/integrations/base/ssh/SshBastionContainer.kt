@@ -36,7 +36,10 @@ class SshBastionContainer : AutoCloseable {
             val container =
                 super.exclusive(
                     "bastion-test",
-                    NamedContainerModifierImpl("withNetwork", imageModifier)
+                    object : ContainerModifier<GenericContainer<*>> {
+                        override val name = "withNetwork"
+                        override val modifier = imageModifier
+                    }
                 )
             return container
         }

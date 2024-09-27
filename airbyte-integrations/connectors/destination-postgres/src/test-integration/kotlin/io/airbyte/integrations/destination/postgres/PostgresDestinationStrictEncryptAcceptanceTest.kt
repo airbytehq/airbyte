@@ -41,10 +41,6 @@ class PostgresDestinationStrictEncryptAcceptanceTest : AbstractPostgresDestinati
             .build()
     }
 
-    override fun getTestDb(): PostgresTestDatabase {
-        return testDb!!
-    }
-
     @Throws(Exception::class)
     override fun setup(testEnv: TestDestinationEnv, TEST_SCHEMAS: HashSet<String>) {
         testDb =

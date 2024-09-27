@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Disabled
 
 @Disabled("Disabled after DV2 migration. Re-enable with fixtures updated to DV2.")
 class PostgresDestinationAcceptanceTest : AbstractPostgresDestinationAcceptanceTest() {
-    private var testDb: PostgresTestDatabase? = null
-
     override fun getConfig(): JsonNode {
         return testDb!!
             .configBuilder()
@@ -19,10 +17,6 @@ class PostgresDestinationAcceptanceTest : AbstractPostgresDestinationAcceptanceT
             .withCredentials()
             .withoutSsl()
             .build()
-    }
-
-    override fun getTestDb(): PostgresTestDatabase {
-        return testDb!!
     }
 
     override fun setup(testEnv: TestDestinationEnv, TEST_SCHEMAS: HashSet<String>) {
