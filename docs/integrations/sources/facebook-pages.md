@@ -88,6 +88,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.0.19 | 2024-09-28 | [46133](https://github.com/airbytehq/airbyte/pull/46133) | Update dependencies |
 | 1.0.18 | 2024-09-21 | [45734](https://github.com/airbytehq/airbyte/pull/45734) | Update dependencies |
 | 1.0.17 | 2024-09-14 | [45563](https://github.com/airbytehq/airbyte/pull/45563) | Update dependencies |
 | 1.0.16 | 2024-09-07 | [45311](https://github.com/airbytehq/airbyte/pull/45311) | Update dependencies |
