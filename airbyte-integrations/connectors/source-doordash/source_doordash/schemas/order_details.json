@@ -72,6 +72,21 @@
     },
     "SUBTOTAL": {
       "type": ["null", "number"]
-    }       
+    },
+    "ORDER_CART_ID": {
+      "type": ["null", "string"]
+    },
+    "ORDER_PLACE_DATE": {
+      "type": ["null", "string"]
+    },    
+    "ORDER_PLACE_TIME": {
+      "type": ["null", "string"]
+    },
+    "CREATED_AT": {
+      "type": ["null", "string"]
+    },
+    "UPDATED_AT": {
+      "type": ["null", "string"]
+    }
   }
 }
