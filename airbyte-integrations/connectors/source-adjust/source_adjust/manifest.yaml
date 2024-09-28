@@ -20,10 +20,11 @@ definitions:
           http_method: GET
           request_parameters:
             metrics: >-
-              {{ config['metrics'] + config['additional_metrics'] |
-              join(',') }}
-            dimensions: '{{ config["dimensions"] + ["day"] | join(",") }}'
-            date_period: "{{ stream_interval['start_time'] }}:{{ stream_interval['end_time'] }}"
+              {{ ','.join(config['metrics'] + (config['additional_metrics'] or [])) }}
+            dimensions: >-
+              {{ ','.join(config['dimensions'] + ['day']) }}
+            date_period: >-
+              {{ format_datetime(stream_interval['start_time'], '%Y-%m-%d') }}:{{ format_datetime(stream_interval['end_time'], '%Y-%m-%d') }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -35,16 +36,16 @@ definitions:
         cursor_field: day
         cursor_datetime_formats:
           - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['ingest_start'] }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+          datetime_format: "%Y-%m-%d"
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if config['until_today'] else (day_delta(1)).strftime('%Y-%m-%dT%H:%M:%SZ') }}
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+            {{ format_datetime(now_utc(), '%Y-%m-%d') if config['until_today'] else day_delta(1, format='%Y-%m-%d') }}
+          datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
