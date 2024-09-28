@@ -23,6 +23,21 @@ config_mock = {
     "action_report_time": "impression",
     "swipe_up_attribution_window": "7_DAY",
     "view_attribution_window": "1_DAY",
+    "organization_ids": [],
+    "ad_account_ids": [],
+}
+
+non_empty_config_mock = {
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "refresh_token": "refresh_token",
+    "start_date": "2024-01-01",
+    "end_date": "2024-02-10",
+    "action_report_time": "impression",
+    "swipe_up_attribution_window": "7_DAY",
+    "view_attribution_window": "1_DAY",
+    "organization_ids": ["organization_id_1"],
+    "ad_account_ids": ["adaccount_id_1", "adaccount_id_2"],
 }
 
 response_organizations = {
@@ -37,6 +52,10 @@ response_organizations = {
     ]
 }
 
+def run_stream(stream):
+    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
+    for slice in slices:
+        yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
 
 def test_should_retry_403_error(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
@@ -48,20 +67,24 @@ def test_should_retry_403_error(requests_mock):
     stream.retriever.requester.error_handler.max_retries = 1
     
     with pytest.raises(UserDefinedBackoffException):
-        list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        list(run_stream(stream))
 
 
 def test_organizations(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     stream = find_stream("organizations", config_mock)
-    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=StreamSlice(partition={},
-                                                                                            cursor_slice={"start_time": "2024-01-01",
-                                                                                                          "end_time": "2024-01-01"}),
-                                  stream_state=None)
+    records = run_stream(stream)
     assert json.dumps(next(records).data, sort_keys=True) == json.dumps(
         {"id": "organization_id_1", "updated_at": "2024-02-05T22:35:17.819Z", "created_at": "2024-02-05T11:13:03.910Z"}, sort_keys=True)
 
+def test_organizations_with_organization_ids(requests_mock):
+    requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
+    requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1", json=response_organizations)
+    stream = find_stream("organizations", non_empty_config_mock)
+    records = run_stream(stream)
+    assert json.dumps(next(records).data, sort_keys=True) == json.dumps(
+        {"id": "organization_id_1", "updated_at": "2024-02-05T22:35:17.819Z", "created_at": "2024-02-05T11:13:03.910Z"}, sort_keys=True)
 
 response_adaccounts = {
     "adaccounts": [
@@ -82,12 +105,29 @@ response_adaccounts = {
     ]
 }
 
+adaccount_1 = {
+    "adaccounts": [
+        {
+            "adaccount": {
+                "id": "adaccount_id_1",
+                "updated_at": "2024-02-05T22:35:17.819Z",
+                "created_at": "2024-02-05T11:13:03.910Z",
+            }
+        }
+    ]
+}
 
-def run_stream(stream):
-    slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
-    for slice in slices:
-        yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
-
+adaccount_2 = {
+    "adaccounts": [
+        {
+            "adaccount": {
+                "id": "adaccount_id_2",
+                "updated_at": "2024-02-05T22:35:17.819Z",
+                "created_at": "2024-02-05T11:13:03.910Z",
+            }
+        }
+    ]
+}
 
 def test_accounts(requests_mock):
     requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
@@ -111,6 +151,27 @@ def test_accounts(requests_mock):
         },
     ]
 
+def test_accounts_with_adaccount_ids(requests_mock):
+    requests_mock.post("https://accounts.snapchat.com/login/oauth2/access_token", json={"access_token": "XXX", "expires_in": 3600})
+    requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1", json=response_organizations)
+    requests_mock.get("https://adsapi.snapchat.com/v1/adaccounts/adaccount_id_1", json=adaccount_1)
+    requests_mock.get("https://adsapi.snapchat.com/v1/adaccounts/adaccount_id_2", json=adaccount_2)
+
+    stream = find_stream("adaccounts", non_empty_config_mock)
+    records = run_stream(stream)
+    list_records = [record.data for record in records]
+    assert list_records == [
+        {
+            "id": "adaccount_id_1",
+            "updated_at": "2024-02-05T22:35:17.819Z",
+            "created_at": "2024-02-05T11:13:03.910Z",
+        },
+        {
+            "id": "adaccount_id_2",
+            "updated_at": "2024-02-05T22:35:17.819Z",
+            "created_at": "2024-02-05T11:13:03.910Z",
+        },
+    ]
 
 response_ads = {
     "ads": [
