@@ -19,7 +19,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-interface ProcessRecordsTask : Task
+interface ProcessRecordsTask : StreamTask
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
