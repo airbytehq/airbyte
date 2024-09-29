@@ -1,9 +1,11 @@
 # Testrail
-This directory contains the manifest-only connector for `source-testrail`.
+This directory contains the manifest-only connector for [`source-testrail`](https://www.testrail.com/).
 
-Website: https://www.testrail.com/
-API Docs: https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments
-Auth Docs: https://support.testrail.com/hc/en-us/articles/7077039051284-Accessing-the-TestRail-API
+## Documentation reference:
+Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments` for V1 API documentation
+
+## Authentication setup
+`Testrail` uses basic http authentication, Visit `https://support.testrail.com/hc/en-us/articles/7077039051284-Accessing-the-TestRail-API` for more info.
 
 ## Usage
 There are multiple ways to use this connector:

@@ -1,7 +1,11 @@
 # Testrail
-Website: https://www.testrail.com/
-API Docs: https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments
-Auth Docs: https://support.testrail.com/hc/en-us/articles/7077039051284-Accessing-the-TestRail-API
+This directory contains the manifest-only connector for [`source-testrail`](https://www.testrail.com/).
+
+## Documentation reference:
+Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments` for V1 API documentation
+
+## Authentication setup
+`Testrail` uses basic http authentication, Visit `https://support.testrail.com/hc/en-us/articles/7077039051284-Accessing-the-TestRail-API` for more info.
 
 ## Configuration
 
@@ -10,6 +14,7 @@ Auth Docs: https://support.testrail.com/hc/en-us/articles/7077039051284-Accessin
 | `username` | `string` | Username.  |  |
 | `password` | `string` | Password.  |  |
 | `start_date` | `string` | Start date.  |  |
+| `domain_name` | `string` | The unique domain name for accessing testrail.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -38,8 +43,8 @@ Auth Docs: https://support.testrail.com/hc/en-us/articles/7077039051284-Accessin
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-29 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|--|----------------|
+| 0.0.1 | 2024-09-29 |[46250](https://github.com/airbytehq/airbyte/pull/46250)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
