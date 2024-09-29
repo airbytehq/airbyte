@@ -1,8 +1,11 @@
 # Gorgias
-Website: https://gorgias.com/
-API docs: https://developers.gorgias.com/reference/introduction
-Auth docs: https://developers.gorgias.com/reference/authentication
-API Keys: https://testerstoreusedbytester.gorgias.com/app/settings/api
+This directory contains the manifest-only connector for [`source-gorgias`](https://gorgias.com/).
+
+## Documentation reference:
+Visit `https://developers.gorgias.com/reference/introduction` for API documentation
+
+## Authentication setup
+`Gorgias` uses Http basic authentication, Visit `https://testerstoreusedbytester.gorgias.com/app/settings/api` for getting your username and password. Visit `https://developers.gorgias.com/reference/authentication` for more information.
 
 ## Configuration
 
@@ -38,8 +41,8 @@ API Keys: https://testerstoreusedbytester.gorgias.com/app/settings/api
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-29 | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version          | Date       |PR| Subject        |
+|------------------|------------|---|----------------|
+| 0.0.1 | 2024-09-29 |[46221](https://github.com/airbytehq/airbyte/pull/46221)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
 
 </details>
