@@ -191,6 +191,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 4.1.2 | 2024-09-28 | [46171](https://github.com/airbytehq/airbyte/pull/46171) | Update dependencies |
 | 4.1.1 | 2024-09-21 | [45774](https://github.com/airbytehq/airbyte/pull/45774) | Update dependencies |
 | 4.1.0 | 2024-09-20 | [44370](https://github.com/airbytehq/airbyte/pull/44370) | Migrate to low-code |
 | 4.0.6 | 2024-09-14 | [45532](https://github.com/airbytehq/airbyte/pull/45532) | Update dependencies |
