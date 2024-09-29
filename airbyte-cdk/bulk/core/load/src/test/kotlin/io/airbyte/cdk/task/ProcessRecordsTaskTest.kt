@@ -26,10 +26,16 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = ["ProcessRecordsTaskTest"])
+@MicronautTest(
+    environments =
+        [
+            "ProcessRecordsTaskTest",
+            "MockTaskLauncher",
+        ]
+)
 class ProcessRecordsTaskTest {
-    @Inject lateinit var taskRunner: TaskRunner
     @Inject lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
+    @Inject lateinit var launcher: MockTaskLauncher
 
     class MockBatch(
         override val state: Batch.State,
@@ -82,7 +88,6 @@ class ProcessRecordsTaskTest {
         val byteSize = 999L
         val recordCount = 1024L
 
-        val launcher = MockTaskLauncher(taskRunner)
         val mockFile =
             MockTempFileProvider()
                 .createTempFile(directory = Path.of("tmp/"), prefix = "test", suffix = ".json")

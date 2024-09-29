@@ -9,7 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface TeardownTask : Task
+interface TeardownTask : SyncTask
 
 /**
  * Wraps @[DestinationWriter.teardown] and stops the task launcher.

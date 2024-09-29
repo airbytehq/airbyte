@@ -9,7 +9,7 @@ import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface ProcessBatchTask : Task
+interface ProcessBatchTask : StreamTask
 
 /** Wraps @[StreamLoader.processBatch] and handles the resulting batch. */
 class DefaultProcessBatchTask(
