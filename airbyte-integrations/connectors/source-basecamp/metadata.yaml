@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0abc340d-772c-4fa1-8d1d-ebf3be72ab51
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-basecamp
   githubIssueLabel: source-basecamp
   icon: icon.svg
