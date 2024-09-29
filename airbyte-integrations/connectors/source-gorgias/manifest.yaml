@@ -53,7 +53,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -107,8 +107,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_datetime
@@ -117,7 +117,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -173,8 +173,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_datetime
@@ -183,7 +183,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -237,8 +237,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -247,7 +247,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -301,8 +301,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_datetime
@@ -311,7 +311,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -365,8 +365,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -375,7 +375,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -429,8 +429,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -439,7 +439,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -493,8 +493,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -503,7 +503,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -557,8 +557,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -567,7 +567,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -621,8 +621,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -631,7 +631,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -685,8 +685,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -695,7 +695,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -749,8 +749,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -759,7 +759,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -813,8 +813,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -823,7 +823,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -877,8 +877,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -887,7 +887,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -941,8 +941,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
@@ -951,7 +951,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1005,8 +1005,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 50
-            cursor_value: "{{ response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
-            stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
+            cursor_value: '{{ response.get("meta", {}).get("next_cursor", {}) }}'
+            stop_condition: '{{ not response.get("meta", {}).get("next_cursor", {}) }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1023,7 +1023,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1038,8 +1038,8 @@ definitions:
     url_base: https://{{ config['domain_name'] }}.gorgias.com/api/
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
-      username: "{{ config[\"username\"] }}"
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
 
 streams:
   - $ref: "#/definitions/streams/account"
