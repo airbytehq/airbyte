@@ -6,7 +6,7 @@ package io.airbyte.cdk.task
 
 import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.data.IntegerValue
 import io.airbyte.cdk.file.MockTempFileProvider
 import io.airbyte.cdk.message.Batch
@@ -15,6 +15,7 @@ import io.airbyte.cdk.message.Deserializer
 import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.DestinationRecord
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.state.MockSyncManager
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -30,12 +31,15 @@ import org.junit.jupiter.api.Test
     environments =
         [
             "ProcessRecordsTaskTest",
+            "MockDestinationCatalog",
+            "MockSyncManager",
             "MockTaskLauncher",
         ]
 )
 class ProcessRecordsTaskTest {
     @Inject lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
     @Inject lateinit var launcher: MockTaskLauncher
+    @Inject lateinit var syncManager: MockSyncManager
 
     class MockBatch(
         override val state: Batch.State,
@@ -100,11 +104,12 @@ class ProcessRecordsTaskTest {
         val task =
             processRecordsTaskFactory.make(
                 taskLauncher = launcher,
-                streamLoader = MockStreamLoader(),
+                stream = stream1,
                 fileEnvelope = BatchEnvelope(file, Range.closed(0, 1024))
             )
         mockFile.linesToRead = (0 until recordCount).map { "$it" }.toMutableList()
 
+        syncManager.mockGetOrAwaitStreamLoader(MockStreamLoader())
         task.execute()
 
         Assertions.assertEquals(1, launcher.batchEnvelopes.size)

@@ -6,6 +6,7 @@ package io.airbyte.cdk.command
 
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 /**
@@ -15,6 +16,14 @@ import jakarta.inject.Singleton
 data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()) {
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
         streams.associateBy { it.descriptor }
+
+    init {
+        if (streams.isEmpty()) {
+            throw IllegalArgumentException(
+                "Catalog must have at least one stream: check that files are in the correct location."
+            )
+        }
+    }
 
     fun getStream(name: String, namespace: String?): DestinationStream {
         val descriptor = DestinationStream.Descriptor(namespace = namespace, name = name)
@@ -36,6 +45,7 @@ class DefaultDestinationCatalogFactory(
     private val streamFactory: DestinationStreamFactory
 ) {
     @Singleton
+    @Secondary
     fun make(): DestinationCatalog {
         return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
     }

@@ -6,7 +6,7 @@ package io.airbyte.cdk.task
 
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.data.NullValue
 import io.airbyte.cdk.file.MockTempFileProvider
 import io.airbyte.cdk.message.DestinationRecord
@@ -90,7 +90,7 @@ class SpillToDiskTaskTest {
     @Test
     fun testSpillToDiskTask() = runTest {
         val mockTaskLauncher = MockTaskLauncher(taskRunner)
-        spillToDiskTaskFactory.make(mockTaskLauncher, stream1.descriptor).execute()
+        spillToDiskTaskFactory.make(mockTaskLauncher, stream1).execute()
         Assertions.assertEquals(2, mockTaskLauncher.spilledFiles.size)
         Assertions.assertEquals(1024, mockTaskLauncher.spilledFiles[0].batch.totalSizeBytes)
         Assertions.assertEquals(512, mockTaskLauncher.spilledFiles[1].batch.totalSizeBytes)
