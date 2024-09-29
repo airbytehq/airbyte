@@ -51,8 +51,8 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-24 | Initial release by [@craigbloodworth](https://github.com/craigbloodworth) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-24 | | Initial release by [@craigbloodworth](https://github.com/craigbloodworth) via Connector Builder |
 
 </details>

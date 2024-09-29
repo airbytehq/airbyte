@@ -28,8 +28,8 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-21 |[45839](https://github.com/airbytehq/airbyte/pull/45839)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.0.1 | 2024-09-21 | [45839](https://github.com/airbytehq/airbyte/pull/45839) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>
