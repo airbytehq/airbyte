@@ -176,7 +176,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -296,7 +296,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -755,7 +755,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1044,7 +1044,7 @@ definitions:
         datetime_format: "%s"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -1059,8 +1059,8 @@ definitions:
     url_base: https://{{ config['domain_name'] }}.testrail.io/
     authenticator:
       type: BasicHttpAuthenticator
-      password: "{{ config[\"password\"] }}"
-      username: "{{ config[\"username\"] }}"
+      password: '{{ config["password"] }}'
+      username: '{{ config["username"] }}'
 
 streams:
   - $ref: "#/definitions/streams/projects"
