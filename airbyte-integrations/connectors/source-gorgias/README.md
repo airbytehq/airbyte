@@ -5,7 +5,7 @@ This directory contains the manifest-only connector for [`source-gorgias`](https
 Visit `https://developers.gorgias.com/reference/introduction` for API documentation
 
 ## Authentication setup
-`Gorgias` uses Http basic authentication, Visit `https://testerstoreusedbytester.gorgias.com/app/settings/api` for getting your username and password. Visit `https://developers.gorgias.com/reference/authentication` for more information.
+`Gorgias` uses Http basic authentication, Visit `https://YOUR_DOMAIN.gorgias.com/app/settings/api` for getting your username and password. Visit `https://developers.gorgias.com/reference/authentication` for more information.
 
 ## Usage
 There are multiple ways to use this connector:
