@@ -228,6 +228,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:--------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.4.2 | 2024-09-28 | [44748](https://github.com/airbytehq/airbyte/pull/44748) | Update dependencies |
 | 4.4.1 | 2024-08-17 | [43739](https://github.com/airbytehq/airbyte/pull/43739) | Update dependencies |
 | 4.4.0 | 2024-07-17 | [42052](https://github.com/airbytehq/airbyte/pull/42052) | Add waiting between requests logic to avoid failed report requests |
 | 4.3.11 | 2024-07-13 | [41873](https://github.com/airbytehq/airbyte/pull/41873) | Update dependencies |
