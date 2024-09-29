@@ -155,19 +155,18 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final List<String> additionalParameters = new ArrayList<>();
 
     StringBuilder jdbcUrl = null;
-    if(mssqlConfig.has(JdbcUtils.PORT_KEY)){
+    if (mssqlConfig.has(JdbcUtils.PORT_KEY)) {
 
-       jdbcUrl = new StringBuilder(
-        String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
-            mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
-            mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
-    }
-    else{
       jdbcUrl = new StringBuilder(
-        String.format("jdbc:sqlserver://%s;databaseName=%s;",
-            mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
-            mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+          String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
+              mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
+              mssqlConfig.get(JdbcUtils.PORT_KEY).asText(),
+              mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
+    } else {
+      jdbcUrl = new StringBuilder(
+          String.format("jdbc:sqlserver://%s;databaseName=%s;",
+              mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
+              mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
     }
 
