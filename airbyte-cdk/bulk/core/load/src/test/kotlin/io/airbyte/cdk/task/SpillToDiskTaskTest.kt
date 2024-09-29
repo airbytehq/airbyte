@@ -14,7 +14,6 @@ import io.airbyte.cdk.message.DestinationRecordWrapped
 import io.airbyte.cdk.message.MessageQueueReader
 import io.airbyte.cdk.message.StreamCompleteWrapped
 import io.airbyte.cdk.message.StreamRecordWrapped
-import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -28,20 +27,18 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = ["SpillToDiskTaskTest", "MockTempFileProvider"])
+@MicronautTest(
+    environments =
+        [
+            "SpillToDiskTaskTest",
+            "MockTempFileProvider",
+            "MockTaskLauncher",
+        ]
+)
 class SpillToDiskTaskTest {
     @Inject lateinit var taskRunner: TaskRunner
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject lateinit var mockTempFileProvider: MockTempFileProvider
-
-    @Factory
-    @Requires(env = ["SpillToDiskTaskTest"])
-    class MockDestinationTaskLauncherFactory {
-        @Singleton
-        fun mockDestinationTaskLauncher(taskRunner: TaskRunner): DestinationTaskLauncher {
-            return MockTaskLauncher(taskRunner)
-        }
-    }
 
     @Singleton
     @Primary

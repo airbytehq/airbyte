@@ -38,10 +38,16 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(rebuildContext = true, environments = ["DestinationTaskLauncherTest"])
+@MicronautTest(
+    rebuildContext = true,
+    environments =
+        [
+            "DestinationTaskLauncherTest",
+        ]
+)
 class DestinationTaskLauncherTest {
     @Inject lateinit var taskRunner: TaskRunner
-    @Inject lateinit var taskLauncherFactory: DestinationTaskLauncherFactory
+    @Inject lateinit var taskLauncher: DestinationTaskLauncher
     @Inject lateinit var streamsManager: StreamsManager
     @Inject lateinit var checkpointManager: MockCheckpointManager
 
@@ -239,31 +245,28 @@ class DestinationTaskLauncherTest {
 
     @Test
     fun testStart() = runTest {
-        val launcher = taskLauncherFactory.get()
         launch { taskRunner.run() }
-        launcher.start()
+        taskLauncher.start()
         mockSetupTaskFactory.hasRun.receive()
         mockSpillToDiskTaskFactory.streamHasRun.values.forEach { it.receive() }
-        launcher.stop()
+        taskLauncher.stop()
     }
 
     @Test
     fun testHandleSetupComplete() = runTest {
-        val launcher = taskLauncherFactory.get()
         launch { taskRunner.run() }
-        launcher.handleSetupComplete()
+        taskLauncher.handleSetupComplete()
         mockOpenStreamTaskFactory.streamHasRun.values.forEach { it.receive() }
-        launcher.stop()
+        taskLauncher.stop()
     }
 
     @Test
     fun testHandleJoinStreamOpenSpilledFileComplete() = runTest {
-        val launcher = taskLauncherFactory.get()
         launch { taskRunner.run() }
 
         // This will block until the stream is done opening.
         launch {
-            launcher.handleNewSpilledFile(
+            taskLauncher.handleNewSpilledFile(
                 stream1.descriptor,
                 BatchEnvelope(
                     SpilledRawMessagesLocalFile(DefaultLocalFile(Path("not/a/real/file")), 100L)
@@ -279,27 +282,26 @@ class DestinationTaskLauncherTest {
 
         // This should unblock the processRecords task.
         val destination = MockDestinationWrite()
-        launcher.handleStreamOpen(destination.getStreamLoader(stream1))
+        taskLauncher.handleStreamOpen(destination.getStreamLoader(stream1))
         processRecordsTaskFactory.hasRun.receive()
         Assertions.assertTrue(true)
 
-        launcher.stop()
+        taskLauncher.stop()
     }
 
     @Test
     fun testHandleNewBatch() = runTest {
-        val launcher = taskLauncherFactory.get()
         launch { taskRunner.run() }
 
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
 
         val destination = MockDestinationWrite()
         val streamLoader = destination.getStreamLoader(stream1)
-        launcher.handleStreamOpen(streamLoader)
+        taskLauncher.handleStreamOpen(streamLoader)
 
         // Verify incomplete batch triggers process batch
         val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.PERSISTED), range)
-        launcher.handleNewBatch(streamLoader, incompleteBatch)
+        taskLauncher.handleNewBatch(streamLoader, incompleteBatch)
         Assertions.assertTrue(
             streamsManager.getManager(stream1.descriptor).areRecordsPersistedUntil(100L)
         )
@@ -308,27 +310,26 @@ class DestinationTaskLauncherTest {
 
         // Verify complete batch w/o batch processing complete does nothing
         val completeBatch = BatchEnvelope(MockBatch(Batch.State.COMPLETE))
-        launcher.handleNewBatch(streamLoader, completeBatch)
+        taskLauncher.handleNewBatch(streamLoader, completeBatch)
         delay(1000)
         Assertions.assertTrue(closeStreamTaskFactory.hasRun.tryReceive().isFailure)
         (streamsManager.getManager(stream1.descriptor) as MockStreamManager)
             .mockBatchProcessingComplete(true)
 
         // Verify complete batch w/ batch processing complete triggers close stream
-        launcher.handleNewBatch(streamLoader, completeBatch)
+        taskLauncher.handleNewBatch(streamLoader, completeBatch)
         closeStreamTaskFactory.hasRun.receive()
         Assertions.assertTrue(true)
 
-        launcher.stop()
+        taskLauncher.stop()
     }
 
     @Test
     fun testHandleStreamClosed() = runTest {
-        val launcher = taskLauncherFactory.get()
         launch { taskRunner.run() }
 
         // This should not run teardown until all streams are closed.
-        launch { launcher.handleStreamClosed(stream1) }
+        launch { taskLauncher.handleStreamClosed(stream1) }
         delay(1000)
         val hasRun = teardownTaskFactory.hasRun.tryReceive()
         Assertions.assertTrue(hasRun.isFailure)
@@ -342,12 +343,12 @@ class DestinationTaskLauncherTest {
         Assertions.assertTrue(true)
 
         // This should do nothing, since the teardown task has already run.
-        launch { launcher.handleStreamClosed(stream2) }
+        launch { taskLauncher.handleStreamClosed(stream2) }
         delay(1000)
         val hasRun3 = teardownTaskFactory.hasRun.tryReceive()
         Assertions.assertTrue(hasRun3.isFailure)
         checkpointManager.hasBeenFlushed.receive() // Stream2 close triggered flush
 
-        launcher.stop()
+        taskLauncher.stop()
     }
 }

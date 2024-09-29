@@ -15,9 +15,6 @@ import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.state.StreamsManager
 import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.DefaultImplementation
-import io.micronaut.context.annotation.Factory
-import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -67,6 +64,7 @@ interface DestinationTaskLauncher : TaskLauncher {
  *
  * // TODO: Capture failures, retry, and call into close(failure=true) if can't recover.
  */
+@Singleton
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
@@ -182,39 +180,5 @@ class DefaultDestinationTaskLauncher(
     /** Called exactly once when all streams are closed. */
     override suspend fun handleTeardownComplete() {
         stop()
-    }
-}
-
-@Factory
-@DefaultImplementation(DefaultDestinationTaskLauncher::class)
-class DestinationTaskLauncherFactory(
-    private val catalog: DestinationCatalog,
-    private val streamsManager: StreamsManager,
-    private val taskRunner: TaskRunner,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
-    private val setupTaskFactory: SetupTaskFactory,
-    private val openStreamTaskFactory: OpenStreamTaskFactory,
-    private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
-    private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
-    private val processBatchTaskFactory: ProcessBatchTaskFactory,
-    private val closeStreamTaskFactory: CloseStreamTaskFactory,
-    private val teardownTaskFactory: TeardownTaskFactory
-) : Provider<DestinationTaskLauncher> {
-    @Singleton
-    override fun get(): DestinationTaskLauncher {
-        return DefaultDestinationTaskLauncher(
-            catalog,
-            streamsManager,
-            taskRunner,
-            checkpointManager,
-            setupTaskFactory,
-            openStreamTaskFactory,
-            spillToDiskTaskFactory,
-            processRecordsTaskFactory,
-            processBatchTaskFactory,
-            closeStreamTaskFactory,
-            teardownTaskFactory,
-        )
     }
 }
