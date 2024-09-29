@@ -89,7 +89,7 @@ jobs:
           subcommand: |
             connectors --modified bump-version \
               ${{ github.event.inputs.type }} \
-              ${{ github.event.inputs.changelog }} \
+              "${{ github.event.inputs.changelog }}" \
               --pr-number ${{ github.event.inputs.pr }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
