@@ -1,11 +1,12 @@
 # Circleci
-This directory contains the manifest-only connector for `source-circleci`.
+This directory contains the manifest-only connector for [`source-circleci`](https://app.circleci.com/).
 
-Website: https://app.circleci.com/
-API Docs: 
-- v1-https://circleci.com/docs/api/v1/index.html
-- v2-https://circleci.com/docs/api/v2/index.html
-API page: https://app.circleci.com/settings/user/tokens
+## Documentation reference:
+- Visit `https://circleci.com/docs/api/v1/index.html` for V1 API documentation
+- Visit `https://circleci.com/docs/api/v2/index.html` for V2 API documentation
+
+## Authentication setup
+`CircleCI` uses api key authentication, Visit `https://app.circleci.com/settings/user/tokens` for getting your api keys.
 
 ## Usage
 There are multiple ways to use this connector:
