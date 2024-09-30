@@ -156,6 +156,7 @@ class DefaultStreamManager(
     /** True if all records in `[0, index)` have reached the given state. */
     private fun isProcessingCompleteForState(index: Long, state: Batch.State): Boolean {
         val completeRanges = rangesState[state]!!
+
         return completeRanges.encloses(Range.closedOpen(0L, index))
     }
 

@@ -53,6 +53,13 @@ interface Batch {
         COMPLETE
     }
 
+    fun isPersisted(): Boolean =
+        when (state) {
+            State.PERSISTED,
+            State.COMPLETE -> true
+            else -> false
+        }
+
     val state: State
 }
 
