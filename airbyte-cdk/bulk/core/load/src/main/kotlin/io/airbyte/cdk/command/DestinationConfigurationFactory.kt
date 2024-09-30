@@ -7,13 +7,13 @@ package io.airbyte.cdk.command
 import io.airbyte.cdk.ConfigErrorException
 
 interface DestinationConfigurationFactory<
-    I : ConfigurationJsonObjectBase, O : DestinationConfiguration> {
+    I : ConfigurationSpecification, O : DestinationConfiguration> {
     fun makeWithoutExceptionHandling(pojo: I): O
 
     /** Wraps [makeWithoutExceptionHandling] exceptions in [ConfigErrorException]. */
-    fun make(pojo: I): O =
+    fun make(spec: I): O =
         try {
-            makeWithoutExceptionHandling(pojo)
+            makeWithoutExceptionHandling(spec)
         } catch (e: Exception) {
             // Wrap NPEs (mostly) in ConfigErrorException.
             throw ConfigErrorException("Failed to build ConnectorConfiguration.", e)

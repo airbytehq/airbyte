@@ -5,7 +5,7 @@
 package io.airbyte.cdk.test.write
 
 import io.airbyte.cdk.command.Append
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.message.DestinationRecord
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
 abstract class BasicFunctionalityIntegrationTest(
-    val config: ConfigurationJsonObjectBase,
+    val config: ConfigurationSpecification,
     dataDumper: DestinationDataDumper,
     destinationCleaner: DestinationCleaner,
     recordMangler: ExpectedRecordMapper = NoopExpectedRecordMapper,

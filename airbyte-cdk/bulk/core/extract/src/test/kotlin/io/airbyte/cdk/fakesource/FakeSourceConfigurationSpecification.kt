@@ -18,15 +18,15 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.ConfigurationProperties
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-/** [ConfigurationJsonObjectBase] implementation for a fake source. */
+/** [ConfigurationSpecification] implementation for a fake source. */
 @JsonSchemaTitle("Test Source Spec")
 @JsonPropertyOrder(
     value =
@@ -42,7 +42,7 @@ import jakarta.inject.Singleton
 @Singleton
 @Secondary
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
-class FakeSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
+class FakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -72,7 +72,7 @@ class FakeSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
-    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject()
+    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
     @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
 
