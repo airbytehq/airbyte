@@ -5,6 +5,7 @@
 package io.airbyte.cdk.task
 
 import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.write.DestinationWriter
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
@@ -18,12 +19,16 @@ interface OpenStreamTask : StreamTask
  * TODO: There's no reason to wait on initialization to start spilling to disk.
  */
 class DefaultOpenStreamTask(
-    private val streamLoader: StreamLoader,
+    private val destinationWriter: DestinationWriter,
+    private val syncManager: SyncManager,
+    private val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher
 ) : OpenStreamTask {
     override suspend fun execute() {
+        val streamLoader = destinationWriter.createStreamLoader(stream)
         streamLoader.start()
-        taskLauncher.handleStreamOpen(streamLoader)
+        syncManager.registerStartedStreamLoader(streamLoader)
+        taskLauncher.handleStreamStarted(stream)
     }
 }
 
@@ -34,12 +39,13 @@ interface OpenStreamTaskFactory {
 @Singleton
 @Secondary
 class DefaultOpenStreamTaskFactory(
-    private val destination: DestinationWriter,
+    private val destinationWriter: DestinationWriter,
+    private val syncManager: SyncManager
 ) : OpenStreamTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream
     ): OpenStreamTask {
-        return DefaultOpenStreamTask(destination.getStreamLoader(stream), taskLauncher)
+        return DefaultOpenStreamTask(destinationWriter, syncManager, stream, taskLauncher)
     }
 }

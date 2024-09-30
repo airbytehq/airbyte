@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.task
 
+import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.BatchEnvelope
+import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -13,33 +15,36 @@ interface ProcessBatchTask : StreamTask
 
 /** Wraps @[StreamLoader.processBatch] and handles the resulting batch. */
 class DefaultProcessBatchTask(
+    private val syncManager: SyncManager,
     private val batchEnvelope: BatchEnvelope<*>,
-    private val streamLoader: StreamLoader,
+    private val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher
 ) : ProcessBatchTask {
     override suspend fun execute() {
+        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
         val nextBatch = streamLoader.processBatch(batchEnvelope.batch)
         val nextWrapped = batchEnvelope.withBatch(nextBatch)
-        taskLauncher.handleNewBatch(streamLoader, nextWrapped)
+        taskLauncher.handleNewBatch(stream, nextWrapped)
     }
 }
 
 interface ProcessBatchTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        streamLoader: StreamLoader,
+        stream: DestinationStream,
         batchEnvelope: BatchEnvelope<*>
     ): ProcessBatchTask
 }
 
 @Singleton
 @Secondary
-class DefaultProcessBatchTaskFactory : ProcessBatchTaskFactory {
+class DefaultProcessBatchTaskFactory(private val syncManager: SyncManager) :
+    ProcessBatchTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        streamLoader: StreamLoader,
+        stream: DestinationStream,
         batchEnvelope: BatchEnvelope<*>
     ): ProcessBatchTask {
-        return DefaultProcessBatchTask(batchEnvelope, streamLoader, taskLauncher)
+        return DefaultProcessBatchTask(syncManager, batchEnvelope, stream, taskLauncher)
     }
 }
