@@ -16,11 +16,7 @@ from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
-    AbstractAvailabilityStrategy,
-    StreamAvailability,
-    StreamAvailable,
-)
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
