@@ -45,7 +45,7 @@ abstract class StreamsCheckpointManager<T, U>() :
     private val log = KotlinLogging.logger {}
 
     abstract val catalog: DestinationCatalog
-    abstract val streamsManager: StreamsManager
+    abstract val syncManager: SyncManager
     abstract val outputFactory: MessageConverter<T, U>
     abstract val outputConsumer: Consumer<U>
 
@@ -141,7 +141,7 @@ abstract class StreamsCheckpointManager<T, U>() :
             val head = globalCheckpoints.peek()
             val allStreamsPersisted =
                 head.streamIndexes.all { (stream, index) ->
-                    streamsManager.getManager(stream).areRecordsPersistedUntil(index)
+                    syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
                 }
             if (allStreamsPersisted) {
                 globalCheckpoints.poll()
@@ -155,7 +155,7 @@ abstract class StreamsCheckpointManager<T, U>() :
 
     private fun flushStreamCheckpoints() {
         for (stream in catalog.streams) {
-            val manager = streamsManager.getManager(stream.descriptor)
+            val manager = syncManager.getStreamManager(stream.descriptor)
             val streamCheckpoints = streamCheckpoints[stream.descriptor] ?: return
             for (index in streamCheckpoints.keys) {
                 if (manager.areRecordsPersistedUntil(index)) {
@@ -177,7 +177,7 @@ abstract class StreamsCheckpointManager<T, U>() :
 @Secondary
 class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,
-    override val streamsManager: StreamsManager,
+    override val syncManager: SyncManager,
     override val outputFactory: MessageConverter<CheckpointMessage, AirbyteMessage>,
     override val outputConsumer: Consumer<AirbyteMessage>
 ) : StreamsCheckpointManager<CheckpointMessage, AirbyteMessage>()
