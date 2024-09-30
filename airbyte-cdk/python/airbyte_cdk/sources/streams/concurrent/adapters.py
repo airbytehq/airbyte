@@ -340,6 +340,7 @@ class CursorPartitionGenerator(PartitionGenerator):
         stream: Stream,
         message_repository: MessageRepository,
         cursor: Cursor,
+        cursor_field: Optional[List[str]],
     ):
         """
         Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
@@ -353,7 +354,7 @@ class CursorPartitionGenerator(PartitionGenerator):
         self.message_repository = message_repository
         self._sync_mode = SyncMode.full_refresh
         self._cursor = cursor
-        self._cursor_field = self._cursor.cursor_field
+        self._cursor_field = cursor_field
         self._state = self._cursor.state
 
     def generate(self) -> Iterable[Partition]:

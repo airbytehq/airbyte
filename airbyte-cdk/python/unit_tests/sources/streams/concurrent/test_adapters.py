@@ -216,10 +216,10 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
         assert (
-            StreamFacade(
-                self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
-            ).supports_incremental
-            == self._legacy_stream.supports_incremental
+                StreamFacade(
+                    self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+                ).supports_incremental
+                == self._legacy_stream.supports_incremental
         )
 
     def test_given_cursor_is_not_noop_when_supports_incremental_then_return_true(self):
@@ -385,20 +385,15 @@ def test_cursor_partition_generator():
     stream = Mock()
     cursor = Mock()
     message_repository = Mock()
+    cursor_field = Mock()
 
-    state_slices = [{"slice": 1}, {"slice": 2}]
-    cursor.generate_slices.return_value = state_slices
-    cursor.state = {"slices": state_slices}
-    cursor.cursor_field = CursorField("cursor_field")
+    expected_slices = [{"start": 1, "end": 2}]
+    cursor.generate_slices.return_value = [(1, 2)]
 
-    partition_generator = CursorPartitionGenerator(stream, message_repository, cursor)
+    partition_generator = CursorPartitionGenerator(stream, message_repository, cursor, cursor_field)
 
     partitions = list(partition_generator.generate())
+    generated_slices = [partition.to_slice() for partition in partitions]
 
-    generated_slices = []
-
-    for partition in partitions:
-        assert isinstance(partition, StreamPartition)
-        generated_slices.append(partition.to_slice())
-
-    assert generated_slices == state_slices
+    assert all(isinstance(partition, StreamPartition) for partition in partitions), "Not all partitions are instances of StreamPartition"
+    assert generated_slices == expected_slices, f"Expected {expected_slices}, but got {generated_slices}"
