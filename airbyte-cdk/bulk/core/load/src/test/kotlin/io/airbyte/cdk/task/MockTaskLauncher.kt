@@ -8,7 +8,13 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.write.StreamLoader
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Singleton
 
+@Singleton
+@Primary
+@Requires(env = ["MockTaskLauncher"])
 class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLauncher {
     val spilledFiles = mutableListOf<BatchEnvelope<SpilledRawMessagesLocalFile>>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
