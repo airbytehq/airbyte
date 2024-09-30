@@ -365,10 +365,12 @@ class CursorPartitionGenerator(PartitionGenerator):
 
         :return: An iterable of StreamPartition objects.
         """
-        for state_slice in self._cursor.generate_slices():
+        for slice_start, slice_end in self._cursor.generate_slices():
+            cursor_slice = {"start": slice_start, "end": slice_end}
+
             yield StreamPartition(
                 self._stream,
-                copy.deepcopy(state_slice),
+                copy.deepcopy(cursor_slice),
                 self.message_repository,
                 self._sync_mode,
                 self._cursor_field,
