@@ -123,6 +123,18 @@
           "subdomain": {
             "type": "string",
             "path_in_connector_config": ["credentials", "subdomain"]
+          },
+          "access_token_url": {
+            "type": "string",
+            "const": "https://auth.monday.com/oauth2/token"
+          },
+          "scope": {
+            "type": "string",
+            "const": "me:read boards:read workspaces:read users:read account:read updates:read assets:read tags:read teams:read"
+          },
+          "consent_url": {
+            "type": "string",
+            "const": "https://auth.monday.com/oauth2/authorize?client_id={client_id}&redirect_uri={urlEncode(redirect_uri})&scope={urlEncode(scopes)}&state={state}&subdomain={subdomain}"
           }
         }
       }
