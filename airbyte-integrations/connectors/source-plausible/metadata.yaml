@@ -3,7 +3,7 @@ data:
     oss:
       enabled: true
     cloud:
-      enabled: false
+      enabled: true
   remoteRegistries:
     pypi:
       enabled: false
