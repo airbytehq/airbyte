@@ -10,7 +10,7 @@ import java.util.function.Function
 import org.jooq.Field
 import org.jooq.Record
 
-abstract class JdbcDestinationAcceptanceTest : DestinationAcceptanceTest() {
+abstract class JdbcDestinationAcceptanceTest : RecordBasedWithNormalizationAndDbtDestinationAcceptanceTest() {
     protected val mapper: ObjectMapper = ObjectMapper()
 
     protected fun getJsonFromRecord(record: Record): JsonNode {

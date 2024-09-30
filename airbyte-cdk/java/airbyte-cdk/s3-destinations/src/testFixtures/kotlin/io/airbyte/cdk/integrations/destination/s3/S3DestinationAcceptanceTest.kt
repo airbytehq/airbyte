@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer
-import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
+import io.airbyte.cdk.integrations.standardtest.destination.AbstractDestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
@@ -54,7 +54,7 @@ protected constructor(
     expectSchemalessObjectsCoercedToStrings: Boolean = false,
     expectUnionsPromotedToDisjointRecords: Boolean = false
 ) :
-    DestinationAcceptanceTest(
+    RecordBasedWithNormalizationAndDbtDestinationAcceptanceTest(
         verifyIndividualStateAndCounts = true,
         useV2Fields = true,
         supportsChangeCapture = supportsChangeCapture,
