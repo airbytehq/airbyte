@@ -3,9 +3,9 @@
 #
 
 
+import json
 from datetime import date
 
-import json
 import pendulum
 import pytest
 from airbyte_cdk.utils import AirbyteTracedException

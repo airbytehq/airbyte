@@ -13,10 +13,9 @@ from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v17.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
-from proto.marshal.collections import Repeated, RepeatedComposite
-
 from google.protobuf import json_format
 from google.protobuf.message import Message
+from proto.marshal.collections import Repeated, RepeatedComposite
 
 from .utils import logger
 
@@ -174,7 +173,7 @@ class GoogleAds:
             # that's apparently the only way to get the actual protobuf message that can be serialzied
             # into json.
             # type: ignore[union-attr]
-            return json_format.MessageToJson(message._pb, indent=0).replace('\n', '')
+            return json_format.MessageToJson(message._pb, indent=0).replace("\n", "")
         except AttributeError:
             # This is a fallback for the cases when '_pb' attribute is not available.
             return str(message)
