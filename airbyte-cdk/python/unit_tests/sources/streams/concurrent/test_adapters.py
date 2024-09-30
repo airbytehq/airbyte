@@ -216,10 +216,10 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_given_cursor_is_noop_when_supports_incremental_then_return_legacy_stream_response(self):
         assert (
-                StreamFacade(
-                    self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
-                ).supports_incremental
-                == self._legacy_stream.supports_incremental
+            StreamFacade(
+                self._abstract_stream, self._legacy_stream, _ANY_CURSOR, Mock(spec=SliceLogger), Mock(spec=logging.Logger)
+            ).supports_incremental
+            == self._legacy_stream.supports_incremental
         )
 
     def test_given_cursor_is_not_noop_when_supports_incremental_then_return_true(self):
