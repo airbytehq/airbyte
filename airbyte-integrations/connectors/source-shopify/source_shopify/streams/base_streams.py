@@ -644,7 +644,7 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         self.job_manager: ShopifyBulkManager = ShopifyBulkManager(
             http_client=self.bulk_http_client,
             base_url=f"{self.url_base}{self.path()}",
-            query=self.bulk_query(config),
+            query=self.bulk_query(config, self.parent_stream_name, self.parent_stream_cursor),
             job_termination_threshold=float(config.get("job_termination_threshold", 3600)),
             # overide the default job slice size, if provided (it's auto-adjusted, later on)
             job_size=config.get("bulk_window_in_days", 30.0),
@@ -669,6 +669,20 @@ class IncrementalShopifyGraphQlBulkStream(IncrementalShopifyStream):
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
+
+    @property
+    def parent_stream_name(self) -> Optional[str]:
+        """
+        Returns the parent stream name, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream.name if self.parent_stream_class else None
+
+    @property
+    def parent_stream_cursor(self) -> Optional[str]:
+        """
+        Returns the parent stream cursor, if the substream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream.cursor_field if self.parent_stream_class else None
 
     @property
     @abstractmethod

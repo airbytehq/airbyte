@@ -76,6 +76,7 @@ class Customers(IncrementalShopifyStream):
 
 
 class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
+    parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
 
