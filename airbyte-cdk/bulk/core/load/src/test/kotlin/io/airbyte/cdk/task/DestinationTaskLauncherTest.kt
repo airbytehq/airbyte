@@ -318,11 +318,17 @@ class DestinationTaskLauncherTest {
         streamManager.markEndOfStream()
 
         // Verify incomplete batch triggers process batch
-        val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.PERSISTED), range)
+        val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range)
         taskLauncher.handleNewBatch(stream1, incompleteBatch)
-        Assertions.assertTrue(streamManager.areRecordsPersistedUntil(100L))
+        Assertions.assertFalse(streamManager.areRecordsPersistedUntil(100L))
         val batchReceived = processBatchTaskFactory.hasRun.receive()
         Assertions.assertEquals(incompleteBatch, batchReceived)
+        delay(500)
+        Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.tryReceive().isFailure)
+
+        val persistedBatch = BatchEnvelope(MockBatch(Batch.State.PERSISTED), range)
+        taskLauncher.handleNewBatch(stream1, persistedBatch)
+        Assertions.assertTrue(streamManager.areRecordsPersistedUntil(100L))
         Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.receive())
 
         // Verify complete batch w/o batch processing complete does nothing

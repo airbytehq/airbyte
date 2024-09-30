@@ -68,6 +68,7 @@ class StreamManagerTest {
         Assertions.assertTrue(channel.tryReceive().isFailure)
         Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
         manager.markEndOfStream()
+
         manager.markSucceeded()
         Assertions.assertTrue(channel.receive())
 
