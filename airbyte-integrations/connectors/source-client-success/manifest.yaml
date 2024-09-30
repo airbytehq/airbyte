@@ -1,0 +1,1488 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: Connector for the working Client Success API endpoints
+
+check:
+  type: CheckStream
+  stream_names:
+    - Clients
+
+definitions:
+  streams:
+    Clients:
+      type: DeclarativeStream
+      name: Clients
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/client/search
+          http_method: GET
+          request_parameters:
+            sortBy: modifiedTime
+            sortDirection: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedAfter
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Clients"
+    Contacts:
+      type: DeclarativeStream
+      name: Contacts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/contact/search
+          http_method: GET
+          request_parameters:
+            sortBy: modifiedTime
+            sortDirection: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedAfter
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Contacts"
+    Contracts:
+      type: DeclarativeStream
+      name: Contracts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/contract/search
+          http_method: GET
+          request_parameters:
+            sortBy: modifiedTime
+            sortDirection: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedAfter
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Contracts"
+    Products:
+      type: DeclarativeStream
+      name: Products
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/product/search
+          http_method: GET
+          request_parameters:
+            sortBy: modifiedTime
+            sortDirection: desc
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 0
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modifiedTime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config[\"start_date\"] }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: modifiedAfter
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Products"
+    Custom Fields:
+      type: DeclarativeStream
+      name: Custom Fields
+      primary_key:
+        - fieldId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/customfield/all/{{ stream_partition.resource_type }}
+          http_method: GET
+          request_parameters: {}
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values:
+            - CLIENT
+            - CONTACT
+            - EMPLOYEE
+            - CONTRACT_PRODUCT
+            - OPPORTUNITY
+            - SUBSCRIPTION
+            - TICKET
+            - FEEDBACK
+            - ENGAGEMENT_NOTE
+            - ENGAGEMENT_MEETING
+            - ENGAGEMENT_CALL
+            - ENGAGEMENT_EMAIL
+            - CLIENT_REV_METRICS
+            - CONTRACT
+            - CONTRACT_ITEM
+            - SURVEY_RESPONSE
+            - CLIENT_DISPOSITION_ACTIVITY
+            - ENGAGEMENT_CHAT
+            - GOAL
+            - USAGE
+            - CLIENT_NOTE
+            - PRODUCT_DISPOSITION_ACTIVITY
+          cursor_field: resource_type
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Custom Fields"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.clientsuccess.com/
+    authenticator:
+      type: SessionTokenAuthenticator
+      login_requester:
+        type: HttpRequester
+        url_base: https://api.clientsuccess.com/v1
+        path: auth
+        authenticator:
+          type: NoAuth
+        http_method: POST
+        request_parameters: {}
+        request_headers: {}
+        request_body_data:
+          username: "{{ config['username'] }}"
+          password: "{{ config['password'] }}"
+      session_token_path:
+        - access_token
+      expiration_duration: PT12H
+      request_authentication:
+        type: ApiKey
+        inject_into:
+          type: RequestOption
+          inject_into: header
+          field_name: Authorization
+
+streams:
+  - $ref: "#/definitions/streams/Clients"
+  - $ref: "#/definitions/streams/Contacts"
+  - $ref: "#/definitions/streams/Contracts"
+  - $ref: "#/definitions/streams/Products"
+  - $ref: "#/definitions/streams/Custom Fields"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - username
+      - password
+      - start_date
+    properties:
+      username:
+        type: string
+        title: Username
+        order: 0
+      password:
+        type: string
+        title: Password
+        airbyte_secret: true
+        order: 1
+      start_date:
+        type: string
+        order: 2
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Clients: true
+    Contacts: true
+    Contracts: true
+    Products: true
+    Custom Fields: true
+  testedStreams:
+    Clients:
+      streamHash: fd3b96ac66a2fd08a24da353a1c81a5e3135f98e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Contacts:
+      streamHash: 6def9995fc2c5be191740d545e5e5670cd59d4c9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Contracts:
+      streamHash: 4c404ad8e79f12bc3f1275e9e5b1384077b50de7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Products:
+      hasRecords: true
+      streamHash: 2404eb232a2ca0860c4cd2f39eca2f096c7b3da0
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Custom Fields:
+      streamHash: 373ad03d8301f6c20d202509feba72a561db26fa
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://clientsuccess.readme.io/
+
+schemas:
+  Clients:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      activeClientSuccessCycleId:
+        type:
+          - number
+          - "null"
+      assignedSalesRep:
+        type:
+          - string
+          - "null"
+      assignedSalesRepAssociation:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          externalSystems:
+            type:
+              - object
+              - "null"
+          firstname:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastname:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          reportTo:
+            type:
+              - number
+              - "null"
+      city:
+        type:
+          - string
+          - "null"
+      clientType:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+      country:
+        type:
+          - string
+          - "null"
+      createdByEmployeeId:
+        type:
+          - number
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      entityType:
+        type:
+          - string
+          - "null"
+      externalSystems:
+        type:
+          - object
+          - "null"
+        properties:
+          BATON:
+            type:
+              - string
+              - "null"
+          HUBSPOT:
+            type:
+              - string
+              - "null"
+          INTERCOM:
+            type:
+              - string
+              - "null"
+          PRODUCT_SIGNALS:
+            type:
+              - string
+              - "null"
+          SALESFORCE:
+            type:
+              - string
+              - "null"
+          SALESFORCE_V2:
+            type:
+              - string
+              - "null"
+          STATUS:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      inceptionDate:
+        type:
+          - string
+          - "null"
+      managedByEmployee:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          externalSystems:
+            type:
+              - object
+              - "null"
+            properties:
+              HUBSPOT:
+                type:
+                  - string
+                  - "null"
+              PIPEDRIVE:
+                type:
+                  - string
+                  - "null"
+              ZOHOCRM:
+                type:
+                  - string
+                  - "null"
+          firstname:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastname:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          reportTo:
+            type:
+              - number
+              - "null"
+      modifiedByEmployeeId:
+        type:
+          - number
+          - "null"
+      modifiedTime:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      regionId:
+        type:
+          - number
+          - "null"
+      salesforceAccountId:
+        type:
+          - string
+          - "null"
+      siteUrl:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      successScore:
+        type:
+          - number
+          - "null"
+      tenantId:
+        type:
+          - number
+          - "null"
+      terminatedDate:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      usageId:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedTime
+  Contacts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      advocate:
+        type:
+          - boolean
+          - "null"
+      champion:
+        type:
+          - boolean
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      custom:
+        type:
+          - object
+          - "null"
+        properties:
+          attended_user_webinar__cs:
+            type:
+              - boolean
+              - "null"
+      email:
+        type:
+          - string
+          - "null"
+      engagementCount:
+        type:
+          - number
+          - "null"
+      engagements:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            engagementCount:
+              type:
+                - number
+                - "null"
+            interactionCount:
+              type:
+                - number
+                - "null"
+            interactionTypeId:
+              type:
+                - number
+                - "null"
+            lastEngagementDate:
+              type:
+                - string
+                - "null"
+            lastInteractionDate:
+              type:
+                - string
+                - "null"
+      entityType:
+        type:
+          - string
+          - "null"
+      executiveSponsor:
+        type:
+          - boolean
+          - "null"
+      externalSystems:
+        type:
+          - object
+          - "null"
+        properties:
+          SALESFORCE_V2:
+            type:
+              - string
+              - "null"
+      firstName:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      keyContact:
+        type:
+          - boolean
+          - "null"
+      lastEngagementDate:
+        type:
+          - string
+          - "null"
+      lastName:
+        type:
+          - string
+          - "null"
+      mobile:
+        type:
+          - string
+          - "null"
+      modifiedTime:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      npsResult:
+        type:
+          - object
+          - "null"
+        properties:
+          lastCampaign:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              uuid:
+                type:
+                  - string
+                  - "null"
+          lastCampaignComment:
+            type:
+              - string
+              - "null"
+          lastCampaignResponseDate:
+            type:
+              - string
+              - "null"
+          lastCampaignResponseId:
+            type:
+              - number
+              - "null"
+          lastCampaignScore:
+            type:
+              - number
+              - "null"
+          lastResentCampaign:
+            type:
+              - object
+              - "null"
+            properties:
+              name:
+                type:
+                  - string
+                  - "null"
+              uuid:
+                type:
+                  - string
+                  - "null"
+          lastResentComment:
+            type:
+              - string
+              - "null"
+          lastResentResponseId:
+            type:
+              - number
+              - "null"
+          lastResentScore:
+            type:
+              - number
+              - "null"
+          lastResentTime:
+            type:
+              - string
+              - "null"
+      phone:
+        type:
+          - string
+          - "null"
+      starred:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      street:
+        type:
+          - string
+          - "null"
+      tenantClient:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          uuid:
+            type:
+              - string
+              - "null"
+      tenantClientId:
+        type:
+          - number
+          - "null"
+      tenantId:
+        type:
+          - number
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+      zip:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedTime
+  Contracts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      acv:
+        type:
+          - number
+          - "null"
+      adjustedBy:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            arr:
+              type:
+                - number
+                - "null"
+            bookingDate:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            tcv:
+              type:
+                - number
+                - "null"
+            termEndDate:
+              type:
+                - string
+                - "null"
+            termStartDate:
+              type:
+                - string
+                - "null"
+            uuid:
+              type:
+                - string
+                - "null"
+      adjusts:
+        type:
+          - object
+          - "null"
+        properties:
+          arr:
+            type:
+              - number
+              - "null"
+          bookingDate:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          tcv:
+            type:
+              - number
+              - "null"
+          termEndDate:
+            type:
+              - string
+              - "null"
+          termStartDate:
+            type:
+              - string
+              - "null"
+          uuid:
+            type:
+              - string
+              - "null"
+      arr:
+        type:
+          - number
+          - "null"
+      autoRenew:
+        type:
+          - boolean
+          - "null"
+      bookedByEmployee:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          externalSystems:
+            type:
+              - object
+              - "null"
+            properties:
+              HUBSPOT:
+                type:
+                  - string
+                  - "null"
+              PIPEDRIVE:
+                type:
+                  - string
+                  - "null"
+              ZOHOCRM:
+                type:
+                  - string
+                  - "null"
+          firstname:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastname:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          reportTo:
+            type:
+              - number
+              - "null"
+      bookingDate:
+        type:
+          - string
+          - "null"
+      client:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      createdByEmployeeId:
+        type:
+          - number
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      externalSystems:
+        type:
+          - object
+          - "null"
+      id:
+        type: number
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            arr:
+              type:
+                - number
+                - "null"
+            assignedArr:
+              type:
+                - number
+                - "null"
+            assignedMrr:
+              type:
+                - number
+                - "null"
+            createdTime:
+              type:
+                - string
+                - "null"
+            externalSystems:
+              type:
+                - object
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            lineNumber:
+              type:
+                - number
+                - "null"
+            modifiedTime:
+              type:
+                - string
+                - "null"
+            mrr:
+              type:
+                - number
+                - "null"
+            pricePer:
+              type:
+                - number
+                - "null"
+            productCode:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - number
+                - "null"
+            recurring:
+              type:
+                - boolean
+                - "null"
+            tenantContractId:
+              type:
+                - number
+                - "null"
+            tenantId:
+              type:
+                - number
+                - "null"
+            termEndDate:
+              type:
+                - string
+                - "null"
+            termLengthDays:
+              type:
+                - number
+                - "null"
+            termStartDate:
+              type:
+                - string
+                - "null"
+            total:
+              type:
+                - number
+                - "null"
+            uuid:
+              type:
+                - string
+                - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          externalSystems:
+            type:
+              - object
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+      modifiedByEmployeeId:
+        type:
+          - number
+          - "null"
+      modifiedTime:
+        type: string
+      mrr:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      note:
+        type:
+          - string
+          - "null"
+      otr:
+        type:
+          - number
+          - "null"
+      probability:
+        type:
+          - number
+          - "null"
+      recurring:
+        type:
+          - boolean
+          - "null"
+      renewedBy:
+        type:
+          - object
+          - "null"
+        properties:
+          arr:
+            type:
+              - number
+              - "null"
+          bookingDate:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          tcv:
+            type:
+              - number
+              - "null"
+          termEndDate:
+            type:
+              - string
+              - "null"
+          termStartDate:
+            type:
+              - string
+              - "null"
+          uuid:
+            type:
+              - string
+              - "null"
+      renews:
+        type:
+          - object
+          - "null"
+        properties:
+          arr:
+            type:
+              - number
+              - "null"
+          bookingDate:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          tcv:
+            type:
+              - number
+              - "null"
+          termEndDate:
+            type:
+              - string
+              - "null"
+          termStartDate:
+            type:
+              - string
+              - "null"
+          uuid:
+            type:
+              - string
+              - "null"
+      tcv:
+        type:
+          - number
+          - "null"
+      tenantClientId:
+        type:
+          - number
+          - "null"
+      tenantId:
+        type:
+          - number
+          - "null"
+      termEndDate:
+        type:
+          - string
+          - "null"
+      termLengthDays:
+        type:
+          - number
+          - "null"
+      termStartDate:
+        type:
+          - string
+          - "null"
+      terminatedByEmployee:
+        type:
+          - object
+          - "null"
+        properties:
+          email:
+            type:
+              - string
+              - "null"
+          externalSystems:
+            type:
+              - object
+              - "null"
+          firstname:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          lastname:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          reportTo:
+            type:
+              - number
+              - "null"
+      terminatedDate:
+        type:
+          - string
+          - "null"
+      terminatedEffectiveDate:
+        type:
+          - string
+          - "null"
+      total:
+        type:
+          - number
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedTime
+  Products:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      contractUsageCount:
+        type:
+          - number
+          - "null"
+      createdTime:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      isPulse:
+        type:
+          - boolean
+          - "null"
+      modifiedTime:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      productPulseUsageCount:
+        type:
+          - number
+          - "null"
+      recurring:
+        type:
+          - boolean
+          - "null"
+      sku:
+        type:
+          - string
+          - "null"
+      subscriptionUsageCount:
+        type:
+          - number
+          - "null"
+      tenantId:
+        type:
+          - number
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modifiedTime
+  Custom Fields:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      enum:
+        type:
+          - boolean
+          - "null"
+      fieldId:
+        type: number
+      fieldKey:
+        type:
+          - string
+          - "null"
+      fieldLabel:
+        type:
+          - string
+          - "null"
+      fieldName:
+        type:
+          - string
+          - "null"
+      fieldTypeId:
+        type:
+          - number
+          - "null"
+      fieldTypeName:
+        type:
+          - string
+          - "null"
+      picklistValues:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            archived:
+              type:
+                - boolean
+                - "null"
+            customFieldId:
+              type:
+                - number
+                - "null"
+            default:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            label:
+              type:
+                - string
+                - "null"
+            usageCount:
+              type:
+                - number
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      placeholder:
+        type:
+          - boolean
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      requiredEditable:
+        type:
+          - boolean
+          - "null"
+      sequence:
+        type:
+          - number
+          - "null"
+      system:
+        type:
+          - boolean
+          - "null"
+    required:
+      - fieldId
