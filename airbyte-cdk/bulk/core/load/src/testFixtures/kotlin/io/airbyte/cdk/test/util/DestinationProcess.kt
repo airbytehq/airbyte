@@ -7,7 +7,7 @@ package io.airbyte.cdk.test.util
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -52,14 +52,14 @@ interface DestinationProcess {
 interface DestinationProcessFactory {
     fun createDestinationProcess(
         command: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
     ): DestinationProcess
 }
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationJsonObjectBase?,
+    config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
@@ -107,7 +107,7 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationJsonObjectBase?,
+        config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?
     ): DestinationProcess {
         return NonDockerizedDestination(command, config, catalog)
