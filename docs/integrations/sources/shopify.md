@@ -27,6 +27,7 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 :::
 
 <HideInUI>
+
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
