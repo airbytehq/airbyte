@@ -6,28 +6,21 @@ package io.airbyte.cdk.mock_integration_test
 
 import io.airbyte.cdk.test.util.DestinationDataDumper
 import io.airbyte.cdk.test.util.OutputRecord
+import java.util.concurrent.ConcurrentHashMap
 
 object MockDestinationBackend {
-    private val lock = Object()
-    private val files: MutableMap<String, MutableList<OutputRecord>> = mutableMapOf()
+    private val files: MutableMap<String, MutableList<OutputRecord>> = ConcurrentHashMap()
 
     fun insert(filename: String, vararg records: OutputRecord) {
-        synchronized(lock) { getFile(filename).addAll(records) }
+        getFile(filename).addAll(records)
     }
 
     fun readFile(filename: String): List<OutputRecord> {
-        return synchronized(lock) {
-            getFile(filename)
-        }
+        return getFile(filename)
     }
 
     private fun getFile(filename: String): MutableList<OutputRecord> {
-        return synchronized(lock) {
-            if (!files.containsKey(filename)) {
-                files[filename] = mutableListOf()
-            }
-            files[filename]!!
-        }
+        return files.getOrPut(filename) { mutableListOf() }
     }
 }
 
