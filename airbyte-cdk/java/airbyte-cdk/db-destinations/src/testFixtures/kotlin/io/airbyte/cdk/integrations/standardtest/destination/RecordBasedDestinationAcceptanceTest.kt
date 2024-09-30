@@ -28,7 +28,7 @@ abstract class RecordBasedDestinationAcceptanceTest(
     private val expectNumericTimestamps: Boolean = false,
     private val expectSchemalessObjectsCoercedToStrings: Boolean = false,
     private val expectUnionsPromotedToDisjointRecords: Boolean = false
-): DestinationAcceptanceTest(){
+): AbstractDestinationAcceptanceTest(){
 
     /**
      * This serves to test MSSQL 2100 limit parameters in a single query. this means that for

@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableMap
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
 import io.airbyte.cdk.integrations.destination.s3.FileUploadFormat
 import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations
-import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
+import io.airbyte.cdk.integrations.standardtest.destination.AbstractDestinationAcceptanceTest
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
@@ -45,7 +45,7 @@ private val LOGGER = KotlinLogging.logger {}
  * * Get the format config from [.getFormatConfig]
  */
 abstract class GcsDestinationAcceptanceTest(protected val outputFormat: FileUploadFormat) :
-    DestinationAcceptanceTest() {
+    RecordBasedWithNormalizationAndDbtDestinationAcceptanceTest() {
     protected var configJson: JsonNode? = null
     // Not a big fan of those mocks(). Here to make spotbugs happy
     protected var config: GcsDestinationConfig = mock()
