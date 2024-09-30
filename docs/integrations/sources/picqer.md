@@ -40,8 +40,8 @@ Configure the API key as your username and leave password field as blank
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-05 | [45159](https://github.com/airbytehq/airbyte/pull/45159) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.0.1 | 2024-09-05 | [45159](https://github.com/airbytehq/airbyte/pull/45159) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

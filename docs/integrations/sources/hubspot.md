@@ -336,6 +336,7 @@ The connector is restricted by normal HubSpot [rate limitations](https://legacyd
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.22 | 2024-09-28 | [46160](https://github.com/airbytehq/airbyte/pull/46160) | Update dependencies |
 | 4.2.21 | 2024-09-23 | [42688](https://github.com/airbytehq/airbyte/pull/44899) | Fix incremental search to use primary key as placeholder instead of lastModifiedDate |
 | 4.2.20 | 2024-09-21 | [45753](https://github.com/airbytehq/airbyte/pull/45753) | Update dependencies |
 | 4.2.19 | 2024-09-14 | [45018](https://github.com/airbytehq/airbyte/pull/45018) | Update dependencies |

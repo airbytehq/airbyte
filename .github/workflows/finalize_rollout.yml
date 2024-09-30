@@ -28,7 +28,7 @@ jobs:
         shell: bash
       - name: Checkout Airbyte
         uses: actions/checkout@v4
-      - name: Promote {{ github.event.client_payload.connector_name }} release candidate
+      - name: Promote {{ github.event.inputs.connector_name }} release candidate
         id: promote-release-candidate
         if: ${{ env.ACTION == 'promote' }}
         uses: ./.github/actions/run-airbyte-ci
@@ -43,8 +43,8 @@ jobs:
           metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          subcommand: "connectors --name=${{ github.event.client_payload.connector_name }} publish --promote-release-candidate"
-      - name: Rollback {{ github.event.client_payload.connector_name }} release candidate
+          subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --promote-release-candidate"
+      - name: Rollback {{ github.event.inputs.connector_name }} release candidate
         id: rollback-release-candidate
         if: ${{ env.ACTION == 'rollback' }}
         uses: ./.github/actions/run-airbyte-ci
@@ -60,4 +60,4 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          subcommand: "connectors --name=${{ github.event.client_payload.connector_name }} publish --rollback-release-candidate"
+          subcommand: "connectors --name=${{ github.event.inputs.connector_name }} publish --rollback-release-candidate"
