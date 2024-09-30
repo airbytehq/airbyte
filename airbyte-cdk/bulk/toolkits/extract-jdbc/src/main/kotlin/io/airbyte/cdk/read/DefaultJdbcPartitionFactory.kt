@@ -158,7 +158,7 @@ class DefaultJdbcPartitionFactory(
         return cursor to cursors[cursorLabel]!!
     }
 
-    private fun coldStart(streamState: DefaultJdbcStreamState): DefaultJdbcPartition {
+    fun coldStart(streamState: DefaultJdbcStreamState): DefaultJdbcPartition {
         val stream: Stream = streamState.stream
         val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || configuration.global) {
