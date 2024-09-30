@@ -1,0 +1,8 @@
+dependencies {
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
+    implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
+    implementation 'io.debezium:debezium-api:2.7.1.Final'
+    implementation 'io.debezium:debezium-embedded:2.7.1.Final'
+
+    implementation 'commons-io:commons-io:2.17.0'
+}

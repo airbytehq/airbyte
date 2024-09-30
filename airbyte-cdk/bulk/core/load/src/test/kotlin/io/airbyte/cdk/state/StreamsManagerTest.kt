@@ -5,12 +5,10 @@
 package io.airbyte.cdk.state
 
 import com.google.common.collect.Range
-import io.airbyte.cdk.command.Append
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
-import io.airbyte.cdk.data.NullType
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SimpleBatch
@@ -37,8 +35,8 @@ class StreamsManagerTest {
     @Test
     fun testCountRecordsAndCheckpoint() {
         val streamsManager = StreamsManagerFactory(catalog).make()
-        val manager1 = streamsManager.getManager(stream1)
-        val manager2 = streamsManager.getManager(stream2)
+        val manager1 = streamsManager.getManager(stream1.descriptor)
+        val manager2 = streamsManager.getManager(stream2.descriptor)
 
         // Incrementing once yields (n, n)
         repeat(10) { manager1.countRecordIn() }
@@ -71,16 +69,7 @@ class StreamsManagerTest {
     fun testGettingNonexistentManagerFails() {
         val streamsManager = StreamsManagerFactory(catalog).make()
         Assertions.assertThrows(IllegalArgumentException::class.java) {
-            streamsManager.getManager(
-                DestinationStream(
-                    DestinationStream.Descriptor("test", "non-existent"),
-                    importType = Append,
-                    schema = NullType,
-                    generationId = 42,
-                    minimumGenerationId = 0,
-                    syncId = 42,
-                )
-            )
+            streamsManager.getManager(DestinationStream.Descriptor("test", "non-existent"))
         }
     }
 
@@ -181,7 +170,7 @@ class StreamsManagerTest {
     fun testUpdateBatchState(testCase: TestCase) {
         val streamsManager = StreamsManagerFactory(catalog).make()
         testCase.events.forEach { (stream, event) ->
-            val manager = streamsManager.getManager(stream)
+            val manager = streamsManager.getManager(stream.descriptor)
             when (event) {
                 is SetRecordCount -> repeat(event.count.toInt()) { manager.countRecordIn() }
                 is SetEndOfStream -> manager.countEndOfStream()
@@ -218,7 +207,7 @@ class StreamsManagerTest {
     @Test
     fun testCannotUpdateOrCloseReadClosedStream() {
         val streamsManager = StreamsManagerFactory(catalog).make()
-        val manager = streamsManager.getManager(stream1)
+        val manager = streamsManager.getManager(stream1.descriptor)
 
         // Can't close before end-of-stream
         Assertions.assertThrows(IllegalStateException::class.java) { manager.markClosed() }
@@ -237,7 +226,7 @@ class StreamsManagerTest {
     @Test
     fun testAwaitStreamClosed() = runTest {
         val streamsManager = StreamsManagerFactory(catalog).make()
-        val manager = streamsManager.getManager(stream1)
+        val manager = streamsManager.getManager(stream1.descriptor)
         val hasClosed = AtomicBoolean(false)
 
         val job = launch {
@@ -259,8 +248,8 @@ class StreamsManagerTest {
     @Test
     fun testAwaitAllStreamsClosed() = runTest {
         val streamsManager = StreamsManagerFactory(catalog).make()
-        val manager1 = streamsManager.getManager(stream1)
-        val manager2 = streamsManager.getManager(stream2)
+        val manager1 = streamsManager.getManager(stream1.descriptor)
+        val manager2 = streamsManager.getManager(stream2.descriptor)
         val allHaveClosed = AtomicBoolean(false)
 
         val awaitStream1 = launch { manager1.awaitStreamClosed() }
