@@ -4,6 +4,7 @@
 
 import logging
 import xmltodict
+from xml.parsers.expat import ExpatError
 from dataclasses import InitVar, dataclass
 from typing import Any, Generator, Mapping
 
@@ -26,4 +27,16 @@ class XmlDecoder(Decoder):
         return False
 
     def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
-        pass
+        body_xml = response.content
+
+        try:
+            body_json = xmltodict.parse(body_xml)
+            if not isinstance(body_json, list):
+                body_json = [body_json]
+            if len(body_json) == 0:
+                yield {}
+            else:
+                yield from body_json
+        except ExpatError:
+            logger.warning(f"Response cannot be parsed from XML: {response.status_code=}, {response.text=}")
+            yield {}
