@@ -146,11 +146,6 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
         return self
 
 
-class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
-    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        return StreamAvailable()
-
-
 class NeverLogSliceLogger(SliceLogger):
     def should_log_slice_message(self, logger: logging.Logger) -> bool:
         return False
