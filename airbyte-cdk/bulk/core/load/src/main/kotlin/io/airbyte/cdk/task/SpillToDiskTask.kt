@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 
 interface SpillToDiskTask : StreamTask
 
@@ -36,7 +35,7 @@ class DefaultSpillToDiskTask(
     private val tmpFileProvider: TempFileProvider,
     private val queueReader:
         MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>,
-    private val stream: DestinationStream,
+    override val stream: DestinationStream,
     private val launcher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
@@ -59,60 +58,52 @@ class DefaultSpillToDiskTask(
     }
 
     override suspend fun execute() {
-        do {
-            val (path, result) =
-                withContext(Dispatchers.IO) {
-                    val tmpFile =
-                        tmpFileProvider.createTempFile(
-                            config.tmpFileDirectory,
-                            config.firstStageTmpFilePrefix,
-                            config.firstStageTmpFileSuffix
-                        )
-                    val result =
-                        tmpFile.toFileWriter().use {
-                            queueReader
-                                .readChunk(stream.descriptor, config.recordBatchSizeBytes)
-                                .runningFold(ReadResult()) { (range, sizeBytes, _), wrapped ->
-                                    when (wrapped) {
-                                        is StreamRecordWrapped -> {
-                                            val nextRange = withIndex(range, wrapped.index)
-                                            it.write(wrapped.record.serialized)
-                                            it.write("\n")
-                                            ReadResult(nextRange, sizeBytes + wrapped.sizeBytes)
-                                        }
-                                        is StreamCompleteWrapped -> {
-                                            val nextRange = withIndex(range, wrapped.index)
-                                            return@runningFold ReadResult(
-                                                nextRange,
-                                                sizeBytes,
-                                                true
-                                            )
-                                        }
+        val (path, result) =
+            withContext(Dispatchers.IO) {
+                val tmpFile =
+                    tmpFileProvider.createTempFile(
+                        config.tmpFileDirectory,
+                        config.firstStageTmpFilePrefix,
+                        config.firstStageTmpFileSuffix
+                    )
+                val result =
+                    tmpFile.toFileWriter().use {
+                        queueReader
+                            .readChunk(stream.descriptor, config.recordBatchSizeBytes)
+                            .runningFold(ReadResult()) { (range, sizeBytes, _), wrapped ->
+                                when (wrapped) {
+                                    is StreamRecordWrapped -> {
+                                        val nextRange = withIndex(range, wrapped.index)
+                                        it.write(wrapped.record.serialized)
+                                        it.write("\n")
+                                        ReadResult(nextRange, sizeBytes + wrapped.sizeBytes)
+                                    }
+                                    is StreamCompleteWrapped -> {
+                                        val nextRange = withIndex(range, wrapped.index)
+                                        return@runningFold ReadResult(nextRange, sizeBytes, true)
                                     }
                                 }
-                                .flowOn(Dispatchers.IO)
-                                .toList()
-                        }
-                    Pair(tmpFile, result.last())
-                }
-
-            /** Handle the result */
-            val (range, sizeBytes, endOfStream) = result
-
-            log.info { "Finished writing $range records (${sizeBytes}b) to $path" }
-
-            // This could happen if the chunk only contained end-of-stream
-            if (range == null) {
-                // We read 0 records, do nothing
-                return
+                            }
+                            .flowOn(Dispatchers.IO)
+                            .toList()
+                    }
+                Pair(tmpFile, result.last())
             }
 
-            val batch = SpilledRawMessagesLocalFile(path, sizeBytes)
-            val wrapped = BatchEnvelope(batch, range)
-            launcher.handleNewSpilledFile(stream, wrapped)
+        /** Handle the result */
+        val (range, sizeBytes, endOfStream) = result
 
-            yield()
-        } while (!endOfStream)
+        log.info { "Finished writing $range records (${sizeBytes}b) to $path" }
+
+        // This could happen if the chunk only contained end-of-stream
+        if (range == null) {
+            // We read 0 records, do nothing
+            return
+        }
+
+        val batch = SpilledRawMessagesLocalFile(path, sizeBytes)
+        val wrapped = BatchEnvelope(batch, range)
+        launcher.handleNewSpilledFile(stream, wrapped, endOfStream)
     }
 }
 

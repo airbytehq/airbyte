@@ -91,7 +91,10 @@ class SpillToDiskTaskTest {
     fun testSpillToDiskTask() = runTest {
         val mockTaskLauncher = MockTaskLauncher(taskRunner)
         spillToDiskTaskFactory.make(mockTaskLauncher, stream1).execute()
+        Assertions.assertEquals(1, mockTaskLauncher.spilledFiles.size)
+        spillToDiskTaskFactory.make(mockTaskLauncher, stream1).execute()
         Assertions.assertEquals(2, mockTaskLauncher.spilledFiles.size)
+
         Assertions.assertEquals(1024, mockTaskLauncher.spilledFiles[0].batch.totalSizeBytes)
         Assertions.assertEquals(512, mockTaskLauncher.spilledFiles[1].batch.totalSizeBytes)
 
