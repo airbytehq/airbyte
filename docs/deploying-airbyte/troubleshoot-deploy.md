@@ -168,12 +168,6 @@ Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade
 
 ## FAQ
 
-### How do I connect from a container to a service on the host?
-
-> The host has a changing IP address, or none if you have no network access. We recommend that you connect to the special DNS name host.docker.internal, which resolves to the internal IP address used by the host.
-
-https://docs.docker.com/desktop/faqs/general/#how-do-i-connect-from-a-container-to-a-service-on-the-host
-
 ### Using standard tools to interact with an Airbyte instance that was installed with `abctl`
 
 `abctl` install Airbyte into a kind cluster on your local machine. If you'd like to interact directly with any of the underlying infrastructure, you can use standard tooling. You will need to make sure these tools are installed (or install them yourself). Any of these out of the box tools will work with an Airbyte instance installed with `abctl`.
@@ -209,6 +203,12 @@ kind load docker-image <image-name>:<image-tag> -n airbyte-abctl
 ```
 
 For more troubleshooting information review the troubleshooting section in [Uploading Customer Connectors](../../operator-guides/using-custom-connectors#troubleshooting)
+
+### How do I connect from a container to a service on the host?
+
+> The host has a changing IP address, or none if you have no network access. We recommend that you connect to the special DNS name host.docker.internal, which resolves to the internal IP address used by the host.
+
+https://docs.docker.com/desktop/faqs/general/#how-do-i-connect-from-a-container-to-a-service-on-the-host
 
 ## Additional Resources
 
