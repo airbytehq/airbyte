@@ -145,7 +145,7 @@ map[key:JOB_MAIN_CONTAINER_CPU_REQUEST name:airbyte-abctl-airbyte-env]]]
 - Error: `connection refused`
 
 ```shell
-nable to initialize local command: error communicating with kubernetes:
+unable to initialize local command: error communicating with kubernetes:
  unable to fetch kubernetes server version: Get "https://127.0.0.1:50124/version":
   dial tcp 127.0.0.1:[PORT]: connect: connection refused
 ```
@@ -167,6 +167,12 @@ Version `0.15.0` had a bug when users have `secrets.yaml` file. You must upgrade
 ---
 
 ## FAQ
+
+### How do I connect from a container to a service on the host?
+
+> The host has a changing IP address, or none if you have no network access. We recommend that you connect to the special DNS name host.docker.internal, which resolves to the internal IP address used by the host.
+
+https://docs.docker.com/desktop/faqs/general/#how-do-i-connect-from-a-container-to-a-service-on-the-host
 
 ### Using standard tools to interact with an Airbyte instance that was installed with `abctl`
 
