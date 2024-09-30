@@ -32,8 +32,8 @@ Visit `https://developers.vwo.com/reference/introduction-1` for API documentatio
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.1 | 2024-09-23 |[45851](https://github.com/airbytehq/airbyte/pull/45851)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.0.1 | 2024-09-23 | [45851](https://github.com/airbytehq/airbyte/pull/45851) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

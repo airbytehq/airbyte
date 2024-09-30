@@ -141,13 +141,13 @@ files = [
 
 [[package]]
 name = "bracex"
-version = "2.5"
+version = "2.5.post1"
 description = "Bash style brace expander."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "bracex-2.5-py3-none-any.whl", hash = "sha256:d2fcf4b606a82ac325471affe1706dd9bbaa3536c91ef86a31f6b766f3dad1d0"},
-    {file = "bracex-2.5.tar.gz", hash = "sha256:0725da5045e8d37ea9592ab3614d8b561e22c3c5fde3964699be672e072ab611"},
+    {file = "bracex-2.5.post1-py3-none-any.whl", hash = "sha256:13e5732fec27828d6af308628285ad358047cec36801598368cb28bc631dbaf6"},
+    {file = "bracex-2.5.post1.tar.gz", hash = "sha256:12c50952415bfa773d2d9ccb8e79651b8cdb1f31a42f6091b804f6ba2b4a66b6"},
 ]
 
 [[package]]
@@ -726,13 +726,13 @@ extended-testing = ["jinja2 (>=3,<4)"]
 
 [[package]]
 name = "langsmith"
-version = "0.1.128"
+version = "0.1.129"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = "<4.0,>=3.8.1"
 files = [
-    {file = "langsmith-0.1.128-py3-none-any.whl", hash = "sha256:c1b59d947584be7487ac53dffb4e232704626964011b714fd3d9add4b3694cbc"},
-    {file = "langsmith-0.1.128.tar.gz", hash = "sha256:3299e17a659f3c47725c97c47f4445fc34113ac668becce425919866fbcb6ec2"},
+    {file = "langsmith-0.1.129-py3-none-any.whl", hash = "sha256:31393fbbb17d6be5b99b9b22d530450094fab23c6c37281a6a6efb2143d05347"},
+    {file = "langsmith-0.1.129.tar.gz", hash = "sha256:6c3ba66471bef41b9f87da247cc0b493268b3f54656f73648a256a205261b6a0"},
 ]
 
 [package.dependencies]

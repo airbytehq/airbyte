@@ -50,8 +50,8 @@ This Source is capable of syncing the following core Streams:
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-08-22 | Initial release by natikgadzhi via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-08-22 | | Initial release by natikgadzhi via Connector Builder |
 
 </details>
