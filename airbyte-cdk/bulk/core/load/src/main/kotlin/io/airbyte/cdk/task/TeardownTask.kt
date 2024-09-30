@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.task
 
-import io.airbyte.cdk.write.DestinationWriteOperation
+import io.airbyte.cdk.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -12,12 +12,12 @@ import jakarta.inject.Singleton
 interface TeardownTask : Task
 
 /**
- * Wraps @[DestinationWriteOperation.teardown] and stops the task launcher.
+ * Wraps @[DestinationWriter.teardown] and stops the task launcher.
  *
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
 class DefaultTeardownTask(
-    private val destination: DestinationWriteOperation,
+    private val destination: DestinationWriter,
     private val taskLauncher: DestinationTaskLauncher
 ) : TeardownTask {
     val log = KotlinLogging.logger {}
@@ -35,7 +35,7 @@ interface TeardownTaskFactory {
 @Singleton
 @Secondary
 class DefaultTeardownTaskFactory(
-    private val destination: DestinationWriteOperation,
+    private val destination: DestinationWriter,
 ) : TeardownTaskFactory {
     override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
         return DefaultTeardownTask(destination, taskLauncher)

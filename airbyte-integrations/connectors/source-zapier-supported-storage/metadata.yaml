@@ -16,7 +16,7 @@ data:
   name: Zapier Supported Storage
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha

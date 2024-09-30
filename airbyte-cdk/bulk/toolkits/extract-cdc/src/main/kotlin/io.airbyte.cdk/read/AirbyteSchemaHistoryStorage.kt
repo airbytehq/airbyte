@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.util.Jsons
 import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
@@ -69,7 +68,6 @@ class AirbyteSchemaHistoryStorage(
         return SchemaHistory(schemaHistory, false)
     }
 
-    @VisibleForTesting
     fun readUncompressed(): String {
         val fileAsString = StringBuilder()
         try {
@@ -112,7 +110,7 @@ class AirbyteSchemaHistoryStorage(
         } catch (e: IOException) {
             throw RuntimeException(e)
         }
-        return Jsons.serialize(compressedStream.toByteArray())
+        return Jsons.writeValueAsString(compressedStream.toByteArray())
     }
 
     private fun makeSureFileExists() {
@@ -141,7 +139,7 @@ class AirbyteSchemaHistoryStorage(
         if (schemaHistory!!.schema.isEmpty) {
             return
         }
-        val fileAsString = Jsons.`object`(schemaHistory.schema.get(), String::class.java)
+        val fileAsString = Jsons.treeToValue(schemaHistory.schema.get(), String::class.java)
 
         if (fileAsString.isNullOrEmpty()) {
             return
@@ -186,7 +184,7 @@ class AirbyteSchemaHistoryStorage(
 
     private fun writeCompressedStringToFile(compressedString: String) {
         try {
-            ByteArrayInputStream(Jsons.deserialize(compressedString, ByteArray::class.java)).use {
+            ByteArrayInputStream(Jsons.readValue(compressedString, ByteArray::class.java)).use {
                 inputStream ->
                 GZIPInputStream(inputStream).use { gzipInputStream ->
                     FileOutputStream(path.toFile()).use { fileOutputStream ->
@@ -222,7 +220,6 @@ class AirbyteSchemaHistoryStorage(
         const val ONE_MB: Int = 1024 * 1024
         private val UTF8: Charset = StandardCharsets.UTF_8
 
-        @VisibleForTesting
         fun calculateSizeOfStringInMB(string: String): Double {
             return string.toByteArray(StandardCharsets.UTF_8).size.toDouble() / (ONE_MB)
         }

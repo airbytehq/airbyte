@@ -5,7 +5,6 @@
 package io.airbyte.cdk.task
 
 import io.airbyte.cdk.message.BatchEnvelope
-import io.airbyte.cdk.state.StreamsManager
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -35,9 +34,7 @@ interface ProcessBatchTaskFactory {
 
 @Singleton
 @Secondary
-class DefaultProcessBatchTaskFactory(
-    private val streamsManager: StreamsManager,
-) : ProcessBatchTaskFactory {
+class DefaultProcessBatchTaskFactory : ProcessBatchTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         streamLoader: StreamLoader,
