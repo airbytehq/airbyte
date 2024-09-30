@@ -49,7 +49,10 @@ interface DestinationProcess {
     fun shutdown()
 }
 
-enum class TestDeploymentMode { CLOUD, OSS }
+enum class TestDeploymentMode {
+    CLOUD,
+    OSS
+}
 
 interface DestinationProcessFactory {
     fun createDestinationProcess(

@@ -13,20 +13,17 @@ import org.junit.jupiter.api.Test
 class DevNullCheckIntegrationTest :
     CheckIntegrationTest<DevNullSpecificationOss>(
         DevNullSpecificationOss::class.java,
-        successConfigFilenames = listOf(
-            CheckTestConfig(
-                DevNullTestUtils.LOGGING_CONFIG_PATH,
-                TestDeploymentMode.OSS
+        successConfigFilenames =
+            listOf(
+                CheckTestConfig(DevNullTestUtils.LOGGING_CONFIG_PATH, TestDeploymentMode.OSS),
             ),
-        ),
-        failConfigFilenamesAndFailureReasons = mapOf(
-            // cloud doesn't support logging mode, so this should fail
-            // when trying to parse the config
-            CheckTestConfig(
-                DevNullTestUtils.LOGGING_CONFIG_PATH,
-                TestDeploymentMode.CLOUD
-            ) to Pattern.compile("Value 'LOGGING' is not defined in the schema")
-        ),
+        failConfigFilenamesAndFailureReasons =
+            mapOf(
+                // cloud doesn't support logging mode, so this should fail
+                // when trying to parse the config
+                CheckTestConfig(DevNullTestUtils.LOGGING_CONFIG_PATH, TestDeploymentMode.CLOUD) to
+                    Pattern.compile("Value 'LOGGING' is not defined in the schema")
+            ),
     ) {
 
     @Test

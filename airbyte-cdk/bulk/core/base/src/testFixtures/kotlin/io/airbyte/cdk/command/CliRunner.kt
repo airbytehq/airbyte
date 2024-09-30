@@ -61,7 +61,12 @@ data object CliRunner {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteDestinationRunner(args, testProperties, inputBeanDefinition, out.beanDefinition)
+                AirbyteDestinationRunner(
+                    args,
+                    testProperties,
+                    inputBeanDefinition,
+                    out.beanDefinition
+                )
             }
         return CliRunnable(runnable, out.results)
     }

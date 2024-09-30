@@ -8,8 +8,8 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
-import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import io.micronaut.context.env.MapPropertySource
+import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import java.nio.file.Path
 import kotlin.system.exitProcess
 import picocli.CommandLine
@@ -73,11 +73,12 @@ sealed class AirbyteConnectorRunner(
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
                     *listOfNotNull(
-                        MapPropertySource("additional_properties", testProperties),
-                        airbytePropertySource,
-                        commandLinePropertySource,
-                        MetadataYamlPropertySource(),
-                    ).toTypedArray(),
+                            MapPropertySource("additional_properties", testProperties),
+                            airbytePropertySource,
+                            commandLinePropertySource,
+                            MetadataYamlPropertySource(),
+                        )
+                        .toTypedArray(),
                 )
                 .beanDefinitions(*testBeanDefinitions)
                 .start()
