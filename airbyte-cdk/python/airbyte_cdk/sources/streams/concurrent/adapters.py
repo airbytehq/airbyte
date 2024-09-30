@@ -20,7 +20,6 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     AbstractAvailabilityStrategy,
     StreamAvailability,
     StreamAvailable,
-    StreamUnavailable,
 )
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
