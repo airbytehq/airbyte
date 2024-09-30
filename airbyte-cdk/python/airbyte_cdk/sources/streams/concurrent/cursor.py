@@ -158,7 +158,7 @@ class ConcurrentCursor(Cursor):
         self._message_repository = message_repository
         self._connector_state_converter = connector_state_converter
         self._connector_state_manager = connector_state_manager
-        self.cursor_field = cursor_field
+        self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._start = start
@@ -177,7 +177,7 @@ class ConcurrentCursor(Cursor):
     def _get_concurrent_state(self, state: MutableMapping[str, Any]) -> Tuple[CursorValueType, MutableMapping[str, Any]]:
         if self._connector_state_converter.is_state_message_compatible(state):
             return self._start or self._connector_state_converter.zero_value, self._connector_state_converter.deserialize(state)
-        return self._connector_state_converter.convert_from_sequential_state(self.cursor_field, state, self._start)
+        return self._connector_state_converter.convert_from_sequential_state(self._cursor_field, state, self._start)
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -190,7 +190,7 @@ class ConcurrentCursor(Cursor):
             self._most_recent_record = record
 
     def _extract_cursor_value(self, record: Record) -> Any:
-        return self._connector_state_converter.parse_value(self.cursor_field.extract_value(record))
+        return self._connector_state_converter.parse_value(self._cursor_field.extract_value(record))
 
     def close_partition(self, partition: Partition) -> None:
         slice_count_before = len(self.state.get("slices", []))
@@ -240,7 +240,7 @@ class ConcurrentCursor(Cursor):
         self._connector_state_manager.update_state_for_stream(
             self._stream_name,
             self._stream_namespace,
-            self._connector_state_converter.convert_to_state_message(self.cursor_field, self.state),
+            self._connector_state_converter.convert_to_state_message(self._cursor_field, self.state),
         )
         state_message = self._connector_state_manager.create_state_message(self._stream_name, self._stream_namespace)
         self._message_repository.emit_message(state_message)
