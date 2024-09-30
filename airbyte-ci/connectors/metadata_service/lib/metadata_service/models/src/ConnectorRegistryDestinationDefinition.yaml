@@ -82,3 +82,6 @@ properties:
   language:
     type: string
     description: The language the connector is written in
+  supportsFilesInAdditionalPropertiesPreview:
+    type: boolean
+    default: false
