@@ -5,8 +5,8 @@
 package io.airbyte.cdk.task
 
 import com.google.common.collect.Range
+import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.WriteConfiguration
 import io.airbyte.cdk.file.TempFileProvider
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.DestinationRecordWrapped
@@ -32,10 +32,11 @@ interface SpillToDiskTask : Task
  * TODO: Allow for the record batch size to be supplied per-stream. (Needed?)
  */
 class DefaultSpillToDiskTask(
-    private val config: WriteConfiguration,
+    private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>,
-    private val stream: DestinationStream,
+    private val queueReader:
+        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>,
+    private val stream: DestinationStream.Descriptor,
     private val launcher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
@@ -116,18 +117,22 @@ class DefaultSpillToDiskTask(
 }
 
 interface SpillToDiskTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): SpillToDiskTask
+    fun make(
+        taskLauncher: DestinationTaskLauncher,
+        stream: DestinationStream.Descriptor
+    ): SpillToDiskTask
 }
 
 @Singleton
 class DefaultSpillToDiskTaskFactory(
-    private val config: WriteConfiguration,
+    private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>
+    private val queueReader:
+        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream
+        stream: DestinationStream.Descriptor
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(config, tmpFileProvider, queueReader, stream, taskLauncher)
     }

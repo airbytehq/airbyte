@@ -134,7 +134,7 @@ class HttpClient:
                 sqlite_path = str(Path(cache_dir) / self.cache_filename)
             else:
                 sqlite_path = "file::memory:?cache=shared"
-            return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
+            return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget, match_headers=True)  # type: ignore # there are no typeshed stubs for requests_cache
         else:
             return LimiterSession(api_budget=self._api_budget)
 
