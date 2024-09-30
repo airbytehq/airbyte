@@ -171,6 +171,10 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         else:
             return self._abstract_stream.cursor_field
 
+    @property
+    def cursor(self):
+        return self._cursor
+
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._abstract_stream.get_json_schema()
