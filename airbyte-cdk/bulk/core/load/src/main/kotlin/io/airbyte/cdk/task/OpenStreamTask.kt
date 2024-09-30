@@ -10,7 +10,7 @@ import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface OpenStreamTask : Task
+interface OpenStreamTask : StreamTask
 
 /**
  * Wraps @[StreamLoader.start] and starts the spill-to-disk tasks.

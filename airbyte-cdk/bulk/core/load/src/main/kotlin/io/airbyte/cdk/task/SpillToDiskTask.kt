@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-interface SpillToDiskTask : Task
+interface SpillToDiskTask : StreamTask
 
 /**
  * Reads records from the message queue and writes them to disk. This task is internal and is not
