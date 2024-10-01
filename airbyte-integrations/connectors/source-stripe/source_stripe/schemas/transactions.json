@@ -4,89 +4,116 @@
   "additionalProperties": true,
   "properties": {
     "amount": {
+      "description": "The transaction amount in the specified currency.",
       "type": ["null", "integer"]
     },
     "amount_details": {
+      "description": "Additional details about the transaction amount such as currency, fees, and taxes.",
       "type": ["null", "object"],
       "properties": {
         "atm_fee": {
+          "description": "The fee charged by the ATM for the transaction.",
           "type": ["null", "integer"]
         }
       }
     },
     "authorization": {
+      "description": "The authorization code for the transaction.",
       "type": ["null", "string"]
     },
     "balance_transaction": {
+      "description": "The ID of the balance transaction associated with this payment.",
       "type": ["null", "string"]
     },
     "card": {
+      "description": "Information about the payment card used for the transaction.",
       "type": ["null", "string"]
     },
     "cardholder": {
+      "description": "Details about the cardholder, such as name and address.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the transaction was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp when the transaction record was last updated.",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency in which the transaction was made.",
       "type": ["null", "string"]
     },
     "dispute": {
+      "description": "Information about any disputes related to the transaction.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "The unique identifier for the transaction.",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "A boolean indicating whether the transaction occurred in live mode.",
       "type": ["null", "boolean"]
     },
     "merchant_amount": {
+      "description": "The amount received by the merchant after fees.",
       "type": ["null", "integer"]
     },
     "merchant_currency": {
+      "description": "The currency in which the merchant received the payment.",
       "type": ["null", "string"]
     },
     "merchant_data": {
+      "description": "Information about the merchant involved in the transaction, like the merchant name, location, and ID.",
       "type": ["null", "object"],
       "properties": {
         "category": {
+          "description": "The category of the merchant.",
           "type": ["null", "string"]
         },
         "city": {
+          "description": "The city where the merchant is located.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country where the merchant is located.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the merchant.",
           "type": ["null", "string"]
         },
         "network_id": {
+          "description": "The unique network identifier of the merchant.",
           "type": ["null", "string"]
         },
         "postal_code": {
+          "description": "The postal code of the merchant's location.",
           "type": ["null", "string"]
         },
         "state": {
+          "description": "The state or region where the merchant is located.",
           "type": ["null", "string"]
         }
       }
     },
     "metadata": {
+      "description": "Additional metadata or custom information associated with the transaction.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "object": {
+      "description": "The object type, which in this case is 'transaction'.",
       "type": ["null", "string"]
     },
     "purchase_details": {
+      "description": "Details of the purchase, such as items bought or services availed.",
       "$ref": "issuing_transaction_purchase_details.json"
     },
     "type": {
+      "description": "The type of transaction, e.g., sale, refund, or dispute.",
       "type": ["null", "string"]
     }
   }

@@ -4,77 +4,101 @@
   "type": ["null", "object"],
   "properties": {
     "billing_zip": {
+      "description": "The ZIP code associated with the billing address.",
       "type": ["null", "string"]
     },
     "charge": {
+      "description": "The charge associated with the payment.",
       "type": ["null", "string"]
     },
     "closed_reason": {
+      "description": "The reason for closing the transaction.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the review was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp when the review was last updated.",
       "type": ["null", "integer"]
     },
     "id": {
+      "description": "The unique identifier for the review.",
       "type": ["null", "string"]
     },
     "ip_address": {
+      "description": "The IP address of the reviewer.",
       "type": ["null", "string"]
     },
     "ip_address_location": {
+      "description": "Location details of the reviewer's IP address.",
       "type": ["null", "object"],
       "properties": {
         "city": {
+          "description": "The city of the reviewer's IP address location.",
           "type": ["null", "string"]
         },
         "country": {
+          "description": "The country of the reviewer's IP address location.",
           "type": ["null", "string"]
         },
         "latitude": {
+          "description": "The latitude coordinate of the reviewer's IP address location.",
           "type": ["null", "number"]
         },
         "longitude": {
+          "description": "The longitude coordinate of the reviewer's IP address location.",
           "type": ["null", "number"]
         },
         "region": {
+          "description": "The region of the reviewer's IP address location.",
           "type": ["null", "number"]
         }
       }
     },
     "livemode": {
+      "description": "Indicates if the review is in live mode.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "The type of object being reviewed.",
       "type": ["null", "string"]
     },
     "open": {
+      "description": "Indicates if the review is open.",
       "type": ["null", "boolean"]
     },
     "opened_reason": {
+      "description": "The reason for opening the review.",
       "type": ["null", "string"]
     },
     "payment_intent": {
+      "description": "The payment intent associated with the review.",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason for the review being conducted.",
       "type": ["null", "string"]
     },
     "session": {
+      "description": "Details of the reviewer's session.",
       "type": ["null", "object"],
       "properties": {
         "browser": {
+          "description": "The browser used by the reviewer.",
           "type": ["null", "string"]
         },
         "device": {
+          "description": "The device used by the reviewer.",
           "type": ["null", "string"]
         },
         "platform": {
+          "description": "The platform used by the reviewer.",
           "type": ["null", "string"]
         },
         "version": {
+          "description": "The version of the platform used by the reviewer.",
           "type": ["null", "string"]
         }
       }

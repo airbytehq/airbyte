@@ -31,6 +31,10 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
         grant_type: str = "refresh_token",
+        token_expiry_is_time_of_expiration: bool = False,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
     ):
         self._token_refresh_endpoint = token_refresh_endpoint
         self._client_secret = client_secret
@@ -44,7 +48,9 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._token_expiry_date_format = token_expiry_date_format
+        self._token_expiry_is_time_of_expiration = token_expiry_is_time_of_expiration
         self._access_token = None
+        super().__init__(refresh_token_error_status_codes, refresh_token_error_key, refresh_token_error_values)
 
     def get_token_refresh_endpoint(self) -> str:
         return self._token_refresh_endpoint
@@ -77,10 +83,15 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         return self._token_expiry_date
 
     def set_token_expiry_date(self, value: Union[str, int]):
-        if self._token_expiry_date_format:
-            self._token_expiry_date = pendulum.from_format(value, self._token_expiry_date_format)
-        else:
-            self._token_expiry_date = pendulum.now().add(seconds=value)
+        self._token_expiry_date = self._parse_token_expiration_date(value)
+
+    @property
+    def token_expiry_is_time_of_expiration(self) -> bool:
+        return self._token_expiry_is_time_of_expiration
+
+    @property
+    def token_expiry_date_format(self) -> Optional[str]:
+        return self._token_expiry_date_format
 
     @property
     def access_token(self) -> str:
@@ -96,8 +107,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     Authenticator that should be used for API implementing single use refresh tokens:
     when refreshing access token some API returns a new refresh token that needs to used in the next refresh flow.
     This authenticator updates the configuration with new refresh token by emitting Airbyte control message from an observed mutation.
-    By default this authenticator expects a connector config with a"credentials" field with the following nested fields: client_id, client_secret, refresh_token.
-    This behavior can be changed by defining custom config path (using dpath paths) in client_id_config_path, client_secret_config_path, refresh_token_config_path constructor arguments.
+    By default, this authenticator expects a connector config with a "credentials" field with the following nested fields: client_id,
+    client_secret, refresh_token. This behavior can be changed by defining custom config path (using dpath paths) in client_id_config_path,
+    client_secret_config_path, refresh_token_config_path constructor arguments.
     """
 
     def __init__(
@@ -117,9 +129,12 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
         token_expiry_date_format: Optional[str] = None,
         message_repository: MessageRepository = NoopMessageRepository(),
+        token_expiry_is_time_of_expiration: bool = False,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
     ):
         """
-
         Args:
             connector_config (Mapping[str, Any]): The full connector configuration
             token_refresh_endpoint (str): Full URL to the token refresh endpoint
@@ -135,12 +150,11 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
             token_expiry_date_config_path (Sequence[str]): Dpath to the token_expiry_date field in the connector configuration. Defaults to ("credentials", "token_expiry_date").
             token_expiry_date_format (Optional[str]): Date format of the token expiry date field (set by expires_in_name). If not specified the token expiry date is interpreted as number of seconds until expiration.
+            token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of the number seconds until expiration
             message_repository (MessageRepository): the message repository used to emit logs on HTTP requests and control message on config update
         """
-        self._client_id = client_id if client_id is not None else dpath.util.get(connector_config, ("credentials", "client_id"))
-        self._client_secret = (
-            client_secret if client_secret is not None else dpath.util.get(connector_config, ("credentials", "client_secret"))
-        )
+        self._client_id = client_id if client_id is not None else dpath.get(connector_config, ("credentials", "client_id"))
+        self._client_secret = client_secret if client_secret is not None else dpath.get(connector_config, ("credentials", "client_secret"))
         self._access_token_config_path = access_token_config_path
         self._refresh_token_config_path = refresh_token_config_path
         self._token_expiry_date_config_path = token_expiry_date_config_path
@@ -160,6 +174,10 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_request_body=refresh_request_body,
             grant_type=grant_type,
             token_expiry_date_format=token_expiry_date_format,
+            token_expiry_is_time_of_expiration=token_expiry_is_time_of_expiration,
+            refresh_token_error_status_codes=refresh_token_error_status_codes,
+            refresh_token_error_key=refresh_token_error_key,
+            refresh_token_error_values=refresh_token_error_values,
         )
 
     def get_refresh_token_name(self) -> str:
@@ -173,24 +191,24 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     @property
     def access_token(self) -> str:
-        return dpath.util.get(self._connector_config, self._access_token_config_path, default="")
+        return dpath.get(self._connector_config, self._access_token_config_path, default="")
 
     @access_token.setter
     def access_token(self, new_access_token: str):
-        dpath.util.new(self._connector_config, self._access_token_config_path, new_access_token)
+        dpath.new(self._connector_config, self._access_token_config_path, new_access_token)
 
     def get_refresh_token(self) -> str:
-        return dpath.util.get(self._connector_config, self._refresh_token_config_path, default="")
+        return dpath.get(self._connector_config, self._refresh_token_config_path, default="")
 
     def set_refresh_token(self, new_refresh_token: str):
-        dpath.util.new(self._connector_config, self._refresh_token_config_path, new_refresh_token)
+        dpath.new(self._connector_config, self._refresh_token_config_path, new_refresh_token)
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
-        expiry_date = dpath.util.get(self._connector_config, self._token_expiry_date_config_path, default="")
+        expiry_date = dpath.get(self._connector_config, self._token_expiry_date_config_path, default="")
         return pendulum.now().subtract(days=1) if expiry_date == "" else pendulum.parse(expiry_date)
 
     def set_token_expiry_date(self, new_token_expiry_date):
-        dpath.util.new(self._connector_config, self._token_expiry_date_config_path, str(new_token_expiry_date))
+        dpath.new(self._connector_config, self._token_expiry_date_config_path, str(new_token_expiry_date))
 
     def token_has_expired(self) -> bool:
         """Returns True if the token is expired"""

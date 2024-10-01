@@ -7,22 +7,15 @@ import logging
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteCatalog, ConnectorSpecification
+from airbyte_cdk.models import AirbyteCatalog
 from source_airtable.source import SourceAirtable
-
-
-def test_spec(config):
-    source = SourceAirtable()
-    logger_mock = MagicMock()
-    spec = source.spec(logger_mock)
-    assert isinstance(spec, ConnectorSpecification)
 
 
 @pytest.mark.parametrize(
     "status, check_passed",
     [
         (200, (True, None)),
-        (401, (False, "401 Client Error: None for url: https://api.airtable.com/v0/meta/bases")),
+        (401, (False, "Unauthorized. Please ensure you are authenticated correctly.")),
     ],
     ids=["success", "fail"],
 )

@@ -9,27 +9,58 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 2.0.1
+  dockerImageTag: 4.1.14
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
   icon: mssql.svg
   license: ELv2
+  maxSecondsBetweenMessages: 7200
   name: Microsoft SQL Server (MSSQL)
-  registries:
+  registryOverrides:
     cloud:
-      dockerRepository: airbyte/source-mssql-strict-encrypt
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
-  supportLevel: community
+  releaseStage: generally_available
+  supportLevel: certified
   tags:
     - language:java
-    - language:python
   releases:
     breakingChanges:
+      4.0.0:
+        message: "We have overhauled our MSSQL source connector and it is now supported by the Airbyte team! To benefit from new features, including terabyte-sized table support, reliability improvements, expanded datetime data types, and various bug fixes, please opt in to the 4.0.0 version."
+        upgradeDeadline: "2024-04-07"
+      3.0.0:
+        message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected data types must take action with their connections."
+        upgradeDeadline: "2023-12-07"
       2.0.0:
         message: "Add default cursor for cdc"
         upgradeDeadline: "2023-08-23"
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_SOURCE-MSSQL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MSSQL_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-MSSQL__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MSSQL_PERFORMANCE_TEST_CREDS
+          fileName: performance-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

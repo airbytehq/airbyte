@@ -21,7 +21,7 @@ class GoogleSheetsClient:
         @classmethod
         def increase_row_batch_size(cls, details):
             if details["exception"].status_code == status_codes.TOO_MANY_REQUESTS and cls.row_batch_size < 1000:
-                cls.row_batch_size = cls.row_batch_size + 10
+                cls.row_batch_size = cls.row_batch_size + 100
                 logger.info(f"Increasing number of records fetching due to rate limits. Current value: {cls.row_batch_size}")
 
         @staticmethod
@@ -33,7 +33,7 @@ class GoogleSheetsClient:
     def __init__(self, credentials: Dict[str, str], scopes: List[str] = SCOPES):
         self.client = Helpers.get_authenticated_sheets_client(credentials, scopes)
 
-    def create_range(self, sheet, row_cursor):
+    def _create_range(self, sheet, row_cursor):
         range = f"{sheet}!{row_cursor}:{row_cursor + self.Backoff.row_batch_size}"
         return range
 
@@ -47,7 +47,9 @@ class GoogleSheetsClient:
 
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
     def get_values(self, **kwargs):
-        return self.client.values().batchGet(**kwargs).execute()
+        range = self._create_range(kwargs.pop("sheet"), kwargs.pop("row_cursor"))
+        logger.info(f"Fetching range {range}")
+        return self.client.values().batchGet(ranges=range, **kwargs).execute()
 
     @backoff.on_exception(backoff.expo, errors.HttpError, max_time=120, giveup=Backoff.give_up, on_backoff=Backoff.increase_row_batch_size)
     def update_values(self, **kwargs):

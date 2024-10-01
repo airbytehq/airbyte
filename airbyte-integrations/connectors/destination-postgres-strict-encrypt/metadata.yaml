@@ -1,25 +1,35 @@
 data:
-  registries:
-    cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
-    oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 0.4.0
+  dockerImageTag: 2.4.0
   dockerRepository: airbyte/destination-postgres-strict-encrypt
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
   icon: postgresql.svg
   license: ELv2
   name: Postgres
-  normalizationConfig:
-    normalizationIntegrationType: postgres
-    normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.1
-  releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: >
+          This version introduces [Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2), which provides better error handling, incremental delivery of data for large syncs, and improved final table structures.
+          To review the breaking changes, and how to upgrade, see [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#quick-start-to-upgrading).
+          These changes will likely require updates to downstream dbt / SQL models, which we walk through [here](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#updating-downstream-transformations).
+          Selecting `Upgrade` will upgrade **all** connections using this destination at their next sync. For more controlled upgrade [see instructions](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#upgrading-connections-one-by-one-with-dual-writing).
+        upgradeDeadline: "2024-05-31"
+  releaseStage: generally_available
+  supportLevel: certified
+  supportsRefreshes: true
   supportsDbt: true
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

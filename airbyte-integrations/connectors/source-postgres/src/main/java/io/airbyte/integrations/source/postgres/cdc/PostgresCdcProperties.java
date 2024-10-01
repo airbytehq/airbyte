@@ -12,7 +12,6 @@ import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRU
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresConverter;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.postgres.PostgresSource;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
@@ -25,7 +24,11 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresCdcProperties {
 
-  private static final int HEARTBEAT_FREQUENCY_SEC = 10;
+  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
+
+  // Test execution latency is lower when heartbeats are more frequent.
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
+
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
 
   public static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
@@ -58,7 +61,18 @@ public class PostgresCdcProperties {
     props.setProperty("converters", "datetime");
     props.setProperty("datetime.type", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
-    props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
+
+    final Duration heartbeatInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? HEARTBEAT_INTERVAL_IN_TESTS
+            : HEARTBEAT_INTERVAL;
+    props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+
+    if (sourceConfig.get("replication_method").has("heartbeat_action_query")
+        && !sourceConfig.get("replication_method").get("heartbeat_action_query").asText().isEmpty()) {
+      props.setProperty("heartbeat.action.query", sourceConfig.get("replication_method").get("heartbeat_action_query").asText());
+    }
+
     if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
       props.setProperty("flush.lsn.source", "false");
     }

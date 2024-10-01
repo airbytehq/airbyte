@@ -1,24 +1,54 @@
-{
-  "customers": {
-    "created_at": "2022-01-01T00:00:00Z"
-  },
-  "plans": {
-    "created_at": "2022-01-01T00:00:00Z"
-  },
-  "subscriptions": {
-    "created_at": "2022-01-01T00:00:00Z"
-  },
-  "credits_ledger_entries": {
-    "7c507794-7413-4467-8f1d-d3785a6c65ca": {
-      "created_at": "2022-01-01T00:00:00Z"
+[
+  {
+    "streamDescriptor": {
+      "name": "credits_ledger_entries"
+    },
+    "streamState": {
+      "hHQF5BT5jtyj9r7V": {
+        "created_at": "2022-02-03T18:59:01+00:00"
+      }
     }
   },
-  "subscription_usage": {
-    "someId": {
-      "timeframe_start": "2022-01-01T00:00:00Z"
+  {
+    "streamDescriptor": {
+      "name": "subscription_usage"
+    },
+    "streamState": {
+      "FDWRvxuBUiFfZech": {
+        "timeframe_start": "2022-02-02T00:00:00+00:00"
+      }
     }
   },
-  "invoices": {
-    "invoice_date": "2022-01-01T00:00:00Z"
+  {
+    "streamDescriptor": {
+      "name": "plans"
+    },
+    "streamState": {
+      "created_at": "2022-02-02T10:03:57+00:00"
+    }
+  },
+  {
+    "streamDescriptor": {
+      "name": "invoices"
+    },
+    "streamState": {
+      "invoice_date": "2022-03-01T08:00:00+00:00"
+    }
+  },
+  {
+    "streamDescriptor": {
+      "name": "customers"
+    },
+    "streamState": {
+      "created_at": "2022-02-02T10:01:15+00:00"
+    }
+  },
+  {
+    "streamDescriptor": {
+      "name": "subscriptions"
+    },
+    "streamState": {
+      "created_at": "2022-02-02T10:04:09+00:00"
+    }
   }
-}
+]

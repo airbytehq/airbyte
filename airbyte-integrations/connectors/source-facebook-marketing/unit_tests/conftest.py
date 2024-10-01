@@ -23,12 +23,19 @@ def account_id_fixture():
 
 @fixture(scope="session", name="some_config")
 def some_config_fixture(account_id):
-    return {"start_date": "2021-01-23T00:00:00Z", "account_id": f"{account_id}", "access_token": "unknown_token"}
+    return {
+        "start_date": "2021-01-23T00:00:00Z",
+        "account_ids": [f"{account_id}"],
+        "access_token": "unknown_token",
+    }
 
 
 @fixture(autouse=True)
 def mock_default_sleep_interval(mocker):
-    mocker.patch("source_facebook_marketing.streams.common.DEFAULT_SLEEP_INTERVAL", return_value=pendulum.duration(seconds=5))
+    mocker.patch(
+        "source_facebook_marketing.streams.common.DEFAULT_SLEEP_INTERVAL",
+        return_value=pendulum.duration(seconds=5),
+    )
 
 
 @fixture(name="fb_account_response")
@@ -41,7 +48,12 @@ def fb_account_response_fixture(account_id):
                     "id": f"act_{account_id}",
                 }
             ],
-            "paging": {"cursors": {"before": "MjM4NDYzMDYyMTcyNTAwNzEZD", "after": "MjM4NDYzMDYyMTcyNTAwNzEZD"}},
+            "paging": {
+                "cursors": {
+                    "before": "MjM4NDYzMDYyMTcyNTAwNzEZD",
+                    "after": "MjM4NDYzMDYyMTcyNTAwNzEZD",
+                }
+            },
         },
         "status_code": 200,
     }
@@ -49,8 +61,16 @@ def fb_account_response_fixture(account_id):
 
 @fixture(name="api")
 def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+    api = API(access_token=some_config["access_token"], page_size=100)
 
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts",
+        [fb_account_response],
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_ids'][0]}/",
+        [fb_account_response],
+    )
     return api

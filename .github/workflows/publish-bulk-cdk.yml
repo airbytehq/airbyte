@@ -1,0 +1,149 @@
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+
+name: Publish Bulk CDK
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-cdk/bulk/**"
+  workflow_dispatch:
+    inputs:
+      build-number:
+        description: "Build Number"
+        required: false
+        type: number
+
+concurrency:
+  group: publish-bulk-cdk
+  cancel-in-progress: false
+
+env:
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  publish-bulk-cdk:
+    name: Publish Bulk CDK
+    runs-on: connector-test-large
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Docker login
+        # Some tests use testcontainers which pull images from DockerHub.
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+
+      - name: Set Build Number [manual]
+        if: github.event.inputs.build-number
+        env:
+          BUILD_NUMBER: ${{ github.event.inputs.build-number }}
+        run: |
+          mkdir -p airbyte-cdk/bulk/build/generated
+          echo $BUILD_NUMBER > airbyte-cdk/bulk/build/generated/build.number
+
+      - name: Set Build Number [auto]
+        if: ${{ !github.event.inputs.build-number }}
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:generateBuildNumberFile
+
+      - name: Read Build Number
+        run: echo "BUILD_NUMBER=$(cat airbyte-cdk/bulk/build/generated/build.number)" >>$GITHUB_ENV
+
+      - name: Build Bulk CDK
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+        with:
+          job-id: bulk-cdk-publish
+          concurrent: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:bulkCdkBuild
+
+      - name: Publish Poms and Jars to CloudRepo
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
+          CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
+          CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+        with:
+          job-id: bulk-cdk-publish
+          read-only: true
+          concurrent: true
+          execution-only-caches: true
+          gradle-distribution-sha-256-sum-warning: false
+          arguments: --scan :airbyte-cdk:bulk:bulkCdkPublish
+
+      - name: Post failure to Slack channel
+        if: ${{ env.DRY_RUN == 'false' && failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
+          payload: |
+            {
+                "text": "Error while publishing Bulk CDK!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Error while publishing Bulk CDK!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Post success to Slack channel
+        if: ${{ env.DRY_RUN == 'false' && !failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C07K1P3UL6Q # The `#dev-java-cdk-releases` channel
+          payload: |
+            {
+                "text": "Bulk CDK version 0.${{ env.BUILD_NUMBER }} published successfully!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Bulk CDK version 0.${{ env.BUILD_NUMBER }} published successfully!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}

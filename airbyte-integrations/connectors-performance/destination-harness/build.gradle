@@ -1,6 +1,5 @@
 plugins {
     id 'application'
-    id 'airbyte-docker-legacy'
 }
 
 application {
@@ -9,9 +8,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-commons')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies')
 
-    implementation libs.airbyte.protocol
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
@@ -19,5 +17,11 @@ dependencies {
     implementation 'junit:junit:4.13.1'
     implementation 'org.testng:testng:7.1.0'
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+}
 
+//This is only needed because we're using some very old libraries from airbyte-commons that were not packaged correctly
+java {
+    compileJava {
+       options.compilerArgs.remove("-Werror")
+   }
 }

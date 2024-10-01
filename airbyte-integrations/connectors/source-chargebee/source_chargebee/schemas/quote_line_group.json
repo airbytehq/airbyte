@@ -4,41 +4,47 @@
   "type": "object",
   "properties": {
     "version": {
+      "description": "The version of the quote line group.",
       "type": ["integer", "null"]
     },
     "id": {
+      "description": "Unique identifier for the quote line group.",
+      "type": ["string", "null"]
+    },
+    "quote_id": {
+      "description": "Unique identifier for the quote associated with the line group.",
       "type": ["string", "null"]
     },
     "sub_total": {
+      "description": "The subtotal amount of the quote line group.",
       "type": ["integer", "null"]
     },
     "total": {
+      "description": "The total amount for the quote line group after all calculations.",
       "type": ["integer", "null"]
     },
     "credits_applied": {
+      "description": "The amount of credits applied to the quote line group.",
       "type": ["integer", "null"]
     },
     "amount_paid": {
+      "description": "The total amount that has been paid.",
       "type": ["integer", "null"]
     },
     "amount_due": {
+      "description": "The total amount that is due for payment.",
       "type": ["integer", "null"]
     },
     "charge_event": {
-      "type": ["string", "null"],
-      "enum": [
-        "immediate",
-        "subscription_creation",
-        "trial_start",
-        "subscription_change",
-        "subscription_renewal",
-        "subscription_cancel"
-      ]
+      "description": "Details about the charge event associated with the quote line group.",
+      "type": ["string", "null"]
     },
     "billing_cycle_number": {
+      "description": "The number indicating the current billing cycle.",
       "type": ["integer", "null"]
     },
     "line_items": {
+      "description": "Details about the line items included in the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -65,8 +71,7 @@
             "type": ["integer", "null"]
           },
           "pricing_model": {
-            "type": ["string", "null"],
-            "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+            "type": ["string", "null"]
           },
           "is_taxed": {
             "type": ["boolean", "null"]
@@ -102,38 +107,28 @@
             "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "adhoc",
-              "plan_item_price",
-              "addon_item_price",
-              "charge_item_price"
-            ]
+            "type": ["string", "null"]
           },
           "tax_exempt_reason": {
-            "type": ["string", "null"],
-            "enum": [
-              "tax_not_configured",
-              "region_non_taxable",
-              "export",
-              "customer_exempt",
-              "product_exempt",
-              "zero_rated",
-              "reverse_charge",
-              "high_value_physical_goods",
-              "zero_value_item"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "customer_id": {
             "type": ["string", "null"]
+          },
+          "metered": {
+            "type": ["boolean", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
     },
     "discounts": {
+      "description": "Details about any discounts applied to the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -148,30 +143,25 @@
             "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "item_level_discount",
-              "document_level_discount"
-            ]
+            "type": ["string", "null"]
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": ["fixed_amount", "percentage"]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "coupon_set_code": {
             "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_discounts": {
+      "description": "Details about any discounts applied to individual line items within the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -180,26 +170,22 @@
             "type": ["string", "null"]
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "item_level_discount",
-              "document_level_discount"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "discount_amount": {
             "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
     },
     "taxes": {
+      "description": "Details about the taxes applied to the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -217,6 +203,7 @@
       }
     },
     "line_item_taxes": {
+      "description": "Details about taxes applied to individual line items within the quote line group.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -243,17 +230,7 @@
             "type": ["integer", "null"]
           },
           "tax_juris_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "country",
-              "federal",
-              "state",
-              "county",
-              "city",
-              "special",
-              "unincorporated",
-              "other"
-            ]
+            "type": ["string", "null"]
           },
           "tax_juris_name": {
             "type": ["string", "null"]
@@ -270,19 +247,13 @@
         }
       }
     },
+    "object": {
+      "description": "Type of object representing the quote line group.",
+      "type": ["string", "null"]
+    },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Any custom fields associated with the quote line group.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

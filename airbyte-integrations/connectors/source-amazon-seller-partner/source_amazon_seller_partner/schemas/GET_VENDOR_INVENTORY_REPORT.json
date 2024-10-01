@@ -5,84 +5,120 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "startDate": {
-      "type": ["null", "string"]
+      "description": "Start date and time for the period of data captured.",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "endDate": {
-      "type": ["null", "string"]
+      "description": "End date and time for the period of data captured.",
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "asin": {
+      "description": "Amazon Standard Identification Number of the product associated with the data.",
       "type": ["null", "string"]
     },
     "vendorConfirmationRate": {
+      "description": "Rate at which the vendor confirms incoming orders.",
       "type": ["null", "number"]
     },
     "netReceivedAmount": {
+      "description": "Amount received after deducting any fees or charges.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "Received amount in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "Currency code of the received amount.",
           "type": ["null", "string"]
         }
       }
     },
     "netReceivedUnits": {
+      "description": "Total number of units received after deducting any returns or losses.",
       "type": ["null", "number"]
     },
     "openPurchaseOrderQuantity": {
+      "description": "Number of units that have been ordered but not yet received or processed.",
       "type": ["null", "number"]
     },
     "overallVendorLeadTime": {
+      "description": "Average lead time it takes for the vendor to fulfill an order.",
       "type": ["null", "number"]
     },
     "sellThroughRate": {
+      "description": "Percentage of inventory sold within a defined period.",
       "type": ["null", "number"]
     },
     "sellableOnHandInventory": {
+      "description": "Sellable inventory on hand.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "Total amount of sellable inventory in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "Currency code of the sellable inventory amount.",
           "type": ["null", "string"]
         }
       }
     },
     "sellableOnHandUnits": {
+      "description": "Total units of sellable inventory on hand.",
       "type": ["null", "number"]
     },
     "unfilledCustomerOrderedUnits": {
+      "description": "Number of units ordered by customers but not yet fulfilled.",
       "type": ["null", "number"]
     },
     "unsellableOnHandInventory": {
+      "description": "Inventory that cannot be sold in its current state.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "Total amount of unsellable inventory in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "Currency code of the unsellable inventory amount.",
           "type": ["null", "string"]
         }
       }
     },
     "aged90PlusDaysSellableUnits": {
+      "description": "Number of units that have been in inventory for more than 90 days and are still sellable.",
       "type": ["null", "number"]
     },
     "unhealthyInventory": {
+      "description": "Inventory that may be damaged, expired, or otherwise unfit for sale.",
       "type": "object",
       "properties": {
         "amount": {
+          "description": "Total amount of unhealthy inventory in the specified currency.",
           "type": ["null", "number"]
         },
         "currencyCode": {
+          "description": "Currency code of the unhealthy inventory amount.",
           "type": ["null", "string"]
         }
       }
     },
     "unhealthyUnits": {
+      "description": "Total units of unhealthy inventory.",
       "type": ["null", "number"]
+    },
+    "dataEndTime": {
+      "description": "End time for the data captured.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "queryEndDate": {
+      "description": "End date for querying the data.",
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

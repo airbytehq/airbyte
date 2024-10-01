@@ -4,6 +4,7 @@
 
 
 import logging
+import random
 from datetime import timedelta
 from http import HTTPStatus
 from unittest.mock import MagicMock
@@ -50,7 +51,7 @@ def test_check_connection_empty_config(config):
 
 
 def test_check_connection_invalid_config(config):
-    config.pop("start_date")
+    config.pop("credentials")
 
     with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
@@ -85,7 +86,24 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 30
+    assert len(streams) == 34
+
+
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_streams_incremental(requests_mock, config_experimental):
+
+    streams = SourceHubspot().streams(config_experimental)
+
+    assert len(streams) == 46
+
+
+def test_custom_streams(config_experimental):
+    custom_object_stream_instances = [MagicMock()]
+    streams = SourceHubspot().get_web_analytics_custom_objects_stream(
+        custom_object_stream_instances=custom_object_stream_instances,
+        common_params={"api": MagicMock(), "start_date": "2021-01-01T00:00:00Z", "credentials": config_experimental["credentials"]},
+    )
+    assert len(list(streams)) == 1
 
 
 def test_check_credential_title_exception(config):
@@ -112,18 +130,21 @@ def test_convert_datetime_to_string():
 
 def test_cast_datetime(common_params, caplog):
     field_value = pendulum.now()
-    field_name = "curent_time"
+    field_name = "current_time"
 
     Companies(**common_params)._cast_datetime(field_name, field_value)
 
-    expected_warining_message = {
+    expected_warning_message = {
         "type": "LOG",
         "log": {
             "level": "WARN",
-            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: argument of type 'DateTime' is not iterable",
+            # if you find some diff locally try using "Ex: argument of type 'DateTime' is not iterable in the message". There could be a
+            # difference in local environment when pendulum.parsing.__init__.py importing parse_iso8601. Anyway below is working fine
+            # in container for now and I am not sure if this diff was just a problem with my setup.
+            "message": f"Couldn't parse date/datetime string in {field_name}, trying to parse timestamp... Field value: {field_value}. Ex: expected string or bytes-like object"
         },
     }
-    assert expected_warining_message["log"]["message"] in caplog.text
+    assert expected_warning_message["log"]["message"] in caplog.text
 
 
 def test_check_connection_backoff_on_limit_reached(requests_mock, config):
@@ -455,12 +476,85 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri("POST", test_stream.url, responses)
     test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    requests_mock.register_uri("POST", "/crm/v4/associations/company/contacts/batch/read", [{"status_code": 200, "json": {"results": []}}])
+    requests_mock.register_uri(
+        "POST",
+        "/crm/v4/associations/company/contacts/batch/read",
+        [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
+    )
 
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
+    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
+
+def test_search_based_incremental_stream_should_sort_by_id(requests_mock, common_params, fake_properties_list):
+    """
+    If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
+    the CRMSearchStream instance should stop at the 10Kth record
+    """
+    # Create test_stream instance with some state
+    test_stream = Companies(**common_params)
+    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
+    test_stream.state = {"updatedAt": "2022-01-24T16:43:11Z"}
+    test_stream.associations = []
+
+    def random_date(start, end):
+        return pendulum.from_timestamp(random.randint(start, end)/1000).to_iso8601_string()
+
+    after = 0
+
+    # Custom callback to mock search endpoint filter and sort behavior, returns 100 records per request.
+    # See _process_search in stream.py for details on the structure of the filter amd sort parameters.
+    # The generated records will have an id that is the sum of the current id and the current "after" value
+    # and the updatedAt field will be a random date between min_time and max_time.
+    # Store "after" value in the record to check if it resets after 10k records.
+    def custom_callback(request, context):
+        post_data = request.json()  # Access JSON data from the request body
+        after = int(post_data.get("after", 0))
+        filters = post_data.get("filters", [])
+        min_time = int(filters[0].get("value", 0))
+        max_time = int(filters[1].get("value", 0))
+        id = int(filters[2].get("value", 0))
+        next = int(after) + 100
+        results = [
+            {
+                "id": f"{y + id}",
+                "updatedAt": random_date(min_time, max_time),
+                "after": after
+            } for y in range(int(after) + 1, next + 1)
+        ]
+        context.status_code = 200
+        if ((id + next) < 11000):
+            return {"results": results, "paging": {"next": {"after": f"{next}"}}}
+        else:
+            return {"results": results, "paging": {}} # Last page
+
+    properties_response = [
+        {
+            "json": [],
+            "status_code": 200,
+        }
+    ]
+
+    # Mocking Request
+    test_stream._sync_mode = SyncMode.incremental
+    requests_mock.register_uri("POST", test_stream.url, json=custom_callback)
+    # test_stream._sync_mode = None
+    requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    records, _ = read_incremental(test_stream, {})
+    # The stream should not attempt to get more than 10K records.
+    # Instead, it should use the new state to start a new search query.
+    assert len(records) == 11000
+    # Check that the records are sorted by id and that "after" resets after 10k records
+    assert records[0]["id"] == "1"
+    assert records[0]["after"] == 0
+    assert records[10000 - 1]["id"] == "10000"
+    assert records[10000 - 1]["after"] == 9900
+    assert records[10000]["id"] == "10001"
+    assert records[10000]["after"] == 0
+    assert records[-1]["id"] == "11000"
+    assert records[-1]["after"] == 900
     assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
 
 
@@ -677,3 +771,51 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
+
+
+def test_get_granted_scopes(requests_mock, mocker):
+    authenticator = mocker.Mock()
+    authenticator.get_access_token.return_value = "the-token"
+
+    expected_scopes = ["a", "b", "c"]
+    response = [
+        {"json": {"scopes": expected_scopes}, "status_code": 200},
+    ]
+    requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
+
+    actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
+
+    assert expected_scopes == actual_scopes
+
+def test_get_granted_scopes_retry(requests_mock, mocker):
+    authenticator = mocker.Mock()
+    expected_token = "the-token"
+    authenticator.get_access_token.return_value = expected_token
+    mock_url = f"https://api.hubapi.com/oauth/v1/access-tokens/{expected_token}"
+    response = [
+        {"json": {}, "status_code": 500},
+    ]
+
+    requests_mock.register_uri("GET", mock_url, response)
+    actual_scopes = SourceHubspot().get_granted_scopes(authenticator)
+    assert len(requests_mock.request_history) > 1
+
+
+def test_streams_oauth_2_auth_no_suitable_scopes(requests_mock, mocker, config):
+    authenticator = mocker.Mock()
+    authenticator.get_access_token.return_value = "the-token"
+
+    mocker.patch("source_hubspot.streams.API.is_oauth2", return_value=True)
+    mocker.patch("source_hubspot.streams.API.get_authenticator", return_value=authenticator)
+
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+
+    expected_scopes = ["no.scopes.granted"]
+    response = [
+        {"json": {"scopes": expected_scopes}, "status_code": 200},
+    ]
+    requests_mock.register_uri("GET", "https://api.hubapi.com/oauth/v1/access-tokens/the-token", response)
+
+    streams = SourceHubspot().streams(config)
+
+    assert len(streams) == 0

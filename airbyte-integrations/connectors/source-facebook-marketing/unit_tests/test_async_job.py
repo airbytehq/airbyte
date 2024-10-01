@@ -6,6 +6,7 @@ import copy
 import time
 from typing import Iterator
 
+import freezegun
 import pendulum
 import pytest
 from facebook_business.adobjects.ad import Ad
@@ -48,12 +49,27 @@ def job_fixture(api, account):
     }
     interval = pendulum.Period(pendulum.Date(2019, 1, 1), pendulum.Date(2019, 1, 1))
 
-    return InsightAsyncJob(edge_object=account, api=api, interval=interval, params=params)
+    return InsightAsyncJob(
+        edge_object=account,
+        api=api,
+        interval=interval,
+        params=params,
+        job_timeout=pendulum.duration(minutes=60),
+    )
 
 
 @pytest.fixture(name="grouped_jobs")
 def grouped_jobs_fixture(mocker):
-    return [mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False, elapsed_time=None) for _ in range(10)]
+    return [
+        mocker.Mock(
+            spec=InsightAsyncJob,
+            attempt_number=1,
+            failed=False,
+            completed=False,
+            elapsed_time=None,
+        )
+        for _ in range(10)
+    ]
 
 
 @pytest.fixture(name="parent_job")
@@ -169,7 +185,10 @@ class TestInsightAsyncJob:
     def test_start_already_started(self, job):
         job.start()
 
-        with pytest.raises(RuntimeError, match=r": Incorrect usage of start - the job already started, use restart instead"):
+        with pytest.raises(
+            RuntimeError,
+            match=r": Incorrect usage of start - the job already started, use restart instead",
+        ):
             job.start()
 
     def test_restart(self, failed_job, api, adreport):
@@ -184,15 +203,24 @@ class TestInsightAsyncJob:
         job.start()
         assert not job.failed
 
-        with pytest.raises(RuntimeError, match=r": Incorrect usage of restart - only failed jobs can be restarted"):
+        with pytest.raises(
+            RuntimeError,
+            match=r": Incorrect usage of restart - only failed jobs can be restarted",
+        ):
             job.restart()
 
     def test_restart_when_job_not_started(self, job):
-        with pytest.raises(RuntimeError, match=r": Incorrect usage of restart - only failed jobs can be restarted"):
+        with pytest.raises(
+            RuntimeError,
+            match=r": Incorrect usage of restart - only failed jobs can be restarted",
+        ):
             job.restart()
 
     def test_update_job_not_started(self, job):
-        with pytest.raises(RuntimeError, match=r": Incorrect usage of the method - the job is not started"):
+        with pytest.raises(
+            RuntimeError,
+            match=r": Incorrect usage of the method - the job is not started",
+        ):
             job.update_job()
 
     def test_update_job_on_completed_job(self, completed_job, adreport):
@@ -206,7 +234,7 @@ class TestInsightAsyncJob:
         adreport.api_get.assert_called_once()
 
     def test_update_job_expired(self, started_job, adreport, mocker):
-        mocker.patch.object(started_job, "job_timeout", new=pendulum.Duration())
+        mocker.patch.object(started_job, "_job_timeout", new=pendulum.Duration())
 
         started_job.update_job()
         assert started_job.failed
@@ -284,6 +312,7 @@ class TestInsightAsyncJob:
             api=api,
             params={"breakdowns": [10, 20]},
             interval=interval,
+            job_timeout=pendulum.duration(minutes=60),
         )
 
         assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
@@ -307,17 +336,26 @@ class TestInsightAsyncJob:
         ads_insights._set_data({"items": [{"some_data": 123}, {"some_data": 77}]})
         with mocker.patch(
             "facebook_business.adobjects.objectparser.ObjectParser.parse_multiple",
-            side_effect=[FacebookBadObjectError("Bad data to set object data"), ads_insights],
+            side_effect=[
+                FacebookBadObjectError("Bad data to set object data"),
+                ads_insights,
+            ],
         ):
             # in case this is not retried, an error will be raised
             job.get_result()
 
     def test_get_result_when_job_is_not_started(self, job):
-        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
+        with pytest.raises(
+            RuntimeError,
+            match=r"Incorrect usage of get_result - the job is not started or failed",
+        ):
             job.get_result()
 
     def test_get_result_when_job_is_failed(self, failed_job):
-        with pytest.raises(RuntimeError, match=r"Incorrect usage of get_result - the job is not started or failed"):
+        with pytest.raises(
+            RuntimeError,
+            match=r"Incorrect usage of get_result - the job is not started or failed",
+        ):
             failed_job.get_result()
 
     @pytest.mark.parametrize(
@@ -328,13 +366,24 @@ class TestInsightAsyncJob:
             (AdSet, Ad, "ad_id"),
         ],
     )
+    @freezegun.freeze_time("2023-10-29")
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
         """Test that split will correctly downsize edge_object"""
-        today = pendulum.today().date()
+        today = pendulum.today(tz=pendulum.tz.UTC).date()
         start, end = today - pendulum.duration(days=365 * 3 + 20), today - pendulum.duration(days=365 * 3 + 10)
         params = {"time_increment": 1, "breakdowns": []}
-        job = InsightAsyncJob(api=api, edge_object=edge_class(1), interval=pendulum.Period(start, end), params=params)
-        mocker.patch.object(edge_class, "get_insights", return_value=[{id_field: 1}, {id_field: 2}, {id_field: 3}])
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=edge_class(1),
+            interval=pendulum.Period(start, end),
+            params=params,
+            job_timeout=pendulum.duration(minutes=60),
+        )
+        mocker.patch.object(
+            edge_class,
+            "get_insights",
+            return_value=[{id_field: 1}, {id_field: 2}, {id_field: 3}],
+        )
 
         small_jobs = job.split_job()
 
@@ -344,6 +393,10 @@ class TestInsightAsyncJob:
                 "fields": [id_field],
                 "level": next_edge_class.__name__.lower(),
                 "time_range": {
+                    # This time range is valid for dates that share the same day of the month
+                    # with the one 37 months ago, that's why current date is frozen.
+                    # For a different date the since date would be also different.
+                    # See facebook_marketing.utils.validate_start_date for reference
                     "since": (today - pendulum.duration(months=37) + pendulum.duration(days=1)).to_date_string(),
                     "until": end.to_date_string(),
                 },
@@ -359,7 +412,13 @@ class TestInsightAsyncJob:
         """Test that split will correctly downsize edge_object"""
         interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": []}
-        job = InsightAsyncJob(api=api, edge_object=Ad(1), interval=interval, params=params)
+        job = InsightAsyncJob(
+            api=api,
+            edge_object=Ad(1),
+            interval=interval,
+            params=params,
+            job_timeout=pendulum.duration(minutes=60),
+        )
 
         with pytest.raises(ValueError, match="The job is already splitted to the smallest size."):
             job.split_job()
@@ -423,7 +482,10 @@ class TestParentAsyncJob:
 
     def test_split_job(self, parent_job, grouped_jobs, mocker):
         grouped_jobs[0].failed = True
-        grouped_jobs[0].split_job.return_value = [mocker.Mock(spec=InsightAsyncJob), mocker.Mock(spec=InsightAsyncJob)]
+        grouped_jobs[0].split_job.return_value = [
+            mocker.Mock(spec=InsightAsyncJob),
+            mocker.Mock(spec=InsightAsyncJob),
+        ]
         grouped_jobs[5].failed = True
         grouped_jobs[5].split_job.return_value = [
             mocker.Mock(spec=InsightAsyncJob),

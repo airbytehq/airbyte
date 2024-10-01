@@ -1,5 +1,5 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
     oss:
@@ -17,4 +17,13 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb
   tags:
     - language:java
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-MONGODB-STRICT-ENCRYPT_CREDENTIALS__CREDS
+          fileName: credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

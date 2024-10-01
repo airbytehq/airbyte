@@ -3,11 +3,7 @@
 #
 
 
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_gcs import SourceGCS
+from source_gcs.run import run
 
 if __name__ == "__main__":
-    source = SourceGCS()
-    launch(source, sys.argv[1:])
+    run()

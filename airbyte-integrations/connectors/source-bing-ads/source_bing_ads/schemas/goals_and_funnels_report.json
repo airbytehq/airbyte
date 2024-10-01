@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "AccountName": {
+      "description": "The name of the Bing Ads account.",
+      "type": ["null", "string"]
+    },
+    "AccountNumber": {
+      "description": "The account number associated with the Bing Ads account.",
+      "type": ["null", "string"]
+    },
+    "AccountId": {
+      "description": "The unique identifier for the Bing Ads account.",
+      "type": ["null", "string"]
+    },
+    "TimePeriod": {
+      "description": "The time period for the report data.",
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "CampaignName": {
+      "description": "The name of the campaign.",
+      "type": ["null", "string"]
+    },
+    "CampaignId": {
+      "description": "The unique identifier for the campaign.",
+      "type": ["null", "integer"]
+    },
+    "AdGroupName": {
+      "description": "The name of the ad group.",
+      "type": ["null", "string"]
+    },
+    "AdGroupId": {
+      "description": "The unique identifier for the ad group.",
+      "type": ["null", "integer"]
+    },
+    "Keyword": {
+      "description": "The keyword associated with the report data.",
+      "type": ["null", "string"]
+    },
+    "KeywordId": {
+      "description": "The unique identifier for the keyword.",
+      "type": ["null", "integer"]
+    },
+    "Goal": {
+      "description": "The goal achieved in the report.",
+      "type": ["null", "string"]
+    },
+    "AllConversions": {
+      "description": "The total number of conversions.",
+      "type": ["null", "integer"]
+    },
+    "Assists": {
+      "description": "The number of conversions in which the keyword assisted.",
+      "type": ["null", "integer"]
+    },
+    "AllRevenue": {
+      "description": "The total revenue generated from all conversions.",
+      "type": ["null", "number"]
+    },
+    "GoalId": {
+      "description": "The unique identifier for the goal.",
+      "type": ["null", "integer"]
+    },
+    "DeviceType": {
+      "description": "The type of device used when the event occurred.",
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "description": "The operating system of the device used when the event occurred.",
+      "type": ["null", "string"]
+    },
+    "AccountStatus": {
+      "description": "The status of the Bing Ads account.",
+      "type": ["null", "string"]
+    },
+    "CampaignStatus": {
+      "description": "The status of the campaign.",
+      "type": ["null", "string"]
+    },
+    "AdGroupStatus": {
+      "description": "The status of the ad group.",
+      "type": ["null", "string"]
+    },
+    "KeywordStatus": {
+      "description": "The status of the keyword.",
+      "type": ["null", "string"]
+    },
+    "GoalType": {
+      "description": "The type of goal achieved.",
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversions": {
+      "description": "The total number of view-through conversions.",
+      "type": ["null", "integer"]
+    },
+    "AllConversionsQualified": {
+      "description": "The number of conversions that meet specific qualification criteria.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughConversionsQualified": {
+      "description": "The number of view-through conversions that meet specific qualification criteria.",
+      "type": ["null", "number"]
+    },
+    "ViewThroughRevenue": {
+      "description": "The total revenue generated from view-through conversions.",
+      "type": ["null", "number"]
+    }
+  }
+}

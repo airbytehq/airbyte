@@ -75,12 +75,6 @@ class InMemoryMessageRepository(MessageRepository):
         self._log_level = log_level
 
     def emit_message(self, message: AirbyteMessage) -> None:
-        """
-        :param message: As of today, only AirbyteControlMessages are supported given that supporting other types of message will need more
-          work and therefore this work has been postponed
-        """
-        if message.type not in _SUPPORTED_MESSAGE_TYPES:
-            raise ValueError(f"As of today, only {_SUPPORTED_MESSAGE_TYPES} are supported as part of the InMemoryMessageRepository")
         self._message_queue.append(message)
 
     def log_message(self, level: Level, message_provider: Callable[[], LogMessage]) -> None:

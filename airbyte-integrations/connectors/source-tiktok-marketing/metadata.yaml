@@ -1,28 +1,174 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - sandbox-ads.tiktok.com
       - business-api.tiktok.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
-  dockerImageTag: 3.4.1
+  dockerImageTag: 4.3.3
   dockerRepository: airbyte/source-tiktok-marketing
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: TikTok Marketing
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      4.0.0:
+        message:
+          The source TikTok Marketing connector is being migrated from the Python CDK
+          to our declarative low-code CDK. Due to changes in the handling of state
+          format for incremental substreams, this migration constitutes a breaking
+          change for the following streams - ad_groups, ads, campaigns, creative_assets_images, creative_assets_videos,
+          *_reports_daily, *_reports_hourly, *_reports_by_country_daily, *_reports_by_platform_daily.
+          Also the schema for advertiser_ids stream was changed to use string type of advertiser_id
+          field as API docs declares it.
+          Users will need to reset source configuration, refresh the source schema and reset the impacted streams after upgrading.
+          For more information, see our migration documentation for source TikTok Marketing.
+        upgradeDeadline: "2024-07-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "advertiser_ids"
+              - "ad_group_audience_reports_by_country_daily"
+              - "ad_group_audience_reports_by_platform_daily"
+              - "ad_group_audience_reports_daily"
+              - "ad_groups"
+              - "ad_groups_reports_daily"
+              - "ad_groups_reports_hourly"
+              - "ads"
+              - "ads_audience_reports_by_country_daily"
+              - "ads_audience_reports_by_platform_daily"
+              - "ads_audience_reports_by_province_daily"
+              - "ads_audience_reports_daily"
+              - "ads_reports_daily"
+              - "ads_reports_hourly"
+              - "advertisers_audience_reports_by_country_daily"
+              - "advertisers_audience_reports_by_platform_daily"
+              - "advertisers_audience_reports_daily"
+              - "advertisers_reports_daily"
+              - "advertisers_reports_hourly"
+              - "campaigns"
+              - "campaigns_audience_reports_by_country_daily"
+              - "campaigns_audience_reports_by_platform_daily"
+              - "campaigns_audience_reports_daily"
+              - "campaigns_reports_daily"
+              - "campaigns_reports_hourly"
+              - "creative_assets_images"
+              - "creative_assets_videos"
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-tiktok-marketing
+  suggestedStreams:
+    streams:
+      - ads_reports_daily
+      - ads
+      - campaigns
+      - campaigns_reports_daily
+      - ad_groups
+      - ad_groups_reports_daily
+      - advertisers_reports_daily
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: tiktok-marketing_prod_config_with_lifetime_granularity_dev_null
+          id: 2a53fa01-351c-45af-84d8-a9f200a0c988
+        - name: tiktok-marketing_prod_config_with_day_granularity_dev_null
+          id: 35e62f0f-903a-4fcd-afc6-98259a4f2fea
+        - name: tiktok-marketing_sandbox_config_dev_null
+          id: 36e6778b-a04d-4356-a670-e41123fe9596
+        - name: tiktok-marketing_config_dev_null
+          id: 4da9b9c1-10bd-46c1-915b-bb3d1651153b
+        - name: tiktok-marketing_new_config_prod_dev_null
+          id: 59935970-bbee-4122-88c9-219e97dae272
+        - name: tiktok-marketing_prod_config_dev_null
+          id: 5b364ce8-b98d-4ccf-9a43-56ebd53d481a
+        - name: tiktok-marketing_config_oauth_dev_null
+          id: 60c12fbb-bc41-4df1-9b33-9a5455312b0e
+        - name: tiktok-marketing_new_config_sandbox_dev_null
+          id: 9aab8bf6-b4cd-4bad-b319-ed39bcddfe2a
+        - name: tiktok-marketing_prod_config_day_dev_null
+          id: bb8311bf-6def-4119-bf32-38c001a1e549
+    - suite: unitTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
+          fileName: sandbox_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
+          fileName: prod_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_CREDS
+          fileName: new_config_sandbox.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_NEW_PROD_CREDS
+          fileName: new_config_prod.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS
+          fileName: prod_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS_WITH_DAY_GRANULARITY
+          fileName: prod_config_with_day_granularity.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_CREDS_WITH_LIFETIME_GRANULARITY
+          fileName: prod_config_with_lifetime_granularity.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_PROD_DAY_CREDS
+          fileName: prod_config_day.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TIKTOK-MARKETING_SANDBOX_CREDS
+          fileName: sandbox_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

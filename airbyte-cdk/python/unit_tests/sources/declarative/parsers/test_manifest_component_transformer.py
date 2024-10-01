@@ -347,3 +347,60 @@ def test_only_propagate_parameters_to_components():
     actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
+
+
+def test_do_not_propagate_parameters_on_json_schema_object():
+    component = {
+        "type": "DeclarativeStream",
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "schema_loader": {
+                    "type": "InlineSchemaLoader",
+                    "schema": {
+                        "type": "object",
+                        "$schema": "http://json-schema.org/schema#",
+                        "properties": {"id": {"type": "string"}},
+                    },
+                },
+                "$parameters": {
+                    "name": "roasters",
+                    "primary_key": "id",
+                },
+            }
+        ],
+    }
+
+    expected_component = {
+        "type": "DeclarativeStream",
+        "streams": [
+            {
+                "type": "DeclarativeStream",
+                "name": "roasters",
+                "primary_key": "id",
+                "schema_loader": {
+                    "type": "InlineSchemaLoader",
+                    "name": "roasters",
+                    "primary_key": "id",
+                    "schema": {
+                        "type": "object",
+                        "$schema": "http://json-schema.org/schema#",
+                        "properties": {"id": {"type": "string"}},
+                    },
+                    "$parameters": {
+                        "name": "roasters",
+                        "primary_key": "id",
+                    },
+                },
+                "$parameters": {
+                    "name": "roasters",
+                    "primary_key": "id",
+                },
+            }
+        ],
+    }
+
+    transformer = ManifestComponentTransformer()
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
+
+    assert actual_component == expected_component

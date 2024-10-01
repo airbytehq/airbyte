@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <!-- Set the LOG_SCRUB_PATTERN env var to a regex pattern to scrub the log messages of secrets or any other unwanted content. -->
+        <Property name="jvm-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%t`%T`%highlight{%p}`%C{1.}(%M):%L - %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
+        <!--Logs the timestamp and log_source/application name in the beginning of the line if it exists with a > separator, and then always the rest of the line.-->
+        <Property name="container-log-pattern">%d{yyyy-MM-dd'T'HH:mm:ss,SSS}{GMT+0}`%replace{%X{log_source}}{^ -}{} > %replace{%m}{$${env:LOG_SCRUB_PATTERN:-\*\*\*\*\*}}{*****}%n</Property>
+        <!-- Always log INFO by default. -->
+        <Property name="log-level">${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
+        <Property name="logDir">target/test-logs/${date:yyyy-MM-dd'T'HH:mm:ss}</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="JvmLogsStdOut" target="SYSTEM_OUT">
+            <PatternLayout pattern="${jvm-log-pattern}"/>
+        </Console>
+        <Console name="ContainerLogsStdOut" target="SYSTEM_OUT">
+            <PatternLayout pattern="${container-log-pattern}"/>
+        </Console>
+        <File name="JvmLogsFile" fileName="${logDir}/airbyte_jvm.log">
+            <PatternLayout disableAnsi="true"  pattern="${jvm-log-pattern}"/>
+        </File>
+        <File name="ContainerLogFiles" fileName="${logDir}/airbyte_containers.log">
+            <PatternLayout disableAnsi="true" pattern="${container-log-pattern}"/>
+        </File>
+        <File name="UnifiedFile-JvmLogs" fileName="${logDir}/airbyte_unified.log">
+            <PatternLayout pattern="${jvm-log-pattern}"/>
+        </File>
+        <File name="UnifiedFile-ContainerLogs" fileName="${logDir}/airbyte_unified.log">
+            <PatternLayout pattern="${container-log-pattern}"/>
+        </File>
+
+        <ASync name="JvmLogs" includeLocation="true">
+            <AppenderRef ref="JvmLogsStdOut"/>
+            <AppenderRef ref="JvmLogsFile"/>
+            <AppenderRef ref="UnifiedFile-JvmLogs"/>
+        </ASync>
+        <ASync name="ContainerLogs">
+            <AppenderRef ref="ContainerLogsStdOut"/>
+            <AppenderRef ref="ContainerLogFiles"/>
+            <AppenderRef ref="UnifiedFile-ContainerLogs"/>
+        </ASync>
+
+        <Routing name="AllLogs">
+            <Routes pattern="$${ctx:simple}">
+                <Route key="true" ref="ContainerLogs">
+                </Route>
+                <Route ref="JvmLogs">
+                </Route>
+            </Routes>
+        </Routing>
+    </Appenders>
+
+    <Loggers>
+        <Root level="${log-level}">
+            <AppenderRef ref="AllLogs"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

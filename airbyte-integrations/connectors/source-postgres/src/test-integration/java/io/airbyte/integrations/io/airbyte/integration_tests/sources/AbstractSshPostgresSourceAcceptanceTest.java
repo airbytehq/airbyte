@@ -13,9 +13,11 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -23,36 +25,32 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-@ExtendWith(SystemStubsExtension.class)
 public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String SCHEMA_NAME = "public";
-  @SystemStub
-  private EnvironmentVariables environmentVariables;
-  private static final Network network = Network.newNetwork();
-  private static JsonNode config;
+
   private final SshBastionContainer bastion = new SshBastionContainer();
-  private PostgreSQLContainer<?> db;
+  private PostgresTestDatabase testdb;
 
   private void populateDatabaseTestData() throws Exception {
-    final var outerConfig = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")), false);
+    final var outerConfig = testdb.integrationTestConfigBuilder()
+        .withSchemas("public")
+        .withoutSsl()
+        .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), false))
+        .build();
     SshTunnel.sshWrap(
         outerConfig,
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
+        (CheckedConsumer<JsonNode, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
               ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
@@ -81,31 +79,29 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   // requiring data to already be in place.
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")), true);
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.NETWORK);
+    bastion.initAndStartBastion(testdb.getContainer().getNetwork());
     populateDatabaseTestData();
-
-  }
-
-  private void startTestContainers() {
-    bastion.initAndStartBastion(network);
-    initAndStartJdbcContainer();
-  }
-
-  private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(network);
-    db.start();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    bastion.stopAndCloseContainers(db);
+    bastion.stopAndClose();
   }
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    try {
+      return testdb.integrationTestConfigBuilder()
+          .withSchemas("public")
+          .withoutSsl()
+          .with("tunnel_method", bastion.getTunnelMethod(getTunnelMethod(), true))
+          .build();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -136,11 +132,6 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
-  }
-
-  @Override
-  protected boolean supportsPerStream() {
-    return true;
   }
 
 }

@@ -1,0 +1,232 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - stats
+definitions:
+  streams:
+    stats:
+      type: DeclarativeStream
+      name: stats
+      primary_key:
+        - date
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /timeseries
+          http_method: GET
+          request_parameters:
+            site_id: "{{ config['site_id'] }}"
+            period: custom
+            metrics: visitors,pageviews,bounce_rate,visit_duration,visits
+            date: "{{ config['start_date'] or '2019-01-01' }},{{ today_utc() }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - results
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['bounce_rate'] is not none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          description: Timeseries data over a given time period.
+          properties:
+            bounce_rate:
+              type:
+                - integer
+                - "null"
+              description: Bounce rate percentage.
+              title: Bounce Rate
+            date:
+              type: string
+              description: The date, in your site's time zone, in ISO 8601 format.
+              title: Date
+            pageviews:
+              type: integer
+              description: The number of pageview events.
+              title: Pageviews
+            visit_duration:
+              type:
+                - integer
+                - "null"
+              description: Visit duration in seconds.
+              title: Visit Duration
+            visitors:
+              type: integer
+              description: The number of unique visitors.
+              title: Visitors
+            visits:
+              type: integer
+              description: The number of visits/sessions.
+              title: Visits
+          title: Stats
+          additionalProperties: true
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: stats
+    primary_key:
+      - date
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: "{{ config['api_url'] or 'https://plausible.io/api/v1/stats' }}"
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /timeseries
+        http_method: GET
+        request_parameters:
+          site_id: "{{ config['site_id'] }}"
+          period: custom
+          metrics: visitors,pageviews,bounce_rate,visit_duration,visits
+          date: "{{ config['start_date'] or '2019-01-01' }},{{ today_utc() }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record['bounce_rate'] is not none }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        description: Timeseries data over a given time period.
+        properties:
+          bounce_rate:
+            type:
+              - integer
+              - "null"
+            description: Bounce rate percentage.
+            title: Bounce Rate
+          date:
+            type: string
+            description: The date, in your site's time zone, in ISO 8601 format.
+            title: Date
+          pageviews:
+            type: integer
+            description: The number of pageview events.
+            title: Pageviews
+          visit_duration:
+            type:
+              - integer
+              - "null"
+            description: Visit duration in seconds.
+            title: Visit Duration
+          visitors:
+            type: integer
+            description: The number of unique visitors.
+            title: Visitors
+          visits:
+            type: integer
+            description: The number of visits/sessions.
+            title: Visits
+        title: Stats
+        additionalProperties: true
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - site_id
+    properties:
+      api_key:
+        type: string
+        title: Plausible API key
+        airbyte_secret: true
+        description: >-
+          Plausible API Key. See the <a
+          href="https://plausible.io/docs/stats-api">docs</a> for information on
+          how to generate this key.
+        order: 0
+      site_id:
+        type: string
+        title: Target website domain
+        description: >-
+          The domain of the site you want to retrieve data for. Enter the name
+          of your site as configured on Plausible, i.e., excluding "https://"
+          and "www". Can be retrieved from the 'domain' field in your Plausible
+          site settings.
+        pattern: ^[A-Za-z0-9-.]+\.[A-Z-a-z0-9-.]+
+        examples:
+          - airbyte.com
+          - docs.airbyte.com
+        order: 1
+      api_url:
+        type: string
+        title: API URL
+        description: >-
+          The API URL of your plausible instance.
+          Change this if you self-host plausible. The default is https://plausible.io/api/v1/stats
+        pattern: ^[A-Za-z0-9-.]+\.[A-Z-a-z0-9-.]+
+        examples:
+          - https://plausible.example.com/api/v1/stats
+        order: 2
+      start_date:
+        type: string
+        title: Data start date
+        description: Start date for data to retrieve, in ISO-8601 format.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+        order: 3
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    stats: false
+schemas:
+  stats:
+    type: object
+    description: Timeseries data over a given time period.
+    properties:
+      bounce_rate:
+        type:
+          - integer
+          - "null"
+        description: Bounce rate percentage.
+        title: Bounce Rate
+      date:
+        type: string
+        description: The date, in your site's time zone, in ISO 8601 format.
+        title: Date
+      pageviews:
+        type: integer
+        description: The number of pageview events.
+        title: Pageviews
+      visit_duration:
+        type:
+          - integer
+          - "null"
+        description: Visit duration in seconds.
+        title: Visit Duration
+      visitors:
+        type: integer
+        description: The number of unique visitors.
+        title: Visitors
+      visits:
+        type: integer
+        description: The number of visits/sessions.
+        title: Visits
+    title: Stats
+    additionalProperties: true

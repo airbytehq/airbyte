@@ -2169,6 +2169,9 @@
       "description": "The group that the filter is shared with. For a request, specify the `name` property for the group.",
       "type": "object",
       "properties": {
+        "groupId": {
+          "type": ["null", "string"]
+        },
         "name": {
           "type": "string",
           "description": "The name of group."

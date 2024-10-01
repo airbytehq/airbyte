@@ -12,7 +12,11 @@ data:
   icon: netsuite.svg
   license: MIT
   name: Netsuite
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-netsuite
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -21,4 +25,14 @@ data:
   supportLevel: community
   tags:
     - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_NETSUITE_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

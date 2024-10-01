@@ -2,58 +2,76 @@
   "type": ["null", "object"],
   "properties": {
     "metadata": {
+      "description": "Additional information associated with the coupon.",
       "type": ["null", "object"],
       "properties": {}
     },
     "times_redeemed": {
+      "description": "Number of times the coupon has been redeemed.",
       "type": ["null", "integer"]
     },
     "percent_off_precise": {
+      "description": "Precise percentage discount value.",
       "type": ["null", "number"]
     },
     "livemode": {
+      "description": "Indicates if the coupon is in live mode.",
       "type": ["null", "boolean"]
     },
     "object": {
+      "description": "Type of object, in this case, 'coupon'.",
       "type": ["null", "string"]
     },
     "redeem_by": {
+      "description": "Timestamp by which the coupon must be redeemed.",
       "type": ["null", "string"]
     },
     "duration": {
+      "description": "Specifies the duration that the coupon remains valid for, e.g., once, repeating.",
       "type": ["null", "string"]
     },
     "id": {
+      "description": "Unique identifier for the coupon.",
       "type": ["null", "string"]
     },
     "valid": {
+      "description": "Indicates if the coupon is currently valid for use.",
       "type": ["null", "boolean"]
     },
     "currency": {
+      "description": "Currency of the amount_off value.",
       "type": ["null", "string"]
     },
     "duration_in_months": {
+      "description": "The number of months the coupon is valid for.",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "Name of the coupon for identification purposes.",
       "type": ["null", "string"]
     },
     "max_redemptions": {
+      "description": "Maximum number of times the coupon can be redeemed.",
       "type": ["null", "integer"]
     },
     "amount_off": {
+      "description": "The amount deducted from the total cost when the coupon is applied.",
       "type": ["null", "integer"]
     },
     "created": {
+      "description": "Timestamp when the coupon was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "Timestamp when the coupon was last updated.",
       "type": ["null", "integer"]
     },
     "percent_off": {
+      "description": "Percentage discount applied when coupon is used.",
       "type": ["null", "number"]
     },
     "is_deleted": {
+      "description": "Indicates if the coupon has been marked as deleted.",
       "type": ["null", "boolean"]
     }
   }

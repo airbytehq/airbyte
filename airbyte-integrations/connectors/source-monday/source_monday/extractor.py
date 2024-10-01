@@ -41,9 +41,8 @@ class MondayActivityExtractor(RecordExtractor):
             return result
 
         for board_data in response_body["data"]["boards"]:
-            if not isinstance(board_data, dict):
+            if not isinstance(board_data, dict) or not board_data.get("activity_logs"):
                 continue
-
             for record in board_data.get("activity_logs", []):
                 json_data = json.loads(record["data"])
                 new_record = record
@@ -72,11 +71,12 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
     field_path: List[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    additional_field_path: List[Union[InterpolatedString, str]] = field(default_factory=list)
+    field_path_pagination: List[Union[InterpolatedString, str]] = field(default_factory=list)
+    field_path_incremental: List[Union[InterpolatedString, str]] = field(default_factory=list)
     decoder: Decoder = JsonDecoder(parameters={})
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        for field_list in (self.field_path, self.additional_field_path):
+        for field_list in (self.field_path, self.field_path_pagination, self.field_path_incremental):
             for path_index in range(len(field_list)):
                 if isinstance(field_list[path_index], str):
                     field_list[path_index] = InterpolatedString.create(field_list[path_index], parameters=parameters)
@@ -100,12 +100,19 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         result = self.try_extract_records(response, field_path=self.field_path)
-        if not result and self.additional_field_path:
-            result = self.try_extract_records(response, self.additional_field_path)
+        if not result and self.field_path_pagination:
+            result = self.try_extract_records(response, self.field_path_pagination)
+        if not result and self.field_path_incremental:
+            result = self.try_extract_records(response, self.field_path_incremental)
 
-        for item_index in range(len(result)):
-            if "updated_at" in result[item_index]:
-                result[item_index]["updated_at_int"] = int(
-                    datetime.strptime(result[item_index]["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp()
-                )
+        for record in result:
+            if "updated_at" in record:
+                record["updated_at_int"] = int(datetime.strptime(record["updated_at"], "%Y-%m-%dT%H:%M:%S%z").timestamp())
+
+            column_values = record.get("column_values", [])
+            for values in column_values:
+                display_value, text = values.get("display_value"), values.get("text")
+                if display_value and not text:
+                    values["text"] = display_value
+
         return result

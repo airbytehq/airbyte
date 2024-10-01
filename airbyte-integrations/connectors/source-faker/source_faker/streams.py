@@ -15,7 +15,7 @@ from .utils import format_airbyte_time, generate_estimate, read_json
 
 
 class Products(Stream, IncrementalMixin):
-    primary_key = None
+    primary_key = "id"
     cursor_field = "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
@@ -65,7 +65,7 @@ class Products(Stream, IncrementalMixin):
 
 
 class Users(Stream, IncrementalMixin):
-    primary_key = None
+    primary_key = "id"
     cursor_field = "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
@@ -119,13 +119,13 @@ class Users(Stream, IncrementalMixin):
                 if records_remaining_this_loop == 0:
                     break
 
-                self.state = {"seed": self.seed, "updated_at": updated_at}
+                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-        self.state = {"seed": self.seed, "updated_at": updated_at}
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
 
 class Purchases(Stream, IncrementalMixin):
-    primary_key = None
+    primary_key = "id"
     cursor_field = "updated_at"
 
     def __init__(self, count: int, seed: int, parallelism: int, records_per_slice: int, always_updated: bool, **kwargs):
@@ -180,6 +180,6 @@ class Purchases(Stream, IncrementalMixin):
                 if records_remaining_this_loop == 0:
                     break
 
-                self.state = {"seed": self.seed, "updated_at": updated_at}
+                self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}
 
-        self.state = {"seed": self.seed, "updated_at": updated_at}
+            self.state = {"seed": self.seed, "updated_at": updated_at, "loop_offset": loop_offset}

@@ -2,27 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Union
+from typing import Optional, Union
 
-from dagster import get_dagster_logger
-from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+import pandas as pd
+from dagster import OpExecutionContext
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import get_metadata_remote_file_path
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from orchestrator.models.metadata import LatestMetadataEntry
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
-
-
-def _is_docker_repository_overridden(
-    metadata_entry: LatestMetadataEntry,
-    registry_entry: PolymorphicRegistryEntry,
-) -> bool:
-    """Check if the docker repository is overridden in the registry entry."""
-    registry_entry_docker_repository = registry_entry.dockerRepository
-    metadata_docker_repository = metadata_entry.metadata_definition.data.dockerRepository
-    return registry_entry_docker_repository != metadata_docker_repository
 
 
 def _get_version_specific_registry_entry_file_path(registry_entry, registry_name):
@@ -44,48 +33,107 @@ def _check_for_invalid_write_path(write_path: str):
         )
 
 
-def write_registry_to_overrode_file_paths(
+def construct_registry_entry_write_path(
     registry_entry: PolymorphicRegistryEntry,
     registry_name: str,
-    metadata_entry: LatestMetadataEntry,
-    registry_directory_manager: GCSFileManager,
-) -> GCSFileHandle:
+) -> str:
     """
-    Write the registry entry to the docker repository and version specific file paths
-    in the event that the docker repository is overridden.
+    Construct a registry entry write path from its parts.
 
     Underlying issue:
-        The registry entry files (oss.json and cloud.json) are traditionally written to
-        the same path as the metadata.yaml file that created them. This is fine for the
-        most cases, but when the docker repository is overridden, the registry entry
-        files need to be written to a different path.
+        This is barely a hack.
 
-        For example if source-postgres:dev.123 is overridden to source-postgres-strict-encrypt:dev.123
-        then the oss.json file needs to be written to the path that would be assumed
-        by the platform when looking for a specific registry entry. In this case, for cloud, it would be
-        gs://my-bucket/metadata/source-postgres-strict-encrypt/dev.123/cloud.json
+        But it is related to a few imperfect design decisions that we have to work around.
+        1. Metadata files and the registry entries are saved to the same top level folder.
+        2. That save path is determined by the docker repository and version of the image
+        3. A metadata file can include overrides for the docker repository and version of the image depending on the registry
+        4. The platform looks up registry entries by docker repository and version of the image.
+        5. The registry generation depends on what ever registry entry is written to a path ending in latest/{registry_name}.json
 
-        Ideally we would not have to do this, but the combination of prereleases and common overrides
-        make this nessesary.
+        This means that when a metadata file overrides the docker repository and version of the image,
+        the registry entry needs to be written to a different path than the metadata file.
+
+        *But only in the case that its a versioned path and NOT a latest path.*
+
+        Example:
+        If metadata file for source-posgres is at version 2.0.0 but there is a override for the cloud registry
+        that changes the docker repository to source-postgres-strict-encrypt and the version to 1.0.0
+
+        Then we will have a metadata file written to:
+        gs://my-bucket/metadata/source-postgres/2.0.0/metadata.yaml
+
+        and registry entries written to:
+        gs://my-bucket/metadata/source-postgres/2.0.0/oss.json
+        gs://my-bucket/metadata/source-postgres-strict-encrypt/1.0.0/cloud.json
+
+        But if the metadata file is written to a latest path, then the registry entry will be written to the same path:
+        gs://my-bucket/metadata/source-postgres/latest/oss.json
+        gs://my-bucket/metadata/source-postgres/latest/cloud.json
+
+        Future Solution:
+        To resolve this properly we need to
+        1. Separate the save paths for metadata files and registry entries
+        2. Have the paths determined by definitionId and a metadata version
+        3. Allow for references to other metadata files in the metadata file instead of overrides
 
     Args:
         registry_entry (PolymorphicRegistryEntry): The registry entry to write
         registry_name (str): The name of the registry entry (oss or cloud)
-        metadata_entry (LatestMetadataEntry): The metadata entry that created the registry entry
-        registry_directory_manager (GCSFileManager): The file manager to use to write the registry entry
 
     Returns:
-        GCSFileHandle: The file handle of the written registry entry
+        str: The registry entry write path corresponding to the registry entry
     """
-    if not _is_docker_repository_overridden(metadata_entry, registry_entry):
-        return None
-    logger = get_dagster_logger()
-    registry_entry_json = registry_entry.json(exclude_none=True)
     overrode_registry_entry_version_write_path = _get_version_specific_registry_entry_file_path(registry_entry, registry_name)
     _check_for_invalid_write_path(overrode_registry_entry_version_write_path)
-    logger.info(f"Writing registry entry to {overrode_registry_entry_version_write_path}")
-    file_handle = registry_directory_manager.write_data(
-        registry_entry_json.encode("utf-8"), ext="json", key=overrode_registry_entry_version_write_path
-    )
-    logger.info(f"Successfully wrote registry entry to {file_handle.public_url}")
-    return file_handle
+    return overrode_registry_entry_version_write_path
+
+
+def sanitize_docker_repo_name_for_dependency_file(docker_repo_name: str) -> str:
+    """
+    Remove the "airbyte/" prefix from the docker repository name.
+
+    e.g. airbyte/source-postgres -> source-postgres
+
+    Problem:
+        The dependency file paths are based on the docker repository name without the "airbyte/" prefix where as all other
+        paths are based on the full docker repository name.
+
+        e.g. https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/connector_dependencies/source-pokeapi/0.2.0/dependencies.json
+
+    Long term solution:
+        Move the dependency file paths to be based on the full docker repository name.
+
+    Args:
+        docker_repo_name (str): The docker repository name
+
+    Returns:
+        str: The docker repository name without the "airbyte/" prefix
+    """
+
+    return docker_repo_name.replace("airbyte/", "")
+
+
+def get_airbyte_slack_users_from_graph(context: OpExecutionContext) -> Optional[pd.DataFrame]:
+    """
+    Get the airbyte slack users from the graph.
+
+    Important: Directly relates to the airbyte_slack_users asset. Requires the asset to be materialized in the graph.
+
+    Problem:
+        I guess having dynamic partitioned assets that automatically materialize depending on another asset is a bit too much to ask for.
+
+    Solution:
+        Just get the asset from the graph, but dont declare it as a dependency.
+
+    Context:
+        https://airbytehq-team.slack.com/archives/C048P9GADFW/p1715276222825929
+    """
+    try:
+        from orchestrator import defn
+
+        airbyte_slack_users = defn.load_asset_value("airbyte_slack_users", instance=context.instance)
+        context.log.info(f"Got airbyte slack users from graph: {airbyte_slack_users}")
+        return airbyte_slack_users
+    except Exception as e:
+        context.log.error(f"Failed to get airbyte slack users from graph: {e}")
+        return None

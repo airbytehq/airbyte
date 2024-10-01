@@ -19,7 +19,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
@@ -119,8 +119,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
         super().__init__(config, profiles)
         self._state = {}
-        self._authenticator = authenticator
         self._session = requests.Session()
+        self._session.auth = authenticator
+        self._report_download_session = self._session
         self._model = self._generate_model()
         self._start_date: Optional[Date] = config.get("start_date")
         self._look_back_window: int = config["look_back_window"]
@@ -243,7 +244,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             {
                 "Amazon-Advertising-API-ClientId": self._client_id,
                 "Amazon-Advertising-API-Scope": str(profile_id),
-                **self._authenticator.get_auth_header(),
+                **self._session.auth.get_auth_header(),
             }
             if profile_id
             else {}
@@ -294,12 +295,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         ),
         max_tries=10,
     )
-    def _send_http_request(self, url: str, profile_id: int, json: dict = None):
+    def _send_http_request(self, url: str, profile_id: int, json: dict = None, is_download_report: bool = False):
         headers = self._get_auth_headers(profile_id)
         if json:
             response = self._session.post(url, headers=headers, json=json)
         else:
-            response = self._session.get(url, headers=headers)
+            session = self._report_download_session if is_download_report else self._session
+            response = session.get(url, headers=headers)
         if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
             raise TooManyRequests()
         return response
@@ -433,7 +435,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         """
         Download and parse report result
         """
-        response = self._send_http_request(url, report_info.profile_id) if report_info else self._send_http_request(url, None)
+        profile_id = report_info.profile_id if report_info else None
+        response = self._send_http_request(url=url, profile_id=profile_id, is_download_report=True)
         response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
         return json.loads(raw_string)

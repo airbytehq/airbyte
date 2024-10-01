@@ -15,12 +15,14 @@ import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Leibniz on 2022/11/3.
  */
+@Disabled("We will not be supporting Hive meta store going forward, tests are broken too")
 public class IcebergHiveCatalogS3ParquetIntegrationTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IcebergHiveCatalogS3ParquetIntegrationTest.class);

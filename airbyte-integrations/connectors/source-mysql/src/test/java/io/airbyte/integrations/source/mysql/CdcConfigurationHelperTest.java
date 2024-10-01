@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
+import io.airbyte.integrations.source.mysql.cdc.CdcConfigurationHelper;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

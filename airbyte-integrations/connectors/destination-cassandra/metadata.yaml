@@ -8,11 +8,11 @@ data:
   icon: cassandra.svg
   license: MIT
   name: Cassandra
-  registries:
+  registryOverrides:
     cloud:
-      enabled: false # hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/cassandra
   tags:

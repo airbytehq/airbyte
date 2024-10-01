@@ -3,61 +3,79 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the article",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "The title of the article",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The date and time when the article was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "body_html": {
+      "description": "The HTML content of the article body",
       "type": ["null", "string"]
     },
     "blog_id": {
+      "description": "The unique identifier of the blog to which the article belongs",
       "type": ["null", "integer"]
     },
     "author": {
+      "description": "The name of the author of the article",
       "type": ["null", "string"]
     },
     "user_id": {
+      "description": "The unique identifier of the user who created the article",
       "type": ["null", "string"]
     },
     "published_at": {
+      "description": "The date and time when the article was published",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the article was last updated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "summary_html": {
+      "description": "A summary or excerpt of the article content in HTML format",
       "type": ["null", "string"]
     },
     "template_suffix": {
+      "description": "The suffix of the template used for the article",
       "type": ["null", "string"]
     },
     "handle": {
+      "description": "The unique URL path segment for the article",
       "type": ["null", "string"]
     },
     "tags": {
+      "description": "Tags associated with the article",
       "type": ["null", "string"]
     },
     "admin_graphql_api_id": {
+      "description": "The unique identifier of the article in the GraphQL Admin API",
       "type": ["null", "string"]
     },
     "shop_url": {
+      "description": "The URL of the shop where the article is published",
       "type": ["null", "string"]
     },
     "deleted_at": {
+      "description": "The date and time when the article was deleted",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deleted_message": {
+      "description": "Message related to the deletion of the article",
       "type": ["null", "string"]
     },
     "deleted_description": {
+      "description": "Description of the reason for article deletion",
       "type": ["null", "string"]
     }
   }

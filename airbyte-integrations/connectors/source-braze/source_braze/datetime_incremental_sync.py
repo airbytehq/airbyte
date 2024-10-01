@@ -46,7 +46,7 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
             if get_start_time(dr) < get_end_time(dr)
         ]
         for i, _slice in enumerate(date_range):
-            start_time = self._parser.parse(get_start_time(_slice), self.start_datetime.datetime_format, self._timezone)
-            end_time = self._parser.parse(get_end_time(_slice), self.end_datetime.datetime_format, self._timezone)
+            start_time = self._parser.parse(get_start_time(_slice), self.start_datetime.datetime_format)
+            end_time = self._parser.parse(get_end_time(_slice), self.end_datetime.datetime_format)
             _slice[self.stream_slice_field_step.eval(self.config)] = (end_time + datetime.timedelta(days=int(bool(i))) - start_time).days
         return date_range

@@ -2,14 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import socket
 from datetime import datetime, timedelta
 from unittest import mock
 from unittest.mock import patch
+from urllib.error import URLError
 
 import pytest
 import source_bing_ads.client
 from airbyte_cdk.utils import AirbyteTracedException
-from bingads.authorization import OAuthTokens
+from bingads.authorization import AuthorizationData, OAuthTokens
+from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from suds import sudsobject
 
@@ -100,6 +103,13 @@ def test_get_auth_client(patched_request_tokens):
 
 
 @patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
+def test_get_auth_data(patched_request_tokens):
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    auth_data = client._get_auth_data()
+    assert isinstance(auth_data, AuthorizationData)
+
+
+@patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
 def test_handling_ReportingDownloadException(patched_request_tokens):
     client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
     give_up = client.should_give_up(ReportingDownloadException(message="test"))
@@ -125,3 +135,57 @@ def test_get_access_token(requests_mock):
         "The user must sign in again.",
     ):
         source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+
+
+def test_get_access_token_success(requests_mock):
+    requests_mock.post(
+        "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token",
+        status_code=200,
+        json={"access_token": "test", "expires_in": "900", "refresh_token": "test"},
+    )
+    source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    assert requests_mock.call_count == 1
+
+
+@patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
+def test_should_give_up(patched_request_tokens):
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    give_up = client.should_give_up(Exception())
+    assert True is give_up
+    give_up = client.should_give_up(URLError(reason="test"))
+    assert True is give_up
+    give_up = client.should_give_up(URLError(reason=socket.timeout()))
+    assert False is give_up
+
+
+@patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
+def test_get_service(patched_request_tokens):
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    service = client.get_service(service_name="CustomerManagementService")
+    assert "customermanagement_service.xml" in service.service_url
+
+
+@patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
+def test_get_reporting_service(patched_request_tokens):
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    service = client._get_reporting_service()
+    assert (service._poll_interval_in_milliseconds, service._environment) == (client.report_poll_interval, client.environment)
+
+
+@patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
+def test_bulk_service_manager(patched_request_tokens):
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    service = client._bulk_service_manager()
+    assert (service._poll_interval_in_milliseconds, service._environment) == (5000, client.environment)
+
+
+def test_get_bulk_entity(requests_mock):
+    requests_mock.post(
+        "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token",
+        status_code=200,
+        json={"access_token": "test", "expires_in": "9000", "refresh_token": "test"},
+    )
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    with patch.object(BulkServiceManager, "download_file", return_value="file.csv"):
+        bulk_entity = client.get_bulk_entity(data_scope=["EntityData"], download_entities=["AppInstallAds"])
+        assert bulk_entity == "file.csv"
