@@ -128,6 +128,10 @@
             "type": "string",
             "const": "https://auth.monday.com/oauth2/token"
           },
+          "access_token_key": {
+            "type" : "string",
+            "const" : "access_token"
+          },
           "scope": {
             "type": "string",
             "const": "me:read boards:read workspaces:read users:read account:read updates:read assets:read tags:read teams:read"
