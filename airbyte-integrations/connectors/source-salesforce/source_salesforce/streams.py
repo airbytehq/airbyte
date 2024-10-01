@@ -132,10 +132,6 @@ class SalesforceStream(HttpStream, ABC):
         return self.sf_api.instance_url
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return SalesforceAvailabilityStrategy()
-
-    @property
     def too_many_properties(self):
         selected_properties = self.get_json_schema().get("properties", {})
         properties_length = len(urllib.parse.quote(",".join(p for p in selected_properties)))
@@ -620,7 +616,7 @@ class BulkSalesforceStream(SalesforceStream):
             request_options_provider=InterpolatedRequestOptionsProvider(
                 request_body_data=None,
                 request_body_json=None,
-                request_headers=None,
+                request_headers={"Accept-Encoding": "gzip"},
                 request_parameters=None,
                 config=config,
                 parameters=parameters,
@@ -761,10 +757,6 @@ class BulkSalesforceStream(SalesforceStream):
     MAX_RETRY_NUMBER = 3
 
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def get_query_select_fields(self) -> str:
         return ", ".join(
