@@ -53,7 +53,7 @@ class TestTicketMetricsIncremental(TestCase):
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
         assert output.most_recent_state.stream_state == AirbyteStateBlob({
-            "generated_timestamp": 1705676029
+            "_ab_updated_at": 1705676029
         })
 
 
@@ -62,7 +62,7 @@ class TestTicketMetricsIncremental(TestCase):
         api_token_authenticator = self._get_authenticator(self._config)
 
         state_cursor_value = pendulum.now(tz="UTC").subtract(days=2).int_timestamp
-        state = {"generated_timestamp": state_cursor_value}
+        state = {"_ab_updated_at": state_cursor_value}
         record_cursor_value = pendulum.now(tz="UTC").subtract(days=1)
         tickets_records_builder = given_tickets_with_state(http_mocker, pendulum.from_timestamp(state_cursor_value), record_cursor_value,api_token_authenticator)
         ticket = tickets_records_builder.build()
@@ -81,5 +81,5 @@ class TestTicketMetricsIncremental(TestCase):
         assert len(output.records) == 1
         assert output.most_recent_state.stream_descriptor.name == "ticket_metrics"
         assert output.most_recent_state.stream_state == AirbyteStateBlob({
-            "generated_timestamp": record_cursor_value.int_timestamp
+            "_ab_updated_at": record_cursor_value.int_timestamp
         })

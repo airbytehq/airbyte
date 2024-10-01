@@ -426,7 +426,7 @@ class TestSourceZendeskSupportStream:
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (StatefulTicketMetrics, {}, {"generated_timestamp": 1622505600}, {"generated_timestamp": 1622505600}),
+            (StatefulTicketMetrics, {}, {"_ab_updated_at": 1622505600}, {"_ab_updated_at": 1622505600}),
             (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
         ids=["Macros", "Posts", "Organizations", "Groups", "SatisfactionRatings", "TicketFields", "StatefulTicketMetrics", "Topics"],
@@ -1060,7 +1060,7 @@ class TestTicketMetrics:
     @pytest.mark.parametrize(
             "state, expected_parent_stream",
             [
-                ({"generated_timestamp": 1727334000}, StatefulTicketMetrics),
+                ({"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
                 ({}, StatelessTicketMetrics),
             ]
     )
@@ -1072,7 +1072,7 @@ class TestTicketMetrics:
     @pytest.mark.parametrize(
             "sync_mode, state, expected_parent_stream",
             [
-                (SyncMode.incremental, {"generated_timestamp": 1727334000}, StatefulTicketMetrics),
+                (SyncMode.incremental, {"_ab_updated_at": 1727334000}, StatefulTicketMetrics),
                 (SyncMode.full_refresh, {}, StatelessTicketMetrics),
                 (SyncMode.incremental, {}, StatelessTicketMetrics),
             ]
@@ -1096,11 +1096,11 @@ class TestStatefulTicketMetrics:
                 ],
             ),
             (
-                {"generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp},
+                {"_ab_updated_state": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp},
                 {"tickets": [{"id": "80", "generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}]},
                 [{"ticket_id": "80", "_ab_updated_at": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}],
             ),
-            ({"generated_timestamp": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}, {"tickets": []}, []),
+            ({"_ab_updated_state": pendulum.parse("2024-04-17T19:34:06Z").int_timestamp}, {"tickets": []}, []),
         ],
         ids=[
             "read_without_state",
@@ -1143,8 +1143,8 @@ class TestStatefulTicketMetrics:
     @pytest.mark.parametrize(
         "current_stream_state, record_cursor_value, expected",
         [
-            ({ "generated_timestamp": 1727334000}, 1727420400, { "generated_timestamp": 1727420400}),
-            ({ "generated_timestamp": 1727334000}, 1700000000, { "generated_timestamp": 1727334000}),
+            ({ "_ab_updated_at": 1727334000}, 1727420400, { "_ab_updated_at": 1727420400}),
+            ({ "_ab_updated_at": 1727334000}, 1700000000, { "_ab_updated_at": 1727334000}),
         ]
     )
     def test_get_updated_state(self, current_stream_state, record_cursor_value, expected):
@@ -1202,7 +1202,7 @@ class TestStatelessTicketMetrics:
         stream = StatelessTicketMetrics(**STREAM_ARGS)
         stream.most_recently_updated_record = {"id": 2, "ticket_id": 1000, "updated_at": "2024-02-01T00:00:00Z", "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
         output_state = stream.get_updated_state(current_stream_state={}, latest_record={})
-        expected_state = { "generated_timestamp": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
+        expected_state = { "_ab_updated_at": pendulum.parse("2024-02-01T00:00:00Z").int_timestamp}
         assert output_state == expected_state
 
 
