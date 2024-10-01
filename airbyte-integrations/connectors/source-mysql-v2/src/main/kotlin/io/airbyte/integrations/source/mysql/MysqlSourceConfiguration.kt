@@ -93,7 +93,6 @@ class MysqlSourceConfigurationFactory :
         val jdbcUrlFmt = "jdbc:mysql://${address}"
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
-        val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
@@ -111,7 +110,7 @@ class MysqlSourceConfigurationFactory :
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
-            namespaces = pojo.schemas?.toSet() ?: setOf(defaultSchema),
+            namespaces = setOf(pojo.database),
             cursorConfiguration = pojo.getCursorConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

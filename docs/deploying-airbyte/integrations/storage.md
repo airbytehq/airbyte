@@ -53,6 +53,20 @@ stringData:
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloud-proj.iam.gserviceaccount.com"
 }
 ```
+</TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: airbyte-config-secrets
+type: Opaque
+stringData:
+  # Azure Secrets
+  azure-blob-store-connection-string: ## DefaultEndpointsProtocol=https;AccountName=azureintegration;AccountKey=wJalrXUtnFEMI/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY/wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY==;EndpointSuffix=core.windows.net
+```
 
 </TabItem>
 
@@ -101,6 +115,22 @@ global:
       credentialsPath: /secrets/gcs-log-creds/gcp.json
 ```
 
+</TabItem>
+
+<TabItem value="Azure Blob" label="Azure" default>
+
+```yaml
+global:
+  storage:
+    type: "Azure"
+    storageSecretName: airbyte-config-secrets # Name of your Kubernetes secret.
+    bucket: ## S3 bucket names that you've created. We recommend storing the following all in one bucket.
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+    azure:
+      connectionStringSecretKey: azure-blob-store-connection-string
+```
 </TabItem>
 
 </Tabs>
