@@ -53,7 +53,7 @@ data:
               - "tags"
       5.0.0:
         message: "This version includes breaking changes to the `TicketsMetric` stream.  The cursor field has been updated to `_ab_updated_at`. It is necessary to refresh the data and schema for the affected stream. Please see the migration guide for additional details."
-        upgradeDeadline: "2024-10-05"
+        upgradeDeadline: "2024-11-05"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
