@@ -219,7 +219,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
-| 2.6.0   | 2024-10-01 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components |
+| 2.6.0   | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components |
 | 2.5.34  | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies |
 | 2.5.33  | 2024-09-21 | [45779](https://github.com/airbytehq/airbyte/pull/45779) | Update dependencies |
 | 2.5.32  | 2024-09-14 | [45579](https://github.com/airbytehq/airbyte/pull/45579) | Update dependencies |
