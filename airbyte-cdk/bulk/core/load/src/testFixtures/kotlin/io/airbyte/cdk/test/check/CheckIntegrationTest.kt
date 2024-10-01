@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.test.check
 
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.test.util.FakeDataDumper
 import io.airbyte.cdk.test.util.IntegrationTest
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-open class CheckIntegrationTest<T : ConfigurationJsonObjectBase>(
+open class CheckIntegrationTest<T : ConfigurationSpecification>(
     val configurationClass: Class<T>,
     val successConfigFilenames: List<String>,
     val failConfigFilenamesAndFailureReasons: Map<String, Pattern>,

@@ -20,3 +20,7 @@ interface TaskLauncher {
         taskRunner.close()
     }
 }
+
+interface TaskLauncherExceptionHandler<T : Task> {
+    fun withExceptionHandling(task: T): Task
+}

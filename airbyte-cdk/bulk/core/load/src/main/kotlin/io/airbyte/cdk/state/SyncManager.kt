@@ -11,28 +11,49 @@ import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
+import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 
 /** Manages the state of all streams in the destination. */
-interface StreamsManager {
+interface SyncManager {
     /** Get the manager for the given stream. Throws an exception if the stream is not found. */
-    fun getManager(stream: DestinationStream.Descriptor): StreamManager
+    fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager
+
+    fun registerStartedStreamLoader(streamLoader: StreamLoader)
+    suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader
 
     /** Suspend until all streams are closed. */
     suspend fun awaitAllStreamsClosed()
 }
 
-class DefaultStreamsManager(
+class DefaultSyncManager(
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager>
-) : StreamsManager {
-    override fun getManager(stream: DestinationStream.Descriptor): StreamManager {
+) : SyncManager {
+    private val streamLoaders =
+        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader>>()
+
+    override fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager {
         return streamManagers[stream] ?: throw IllegalArgumentException("Stream not found: $stream")
+    }
+
+    override fun registerStartedStreamLoader(streamLoader: StreamLoader) {
+        streamLoaders
+            .getOrPut(streamLoader.stream.descriptor) { CompletableDeferred() }
+            .complete(streamLoader)
+    }
+
+    override suspend fun getOrAwaitStreamLoader(
+        stream: DestinationStream.Descriptor
+    ): StreamLoader {
+        return streamLoaders.getOrPut(stream) { CompletableDeferred() }.await()
     }
 
     override suspend fun awaitAllStreamsClosed() {
@@ -187,13 +208,14 @@ class DefaultStreamManager(
 }
 
 @Factory
-class StreamsManagerFactory(
+class SyncManagerFactory(
     private val catalog: DestinationCatalog,
 ) {
     @Singleton
-    fun make(): StreamsManager {
+    @Secondary
+    fun make(): SyncManager {
         val hashMap = ConcurrentHashMap<DestinationStream.Descriptor, StreamManager>()
         catalog.streams.forEach { hashMap[it.descriptor] = DefaultStreamManager(it) }
-        return DefaultStreamsManager(hashMap)
+        return DefaultSyncManager(hashMap)
     }
 }

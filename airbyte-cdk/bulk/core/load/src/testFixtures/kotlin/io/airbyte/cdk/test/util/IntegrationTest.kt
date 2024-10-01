@@ -5,7 +5,7 @@
 package io.airbyte.cdk.test.util
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.DestinationMessage
@@ -81,7 +81,7 @@ abstract class IntegrationTest(
 
     /** Convenience wrapper for [runSync] using a single stream. */
     fun runSync(
-        config: ConfigurationJsonObjectBase,
+        config: ConfigurationSpecification,
         stream: DestinationStream,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
@@ -95,7 +95,7 @@ abstract class IntegrationTest(
      * want to send multiple stream status messages).
      */
     fun runSync(
-        config: ConfigurationJsonObjectBase,
+        config: ConfigurationSpecification,
         catalog: DestinationCatalog,
         messages: List<DestinationMessage>,
         streamStatus: AirbyteStreamStatus? = AirbyteStreamStatus.COMPLETE,
