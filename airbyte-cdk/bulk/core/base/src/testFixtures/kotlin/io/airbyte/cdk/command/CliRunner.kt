@@ -33,7 +33,7 @@ data object CliRunner {
      */
     fun source(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
     ): CliRunnable {
@@ -48,7 +48,7 @@ data object CliRunner {
     /** Same as [source] but for destinations. */
     fun destination(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
@@ -68,7 +68,7 @@ data object CliRunner {
     /** Same as the other [destination] but with [AirbyteMessage] input. */
     fun destination(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         vararg input: AirbyteMessage,
@@ -87,7 +87,7 @@ data object CliRunner {
 
     private fun makeRunnable(
         op: String,
-        config: ConfigurationJsonObjectBase?,
+        config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
         state: List<AirbyteStateMessage>?,
         connectorRunnerConstructor: (Array<String>) -> AirbyteConnectorRunner,
