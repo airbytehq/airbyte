@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 from unittest import TestCase
 
 import freezegun
+from airbyte_cdk.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpMocker
@@ -18,7 +19,6 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateBlob, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from source_chargebee import SourceChargebee
 
 from .config import ConfigBuilder
@@ -97,6 +97,7 @@ class FullRefreshTest(TestCase):
 
     @HttpMocker()
     def test_given_multiple_pages_of_records_read_and_returned(self, http_mocker: HttpMocker) -> None:
+        print([self._start_date_in_seconds, self._now_in_seconds])
         # Tests pagination
         http_mocker.get(
             _a_request().with_sort_by_asc(_CURSOR_FIELD).with_include_deleted(True).with_updated_at_btw([self._start_date_in_seconds, self._now_in_seconds]).build(),
