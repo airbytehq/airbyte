@@ -10,14 +10,14 @@ import jakarta.inject.Singleton
 
 /**
  * Implementor interface. Every Destination must extend this and at least provide an implementation
- * of [getStreamLoader].
+ * of [createStreamLoader].
  */
 interface DestinationWriter {
     // Called once before anything else
     suspend fun setup() {}
 
     // Return a StreamLoader for the given stream
-    fun getStreamLoader(stream: DestinationStream): StreamLoader
+    fun createStreamLoader(stream: DestinationStream): StreamLoader
 
     // Called once at the end of the job, unconditionally.
     suspend fun teardown(succeeded: Boolean = true) {}
@@ -32,7 +32,7 @@ class DefaultDestinationWriter : DestinationWriter {
         )
     }
 
-    override fun getStreamLoader(stream: DestinationStream): StreamLoader {
+    override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         throw NotImplementedError()
     }
 }

@@ -2,7 +2,7 @@
 package io.airbyte.cdk.command
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.fakesource.FakeSourceConfigurationJsonObject
+import io.airbyte.cdk.fakesource.FakeSourceConfigurationSpecification
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.util.Jsons
@@ -14,13 +14,16 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(rebuildContext = true)
-class ConfigurationJsonObjectSupplierTest {
+class ConfigurationSpecificationSupplierTest {
     @Inject
-    lateinit var supplier: ConfigurationJsonObjectSupplier<FakeSourceConfigurationJsonObject>
+    lateinit var supplier: ConfigurationSpecificationSupplier<FakeSourceConfigurationSpecification>
 
     @Test
     fun testSchema() {
-        Assertions.assertEquals(FakeSourceConfigurationJsonObject::class.java, supplier.javaClass)
+        Assertions.assertEquals(
+            FakeSourceConfigurationSpecification::class.java,
+            supplier.javaClass
+        )
         val expected: String = ResourceUtils.readResource("fakesource/expected-schema.json")
         Assertions.assertEquals(Jsons.readTree(expected), supplier.jsonSchema)
     }
@@ -29,7 +32,7 @@ class ConfigurationJsonObjectSupplierTest {
     @Property(name = "airbyte.connector.config.host", value = "hello")
     @Property(name = "airbyte.connector.config.database", value = "testdb")
     fun testPropertyInjection() {
-        val pojo: FakeSourceConfigurationJsonObject = supplier.get()
+        val pojo: FakeSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("hello", pojo.host)
         Assertions.assertEquals("testdb", pojo.database)
         Assertions.assertEquals(SshNoTunnelMethod, pojo.getTunnelMethodValue())
@@ -46,7 +49,7 @@ class ConfigurationJsonObjectSupplierTest {
         value = """{"host":"hello","port":123,"database":"testdb"}""",
     )
     fun testGoodJson() {
-        val pojo: FakeSourceConfigurationJsonObject = supplier.get()
+        val pojo: FakeSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("hello", pojo.host)
         Assertions.assertEquals(123, pojo.port)
         Assertions.assertEquals("testdb", pojo.database)
@@ -74,7 +77,7 @@ class ConfigurationJsonObjectSupplierTest {
         value = "secret",
     )
     fun testPropertySubTypeInjection() {
-        val pojo: FakeSourceConfigurationJsonObject = supplier.get()
+        val pojo: FakeSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("hello", pojo.host)
         Assertions.assertEquals("testdb", pojo.database)
         val expected = SshPasswordAuthTunnelMethod("localhost", 22, "sshuser", "secret")

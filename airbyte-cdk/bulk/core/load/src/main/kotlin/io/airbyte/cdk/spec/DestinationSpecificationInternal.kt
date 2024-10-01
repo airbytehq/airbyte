@@ -13,7 +13,7 @@ import jakarta.inject.Singleton
 @Singleton
 @Replaces(IdentitySpecificationExtender::class)
 @Requires(env = ["destination"])
-class DestinationSpecificationExtender(private val spec: DestinationSpecificationInternal) :
+class DestinationSpecificationExtender(private val spec: DestinationSpecificationExtension) :
     SpecificationExtender {
     override fun invoke(specification: ConnectorSpecification): ConnectorSpecification {
         return specification
@@ -22,7 +22,7 @@ class DestinationSpecificationExtender(private val spec: DestinationSpecificatio
     }
 }
 
-interface DestinationSpecificationInternal {
+interface DestinationSpecificationExtension {
     val supportedSyncModes: List<DestinationSyncMode>
     val supportsIncremental: Boolean
 }

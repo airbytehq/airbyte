@@ -4,12 +4,13 @@
 
 package io.airbyte.cdk.test.check
 
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.test.util.FakeDataDumper
 import io.airbyte.cdk.test.util.IntegrationTest
 import io.airbyte.cdk.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.test.util.TestDeploymentMode
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.charset.StandardCharsets
@@ -21,10 +22,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 
-open class CheckIntegrationTest<T : ConfigurationJsonObjectBase>(
+data class CheckTestConfig(val configPath: String, val deploymentMode: TestDeploymentMode)
+
+open class CheckIntegrationTest<T : ConfigurationSpecification>(
     val configurationClass: Class<T>,
-    val successConfigFilenames: List<String>,
-    val failConfigFilenamesAndFailureReasons: Map<String, Pattern>,
+    val successConfigFilenames: List<CheckTestConfig>,
+    val failConfigFilenamesAndFailureReasons: Map<CheckTestConfig, Pattern>,
 ) :
     IntegrationTest(
         FakeDataDumper,
@@ -33,11 +36,15 @@ open class CheckIntegrationTest<T : ConfigurationJsonObjectBase>(
     ) {
     @Test
     open fun testSuccessConfigs() {
-        for (path in successConfigFilenames) {
+        for ((path, deploymentMode) in successConfigFilenames) {
             val fileContents = Files.readString(Path.of(path), StandardCharsets.UTF_8)
             val config = ValidatedJsonUtils.parseOne(configurationClass, fileContents)
             val process =
-                destinationProcessFactory.createDestinationProcess("check", config = config)
+                destinationProcessFactory.createDestinationProcess(
+                    "check",
+                    config = config,
+                    deploymentMode = deploymentMode,
+                )
             process.run()
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
@@ -49,18 +56,24 @@ open class CheckIntegrationTest<T : ConfigurationJsonObjectBase>(
             )
             assertEquals(
                 AirbyteConnectionStatus.Status.SUCCEEDED,
-                checkMessages.first().connectionStatus.status
+                checkMessages.first().connectionStatus.status,
+                "Expected check to be successful, but message was ${checkMessages.first().connectionStatus}"
             )
         }
     }
 
     @Test
     open fun testFailConfigs() {
-        for ((path, failurePattern) in failConfigFilenamesAndFailureReasons) {
+        for ((checkTestConfig, failurePattern) in failConfigFilenamesAndFailureReasons) {
+            val (path, deploymentMode) = checkTestConfig
             val fileContents = Files.readString(Path.of(path))
             val config = ValidatedJsonUtils.parseOne(configurationClass, fileContents)
             val process =
-                destinationProcessFactory.createDestinationProcess("check", config = config)
+                destinationProcessFactory.createDestinationProcess(
+                    "check",
+                    config = config,
+                    deploymentMode = deploymentMode,
+                )
             process.run()
             val messages = process.readMessages()
             val checkMessages = messages.filter { it.type == AirbyteMessage.Type.CONNECTION_STATUS }
@@ -76,7 +89,7 @@ open class CheckIntegrationTest<T : ConfigurationJsonObjectBase>(
                 { assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.status) },
                 {
                     assertTrue(
-                        failurePattern.matcher(connectionStatus.message).matches(),
+                        failurePattern.matcher(connectionStatus.message).find(),
                         "Expected to match ${failurePattern.pattern()}, but got ${connectionStatus.message}"
                     )
                 }

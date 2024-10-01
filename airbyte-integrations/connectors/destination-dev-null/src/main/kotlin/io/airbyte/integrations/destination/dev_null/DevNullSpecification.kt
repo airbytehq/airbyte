@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.spec.DestinationSpecificationInternal
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.spec.DestinationSpecificationExtension
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -22,7 +22,7 @@ import javax.validation.constraints.Min
 
 sealed class TestDestination
 
-sealed class DevNullSpecification : ConfigurationJsonObjectBase() {
+sealed class DevNullSpecification : ConfigurationSpecification() {
     abstract val testDestination: TestDestination
 }
 
@@ -232,7 +232,7 @@ data class SilentDestinationCloud(
 
 /** Non-client-facing configuration. */
 @Singleton
-class DevNullSpecificationInternal : DestinationSpecificationInternal {
+class DevNullSpecificationExtension : DestinationSpecificationExtension {
     override val supportedSyncModes =
         listOf(
             DestinationSyncMode.OVERWRITE,

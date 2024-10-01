@@ -41,7 +41,7 @@ class _MockSource(ConcurrentSourceAdapter):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
-            self.convert_to_concurrent_stream(self._logger, s)
+            self.convert_to_concurrent_stream(self._logger, s, Mock())
             if is_concurrent
             else s
             for s, is_concurrent in self._streams_to_is_concurrent.items()
