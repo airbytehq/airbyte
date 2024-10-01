@@ -814,7 +814,9 @@ class BulkSalesforceStream(SalesforceStream):
         try:
             yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
         except BulkNotSupportedException:
-            self.logger.warning("attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+            self.logger.warning(
+                "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
+            )
             self._switch_from_bulk_to_rest = True
             self._rest_stream = self.get_standard_instance()
             stream_is_available, error = SalesforceAvailabilityStrategy().check_availability(self._rest_stream, self.logger, None)

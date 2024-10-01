@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from unittest import TestCase
 
 import freezegun
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 from config_builder import ConfigBuilder
 from conftest import generate_stream, mock_stream_api
 from source_salesforce.api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS

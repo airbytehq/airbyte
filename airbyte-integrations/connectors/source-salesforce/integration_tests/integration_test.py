@@ -12,8 +12,7 @@ from typing import Dict
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_protocol.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 

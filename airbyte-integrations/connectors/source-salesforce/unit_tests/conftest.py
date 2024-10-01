@@ -7,10 +7,9 @@ from typing import Any, List, Mapping
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateMessage
 from config_builder import ConfigBuilder
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
