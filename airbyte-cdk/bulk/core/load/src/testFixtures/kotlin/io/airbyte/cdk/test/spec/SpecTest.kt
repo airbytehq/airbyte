@@ -87,7 +87,7 @@ abstract class SpecTest :
         val diff: JsonDiff =
             DiffGenerator.diff(expectedSpec, Jsons.writeValueAsString(spec), jsonMatcher)
         assertAll(
-            "Spec snapshot test failed. Run this test locally and then `git diff <...>/expected_spec.json` to see what changed, and commit the diff if that change was intentional.",
+            "Spec snapshot test failed. Run this test locally and then `git diff <...>/$expectedSpecFilename` to see what changed, and commit the diff if that change was intentional.",
             { assertEquals("", OnlyErrorDiffViewer.from(diff).toString()) },
             { assertEquals(expectedSpec, actualSpecPrettyPrint) }
         )
