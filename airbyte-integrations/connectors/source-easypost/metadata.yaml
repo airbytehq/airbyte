@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.easypost.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-easypost
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.8.0@sha256:568b4cf0261ea6909db3ae00a0da6bc21ff2b271529a03683be0125dc27a86a2
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b74b0cfc-dd2c-4fdd-9bb0-ffc9efe04c36
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-easypost
+  githubIssueLabel: source-easypost
+  icon: icon.svg
+  license: MIT
+  name: Easypost
+  releaseDate: 2024-10-01
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/easypost
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
