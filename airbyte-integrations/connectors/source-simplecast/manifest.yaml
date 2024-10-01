@@ -52,7 +52,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /podcasts/{{ config['podcast_id'] }}/episodes
+          path: /podcasts/{{ stream_partition.podcast_id }}/episodes
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -69,6 +69,14 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -80,7 +88,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /analytics?podcast={{ config['podcast_id'] }}
+          path: /analytics?
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -96,6 +104,18 @@ definitions:
           pagination_strategy:
             type: OffsetIncrement
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              request_option:
+                type: RequestOption
+                inject_into: request_parameter
+                field_name: podcast
+              partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -151,15 +171,15 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     episodes:
-      hasRecords: true
-      streamHash: 81260f2afca414d2e4ae64d3351ced4ae78bbf5b
+      streamHash: a5bdc57ce73ea1037f195f0b1911263ce11191d6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     analytics:
       hasRecords: true
-      streamHash: 8d29b91d5856878c5c8451bec9ee6286f272e513
+      streamHash: 97b84cf0e030ff4f37c0b62e2d2c1cabf69d2611
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
