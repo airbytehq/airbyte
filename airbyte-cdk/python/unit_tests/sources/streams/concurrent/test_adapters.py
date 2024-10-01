@@ -53,20 +53,6 @@ def test_availability_strategy_facade(stream_availability, expected_available, e
     strategy.check_availability.assert_called_once_with(logger)
 
 
-def test_stream_availability_strategy():
-    stream = Mock()
-    source = Mock()
-    stream.check_availability.return_value = True, None
-    logger = Mock()
-    availability_strategy = StreamAvailabilityStrategy(stream, source)
-
-    stream_availability = availability_strategy.check_availability(logger)
-    assert stream_availability.is_available()
-    assert stream_availability.message() is None
-
-    stream.check_availability.assert_called_once_with(logger, source)
-
-
 @pytest.mark.parametrize(
     "sync_mode",
     [
