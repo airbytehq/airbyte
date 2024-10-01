@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.8.1
+concurrent-cdk: fix convert_to_concurrent_stream to use state from state manager
+
 ## 5.8.0
 Async job component: support Salesforce
 
