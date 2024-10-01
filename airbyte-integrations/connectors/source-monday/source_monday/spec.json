@@ -129,8 +129,28 @@
             "const": "https://auth.monday.com/oauth2/token"
           },
           "access_token_key": {
-            "type" : "string",
-            "const" : "access_token"
+            "type": "string",
+            "const": "access_token"
+          },
+          "client_id_key": {
+            "type": "string",
+            "const": "client_id",
+            "description": "these should go in a map together but i dont feel like handling objects rn"
+          },
+          "client_secret_key": {
+            "type": "string",
+            "const": "client_secret",
+            "description": "these should go in a map together but i dont feel like handling objects rn"
+          },
+          "redirect_url_key": {
+            "type": "string",
+            "const": "redirect_uri",
+            "description": "these should go in a map together but i dont feel like handling objects rn"
+          },
+          "auth_code_key": {
+            "type": "string",
+            "const": "code",
+            "description": "these should go in a map together but i dont feel like handling objects rn"
           },
           "scope": {
             "type": "string",
