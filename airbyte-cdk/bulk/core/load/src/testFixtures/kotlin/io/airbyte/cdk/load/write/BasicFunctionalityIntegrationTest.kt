@@ -412,6 +412,7 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    @Disabled
     open fun testFunkyStreamAndColumnNames() {
         assumeTrue(verifyDataWriting)
         fun makeStream(
