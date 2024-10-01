@@ -49,11 +49,17 @@ interface DestinationProcess {
     fun shutdown()
 }
 
+enum class TestDeploymentMode {
+    CLOUD,
+    OSS
+}
+
 interface DestinationProcessFactory {
     fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
+        deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
     ): DestinationProcess
 }
 
@@ -61,6 +67,7 @@ class NonDockerizedDestination(
     command: String,
     config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
+    testDeploymentMode: TestDeploymentMode,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
@@ -75,11 +82,19 @@ class NonDockerizedDestination(
             // from PrintWriter(outputStream) ).
             // Thanks, spotbugs.
             PrintWriter(PipedOutputStream(destinationStdin), false, Charsets.UTF_8)
+        val testEnvironments =
+            when (testDeploymentMode) {
+                // the env var is DEPLOYMENT_MODE, which micronaut parses to
+                // a property called deployment.mode.
+                TestDeploymentMode.CLOUD -> mapOf("deployment.mode" to "CLOUD")
+                TestDeploymentMode.OSS -> mapOf("deployment.mode" to "OSS")
+            }
         destination =
             CliRunner.destination(
                 command,
                 config = config,
                 catalog = catalog,
+                testProperties = testEnvironments,
                 inputStream = destinationStdin,
             )
     }
@@ -108,9 +123,10 @@ class NonDockerizedDestinationFactory : DestinationProcessFactory {
     override fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification?,
-        catalog: ConfiguredAirbyteCatalog?
+        catalog: ConfiguredAirbyteCatalog?,
+        deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
-        return NonDockerizedDestination(command, config, catalog)
+        return NonDockerizedDestination(command, config, catalog, deploymentMode)
     }
 }
 
