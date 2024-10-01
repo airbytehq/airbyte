@@ -59,7 +59,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -68,7 +68,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -123,7 +123,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -173,7 +173,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -182,7 +182,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -272,7 +272,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -322,7 +322,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -331,7 +331,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -386,7 +386,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -395,7 +395,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -449,7 +449,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -458,7 +458,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config[\"start_date\"] }}"
+          datetime: '{{ config["start_date"] }}'
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         end_datetime:
           type: MinMaxDatetime
@@ -519,7 +519,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: "{{ last_record.id }}"
-            stop_condition: "{{ not response.get(\"has_more\", {}) }}"
+            stop_condition: '{{ not response.get("has_more", {}) }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -529,7 +529,7 @@ definitions:
     url_base: https://api.easypost.com/v2/
     authenticator:
       type: BasicHttpAuthenticator
-      username: "{{ config[\"username\"] }}"
+      username: '{{ config["username"] }}'
 
 streams:
   - $ref: "#/definitions/streams/batches"
