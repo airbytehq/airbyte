@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.mock_integration_test
 
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationConfigurationFactory
 import io.micronaut.context.annotation.Factory
@@ -12,7 +12,7 @@ import jakarta.inject.Singleton
 
 class MockDestinationConfiguration : DestinationConfiguration()
 
-@Singleton class MockDestinationSpecification : ConfigurationJsonObjectBase()
+@Singleton class MockDestinationSpecification : ConfigurationSpecification()
 
 @Singleton
 class MockDestinationConfigurationFactory :

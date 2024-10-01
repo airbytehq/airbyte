@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class MockDestinationWriter : DestinationWriter {
-    override fun getStreamLoader(stream: DestinationStream): StreamLoader {
+    override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return MockStreamLoader(stream)
     }
 }
