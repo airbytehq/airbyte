@@ -7,6 +7,8 @@ import com.google.common.annotations.VisibleForTesting
 import com.google.common.base.Joiner
 import com.google.common.base.Strings
 import com.google.common.collect.Lists
+import io.airbyte.cdk.integrations.BaseConnector
+import io.airbyte.commons.features.EnvVariableFeatureFlags
 import io.airbyte.commons.io.IOs
 import io.airbyte.commons.io.LineGobbler
 import io.airbyte.commons.map.MoreMaps
@@ -30,6 +32,7 @@ class DockerProcessFactory(
     private val workspaceRoot: Path,
     private val workspaceMountSource: String?,
     private val localMountSource: String?,
+    private val fileTransferMountSource: Path?,
     private val networkName: String?,
     private val envMap: Map<String, String>
 ) : ProcessFactory {
@@ -123,6 +126,11 @@ class DockerProcessFactory(
             if (localMountSource != null) {
                 cmd.add("-v")
                 cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION))
+            }
+
+            if (fileTransferMountSource != null) {
+                cmd.add("-v")
+                cmd.add("$fileTransferMountSource:${EnvVariableFeatureFlags.DEFAULT_AIRBYTE_STAGING_DIRECTORY}")
             }
 
             val allEnvMap = MoreMaps.merge(jobMetadata, envMap, additionalEnvironmentVariables)
