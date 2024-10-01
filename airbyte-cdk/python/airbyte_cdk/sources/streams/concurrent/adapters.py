@@ -30,6 +30,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
@@ -367,11 +368,11 @@ class CursorPartitionGenerator(PartitionGenerator):
         :return: An iterable of StreamPartition objects.
         """
         for slice_start, slice_end in self._cursor.generate_slices():
-            cursor_slice = {"start": slice_start, "end": slice_end}
+            stream_slice = StreamSlice(partition={}, cursor_slice={"start": slice_start, "end": slice_end})
 
             yield StreamPartition(
                 self._stream,
-                copy.deepcopy(cursor_slice),
+                copy.deepcopy(stream_slice),
                 self.message_repository,
                 self._sync_mode,
                 self._cursor_field,

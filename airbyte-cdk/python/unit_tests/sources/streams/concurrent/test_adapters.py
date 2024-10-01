@@ -22,6 +22,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -387,7 +388,7 @@ def test_cursor_partition_generator():
     message_repository = Mock()
     cursor_field = Mock()
 
-    expected_slices = [{"start": 1, "end": 2}]
+    expected_slices = [StreamSlice(partition={}, cursor_slice={"start": 1, "end": 2})]
     cursor.generate_slices.return_value = [(1, 2)]
 
     partition_generator = CursorPartitionGenerator(stream, message_repository, cursor, cursor_field)
