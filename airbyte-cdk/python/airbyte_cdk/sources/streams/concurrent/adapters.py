@@ -16,12 +16,7 @@ from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
-    AbstractAvailabilityStrategy,
-    StreamAvailability,
-    StreamAvailable,
-    StreamUnavailable,
-)
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, AlwaysAvailableAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
@@ -86,7 +81,7 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
                 name=stream.name,
                 namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
-                availability_strategy=StreamAvailabilityStrategy(stream, source),
+                availability_strategy=AlwaysAvailableAvailabilityStrategy(),
                 primary_key=pk,
                 cursor_field=cursor_field,
                 logger=logger,
@@ -340,7 +335,7 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 
@@ -353,41 +348,3 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         """
         stream_availability = self._abstract_availability_strategy.check_availability(logger)
         return stream_availability.is_available(), stream_availability.message()
-
-
-class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
-    """
-    This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
-    StreamAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
-
-    A more convenient implementation would not depend on the docs URL instead of the Source itself, and would support running on an AbstractStream instead of only on a Stream.
-
-    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream and AbstractAvailabilityStrategy.
-    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
-    """
-
-    def __init__(self, stream: Stream, source: Source):
-        """
-        :param stream: The stream to delegate to
-        :param source: The source to delegate to
-        """
-        self._stream = stream
-        self._source = source
-
-    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        try:
-            if hasattr(self._stream, "check_availability"):
-                available, message = self._stream.check_availability(logger, self._source)
-                if available:
-                    return StreamAvailable()
-                else:
-                    return StreamUnavailable(str(message))
-            else:
-                # Given no availability strategy, we will assume the stream is available
-                return StreamAvailable()
-        except Exception as e:
-            display_message = self._stream.get_error_display_message(e)
-            if display_message:
-                raise ExceptionWithDisplayMessage(display_message)
-            else:
-                raise e
