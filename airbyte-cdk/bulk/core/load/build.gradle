@@ -1,8 +1,9 @@
+// simply declaring the source sets is sufficient to populate them with
+// src/integrationTest/java+resources + src/integrationTest/kotlin.
 sourceSets {
     integrationTest {
     }
 }
-
 kotlin {
     sourceSets {
         testIntegration {
@@ -31,8 +32,9 @@ task integrationTest(type: Test) {
     useJUnitPlatform()
     mustRunAfter tasks.check
 }
-
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
+// These tests are lightweight enough to run on every PR.
+rootProject.check.dependsOn(integrationTest)
