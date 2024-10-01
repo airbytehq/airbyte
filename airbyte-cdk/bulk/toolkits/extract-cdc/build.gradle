@@ -1,8 +1,10 @@
 dependencies {
+    api platform('io.debezium:debezium-bom:2.7.3.Final')
+    api 'io.debezium:debezium-api'
+    api 'io.debezium:debezium-embedded'
+
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-extract')
-    implementation 'io.debezium:debezium-api:2.7.1.Final'
-    implementation 'io.debezium:debezium-embedded:2.7.1.Final'
-
+    implementation 'io.debezium:debezium-storage-file'
     implementation 'commons-io:commons-io:2.17.0'
 }

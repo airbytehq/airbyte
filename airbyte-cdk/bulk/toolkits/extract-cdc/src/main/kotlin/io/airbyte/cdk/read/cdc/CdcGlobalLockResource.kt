@@ -12,10 +12,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @Singleton
 @Replaces(GlobalLockResource::class)
+/**
+ * [GlobalLockResource] implementation for CDC with Debezium.
+ *
+ * Holds the lock while CDC is ongoing.
+ */
 class CdcGlobalLockResource(configuration: SourceConfiguration) : GlobalLockResource {
 
     private val isCdcComplete = AtomicBoolean(configuration.global.not())
 
+    /** Called when CDC is done to release the lock. */
     fun markCdcAsComplete() {
         isCdcComplete.set(true)
     }
