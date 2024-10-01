@@ -16,7 +16,12 @@ from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
+    AbstractAvailabilityStrategy,
+    AlwaysAvailableAvailabilityStrategy,
+    StreamAvailability,
+    StreamAvailable,
+)
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
@@ -340,22 +345,3 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         """
         stream_availability = self._abstract_availability_strategy.check_availability(logger)
         return stream_availability.is_available(), stream_availability.message()
-
-
-class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
-    """
-    An availability strategy that always indicates a stream is available.
-
-    This strategy is used to avoid breaking changes and serves as a soft
-    deprecation of the availability strategy, allowing a smoother transition
-    without disrupting existing functionality.
-    """
-
-    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        """
-        Checks stream availability.
-
-        :param logger: logger object to use
-        :return: A StreamAvailability object describing the stream's availability
-        """
-        return StreamAvailable()
