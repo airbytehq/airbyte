@@ -47,6 +47,7 @@ class HttpRequester(Requester):
     path: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder
     authenticator: Optional[DeclarativeAuthenticator] = None
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
@@ -56,7 +57,6 @@ class HttpRequester(Requester):
     use_cache: bool = False
     _exit_on_rate_limit: bool = False
     stream_response: bool = False
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)

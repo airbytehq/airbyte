@@ -90,7 +90,7 @@ class DefaultPaginator(Paginator):
     config: Config
     url_base: Union[InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+    decoder: Decoder
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 

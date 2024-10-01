@@ -30,9 +30,9 @@ class CursorPaginationStrategy(PaginationStrategy):
     cursor_value: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder
     page_size: Optional[int] = None
     stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._initial_cursor = None

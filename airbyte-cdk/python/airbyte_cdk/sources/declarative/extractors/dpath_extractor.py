@@ -56,7 +56,7 @@ class DpathExtractor(RecordExtractor):
     field_path: List[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
+    decoder: Decoder
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
