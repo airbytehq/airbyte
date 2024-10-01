@@ -1128,13 +1128,31 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        last_id=None,
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
         properties_list = list(self.properties.keys())
+        if last_id == None:
+            last_id = 0
+        # The search query below uses the following criteria:
+        #   - Last modified >= timestemp of previous sync
+        #   - Last modified <= timestamp of current sync to avoid open ended queries
+        #   - Object primary key <= last_id with initial value 0, then max(last_id) returned from previous pagination loop
+        #   - Sort results by primary key ASC
+        # Note: Although results return out of chronological order, sorting on primary key ensures retrieval of *all* records
+        #     once the final pagination loop completes. This is preferable to sorting by a non-unique value, such as
+        #     last modified date, which may result in an infinite loop in some edge cases.
+        key = self.primary_key
+        if key == "id":
+            key = "hs_object_id"
         payload = (
             {
-                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
-                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
+                "filters": [
+                    {"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"},
+                    {"value": int(self._init_sync.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "LTE"},
+                    {"value": last_id, "propertyName": key, "operator": "GTE"},
+                ],
+                "sorts": [{"propertyName": key, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
             }
@@ -1168,6 +1186,16 @@ class CRMSearchStream(IncrementalStream, ABC):
                 current_record[_slice] = associations_list
         return records_by_pk.values()
 
+    def get_max(self, val1, val2):
+        try:
+            # Try to convert both values to integers
+            int_val1 = int(val1)
+            int_val2 = int(val2)
+            return max(int_val1, int_val2)
+        except ValueError:
+            # If conversion fails, fall back to string comparison
+            return max(str(val1), str(val2))
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -1178,14 +1206,13 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_state = stream_state or {}
         pagination_complete = False
         next_page_token = None
+        last_id = None
+        max_last_id = None
 
-        latest_cursor = None
         while not pagination_complete:
             if self.state:
                 records, raw_response = self._process_search(
-                    next_page_token=next_page_token,
-                    stream_state=stream_state,
-                    stream_slice=stream_slice,
+                    next_page_token=next_page_token, stream_state=stream_state, stream_slice=stream_slice, last_id=max_last_id
                 )
                 if self.associations:
                     records = self._read_associations(records)
@@ -1200,8 +1227,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             records = self.record_unnester.unnest(records)
 
             for record in records:
-                cursor = self._field_to_datetime(record[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                last_id = self.get_max(record[self.primary_key], last_id) if last_id else record[self.primary_key]
                 yield record
 
             next_page_token = self.next_page_token(raw_response)
@@ -1211,13 +1237,13 @@ class CRMSearchStream(IncrementalStream, ABC):
                 # Hubspot documentation states that the search endpoints are limited to 10,000 total results
                 # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                 # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
-                # start a new search query with the latest state that has been collected.
-                self._update_state(latest_cursor=latest_cursor)
+                # start a new search query with the latest id that has been collected.
+                max_last_id = self.get_max(max_last_id, last_id) if max_last_id else last_id
                 next_page_token = None
 
         # Since Search stream does not have slices is safe to save the latest
         # state as the initial sync date
-        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
+        self._update_state(latest_cursor=self._init_sync, is_last_record=True)
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 

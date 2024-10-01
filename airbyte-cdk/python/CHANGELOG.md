@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.8.0
+Async job component: support Salesforce
+
 ## 5.7.5
 Have headers match during HTTP cache hit
 

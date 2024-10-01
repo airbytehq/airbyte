@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 class WriteOperation(
     private val inputConsumer: InputConsumer<DestinationMessage>,
     private val taskLauncher: TaskLauncher,
-    private val taskRunner: TaskRunner
+    private val taskRunner: TaskRunner,
 ) : Operation {
     override fun execute() {
         runBlocking {
