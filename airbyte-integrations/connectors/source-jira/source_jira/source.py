@@ -14,7 +14,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic import ValidationError
 from requests.exceptions import InvalidURL
 
-from .streams import IssueComments, IssueFields, Issues, IssueWorklogs, PullRequests
+from .streams import IssueFields, Issues, PullRequests
 from .utils import read_full_refresh
 
 
@@ -84,11 +84,9 @@ class SourceJira(YamlDeclarativeSource):
         issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
 
-        streams = [IssueComments(**incremental_args), IssueWorklogs(**incremental_args)]
-
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
             experimental_streams.append(
                 PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
             )
-        return streams + experimental_streams
+        return experimental_streams
