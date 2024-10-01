@@ -38,7 +38,9 @@ class JobTracker:
             # Nothing to do here as the ID to replace is the same
             return
 
-        lazy_log(LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} replacing job {intent_or_job_id} by {job_id}!")
+        lazy_log(
+            LOGGER, logging.DEBUG, lambda: f"JobTracker - Thread {threading.get_native_id()} replacing job {intent_or_job_id} by {job_id}!"
+        )
         with self._lock:
             self._jobs.add(job_id)
             self._jobs.remove(intent_or_job_id)
