@@ -24,10 +24,10 @@ class MockDestinationWriter : DestinationWriter {
 }
 
 class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
-    data class LocalBatch(val records: List<DestinationRecord>): Batch {
+    data class LocalBatch(val records: List<DestinationRecord>) : Batch {
         override val state = Batch.State.LOCAL
     }
-    data class PersistedBatch(val records: List<DestinationRecord>): Batch {
+    data class PersistedBatch(val records: List<DestinationRecord>) : Batch {
         override val state = Batch.State.PERSISTED
     }
 

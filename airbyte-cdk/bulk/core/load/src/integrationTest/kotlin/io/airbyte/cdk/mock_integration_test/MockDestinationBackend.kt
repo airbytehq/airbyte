@@ -27,7 +27,7 @@ object MockDestinationBackend {
 object MockDestinationDataDumper : DestinationDataDumper {
     override fun dumpRecords(streamName: String, streamNamespace: String?): List<OutputRecord> {
         return MockDestinationBackend.readFile(
-                MockStreamLoader.getFilename(streamNamespace, streamName)
-            )
+            MockStreamLoader.getFilename(streamNamespace, streamName)
+        )
     }
 }
