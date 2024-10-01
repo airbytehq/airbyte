@@ -60,6 +60,7 @@ class CdcPartitionReader(
         // A null state value implies that this is the first time debezium is run. If so, we skip
         // running the debezium engine (as there are no new changes) and build the initial offset
         if (opaqueStateValue != null) {
+            checkStateNotStale(config, opaqueStateValue)
             engine = createDebeziumEngine()
             engine.run()
         } else {
