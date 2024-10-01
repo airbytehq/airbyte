@@ -2,7 +2,7 @@
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Property
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
 class MysqlSourceConfigurationJsonObjectTest {
     @Inject
-    lateinit var supplier: ConfigurationJsonObjectSupplier<MysqlSourceConfigurationJsonObject>
+    lateinit var supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationJsonObject>
 
     @Test
     fun testSchemaViolation() {

@@ -25,7 +25,7 @@ import java.util.function.Supplier
  * The object is also validated against its [jsonSchema] JSON schema, derived from [javaClass].
  */
 @Singleton
-class ConfigurationJsonObjectSupplier<T : ConfigurationJsonObjectBase>(
+class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
     private val micronautPropertiesFallback: T,
     @Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String? = null,
 ) : Supplier<T> {
@@ -51,8 +51,9 @@ class ConfigurationJsonObjectSupplier<T : ConfigurationJsonObjectBase>(
  * Connector configuration POJO supertype.
  *
  * This dummy base class is required by Micronaut. Without it, thanks to Java's type erasure, it
- * thinks that the [ConfigurationJsonObjectSupplier] requires a constructor argument of type [Any].
+ * thinks that the [ConfigurationSpecificationSupplier] requires a constructor argument of type
+ * [Any].
  *
  * Strictly speaking, its subclasses are not really POJOs anymore, but who cares.
  */
-abstract class ConfigurationJsonObjectBase
+abstract class ConfigurationSpecification
