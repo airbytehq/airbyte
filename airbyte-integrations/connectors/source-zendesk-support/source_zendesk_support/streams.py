@@ -497,6 +497,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
 class TicketMetrics(SourceZendeskSupportStream):
 
     name = "ticket_metrics"
+    cursor_field = "_ab_updated_at"
 
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs)
