@@ -2,7 +2,7 @@
 This directory contains the manifest-only connector for [`source-easypost`](https://www.easypost.com/).
 
 ## Documentation reference:
-- Visit `https://docs.easypost.com/docs/addresses` for API documentation
+- Visit [`https://docs.easypost.com/docs/addresses`](https://docs.easypost.com/docs/addresses) for API documentation
 
 ## Authentication setup
 `EasyPost` uses api key authentication routed as Basic Http, Visit `https://docs.easypost.com/docs/authentication` for getting your api keys.
