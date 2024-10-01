@@ -91,15 +91,12 @@ private val LOGGER = KotlinLogging.logger {}
 abstract class DestinationAcceptanceTest(
     // If false, ignore counts and only verify the final state message.
     private val verifyIndividualStateAndCounts: Boolean = false,
-    private val useV2Fields: Boolean = false,
-    private val supportsChangeCapture: Boolean = false,
-    private val expectNumericTimestamps: Boolean = false,
-    private val expectSchemalessObjectsCoercedToStrings: Boolean = false,
-    private val expectUnionsPromotedToDisjointRecords: Boolean = false
+
 ) {
     protected var testSchemas: HashSet<String> = HashSet()
 
-    private lateinit var testEnv: TestDestinationEnv
+    protected lateinit var testEnv: TestDestinationEnv
+        private set
     protected open val isCloudTest: Boolean = true
     protected val featureFlags: FeatureFlags =
         if (isCloudTest) {
@@ -108,12 +105,15 @@ abstract class DestinationAcceptanceTest(
             FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "OSS")
         }
 
-    private lateinit var jobRoot: Path
-    private lateinit var processFactory: ProcessFactory
+    protected lateinit var jobRoot: Path
+        private set
+    protected lateinit var processFactory: ProcessFactory
+        private set
     private lateinit var mConnectorConfigUpdater: ConnectorConfigUpdater
 
     protected var localRoot: Path? = null
-    open protected var _testDataComparator: TestDataComparator = getTestDataComparator()
+        private set
+    protected open var _testDataComparator: TestDataComparator = getTestDataComparator()
 
     protected open fun getTestDataComparator(): TestDataComparator {
         return BasicTestDataComparator { @Suppress("deprecation") this.resolveIdentifier(it) }
@@ -144,7 +144,7 @@ abstract class DestinationAcceptanceTest(
                 imageName.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
             else imageName
 
-    private fun readMetadata(): JsonNode {
+    protected fun readMetadata(): JsonNode {
         return try {
             Jsons.jsonNodeFromFile(MoreResources.readResourceAsFile("metadata.yaml"))
         } catch (e: IllegalArgumentException) {
@@ -180,79 +180,6 @@ abstract class DestinationAcceptanceTest(
      * @return integration-specific configuration
      */
     @Throws(Exception::class) protected abstract fun getFailCheckConfig(): JsonNode?
-
-    /**
-     * Function that returns all of the records in destination as json at the time this method is
-     * invoked. These will be used to check that the data actually written is what should actually
-     * be there. Note: this returns a set and does not test any order guarantees.
-     *
-     * @param testEnv
-     * - information about the test environment.
-     * @param streamName
-     * - name of the stream for which we are retrieving records.
-     * @param namespace
-     * - the destination namespace records are located in. Null if not applicable. Usually a JDBC
-     * schema.
-     * @param streamSchema
-     * - schema of the stream to be retrieved. This is only necessary for destinations in which data
-     * types cannot be accurately inferred (e.g. in CSV destination, every value is a string).
-     * @return All of the records in the destination at the time this method is invoked.
-     * @throws Exception
-     * - can throw any exception, test framework will handle.
-     */
-    @Throws(Exception::class)
-    protected abstract fun retrieveRecords(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode>
-
-    private fun pruneAndMaybeFlatten(node: JsonNode): JsonNode {
-        val metaKeys =
-            mutableSetOf(
-                // V1
-                JavaBaseConstants.COLUMN_NAME_AB_ID,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-                // V2
-                JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-                JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-                JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-                JavaBaseConstants.COLUMN_NAME_AB_META,
-                JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID,
-                // Sometimes added
-                "_airbyte_additional_properties"
-            )
-
-        val jsons = MoreMappers.initMapper().createObjectNode()
-        // Iterate over every key value pair in the json node
-        for (entry in node.fields()) {
-            if (entry.key in metaKeys) {
-                continue
-            }
-
-            // If the message is normalized, flatten it
-            if (entry.key == JavaBaseConstants.COLUMN_NAME_DATA) {
-                for (dataEntry in entry.value.fields()) {
-                    jsons.replace(dataEntry.key, dataEntry.value)
-                }
-            } else {
-                jsons.replace(entry.key, entry.value)
-            }
-        }
-
-        return jsons
-    }
-
-    private fun retrieveRecordsDataOnly(
-        testEnv: TestDestinationEnv?,
-        streamName: String,
-        namespace: String,
-        streamSchema: JsonNode
-    ): List<JsonNode> {
-        return retrieveRecords(testEnv, streamName, namespace, streamSchema)
-            .map(this::pruneAndMaybeFlatten)
-    }
 
     /**
      * Returns a destination's default schema. The default implementation assumes this corresponds
@@ -301,18 +228,6 @@ abstract class DestinationAcceptanceTest(
         }
     }
 
-    protected open fun normalizationFromDefinition(): Boolean {
-        val metadata = readMetadata()["data"] ?: return false
-        val normalizationConfig = metadata["normalizationConfig"] ?: return false
-        return normalizationConfig.has("normalizationRepository") &&
-            normalizationConfig.has("normalizationTag")
-    }
-
-    protected open fun dbtFromDefinition(): Boolean {
-        val metadata = readMetadata()["data"] ?: return false
-        val supportsDbt = metadata["supportsDbt"]
-        return supportsDbt != null && supportsDbt.asBoolean(false)
-    }
 
     protected open val destinationDefinitionKey: String
         get() = imageNameWithoutTag
@@ -516,264 +431,7 @@ abstract class DestinationAcceptanceTest(
         retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema)
     }
 
-    /**
-     * This serves to test MSSQL 2100 limit parameters in a single query. this means that for
-     * Airbyte insert data need to limit to ~ 700 records (3 columns for the raw tables) = 2100
-     * params
-     */
-    @ParameterizedTest
-    @ArgumentsSource(DataArgumentsProvider::class)
-    @Throws(Exception::class)
-    fun testSyncWithLargeRecordBatch(messagesFilename: String, catalogFilename: String) {
-        val catalog =
-            Jsons.deserialize(
-                MoreResources.readResource(catalogFilename),
-                AirbyteCatalog::class.java
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        configuredCatalog.streams.forEach {
-            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
-        }
-        val messages: List<AirbyteMessage> =
-            MoreResources.readResource(messagesFilename).trim().lines().map {
-                Jsons.deserialize(it, AirbyteMessage::class.java)
-            }
 
-        /* Replicate the runs of messages and state hundreds of times, but keep trace messages at the end. */
-        val lotsOfRecordAndStateBlocks =
-            Collections.nCopies(
-                400,
-                messages.filter { it.type == Type.RECORD || it.type == Type.STATE }
-            )
-        val traceMessages = messages.filter { it.type == Type.TRACE }
-        val concatenated = lotsOfRecordAndStateBlocks.flatten() + traceMessages
-
-        val config = getConfig()
-        runSyncAndVerifyStateOutput(config, concatenated, configuredCatalog, false)
-    }
-
-    /** Verify that the integration overwrites the first sync with the second sync. */
-    @Test
-    @Throws(Exception::class)
-    fun testSecondSync() {
-        if (!implementsOverwrite()) {
-            LOGGER.info { "Destination's spec.json does not support overwrite sync mode." }
-            return
-        }
-
-        val catalog =
-            Jsons.deserialize<AirbyteCatalog>(
-                MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
-                ),
-                AirbyteCatalog::class.java
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        configuredCatalog.streams.forEach {
-            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
-        }
-        val firstSyncMessages: List<AirbyteMessage> =
-            MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        getProtocolVersion()
-                    )
-                )
-                .trim()
-                .lines()
-                .map { Jsons.deserialize<AirbyteMessage>(it, AirbyteMessage::class.java) }
-
-        val config = getConfig()
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false)
-
-        // We need to make sure that other streams\tables\files in the same location will not be
-        // affected\deleted\overridden by our activities during first, second or any future sync.
-        // So let's create a dummy data that will be checked after all sync. It should remain the
-        // same
-        val dummyCatalog =
-            Jsons.deserialize<AirbyteCatalog>(
-                MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
-                ),
-                AirbyteCatalog::class.java
-            )
-        dummyCatalog.streams[0].name = DUMMY_CATALOG_NAME
-        val configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog)
-        configuredDummyCatalog.streams.forEach {
-            it.withSyncId(42).withGenerationId(20).withMinimumGenerationId(20)
-        }
-        // update messages to set new dummy stream name
-        firstSyncMessages
-            .filter { message: AirbyteMessage -> message.record != null }
-            .forEach { message: AirbyteMessage -> message.record.stream = DUMMY_CATALOG_NAME }
-        firstSyncMessages
-            .filter { message: AirbyteMessage -> message.type == Type.TRACE }
-            .forEach { message: AirbyteMessage ->
-                message.trace.streamStatus.streamDescriptor.name = DUMMY_CATALOG_NAME
-            }
-        // sync dummy data
-        runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false)
-
-        // Run second sync
-        val configuredCatalog2 = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        configuredCatalog2.streams.forEach {
-            it.withSyncId(43).withGenerationId(13).withMinimumGenerationId(13)
-        }
-        val descriptor = StreamDescriptor().withName(catalog.streams[0].name)
-        val secondSyncMessages: List<AirbyteMessage> =
-            Lists.newArrayList(
-                AirbyteMessage()
-                    .withType(Type.RECORD)
-                    .withRecord(
-                        AirbyteRecordMessage()
-                            .withStream(catalog.streams[0].name)
-                            .withEmittedAt(Instant.now().toEpochMilli())
-                            .withData(
-                                Jsons.jsonNode(
-                                    ImmutableMap.builder<Any, Any>()
-                                        .put("id", 1)
-                                        .put("currency", "USD")
-                                        .put(
-                                            "date",
-                                            "2020-03-31T00:00:00Z"
-                                        ) // TODO(sherifnada) hack: write decimals with sigfigs
-                                        // because Snowflake stores 10.1 as "10" which
-                                        // fails destination tests
-                                        .put("HKD", 10.1)
-                                        .put("NZD", 700.1)
-                                        .build()
-                                )
-                            )
-                    ),
-                AirbyteMessage()
-                    .withType(Type.STATE)
-                    .withState(
-                        AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
-                    ),
-                AirbyteMessage()
-                    .withType(Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    .withStreamDescriptor(descriptor)
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    )
-                            )
-                    )
-            )
-
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog2, false)
-        val defaultSchema = getDefaultSchema(config)
-        retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema)
-
-        // verify that other streams in the same location were not affected. If something fails
-        // here,
-        // then this need to be fixed in connectors logic to override only required streams
-        retrieveRawRecordsAndAssertSameMessages(dummyCatalog, firstSyncMessages, defaultSchema)
-    }
-
-    /**
-     * Tests that we are able to read over special characters properly when processing line breaks
-     * in destinations.
-     */
-    @Test
-    @Throws(Exception::class)
-    open fun testLineBreakCharacters() {
-        val catalog =
-            Jsons.deserialize<AirbyteCatalog>(
-                MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        getProtocolVersion()
-                    )
-                ),
-                AirbyteCatalog::class.java
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        configuredCatalog.streams.forEach {
-            it.withSyncId(42).withGenerationId(12).withMinimumGenerationId(12)
-        }
-        val config = getConfig()
-
-        val secondSyncMessages: List<AirbyteMessage> =
-            Lists.newArrayList(
-                AirbyteMessage()
-                    .withType(Type.RECORD)
-                    .withRecord(
-                        AirbyteRecordMessage()
-                            .withStream(catalog.streams[0].name)
-                            .withEmittedAt(Instant.now().toEpochMilli())
-                            .withData(
-                                Jsons.jsonNode(
-                                    ImmutableMap.builder<Any, Any>()
-                                        .put("id", 1)
-                                        .put("currency", "USD\u2028")
-                                        .put(
-                                            "date",
-                                            "2020-03-\n31T00:00:00Z\r"
-                                        ) // TODO(sherifnada) hack: write decimals with sigfigs
-                                        // because Snowflake stores 10.1 as "10" which
-                                        // fails destination tests
-                                        .put("HKD", 10.1)
-                                        .put("NZD", 700.1)
-                                        .build()
-                                )
-                            )
-                    ),
-                AirbyteMessage()
-                    .withType(Type.STATE)
-                    .withState(
-                        AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
-                    ),
-                AirbyteMessage()
-                    .withType(Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    .withStreamDescriptor(
-                                        StreamDescriptor().withName(catalog.streams[0].name)
-                                    )
-                                    .withStatus(
-                                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE
-                                    )
-                            )
-                    )
-            )
-
-        runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
-        val defaultSchema = getDefaultSchema(config)
-        retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema)
-    }
-
-    @Test
-    fun normalizationFromDefinitionValueShouldBeCorrect() {
-        if (normalizationFromDefinition()) {
-            var normalizationRunnerFactorySupportsDestinationImage: Boolean
-            try {
-                DefaultNormalizationRunner(
-                    processFactory,
-                    getNormalizationImageName(),
-                    getNormalizationIntegrationType()
-                )
-                normalizationRunnerFactorySupportsDestinationImage = true
-            } catch (e: IllegalStateException) {
-                normalizationRunnerFactorySupportsDestinationImage = false
-            }
-            Assertions.assertEquals(
-                normalizationFromDefinition(),
-                normalizationRunnerFactorySupportsDestinationImage
-            )
-        }
-    }
 
     /**
      * Verify that the integration successfully writes records incrementally. The second run should
@@ -882,129 +540,7 @@ abstract class DestinationAcceptanceTest(
         )
     }
 
-    @ArgumentsSource(DataArgumentsProvider::class)
-    @Test
-    @Throws(Exception::class)
-    fun testIncrementalSyncWithNormalizationDropOneColumn() {
-        if (!normalizationFromDefinition() || !supportIncrementalSchemaChanges()) {
-            return
-        }
 
-        val catalog =
-            Jsons.deserialize<AirbyteCatalog>(
-                MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(
-                        ProtocolVersion.V0
-                    )
-                ),
-                AirbyteCatalog::class.java
-            )
-
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        configuredCatalog.streams.forEach { s ->
-            s.withSyncMode(SyncMode.INCREMENTAL)
-            s.withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
-            s.withCursorField(emptyList())
-            // use composite primary key of various types (string, float)
-            s.withPrimaryKey(
-                java.util.List.of(
-                    listOf("id"),
-                    listOf("currency"),
-                    listOf("date"),
-                    listOf("NZD"),
-                    listOf("USD")
-                )
-            )
-        }
-
-        var messages =
-            MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        ProtocolVersion.V0
-                    )
-                )
-                .lines()
-                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
-                .toMutableList()
-
-        val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
-
-        val defaultSchema = getDefaultSchema(config)
-        var actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
-        assertSameMessages(messages, actualMessages, true)
-
-        // remove one field
-        val jsonSchema = configuredCatalog.streams[0].stream.jsonSchema
-        (jsonSchema.findValue("properties") as ObjectNode).remove("HKD")
-        // insert more messages
-        // NOTE: we re-read the messages because `assertSameMessages` above pruned the emittedAt
-        // timestamps.
-        messages =
-            MoreResources.readResource(
-                    DataArgumentsProvider.Companion.EXCHANGE_RATE_CONFIG.getMessageFileVersion(
-                        ProtocolVersion.V0
-                    )
-                )
-                .lines()
-                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
-                .toMutableList()
-        messages.addLast(
-            Jsons.deserialize(
-                "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
-                AirbyteMessage::class.java
-            )
-        )
-
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
-
-        // assert the removed field is missing on the new messages
-        actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
-
-        // We expect all the of messages to be missing the removed column after normalization.
-        val expectedMessages =
-            messages.map { message: AirbyteMessage ->
-                if (message.record != null) {
-                    (message.record.data as ObjectNode).remove("HKD")
-                }
-                message
-            }
-
-        assertSameMessages(expectedMessages, actualMessages, true)
-    }
-
-    /**
-     * Verify that the integration successfully writes records successfully both raw and normalized.
-     * Tests a wide variety of messages an schemas (aspirationally, anyway).
-     */
-    @ParameterizedTest
-    @ArgumentsSource(DataArgumentsProvider::class)
-    @Throws(Exception::class)
-    // Normalization is a pretty slow process. Increase our test timeout.
-    @Timeout(value = 300, unit = TimeUnit.SECONDS)
-    open fun testSyncWithNormalization(messagesFilename: String, catalogFilename: String) {
-        if (!normalizationFromDefinition()) {
-            return
-        }
-
-        val catalog =
-            Jsons.deserialize(
-                MoreResources.readResource(catalogFilename),
-                AirbyteCatalog::class.java
-            )
-        val configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog)
-        val messages =
-            MoreResources.readResource(messagesFilename).trim().lines().map {
-                Jsons.deserialize(it, AirbyteMessage::class.java)
-            }
-
-        val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true)
-
-        val defaultSchema = getDefaultSchema(config)
-        val actualMessages = retrieveNormalizedRecords(catalog, defaultSchema)
-        assertSameMessages(messages, actualMessages, true)
-    }
 
     /**
      * Verify that the integration successfully writes records successfully both raw and normalized
@@ -1153,145 +689,6 @@ abstract class DestinationAcceptanceTest(
     protected open val maxRecordValueLimit: Int
         /** @return the max limit length allowed for values in the destination. */
         get() = 1000000000
-
-    @Test
-    @Throws(Exception::class)
-    open fun testCustomDbtTransformations() {
-        if (!dbtFromDefinition()) {
-            return
-        }
-
-        val config = getConfig()
-
-        // This may throw IllegalStateException "Requesting normalization, but it is not included in
-        // the
-        // normalization mappings"
-        // We indeed require normalization implementation of the 'transform_config' function for
-        // this
-        // destination,
-        // because we make sure to install required dbt dependency in the normalization docker image
-        // in
-        // order to run
-        // this test successfully and that we are able to convert a destination 'config.json' into a
-        // dbt
-        // 'profiles.yml'
-        // (we don't actually rely on normalization running anything else here though)
-        val runner =
-            DbtTransformationRunner(
-                processFactory,
-                DefaultNormalizationRunner(
-                    processFactory,
-                    getNormalizationImageName(),
-                    getNormalizationIntegrationType()
-                )
-            )
-        runner.start()
-        val transformationRoot = Files.createDirectories(jobRoot.resolve("transform"))
-        val dbtConfig =
-            OperatorDbt() // Forked from https://github.com/dbt-labs/jaffle_shop because they made a
-                // change that would have
-                // required a dbt version upgrade
-                // https://github.com/dbt-labs/jaffle_shop/commit/b1680f3278437c081c735b7ea71c2ff9707bc75f#diff-27386df54b2629c1191d8342d3725ed8678413cfa13b5556f59d69d33fae5425R20
-                // We're actually two commits upstream of that, because the previous commit
-                // (https://github.com/dbt-labs/jaffle_shop/commit/ec36ae177ab5cb79da39ff8ab068c878fbac13a0) also
-                // breaks something
-                // TODO once we're on DBT 1.x, switch this back to using the main branch
-                .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
-                .withGitRepoBranch("pre_dbt_upgrade")
-                .withDockerImage(getNormalizationImageName())
-        //
-        // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
-        //
-        // This dbt project transforms raw data from an app database into a customers and orders
-        // model ready
-        // for analytics.
-        // The repo is a self-contained playground dbt project, useful for testing out scripts, and
-        // communicating some of the core dbt concepts:
-        //
-        // 1. First, it tests if connection to the destination works.
-        dbtConfig.withDbtArguments("debug")
-        if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt debug Failed.")
-        }
-        // 2. Install any dependencies packages, if any
-        dbtConfig.withDbtArguments("deps")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt deps Failed.")
-        }
-        // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data
-        // sets.
-        // This materializes the CSVs as tables in your target schema.
-        // Note that a typical dbt project does not require this step since dbt assumes your raw
-        // data is
-        // already in your warehouse.
-        dbtConfig.withDbtArguments("seed")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt seed Failed.")
-        }
-        // 4. Run the models:
-        // Note: If this steps fails, it might mean that you need to make small changes to the SQL
-        // in the
-        // models folder to adjust for the flavor of SQL of your target database.
-        dbtConfig.withDbtArguments("run")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt run Failed.")
-        }
-        // 5. Test the output of the models and tables have been properly populated:
-        dbtConfig.withDbtArguments("test")
-        if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt test Failed.")
-        }
-        // 6. Generate dbt documentation for the project:
-        // This step is commented out because it takes a long time, but is not vital for Airbyte
-        // dbtConfig.withDbtArguments("docs generate");
-        // if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig))
-        // {
-        // throw new WorkerException("dbt docs generate Failed.");
-        // }
-        runner.close()
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun testCustomDbtTransformationsFailure() {
-        if (!normalizationFromDefinition() || !dbtFromDefinition()) {
-            // we require normalization implementation for this destination, because we make sure to
-            // install
-            // required dbt dependency in the normalization docker image in order to run this test
-            // successfully
-            // (we don't actually rely on normalization running anything here though)
-            return
-        }
-
-        val config = getConfig()
-
-        val runner =
-            DbtTransformationRunner(
-                processFactory,
-                DefaultNormalizationRunner(
-                    processFactory,
-                    getNormalizationImageName(),
-                    getNormalizationIntegrationType()
-                )
-            )
-        runner.start()
-        val transformationRoot = Files.createDirectories(jobRoot.resolve("transform"))
-        val dbtConfig =
-            OperatorDbt()
-                .withGitRepoUrl("https://github.com/fishtown-analytics/dbt-learn-demo.git")
-                .withGitRepoBranch("main")
-                .withDockerImage("fishtownanalytics/dbt:0.19.1")
-                .withDbtArguments("debug")
-        if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-            throw TestHarnessException("dbt debug Failed.")
-        }
-
-        dbtConfig.withDbtArguments("test")
-        Assertions.assertFalse(
-            runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig),
-            "dbt test should fail, as we haven't run dbt run on this project yet"
-        )
-    }
 
     /** Verify the destination uses the namespace field if it is set. */
     @Test
@@ -1595,288 +992,6 @@ abstract class DestinationAcceptanceTest(
         Assertions.assertEquals(secondSyncMessagesWithNewFields.size, destinationOutput.size)
     }
 
-    private fun getData(record: JsonNode): JsonNode {
-        if (record.has(JavaBaseConstants.COLUMN_NAME_DATA))
-            return record.get(JavaBaseConstants.COLUMN_NAME_DATA)
-        return record
-    }
-
-    private fun getMeta(record: JsonNode): ObjectNode {
-        val meta = record.get(JavaBaseConstants.COLUMN_NAME_AB_META)
-
-        val asString = if (meta.isTextual) meta.asText() else Jsons.serialize(meta)
-        val asMeta = Jsons.deserialize(asString)
-
-        return asMeta as ObjectNode
-    }
-
-    @Test
-    @Throws(Exception::class)
-    open fun testAirbyteFields() {
-        val configuredCatalog =
-            Jsons.deserialize(
-                MoreResources.readResource("v0/users_with_generation_id_configured_catalog.json"),
-                ConfiguredAirbyteCatalog::class.java
-            )
-        val config = getConfig()
-        val messages =
-            MoreResources.readResource("v0/users_with_generation_id_messages.txt")
-                .trim()
-                .lines()
-                .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
-        val preRunTime = Instant.now()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
-        val generationId = configuredCatalog.streams[0].generationId
-        val stream = configuredCatalog.streams[0].stream
-        val destinationOutput =
-            retrieveRecords(
-                testEnv,
-                "users",
-                getDefaultSchema(config)!! /* ignored */,
-                stream.jsonSchema
-            )
-
-        // Resolve common field keys.
-        val abIdKey: String =
-            if (useV2Fields) JavaBaseConstants.COLUMN_NAME_AB_RAW_ID
-            else JavaBaseConstants.COLUMN_NAME_AB_ID
-        val abTsKey =
-            if (useV2Fields) JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT
-            else JavaBaseConstants.COLUMN_NAME_EMITTED_AT
-
-        // Validate airbyte fields as much as possible
-        val uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
-        val zippedMessages = messages.take(destinationOutput.size).zip(destinationOutput)
-        zippedMessages.forEach { (message, record) ->
-            // Ensure the id is UUID4 format (best we can do without mocks)
-            Assertions.assertTrue(record.get(abIdKey).asText().matches(Regex(uuidRegex)))
-            Assertions.assertEquals(message.record.emittedAt, record.get(abTsKey).asLong())
-
-            if (useV2Fields) {
-                // Generation id should match the one from the catalog
-                Assertions.assertEquals(
-                    generationId,
-                    record.get(JavaBaseConstants.COLUMN_NAME_AB_GENERATION_ID).asLong()
-                )
-            }
-        }
-
-        // Regardless of whether change failures are capatured, all v2
-        // destinations should pass upstream changes through and set sync id.
-        if (useV2Fields) {
-            val metas = destinationOutput.map { getMeta(it) }
-            val syncIdsAllValid = metas.map { it["sync_id"].asLong() }.all { it == 100L }
-            Assertions.assertTrue(syncIdsAllValid)
-
-            val changes = metas[2]["changes"].elements().asSequence().toList()
-            Assertions.assertEquals(changes.size, 1)
-            Assertions.assertEquals(changes[0]["field"].asText(), "name")
-            Assertions.assertEquals(
-                changes[0]["change"].asText(),
-                AirbyteRecordMessageMetaChange.Change.TRUNCATED.value()
-            )
-            Assertions.assertEquals(
-                changes[0]["reason"].asText(),
-                AirbyteRecordMessageMetaChange.Reason.SOURCE_FIELD_SIZE_LIMITATION.value()
-            )
-        }
-
-        // Specifically verify that bad fields were captures for supporting formats
-        // (ie, Avro and Parquet)
-        if (supportsChangeCapture) {
-            // Expect the second message id field to have been nulled due to type conversion error.
-            val badRow = destinationOutput[1]
-            val data = getData(badRow)
-
-            Assertions.assertTrue(data["id"] == null || data["id"].isNull)
-            val changes = getMeta(badRow)["changes"].elements().asSequence().toList()
-
-            Assertions.assertEquals(1, changes.size)
-            Assertions.assertEquals("id", changes[0]["field"].asText())
-            Assertions.assertEquals(
-                AirbyteRecordMessageMetaChange.Change.NULLED.value(),
-                changes[0]["change"].asText()
-            )
-            Assertions.assertEquals(
-                AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR.value(),
-                changes[0]["reason"].asText()
-            )
-
-            // Expect the third message to have added a new change to an old one
-            val badRowWithPreviousChange = destinationOutput[3]
-            val dataWithPreviousChange = getData(badRowWithPreviousChange)
-            Assertions.assertTrue(
-                dataWithPreviousChange["id"] == null || dataWithPreviousChange["id"].isNull
-            )
-            val twoChanges =
-                getMeta(badRowWithPreviousChange)["changes"].elements().asSequence().toList()
-            Assertions.assertEquals(2, twoChanges.size)
-        }
-    }
-
-    private fun toTimeTypeMap(
-        schemaMap: Map<String, JsonNode>,
-        format: String
-    ): Map<String, Map<String, Boolean>> {
-        return schemaMap.mapValues { schema ->
-            schema.value["properties"]
-                .fields()
-                .asSequence()
-                .filter { (_, value) -> value["format"]?.asText() == format }
-                .map { (key, value) ->
-                    val hasTimeZone =
-                        !(value.has("airbyte_type") &&
-                            value["airbyte_type"]!!.asText().endsWith("without_timezone"))
-                    key to hasTimeZone
-                }
-                .toMap()
-        }
-    }
-
-    @Test
-    open fun testAirbyteTimeTypes() {
-        val configuredCatalog =
-            Jsons.deserialize(
-                MoreResources.readResource("v0/every_time_type_configured_catalog.json"),
-                ConfiguredAirbyteCatalog::class.java
-            )
-        val config = getConfig()
-        val messages =
-            MoreResources.readResource("v0/every_time_type_messages.txt").trim().lines().map {
-                Jsons.deserialize(it, AirbyteMessage::class.java)
-            }
-
-        val expectedByStream =
-            messages.filter { it.type == Type.RECORD }.groupBy { it.record.stream }
-        val schemasByStreamName =
-            configuredCatalog.streams
-                .associateBy { it.stream.name }
-                .mapValues { it.value.stream.jsonSchema }
-        val dateFieldMeta = toTimeTypeMap(schemasByStreamName, "date")
-        val datetimeFieldMeta = toTimeTypeMap(schemasByStreamName, "date-time")
-        val timeFieldMeta = toTimeTypeMap(schemasByStreamName, "time")
-
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
-        for (stream in configuredCatalog.streams) {
-            val name = stream.stream.name
-            val schema = stream.stream.jsonSchema
-            val records =
-                retrieveRecordsDataOnly(
-                    testEnv,
-                    stream.stream.name,
-                    getDefaultSchema(config)!!, /* ignored */
-                    schema
-                )
-            val actual = records.map { node -> pruneAndMaybeFlatten(node) }
-            val expected =
-                expectedByStream[stream.stream.name]!!.map {
-                    if (expectNumericTimestamps) {
-                        val node = MoreMappers.initMapper().createObjectNode()
-                        it.record.data.fields().forEach { (k, v) ->
-                            if (dateFieldMeta[name]!!.containsKey(k)) {
-                                val daysSinceEpoch = LocalDate.parse(v.asText()).toEpochDay()
-                                node.put(k, daysSinceEpoch.toInt())
-                            } else if (datetimeFieldMeta[name]!!.containsKey(k)) {
-                                val hasTimeZone = datetimeFieldMeta[name]!![k]!!
-                                val millisSinceEpoch =
-                                    if (hasTimeZone) {
-                                        Instant.parse(v.asText()).toEpochMilli() * 1000L
-                                    } else {
-                                        LocalDateTime.parse(v.asText())
-                                            .toInstant(ZoneOffset.UTC)
-                                            .toEpochMilli() * 1000L
-                                    }
-                                node.put(k, millisSinceEpoch)
-                            } else if (timeFieldMeta[name]!!.containsKey(k)) {
-                                val hasTimeZone = timeFieldMeta[name]!![k]!!
-                                val timeOfDayMicros =
-                                    if (hasTimeZone) {
-                                        val offsetTime = OffsetTime.parse(v.asText())
-                                        val microsLocal =
-                                            offsetTime.toLocalTime().toNanoOfDay() / 1000L
-                                        val microsUTC =
-                                            microsLocal -
-                                                offsetTime.offset.totalSeconds * 1_000_000L
-                                        if (microsUTC < 0) {
-                                            microsUTC + 24L * 60L * 60L * 1_000_000L
-                                        } else {
-                                            microsUTC
-                                        }
-                                    } else {
-                                        LocalTime.parse(v.asText()).toNanoOfDay() / 1000L
-                                    }
-                                node.put(k, timeOfDayMicros)
-                            } else {
-                                node.set(k, v)
-                            }
-                        }
-                        node
-                    } else {
-                        it.record.data
-                    }
-                }
-
-            Assertions.assertEquals(expected, actual)
-        }
-    }
-
-    @Test
-    fun testProblematicTypes() {
-        // Kind of a hack, since we'd prefer to test this not happen on some destinations,
-        // but verifiying that for CSV is painful.
-        Assumptions.assumeTrue(
-            expectSchemalessObjectsCoercedToStrings || expectUnionsPromotedToDisjointRecords
-        )
-
-        // Run the sync
-        val configuredCatalog =
-            Jsons.deserialize(
-                MoreResources.readResource("v0/problematic_types_configured_catalog.json"),
-                ConfiguredAirbyteCatalog::class.java
-            )
-        val config = getConfig()
-        val messagesIn =
-            MoreResources.readResource("v0/problematic_types_messages_in.txt").trim().lines().map {
-                Jsons.deserialize(it, AirbyteMessage::class.java)
-            }
-
-        runSyncAndVerifyStateOutput(config, messagesIn, configuredCatalog, false)
-
-        // Collect destination data, using the correct transformed schema
-        val destinationSchemaStr =
-            if (!expectUnionsPromotedToDisjointRecords) {
-                MoreResources.readResource("v0/problematic_types_coerced_schemaless_schema.json")
-            } else {
-                MoreResources.readResource("v0/problematic_types_disjoint_union_schema.json")
-            }
-        val destinationSchema = Jsons.deserialize(destinationSchemaStr, JsonNode::class.java)
-        val actual =
-            retrieveRecordsDataOnly(
-                testEnv,
-                "problematic_types",
-                getDefaultSchema(config)!!,
-                destinationSchema
-            )
-
-        // Validate data
-        val expectedMessages =
-            if (!expectUnionsPromotedToDisjointRecords) {
-                    MoreResources.readResource(
-                        "v0/problematic_types_coerced_schemaless_messages_out.txt"
-                    )
-                } else { // expectSchemalessObjectsCoercedToStrings
-                    MoreResources.readResource(
-                        "v0/problematic_types_disjoint_union_messages_out.txt"
-                    )
-                }
-                .trim()
-                .lines()
-                .map { Jsons.deserialize(it, JsonNode::class.java) }
-        actual.forEachIndexed { i, record: JsonNode ->
-            Assertions.assertEquals(expectedMessages[i], record, "Record $i")
-        }
-    }
-
     /** Whether the destination should be tested against different namespaces. */
     open protected fun supportNamespaceTest(): Boolean {
         return false
@@ -2153,57 +1268,6 @@ abstract class DestinationAcceptanceTest(
         }
         runner.close()
         return destinationOutput
-    }
-
-    @Throws(Exception::class)
-    protected fun retrieveRawRecordsAndAssertSameMessages(
-        catalog: AirbyteCatalog,
-        messages: List<AirbyteMessage>,
-        defaultSchema: String?
-    ) {
-        val actualMessages: MutableList<AirbyteRecordMessage> = ArrayList()
-        for (stream in catalog.streams) {
-            val streamName = stream.name
-            val schema = if (stream.namespace != null) stream.namespace else defaultSchema!!
-            val msgList =
-                retrieveRecordsDataOnly(testEnv, streamName, schema, stream.jsonSchema).map {
-                    data: JsonNode ->
-                    AirbyteRecordMessage()
-                        .withStream(streamName)
-                        .withNamespace(schema)
-                        .withData(data)
-                }
-
-            actualMessages.addAll(msgList)
-        }
-
-        assertSameMessages(messages, actualMessages, false)
-    }
-
-    // ignores emitted at.
-    open protected fun assertSameMessages(
-        expected: List<AirbyteMessage>,
-        actual: List<AirbyteRecordMessage>,
-        pruneAirbyteInternalFields: Boolean
-    ) {
-        val expectedProcessed =
-            expected
-                .filter { message: AirbyteMessage -> message.type == AirbyteMessage.Type.RECORD }
-                .map { obj: AirbyteMessage -> obj.record }
-                .onEach { recordMessage: AirbyteRecordMessage -> recordMessage.emittedAt = null }
-                .map { recordMessage: AirbyteRecordMessage ->
-                    if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
-                }
-                .map { obj: AirbyteRecordMessage -> obj.data }
-
-        val actualProcessed =
-            actual
-                .map { recordMessage: AirbyteRecordMessage ->
-                    if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
-                }
-                .map { obj: AirbyteRecordMessage -> obj.data }
-
-        _testDataComparator.assertSameData(expectedProcessed, actualProcessed)
     }
 
     @Throws(Exception::class)
@@ -2574,6 +1638,24 @@ abstract class DestinationAcceptanceTest(
         }
     }
 
+    protected open fun normalizationFromDefinition(): Boolean {
+        val metadata = readMetadata()["data"] ?: return false
+        val normalizationConfig = metadata["normalizationConfig"] ?: return false
+        return normalizationConfig.has("normalizationRepository") &&
+                normalizationConfig.has("normalizationTag")
+    }
+
+    @Throws(Exception::class)
+    private fun runAndCheckWithoutNormalization(
+        messages: List<AirbyteMessage>,
+        configuredCatalog: ConfiguredAirbyteCatalog,
+        catalog: AirbyteCatalog
+    ) {
+        val config = getConfig()
+        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
+        retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config))
+    }
+
     @Throws(Exception::class)
     private fun runAndCheckWithNormalization(
         messages: List<AirbyteMessage>,
@@ -2588,15 +1670,11 @@ abstract class DestinationAcceptanceTest(
     }
 
     @Throws(Exception::class)
-    private fun runAndCheckWithoutNormalization(
+    protected abstract fun retrieveRawRecordsAndAssertSameMessages(
+        catalog: AirbyteCatalog,
         messages: List<AirbyteMessage>,
-        configuredCatalog: ConfiguredAirbyteCatalog,
-        catalog: AirbyteCatalog
-    ) {
-        val config = getConfig()
-        runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false)
-        retrieveRawRecordsAndAssertSameMessages(catalog, messages, getDefaultSchema(config))
-    }
+        defaultSchema: String?
+    )
 
     /**
      * Can be used in overridden [
@@ -2645,14 +1723,72 @@ abstract class DestinationAcceptanceTest(
         return supportsInDestinationNormalization() || normalizationFromDefinition()
     }
 
+    // ignores emitted at.
+    protected open fun assertSameMessages(
+        expected: List<AirbyteMessage>,
+        actual: List<AirbyteRecordMessage>,
+        pruneAirbyteInternalFields: Boolean
+    ) {
+        val expectedProcessed =
+            expected
+                .filter { message: AirbyteMessage -> message.type == AirbyteMessage.Type.RECORD }
+                .map { obj: AirbyteMessage -> obj.record }
+                .onEach { recordMessage: AirbyteRecordMessage -> recordMessage.emittedAt = null }
+                .map { recordMessage: AirbyteRecordMessage ->
+                    if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
+                }
+                .map { obj: AirbyteRecordMessage -> obj.data }
+
+        val actualProcessed =
+            actual
+                .map { recordMessage: AirbyteRecordMessage ->
+                    if (pruneAirbyteInternalFields) safePrune(recordMessage) else recordMessage
+                }
+                .map { obj: AirbyteRecordMessage -> obj.data }
+
+        _testDataComparator.assertSameData(expectedProcessed, actualProcessed)
+    }
+
+    protected abstract fun safePrune(record: AirbyteRecordMessage): AirbyteRecordMessage
+
+    /**
+     * Function that returns all of the records in destination as json at the time this method is
+     * invoked. These will be used to check that the data actually written is what should actually
+     * be there. Note: this returns a set and does not test any order guarantees.
+     *
+     * @param testEnv
+     * - information about the test environment.
+     * @param streamName
+     * - name of the stream for which we are retrieving records.
+     * @param namespace
+     * - the destination namespace records are located in. Null if not applicable. Usually a JDBC
+     * schema.
+     * @param streamSchema
+     * - schema of the stream to be retrieved. This is only necessary for destinations in which data
+     * types cannot be accurately inferred (e.g. in CSV destination, every value is a string).
+     * @return All of the records in the destination at the time this method is invoked.
+     * @throws Exception
+     * - can throw any exception, test framework will handle.
+     */
+    @Throws(Exception::class)
+    protected abstract fun retrieveRecords(
+        testEnv: TestDestinationEnv?,
+        streamName: String,
+        namespace: String,
+        streamSchema: JsonNode
+    ): List<JsonNode>
+
     companion object {
         private val RANDOM = Random()
         private const val NORMALIZATION_VERSION = "dev"
 
-        private const val JOB_ID = "0"
-        private const val JOB_ATTEMPT = 0
+        @JvmStatic
+        protected val JOB_ID = "0"
+        @JvmStatic
+        protected val JOB_ATTEMPT = 0
 
-        private const val DUMMY_CATALOG_NAME = "DummyCatalog"
+        @JvmStatic
+        protected val DUMMY_CATALOG_NAME = "DummyCatalog"
 
         /**
          * Reverses a list by creating a new list with the same elements of the input list and then
@@ -2668,68 +1804,6 @@ abstract class DestinationAcceptanceTest(
             return reversed
         }
 
-        /**
-         * Same as [.pruneMutate], except does a defensive copy and returns a new json node object
-         * instead of mutating in place.
-         *
-         * @param record
-         * - record that will be pruned.
-         * @return pruned json node.
-         */
-        private fun safePrune(record: AirbyteRecordMessage): AirbyteRecordMessage {
-            val clone = Jsons.clone(record)
-            pruneMutate(clone.data)
-            return clone
-        }
-
-        /**
-         * Prune fields that are added internally by airbyte and are not part of the original data.
-         * Used so that we can compare data that is persisted by an Airbyte worker to the original
-         * data. This method mutates the provided json in place.
-         *
-         * @param json
-         * - json that will be pruned. will be mutated in place!
-         */
-        private fun pruneMutate(json: JsonNode) {
-            for (key in Jsons.keys(json)) {
-                val node = json[key]
-                // recursively prune all airbyte internal fields.
-                if (node.isObject || node.isArray) {
-                    pruneMutate(node)
-                }
-
-                // prune the following
-                // - airbyte internal fields
-                // - fields that match what airbyte generates as hash ids
-                // - null values -- normalization will often return `<key>: null` but in the
-                // original data that key
-                // likely did not exist in the original message. the most consistent thing to do is
-                // always remove
-                // the null fields (this choice does decrease our ability to check that
-                // normalization creates
-                // columns even if all the values in that column are null)
-                val airbyteInternalFields =
-                    Sets.newHashSet(
-                        "emitted_at",
-                        "ab_id",
-                        "normalized_at",
-                        "EMITTED_AT",
-                        "AB_ID",
-                        "NORMALIZED_AT",
-                        "HASHID",
-                        "unique_key",
-                        "UNIQUE_KEY"
-                    )
-                if (
-                    airbyteInternalFields.any { internalField: String ->
-                        key.lowercase(Locale.getDefault())
-                            .contains(internalField.lowercase(Locale.getDefault()))
-                    } || json[key].isNull
-                ) {
-                    (json as ObjectNode).remove(key)
-                }
-            }
-        }
 
         private const val LOREM_IPSUM =
             ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque malesuada lacinia aliquet. Nam feugiat mauris vel magna dignissim feugiat. Nam non dapibus sapien, ac mattis purus. Donec mollis libero erat, a rutrum ipsum pretium id. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer nec aliquam leo. Aliquam eu dictum augue, a ornare elit.\n" +
