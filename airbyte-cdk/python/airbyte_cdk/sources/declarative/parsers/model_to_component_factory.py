@@ -809,25 +809,31 @@ class ModelToComponentFactory:
         config: Config,
         *,
         url_base: str,
-        decoder: Optional[Decoder] = None,
+        decoder: Decoder,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
+<<<<<<< HEAD
         decoder_to_use = decoder if decoder else JsonDecoder(parameters={})
         if not isinstance(decoder_to_use, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
+=======
+        if not isinstance(decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+
+>>>>>>> da3dfb363b (consolidates decoders under `SimpleRetriever`)
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
         page_token_option = (
             self._create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
         )
-        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder_to_use)
+        pagination_strategy = self._create_component_from_model(model=model.pagination_strategy, config=config, decoder=decoder)
         if cursor_used_for_stop_condition:
             pagination_strategy = StopConditionPaginationStrategyDecorator(
                 pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
             )
         paginator = DefaultPaginator(
-            decoder=decoder_to_use,
+            decoder=decoder,
             page_size_option=page_size_option,
             page_token_option=page_token_option,
             pagination_strategy=pagination_strategy,
@@ -840,11 +846,14 @@ class ModelToComponentFactory:
         return paginator
 
     def create_dpath_extractor(
-        self, model: DpathExtractorModel, config: Config, decoder: Optional[Decoder] = None, **kwargs: Any
+        self, model: DpathExtractorModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> DpathExtractor:
+<<<<<<< HEAD
         decoder_to_use = decoder if decoder else JsonDecoder(parameters={})
+=======
+>>>>>>> da3dfb363b (consolidates decoders under `SimpleRetriever`)
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
-        return DpathExtractor(decoder=decoder_to_use, field_path=model_field_path, config=config, parameters=model.parameters or {})
+        return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
@@ -1094,7 +1103,7 @@ class ModelToComponentFactory:
         self,
         model: RecordSelectorModel,
         config: Config,
-        decoder: Optional[Decoder] = None,
+        decoder: Decoder,
         *,
         transformations: List[RecordTransformation],
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
