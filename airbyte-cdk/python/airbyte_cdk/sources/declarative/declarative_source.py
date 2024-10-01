@@ -4,7 +4,7 @@
 
 import logging
 from abc import abstractmethod
-from typing import Any, Mapping, Tuple, List
+from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker

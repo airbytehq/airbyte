@@ -5,6 +5,7 @@
 import copy
 import json
 import logging
+from datetime import datetime
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -22,7 +23,7 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     StreamAvailable,
     StreamUnavailable,
 )
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
@@ -30,6 +31,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
@@ -199,6 +201,17 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         return self._abstract_stream
 
 
+class SliceEncoder(json.JSONEncoder):
+    def default(self, obj) -> Any:
+        if hasattr(obj, "__json_serializable__"):
+            return obj.__json_serializable__()
+        # This needs to be revisited as we can't lose precision
+        if isinstance(obj, datetime):
+            return list(obj.timetuple())[0:6]
+        # Let the base class default method raise the TypeError
+        return super().default(obj)
+
+
 class StreamPartition(Partition):
     """
     This class acts as an adapter between the new Partition interface and the Stream's stream_slice interface
@@ -273,7 +286,7 @@ class StreamPartition(Partition):
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
-            s = json.dumps(self._slice, sort_keys=True)
+            s = json.dumps(self._slice, sort_keys=True, cls=SliceEncoder)
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)
@@ -325,6 +338,37 @@ class StreamPartitionGenerator(PartitionGenerator):
             yield StreamPartition(
                 self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
             )
+
+
+class CursorPartitionGenerator(PartitionGenerator):
+    """
+    This class generates partitions using the concurrent cursor and iterates through state slices to generate partitions.
+
+    It is used when synchronizing a stream in incremental or full-refresh mode where state information is maintained
+    across partitions. Each partition represents a subset of the stream's data and is determined by the cursor's state.
+    """
+
+    def __init__(
+        self,
+        stream: Stream,
+        message_repository: MessageRepository,
+        cursor: Cursor,
+        cursor_field: Optional[List[str]],
+    ):
+        """
+        Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
+
+        :param stream: The stream to delegate to for partition generation.
+        :param message_repository: The message repository to use to emit non-record messages.
+        :param sync_mode: The synchronization mode.
+        :param cursor: A Cursor object that maintains the state and the cursor field.
+        """
+        self._stream = stream
+        self.message_repository = message_repository
+        self._sync_mode = SyncMode.full_refresh
+        self._cursor = cursor
+        self._cursor_field = cursor_field
+        self._state = self._cursor.state
 
 
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)

@@ -165,8 +165,8 @@ class CustomOutputFormatConcurrentStreamStateConverter(IsoMillisConcurrentStream
     incoming state in any valid datetime format via Pendulum.
     """
 
-    def __init__(self, datetime_format: str):
-        super().__init__()
+    def __init__(self, datetime_format: str, is_sequential_state: bool = True, cursor_granularity: Optional[timedelta] = None):
+        super().__init__(is_sequential_state=is_sequential_state, cursor_granularity=cursor_granularity)
         self._datetime_format = datetime_format
 
     def output_format(self, timestamp: datetime) -> Any:

@@ -2,19 +2,35 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import timedelta, datetime, timezone
+from datetime import datetime, timedelta, timezone
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import freezegun
 import isodate
 import pendulum
-from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor, AirbyteStateBlob, Type
-
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    StreamDescriptor,
+    SyncMode,
+    Type,
+)
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import CursorPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+from airbyte_cdk.sources.types import Record, StreamSlice
+from sources.streams.core import StreamData
 
 _CONFIG = {
     "start_date": "2024-07-01T00:00:00.000Z"
@@ -24,7 +40,7 @@ _CATALOG = ConfiguredAirbyteCatalog(
     streams=[
         ConfiguredAirbyteStream(
             stream=AirbyteStream(name="party_members", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
-            sync_mode=SyncMode.full_refresh,
+            sync_mode=SyncMode.incremental,
             destination_sync_mode=DestinationSyncMode.append,
         ),
         ConfiguredAirbyteStream(
@@ -34,7 +50,7 @@ _CATALOG = ConfiguredAirbyteCatalog(
         ),
         ConfiguredAirbyteStream(
             stream=AirbyteStream(name="locations", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
-            sync_mode=SyncMode.full_refresh,
+            sync_mode=SyncMode.incremental,
             destination_sync_mode=DestinationSyncMode.append,
         ),
         ConfiguredAirbyteStream(
@@ -301,6 +317,44 @@ _MANIFEST = {
 }
 
 
+class DeclarativeStreamDecorator(Stream):
+    """
+    Helper class that wraps an existing DeclarativeStream but allows for overriding the output of read_records() to
+    make it easier to mock behavior and test how low-code streams integrate with the Concurrent CDK.
+    """
+
+    def __init__(self, declarative_stream: DeclarativeStream, slice_to_records_mapping: Mapping[tuple[str, str], List[Mapping[str, Any]]]):
+        self._declarative_stream = declarative_stream
+        self._slice_to_records_mapping = slice_to_records_mapping
+
+    @property
+    def name(self) -> str:
+        return self._declarative_stream.name
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._declarative_stream.primary_key
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        if isinstance(stream_slice, StreamSlice):
+            slice_key = (stream_slice.get("start_time"), stream_slice.get("end_time"))
+            if slice_key in self._slice_to_records_mapping:
+                yield from self._slice_to_records_mapping.get(slice_key)
+            else:
+                yield from []
+        else:
+            raise ValueError(f"stream_slice should be of type StreamSlice, but received {type(stream_slice)}")
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._declarative_stream.get_json_schema()
+
+
 def test_separate_streams():
     """
     Tests the separating of low-code streams into ones that can be processed concurrently vs ones that must be processed concurrently
@@ -398,7 +452,7 @@ def test_create_concurrent_cursor():
         ),
     ]
 
-    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=catalog, state=state)
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
 
     party_members_stream = source._concurrent_streams[0]
     assert isinstance(party_members_stream, DefaultStream)
@@ -466,23 +520,222 @@ def test_discover():
     assert actual_catalog.streams[3].name in expected_stream_names
 
 
-def test_read():
+@freezegun.freeze_time("2024-09-10T00:00:00")
+def test_read_with_concurrent_and_synchronous_streams():
     """
     Verifies that a ConcurrentDeclarativeSource processes concurrent streams followed by synchronous streams
     """
-    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=None, state=None)
 
-    state = []
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=None)
 
-    # we need to find a way to mock at the very edge of concurrent probably the underlying DeclarativeStream.read_records()
-    # aka the thing that gets invoked by the partition generator and return 5 records.
-    # and if we can simulate 2-3 partitions on the concurrent flow that should equate to 15 records
-    # and maybe we need to assert or count the invocations or on the Default stream count something to verify that it went through
-    # that flow. might be tricky...
+    for i, _ in enumerate(source._concurrent_streams):
+        stream = source._concurrent_streams[i]._stream_partition_generator._stream
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    for i, _ in enumerate(source._synchronous_streams):
+        stream = source._synchronous_streams[i]
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._synchronous_streams[i] = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=[]))
+
+    # Expects 15 records, 5 slices, 3 records each slice
+    party_members_records = get_records_for_stream("party_members", messages)
+    assert len(party_members_records) == 15
+
+    party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
+    assert len(party_members_states) == 6
+    assert party_members_states[5].stream.stream_state == AirbyteStateBlob(
+        state_type="date-range",
+        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+    )
+
+    # Expects 12 records, 3 slices, 4 records each slice
+    locations_records = get_records_for_stream(stream_name="locations", messages=messages)
+    assert len(locations_records) == 12
+
+    # 3 partitions == 3 state messages + final state message
+    # Because we cannot guarantee the order partitions finish, we only validate that the final state has the latest checkpoint value
+    locations_states = get_states_for_stream(stream_name="locations", messages=messages)
+    assert len(locations_states) == 4
+    assert locations_states[3].stream.stream_state == AirbyteStateBlob(
+        state_type="date-range",
+        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+    )
+
+    # Expects 7 records, 1 empty slice, 7 records in slice
+    palaces_records = get_records_for_stream("palaces", messages)
+    assert len(palaces_records) == 7
+
+    palaces_states = get_states_for_stream(stream_name="palaces", messages=messages)
+    assert len(palaces_states) == 1
+    assert palaces_states[0].stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+
+    # Expects 3 records, 1 empty slice, 3 records in slice
+    party_members_skills_records = get_records_for_stream("party_members_skills", messages)
+    assert len(party_members_skills_records) == 3
+
+    party_members_skills_states = get_states_for_stream(stream_name="party_members_skills", messages=messages)
+    assert len(party_members_skills_states) == 1
+    assert party_members_skills_states[0].stream.stream_state == AirbyteStateBlob(__ab_no_cursor_state_message=True)
+
+
+@freezegun.freeze_time("2024-09-10T00:00:00")
+def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
+    """
+    Verifies that a ConcurrentDeclarativeSource processes concurrent streams correctly using the incoming
+    concurrent state format
+    """
+
+    # This test isn't working. It could be for one of two reasons:
+    #  - The state boundary of party_members is not set up right which is what is causing the party_members sync to even run
+    #    and this misconfiguration causes the stream to silently get skipped even though we pass it to the ConcurrentReadProcessor
+    #  - There is an actual bug in my new code somewhere that is preventing concurrent streams with incoming partial success from
+    #    running correctly
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="locations", namespace=None),
+                stream_state=AirbyteStateBlob(
+                    state_type="date-range",
+                    slices=[{"start": "2024-07-01", "end": "2024-07-31"}],
+                ),
+            ),
+        ),
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="party_members", namespace=None),
+                stream_state=AirbyteStateBlob(
+                    state_type="date-range",
+                    slices=[
+                        {"start": "2024-07-16", "end": "2024-07-30"},  # WHYYYYYYYYYYYYYY
+                        {"start": "2024-08-15", "end": "2024-08-29"},
+                    ]
+                ),
+            ),
+        ),
+    ]
+
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
+
+    for i, _ in enumerate(source._concurrent_streams):
+        stream = source._concurrent_streams[i]._stream_partition_generator._stream
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    for i, _ in enumerate(source._synchronous_streams):
+        stream = source._synchronous_streams[i]
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._synchronous_streams[i] = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
 
     messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
 
-    assert len(messages) == 1
+    # Expects 12 records, 3 slices, 4 records each slice
+    locations_records = get_records_for_stream("locations", messages)
+    assert len(locations_records) == 8
+
+    # Expects 15 records, 5 slices, 3 records each slice
+    party_members_records = get_records_for_stream("party_members", messages)
+    assert len(party_members_records) == 9
+
+    # Expects 7 records, 1 empty slice, 7 records in slice
+    palaces_records = get_records_for_stream("palaces", messages)
+    assert len(palaces_records) == 7
+
+    # Expects 3 records, 1 empty slice, 3 records in slice
+    party_members_skills_records = get_records_for_stream("party_members_skills", messages)
+    assert len(party_members_skills_records) == 3
+
+
+@freezegun.freeze_time("2024-09-10T00:00:00")
+def test_read_with_concurrent_and_synchronous_streams_with_legacy_state():
+    """
+    Verifies that a ConcurrentDeclarativeSource processes concurrent streams correctly using the incoming
+    legacy state format
+    """
+    pass
+
+
+@freezegun.freeze_time("2024-09-10T00:00:00")
+def test_read_concurrent_with_failing_partition_in_the_middle():
+    """
+    Verify that partial state is emitted when only some partitions are successful during a concurrent sync attempt
+    """
+    pass
+
+
+@freezegun.freeze_time("2024-09-10T00:00:00")
+def test_read_concurrent_skip_streams_not_in_catalog():
+    """
+    Verifies that the ConcurrentDeclarativeSource only syncs streams that are specified in the incoming ConfiguredCatalog
+    """
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="palaces", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="locations", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.append,
+            ),
+        ]
+    )
+
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=catalog, state=None)
+
+    for i, _ in enumerate(source._concurrent_streams):
+        stream = source._concurrent_streams[i]._stream_partition_generator._stream
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    for i, _ in enumerate(source._synchronous_streams):
+        stream = source._synchronous_streams[i]
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._synchronous_streams[i] = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=catalog, state=[]))
+
+    locations_records = get_records_for_stream(stream_name="locations", messages=messages)
+    assert len(locations_records) == 12
+    locations_states = get_states_for_stream(stream_name="locations", messages=messages)
+    assert len(locations_states) == 4
+
+    palaces_records = get_records_for_stream("palaces", messages)
+    assert len(palaces_records) == 7
+    palaces_states = get_states_for_stream(stream_name="palaces", messages=messages)
+    assert len(palaces_states) == 1
+
+    assert len(get_records_for_stream(stream_name="party_members", messages=messages)) == 0
+    assert len(get_states_for_stream(stream_name="party_members", messages=messages)) == 0
+
+    assert len(get_records_for_stream(stream_name="party_members_skills", messages=messages)) == 0
+    assert len(get_states_for_stream(stream_name="party_members_skills", messages=messages)) == 0
+
 
 def test_read_concurrent_streams_only():
     pass
@@ -490,3 +743,82 @@ def test_read_concurrent_streams_only():
 
 def test_read_synchronous_streams_only():
     pass
+
+
+def create_wrapped_stream(stream: DeclarativeStream) -> Stream:
+    slice_to_records_mapping = get_mocked_read_records_output(stream_name=stream.name)
+
+    return DeclarativeStreamDecorator(declarative_stream=stream, slice_to_records_mapping=slice_to_records_mapping)
+
+
+def get_mocked_read_records_output(stream_name: str) -> Mapping[tuple[str, str], List[StreamData]]:
+    match stream_name:
+        case "locations":
+            slices = [
+                # Slices used during first incremental sync
+                StreamSlice(cursor_slice={"start": "2024-07-01", "end": "2024-07-31"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-08-01", "end": "2024-08-31"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-09-01", "end": "2024-09-09"}, partition={}),
+
+                # Slices used during incremental checkpoint sync
+                StreamSlice(cursor_slice={'start': '2024-07-26', 'end': '2024-08-25'}, partition={}),
+                StreamSlice(cursor_slice={'start': '2024-08-26', 'end': '2024-09-09'}, partition={}),
+            ]
+
+            records = [
+                {"id": "444", "name": "Yongen-jaya"},
+                {"id": "scramble", "name": "Shibuya"},
+                {"id": "aoyama", "name": "Aoyama-itchome"},
+                {"id": "shin123", "name": "Shinjuku"},
+            ]
+        case "party_members":
+            slices = [
+                # Slices used during first incremental sync
+                StreamSlice(cursor_slice={"start": "2024-07-01", "end": "2024-07-15"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-07-16", "end": "2024-07-30"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-07-31", "end": "2024-08-14"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-08-15", "end": "2024-08-29"}, partition={}),
+                StreamSlice(cursor_slice={"start": "2024-08-30", "end": "2024-09-09"}, partition={}),
+
+                # Slices used during incremental checkpoint sync
+                StreamSlice(cursor_slice={'start': '2024-07-26', 'end': '2024-08-25'}, partition={}),
+                StreamSlice(cursor_slice={'start': '2024-08-26', 'end': '2024-09-09'}, partition={}),
+            ]
+
+            records = [
+                {"id": "amamiya", "first_name": "ren", "last_name": "amamiya"},
+                {"id": "nijima", "first_name": "makoto", "last_name": "nijima"},
+                {"id": "yoshizawa", "first_name": "sumire", "last_name": "yoshizawa"},
+            ]
+        case "palaces":
+            slices = [StreamSlice(cursor_slice={}, partition={})]
+
+            records = [
+                {"id": "0", "world": "castle", "owner": "kamoshida"},
+                {"id": "1", "world": "museum", "owner": "madarame"},
+                {"id": "2", "world": "bank", "owner": "kaneshiro"},
+                {"id": "3", "world": "pyramid", "owner": "futaba"},
+                {"id": "4", "world": "spaceport", "owner": "okumura"},
+                {"id": "5", "world": "casino", "owner": "nijima"},
+                {"id": "6", "world": "cruiser", "owner": "shido"},
+            ]
+        case "party_members_skills":
+            slices = [StreamSlice(cursor_slice={}, partition={})]
+
+            records = [
+                {"id": "0", "name": "hassou tobi"},
+                {"id": "1", "name": "mafreidyne"},
+                {"id": "2", "name": "myriad truths"},
+            ]
+        case _:
+            raise ValueError(f"Stream '{stream_name}' does not have associated mocked records")
+
+    return {(_slice.get("start"), _slice.get("end")): [Record(data=stream_data, associated_slice=_slice) for stream_data in records] for _slice in slices}
+
+
+def get_records_for_stream(stream_name: str, messages: List[AirbyteMessage]) -> List[AirbyteRecordMessage]:
+    return [message.record for message in messages if message.record and message.record.stream == stream_name]
+
+
+def get_states_for_stream(stream_name: str, messages: List[AirbyteMessage]) -> List[AirbyteStateMessage]:
+    return [message.state for message in messages if message.state and message.state.stream.stream_descriptor.name == stream_name]
