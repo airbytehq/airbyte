@@ -17,6 +17,7 @@ import io.airbyte.cdk.test.util.FakeDataDumper
 import io.airbyte.cdk.test.util.IntegrationTest
 import io.airbyte.cdk.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.test.util.TestDeploymentMode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files
@@ -24,9 +25,6 @@ import java.nio.file.Path
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
-
-private const val EXPECTED_SPEC_FILENAME = "expected-spec.json"
-private val expectedSpecPath = Path.of(EXPECTED_SPEC_FILENAME)
 
 /**
  * This is largely copied from [io.airbyte.cdk.spec.SpecTest], but adapted to use our
@@ -43,12 +41,28 @@ abstract class SpecTest :
         NoopExpectedRecordMapper,
     ) {
     @Test
-    fun testSpec() {
+    fun testSpecOss() {
+        testSpec(TestDeploymentMode.OSS)
+    }
+
+    @Test
+    fun testSpecCloud() {
+        testSpec(TestDeploymentMode.CLOUD)
+    }
+
+    private fun testSpec(deploymentMode: TestDeploymentMode) {
+        val expectedSpecFilename = "expected-spec-${deploymentMode.name.lowercase()}.json"
+        val expectedSpecPath = Path.of(expectedSpecFilename)
+
         if (!Files.exists(expectedSpecPath)) {
             Files.createFile(expectedSpecPath)
         }
         val expectedSpec = Files.readString(expectedSpecPath)
-        val process = destinationProcessFactory.createDestinationProcess("spec")
+        val process =
+            destinationProcessFactory.createDestinationProcess(
+                "spec",
+                deploymentMode = deploymentMode
+            )
         process.run()
         val messages = process.readMessages()
         val specMessages = messages.filter { it.type == AirbyteMessage.Type.SPEC }
