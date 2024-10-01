@@ -1,6 +1,7 @@
 """Simple script to download perf profiling dataset from S3.
 
 Usage:
+    poetry install
     cd perf_tests
     poetry install
     poetry run python ./run_perf_tests.py
@@ -45,8 +46,8 @@ INCLUDE_BASELINE = True
 devnull_destination: ab.Destination | None = None
 if not USE_CACHE:
     devnull_destination = ab.get_destination(
-    name="destination-e2e-test",
-    docker_image="airbyte/destination-e2e-test:latest",
+    name="destination-dev-null",
+    docker_image="airbyte/destination-dev-null:latest",
     config={
         "test_destination": {
             "test_destination_type": "LOGGING",
@@ -94,14 +95,11 @@ def main() -> None:
 
     for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
         print(f"======Starting new-version test iteration #{i+1}======")
-        if USE_CACHE:
-            new_source.read(force_full_refresh=True)
-        else:
-            devnull_destination.write(
-                new_source,
-                force_full_refresh=True,
-                cache=False,
-            )
+        devnull_destination.write(
+            new_source,
+            force_full_refresh=True,
+            cache=False,
+        )
         print(f"======Finished new-version test iteration #{i+1}======")
 
     if INCLUDE_BASELINE:
@@ -111,14 +109,11 @@ def main() -> None:
         )
         for i in range(WARMUP_ITERATIONS + MEASURED_ITERATIONS):
             print(f"======Starting baseline test iteration #{i+1}======")
-            if USE_CACHE:
-                baseline_source.read(force_full_refresh=True)
-            else:
-                devnull_destination.write(
-                    baseline_source,
-                    force_full_refresh=True,
-                    cache=False,
-                )
+            devnull_destination.write(
+                baseline_source,
+                force_full_refresh=True,
+                cache=False,
+            )
             print(f"======Finished baseline test iteration #{i+1}======")
 
 
