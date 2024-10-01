@@ -33,6 +33,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: auth0_config_dev_null

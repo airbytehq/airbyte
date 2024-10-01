@@ -28,10 +28,11 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
   # Disable acceptance tests as:
   # - they are failing
   # - connector is not used on Cloud
-  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-COINGECKO-COINS__CREDS

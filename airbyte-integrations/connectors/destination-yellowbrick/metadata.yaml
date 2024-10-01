@@ -24,6 +24,7 @@ data:
   tags:
     - language:java
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: integrationTests
       testSecrets:
         - name: SECRET_DESTINATION-YELLOWBRICK_CREDENTIALS__CREDS

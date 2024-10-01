@@ -27,6 +27,7 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: configcat_config_dev_null

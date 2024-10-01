@@ -45,6 +45,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: chartmogul_config_dev_null

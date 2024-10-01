@@ -29,6 +29,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: coin-api_config_dev_null

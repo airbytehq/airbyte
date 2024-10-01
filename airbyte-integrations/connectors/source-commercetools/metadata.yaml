@@ -30,10 +30,11 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
   # Disabling the acceptance tests for now
   # No Airbyte Cloud usage
   #
-  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-COMMERCETOOLS__CREDS

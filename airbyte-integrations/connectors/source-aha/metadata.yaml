@@ -32,6 +32,7 @@ data:
     - cdk:low-code
     - language:manifest-only
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: aha_config_dev_null

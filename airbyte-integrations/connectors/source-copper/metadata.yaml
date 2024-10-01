@@ -27,9 +27,11 @@ data:
   supportLevel: community
   tags:
     - cdk:low-code
+    - language:manifest-only
+  connectorTestSuitesOptions:
+    - suite: unitTests
       # Disable acceptance tests for now
       # No/Low airbyte cloud usage
-      # connectorTestSuitesOptions:
       #   - suite: acceptanceTests
       #     testSecrets:
       #       - name: SECRET_SOURCE-COPPER__CREDS
@@ -37,5 +39,4 @@ data:
       #         secretStore:
       #           type: GSM
       #           alias: airbyte-connector-testing-secret-store
-    - language:manifest-only
 metadataSpecVersion: "1.0"

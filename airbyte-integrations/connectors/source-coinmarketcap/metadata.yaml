@@ -36,6 +36,7 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: coinmarketcap_config_dev_null

@@ -27,6 +27,7 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: aircall_config_dev_null
