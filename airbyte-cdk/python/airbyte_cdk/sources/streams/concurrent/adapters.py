@@ -199,6 +199,14 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
         return self._abstract_stream
 
 
+class SliceEncoder(json.JSONEncoder):
+    def default(self, obj: Any) -> Any:
+        if hasattr(obj, "__json_serializable__"):
+            return obj.__json_serializable__()
+        # Let the base class default method raise the TypeError
+        return super().default(obj)
+
+
 class StreamPartition(Partition):
     """
     This class acts as an adapter between the new Partition interface and the Stream's stream_slice interface
@@ -273,7 +281,7 @@ class StreamPartition(Partition):
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
-            s = json.dumps(self._slice, sort_keys=True)
+            s = json.dumps(self._slice, sort_keys=True, cls=SliceEncoder)
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)
@@ -332,7 +340,7 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source] = None) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 
@@ -368,11 +376,15 @@ class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
 
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
         try:
-            available, message = self._stream.check_availability(logger, self._source)
-            if available:
-                return StreamAvailable()
+            if hasattr(self._stream, "check_availability"):
+                available, message = self._stream.check_availability(logger, self._source)
+                if available:
+                    return StreamAvailable()
+                else:
+                    return StreamUnavailable(str(message))
             else:
-                return StreamUnavailable(str(message))
+                # Given no availability strategy, we will assume the stream is available
+                return StreamAvailable()
         except Exception as e:
             display_message = self._stream.get_error_display_message(e)
             if display_message:
