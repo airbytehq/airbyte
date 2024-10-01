@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime, timezone
-from typing import Any, MutableMapping, Optional
+from typing import Any, Literal, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
@@ -11,8 +11,10 @@ from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from source_s3.v4.cursor import Cursor
-
+from source_s3.v4.cursor import Cursor, CursorField
+from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
 
 def _create_datetime(dt: str) -> datetime:
     return datetime.strptime(dt, DefaultFileBasedCursor.DATE_TIME_FORMAT)
@@ -391,7 +393,12 @@ def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state
         ),
     ],
 )
-def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync, max_history_size):
+def test_list_files_v4_migration(
+    input_state: MutableMapping[str, Any],
+    all_files: list[RemoteFile],
+    expected_files_to_sync: list[RemoteFile],
+    max_history_size: None | int,
+):
     cursor = _init_cursor_with_state(input_state, max_history_size)
     files_to_sync = list(cursor.get_files_to_sync(all_files, Mock()))
     assert files_to_sync == expected_files_to_sync
@@ -483,9 +490,33 @@ def test_get_adjusted_date_timestamp(cursor_datetime, file_datetime, expected_ad
     assert adjusted_datetime == expected_adjusted_datetime
 
 
-def _init_cursor_with_state(input_state, max_history_size: Optional[int] = None) -> Cursor:
-    cursor = Cursor(stream_config=FileBasedStreamConfig(name="test", validation_policy="Emit Record", format=CsvFormat()))
-    cursor.set_initial_state(input_state)
+def _init_cursor_with_state(
+    input_state: MutableMapping[str, Any],
+    max_history_size: Optional[int] = None,
+) -> Cursor:
+    cursor = Cursor(
+        stream_config=FileBasedStreamConfig(
+            name="test",
+            validation_policy="Emit Record",
+            format=CsvFormat(),
+        ),
+        stream_name="test",
+        stream_namespace=None,
+        stream_state=input_state,
+        message_repository=InMemoryMessageRepository(),
+        connector_state_manager=ConnectorStateManager(
+            state=[],
+            #     [AirbyteStateMessage(
+            #         type=AirbyteStateType.STREAM,
+            #         stream=AirbyteStreamState(
+            #             stream_descriptor=StreamDescriptor(name="test"),
+            #             stream_state=input_state,
+            #         ),
+            #     )],
+        ),
+        cursor_field=CursorField(cursor_field_key="_ab_source_file_last_modified"),
+    )
+    # cursor.set_initial_state(input_state)
     if max_history_size is not None:
         cursor.DEFAULT_MAX_HISTORY_SIZE = max_history_size
     return cursor
