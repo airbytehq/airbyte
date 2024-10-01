@@ -134,7 +134,7 @@
           },
           "consent_url": {
             "type": "string",
-            "const": "https://auth.monday.com/oauth2/authorize?client_id={client_id}&redirect_uri={callback_url}&scope={scopes}&state={state}&subdomain={subdomain}"
+            "const": "https://auth.monday.com/oauth2/authorize?client_id={client_id}&redirect_uri={callback_url}&scope={scope}&state={state}&subdomain={subdomain}"
           }
         }
       }
