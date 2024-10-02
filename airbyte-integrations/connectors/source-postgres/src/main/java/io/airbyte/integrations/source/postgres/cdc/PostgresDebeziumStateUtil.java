@@ -249,7 +249,7 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
   private Long currentTransactionId(final JdbcDatabase database) throws SQLException {
     final List<Long> transactionId = database.bufferedResultSetQuery(
         conn -> conn.createStatement().executeQuery(
-            "SELECT CASE WHEN pg_is_in_recovery() THEN txid_snapshot_xmax(txid_current_snapshot()) ELSE txid_current() END AS pg_current_txid;"),
+            "SELECT CASE WHEN pg_is_in_recovery() THEN txid_snapshot_xmin(txid_current_snapshot()) ELSE txid_current() END AS pg_current_txid;"),
         resultSet -> resultSet.getLong(1));
     Preconditions.checkState(transactionId.size() == 1);
     return transactionId.get(0);
