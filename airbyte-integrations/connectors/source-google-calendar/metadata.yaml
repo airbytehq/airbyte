@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "googleapis.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-google-calendar
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.9.0@sha256:c56a14384e2b0096fabbfe6b054657d564e2453b956912cbd293a1fe4e79cef0
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b9f03fa3-5518-4a02-bd33-6461e3b481e3
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-google-calendar
+  githubIssueLabel: source-google-calendar
+  icon: icon.svg
+  license: MIT
+  name: Google Calendar
+  releaseDate: 2024-10-02
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-calendar
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
