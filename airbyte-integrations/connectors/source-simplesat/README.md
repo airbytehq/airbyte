@@ -2,6 +2,16 @@
 This directory contains the manifest-only connector for `source-simplesat`.
 
 This is the setup guide for the Simplesat source connector.
+The Simplesat source connector which ingests data from the Simplesat API.
+Simplesat is a engaging survey tool for service businesses to gather insight and feedback from their customers.
+
+The source supports 3 of the endpoints from the API (questions, surveys and answers)
+For more information, checkout the website https://www.simplesat.io/
+  
+An API key is required for authentication and using this connector.
+In order to obtain an API key, you must first create a Simplesat account.
+Once logged-in, you will find your API key in the account settings.
+You can find more about their API here https://documenter.getpostman.com/view/457268/SVfRt7WJ?version=latest
 
 
 ## Usage
