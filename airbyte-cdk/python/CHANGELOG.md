@@ -1,5 +1,32 @@
 # Changelog
 
+## 5.10.0
+concurrent-cdk: add cursor partition generator
+
+## 5.9.0
+concurrent-cdk: change stream availability strategy to always available
+
+## 5.8.1
+concurrent-cdk: fix convert_to_concurrent_stream to use state from state manager
+
+## 5.8.0
+Async job component: support Salesforce
+
+## 5.7.5
+Have headers match during HTTP cache hit
+
+## 5.7.4
+Always return a connection status even if an exception was raised
+
+## 5.7.3
+fix connector builder output serialization 
+
+## 5.7.2
+add transform_record() to class DefaultFileBasedStream
+
+## 5.7.1
+add python-snappy to file-based dependencies
+
 ## 5.7.0
 concurrent-cdk: add cursor definition based on sync mode to ConcurrentSourceAdapter
 

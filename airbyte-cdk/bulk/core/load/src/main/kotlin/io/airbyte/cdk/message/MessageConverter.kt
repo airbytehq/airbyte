@@ -27,10 +27,15 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
             when (message) {
                 is StreamCheckpoint ->
                     AirbyteStateMessage()
-                        .withSourceStats(
-                            AirbyteStateStats()
-                                .withRecordCount(message.sourceStats.recordCount.toDouble())
-                        )
+                        .also {
+                            if (message.sourceStats != null) {
+                                it.sourceStats =
+                                    AirbyteStateStats()
+                                        .withRecordCount(
+                                            message.sourceStats!!.recordCount.toDouble()
+                                        )
+                            }
+                        }
                         .withDestinationStats(
                             message.destinationStats?.let {
                                 AirbyteStateStats().withRecordCount(it.recordCount.toDouble())
@@ -41,12 +46,22 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                         )
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                         .withStream(fromStreamState(message.checkpoint))
+                        .also {
+                            message.additionalProperties.forEach { (key, value) ->
+                                it.withAdditionalProperty(key, value)
+                            }
+                        }
                 is GlobalCheckpoint ->
                     AirbyteStateMessage()
-                        .withSourceStats(
-                            AirbyteStateStats()
-                                .withRecordCount(message.sourceStats.recordCount.toDouble())
-                        )
+                        .also {
+                            if (message.sourceStats != null) {
+                                it.sourceStats =
+                                    AirbyteStateStats()
+                                        .withRecordCount(
+                                            message.sourceStats!!.recordCount.toDouble()
+                                        )
+                            }
+                        }
                         .withDestinationStats(
                             message.destinationStats?.let {
                                 AirbyteStateStats().withRecordCount(it.recordCount.toDouble())
@@ -58,6 +73,11 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                                 .withSharedState(message.state)
                                 .withStreamStates(message.checkpoints.map { fromStreamState(it) })
                         )
+                        .also {
+                            message.additionalProperties.forEach { (key, value) ->
+                                it.withAdditionalProperty(key, value)
+                            }
+                        }
             }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(state)
     }
@@ -66,8 +86,8 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
         return AirbyteStreamState()
             .withStreamDescriptor(
                 StreamDescriptor()
-                    .withNamespace(checkpoint.stream.descriptor.namespace)
-                    .withName(checkpoint.stream.descriptor.name)
+                    .withNamespace(checkpoint.stream.namespace)
+                    .withName(checkpoint.stream.name)
             )
             .withStreamState(checkpoint.state)
     }
