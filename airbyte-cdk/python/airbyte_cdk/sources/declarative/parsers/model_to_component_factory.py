@@ -380,6 +380,8 @@ class ModelToComponentFactory:
     def create_session_token_authenticator(
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
+        if not isinstance(model.decoder, JsonDecoder):
+            raise ValueError(f"Provided decoder of {type(model.decoder)=} is not supported. Please set JsonDecoder instead.")
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         login_requester = self._create_component_from_model(
             model=model.login_requester, config=config, name=f"{name}_login_requester", decoder=decoder

@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, Union, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Union
 
 import dpath
 import requests
