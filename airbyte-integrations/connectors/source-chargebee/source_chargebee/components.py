@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Literal, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.incremental import DeclarativeCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -51,6 +51,90 @@ class CustomFieldTransformation(RecordTransformation):
         return record
 
 
+class PriorState:
+    def __init__(
+        self,
+        cursor_field: str,
+        stream_state: Optional[StreamState] = None,
+        default_value_type: Any = int(),
+    ) -> None:
+        self.cursor_field = cursor_field
+        self.stream_state = stream_state if stream_state is not None else {}
+
+        self.value_type = default_value_type
+        self._state_key: Literal["prior_state"] = "prior_state"
+
+    @property
+    def _exists(self) -> bool:
+        """
+        Check if the prior state key exists in the stream state.
+
+        Returns:
+            bool: True if the state key exists in the stream state, False otherwise.
+        """
+
+        return self._state_key in self.stream_state
+
+    @property
+    def _prior_state_value(self) -> int:
+        """
+        Property that retrieves the prior state value for a specific stream.
+
+        Returns:
+            int: The prior state value for the stream, or the default value type if not found.
+        """
+
+        return self.stream_state.get(self._state_key, {}).get(self.cursor_field, self.value_type)
+
+    @property
+    def _stream_state_value(self) -> int:
+        """
+        Property that retrieves the state value of the stream.
+
+        This method accesses the `stream_state` dictionary and returns the value
+        associated with the `cursor_field` key. If the key is not found, it returns
+        the default value specified by `self.value_type`.
+
+        Returns:
+            int: The state value of the stream.
+        """
+
+        return self.stream_state.get(self.cursor_field, self.value_type)
+
+    def _update(self) -> None:
+        """
+        Updates the stream state if the current stream state value is greater than the prior state value.
+
+        This method compares the current stream state value with the prior state value.
+        If the current stream state value is greater, it updates the stream state with the new value
+        using the state key and cursor field.
+        """
+
+        if self._stream_state_value > self._prior_state_value:
+            self.stream_state[self._state_key] = {self.cursor_field: self._stream_state_value}
+
+    def _init(self) -> None:
+        """
+        Sets the initial state for the stream by copying the current state.
+
+        This method initializes the stream state by creating a copy of the current state
+        and assigning it to the state key specific to this stream.
+        """
+
+        self.stream_state[self._state_key] = self.stream_state.copy()
+
+    def set(self) -> None:
+        """
+        Sets the state of the component. If the component does not exist, it initializes it.
+        Otherwise, it updates the existing component.
+        """
+
+        if not self._exists:
+            self._init()
+        else:
+            self._update()
+
+
 @dataclass
 class IncrementalSingleSliceCursor(DeclarativeCursor):
 
@@ -62,6 +146,7 @@ class IncrementalSingleSliceCursor(DeclarativeCursor):
         self._state = {}
         self._cursor = None
         self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
+        self._prior_state = PriorState(self.cursor_field.eval(self.config), self._state)
 
     def get_request_params(
         self,
@@ -113,12 +198,23 @@ class IncrementalSingleSliceCursor(DeclarativeCursor):
         return self.get_stream_state()
 
     def set_initial_state(self, stream_state: StreamState):
+        """
+        Sets the initial state of the stream based on the provided stream state.
+
+        This method evaluates the cursor field using the configuration, retrieves the cursor value from the
+        provided stream state, and updates the internal state and cursor if the cursor value is present.
+        Additionally, it sets or updates the existing prior state with the cursor value.
+
+        Args:
+            stream_state (StreamState): The state of the stream to initialize from.
+        """
+
         cursor_field = self.cursor_field.eval(self.config)
         cursor_value = stream_state.get(cursor_field)
         if cursor_value:
             self._state[cursor_field] = cursor_value
-            self._state["prior_state"] = self._state.copy()
             self._cursor = cursor_value
+            self._prior_state.set()
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         """
