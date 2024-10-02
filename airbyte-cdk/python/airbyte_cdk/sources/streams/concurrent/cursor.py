@@ -87,6 +87,13 @@ class Cursor(ABC):
         """
         raise NotImplementedError()
 
+    def generate_slices(self) -> Iterable[Tuple[Any, Any]]:
+        """
+        Default placeholder implementation of generate_slices.
+        Subclasses can override this method to provide actual behavior.
+        """
+        yield from ()
+
 
 class FinalStateCursor(Cursor):
     """Cursor that is used to guarantee at least one state message is emitted for a concurrent stream."""
