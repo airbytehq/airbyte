@@ -1,4 +1,4 @@
-version: 5.7.5
+version: 5.8.1
 
 type: DeclarativeSource
 
@@ -111,8 +111,8 @@ definitions:
               parent_key: id
               request_option:
                 type: RequestOption
-                inject_into: request_parameter
                 field_name: podcast
+                inject_into: request_parameter
               partition_field: podcast_id
               stream:
                 $ref: "#/definitions/streams/podcasts"
@@ -138,21 +138,15 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - podcast_id
       - api_token
     properties:
-      podcast_id:
-        type: string
-        name: podcast_id
-        order: 0
-        title: podcast_id
       api_token:
         type: string
         description: >-
           API token to use. Find it at your Private Apps page on the Simplecast
           dashboard.
         name: api_token
-        order: 1
+        order: 0
         title: API Token
         airbyte_secret: true
     additionalProperties: true
@@ -164,19 +158,19 @@ metadata:
     analytics: false
   testedStreams:
     podcasts:
+      hasRecords: true
       streamHash: c2da39bd684fd26f29d71310fd294fc22a0978b3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     episodes:
+      hasRecords: true
       streamHash: a5bdc57ce73ea1037f195f0b1911263ce11191d6
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     analytics:
       hasRecords: true
       streamHash: 97b84cf0e030ff4f37c0b62e2d2c1cabf69d2611

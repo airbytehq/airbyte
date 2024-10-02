@@ -5,7 +5,6 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `podcast_id` | `string` | podcast_id.  |  |
 | `api_token` | `string` | API Token. API token to use. Find it at your Private Apps page on the Simplecast dashboard. |  |
 
 ## Streams
@@ -22,6 +21,6 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-01 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-10-02 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
