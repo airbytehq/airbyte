@@ -73,6 +73,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageP
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -166,14 +168,25 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource(PostgresSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
   PostgresSource() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  PostgresSource(FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
+    this.featureFlags = featureFlags;
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
   }
 
   @Override
