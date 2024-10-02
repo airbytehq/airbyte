@@ -64,7 +64,7 @@ public class CloudDeploymentPostgresSourceTest {
 
   private Source source() {
     PostgresSource source = new PostgresSource(FeatureFlagsWrapper.overridingDeploymentMode(
-            new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
+        new EnvVariableFeatureFlags(), AdaptiveSourceRunner.CLOUD_MODE));
     return PostgresSource.sshWrappedSource(source);
   }
 
