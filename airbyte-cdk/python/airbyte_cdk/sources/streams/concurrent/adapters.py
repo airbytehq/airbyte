@@ -17,18 +17,8 @@ from airbyte_cdk.sources.source import ExperimentalClassWarning
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream_facade import AbstractStreamFacade
-<<<<<<< HEAD
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
-    AbstractAvailabilityStrategy,
-    StreamAvailability,
-    StreamAvailable,
-    StreamUnavailable,
-)
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, FinalStateCursor
-=======
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, AlwaysAvailableAvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, FinalStateCursor
->>>>>>> master
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.helpers import get_cursor_field_from_stream, get_primary_key_from_stream
@@ -377,8 +367,6 @@ class CursorPartitionGenerator(PartitionGenerator):
         self._cursor_field = cursor_field
         self._state = self._cursor.state
 
-<<<<<<< HEAD
-=======
     def generate(self) -> Iterable[Partition]:
         """
         Generate partitions based on the slices in the cursor's state.
@@ -401,7 +389,6 @@ class CursorPartitionGenerator(PartitionGenerator):
                 self._cursor,
             )
 
->>>>>>> master
 
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AvailabilityStrategyFacade(AvailabilityStrategy):
