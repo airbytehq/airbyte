@@ -168,7 +168,7 @@ class StreamFacade(AbstractStreamFacade[DefaultStream], Stream):
             return self._abstract_stream.cursor_field
 
     @property
-    def cursor(self):
+    def cursor(self) -> Optional[Cursor]:  # type: ignore[override] # StreamFaced expects to use only airbyte_cdk.sources.streams.concurrent.cursor.Cursor
         return self._cursor
 
     @lru_cache(maxsize=None)
