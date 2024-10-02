@@ -149,7 +149,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                             f"Parent stream {parent_stream.name} returns records of type AirbyteMessage. This SubstreamPartitionRouter is not able to checkpoint incremental parent state."
                         )
                         if parent_record.type == MessageType.RECORD:
-                            parent_record = parent_record.record.data
+                            parent_record = parent_record.record.data if parent_record.record else {}
                         else:
                             continue
                     elif isinstance(parent_record, Record):
@@ -160,7 +160,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                         # The parent_record should only take the form of a Record, AirbyteMessage, or Mapping. Anything else is invalid
                         raise AirbyteTracedException(message=f"Parent stream returned records as invalid type {type(parent_record)}")
                     try:
-                        partition_value = dpath.get(parent_record, parent_field)
+                        partition_value = dpath.get(parent_record, parent_field)  # type: ignore # parent_record is already validated earlier to be a valid type
                     except KeyError:
                         pass
                     else:

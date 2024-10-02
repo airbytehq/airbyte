@@ -207,7 +207,7 @@ class Stream(ABC):
                     if self.cursor_field:
                         # Some connectors have streams that implement get_updated_state(), but do not define a cursor_field. This
                         # should be fixed on the stream implementation, but we should also protect against this in the CDK as well
-                        stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)
+                        stream_state_tracker = self.get_updated_state(stream_state_tracker, record_data)  # type: ignore # The earlier type check ensures this is a record message
                         self._observe_state(checkpoint_reader, stream_state_tracker)
                     record_counter += 1
 
@@ -601,7 +601,7 @@ class Stream(ABC):
         # todo: This can be consolidated into one ConnectorStateManager.update_and_create_state_message() method, but I want
         #  to reduce changes right now and this would span concurrent as well
         state_manager.update_state_for_stream(self.name, self.namespace, stream_state)
-        return state_manager.create_state_message(self.name, self.namespace)
+        return state_manager.create_state_message(self.name, self.namespace)  # type: ignore # ConnectorStateManager circular dependency
 
     @property
     def configured_json_schema(self) -> Optional[Dict[str, Any]]:
