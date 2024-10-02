@@ -23,8 +23,8 @@ https://www.cqc.org.uk/
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date              | Pull Request | Subject        |
-|------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-02 | | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder |
+| Version | Date       | Pull Request                                             | Subject                                                                                   |
+|---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.1   | 2024-10-02 | [46315](https://github.com/airbytehq/airbyte/pull/46315) | Initial release by [@pabloescoder](https://github.com/pabloescoder) via Connector Builder |
 
 </details>
