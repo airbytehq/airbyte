@@ -1374,8 +1374,6 @@ definitions:
         description: Component decoding the response
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
-          - "$ref": "#/definitions/JsonlDecoder"
-          - "$ref": "#/definitions/IterableDecoder"
       $parameters:
         type: object
         additionalProperties: true

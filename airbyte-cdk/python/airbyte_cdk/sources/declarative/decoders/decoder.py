@@ -22,7 +22,7 @@ class Decoder:
         """
 
     @abstractmethod
-    def decode(self, response: requests.Response) -> Generator[MutableMapping[Any, Any], None, None]:
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
         """
         Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode
