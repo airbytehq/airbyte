@@ -47,6 +47,7 @@ from .sources.declarative.requesters.paginators.strategies import OffsetIncremen
 
 from .sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
+from .sources.declarative.requesters.request_options.default_request_options_provider import DefaultRequestOptionsProvider
 from .sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from .sources.declarative.requesters.requester import HttpMethod
 from .sources.declarative.retrievers import SimpleRetriever
@@ -133,6 +134,7 @@ __all__ = [
     "DeclarativeStream",
     "Decoder",
     "DefaultPaginator",
+    "DefaultRequestOptionsProvider",
     "DpathExtractor",
     "FieldPointer",
     "HttpMethod",

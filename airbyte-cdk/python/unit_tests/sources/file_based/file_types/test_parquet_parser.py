@@ -238,7 +238,8 @@ def test_value_dictionary() -> None:
         pytest.param(pa.decimal256(2), _decimal_as_float_parquet_format, id="test_decimal256_as_float"),
         pytest.param(pa.map_(pa.int32(), pa.int32()), _default_parquet_format, id="test_map"),
         pytest.param(pa.null(), _default_parquet_format, id="test_null"),
-    ])
+    ],
+)
 def test_null_value_does_not_throw(parquet_type, parquet_format) -> None:
     pyarrow_value = pa.scalar(None, type=parquet_type)
     assert ParquetParser._to_output_value(pyarrow_value, parquet_format) is None

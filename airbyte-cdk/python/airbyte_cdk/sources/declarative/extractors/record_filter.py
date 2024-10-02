@@ -48,11 +48,16 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
     """
 
     def __init__(
-        self, date_time_based_cursor: DatetimeBasedCursor, per_partition_cursor: Optional[PerPartitionCursor] = None, **kwargs: Any
+        self,
+        date_time_based_cursor: DatetimeBasedCursor,
+        per_partition_cursor: Optional[PerPartitionCursor] = None,
+        is_global_substream_cursor: bool = False,
+        **kwargs: Any,
     ):
         super().__init__(**kwargs)
         self._date_time_based_cursor = date_time_based_cursor
         self._per_partition_cursor = per_partition_cursor
+        self.is_global_substream_cursor = is_global_substream_cursor
 
     @property
     def _cursor_field(self) -> str:
@@ -102,6 +107,10 @@ class ClientSideIncrementalRecordFilterDecorator(RecordFilter):
             # self._per_partition_cursor is the same object that DeclarativeStream uses to save/update stream_state
             partition_state = self._per_partition_cursor.select_state(stream_slice=stream_slice)
             return partition_state.get(self._cursor_field) if partition_state else None
+
+        if self.is_global_substream_cursor:
+            return stream_state.get("state", {}).get(self._cursor_field)  # type: ignore  # state is inside a dict for GlobalSubstreamCursor
+
         return stream_state.get(self._cursor_field)
 
     def _get_filter_date(self, state_value: Optional[str]) -> datetime.datetime:

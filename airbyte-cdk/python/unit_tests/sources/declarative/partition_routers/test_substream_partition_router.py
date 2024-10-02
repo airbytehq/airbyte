@@ -41,9 +41,7 @@ class MockStream(DeclarativeStream):
         self._slices = slices
         self._records = records
         self._stream_cursor_field = (
-            InterpolatedString.create(cursor_field, parameters={})
-            if isinstance(cursor_field, str)
-            else cursor_field
+            InterpolatedString.create(cursor_field, parameters={}) if isinstance(cursor_field, str) else cursor_field
         )
         self._name = name
         self._state = {"states": []}
@@ -311,15 +309,17 @@ def test_substream_partition_router(parent_stream_configs, expected_slices):
 
 def test_substream_partition_router_invalid_parent_record_type():
     partition_router = SubstreamPartitionRouter(
-        parent_stream_configs=[ParentStreamConfig(
-            stream=MockStream([{}], [list()], "first_stream"),
-            parent_key="id",
-            partition_field="first_stream_id",
-            parameters={},
-            config={},
-        )],
+        parent_stream_configs=[
+            ParentStreamConfig(
+                stream=MockStream([{}], [list()], "first_stream"),
+                parent_key="id",
+                partition_field="first_stream_id",
+                parameters={},
+                config={},
+            )
+        ],
         parameters={},
-        config={}
+        config={},
     )
 
     with pytest.raises(AirbyteTracedException):
@@ -664,7 +664,7 @@ def test_substream_checkpoints_after_each_parent_partition():
     [
         pytest.param(False, id="test_resumable_full_refresh_stream_without_parent_checkpoint"),
         pytest.param(True, id="test_resumable_full_refresh_stream_with_use_incremental_dependency_for_parent_checkpoint"),
-    ]
+    ],
 )
 def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_dependency):
     mock_slices = [
@@ -687,8 +687,8 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
         {"next_page_token": 2},
         {"next_page_token": 3},
         {"next_page_token": 3},
-        {'__ab_full_refresh_sync_complete': True},
-        {'__ab_full_refresh_sync_complete': True},
+        {"__ab_full_refresh_sync_complete": True},
+        {"__ab_full_refresh_sync_complete": True},
     ]
 
     partition_router = SubstreamPartitionRouter(
@@ -737,7 +737,7 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
     [
         pytest.param(False, id="test_substream_resumable_full_refresh_stream_without_parent_checkpoint"),
         pytest.param(True, id="test_substream_resumable_full_refresh_stream_with_use_incremental_dependency_for_parent_checkpoint"),
-    ]
+    ],
 )
 def test_substream_using_resumable_full_refresh_parent_stream_slices(use_incremental_dependency):
     mock_parent_slices = [
@@ -760,72 +760,20 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
         {"next_page_token": 2},
         {"next_page_token": 3},
         {"next_page_token": 3},
-        {'__ab_full_refresh_sync_complete': True},
-        {'__ab_full_refresh_sync_complete': True},
+        {"__ab_full_refresh_sync_complete": True},
+        {"__ab_full_refresh_sync_complete": True},
     ]
 
     expected_substream_state = {
         "states": [
-            {
-                "partition": {
-                    "parent_slice": {},
-                    "partition_field": "makoto_yuki"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "parent_slice": {},
-                    "partition_field": "yukari_takeba"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "parent_slice": {},
-                    "partition_field": "mitsuru_kirijo"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "parent_slice": {},
-                    "partition_field": "akihiko_sanada"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "parent_slice": {},
-                    "partition_field": "junpei_iori"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            },
-            {
-                "partition": {
-                    "parent_slice": {},
-                    "partition_field": "fuuka_yamagishi"
-                },
-                "cursor": {
-                    "__ab_full_refresh_sync_complete": True
-                }
-            }
+            {"partition": {"parent_slice": {}, "partition_field": "makoto_yuki"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "partition_field": "yukari_takeba"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "partition_field": "mitsuru_kirijo"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "partition_field": "akihiko_sanada"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "partition_field": "junpei_iori"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
+            {"partition": {"parent_slice": {}, "partition_field": "fuuka_yamagishi"}, "cursor": {"__ab_full_refresh_sync_complete": True}},
         ],
-        "parent_state": {
-            "persona_3_characters": {
-                "__ab_full_refresh_sync_complete": True
-            }
-        }
+        "parent_state": {"persona_3_characters": {"__ab_full_refresh_sync_complete": True}},
     }
 
     partition_router = SubstreamPartitionRouter(
@@ -874,7 +822,9 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
         assert actual_slice == expected_parent_slices[expected_counter]
         # check for parent state
         if use_incremental_dependency:
-            assert substream_cursor_slicer._partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
+            assert (
+                substream_cursor_slicer._partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
+            )
         expected_counter += 1
 
     # validate final state for closed substream slices

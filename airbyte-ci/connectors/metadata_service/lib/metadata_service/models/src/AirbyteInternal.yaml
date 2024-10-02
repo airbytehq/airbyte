@@ -9,12 +9,14 @@ properties:
   sl:
     type: integer
     enum:
+      - 0
       - 100
       - 200
       - 300
   ql:
     type: integer
     enum:
+      - 0
       - 100
       - 200
       - 300

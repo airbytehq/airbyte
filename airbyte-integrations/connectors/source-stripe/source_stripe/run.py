@@ -9,7 +9,8 @@ from datetime import datetime
 from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from orjson import orjson
 from source_stripe import SourceStripe
 
 
@@ -25,17 +26,21 @@ def _get_source(args: List[str]):
         )
     except Exception as error:
         print(
-            AirbyteMessage(
-                type=Type.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.ERROR,
-                    emitted_at=int(datetime.now().timestamp() * 1000),
-                    error=AirbyteErrorTraceMessage(
-                        message=f"Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance. Error: {error}",
-                        stack_trace=traceback.format_exc(),
-                    ),
-                ),
-            ).json()
+            orjson.dumps(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message=f"Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance. Error: {error}",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        ),
+                    )
+                )
+            ).decode()
         )
         return None
 

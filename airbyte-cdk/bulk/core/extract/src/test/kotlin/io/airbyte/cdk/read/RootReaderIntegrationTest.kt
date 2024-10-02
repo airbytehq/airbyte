@@ -3,7 +3,8 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import io.airbyte.cdk.TestClockFactory
+import io.airbyte.cdk.ClockFactory
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
@@ -11,7 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
-import io.airbyte.protocol.models.v0.SyncMode
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.RuntimeException
 import java.time.Duration
@@ -109,14 +110,16 @@ class RootReaderIntegrationTest {
     fun testAllStreamsNonGlobal() {
         val stateManager =
             StateManager(initialStreamStates = testCases.associate { it.stream to null })
-        val testOutputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val rootReader =
             RootReader(
                 stateManager,
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
+                listOf(
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                ),
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -152,14 +155,16 @@ class RootReaderIntegrationTest {
                 initialGlobalState = null,
                 initialStreamStates = testCases.associate { it.stream to null },
             )
-        val testOutputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val rootReader =
             RootReader(
                 stateManager,
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray()),
+                listOf(
+                    TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
+                ),
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -207,30 +212,29 @@ data class TestCase(
 
     val stream: Stream =
         Stream(
-            name = name,
-            namespace = "test",
+            id = StreamIdentifier.from(StreamDescriptor().withName(name).withNamespace("test")),
             fields = listOf(),
-            configuredSyncMode = SyncMode.FULL_REFRESH,
+            configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
             configuredPrimaryKey = null,
             configuredCursor = null,
         )
 
     fun run() {
-        val testOutputConsumer = BufferingOutputConsumer(TestClockFactory().fixed())
+        val testOutputConsumer = BufferingOutputConsumer(ClockFactory().fixed())
         val rootReader =
             RootReader(
                 StateManager(initialStreamStates = mapOf(stream to null)),
                 slowHeartbeat,
                 excessiveTimeout,
                 testOutputConsumer,
-                TestPartitionsCreatorFactory(Semaphore(resource), this),
+                listOf(TestPartitionsCreatorFactory(Semaphore(resource), this)),
             )
         try {
             runBlocking(Dispatchers.Default) { rootReader.read() }
             log.info { "read completed for $name" }
-            Assertions.assertTrue(isSuccessful, name)
+            Assertions.assertTrue(isSuccessful, "Expected case $name to succeed, but it failed.")
         } catch (e: Exception) {
-            Assertions.assertFalse(isSuccessful, name)
+            Assertions.assertFalse(isSuccessful, "Expected case $name to fail, but it succeeded.")
             log.info(e) { "read failed for $name" }
         }
         for (msg in testOutputConsumer.messages()) {
@@ -276,11 +280,17 @@ data class TestCase(
                     when (trace.streamStatus.status) {
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED -> {
                             hasStarted = true
-                            Assertions.assertFalse(hasCompleted)
+                            Assertions.assertFalse(
+                                hasCompleted,
+                                "Case $name cannot emit a STARTED trace message because it already emitted a COMPLETE."
+                            )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE -> {
                             hasCompleted = true
-                            Assertions.assertTrue(hasStarted)
+                            Assertions.assertTrue(
+                                hasStarted,
+                                "Case $name cannot emit a COMPLETE trace message because it hasn't emitted a STARTED yet."
+                            )
                         }
                         else ->
                             Assertions.fail(
@@ -295,8 +305,21 @@ data class TestCase(
                     )
             }
         }
-        Assertions.assertTrue(hasStarted)
-        Assertions.assertEquals(isSuccessful, hasCompleted)
+        Assertions.assertTrue(
+            hasStarted,
+            "Case $name should have emitted a STARTED trace message, but hasn't."
+        )
+        if (isSuccessful) {
+            Assertions.assertTrue(
+                hasCompleted,
+                "Case $name should have emitted a COMPLETE trace message, but hasn't."
+            )
+        } else {
+            Assertions.assertFalse(
+                hasCompleted,
+                "Case $name should not have emitted a COMPLETE trace message, but did anyway."
+            )
+        }
     }
 
     fun verifyStates(stateMessages: List<AirbyteStateMessage>) {
@@ -325,18 +348,18 @@ data class TestCase(
             if (expected == null) {
                 Assertions.assertNull(
                     actual,
-                    "expected nothing in round $partitionsCreatorID, got $actual",
+                    "Case $name should not have emitted any state checkpoint in round $partitionsCreatorID, but did anyway: $actual",
                 )
                 break
             }
             Assertions.assertNotNull(
                 actual,
-                "expected $expected in round $partitionsCreatorID, got nothing",
+                "Case $name didn't emit any state checkpoint in round $partitionsCreatorID, but should have emitted: $expected"
             )
             for (actualState in actual!!) {
                 Assertions.assertTrue(
-                    actualState in expected,
-                    "$actualState should be in $expected",
+                    actualState.toString() in expected.map { it.toString() },
+                    "Case $name emitted more state checkpoints than were expected: actual $actualState vs expected $expected",
                 )
             }
         }

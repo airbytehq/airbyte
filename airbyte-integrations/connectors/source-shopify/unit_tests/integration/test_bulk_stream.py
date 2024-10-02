@@ -9,7 +9,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 _AN_ERROR_RESPONSE = HttpResponse(json.dumps({"errors": ["an error"]}))
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
 from requests.exceptions import ConnectionError
 from source_shopify import SourceShopify

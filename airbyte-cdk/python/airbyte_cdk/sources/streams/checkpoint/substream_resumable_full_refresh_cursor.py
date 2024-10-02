@@ -3,11 +3,11 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.checkpoint import Cursor
 from airbyte_cdk.sources.streams.checkpoint.per_partition_key_serializer import PerPartitionKeySerializer
 from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 FULL_REFRESH_COMPLETE_STATE: Mapping[str, Any] = {"__ab_full_refresh_sync_complete": True}
 
