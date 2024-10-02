@@ -229,7 +229,7 @@ class FileBasedStreamPartition(Partition):
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
                     yield Record(data_to_return, self)
-                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD and record_data.record:
+                elif isinstance(record_data, AirbyteMessage) and record_data.type == Type.RECORD and record_data.record is not None:
                     # `AirbyteMessage`s of type `Record` should also be yielded so they are enqueued
                     yield Record(record_data.record.data, self)
                 else:
