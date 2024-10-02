@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.10.1
+Async job component: improve memory usage
+
 ## 5.10.0
 concurrent-cdk: add cursor partition generator
 
