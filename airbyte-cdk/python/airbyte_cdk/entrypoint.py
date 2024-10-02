@@ -32,6 +32,7 @@ from airbyte_cdk.models import (  # type: ignore [attr-defined]
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
+
 # from airbyte_cdk.utils import PrintBuffer, is_cloud_environment, message_utils  # add PrintBuffer back once fixed
 from airbyte_cdk.utils import is_cloud_environment, message_utils
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
