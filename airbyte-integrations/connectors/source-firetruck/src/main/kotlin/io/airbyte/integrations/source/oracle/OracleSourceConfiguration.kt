@@ -45,9 +45,9 @@ data class OracleSourceConfiguration(
 
 @Singleton
 class OracleSourceConfigurationFactory :
-    SourceConfigurationFactory<OracleSourceConfigurationJsonObject, OracleSourceConfiguration> {
+    SourceConfigurationFactory<OracleSourceConfigurationSpecification, OracleSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: OracleSourceConfigurationJsonObject,
+        pojo: OracleSourceConfigurationSpecification,
     ): OracleSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port

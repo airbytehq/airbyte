@@ -20,8 +20,8 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.ConfigurationProperties
@@ -53,7 +53,7 @@ import jakarta.inject.Singleton
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
+class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -141,7 +141,7 @@ class OracleSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
-    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject()
+    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
     @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
 

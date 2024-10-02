@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.oracle
 
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
@@ -15,6 +16,7 @@ import io.airbyte.cdk.discover.UserDefinedType
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
@@ -40,10 +42,9 @@ class OracleSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
 ) : MetadataQuerier by base {
     override fun fields(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<Field> {
-        val table: TableName = base.findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = base.findTableName(streamID) ?: return listOf()
         return base
             .columnMetadata(table)
             .map { c: JdbcMetadataQuerier.ColumnMetadata ->
@@ -227,7 +228,10 @@ class OracleSourceMetadataQuerier(
             }
             log.info { "Discovered all primary keys in ${schemas.size} Oracle schema(s)." }
             return@lazy results
-                .groupBy { base.findTableName(it.tableName, it.owner) }
+                .groupBy {
+                    val desc = StreamDescriptor().withName(it.tableName).withNamespace(it.owner)
+                    base.findTableName(StreamIdentifier.from(desc))
+                }
                 .mapNotNull { (table, rowsByTable) ->
                     if (table == null) return@mapNotNull null
                     val pkRows: List<AllPrimaryKeysRow> =
@@ -253,10 +257,9 @@ class OracleSourceMetadataQuerier(
     }
 
     override fun primaryKey(
-        streamName: String,
-        streamNamespace: String?,
+        streamID: StreamIdentifier,
     ): List<List<String>> {
-        val table: TableName = base.findTableName(streamName, streamNamespace) ?: return listOf()
+        val table: TableName = base.findTableName(streamID) ?: return listOf()
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 

@@ -178,7 +178,7 @@ class OracleSourceDatatypeIntegrationTest {
     companion object {
         lateinit var dbContainer: OracleContainer
 
-        fun config(): OracleSourceConfigurationJsonObject =
+        fun config(): OracleSourceConfigurationSpecification =
             OracleContainerFactory.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {

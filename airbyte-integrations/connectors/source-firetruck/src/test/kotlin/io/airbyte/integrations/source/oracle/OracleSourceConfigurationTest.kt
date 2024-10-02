@@ -2,7 +2,7 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
@@ -19,11 +19,13 @@ import org.junit.jupiter.api.Test
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
 class OracleSourceConfigurationTest {
     @Inject
-    lateinit var pojoSupplier: ConfigurationJsonObjectSupplier<OracleSourceConfigurationJsonObject>
+    lateinit var pojoSupplier:
+        ConfigurationSpecificationSupplier<OracleSourceConfigurationSpecification>
 
     @Inject
     lateinit var factory:
-        SourceConfigurationFactory<OracleSourceConfigurationJsonObject, OracleSourceConfiguration>
+        SourceConfigurationFactory<
+            OracleSourceConfigurationSpecification, OracleSourceConfiguration>
 
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
@@ -113,7 +115,7 @@ class OracleSourceConfigurationTest {
     )
     @Property(name = "airbyte.connector.config.encryption.ssl_certificate", value = "non-PEM trash")
     fun testWithInvalidSslCertificate() {
-        val pojo: OracleSourceConfigurationJsonObject = pojoSupplier.get()
+        val pojo: OracleSourceConfigurationSpecification = pojoSupplier.get()
         Assertions.assertThrows(ConfigErrorException::class.java) { factory.make(pojo) }
     }
 }

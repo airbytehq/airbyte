@@ -2,7 +2,7 @@
 package io.airbyte.integrations.source.oracle
 
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Property
@@ -13,9 +13,10 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
-class OracleSourceConfigurationJsonObjectTest {
+class OracleSourceConfigurationSpecificationTest {
     @Inject
-    lateinit var supplier: ConfigurationJsonObjectSupplier<OracleSourceConfigurationJsonObject>
+    lateinit var supplier:
+        ConfigurationSpecificationSupplier<OracleSourceConfigurationSpecification>
 
     @Test
     @Property(name = "airbyte.connector.config.host", value = "localhost")
@@ -39,7 +40,7 @@ class OracleSourceConfigurationJsonObjectTest {
     @Property(name = "airbyte.connector.config.tunnel_method.tunnel_user", value = "sshuser")
     @Property(name = "airbyte.connector.config.tunnel_method.tunnel_user_password", value = "***")
     fun testPropertyInjection() {
-        val pojo: OracleSourceConfigurationJsonObject = supplier.get()
+        val pojo: OracleSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("localhost", pojo.host)
         Assertions.assertEquals(12345, pojo.port)
         Assertions.assertEquals("FOO", pojo.username)
@@ -69,7 +70,7 @@ class OracleSourceConfigurationJsonObjectTest {
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON)
     fun testJson() {
-        val pojo: OracleSourceConfigurationJsonObject = supplier.get()
+        val pojo: OracleSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("localhost", pojo.host)
         Assertions.assertEquals(12345, pojo.port)
         Assertions.assertEquals("FOO", pojo.username)

@@ -48,8 +48,8 @@ object OracleContainerFactory {
     }
 
     @JvmStatic
-    fun config(oracleContainer: OracleContainer): OracleSourceConfigurationJsonObject =
-        OracleSourceConfigurationJsonObject().apply {
+    fun config(oracleContainer: OracleContainer): OracleSourceConfigurationSpecification =
+        OracleSourceConfigurationSpecification().apply {
             host = oracleContainer.host
             port = oracleContainer.oraclePort
             username = oracleContainer.username

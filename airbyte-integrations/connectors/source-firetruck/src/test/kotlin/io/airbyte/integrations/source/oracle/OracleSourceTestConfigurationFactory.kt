@@ -12,9 +12,9 @@ import java.time.Duration
 @Requires(env = [Environment.TEST])
 @Primary
 class OracleSourceTestConfigurationFactory :
-    SourceConfigurationFactory<OracleSourceConfigurationJsonObject, OracleSourceConfiguration> {
+    SourceConfigurationFactory<OracleSourceConfigurationSpecification, OracleSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: OracleSourceConfigurationJsonObject,
+        pojo: OracleSourceConfigurationSpecification,
     ): OracleSourceConfiguration =
         OracleSourceConfigurationFactory()
             .makeWithoutExceptionHandling(pojo)
