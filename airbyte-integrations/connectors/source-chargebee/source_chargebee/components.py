@@ -51,18 +51,39 @@ class CustomFieldTransformation(RecordTransformation):
         return record
 
 
-class PriorState:
+class PriorStateHandler:
+    """
+    PriorStateHandler is a class responsible for managing the state of a stream by tracking and updating the prior state values.
+
+    Args:
+        cursor_field (str): The field used to track the cursor position in the stream.
+        stream_state (Optional[StreamState]): The current state of the stream.
+        value_type (Optional[Any]): The default value type for the state.
+        key (str): The key used to store the prior state in the stream state.
+
+    Methods:
+        Private:
+            property: _exists: Checks if the prior state key exists in the stream state.
+            propetry: _prior_state_value: Retrieves the prior state value for a specific stream.
+            property: _stream_state_value: Retrieves the state value of the stream.
+            func: _update(): Updates the stream state if the current stream state value is greater than the prior state value.
+            func: _init(): Sets the initial state for the stream by copying the current state.
+
+        Public:
+            func: set(): Sets the state of the component. If the component does not exist, it initializes it. Otherwise, it updates the existing component.
+    """
+
     def __init__(
         self,
         cursor_field: str,
         stream_state: Optional[StreamState] = None,
-        default_value_type: Any = int(),
+        value_type: Optional[Any] = None,
+        key: Optional[str] = None,
     ) -> None:
-        self.cursor_field = cursor_field
-        self.stream_state = stream_state if stream_state is not None else {}
-
-        self.value_type = default_value_type
-        self._state_key: Literal["prior_state"] = "prior_state"
+        self._cursor_field = cursor_field
+        self._stream_state = stream_state if stream_state is not None else {}
+        self._default_value: Any = value_type() if value_type is not None else str()
+        self._state_key: str = key if key else "prior_state"
 
     @property
     def _exists(self) -> bool:
@@ -73,10 +94,10 @@ class PriorState:
             bool: True if the state key exists in the stream state, False otherwise.
         """
 
-        return self._state_key in self.stream_state
+        return self._state_key in self._stream_state
 
     @property
-    def _prior_state_value(self) -> int:
+    def _prior_state_value(self) -> Any:
         """
         Property that retrieves the prior state value for a specific stream.
 
@@ -84,22 +105,22 @@ class PriorState:
             int: The prior state value for the stream, or the default value type if not found.
         """
 
-        return self.stream_state.get(self._state_key, {}).get(self.cursor_field, self.value_type)
+        return self._stream_state.get(self._state_key, {}).get(self._cursor_field, self._default_value)
 
     @property
-    def _stream_state_value(self) -> int:
+    def _stream_state_value(self) -> Any:
         """
         Property that retrieves the state value of the stream.
 
         This method accesses the `stream_state` dictionary and returns the value
         associated with the `cursor_field` key. If the key is not found, it returns
-        the default value specified by `self.value_type`.
+        the default value specified by `self._default_value`.
 
         Returns:
             int: The state value of the stream.
         """
 
-        return self.stream_state.get(self.cursor_field, self.value_type)
+        return self._stream_state.get(self._cursor_field, self._default_value)
 
     def _update(self) -> None:
         """
@@ -111,7 +132,7 @@ class PriorState:
         """
 
         if self._stream_state_value > self._prior_state_value:
-            self.stream_state[self._state_key] = {self.cursor_field: self._stream_state_value}
+            self._stream_state[self._state_key] = {self._cursor_field: self._stream_state_value}
 
     def _init(self) -> None:
         """
@@ -121,7 +142,7 @@ class PriorState:
         and assigning it to the state key specific to this stream.
         """
 
-        self.stream_state[self._state_key] = self.stream_state.copy()
+        self._stream_state[self._state_key] = self._stream_state.copy()
 
     def set(self) -> None:
         """
@@ -129,10 +150,7 @@ class PriorState:
         Otherwise, it updates the existing component.
         """
 
-        if not self._exists:
-            self._init()
-        else:
-            self._update()
+        self._init() if not self._exists else self._update()
 
 
 @dataclass
@@ -146,7 +164,11 @@ class IncrementalSingleSliceCursor(DeclarativeCursor):
         self._state = {}
         self._cursor = None
         self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
-        self._prior_state = PriorState(self.cursor_field.eval(self.config), self._state)
+        self._prior_state = PriorStateHandler(
+            cursor_field=self.cursor_field.eval(self.config),
+            stream_state=self._state,
+            value_type=int,
+        )
 
     def get_request_params(
         self,
