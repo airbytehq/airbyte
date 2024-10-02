@@ -39,6 +39,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
+    EmptyStateCursor,
     GlobalSubstreamCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
@@ -768,6 +769,20 @@ class ModelToComponentFactory:
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
+            if isinstance(stream_slicer, SubstreamPartitionRouter):
+                # When a parent stream's records get updated due to changes in the underlying child records (as signified by
+                # the incremental_dependency field), we don't use the RFR cursor because the cursor field of the parent is
+                # a suitable checkpoint. All parent_configs must support incremental_dependency to skip per-partition checkpoint
+                # management to ensure records aren't missed.
+                parent_configs_with_incremental_dependency = [
+                    parent_config for parent_config in stream_slicer.parent_stream_configs if parent_config.incremental_dependency
+                ]
+                if len(stream_slicer.parent_stream_configs) == len(parent_configs_with_incremental_dependency):
+                    return GlobalSubstreamCursor(
+                        stream_cursor=ChildPartitionResumableFullRefreshCursor(parameters={}),
+                        partition_router=stream_slicer,
+                    )
+
             # For the Full-Refresh sub-streams, we use the nested `ChildPartitionResumableFullRefreshCursor`
             return PerPartitionCursor(
                 cursor_factory=CursorFactory(create_function=partial(ChildPartitionResumableFullRefreshCursor, {})),

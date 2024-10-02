@@ -139,7 +139,8 @@ class SubstreamPartitionRouter(PartitionRouter):
 
                 # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
                 # not support either substreams or RFR, but something that needs to be considered once we do
-                for parent_record in parent_stream.read_only_records():
+                previous_state = parent_stream.state or {}
+                for parent_record in parent_stream.read_only_records(state=parent_stream.state):
                     parent_partition = None
                     parent_associated_slice = None
                     # Skip non-records (eg AirbyteLogMessage)
@@ -175,12 +176,14 @@ class SubstreamPartitionRouter(PartitionRouter):
                                 # the next. When this happens, we should update the partition router's current state and
                                 # flush the previous set of collected records and start a new set
                                 #
-                                # Note: One tricky aspect to take note of here is that parent_stream.state will actually
-                                # fetch state of the stream of the previous record's slice NOT the current record's slice.
-                                # This is because in the retriever, we only update stream state after yielding all the
-                                # records. And since we are in the middle of the current slice, parent_stream.state is
-                                # still set to the previous state.
-                                self._parent_state[parent_stream.name] = parent_stream.state
+                                # Note: We set the SubstreamPartitionRouter's parent_state to the previous state of the parent
+                                # stream. Although we have successfully read all parent records up to the current parent state,
+                                # we cannot guarantee that we've successfully read the child records. By only checkpointing
+                                # prior state when we're on the next set of parents, we can guarantee that children that depend
+                                # on the parent incremental state have already been emitted
+                                self._parent_state[parent_stream.name] = previous_state
+                                previous_state = parent_stream.state
+
                                 yield from stream_slices_for_parent
 
                                 # Reset stream_slices_for_parent after we've flushed parent records for the previous parent slice
@@ -194,7 +197,7 @@ class SubstreamPartitionRouter(PartitionRouter):
 
                 # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
                 if incremental_dependency:
-                    self._parent_state[parent_stream.name] = parent_stream.state
+                    self._parent_state[parent_stream.name] = previous_state
 
                 yield from stream_slices_for_parent
 

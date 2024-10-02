@@ -4,6 +4,7 @@
 
 # mypy: ignore-errors
 import datetime
+from functools import partial
 from typing import Any, Mapping
 
 import freezegun
@@ -24,7 +25,14 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
-from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor, ResumableFullRefreshCursor
+from airbyte_cdk.sources.declarative.incremental import (
+    ChildPartitionResumableFullRefreshCursor,
+    CursorFactory,
+    DatetimeBasedCursor,
+    GlobalSubstreamCursor,
+    PerPartitionCursor,
+    ResumableFullRefreshCursor,
+)
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -2091,6 +2099,209 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
     elif partition_router and isinstance(partition_router, list) and len(partition_router) > 1:
         assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
         assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
+
+
+@pytest.mark.parametrize(
+    "incremental_dependency, expected_cursor",
+    [
+        pytest.param(True, GlobalSubstreamCursor, id="test_substream_partition_router_with_incremental_dependency"),
+        pytest.param(False, PerPartitionCursor, id="test_substream_partition_router_with_incremental_dependency"),
+    ]
+)
+def test_merge_use_global_substream_cursor_for_full_refresh_with_incremental_dependency(incremental_dependency, expected_cursor):
+    """
+    Validates that instantiating a substream that supports incremental_dependency does not checkpoint state per-partition
+    by using PerPartitionCursor + ResumableFullRefreshCursor. It should instead use GlobalSubstreamCursor to avoid persisting
+    large state messages
+    """
+
+    stream_model = {
+        "type": "DeclarativeStream",
+        "retriever": {
+            "type": "SimpleRetriever",
+            "record_selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_path": [],
+                },
+            },
+            "requester": {
+                "type": "HttpRequester",
+                "name": "list",
+                "url_base": "orange.com",
+                "path": "/v1/api",
+            },
+            "partition_router": {
+                "type": "SubstreamPartitionRouter",
+                "parent_stream_configs": [
+                    {
+                        "type": "ParentStreamConfig",
+                        "stream": {
+                            "type": "DeclarativeStream",
+                            "name": "a_parent",
+                            "primary_key": "id",
+                            "retriever": {
+                                "type": "SimpleRetriever",
+                                "record_selector": {
+                                    "type": "RecordSelector",
+                                    "extractor": {"type": "DpathExtractor", "field_path": []},
+                                },
+                                "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "a_plus"},
+                            },
+                            "schema_loader": {
+                                "type": "JsonFileSchemaLoader",
+                                "file_path": "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml",
+                            },
+                        },
+                        "parent_key": "id",
+                        "partition_field": "a_id",
+                        "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+                    },
+                    {
+                        "type": "ParentStreamConfig",
+                        "stream": {
+                            "type": "DeclarativeStream",
+                            "name": "b_parent",
+                            "primary_key": "id",
+                            "retriever": {
+                                "type": "SimpleRetriever",
+                                "record_selector": {
+                                    "type": "RecordSelector",
+                                    "extractor": {"type": "DpathExtractor", "field_path": []},
+                                },
+                                "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "b_minus"},
+                            },
+                            "schema_loader": {
+                                "type": "JsonFileSchemaLoader",
+                                "file_path": "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml",
+                            },
+                        },
+                        "parent_key": "id",
+                        "partition_field": "b_id",
+                        "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+                    }
+                ]
+            }
+        },
+    }
+
+    stream_model["retriever"]["partition_router"]["parent_stream_configs"][0]["incremental_dependency"] = incremental_dependency
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_model, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert isinstance(stream.retriever, SimpleRetriever)
+    cursor = stream.retriever.cursor
+
+    if expected_cursor == GlobalSubstreamCursor:
+        assert isinstance(cursor, GlobalSubstreamCursor)
+        assert isinstance(cursor._stream_cursor, ChildPartitionResumableFullRefreshCursor)
+        assert isinstance(cursor._partition_router, SubstreamPartitionRouter)
+    elif expected_cursor == PerPartitionCursor:
+        assert isinstance(cursor, PerPartitionCursor)
+        assert isinstance(cursor._partition_router, SubstreamPartitionRouter)
+        assert isinstance(cursor._cursor_factory, CursorFactory)
+        assert isinstance(cursor._cursor_factory._create_function, partial)
+
+        # Asserting on partial function equality doesn't work that well. So we need to check the signature and args separately
+        assert cursor._cursor_factory._create_function.func == partial(ChildPartitionResumableFullRefreshCursor, {}).func
+        assert cursor._cursor_factory._create_function.args == partial(ChildPartitionResumableFullRefreshCursor, {}).args
+
+
+def test_merge_use_global_substream_cursor_for_full_refresh_with_partial_incremental_dependency():
+    """
+    Validates that instantiating a substream that only has some parent_configs with incremental_dependency does not use
+    GlobalSubstreamCursor otherwise some records would be missed
+    """
+
+    stream_model = {
+        "type": "DeclarativeStream",
+        "retriever": {
+            "type": "SimpleRetriever",
+            "record_selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_path": [],
+                },
+            },
+            "requester": {
+                "type": "HttpRequester",
+                "name": "list",
+                "url_base": "orange.com",
+                "path": "/v1/api",
+            },
+            "partition_router": {
+                "type": "SubstreamPartitionRouter",
+                "parent_stream_configs": [
+                    {
+                        "type": "ParentStreamConfig",
+                        "stream": {
+                            "type": "DeclarativeStream",
+                            "name": "a_parent",
+                            "primary_key": "id",
+                            "retriever": {
+                                "type": "SimpleRetriever",
+                                "record_selector": {
+                                    "type": "RecordSelector",
+                                    "extractor": {"type": "DpathExtractor", "field_path": []},
+                                },
+                                "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "a_plus"},
+                            },
+                            "schema_loader": {
+                                "type": "JsonFileSchemaLoader",
+                                "file_path": "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml",
+                            },
+                        },
+                        "parent_key": "id",
+                        "partition_field": "a_id",
+                        "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+                        "incremental_dependency": True,
+                    },
+                    {
+                        "type": "ParentStreamConfig",
+                        "stream": {
+                            "type": "DeclarativeStream",
+                            "name": "b_parent",
+                            "primary_key": "id",
+                            "retriever": {
+                                "type": "SimpleRetriever",
+                                "record_selector": {
+                                    "type": "RecordSelector",
+                                    "extractor": {"type": "DpathExtractor", "field_path": []},
+                                },
+                                "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "b_minus"},
+                            },
+                            "schema_loader": {
+                                "type": "JsonFileSchemaLoader",
+                                "file_path": "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml",
+                            },
+                        },
+                        "parent_key": "id",
+                        "partition_field": "b_id",
+                        "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+                        "incremental_dependency": False,
+                    }
+                ]
+            }
+        },
+    }
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_model, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert isinstance(stream.retriever, SimpleRetriever)
+
+    cursor = stream.retriever.cursor
+    assert isinstance(cursor, PerPartitionCursor)
+    assert isinstance(cursor._partition_router, SubstreamPartitionRouter)
+    assert isinstance(cursor._cursor_factory, CursorFactory)
+    assert isinstance(cursor._cursor_factory._create_function, partial)
+
+    # Asserting on partial function equality doesn't work that well. So we need to check the signature and args separately
+    assert cursor._cursor_factory._create_function.func == partial(ChildPartitionResumableFullRefreshCursor, {}).func
+    assert cursor._cursor_factory._create_function.args == partial(ChildPartitionResumableFullRefreshCursor, {}).args
 
 
 def test_simple_retriever_emit_log_messages():

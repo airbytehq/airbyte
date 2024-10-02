@@ -91,7 +91,7 @@ class CursorBasedCheckpointReader(CheckpointReader):
         self._cursor = cursor
         self._stream_slices = iter(stream_slices)
         # read_state_from_cursor is used to delineate that partitions should determine when to stop syncing dynamically according
-        # to the value of the state at runtime. This currently only applies to streams that use resumable full refresh.
+        # to the value of the state at runtime. This currently only applies to streams that use resumable full refresh cursors
         self._read_state_from_cursor = read_state_from_cursor
         self._current_slice: Optional[StreamSlice] = None
         self._finished_sync = False
