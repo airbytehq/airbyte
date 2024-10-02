@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, ge
 
 from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
@@ -30,7 +31,7 @@ from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
-from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
@@ -140,7 +141,12 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    DatetimeBasedRequestOptionsProvider,
+    DefaultRequestOptionsProvider,
+    InterpolatedRequestOptionsProvider,
+    RequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRetriever, SimpleRetrieverTestReadDecorator
@@ -153,7 +159,7 @@ from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformatio
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
@@ -653,6 +659,40 @@ class ModelToComponentFactory:
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
                 "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
+
+        if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
+            cursor_model = model.incremental_sync
+
+            end_time_option = (
+                RequestOption(
+                    inject_into=RequestOptionType(cursor_model.end_time_option.inject_into.value),
+                    field_name=cursor_model.end_time_option.field_name,
+                    parameters=cursor_model.parameters or {},
+                )
+                if cursor_model.end_time_option
+                else None
+            )
+            start_time_option = (
+                RequestOption(
+                    inject_into=RequestOptionType(cursor_model.start_time_option.inject_into.value),
+                    field_name=cursor_model.start_time_option.field_name,
+                    parameters=cursor_model.parameters or {},
+                )
+                if cursor_model.start_time_option
+                else None
+            )
+
+            request_options_provider = DatetimeBasedRequestOptionsProvider(
+                start_time_option=start_time_option,
+                end_time_option=end_time_option,
+                partition_field_start=cursor_model.partition_field_end,
+                partition_field_end=cursor_model.partition_field_end,
+                config=config,
+                parameters=model.parameters or {},
+            )
+        else:
+            request_options_provider = None
+
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -663,6 +703,7 @@ class ModelToComponentFactory:
             name=model.name,
             primary_key=primary_key,
             stream_slicer=combined_slicers,
+            request_options_provider=request_options_provider,
             stop_condition_on_cursor=stop_condition_on_cursor,
             client_side_incremental_sync=client_side_incremental_sync,
             transformations=transformations,
@@ -1126,6 +1167,7 @@ class ModelToComponentFactory:
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
+        request_options_provider: Optional[RequestOptionsProvider] = None,
         stop_condition_on_cursor: bool = False,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
@@ -1140,10 +1182,20 @@ class ModelToComponentFactory:
             client_side_incremental_sync=client_side_incremental_sync,
         )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
-        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 
         # Define cursor only if per partition or common incremental support is needed
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
+
+        if not isinstance(stream_slicer, DatetimeBasedCursor) or type(stream_slicer) is not DatetimeBasedCursor:
+            # Many of the custom component implementations of DatetimeBasedCursor override get_request_params() (or other methods).
+            # Because we're decoupling RequestOptionsProvider from the Cursor, custom components will eventually need to reimplement
+            # their own RequestOptionsProvider. However, right now the existing StreamSlicer/Cursor still can act as the SimpleRetriever's
+            # request_options_provider
+            request_options_provider = stream_slicer or DefaultRequestOptionsProvider(parameters={})
+        elif not request_options_provider:
+            request_options_provider = DefaultRequestOptionsProvider(parameters={})
+
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
@@ -1168,6 +1220,7 @@ class ModelToComponentFactory:
                 requester=requester,
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
+                request_option_provider=request_options_provider,
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
@@ -1181,6 +1234,7 @@ class ModelToComponentFactory:
             requester=requester,
             record_selector=record_selector,
             stream_slicer=stream_slicer,
+            request_option_provider=request_options_provider,
             cursor=cursor,
             config=config,
             ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
@@ -1245,22 +1299,59 @@ class ModelToComponentFactory:
         polling_requester = self._create_component_from_model(
             model=model.polling_requester, decoder=decoder, config=config, name=f"job polling - {name}"
         )
+        job_download_components_name = f"job download - {name}"
         download_requester = self._create_component_from_model(
-            model=model.download_requester, decoder=decoder, config=config, name=f"job download - {name}"
+            model=model.download_requester, decoder=decoder, config=config, name=job_download_components_name
+        )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
+            if model.download_paginator
+            else NoPagination(parameters={}),
+            config=config,
+            parameters={},
+        )
+        abort_requester = (
+            self._create_component_from_model(model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}")
+            if model.abort_requester
+            else None
+        )
+        delete_requester = (
+            self._create_component_from_model(model=model.delete_requester, decoder=decoder, config=config, name=f"job delete - {name}")
+            if model.delete_requester
+            else None
         )
         status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
         urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
-            download_requester=download_requester,
+            download_retriever=download_retriever,
+            abort_requester=abort_requester,
+            delete_requester=delete_requester,
             status_extractor=status_extractor,
             status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
             urls_extractor=urls_extractor,
         )
 
         return AsyncRetriever(
-            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices),
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                job_repository,
+                stream_slices,
+                JobTracker(1),  # FIXME eventually make the number of concurrent jobs in the API configurable. Until then, we limit to 1
+                self._message_repository,
+                has_bulk_parent=False,  # FIXME work would need to be done here in order to detect if a stream as a parent stream that is bulk
+            ),
             record_selector=record_selector,
             stream_slicer=stream_slicer,
             config=config,

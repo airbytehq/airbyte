@@ -4,50 +4,58 @@
 
 package io.airbyte.cdk.task
 
-import io.airbyte.cdk.state.StreamsManager
-import io.airbyte.cdk.write.DestinationWrite
+import io.airbyte.cdk.state.CheckpointManager
+import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
 
+interface TeardownTask : SyncTask
+
 /**
- * Wraps @[DestinationWrite.teardown] and stops the task launcher.
+ * Wraps @[DestinationWriter.teardown] and stops the task launcher.
  *
  * TODO: Report teardown-complete and let the task launcher decide what to do next.
  */
-class TeardownTask(
-    private val destination: DestinationWrite,
-    private val streamsManager: StreamsManager,
+class DefaultTeardownTask(
+    private val checkpointManager: CheckpointManager<*, *>,
+    private val syncManager: SyncManager,
+    private val destination: DestinationWriter,
     private val taskLauncher: DestinationTaskLauncher
-) : Task {
+) : TeardownTask {
     val log = KotlinLogging.logger {}
 
-    companion object {
-        val exactlyOnce = AtomicBoolean(false)
-    }
+    private val teardownHasRun = AtomicBoolean(false)
 
     override suspend fun execute() {
-        /** Guard against running this more than once */
-        if (exactlyOnce.getAndSet(true)) {
-            return
+        // TODO: This should be its own task, dispatched on a timer or something.
+        checkpointManager.flushReadyCheckpointMessages()
+
+        // Run the task exactly once, and only after all streams have closed.
+        if (teardownHasRun.compareAndSet(false, true)) {
+            syncManager.awaitAllStreamsClosed()
+            log.info { "Starting teardown task" }
+
+            destination.teardown()
+            taskLauncher.handleTeardownComplete()
         }
-
-        /** Ensure we don't run until all streams have completed */
-        streamsManager.awaitAllStreamsClosed()
-
-        destination.teardown()
-        taskLauncher.stop()
     }
+}
+
+interface TeardownTaskFactory {
+    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask
 }
 
 @Singleton
 @Secondary
-class TeardownTaskFactory(
-    private val destination: DestinationWrite,
-    private val streamsManager: StreamsManager,
-) {
-    fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
-        return TeardownTask(destination, streamsManager, taskLauncher)
+class DefaultTeardownTaskFactory(
+    private val checkpointManager: CheckpointManager<*, *>,
+    private val syncManager: SyncManager,
+    private val destination: DestinationWriter,
+) : TeardownTaskFactory {
+    override fun make(taskLauncher: DestinationTaskLauncher): TeardownTask {
+        return DefaultTeardownTask(checkpointManager, syncManager, destination, taskLauncher)
     }
 }

@@ -2,6 +2,7 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.data.AirbyteType
+import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.JsonStringCodec
@@ -75,6 +76,12 @@ data object CdcStringMetaFieldType : LosslessFieldType {
     override val airbyteType: AirbyteType = LeafAirbyteType.STRING
     override val jsonEncoder: JsonEncoder<String> = JsonStringCodec
     override val jsonDecoder: JsonDecoder<String> = JsonStringCodec
+}
+
+data object CdcIntegerMetaFieldType : LosslessFieldType {
+    override val airbyteType: AirbyteType = LeafAirbyteType.INTEGER
+    override val jsonEncoder: JsonEncoder<Int> = IntCodec
+    override val jsonDecoder: JsonDecoder<Int> = IntCodec
 }
 
 data object CdcOffsetDateTimeMetaFieldType : LosslessFieldType {

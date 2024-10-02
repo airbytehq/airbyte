@@ -6,23 +6,33 @@ package io.airbyte.cdk.command
 
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
 /**
  * Internal representation of destination streams. This is intended to be a case class specialized
  * for usability.
  */
-data class DestinationCatalog(
-    val streams: List<DestinationStream> = emptyList(),
-) {
+data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()) {
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
         streams.associateBy { it.descriptor }
 
-    fun getStream(name: String, namespace: String): DestinationStream {
+    init {
+        if (streams.isEmpty()) {
+            throw IllegalArgumentException(
+                "Catalog must have at least one stream: check that files are in the correct location."
+            )
+        }
+    }
+
+    fun getStream(name: String, namespace: String?): DestinationStream {
         val descriptor = DestinationStream.Descriptor(namespace = namespace, name = name)
         return byDescriptor[descriptor]
             ?: throw IllegalArgumentException("Stream not found: namespace=$namespace, name=$name")
     }
+
+    fun asProtocolObject(): ConfiguredAirbyteCatalog =
+        ConfiguredAirbyteCatalog().withStreams(streams.map { it.asProtocolObject() })
 }
 
 interface DestinationCatalogFactory {
@@ -35,6 +45,7 @@ class DefaultDestinationCatalogFactory(
     private val streamFactory: DestinationStreamFactory
 ) {
     @Singleton
+    @Secondary
     fun make(): DestinationCatalog {
         return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
     }

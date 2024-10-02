@@ -8,6 +8,7 @@
       "host",
       "port",
       "username",
+      "database",
       "encryption",
       "tunnel_method",
       "cursor"
@@ -54,6 +55,68 @@
                 "enum": ["cdc"],
                 "type": "string",
                 "default": "cdc"
+              },
+              "server_timezone": {
+                "type": "string",
+                "order": 2,
+                "title": "Configured server timezone for the MySQL source (Advanced)",
+                "always_show": true,
+                "description": "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard."
+              },
+              "invalid_cdc_behavior": {
+                "type": "object",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "title": "Fail sync",
+                    "required": ["invalid_cdc_cursor_position_behavior"],
+                    "properties": {
+                      "invalid_cdc_cursor_position_behavior": {
+                        "enum": ["fail_sync"],
+                        "type": "string",
+                        "default": "fail_sync"
+                      }
+                    },
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "title": "Re-sync data",
+                    "required": ["invalid_cdc_cursor_position_behavior"],
+                    "properties": {
+                      "invalid_cdc_cursor_position_behavior": {
+                        "enum": ["resync"],
+                        "type": "string",
+                        "default": "resync"
+                      }
+                    },
+                    "additionalProperties": true
+                  }
+                ],
+                "order": 3,
+                "title": "Invalid CDC position behavior (Advanced)",
+                "always_show": true,
+                "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss."
+              },
+              "initial_waiting_seconds": {
+                "max": 1200,
+                "min": 120,
+                "type": "integer",
+                "order": 1,
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "default": 300,
+                "always_show": true,
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n        \"> initial waiting time</a>."
+              },
+              "initial_load_timeout_hours": {
+                "max": 24,
+                "min": 4,
+                "type": "integer",
+                "order": 4,
+                "title": "Initial Load Timeout in Hours (Advanced)",
+                "default": 8,
+                "always_show": true,
+                "description": "The amount of time an initial load is allowed to continue for before catching up on CDC logs."
               }
             },
             "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using Mysql's <a href=\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"> change data capture feature</a>. This must be enabled on your database.",
@@ -65,16 +128,12 @@
         "description": "Configures how data is extracted from the database.",
         "display_type": "radio"
       },
-      "schemas": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
+      "database": {
+        "type": "string",
         "order": 6,
-        "title": "Schemas",
+        "title": "Database",
         "always_show": true,
-        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
-        "uniqueItems": true
+        "description": "The database name."
       },
       "password": {
         "type": "string",
@@ -123,14 +182,8 @@
           },
           {
             "type": "object",
-            "title": "Verify CA",
-            "required": [
-              "encryption_method",
-              "ssl_certificate",
-              "ssl_client_certificate",
-              "ssl_client_key",
-              "ssl_client_key_password"
-            ],
+            "title": "verify_ca",
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -147,9 +200,9 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["Verify CA"],
+                "enum": ["verify_ca"],
                 "type": "string",
-                "default": "Verify CA"
+                "default": "verify_ca"
               },
               "ssl_client_certificate": {
                 "type": "string",
@@ -171,14 +224,8 @@
           },
           {
             "type": "object",
-            "title": "Verify CA",
-            "required": [
-              "encryption_method",
-              "ssl_certificate",
-              "ssl_client_certificate",
-              "ssl_client_key",
-              "ssl_client_key_password"
-            ],
+            "title": "verify_identity",
+            "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "ssl_client_key": {
                 "type": "string",
@@ -195,9 +242,9 @@
                 "airbyte_secret": true
               },
               "encryption_method": {
-                "enum": ["Verify CA"],
+                "enum": ["verify_identity"],
                 "type": "string",
-                "default": "Verify CA"
+                "default": "verify_identity"
               },
               "ssl_client_certificate": {
                 "type": "string",

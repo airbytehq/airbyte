@@ -8,7 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.CheckpointManager
-import io.airbyte.cdk.state.StreamsManager
+import io.airbyte.cdk.state.SyncManager
 import jakarta.inject.Singleton
 
 /** A publishing interface for writing messages to a message queue. */
@@ -17,21 +17,22 @@ interface MessageQueueWriter<T : Any> {
 }
 
 /**
- * Routes @[DestinationRecordMessage]s by stream to the appropriate channel and @
+ * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
  * [CheckpointMessage]s to the state manager.
  *
  * TODO: Handle other message types.
  */
-@Singleton
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
+@Singleton
 class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
-    private val messageQueue: MessageQueue<DestinationStream, DestinationRecordWrapped>,
-    private val streamsManager: StreamsManager,
-    private val checkpointManager: CheckpointManager<DestinationStream, CheckpointMessage>
+    private val messageQueue: MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped>,
+    private val syncManager: SyncManager,
+    private val checkpointManager:
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>
 ) : MessageQueueWriter<DestinationMessage> {
     /**
      * Deserialize and route the message to the appropriate channel.
@@ -41,8 +42,8 @@ class DestinationMessageQueueWriter(
     override suspend fun publish(message: DestinationMessage, sizeBytes: Long) {
         when (message) {
             /* If the input message represents a record. */
-            is DestinationRecordMessage -> {
-                val manager = streamsManager.getManager(message.stream)
+            is DestinationStreamAffinedMessage -> {
+                val manager = syncManager.getStreamManager(message.stream)
                 when (message) {
                     /* If a data record */
                     is DestinationRecord -> {
@@ -56,7 +57,8 @@ class DestinationMessageQueueWriter(
                     }
 
                     /* If an end-of-stream marker. */
-                    is DestinationStreamComplete -> {
+                    is DestinationStreamComplete,
+                    is DestinationStreamIncomplete -> {
                         val wrapped = StreamCompleteWrapped(index = manager.countEndOfStream())
                         messageQueue.getChannel(message.stream).send(wrapped)
                     }
@@ -70,8 +72,8 @@ class DestinationMessageQueueWriter(
                      * stats.
                      */
                     is StreamCheckpoint -> {
-                        val stream = message.streamCheckpoint.stream
-                        val manager = streamsManager.getManager(stream)
+                        val stream = message.checkpoint.stream
+                        val manager = syncManager.getStreamManager(stream)
                         val (currentIndex, countSinceLast) = manager.markCheckpoint()
                         val messageWithCount =
                             message.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
@@ -88,14 +90,15 @@ class DestinationMessageQueueWriter(
                     is GlobalCheckpoint -> {
                         val streamWithIndexAndCount =
                             catalog.streams.map { stream ->
-                                val manager = streamsManager.getManager(stream)
+                                val manager = syncManager.getStreamManager(stream.descriptor)
                                 val (currentIndex, countSinceLast) = manager.markCheckpoint()
                                 Triple(stream, currentIndex, countSinceLast)
                             }
                         val totalCount = streamWithIndexAndCount.sumOf { it.third }
                         val messageWithCount =
                             message.withDestinationStats(CheckpointMessage.Stats(totalCount))
-                        val streamIndexes = streamWithIndexAndCount.map { it.first to it.second }
+                        val streamIndexes =
+                            streamWithIndexAndCount.map { it.first.descriptor to it.second }
                         checkpointManager.addGlobalCheckpoint(streamIndexes, messageWithCount)
                     }
                 }

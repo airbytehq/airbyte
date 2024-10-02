@@ -27,10 +27,15 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
             when (message) {
                 is StreamCheckpoint ->
                     AirbyteStateMessage()
-                        .withSourceStats(
-                            AirbyteStateStats()
-                                .withRecordCount(message.sourceStats.recordCount.toDouble())
-                        )
+                        .also {
+                            if (message.sourceStats != null) {
+                                it.sourceStats =
+                                    AirbyteStateStats()
+                                        .withRecordCount(
+                                            message.sourceStats!!.recordCount.toDouble()
+                                        )
+                            }
+                        }
                         .withDestinationStats(
                             message.destinationStats?.let {
                                 AirbyteStateStats().withRecordCount(it.recordCount.toDouble())
@@ -40,13 +45,23 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                                 )
                         )
                         .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
-                        .withStream(fromStreamState(message.streamCheckpoint))
+                        .withStream(fromStreamState(message.checkpoint))
+                        .also {
+                            message.additionalProperties.forEach { (key, value) ->
+                                it.withAdditionalProperty(key, value)
+                            }
+                        }
                 is GlobalCheckpoint ->
                     AirbyteStateMessage()
-                        .withSourceStats(
-                            AirbyteStateStats()
-                                .withRecordCount(message.sourceStats.recordCount.toDouble())
-                        )
+                        .also {
+                            if (message.sourceStats != null) {
+                                it.sourceStats =
+                                    AirbyteStateStats()
+                                        .withRecordCount(
+                                            message.sourceStats!!.recordCount.toDouble()
+                                        )
+                            }
+                        }
                         .withDestinationStats(
                             message.destinationStats?.let {
                                 AirbyteStateStats().withRecordCount(it.recordCount.toDouble())
@@ -56,23 +71,24 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                         .withGlobal(
                             AirbyteGlobalState()
                                 .withSharedState(message.state)
-                                .withStreamStates(
-                                    message.streamCheckpoints.map { fromStreamState(it) }
-                                )
+                                .withStreamStates(message.checkpoints.map { fromStreamState(it) })
                         )
+                        .also {
+                            message.additionalProperties.forEach { (key, value) ->
+                                it.withAdditionalProperty(key, value)
+                            }
+                        }
             }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(state)
     }
 
-    private fun fromStreamState(
-        streamCheckpoint: CheckpointMessage.StreamCheckpoint
-    ): AirbyteStreamState {
+    private fun fromStreamState(checkpoint: CheckpointMessage.Checkpoint): AirbyteStreamState {
         return AirbyteStreamState()
             .withStreamDescriptor(
                 StreamDescriptor()
-                    .withNamespace(streamCheckpoint.stream.descriptor.namespace)
-                    .withName(streamCheckpoint.stream.descriptor.name)
+                    .withNamespace(checkpoint.stream.namespace)
+                    .withName(checkpoint.stream.name)
             )
-            .withStreamState(streamCheckpoint.state)
+            .withStreamState(checkpoint.state)
     }
 }
