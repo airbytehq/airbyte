@@ -113,7 +113,7 @@
         "default_cursor_field": ["CreatedDate"],
         "source_defined_primary_key": [["Id"]]
       },
-      "sync_mode": "INVALID",
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "append"
     }
   ]

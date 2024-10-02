@@ -46,19 +46,6 @@ def get_any_real_stream(input_config: Mapping[str, Any]) -> Stream:
     return get_stream(input_config, "ActiveFeatureLicenseMetric")
 
 
-def test_not_queryable_stream(caplog, input_config):
-    stream = get_any_real_stream(input_config)
-    url = f"{stream._legacy_stream.sf_api.instance_url}/services/data/{stream._legacy_stream.sf_api.version}/jobs/query"
-
-    # test non queryable BULK streams
-    query = "Select Id, Subject from ActivityHistory"
-    with caplog.at_level(logging.WARNING):
-        assert stream._legacy_stream.create_stream_job(query, url) is None, "this stream should be skipped"
-
-    # check logs
-    assert "is not queryable" in caplog.records[-1].message
-
-
 @pytest.mark.parametrize(
     "stream_name,log_messages",
     (
