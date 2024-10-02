@@ -1,18 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from __future__ import annotations
 
+import json
 import sys
 import traceback
 from datetime import datetime
-from typing import List
 
 from airbyte_cdk import AirbyteEntrypoint, AirbyteMessage, Type, launch
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteTraceMessage, TraceType
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
 
-def get_source(args: List[str]):
+def get_source(args: list[str]) -> SourceS3 | None:
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     config_path = AirbyteEntrypoint.extract_config(args)
     state_path = AirbyteEntrypoint.extract_state(args)
@@ -27,24 +28,28 @@ def get_source(args: List[str]):
         )
     except Exception:
         print(
-            AirbyteMessage(
-                type=Type.TRACE,
-                trace=AirbyteTraceMessage(
-                    type=TraceType.ERROR,
-                    emitted_at=int(datetime.now().timestamp() * 1000),
-                    error=AirbyteErrorTraceMessage(
-                        message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
-                        stack_trace=traceback.format_exc(),
-                    ),
-                ),
-            ).json()
+            json.dumps(
+                AirbyteMessageSerializer.dump(
+                    AirbyteMessage(
+                        type=Type.TRACE,
+                        trace=AirbyteTraceMessage(
+                            type=TraceType.ERROR,
+                            emitted_at=int(datetime.now().timestamp() * 1000),
+                            error=AirbyteErrorTraceMessage(
+                                message="Error starting the sync. This could be due to an invalid configuration or catalog. Please contact Support for assistance.",
+                                stack_trace=traceback.format_exc(),
+                            ),
+                        ),
+                    )
+                )
+            )
         )
         return None
 
 
-def run():
+def run() -> None:
     _args = sys.argv[1:]
-    source = get_source(_args)
+    source: SourceS3 | None = get_source(_args)
 
     if source:
         launch(source, _args)
