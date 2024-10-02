@@ -112,7 +112,7 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
             val r0: ReadResult = read(container.syntheticInput(), p0)
             Assertions.assertEquals(emptyList<Record>(), r0.records)
             Assertions.assertEquals(
-                CdcPartitionReader.CloseReason.HEARTBEAT_REACHED_TARGET_POSITION,
+                CdcPartitionReader.CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION,
                 r0.closeReason,
             )
 
@@ -188,7 +188,17 @@ sealed class CdcPartitionReaderTest<T : Comparable<T>, C : AutoCloseable>(
         } finally {
             reader.releaseResources()
         }
+        // Sanity checks. If any of these fail, particularly after a debezium version change,
+        // it's important to understand why.
         Assertions.assertEquals(checkpoint.numRecords.toInt(), outputConsumer.records().size)
+        Assertions.assertEquals(checkpoint.numRecords, reader.numRecords.get())
+        Assertions.assertEquals(
+            reader.numEvents.get(),
+            reader.numRecords.get() + reader.numHeartbeats.get() + reader.numTombstones.get()
+        )
+        Assertions.assertEquals(0, reader.numEventsWithoutSourceRecord.get())
+        Assertions.assertEquals(0, reader.numSourceRecordsWithoutPosition.get())
+        Assertions.assertEquals(0, reader.numEventValuesWithoutPosition.get())
         return ReadResult(
             outputConsumer.records().map { Jsons.treeToValue(it.data, Record::class.java) },
             deserialize(checkpoint.opaqueStateValue),

@@ -10,13 +10,12 @@ import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.debezium.embedded.EmbeddedEngineChangeEvent
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.lang.reflect.Field
 import java.util.Properties
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
@@ -40,8 +39,15 @@ class CdcPartitionReader<T : Comparable<T>>(
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
     private lateinit var properties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
-    private val numRecords = AtomicLong()
+
     internal val closeReasonReference = AtomicReference<CloseReason>()
+    internal val numEvents = AtomicLong()
+    internal val numTombstones = AtomicLong()
+    internal val numHeartbeats = AtomicLong()
+    internal val numRecords = AtomicLong()
+    internal val numEventsWithoutSourceRecord = AtomicLong()
+    internal val numSourceRecordsWithoutPosition = AtomicLong()
+    internal val numEventValuesWithoutPosition = AtomicLong()
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
@@ -75,13 +81,30 @@ class CdcPartitionReader<T : Comparable<T>>(
                 .using(CompletionCallback())
                 .notifying(EventConsumer(coroutineContext))
                 .build()
+        val debeziumVersion: String = DebeziumEngine::class.java.getPackage().implementationVersion
         log.info { "Running Debezium engine version $debeziumVersion." }
         val engineException = AtomicReference<Throwable>()
         val thread = Thread(engine, "debezium-engine")
         thread.setUncaughtExceptionHandler { _, e: Throwable -> engineException.set(e) }
         thread.start()
         withContext(Dispatchers.IO) { thread.join() }
-        engineException.get()?.let { throw it }
+        val exception: Throwable? = engineException.get()
+        val summary: Map<String, Any?> =
+            mapOf(
+                    "debezium-version" to debeziumVersion,
+                    "records" to numRecords.get(),
+                    "heartbeats" to numHeartbeats.get(),
+                    "tombstones" to numTombstones.get(),
+                    "events" to numEvents.get(),
+                    "events-without-source-record" to numEventsWithoutSourceRecord.get(),
+                    "source-records-without-position" to numSourceRecordsWithoutPosition.get(),
+                    "event-values-without-position" to numEventValuesWithoutPosition.get(),
+                    "close-reason" to closeReasonReference.get(),
+                    "exception" to exception?.let { it::class },
+                )
+                .filterValues { it != null }
+        log.info { "Debezium Engine has shut down and relinquished control, summary: $summary." }
+        if (exception != null) throw exception
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
@@ -101,55 +124,75 @@ class CdcPartitionReader<T : Comparable<T>>(
     ) : Consumer<ChangeEvent<String?, String?>> {
 
         override fun accept(event: ChangeEvent<String?, String?>) {
-            // Parse event
-            val sourceRecord: SourceRecord? = getSourceRecord(event)
-
+            numEvents.incrementAndGet()
+            // Get SourceRecord object if possible.
+            // This object is the preferred way to obtain the current position.
+            val sourceRecord: SourceRecord? =
+                (event as? EmbeddedEngineChangeEvent<*, *, *>)?.sourceRecord()
+            if (sourceRecord == null) numEventsWithoutSourceRecord.incrementAndGet()
+            // Debezium outputs a tombstone event that has a value of null. This is an artifact
+            // of how it interacts with kafka. We want to ignore it. More on the tombstone:
+            // https://debezium.io/documentation/reference/stable/transformations/event-flattening.html
             val debeziumRecordValue: DebeziumRecordValue? =
-                if (event.value() == null) {
-                    // Debezium outputs a tombstone event that has a value of null. This is an
-                    // artifact of how it interacts with kafka. We want to ignore it. More on the
-                    // tombstone:
-                    // https://debezium.io/documentation/reference/2.2/transformations/event-flattening.html
-                    null
-                } else {
-                    DebeziumRecordValue(Jsons.readTree(event.value()))
-                }
-            val isRecord: Boolean
+                event.value()?.let { DebeziumRecordValue(Jsons.readTree(it)) }
             // Process records, ignoring heartbeats which are only used for completion checks.
-            if (debeziumRecordValue != null && !debeziumRecordValue.isHeartbeat) {
+            val isRecord: Boolean
+            if (debeziumRecordValue == null) {
+                isRecord = false
+                numTombstones.incrementAndGet()
+            } else if (debeziumRecordValue.isHeartbeat) {
+                isRecord = false
+                numHeartbeats.incrementAndGet()
+            } else {
                 isRecord = true
                 val debeziumRecordKey = DebeziumRecordKey(Jsons.readTree(event.key()))
                 val airbyteRecord: AirbyteRecordMessage =
                     readerOps.toAirbyteRecordMessage(debeziumRecordKey, debeziumRecordValue)
                 outputConsumer.accept(airbyteRecord)
                 numRecords.incrementAndGet()
-            } else {
-                isRecord = false
             }
             // Look for reasons to close down the engine.
             val closeReason: CloseReason? = run {
                 if (!coroutineContext.isActive) {
                     return@run CloseReason.TIMEOUT
                 }
-                val currentPosition: T =
-                    sourceRecord?.let(readerOps::position)
-                        ?: debeziumRecordValue?.let(readerOps::position) ?: return@run null
-                if (currentPosition < upperBound) {
+                val currentPosition: T? = position(sourceRecord) ?: position(debeziumRecordValue)
+                if (currentPosition == null || currentPosition < upperBound) {
                     return@run null
                 }
                 // Close because the current event is past the sync upper bound.
                 if (isRecord) {
                     CloseReason.RECORD_REACHED_TARGET_POSITION
                 } else {
-                    CloseReason.HEARTBEAT_REACHED_TARGET_POSITION
+                    CloseReason.HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION
                 }
             }
             // Idempotent engine shutdown.
             if (closeReason != null && closeReasonReference.compareAndSet(null, closeReason)) {
-                log.info { "Shutting down Debezium engine: ${closeReason.message}..." }
+                log.info { "Shutting down Debezium engine: ${closeReason.message}." }
                 // TODO : send close analytics message
                 Thread({ engine.close() }, "debezium-close").start()
             }
+        }
+
+        private fun position(sourceRecord: SourceRecord?): T? {
+            if (sourceRecord == null) return null
+            val sourceRecordPosition: T? = readerOps.position(sourceRecord)
+            if (sourceRecordPosition == null) {
+                numSourceRecordsWithoutPosition.incrementAndGet()
+                return null
+            }
+            return sourceRecordPosition
+        }
+
+        private fun position(debeziumRecordValue: DebeziumRecordValue?): T? {
+            if (debeziumRecordValue == null) return null
+            val debeziumRecordValuePosition: T? = readerOps.position(debeziumRecordValue)
+            if (debeziumRecordValuePosition == null) {
+                numEventValuesWithoutPosition.incrementAndGet()
+                return null
+            }
+            return debeziumRecordValuePosition
         }
     }
 
@@ -186,39 +229,11 @@ class CdcPartitionReader<T : Comparable<T>>(
 
     enum class CloseReason(val message: String) {
         TIMEOUT("timed out"),
-        HEARTBEAT_REACHED_TARGET_POSITION(
-            "heartbeat indicates that WAL consumption has reached the target position"
+        HEARTBEAT_OR_TOMBSTONE_REACHED_TARGET_POSITION(
+            "heartbeat or tombstone indicates that WAL consumption has reached the target position"
         ),
         RECORD_REACHED_TARGET_POSITION(
             "record indicates that WAL consumption has reached the target position"
         ),
-    }
-
-    companion object {
-
-        val debeziumVersion: String = DebeziumEngine::class.java.getPackage().implementationVersion
-
-        /**
-         * Extracts the [SourceRecord] wrapped inside a Debezium [ChangeEvent].
-         *
-         * [sourceRecordField] acts as a cache so that we avoid using reflection at each lookup.
-         */
-        fun getSourceRecord(event: ChangeEvent<String?, String?>): SourceRecord? {
-            if (!embeddedEngineChangeEventClass.isInstance(event)) {
-                // This is very unlikely, but we should guard against it.
-                // We don't control Debezium internals
-                return null
-            }
-            val eventClass: Class<out ChangeEvent<*, *>?> = event::class.java
-            val f: Field =
-                sourceRecordField.getOrPut(eventClass) {
-                    eventClass.getDeclaredField("sourceRecord").apply { isAccessible = true }
-                }
-            return f[event] as? SourceRecord // Again, this is very unlikely to be null.
-        }
-
-        private val sourceRecordField = ConcurrentHashMap<Class<out ChangeEvent<*, *>>, Field>()
-        private val embeddedEngineChangeEventClass: Class<*> =
-            Class.forName("io.debezium.embedded.EmbeddedEngineChangeEvent")
     }
 }

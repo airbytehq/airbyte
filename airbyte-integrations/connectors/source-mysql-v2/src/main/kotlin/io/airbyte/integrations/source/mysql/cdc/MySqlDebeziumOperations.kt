@@ -296,6 +296,9 @@ class MySqlDebeziumOperations(
     }
 
     companion object {
+        // Constants defining a range for the random value picked for the database.server.id
+        // Debezium property which uniquely identifies the binlog consumer.
+        // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-server-id
         const val MIN_SERVER_ID = 5400
         const val MAX_SERVER_ID = 6400
 
