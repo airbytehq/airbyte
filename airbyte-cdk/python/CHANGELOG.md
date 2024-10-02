@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.10.0
+concurrent-cdk: add cursor partition generator
+
 ## 5.9.0
 concurrent-cdk: change stream availability strategy to always available
 
