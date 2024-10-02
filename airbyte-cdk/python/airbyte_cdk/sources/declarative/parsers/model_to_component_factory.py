@@ -39,7 +39,6 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
-    EmptyStateCursor,
     GlobalSubstreamCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,

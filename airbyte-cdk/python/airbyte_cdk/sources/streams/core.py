@@ -1,11 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 import inspect
 import itertools
 import logging
-import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import cached_property, lru_cache
@@ -467,9 +467,7 @@ class Stream(ABC):
             return LegacyCursorBasedCheckpointReader(stream_slices=slices_iterable_copy, cursor=cursor, read_state_from_cursor=True)
         elif cursor:
             return CursorBasedCheckpointReader(
-                stream_slices=slices_iterable_copy,
-                cursor=cursor,
-                read_state_from_cursor=cursor.read_state_from_cursor()
+                stream_slices=slices_iterable_copy, cursor=cursor, read_state_from_cursor=cursor.read_state_from_cursor()
             )
         elif checkpoint_mode == CheckpointMode.RESUMABLE_FULL_REFRESH:
             # Resumable full refresh readers rely on the stream state dynamically being updated during pagination and does

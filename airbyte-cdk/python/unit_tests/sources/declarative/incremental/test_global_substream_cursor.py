@@ -2,15 +2,14 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, Mapping, Any, Iterable, List, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.incremental import ChildPartitionResumableFullRefreshCursor, GlobalSubstreamCursor
-from airbyte_cdk.sources.declarative.types import StreamSlice
-from sources.declarative.types import Record
-from sources.streams.core import StreamData
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice
+from airbyte_cdk.sources.streams.core import StreamData
 
 
 class MockStream(DeclarativeStream):

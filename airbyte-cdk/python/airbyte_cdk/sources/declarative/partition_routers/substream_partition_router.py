@@ -140,7 +140,7 @@ class SubstreamPartitionRouter(PartitionRouter):
                 # read_stateless() assumes the parent is not concurrent. This is currently okay since the concurrent CDK does
                 # not support either substreams or RFR, but something that needs to be considered once we do
                 previous_state = parent_stream.state or {}
-                for parent_record in parent_stream.read_only_records(state=parent_stream.state):
+                for parent_record in parent_stream.read_only_records(state=parent_stream.state or {}):
                     parent_partition = None
                     parent_associated_slice = None
                     # Skip non-records (eg AirbyteLogMessage)

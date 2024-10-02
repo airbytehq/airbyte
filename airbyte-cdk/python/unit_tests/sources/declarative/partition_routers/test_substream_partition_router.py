@@ -86,9 +86,6 @@ class MockStream(DeclarativeStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        # The parent stream's records should always be read as full refresh
-        assert sync_mode == SyncMode.full_refresh
-
         if not stream_slice:
             result = self._records
         else:

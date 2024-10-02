@@ -2157,6 +2157,7 @@ def test_merge_use_global_substream_cursor_for_full_refresh_with_incremental_dep
                         "parent_key": "id",
                         "partition_field": "a_id",
                         "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+                        "incremental_dependency": True,
                     },
                     {
                         "type": "ParentStreamConfig",
@@ -2180,6 +2181,7 @@ def test_merge_use_global_substream_cursor_for_full_refresh_with_incremental_dep
                         "parent_key": "id",
                         "partition_field": "b_id",
                         "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
+                        "incremental_dependency": True,
                     }
                 ]
             }
