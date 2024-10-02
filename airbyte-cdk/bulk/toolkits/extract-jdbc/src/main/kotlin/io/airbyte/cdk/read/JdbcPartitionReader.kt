@@ -150,6 +150,7 @@ open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                 streamState.updateLimitState { it.down }
             }
         }
+        println("last record: $lastRecord")
         val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
         return PartitionReadCheckpoint(checkpointState, numRecords.get())
     }
