@@ -329,6 +329,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                   |
 |---------|------------|----------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.6.21 | 2024-10-02 | [46322](https://github.com/airbytehq/airbyte/pull/46322) | Support CDC against a read-replica (continuation) |
 | 3.6.20 | 2024-10-01 | [46299](https://github.com/airbytehq/airbyte/pull/46299) | Make postgres source compile and use the latest CDK |
 | 3.6.19 | 2024-09-17 | [45639](https://github.com/airbytehq/airbyte/pull/45639) | Adopt latest CDK to use the latest apache sshd mina to handle tcpkeepalive requests. |
 | 3.6.18 | 2024-08-28 | [44878](https://github.com/airbytehq/airbyte/pull/44878) | Enable tcpKeepAlive for jdbc connection. |
