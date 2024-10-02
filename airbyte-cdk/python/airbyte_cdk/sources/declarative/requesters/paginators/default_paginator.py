@@ -6,7 +6,8 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy

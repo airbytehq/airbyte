@@ -6,7 +6,8 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Dict, Mapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
@@ -29,9 +30,9 @@ class CursorPaginationStrategy(PaginationStrategy):
     cursor_value: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
     page_size: Optional[int] = None
     stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._initial_cursor = None
