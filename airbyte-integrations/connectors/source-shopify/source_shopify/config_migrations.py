@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 from typing import Any, List, Mapping
 
 from airbyte_cdk.config_observation import create_connector_config_control_message
@@ -93,3 +92,4 @@ class MigrateConfig:
                 cls.emit_control_message(
                     cls.modify_and_save(config_path, source, config),
                 )
+                

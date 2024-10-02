@@ -47,4 +47,4 @@ class ShopifyAuthenticator(TokenAuthenticator):
         elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}
         else:
-            raise NotImplementedAuth(auth_method)
+            raise MissingAccessTokenError

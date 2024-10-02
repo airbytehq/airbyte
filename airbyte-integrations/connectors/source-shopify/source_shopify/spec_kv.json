@@ -1,0 +1,28 @@
+{
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
+    "connectionSpecification": {
+      "$schema": "https://json-schema.org/draft-07/schema#",
+      "title": "Shopify Source CDK Specifications",
+      "type": "object",
+      "required": ["shops"],
+      "additionalProperties": true,
+      "properties": {
+        "shops": {
+          "title": "Shopify store links and their api keys",
+          "description": "'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+          "type": "string",
+          "order": 1
+        },
+        "start_date": {
+          "type": "string",
+          "title": "Replication Start Date",
+          "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
+          "default": "2020-01-01",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "format": "date",
+          "order": 2
+        }
+      
+    }
+  }
+}

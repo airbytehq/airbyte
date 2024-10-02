@@ -4,9 +4,12 @@
 
 
 import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Iterator, List, Mapping, Tuple
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+
+
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
@@ -15,55 +18,13 @@ from requests.exceptions import ConnectionError, RequestException, SSLError
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .scopes import ShopifyScopes
 from .streams.streams import (
-    AbandonedCheckouts,
-    Articles,
-    BalanceTransactions,
-    Blogs,
-    Collections,
-    Collects,
-    Countries,
-    CustomCollections,
-    CustomerAddress,
-    CustomerJourneySummary,
-    Customers,
-    CustomerSavedSearch,
-    DiscountCodes,
-    Disputes,
-    DraftOrders,
-    FulfillmentOrders,
-    Fulfillments,
-    InventoryItems,
-    InventoryLevels,
-    Locations,
-    MetafieldArticles,
-    MetafieldBlogs,
-    MetafieldCollections,
-    MetafieldCustomers,
-    MetafieldDraftOrders,
-    MetafieldLocations,
-    MetafieldOrders,
-    MetafieldPages,
-    MetafieldProductImages,
-    MetafieldProducts,
-    MetafieldProductVariants,
-    MetafieldShops,
-    MetafieldSmartCollections,
-    OrderAgreements,
-    OrderRefunds,
-    OrderRisks,
     Orders,
-    Pages,
-    PriceRules,
-    ProductImages,
     Products,
-    ProductsGraphQl,
-    ProductVariants,
     Shop,
-    SmartCollections,
-    TenderTransactions,
     Transactions,
-    TransactionsGraphql,
+    TransactionsGraphql
 )
+from .config import ConfigCreator
 
 
 class ConnectionCheckTest:
@@ -127,6 +88,7 @@ class ConnectionCheckTest:
 
 
 class SourceShopify(AbstractSource):
+
     @property
     def continue_sync_on_stream_failure(self) -> bool:
         return True
@@ -144,15 +106,48 @@ class SourceShopify(AbstractSource):
     @staticmethod
     def format_stream_name(name) -> str:
         return "".join(x.capitalize() for x in name.split("_"))
+    
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
+        for shop_config in config.get("shops"):
+            catalog = super().discover(logger, shop_config)
+            logger.info("Discover succeeded for %s. Stopping now", self.get_shop_name(shop_config))
+            return catalog
+    
+    def read(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: List[AirbyteStateMessage] = None) -> Iterator[AirbyteMessage]:
+        result = []
+        errored_stores = []
+        shops = config.get("shops", [])
+        if not shops:
+            logger.info("No shops to read data from")
+            return []
+        for shop_config in shops:
+            try:
+                logger.info(f"Starting syncing store: {self.get_shop_name(shop_config)}")
+                yield from super().read(logger, shop_config, catalog, state)
+                logger.info("Read succeeded for %s", self.get_shop_name(shop_config))
+            
+            except Exception as e:
+                errored_stores.append(self.get_shop_name(shop_config))
+                logging.error(f"Error processing {self.get_shop_name(shop_config)}: {e}")
+        if errored_stores:
+            logging.error("Following stores had errors while reading:%s", errored_stores)
+        logger.info("Read completed.")
+        return result
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
-        config["shop"] = self.get_shop_name(config)
-        config["authenticator"] = ShopifyAuthenticator(config)
-        return ConnectionCheckTest(config).test_connection()
-
+        shops = config.get("shops", [])
+        if not shops:
+            logger.info("No shops to test connection on")
+            return True, None
+        for shop_config in shops:
+            shop_config["authenticator"] = ShopifyAuthenticator(shop_config)
+            #only test the first shop
+            logger.info("Checking connection for %s", self.get_shop_name(shop_config))
+            return ConnectionCheckTest(shop_config).test_connection()
+        
     def select_transactions_stream(self, config: Mapping[str, Any]) -> Stream:
         """
         Allow the Customer to decide which API type to use when it comes to the `Transactions` stream.
@@ -162,6 +157,7 @@ class SourceShopify(AbstractSource):
             return Transactions(config)
         else:
             return TransactionsGraphql(config)
+    
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -177,53 +173,9 @@ class SourceShopify(AbstractSource):
         # get the list of the permitted streams, based on the authenticated user scopes
         permitted_streams = scopes_manager.get_permitted_streams()
         stream_instances = [
-            AbandonedCheckouts(config),
-            Articles(config),
-            BalanceTransactions(config),
-            Blogs(config),
-            Collections(config),
-            Collects(config),
-            CustomCollections(config),
-            CustomerJourneySummary(config),
-            Customers(config),
-            DiscountCodes(config),
-            Disputes(config),
-            DraftOrders(config),
-            FulfillmentOrders(config),
-            Fulfillments(config),
-            InventoryItems(config),
-            InventoryLevels(config),
-            Locations(config),
-            MetafieldArticles(config),
-            MetafieldBlogs(config),
-            MetafieldCollections(config),
-            MetafieldCustomers(config),
-            MetafieldDraftOrders(config),
-            MetafieldLocations(config),
-            MetafieldOrders(config),
-            MetafieldPages(config),
-            MetafieldProductImages(config),
-            MetafieldProducts(config),
-            MetafieldProductVariants(config),
-            MetafieldShops(config),
-            MetafieldSmartCollections(config),
-            OrderAgreements(config),
-            OrderRefunds(config),
-            OrderRisks(config),
             Orders(config),
-            Pages(config),
-            PriceRules(config),
-            ProductImages(config),
             Products(config),
-            ProductsGraphQl(config),
-            ProductVariants(config),
-            Shop(config),
-            SmartCollections(config),
-            TenderTransactions(config),
-            self.select_transactions_stream(config),
-            CustomerSavedSearch(config),
-            CustomerAddress(config),
-            Countries(config),
+            Shop(config)
         ]
 
         return [

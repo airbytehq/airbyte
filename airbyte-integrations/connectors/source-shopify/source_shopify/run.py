@@ -6,14 +6,18 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_shopify.config_migrations import MigrateConfig
+#from source_shopify.config_migrations import MigrateConfig
 
 from .source import SourceShopify
-
+from .config import LTKShopifyConfigCreator
 
 def run() -> None:
+
     source = SourceShopify()
     # migrate config at runtime
-    MigrateConfig.migrate(sys.argv[1:], source)
+    #MigrateConfig.migrate(sys.argv[1:], source)
+    
+    
+    LTKShopifyConfigCreator.adjustConfig(sys.argv[1:], source)
     # run the connector
     launch(source, sys.argv[1:])
