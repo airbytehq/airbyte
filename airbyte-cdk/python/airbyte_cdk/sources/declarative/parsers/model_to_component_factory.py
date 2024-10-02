@@ -224,6 +224,7 @@ class ModelToComponentFactory:
             JsonlDecoderModel: self.create_jsonl_decoder,
             KeysToLowerModel: self.create_keys_to_lower_transformation,
             IterableDecoderModel: self.create_iterable_decoder,
+            XmlDecoderModel: self.create_xml_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
             LegacyToPerPartitionStateMigrationModel: self.create_legacy_to_per_partition_state_migration,
@@ -932,7 +933,7 @@ class ModelToComponentFactory:
         return IterableDecoder(parameters={})
 
     @staticmethod
-    def create_xml_decoder(model: XmlDecoderModel, config: Config, **kwargs, Any) -> XmlDecoder:
+    def create_xml_decoder(model: XmlDecoderModel, config: Config, **kwargs: Any) -> XmlDecoder:
         return XmlDecoder(parameters={})
 
     @staticmethod
