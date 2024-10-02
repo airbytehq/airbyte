@@ -76,11 +76,11 @@ def test_global_substream_cursor_with_rfr_cursor():
     expected_slice_and_state = [
         (StreamSlice(partition={"first_stream_id": "abc", "parent_slice": {}}, cursor_slice={}), {'parent_state': {'first_stream': {}}, "state": {}}),
         (StreamSlice(partition={"first_stream_id": "def", "parent_slice": {}}, cursor_slice={}), {'parent_state': {'first_stream': {"updated_at": "2024-07-15"}}, "state": {}}),
-        (StreamSlice(partition={"first_stream_id": "oof", "parent_slice": {}}, cursor_slice={}), {'parent_state': {'first_stream': {"updated_at": "2024-08-15"}}, "state": {}}),
+        (StreamSlice(partition={"first_stream_id": "oof", "parent_slice": {}}, cursor_slice={}), {'parent_state': {'first_stream': {"updated_at": "2024-07-15"}}, "state": {}}),
 
         # This last slice may look odd, but the terminal value is a result of still using the RFR cursor which always ends the
         # final state message to indicate its successful completion
-        (StreamSlice(partition={"first_stream_id": "buh", "parent_slice": {}}, cursor_slice={}), {'parent_state': {'first_stream': {"updated_at": "2024-08-15"}}, "state": {"__ab_full_refresh_sync_complete": True}, "lookback_window": 0}),
+        (StreamSlice(partition={"first_stream_id": "buh", "parent_slice": {}}, cursor_slice={}), {'parent_state': {'first_stream': {"updated_at": "2024-09-15"}}, "state": {"__ab_full_refresh_sync_complete": True}, "lookback_window": 0}),
     ]
 
     i = 0
@@ -138,7 +138,7 @@ def test_global_substream_cursor_with_rfr_cursor_with_state():
         # This last slice may look odd, but the terminal value is a result of still using the RFR cursor which always ends the
         # final state message to indicate its successful completion
         (StreamSlice(partition={"first_stream_id": "buh", "parent_slice": {}}, cursor_slice={}),
-         {'parent_state': {'first_stream': {"updated_at": "2024-08-15"}}, "state": {"__ab_full_refresh_sync_complete": True},
+         {'parent_state': {'first_stream': {"updated_at": "2024-09-15"}}, "state": {"__ab_full_refresh_sync_complete": True},
           "lookback_window": 0}),
     ]
 

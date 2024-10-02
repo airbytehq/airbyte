@@ -609,6 +609,7 @@ def test_substream_checkpoints_after_each_parent_partition():
     mock_slices = [
         StreamSlice(cursor_slice={"start_time": "2024-04-27", "end_time": "2024-05-27"}, partition={}),
         StreamSlice(cursor_slice={"start_time": "2024-05-27", "end_time": "2024-06-27"}, partition={}),
+        StreamSlice(cursor_slice={"start_time": "2024-06-27", "end_time": "2024-07-27"}, partition={}),
     ]
 
     expected_slices = [
@@ -616,13 +617,17 @@ def test_substream_checkpoints_after_each_parent_partition():
         {"partition_field": "may_record_1", "parent_slice": {}},
         {"partition_field": "jun_record_0", "parent_slice": {}},
         {"partition_field": "jun_record_1", "parent_slice": {}},
+        {"partition_field": "jul_record_0", "parent_slice": {}},
+        {"partition_field": "jul_record_1", "parent_slice": {}},
     ]
 
     expected_parent_state = [
+        {},
+        {},
         {"start_time": "2024-04-27", "end_time": "2024-05-27"},
         {"start_time": "2024-04-27", "end_time": "2024-05-27"},
-        {"start_time": "2024-05-27", "end_time": "2024-06-27"},
-        {"start_time": "2024-05-27", "end_time": "2024-06-27"},
+        {"start_time": "2024-04-27", "end_time": "2024-05-27"},
+        {"start_time": "2024-06-27", "end_time": "2024-07-27"},
     ]
 
     partition_router = SubstreamPartitionRouter(
@@ -635,6 +640,8 @@ def test_substream_checkpoints_after_each_parent_partition():
                         Record({"id": "may_record_1", "updated_at": "2024-05-16"}, mock_slices[0]),
                         Record({"id": "jun_record_0", "updated_at": "2024-06-15"}, mock_slices[1]),
                         Record({"id": "jun_record_1", "updated_at": "2024-06-16"}, mock_slices[1]),
+                        Record({"id": "jul_record_0", "updated_at": "2024-07-15"}, mock_slices[2]),
+                        Record({"id": "jul_record_1", "updated_at": "2024-07-16"}, mock_slices[2]),
                     ],
                     name="first_stream",
                 ),
@@ -652,8 +659,14 @@ def test_substream_checkpoints_after_each_parent_partition():
     expected_counter = 0
     for actual_slice in partition_router.stream_slices():
         assert actual_slice == expected_slices[expected_counter]
-        assert partition_router._parent_state["first_stream"] == expected_parent_state[expected_counter]
+        if expected_counter < len(expected_parent_state) - 1:
+            # SubstreamPartitionRouter does the final update of parent_state AFTER emitting the last parent slice. At this point
+            # in the test we're in the middle of processing the last parent slice of the iterable so parent_state is still set to
+            # the previous value. We skip the assertion during the last loop and check it at the end.
+            assert partition_router._parent_state["first_stream"] == expected_parent_state[expected_counter]
         expected_counter += 1
+
+    assert partition_router._parent_state["first_stream"] == expected_parent_state[expected_counter-1]
 
 
 @pytest.mark.parametrize(
@@ -680,11 +693,11 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
     ]
 
     expected_parent_state = [
+        {},
+        {},
         {"next_page_token": 2},
         {"next_page_token": 2},
-        {"next_page_token": 3},
-        {"next_page_token": 3},
-        {"__ab_full_refresh_sync_complete": True},
+        {"next_page_token": 2},
         {"__ab_full_refresh_sync_complete": True},
     ]
 
@@ -724,9 +737,15 @@ def test_substream_using_resumable_full_refresh_parent_stream(use_incremental_de
     expected_counter = 0
     for actual_slice in partition_router.stream_slices():
         assert actual_slice == expected_slices[expected_counter]
-        if use_incremental_dependency:
+        if use_incremental_dependency and expected_counter < len(expected_parent_state) - 1:
+            # SubstreamPartitionRouter does the final update of parent_state AFTER emitting the last parent slice. At this point
+            # in the test we're in the middle of processing the last parent slice of the iterable so parent_state is still set to
+            # the previous value. We skip the assertion during the last loop and check it at the end.
             assert partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
         expected_counter += 1
+
+    if use_incremental_dependency:
+        assert partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter - 1]
 
 
 @pytest.mark.parametrize(
@@ -753,11 +772,11 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
     ]
 
     expected_parent_state = [
+        {},
+        {},
         {"next_page_token": 2},
         {"next_page_token": 2},
-        {"next_page_token": 3},
-        {"next_page_token": 3},
-        {"__ab_full_refresh_sync_complete": True},
+        {"next_page_token": 2},
         {"__ab_full_refresh_sync_complete": True},
     ]
 
@@ -818,7 +837,10 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
         # check the slice has been processed
         assert actual_slice == expected_parent_slices[expected_counter]
         # check for parent state
-        if use_incremental_dependency:
+        if use_incremental_dependency and expected_counter < len(expected_parent_state) - 1:
+            # SubstreamPartitionRouter does the final update of parent_state AFTER emitting the last parent slice. At this point
+            # in the test we're in the middle of processing the last parent slice of the iterable so parent_state is still set to
+            # the previous value. We skip the assertion during the last loop and check it at the end.
             assert (
                 substream_cursor_slicer._partition_router._parent_state["persona_3_characters"] == expected_parent_state[expected_counter]
             )

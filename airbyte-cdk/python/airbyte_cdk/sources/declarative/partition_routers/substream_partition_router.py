@@ -195,11 +195,11 @@ class SubstreamPartitionRouter(PartitionRouter):
                             )
                         )
 
-                # A final parent state update and yield of records is needed, so we don't skip records for the final parent slice
-                if incremental_dependency:
-                    self._parent_state[parent_stream.name] = previous_state
-
+                # A final yield of records and parent state update is needed, so we don't skip records for the final parent slice
                 yield from stream_slices_for_parent
+
+                if incremental_dependency:
+                    self._parent_state[parent_stream.name] = parent_stream.state
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
