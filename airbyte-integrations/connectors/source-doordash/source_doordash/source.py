@@ -73,6 +73,11 @@ class IncrementalDoordashStream(DoordashStream):
             "end_date": end_date,
             "report_type": self.report_type
         }
+        
+        # Only use API v2 for ORDER_DETAIL.
+        if self.report_type == "ORDER_DETAIL":
+            request_json["report_version"] = 2
+
         self.logger.info(f"Sending request: {request_json}")
         return request_json
     
@@ -156,7 +161,8 @@ class SourceDoordash(AbstractSource):
                 "store_ids": [],
                 "start_date": "2023-01-01",
                 "end_date": "2023-01-02",
-                "report_type": "ORDER_DETAIL"
+                "report_type": "ORDER_DETAIL",
+                "report_version": 2
             }
             response = requests.post(url_base, headers=auth.get_auth_header(), json=body)
             response.raise_for_status()
