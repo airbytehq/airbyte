@@ -18,6 +18,10 @@ class PaginationDecoderDecorator(Decoder):
         self._decoder = decoder
         self._logger = logger
 
+    @property
+    def decoder(self):
+        return self._decoder
+
     def is_stream_response(self) -> bool:
         return self._decoder.is_stream_response
 
