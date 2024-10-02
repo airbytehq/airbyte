@@ -38,9 +38,9 @@ data class H2SourceConfiguration(
 @Requires(env = [Environment.TEST])
 @Secondary
 class H2SourceConfigurationFactory :
-    SourceConfigurationFactory<H2SourceConfigurationJsonObject, H2SourceConfiguration> {
+    SourceConfigurationFactory<H2SourceConfigurationSpecification, H2SourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: H2SourceConfigurationJsonObject,
+        pojo: H2SourceConfigurationSpecification,
     ): H2SourceConfiguration {
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())

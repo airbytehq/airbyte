@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.task
 
-import jakarta.inject.Singleton
-
 interface Task {
     suspend fun execute()
 }
@@ -19,13 +17,10 @@ interface TaskLauncher {
 
     suspend fun start()
     suspend fun stop() {
-        taskRunner.enqueue(Done())
+        taskRunner.close()
     }
 }
 
-@Singleton
-class Done : Task {
-    override suspend fun execute() {
-        throw IllegalStateException("The Done() task cannot be executed")
-    }
+interface TaskLauncherExceptionHandler<T : Task> {
+    fun withExceptionHandling(task: T): Task
 }

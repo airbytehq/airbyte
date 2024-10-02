@@ -7,14 +7,12 @@ package io.airbyte.cdk.state
 import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.message.MessageConverter
-import io.airbyte.cdk.message.MockStreamsManager
 import io.micronaut.context.annotation.Prototype
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.function.Consumer
 import java.util.stream.Stream
@@ -26,7 +24,14 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-@MicronautTest(environments = ["MockStreamsManager"])
+@MicronautTest(
+    environments =
+        [
+            "CheckpointManagerTest",
+            "MockSyncManager",
+            "MockDestinationCatalog",
+        ]
+)
 class CheckpointManagerTest {
     @Inject lateinit var checkpointManager: TestCheckpointManager
     /**
@@ -71,8 +76,8 @@ class CheckpointManagerTest {
 
     @Prototype
     class TestCheckpointManager(
-        @Named("mockCatalog") override val catalog: DestinationCatalog,
-        override val streamsManager: MockStreamsManager,
+        override val catalog: DestinationCatalog,
+        override val syncManager: MockSyncManager,
         override val outputFactory: MessageConverter<MockCheckpointIn, MockCheckpointOut>,
         override val outputConsumer: MockOutputConsumer
     ) : StreamsCheckpointManager<MockCheckpointIn, MockCheckpointOut>()
@@ -83,7 +88,7 @@ class CheckpointManagerTest {
         fun toMockCheckpointIn() = MockStreamCheckpointIn(stream, message)
     }
     data class TestGlobalMessage(
-        val streamIndexes: List<Pair<DestinationStream, Long>>,
+        val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         val message: Int
     ) : TestEvent() {
         fun toMockCheckpointIn() = MockGlobalCheckpointIn(message)
@@ -180,8 +185,14 @@ class CheckpointManagerTest {
                         name = "Global checkpoint, two messages, flush all",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
                                 FlushPoint(
                                     persistedRanges =
                                         mapOf(
@@ -196,8 +207,14 @@ class CheckpointManagerTest {
                         name = "Global checkpoint, two messages, range only covers the first",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
                                 FlushPoint(
                                     persistedRanges =
                                         mapOf(
@@ -213,8 +230,14 @@ class CheckpointManagerTest {
                             "Global checkpoint, two messages, where the range only covers *one stream*",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
                                 FlushPoint(
                                     mapOf(
                                         stream1 to listOf(Range.closed(0L, 20L)),
@@ -228,8 +251,14 @@ class CheckpointManagerTest {
                         name = "Global checkpoint, out of order (should fail)",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
                                 FlushPoint(
                                     mapOf(
                                         stream1 to listOf(Range.closed(0L, 20L)),
@@ -244,7 +273,10 @@ class CheckpointManagerTest {
                         events =
                             listOf(
                                 TestStreamMessage(stream1, 10L, 1),
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
                                 FlushPoint(
                                     mapOf(
                                         stream1 to listOf(Range.closed(0L, 20L)),
@@ -258,7 +290,10 @@ class CheckpointManagerTest {
                         name = "Mixed: first global, then stream checkpoint (should fail)",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
                                 TestStreamMessage(stream1, 20L, 2),
                                 FlushPoint(
                                     persistedRanges =
@@ -303,15 +338,24 @@ class CheckpointManagerTest {
                         name = "Global checkpoint, multiple flush points, no output",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
                                 FlushPoint(),
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
                                 FlushPoint(
                                     mapOf(
                                         stream1 to listOf(Range.closed(0L, 20L)),
                                     )
                                 ),
-                                TestGlobalMessage(listOf(stream1 to 30L, stream2 to 40L), 3),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 30L, stream2.descriptor to 40L),
+                                    3
+                                ),
                                 FlushPoint(mapOf(stream2 to listOf(Range.closed(20L, 30L))))
                             ),
                         expectedGlobalOutput = listOf()
@@ -320,15 +364,24 @@ class CheckpointManagerTest {
                         name = "Global checkpoint, multiple flush points, no output until end",
                         events =
                             listOf(
-                                TestGlobalMessage(listOf(stream1 to 10L, stream2 to 20L), 1),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 10L, stream2.descriptor to 20L),
+                                    1
+                                ),
                                 FlushPoint(),
-                                TestGlobalMessage(listOf(stream1 to 20L, stream2 to 30L), 2),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 20L, stream2.descriptor to 30L),
+                                    2
+                                ),
                                 FlushPoint(
                                     mapOf(
                                         stream1 to listOf(Range.closed(0L, 20L)),
                                     )
                                 ),
-                                TestGlobalMessage(listOf(stream1 to 30L, stream2 to 40L), 3),
+                                TestGlobalMessage(
+                                    listOf(stream1.descriptor to 30L, stream2.descriptor to 40L),
+                                    3
+                                ),
                                 FlushPoint(
                                     mapOf(
                                         stream1 to listOf(Range.closed(20L, 30L)),
@@ -374,7 +427,7 @@ class CheckpointManagerTest {
             when (it) {
                 is TestStreamMessage -> {
                     checkpointManager.addStreamCheckpoint(
-                        it.stream,
+                        it.stream.descriptor,
                         it.index,
                         it.toMockCheckpointIn()
                     )
@@ -384,7 +437,7 @@ class CheckpointManagerTest {
                 }
                 is FlushPoint -> {
                     it.persistedRanges.forEach { (stream, ranges) ->
-                        checkpointManager.streamsManager.addPersistedRanges(stream, ranges)
+                        checkpointManager.syncManager.addPersistedRanges(stream, ranges)
                     }
                     checkpointManager.flushReadyCheckpointMessages()
                 }

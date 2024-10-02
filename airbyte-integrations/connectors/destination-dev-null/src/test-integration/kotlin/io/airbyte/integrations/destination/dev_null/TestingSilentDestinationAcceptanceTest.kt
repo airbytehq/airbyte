@@ -5,8 +5,7 @@ package io.airbyte.integrations.destination.dev_null
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest
-import io.airbyte.commons.json.Jsons
-import io.airbyte.integrations.destination.dev_null.TestingDestinations.TestDestinationType
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.*
 import java.util.*
 import org.junit.jupiter.api.Assertions
@@ -18,21 +17,11 @@ open class TestingSilentDestinationAcceptanceTest : DestinationAcceptanceTest() 
     override val isCloudTest = false
 
     override fun getConfig(): JsonNode {
-        return Jsons.jsonNode(
-            Collections.singletonMap(
-                "test_destination",
-                Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name)
-            )
-        )
+        return Jsons.readTree("""{"test_destination": {"test_destination_type": "SILENT"}}""")
     }
 
     override fun getFailCheckConfig(): JsonNode {
-        return Jsons.jsonNode(
-            Collections.singletonMap(
-                "test_destination",
-                Collections.singletonMap("test_destination_type", "invalid")
-            )
-        )
+        return Jsons.readTree("""{"test_destination": {"test_destination_type": "invalid"}}""")
     }
 
     override fun retrieveRecords(

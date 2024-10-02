@@ -5,8 +5,8 @@
 package io.airbyte.cdk.task
 
 import com.google.common.collect.Range
+import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.WriteConfiguration
 import io.airbyte.cdk.file.TempFileProvider
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.DestinationRecordWrapped
@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-interface SpillToDiskTask : Task
+interface SpillToDiskTask : StreamTask
 
 /**
  * Reads records from the message queue and writes them to disk. This task is internal and is not
@@ -32,9 +32,10 @@ interface SpillToDiskTask : Task
  * TODO: Allow for the record batch size to be supplied per-stream. (Needed?)
  */
 class DefaultSpillToDiskTask(
-    private val config: WriteConfiguration,
+    private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>,
+    private val queueReader:
+        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>,
     private val stream: DestinationStream,
     private val launcher: DestinationTaskLauncher
 ) : SpillToDiskTask {
@@ -70,7 +71,7 @@ class DefaultSpillToDiskTask(
                     val result =
                         tmpFile.toFileWriter().use {
                             queueReader
-                                .readChunk(stream, config.recordBatchSizeBytes)
+                                .readChunk(stream.descriptor, config.recordBatchSizeBytes)
                                 .runningFold(ReadResult()) { (range, sizeBytes, _), wrapped ->
                                     when (wrapped) {
                                         is StreamRecordWrapped -> {
@@ -121,9 +122,10 @@ interface SpillToDiskTaskFactory {
 
 @Singleton
 class DefaultSpillToDiskTaskFactory(
-    private val config: WriteConfiguration,
+    private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queueReader: MessageQueueReader<DestinationStream, DestinationRecordWrapped>
+    private val queueReader:
+        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
