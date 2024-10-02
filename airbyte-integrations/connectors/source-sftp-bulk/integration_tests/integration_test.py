@@ -4,11 +4,11 @@
 
 
 import logging
-import pytest
 from copy import deepcopy
 from typing import Any, Mapping
 
-from airbyte_cdk import ConfiguredAirbyteCatalog, Status, AirbyteTracedException
+import pytest
+from airbyte_cdk import AirbyteTracedException, ConfiguredAirbyteCatalog, Status
 from airbyte_cdk.sources.declarative.models import FailureType
 from airbyte_cdk.test.entrypoint_wrapper import read
 from source_sftp_bulk import SourceSFTPBulk
