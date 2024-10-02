@@ -2392,6 +2392,8 @@ definitions:
       - creation_requester
       - polling_requester
       - download_requester
+      - status_extractor
+      - urls_extractor
     properties:
       type:
         type: string

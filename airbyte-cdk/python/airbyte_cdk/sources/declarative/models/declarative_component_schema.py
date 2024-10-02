@@ -1624,11 +1624,11 @@ class AsyncRetriever(BaseModel):
     status_mapping: AsyncJobStatusMap = Field(
         ..., description='Async Job Status to Airbyte CDK Async Job Status mapping.'
     )
-    status_extractor: Optional[Union[CustomRecordExtractor, DpathExtractor]] = Field(
-        None, description='Responsible for fetching the actual status of the async job.'
+    status_extractor: Union[CustomRecordExtractor, DpathExtractor] = Field(
+        ..., description='Responsible for fetching the actual status of the async job.'
     )
-    urls_extractor: Optional[Union[CustomRecordExtractor, DpathExtractor]] = Field(
-        None,
+    urls_extractor: Union[CustomRecordExtractor, DpathExtractor] = Field(
+        ...,
         description='Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.',
     )
     creation_requester: Union[CustomRequester, HttpRequester] = Field(
