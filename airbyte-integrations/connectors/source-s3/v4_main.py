@@ -3,15 +3,15 @@
 #
 from __future__ import annotations
 
-import json
 import sys
 import traceback
 from datetime import datetime
 from typing import cast
 
+import orjson
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
 
-from airbyte_cdk import AirbyteEntrypoint, launch  # AirbyteMessage, Type
+from airbyte_cdk import AirbyteEntrypoint, launch
 from airbyte_cdk.models import (
     AirbyteErrorTraceMessage,
     AirbyteMessage,
@@ -37,7 +37,7 @@ def get_source(args: list[str]) -> SourceS3 | None:
         )
     except Exception:
         print(
-            json.dumps(
+            orjson.dumps(
                 cast(
                     dict,
                     AirbyteMessageSerializer.dump(
@@ -54,7 +54,7 @@ def get_source(args: list[str]) -> SourceS3 | None:
                         )
                     ),
                 )
-            )
+            ).decode()
         )
         return None
 
