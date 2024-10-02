@@ -72,4 +72,5 @@ WARM_UP_INCLUSIONS = {
     ],
     Formatter.PYTHON: ["pyproject.toml", "poetry.lock"],
     Formatter.LICENSE: [LICENSE_FILE_NAME],
+    Formatter.JS: [".prettierrc", ".prettierignore"],
 }

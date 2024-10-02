@@ -115,5 +115,5 @@ class StreamSlice(Mapping[str, Any]):
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
 
-    def __json_serializable__(self):
+    def __json_serializable__(self) -> Any:
         return self._stream_slice

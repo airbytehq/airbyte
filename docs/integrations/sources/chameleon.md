@@ -38,9 +38,9 @@ Refer `https://app.chameleon.io/settings/tokens` for getting your API key.
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|---|----------------|
-| 0.0.2 | 2024-09-21 |[45708](https://github.com/airbytehq/airbyte/pull/45708)| Make end date optional |
-| 0.0.1 | 2024-09-18 |[45658](https://github.com/airbytehq/airbyte/pull/45658)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | --- | ---------------- |
+| 0.0.2 | 2024-09-21 | [45708](https://github.com/airbytehq/airbyte/pull/45708) | Make end date optional |
+| 0.0.1 | 2024-09-18 | [45658](https://github.com/airbytehq/airbyte/pull/45658) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

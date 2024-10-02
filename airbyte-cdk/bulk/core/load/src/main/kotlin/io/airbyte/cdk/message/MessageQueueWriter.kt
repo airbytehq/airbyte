@@ -8,7 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.CheckpointManager
-import io.airbyte.cdk.state.StreamsManager
+import io.airbyte.cdk.state.SyncManager
 import jakarta.inject.Singleton
 
 /** A publishing interface for writing messages to a message queue. */
@@ -30,7 +30,7 @@ interface MessageQueueWriter<T : Any> {
 class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
     private val messageQueue: MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped>,
-    private val streamsManager: StreamsManager,
+    private val syncManager: SyncManager,
     private val checkpointManager:
         CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>
 ) : MessageQueueWriter<DestinationMessage> {
@@ -43,7 +43,7 @@ class DestinationMessageQueueWriter(
         when (message) {
             /* If the input message represents a record. */
             is DestinationStreamAffinedMessage -> {
-                val manager = streamsManager.getManager(message.stream)
+                val manager = syncManager.getStreamManager(message.stream)
                 when (message) {
                     /* If a data record */
                     is DestinationRecord -> {
@@ -73,7 +73,7 @@ class DestinationMessageQueueWriter(
                      */
                     is StreamCheckpoint -> {
                         val stream = message.checkpoint.stream
-                        val manager = streamsManager.getManager(stream)
+                        val manager = syncManager.getStreamManager(stream)
                         val (currentIndex, countSinceLast) = manager.markCheckpoint()
                         val messageWithCount =
                             message.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
@@ -90,7 +90,7 @@ class DestinationMessageQueueWriter(
                     is GlobalCheckpoint -> {
                         val streamWithIndexAndCount =
                             catalog.streams.map { stream ->
-                                val manager = streamsManager.getManager(stream.descriptor)
+                                val manager = syncManager.getStreamManager(stream.descriptor)
                                 val (currentIndex, countSinceLast) = manager.markCheckpoint()
                                 Triple(stream, currentIndex, countSinceLast)
                             }

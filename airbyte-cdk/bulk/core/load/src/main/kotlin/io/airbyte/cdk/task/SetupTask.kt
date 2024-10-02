@@ -8,7 +8,7 @@ import io.airbyte.cdk.write.DestinationWriter
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface SetupTask : Task
+interface SetupTask : SyncTask
 
 /**
  * Wraps @[DestinationWriter.setup] and starts the open stream tasks.

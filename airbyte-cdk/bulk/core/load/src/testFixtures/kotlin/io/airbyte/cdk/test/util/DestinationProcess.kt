@@ -7,7 +7,7 @@ package io.airbyte.cdk.test.util
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.CliRunnable
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -49,18 +49,25 @@ interface DestinationProcess {
     fun shutdown()
 }
 
+enum class TestDeploymentMode {
+    CLOUD,
+    OSS
+}
+
 interface DestinationProcessFactory {
     fun createDestinationProcess(
         command: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
+        deploymentMode: TestDeploymentMode = TestDeploymentMode.OSS,
     ): DestinationProcess
 }
 
 class NonDockerizedDestination(
     command: String,
-    config: ConfigurationJsonObjectBase?,
+    config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
+    testDeploymentMode: TestDeploymentMode,
 ) : DestinationProcess {
     private val destinationStdinPipe: PrintWriter
     private val destination: CliRunnable
@@ -75,11 +82,19 @@ class NonDockerizedDestination(
             // from PrintWriter(outputStream) ).
             // Thanks, spotbugs.
             PrintWriter(PipedOutputStream(destinationStdin), false, Charsets.UTF_8)
+        val testEnvironments =
+            when (testDeploymentMode) {
+                // the env var is DEPLOYMENT_MODE, which micronaut parses to
+                // a property called deployment.mode.
+                TestDeploymentMode.CLOUD -> mapOf("deployment.mode" to "CLOUD")
+                TestDeploymentMode.OSS -> mapOf("deployment.mode" to "OSS")
+            }
         destination =
             CliRunner.destination(
                 command,
                 config = config,
                 catalog = catalog,
+                testProperties = testEnvironments,
                 inputStream = destinationStdin,
             )
     }
@@ -107,10 +122,11 @@ class NonDockerizedDestination(
 class NonDockerizedDestinationFactory : DestinationProcessFactory {
     override fun createDestinationProcess(
         command: String,
-        config: ConfigurationJsonObjectBase?,
-        catalog: ConfiguredAirbyteCatalog?
+        config: ConfigurationSpecification?,
+        catalog: ConfiguredAirbyteCatalog?,
+        deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
-        return NonDockerizedDestination(command, config, catalog)
+        return NonDockerizedDestination(command, config, catalog, deploymentMode)
     }
 }
 

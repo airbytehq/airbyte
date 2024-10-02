@@ -70,10 +70,18 @@ class AbstractAvailabilityStrategy(ABC):
 @deprecated("This class is experimental. Use at your own risk.", category=ExperimentalClassWarning)
 class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
     """
-    We've officially deprecated the availability strategy in favor of per-stream states. But we have not
-    deprecated its instantiation and usage everywhere since it is a required field. This always available
-    class is a lightweight way to avoid implementing availability strategy for new concurrent sources
+    An availability strategy that always indicates a stream is available.
+
+    This strategy is used to avoid breaking changes and serves as a soft
+    deprecation of the availability strategy, allowing a smoother transition
+    without disrupting existing functionality.
     """
 
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+        """
+        Checks stream availability.
+
+        :param logger: logger object to use
+        :return: A StreamAvailability object describing the stream's availability
+        """
         return StreamAvailable()
