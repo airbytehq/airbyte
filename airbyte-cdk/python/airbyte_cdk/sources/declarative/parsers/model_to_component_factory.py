@@ -1081,6 +1081,7 @@ class ModelToComponentFactory:
             config=config,
             incremental_dependency=model.incremental_dependency or False,
             parameters=model.parameters or {},
+            extra_fields=model.extra_fields or [],
         )
 
     @staticmethod
