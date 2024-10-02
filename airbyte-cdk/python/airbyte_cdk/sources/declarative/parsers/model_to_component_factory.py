@@ -809,7 +809,7 @@ class ModelToComponentFactory:
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
         decoder_to_use = decoder if decoder else JsonDecoder(parameters={})
-        if not isinstance(decoder, JsonDecoder):
+        if not isinstance(decoder_to_use, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
