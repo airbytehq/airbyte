@@ -11,8 +11,8 @@ import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.PostgresSource;
 import io.airbyte.integrations.source.postgres.PostgresUtils;
 import java.net.URI;
