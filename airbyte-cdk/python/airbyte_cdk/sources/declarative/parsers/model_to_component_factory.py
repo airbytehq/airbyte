@@ -29,7 +29,7 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder, PaginationDecoderDecorator
+from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder, PaginationDecoderDecorator, XmlDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
@@ -84,6 +84,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonlDecoder as JsonlDecoderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import XmlDecoder as XmlDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
@@ -381,7 +382,7 @@ class ModelToComponentFactory:
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        if not isinstance(decoder, JsonDecoder):
+        if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
             raise ValueError(f"Provided decoder of {type(model.decoder)=} is not supported. Please set JsonDecoder instead.")
         login_requester = self._create_component_from_model(
             model=model.login_requester, config=config, name=f"{name}_login_requester", decoder=decoder
@@ -447,8 +448,8 @@ class ModelToComponentFactory:
     def create_cursor_pagination(
         self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> CursorPaginationStrategy:
-        if not isinstance(decoder, JsonDecoder) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, JsonDecoder)):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        if not isinstance(decoder, (JsonDecoder, XmlDecoder)) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, (JsonDecoder, XmlDecoder))):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
@@ -810,8 +811,8 @@ class ModelToComponentFactory:
         decoder: Decoder,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-        if not isinstance(decoder, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        if not isinstance(decoder, (JsonDecoder, XmlDecoder)):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
         decoder = PaginationDecoderDecorator(decoder=decoder)
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
@@ -931,6 +932,10 @@ class ModelToComponentFactory:
         return IterableDecoder(parameters={})
 
     @staticmethod
+    def create_xml_decoder(model: XmlDecoderModel, config: Config, **kwargs, Any) -> XmlDecoder:
+        return XmlDecoder(parameters={})
+
+    @staticmethod
     def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config, **kwargs: Any) -> JsonFileSchemaLoader:
         return JsonFileSchemaLoader(file_path=model.file_path or "", config=config, parameters=model.parameters or {})
 
@@ -1041,8 +1046,8 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
-        if not isinstance(decoder, JsonDecoder) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, JsonDecoder)):
-            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
+        if not isinstance(decoder, (JsonDecoder, XmlDecoder)) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, (JsonDecoder, XmlDecoder))):
+            raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder or XmlDecoder instead.")
         return OffsetIncrement(
             page_size=model.page_size,
             config=config,

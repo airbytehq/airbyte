@@ -668,6 +668,10 @@ class IterableDecoder(BaseModel):
     type: Literal['IterableDecoder']
 
 
+class XmlDecoder(BaseModel):
+    type: Optional[Literal['XmlDecoder']] = None
+
+
 class MinMaxDatetime(BaseModel):
     type: Literal['MinMaxDatetime']
     datetime: str = Field(
