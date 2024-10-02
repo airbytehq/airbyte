@@ -22,6 +22,7 @@ class Cursor(ABC):
 
         :param stream_state: The state of the stream as returned by get_stream_state
         """
+        pass
 
     def observe(self, stream_slice: StreamSlice, record: Record) -> None:
         """
