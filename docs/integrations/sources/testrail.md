@@ -43,8 +43,8 @@ Visit `https://support.testrail.com/hc/en-us/articles/7077196481428-Attachments`
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       |PR| Subject        |
-|------------------|------------|--|----------------|
-| 0.0.1 | 2024-09-29 |[46250](https://github.com/airbytehq/airbyte/pull/46250)| Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+| ------------------ | ------------ | -- | ---------------- |
+| 0.0.1 | 2024-09-29 | [46250](https://github.com/airbytehq/airbyte/pull/46250) | Initial release by [@btkcodedev](https://github.com/btkcodedev) via Connector Builder |
 
 </details>

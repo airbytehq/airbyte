@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.9.0
+concurrent-cdk: change stream availability strategy to always available
+
+## 5.8.1
+concurrent-cdk: fix convert_to_concurrent_stream to use state from state manager
+
+## 5.8.0
+Async job component: support Salesforce
+
 ## 5.7.5
 Have headers match during HTTP cache hit
 

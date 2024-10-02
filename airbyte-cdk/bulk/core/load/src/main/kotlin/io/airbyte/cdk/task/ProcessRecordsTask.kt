@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.task
 
+import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.Deserializer
 import io.airbyte.cdk.message.DestinationMessage
@@ -12,6 +13,7 @@ import io.airbyte.cdk.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.message.DestinationStreamComplete
 import io.airbyte.cdk.message.DestinationStreamIncomplete
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
+import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -19,7 +21,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-interface ProcessRecordsTask : Task
+interface ProcessRecordsTask : StreamTask
 
 /**
  * Wraps @[StreamLoader.processRecords] and feeds it a lazy iterator over the last batch of spooled
@@ -30,13 +32,17 @@ interface ProcessRecordsTask : Task
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
-    private val streamLoader: StreamLoader,
+    private val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher,
     private val fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     private val deserializer: Deserializer<DestinationMessage>,
+    private val syncManager: SyncManager,
 ) : ProcessRecordsTask {
     override suspend fun execute() {
         val log = KotlinLogging.logger {}
+
+        log.info { "Fetching stream loader for ${stream.descriptor}" }
+        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
 
         log.info { "Processing records from ${fileEnvelope.batch.localFile}" }
         val nextBatch =
@@ -70,14 +76,14 @@ class DefaultProcessRecordsTask(
             }
 
         val wrapped = fileEnvelope.withBatch(nextBatch)
-        taskLauncher.handleNewBatch(streamLoader, wrapped)
+        taskLauncher.handleNewBatch(stream, wrapped)
     }
 }
 
 interface ProcessRecordsTaskFactory {
     fun make(
         taskLauncher: DestinationTaskLauncher,
-        streamLoader: StreamLoader,
+        stream: DestinationStream,
         fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask
 }
@@ -86,17 +92,19 @@ interface ProcessRecordsTaskFactory {
 @Secondary
 class DefaultProcessRecordsTaskFactory(
     private val deserializer: Deserializer<DestinationMessage>,
+    private val syncManager: SyncManager,
 ) : ProcessRecordsTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        streamLoader: StreamLoader,
+        stream: DestinationStream,
         fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     ): ProcessRecordsTask {
         return DefaultProcessRecordsTask(
-            streamLoader,
+            stream,
             taskLauncher,
             fileEnvelope,
             deserializer,
+            syncManager
         )
     }
 }
