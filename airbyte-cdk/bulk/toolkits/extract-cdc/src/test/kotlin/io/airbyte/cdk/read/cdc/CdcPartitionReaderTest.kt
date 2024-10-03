@@ -387,6 +387,7 @@ class CdcPartitionReaderMySQLTest :
             .withDebeziumName(databaseName)
             .withHeartbeats(heartbeat)
             .with("include.schema.changes", "false")
+            .with("connect.keep.alive.interval.ms", "1000")
             .withDatabase("hostname", host)
             .withDatabase("port", firstMappedPort.toString())
             .withDatabase("user", username)
