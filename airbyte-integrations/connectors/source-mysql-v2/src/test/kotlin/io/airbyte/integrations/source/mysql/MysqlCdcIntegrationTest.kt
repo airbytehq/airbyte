@@ -52,7 +52,7 @@ class MysqlCdcIntegrationTest {
             )
             .use { nonCdcDbContainer ->
                 {
-                    val invalidConfig: MysqlSourceConfigurationJsonObject =
+                    val invalidConfig: MysqlSourceConfigurationSpecification =
                         MysqlContainerFactory.config(nonCdcDbContainer).apply {
                             setCursorMethodValue(CdcCursor())
                         }
@@ -112,7 +112,7 @@ class MysqlCdcIntegrationTest {
         val log = KotlinLogging.logger {}
         lateinit var dbContainer: MySQLContainer<*>
 
-        fun config(): MysqlSourceConfigurationJsonObject =
+        fun config(): MysqlSourceConfigurationSpecification =
             MysqlContainerFactory.config(dbContainer).apply { setCursorMethodValue(CdcCursor()) }
 
         val connectionFactory: JdbcConnectionFactory by lazy {

@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.command.CdcSourceConfiguration
-import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.CommonMetaField
@@ -28,6 +26,7 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
 import io.debezium.connector.mysql.MySqlConnector
@@ -53,8 +52,7 @@ import org.apache.kafka.connect.source.SourceRecord
 @Singleton
 class MySqlDebeziumOperations(
     val jdbcConnectionFactory: JdbcConnectionFactory,
-    jdbcSourceConfiguration: JdbcSourceConfiguration,
-    cdcSourceConfiguration: CdcSourceConfiguration,
+    configuration: MysqlSourceConfiguration,
     random: Random = Random.Default,
 ) : DebeziumOperations<MySqlPosition> {
     private val log = KotlinLogging.logger {}
@@ -249,7 +247,7 @@ class MySqlDebeziumOperations(
         return Jsons.objectNode().apply { set<JsonNode>(STATE, stateNode) }
     }
 
-    val databaseName: String = jdbcSourceConfiguration.namespaces.first()
+    val databaseName: String = configuration.namespaces.first()
     val serverID: Int = random.nextInt(MIN_SERVER_ID..MAX_SERVER_ID)
 
     val commonProperties: Map<String, String> by lazy {
@@ -258,7 +256,7 @@ class MySqlDebeziumOperations(
             .withDefault()
             .withConnector(MySqlConnector::class.java)
             .withDebeziumName(databaseName)
-            .withHeartbeats(cdcSourceConfiguration.debeziumHeartbeatInterval)
+            .withHeartbeats(configuration.debeziumHeartbeatInterval)
             // This to make sure that binary data represented as a base64-encoded String.
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
             .with("binary.handling.mode", "base64")
@@ -271,7 +269,11 @@ class MySqlDebeziumOperations(
             .with("snapshot.locking.mode", "none")
             // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-include-schema-changes
             .with("include.schema.changes", "false")
-            .withDatabase(jdbcSourceConfiguration.jdbcProperties)
+            .with(
+                "connect.keep.alive.interval.ms",
+                configuration.debeziumKeepAliveInterval.toMillis().toString()
+            )
+            .withDatabase(configuration.jdbcProperties)
             .withDatabase("hostname", tunnelSession.address.hostName)
             .withDatabase("port", tunnelSession.address.port.toString())
             .withDatabase("dbname", databaseName)
