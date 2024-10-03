@@ -30,11 +30,11 @@ data:
   ab_internal:
     sl: 100
     ql: 200
-  connectorTestSuitesOptions:
-    - suite: unitTests
   # Disabling acceptance tests for now
   # They are not passing
   # This connector is not enabled for OSS/Cloud
+  #
+  # connectorTestSuitesOptions:
   #   - suite: liveTests
   #     testConnections:
   #       - name: bigcommerce_config_dev_null

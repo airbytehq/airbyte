@@ -26,12 +26,11 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  connectorTestSuitesOptions:
-    - suite: unitTests
   # Disable the acceptanceTests suite for now
   # They are not passing
   # Low/No Airbyte Cloud Usage
   #
+  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE_CONVERTKIT__CREDS

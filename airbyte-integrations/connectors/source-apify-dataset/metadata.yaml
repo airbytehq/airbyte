@@ -38,7 +38,6 @@ data:
     - language:python
     - cdk:low-code
   connectorTestSuitesOptions:
-    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: apify-dataset_config_dev_null

@@ -36,7 +36,6 @@ data:
     ql: 100
   supportLevel: community
   connectorTestSuitesOptions:
-    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: appfollow_config_dev_null

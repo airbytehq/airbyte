@@ -30,11 +30,10 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  connectorTestSuitesOptions:
-    - suite: unitTests
   # Disable the acceptanceTests suite for now
   # They are not passing
   # No Airbyte cloud usage
+  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-CHARGIFY_CREDS

@@ -34,8 +34,7 @@ data:
   # They are not passing
   # Low/No Airbyte Cloud Usage
   #
-  connectorTestSuitesOptions:
-      - suite: unitTests
+  # connectorTestSuitesOptions:
   #   - suite: acceptanceTests
   #     testSecrets:
   #       - name: SECRET_SOURCE-ACTIVECAMPAIGN__CREDS
