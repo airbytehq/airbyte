@@ -47,6 +47,8 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "events"
             bypass_reason: "Data expires every 30 days."
+          - name: "subscriptions"
+            bypass_reason: "Data appears to have expired and since we can't access our test account we cannot re-seed or verify this"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
   incremental:
