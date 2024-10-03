@@ -12,9 +12,9 @@ import java.time.Duration
 @Requires(env = [Environment.TEST])
 @Primary
 class MysqlSourceTestConfigurationFactory :
-    SourceConfigurationFactory<MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration> {
+    SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MysqlSourceConfigurationJsonObject,
+        pojo: MysqlSourceConfigurationSpecification,
     ): MysqlSourceConfiguration =
         MysqlSourceConfigurationFactory()
             .makeWithoutExceptionHandling(pojo)
