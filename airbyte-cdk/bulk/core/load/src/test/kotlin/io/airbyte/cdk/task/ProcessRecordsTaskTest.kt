@@ -15,7 +15,7 @@ import io.airbyte.cdk.message.Deserializer
 import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.DestinationRecord
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
-import io.airbyte.cdk.state.MockSyncManager
+import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -32,14 +32,13 @@ import org.junit.jupiter.api.Test
         [
             "ProcessRecordsTaskTest",
             "MockDestinationCatalog",
-            "MockSyncManager",
             "MockTaskLauncher",
         ]
 )
 class ProcessRecordsTaskTest {
     @Inject lateinit var processRecordsTaskFactory: DefaultProcessRecordsTaskFactory
     @Inject lateinit var launcher: MockTaskLauncher
-    @Inject lateinit var syncManager: MockSyncManager
+    @Inject lateinit var syncManager: SyncManager
 
     class MockBatch(
         override val state: Batch.State,
@@ -109,7 +108,7 @@ class ProcessRecordsTaskTest {
             )
         mockFile.linesToRead = (0 until recordCount).map { "$it" }.toMutableList()
 
-        syncManager.mockGetOrAwaitStreamLoader(MockStreamLoader())
+        syncManager.registerStartedStreamLoader(MockStreamLoader())
         task.execute()
 
         Assertions.assertEquals(1, launcher.batchEnvelopes.size)
