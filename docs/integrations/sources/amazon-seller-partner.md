@@ -229,7 +229,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.6.0   | 2024-02-15 | [#](https://github.com/airbytehq/airbyte/pull/) | Add `VendorOrdersStatus` stream  
+| 4.6.0      | 2025-02-03 | [53138](https://github.com/airbytehq/airbyte/pull/53138)  | Add `VendorOrdersStatus` stream  
 | 4.5.0-rc.5 | 2025-01-31 | [52700](https://github.com/airbytehq/airbyte/pull/52700)      | Use incremental_dependency for the OrderItems substream                                                                                                                             |
 | 4.5.0-rc.4 | 2025-01-31 | [52683](https://github.com/airbytehq/airbyte/pull/52683)  | Fix Rate Limiting issue; disable concurrency                                                                                                                                        |
 | 4.5.0-rc.3 | 2025-01-28 | [52619](https://github.com/airbytehq/airbyte/pull/52619)  | Fix `Orders` pagination                                                                                                                                                             |

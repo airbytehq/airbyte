@@ -8,6 +8,7 @@ from typing import List, Optional
 
 import freezegun
 import pendulum
+
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import (
@@ -27,6 +28,7 @@ from .pagination import NEXT_TOKEN_STRING, VendorFulfillmentPaginationStrategy
 from .request_builder import RequestBuilder
 from .response_builder import response_with_status
 from .utils import config, mock_auth, read_output
+
 
 _START_DATE = pendulum.datetime(year=2023, month=1, day=1)
 _END_DATE = pendulum.datetime(year=2023, month=1, day=5)
@@ -75,7 +77,9 @@ class TestFullRefresh:
     @HttpMocker()
     def test_given_one_page_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(_vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build())
+        http_mocker.get(
+            _vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build()
+        )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         assert len(output.records) == 1
@@ -166,7 +170,9 @@ class TestIncremental:
     @HttpMocker()
     def test_when_read_then_add_cursor_field(self, http_mocker: HttpMocker) -> None:
         mock_auth(http_mocker)
-        http_mocker.get(_vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build())
+        http_mocker.get(
+            _vendor_orders_status_request().build(), _vendor_orders_status_response().with_record(_order_status_record()).build()
+        )
 
         output = self._read(config().with_start_date(_START_DATE).with_end_date(_END_DATE))
         expected_cursor_value = _END_DATE.strftime(TIME_FORMAT)
