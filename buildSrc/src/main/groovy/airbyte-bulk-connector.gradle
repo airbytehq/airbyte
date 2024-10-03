@@ -138,6 +138,10 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
                 resources {
                     srcDir 'src/test-integration/resources'
                 }
+                resources {
+                    srcDir '.'
+                    include 'metadata.yaml'
+                }
             }
         }
 

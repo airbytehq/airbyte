@@ -15,11 +15,13 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.BufferedWriter
 import java.io.OutputStreamWriter
+import io.micronaut.context.annotation.Value
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Clock
 import java.util.Locale
 import java.util.Scanner
+import javax.inject.Singleton
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,7 +33,7 @@ private val logger = KotlinLogging.logger {}
 
 // TODO define a factory for this class + @Require(env = CI_master_merge)
 class DockerizedDestination(
-    imageName: String,
+    imageTag: String,
     command: String,
     config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
@@ -75,7 +77,7 @@ class DockerizedDestination(
         // we have monopods. (the pod has a name like replication-job-18386126-attempt-4,
         // and the destination container is just called "destination")
         val shortImageName =
-            imageName.substringAfterLast("/").substringBefore(":")
+            imageTag.substringAfterLast("/").substringBefore(":")
         val containerName = "$shortImageName-$command-$randomSuffix"
         logger.info { "Creating docker container $containerName" }
 
@@ -106,7 +108,7 @@ class DockerizedDestination(
                 // Also also yes, we're relying on this env var >.>
                 "-e",
                 "WORKER_JOB_ID=0",
-                imageName,
+                imageTag,
                 command,
             )
 
@@ -207,5 +209,35 @@ class DockerizedDestination(
                     + filteredTraces,
             )
         }
+    }
+}
+
+@Singleton
+class DockerizedDestinationFactory(
+    // Note that this is not the same property as in MetadataYamlPropertySource.
+    // We get this because IntegrationTest manually sets "classpath:metadata.yaml"
+    // as a property source.
+    // MetadataYamlPropertySource has nothing to do with this property.
+    @Value("\${data.docker-repository}") val imageName: String,
+    // Most tests will just use micronaut to inject this.
+    // But some tests will want to manually instantiate an instance,
+    // e.g. to run an older version of the connector.
+    // So we just hardcode 'dev' here; manual callers can pass in
+    // whatever they want.
+    @Value("dev") val imageVersion: String,
+) : DestinationProcessFactory {
+    override fun createDestinationProcess(
+        command: String,
+        config: ConfigurationSpecification?,
+        catalog: ConfiguredAirbyteCatalog?,
+        deploymentMode: TestDeploymentMode,
+    ): DestinationProcess {
+        return DockerizedDestination(
+            "$imageName:$imageVersion",
+            command,
+            config,
+            catalog,
+            deploymentMode,
+        )
     }
 }

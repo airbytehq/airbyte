@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.micronaut.context.annotation.PropertySource
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.time.Instant
 import java.time.LocalDateTime
@@ -30,7 +31,13 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
-@MicronautTest
+@MicronautTest(
+    // Manually add metadata.yaml as a property source so that we can use its
+    // values as injectable properties.
+    // This is _infinitely_ easier than trying to wire up
+    // MetadataYamlPropertySource to be available at test time.
+    propertySources = ["classpath:metadata.yaml"]
+)
 @Execution(ExecutionMode.CONCURRENT)
 // Spotbugs doesn't let you suppress the actual lateinit property,
 // so we have to suppress the entire class.

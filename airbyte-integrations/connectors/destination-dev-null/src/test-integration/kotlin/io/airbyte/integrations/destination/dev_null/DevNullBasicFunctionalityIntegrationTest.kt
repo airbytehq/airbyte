@@ -17,7 +17,6 @@ class DevNullBasicFunctionalityIntegrationTest :
         NoopExpectedRecordMapper,
         verifyDataWriting = false,
     ) {
-
     @Test
     override fun testCheck() {
         super.testCheck()
