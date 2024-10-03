@@ -3,12 +3,14 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -30,16 +32,29 @@ data class MysqlSourceConfiguration(
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
-    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(1),
+    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
+    val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = cursorConfiguration is CdcCursor
+
+    /** Required to inject [MysqlSourceConfiguration] directly. */
+    @Factory
+    private class MicronautFactory {
+        @Singleton
+        fun mysqlSourceConfig(
+            factory:
+                SourceConfigurationFactory<
+                    MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>,
+        ): MysqlSourceConfiguration = factory.make(supplier.get())
+    }
 }
 
 @Singleton
 class MysqlSourceConfigurationFactory :
-    SourceConfigurationFactory<MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration> {
+    SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MysqlSourceConfigurationJsonObject,
+        pojo: MysqlSourceConfigurationSpecification,
     ): MysqlSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
