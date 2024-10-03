@@ -13,6 +13,12 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 | podcasts | id | DefaultPaginator | ✅ |  ❌  |
 | episodes |  | DefaultPaginator | ✅ |  ❌  |
 | analytics |  | DefaultPaginator | ✅ |  ❌  |
+| analytics_downloads | id | No pagination | ✅ |  ❌  |
+| analytics_podcasts_listeners | id | No pagination | ✅ |  ❌  |
+| categories |  | DefaultPaginator | ✅ |  ❌  |
+| distribution_channels |  | DefaultPaginator | ✅ |  ❌  |
+| timezones |  | No pagination | ✅ |  ❌  |
+| analytics_episodes | id | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -21,6 +27,6 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-02 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-10-03 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>
