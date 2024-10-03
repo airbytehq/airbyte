@@ -2359,6 +2359,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
@@ -2474,6 +2475,7 @@ definitions:
           - "$ref": "#/definitions/JsonDecoder"
           - "$ref": "#/definitions/JsonlDecoder"
           - "$ref": "#/definitions/IterableDecoder"
+          - "$ref": "#/definitions/XmlDecoder"
       $parameters:
         type: object
         additionalProperties: true
