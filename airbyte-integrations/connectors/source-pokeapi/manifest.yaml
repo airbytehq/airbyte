@@ -1,6 +1,8 @@
-version: 4.5.4
+version: 5.8.1
 
 type: DeclarativeSource
+
+description: for the demo
 
 check:
   type: CheckStream
@@ -18,7 +20,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /{{config['pokemon_name']}}
+          path: /pokemon/{{config['pokemon_name']}}
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -29,12 +31,31 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/pokemon"
+    move:
+      type: DeclarativeStream
+      name: move
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /move
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/move"
   base_requester:
     type: HttpRequester
-    url_base: https://pokeapi.co/api/v2/pokemon
+    url_base: https://pokeapi.co/api/v2
 
 streams:
   - $ref: "#/definitions/streams/pokemon"
+  - $ref: "#/definitions/streams/move"
 
 spec:
   type: Spec
@@ -47,8 +68,6 @@ spec:
       pokemon_name:
         type: string
         description: Pokemon requested from the API.
-        title: Pokemon Name
-        pattern: ^[a-z0-9_\-]+$
         enum:
           - bulbasaur
           - ivysaur
@@ -948,16 +967,35 @@ spec:
           - glastrier
           - spectrier
           - calyrex
+        order: 0
+        title: Pokemon Name
+        pattern: ^[a-z0-9_\-]+$
         examples:
           - ditto
           - luxray
           - snorlax
-        order: 0
     additionalProperties: true
 
 metadata:
   autoImportSchema:
     pokemon: false
+    move: true
+  testedStreams:
+    pokemon:
+      streamHash: ce2852240d709bd351d441d66dd8fe64bd005771
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    move:
+      streamHash: 60784dc4dada9b8f5f47ab82281d84c1873f2248
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
 
 schemas:
   pokemon:
@@ -1356,3 +1394,33 @@ schemas:
         type:
           - "null"
           - integer
+  move:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      count:
+        type:
+          - number
+          - "null"
+      next:
+        type:
+          - string
+          - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
