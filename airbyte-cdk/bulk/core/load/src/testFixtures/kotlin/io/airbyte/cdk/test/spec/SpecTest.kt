@@ -52,7 +52,7 @@ abstract class SpecTest :
 
     private fun testSpec(deploymentMode: TestDeploymentMode) {
         val expectedSpecFilename = "expected-spec-${deploymentMode.name.lowercase()}.json"
-        val expectedSpecPath = Path.of(expectedSpecFilename)
+        val expectedSpecPath = Path.of("src/test-integration/resources", expectedSpecFilename)
 
         if (!Files.exists(expectedSpecPath)) {
             Files.createFile(expectedSpecPath)
