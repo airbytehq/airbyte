@@ -46,8 +46,7 @@ class ParentStreamConfig:
         if self.extra_fields:
             # Create InterpolatedString for each field path in extra_keys
             self.extra_fields = [
-                [InterpolatedString.create(path, parameters=parameters) for path in key_path]
-                for key_path in self.extra_fields
+                [InterpolatedString.create(path, parameters=parameters) for path in key_path] for key_path in self.extra_fields
             ]
 
 
@@ -204,8 +203,9 @@ class SubstreamPartitionRouter(PartitionRouter):
 
                         stream_slices_for_parent.append(
                             StreamSlice(
-                                partition={partition_field: partition_value, "parent_slice": parent_partition or {}}, cursor_slice={},
-                                extra_fields=extracted_extra_fields
+                                partition={partition_field: partition_value, "parent_slice": parent_partition or {}},
+                                cursor_slice={},
+                                extra_fields=extracted_extra_fields,
                             )
                         )
 

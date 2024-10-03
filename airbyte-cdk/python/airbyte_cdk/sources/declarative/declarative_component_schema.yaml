@@ -2090,8 +2090,8 @@ definitions:
             type: string
           description: Defines a field path as an array of strings.
           examples:
-            - [ "field1" ]
-            - [ "nested", "field2" ]
+            - ["field1"]
+            - ["nested", "field2"]
       $parameters:
         type: object
         additionalProperties: true

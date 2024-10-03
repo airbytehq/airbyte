@@ -167,7 +167,9 @@ class CursorBasedCheckpointReader(CheckpointReader):
                         has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
                     return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
                 # The reader continues to process the current partition if it's state is still in progress
-                return StreamSlice(cursor_slice=state_for_slice or {}, partition=self.current_slice.partition, extra_fields=self.current_slice.extra_fields)
+                return StreamSlice(
+                    cursor_slice=state_for_slice or {}, partition=self.current_slice.partition, extra_fields=self.current_slice.extra_fields
+                )
         else:
             # Unlike RFR cursors that iterate dynamically according to how stream state is updated, most cursors operate
             # on a fixed set of slices determined before reading records. They just iterate to the next slice
