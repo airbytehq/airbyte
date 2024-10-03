@@ -1,4 +1,4 @@
-version: 5.8.1
+version: 5.10.2
 
 type: DeclarativeSource
 
@@ -15,56 +15,13 @@ check:
 
 definitions:
   streams:
-    episodes:
-      type: DeclarativeStream
-      name: episodes
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /podcasts/{{ stream_partition.podcast_id }}/episodes
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - collection
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/podcasts"
-              parent_key: id
-              partition_field: podcast_id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/episodes"
     podcasts:
       type: DeclarativeStream
       name: podcasts
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /podcasts/
@@ -75,26 +32,62 @@ definitions:
             type: DpathExtractor
             field_path:
               - collection
-      primary_key:
-        - id
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/podcasts"
+    episodes:
+      type: DeclarativeStream
+      name: episodes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /podcasts/{{ stream_partition.podcast_id }}/episodes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/episodes"
     analytics:
       type: DeclarativeStream
       name: analytics
       retriever:
         type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: /analytics?
@@ -104,101 +97,36 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/podcasts"
               parent_key: id
               request_option:
                 type: RequestOption
                 field_name: podcast
                 inject_into: request_parameter
               partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/analytics"
-    timezones:
-      type: DeclarativeStream
-      name: timezones
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /timezones
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - collection
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/timezones"
-    categories:
-      type: DeclarativeStream
-      name: categories
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /categories
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - collection
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/categories"
-    analytics_episodes:
-      type: DeclarativeStream
-      name: analytics_episodes
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /analytics/episodes?podcast={{  stream_partition.podcast_id }}
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - collection
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/podcasts"
-              parent_key: id
-              partition_field: podcast_id
-      primary_key:
-        - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/analytics_episodes"
     analytics_downloads:
       type: DeclarativeStream
       name: analytics_downloads
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -214,49 +142,20 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/podcasts"
               parent_key: id
               partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
               incremental_dependency: true
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/analytics_downloads"
-    distribution_channels:
-      type: DeclarativeStream
-      name: distribution_channels
-      retriever:
-        type: SimpleRetriever
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            field_name: offset
-            inject_into: request_parameter
-          pagination_strategy:
-            type: OffsetIncrement
-            page_size: 2
-            inject_on_first_request: true
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /distribution_channels
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - collection
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/distribution_channels"
     analytics_podcasts_listeners:
       type: DeclarativeStream
       name: analytics_podcasts_listeners
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -274,17 +173,122 @@ definitions:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/podcasts"
               parent_key: id
               partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
               incremental_dependency: true
-      primary_key:
-        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/analytics_podcasts_listeners"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    distribution_channels:
+      type: DeclarativeStream
+      name: distribution_channels
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /distribution_channels
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 2
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/distribution_channels"
+    timezones:
+      type: DeclarativeStream
+      name: timezones
+      primary_key:
+        - value
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /timezones
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/timezones"
+    analytics_episodes:
+      type: DeclarativeStream
+      name: analytics_episodes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /analytics/episodes?podcast={{  stream_partition.podcast_id }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collection
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: podcast_id
+              stream:
+                $ref: "#/definitions/streams/podcasts"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/analytics_episodes"
   base_requester:
     type: HttpRequester
     url_base: https://api.simplecast.com
@@ -323,65 +327,45 @@ spec:
     additionalProperties: true
 
 metadata:
-  assist:
-    docsUrl: https://apidocs.simplecast.com/
+  autoImportSchema:
+    podcasts: false
+    episodes: false
+    analytics: false
+    analytics_downloads: false
+    analytics_podcasts_listeners: false
+    categories: false
+    distribution_channels: false
+    timezones: false
+    analytics_episodes: false
   testedStreams:
-    episodes:
-      hasRecords: true
-      streamHash: a5bdc57ce73ea1037f195f0b1911263ce11191d6
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     podcasts:
-      hasRecords: true
       streamHash: c2da39bd684fd26f29d71310fd294fc22a0978b3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    analytics:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    episodes:
+      streamHash: 6c82add7366bed295b410b39374dcec9456ea6c0
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    analytics:
       streamHash: 97b84cf0e030ff4f37c0b62e2d2c1cabf69d2611
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    timezones:
       hasRecords: true
-      streamHash: 7f57e9fa99b7b775ae730616a204447b35b4ffaa
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    categories:
-      hasRecords: true
-      streamHash: c874cfa177b60b6112039ed34a53cd678475cfb8
-      hasResponse: true
       primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    analytics_episodes:
-      hasRecords: true
-      streamHash: 63fc5db9dbd7151de3a693cf49672e27ae999bb4
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     analytics_downloads:
-      hasRecords: true
       streamHash: 3527e7556494986c3ba4924f9c54930d7cb99ea5
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    distribution_channels:
       hasRecords: true
-      streamHash: d92a5e35a2dfd9ca22eebc9c0913c0d2a653cd62
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     analytics_podcasts_listeners:
       hasRecords: true
       streamHash: f39f0caa505f30512fda482152880fc18cb92584
@@ -389,18 +373,264 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-  autoImportSchema:
-    episodes: false
-    podcasts: false
-    analytics: false
-    timezones: false
-    categories: false
-    analytics_episodes: false
-    analytics_downloads: false
-    distribution_channels: false
-    analytics_podcasts_listeners: false
+    categories:
+      streamHash: c874cfa177b60b6112039ed34a53cd678475cfb8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    distribution_channels:
+      streamHash: c14e9dc97c67b4782a72b2d51001028cd9539bc2
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    timezones:
+      streamHash: 480bd5881021fd2abbb1eac20a17e13120424ff4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    analytics_episodes:
+      hasRecords: true
+      streamHash: 63fc5db9dbd7151de3a693cf49672e27ae999bb4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://apidocs.simplecast.com/
 
 schemas:
+  podcasts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      account:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_custom_plan:
+            type:
+              - boolean
+              - "null"
+          is_default:
+            type:
+              - boolean
+              - "null"
+          owner:
+            type:
+              - object
+              - "null"
+            properties:
+              email:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+      account_id:
+        type:
+          - string
+          - "null"
+      current_user_permission:
+        type:
+          - object
+          - "null"
+        properties:
+          can_create_episode:
+            type:
+              - boolean
+              - "null"
+          can_delete:
+            type:
+              - boolean
+              - "null"
+          can_edit:
+            type:
+              - boolean
+              - "null"
+          can_edit_ad_creatives:
+            type:
+              - boolean
+              - "null"
+          can_edit_admin_permissions:
+            type:
+              - boolean
+              - "null"
+          can_edit_advanced:
+            type:
+              - boolean
+              - "null"
+          can_edit_markers:
+            type:
+              - boolean
+              - "null"
+          can_edit_permissions:
+            type:
+              - boolean
+              - "null"
+          can_publish:
+            type:
+              - boolean
+              - "null"
+          can_upload:
+            type:
+              - boolean
+              - "null"
+          can_view:
+            type:
+              - boolean
+              - "null"
+          can_view_ad_creatives:
+            type:
+              - boolean
+              - "null"
+          can_view_analytics:
+            type:
+              - boolean
+              - "null"
+          can_view_episodes:
+            type:
+              - boolean
+              - "null"
+      display_owner_email:
+        type:
+          - boolean
+          - "null"
+      episodes:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_pending_invitation:
+        type:
+          - boolean
+          - "null"
+      permission:
+        type:
+          - object
+          - "null"
+        properties:
+          app_key:
+            type:
+              - string
+              - "null"
+          app_keys:
+            type:
+              - array
+              - "null"
+          can_create_episode:
+            type:
+              - boolean
+              - "null"
+          can_delete:
+            type:
+              - boolean
+              - "null"
+          can_edit:
+            type:
+              - boolean
+              - "null"
+          can_edit_ad_creatives:
+            type:
+              - boolean
+              - "null"
+          can_edit_admin_permissions:
+            type:
+              - boolean
+              - "null"
+          can_edit_advanced:
+            type:
+              - boolean
+              - "null"
+          can_edit_markers:
+            type:
+              - boolean
+              - "null"
+          can_edit_permissions:
+            type:
+              - boolean
+              - "null"
+          can_publish:
+            type:
+              - boolean
+              - "null"
+          can_upload:
+            type:
+              - boolean
+              - "null"
+          can_view:
+            type:
+              - boolean
+              - "null"
+          can_view_ad_creatives:
+            type:
+              - boolean
+              - "null"
+          can_view_analytics:
+            type:
+              - boolean
+              - "null"
+          can_view_episodes:
+            type:
+              - boolean
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          labels:
+            type:
+              - array
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          rank:
+            type:
+              - number
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
   episodes:
     type: object
     $schema: http://json-schema.org/schema#
@@ -413,23 +643,7 @@ schemas:
         type:
           - string
           - "null"
-      id:
-        type:
-          - string
-          - "null"
-      guid:
-        type:
-          - string
-          - "null"
-      href:
-        type:
-          - string
-          - "null"
-      slug:
-        type:
-          - string
-          - "null"
-      feeds:
+      analytics:
         type:
           - object
           - "null"
@@ -438,6 +652,27 @@ schemas:
             type:
               - string
               - "null"
+      audio_status:
+        type:
+          - string
+          - "null"
+      days_since_release:
+        type:
+          - number
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      enclosure_url:
+        type:
+          - string
+          - "null"
+      feeds:
+        type:
+          - object
+          - "null"
+        properties:
           collection:
             type:
               - array
@@ -447,21 +682,9 @@ schemas:
                 - object
                 - "null"
               properties:
-                id:
+                enable_episode_numbers:
                   type:
-                    - string
-                    - "null"
-                href:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                status:
-                  type:
-                    - string
+                    - boolean
                     - "null"
                 enabled:
                   type:
@@ -471,7 +694,15 @@ schemas:
                   type:
                     - string
                     - "null"
-                no_index:
+                href:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_explicit:
                   type:
                     - boolean
                     - "null"
@@ -479,33 +710,95 @@ schemas:
                   type:
                     - boolean
                     - "null"
-                is_explicit:
-                  type:
-                    - boolean
-                    - "null"
-                published_at:
+                name:
                   type:
                     - string
+                    - "null"
+                no_index:
+                  type:
+                    - boolean
                     - "null"
                 preferred_bitrate:
                   type:
                     - number
                     - "null"
-                enable_episode_numbers:
+                published_at:
                   type:
-                    - boolean
+                    - string
                     - "null"
-      title:
+                status:
+                  type:
+                    - string
+                    - "null"
+          href:
+            type:
+              - string
+              - "null"
+      guid:
         type:
           - string
           - "null"
-      token:
+      href:
         type:
           - string
           - "null"
+      id:
+        type:
+          - string
+          - "null"
+      is_hidden:
+        type:
+          - boolean
+          - "null"
+      markers:
+        type:
+          - object
+          - "null"
+        properties:
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                ad_limit:
+                  type:
+                    - number
+                    - "null"
+                ad_type:
+                  type:
+                    - string
+                    - "null"
+                href:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                offset_milliseconds:
+                  type:
+                    - number
+                    - "null"
+          href:
+            type:
+              - string
+              - "null"
       number:
         type:
           - number
+          - "null"
+      published_at:
+        type:
+          - string
           - "null"
       season:
         type:
@@ -516,107 +809,19 @@ schemas:
             type:
               - string
               - "null"
-          number:
-            type:
-              - number
-              - "null"
           next_episode_number:
             type:
               - number
               - "null"
+          number:
+            type:
+              - number
+              - "null"
+      slug:
+        type:
+          - string
+          - "null"
       status:
-        type:
-          - string
-          - "null"
-      markers:
-        type:
-          - object
-          - "null"
-        properties:
-          href:
-            type:
-              - string
-              - "null"
-          collection:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - object
-                - "null"
-              properties:
-                id:
-                  type:
-                    - string
-                    - "null"
-                href:
-                  type:
-                    - string
-                    - "null"
-                name:
-                  type:
-                    - string
-                    - "null"
-                ad_type:
-                  type:
-                    - string
-                    - "null"
-                ad_limit:
-                  type:
-                    - number
-                    - "null"
-                offset_milliseconds:
-                  type:
-                    - number
-                    - "null"
-      duration:
-        type:
-          - number
-          - "null"
-      analytics:
-        type:
-          - object
-          - "null"
-        properties:
-          href:
-            type:
-              - string
-              - "null"
-      is_hidden:
-        type:
-          - boolean
-          - "null"
-      updated_at:
-        type:
-          - string
-          - "null"
-      audio_status:
-        type:
-          - string
-          - "null"
-      published_at:
-        type:
-          - string
-          - "null"
-      enclosure_url:
-        type:
-          - string
-          - "null"
-      days_since_release:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
-  podcasts:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
-      id:
-        type:
-          - string
-          - "null"
-      href:
         type:
           - string
           - "null"
@@ -624,225 +829,52 @@ schemas:
         type:
           - string
           - "null"
-      status:
+      token:
         type:
           - string
           - "null"
-      account:
+      updated_at:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  analytics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      downloads:
         type:
           - object
           - "null"
         properties:
-          id:
-            type:
-              - string
-              - "null"
           href:
             type:
               - string
               - "null"
-          owner:
+      embed:
+        type:
+          - object
+          - "null"
+        properties:
+          href:
             type:
-              - object
-              - "null"
-            properties:
-              id:
-                type:
-                  - string
-                  - "null"
-              email:
-                type:
-                  - string
-                  - "null"
-          is_default:
-            type:
-              - boolean
-              - "null"
-          is_custom_plan:
-            type:
-              - boolean
+              - string
               - "null"
       episodes:
         type:
           - object
           - "null"
         properties:
-          count:
-            type:
-              - number
-              - "null"
-      account_id:
-        type:
-          - string
-          - "null"
-      permission:
-        type:
-          - object
-          - "null"
-        properties:
-          id:
+          href:
             type:
               - string
               - "null"
-          name:
-            type:
-              - string
-              - "null"
-          rank:
-            type:
-              - number
-              - "null"
-          label:
-            type:
-              - string
-              - "null"
-          labels:
-            type:
-              - array
-              - "null"
-          app_key:
-            type:
-              - string
-              - "null"
-          app_keys:
-            type:
-              - array
-              - "null"
-          can_edit:
-            type:
-              - boolean
-              - "null"
-          can_view:
-            type:
-              - boolean
-              - "null"
-          can_delete:
-            type:
-              - boolean
-              - "null"
-          can_upload:
-            type:
-              - boolean
-              - "null"
-          can_publish:
-            type:
-              - boolean
-              - "null"
-          can_edit_markers:
-            type:
-              - boolean
-              - "null"
-          can_edit_advanced:
-            type:
-              - boolean
-              - "null"
-          can_view_episodes:
-            type:
-              - boolean
-              - "null"
-          can_create_episode:
-            type:
-              - boolean
-              - "null"
-          can_view_analytics:
-            type:
-              - boolean
-              - "null"
-          can_edit_permissions:
-            type:
-              - boolean
-              - "null"
-          can_edit_ad_creatives:
-            type:
-              - boolean
-              - "null"
-          can_view_ad_creatives:
-            type:
-              - boolean
-              - "null"
-          can_edit_admin_permissions:
-            type:
-              - boolean
-              - "null"
-      display_owner_email:
-        type:
-          - boolean
-          - "null"
-      is_pending_invitation:
-        type:
-          - boolean
-          - "null"
-      current_user_permission:
-        type:
-          - object
-          - "null"
-        properties:
-          can_edit:
-            type:
-              - boolean
-              - "null"
-          can_view:
-            type:
-              - boolean
-              - "null"
-          can_delete:
-            type:
-              - boolean
-              - "null"
-          can_upload:
-            type:
-              - boolean
-              - "null"
-          can_publish:
-            type:
-              - boolean
-              - "null"
-          can_edit_markers:
-            type:
-              - boolean
-              - "null"
-          can_edit_advanced:
-            type:
-              - boolean
-              - "null"
-          can_view_episodes:
-            type:
-              - boolean
-              - "null"
-          can_create_episode:
-            type:
-              - boolean
-              - "null"
-          can_view_analytics:
-            type:
-              - boolean
-              - "null"
-          can_edit_permissions:
-            type:
-              - boolean
-              - "null"
-          can_edit_ad_creatives:
-            type:
-              - boolean
-              - "null"
-          can_view_ad_creatives:
-            type:
-              - boolean
-              - "null"
-          can_edit_admin_permissions:
-            type:
-              - boolean
-              - "null"
-    additionalProperties: true
-  analytics:
-    type: object
-    $schema: http://json-schema.org/schema#
-    properties:
       href:
         type:
           - string
           - "null"
-      embed:
+      location:
         type:
           - object
           - "null"
@@ -869,33 +901,6 @@ schemas:
             type:
               - string
               - "null"
-      episodes:
-        type:
-          - object
-          - "null"
-        properties:
-          href:
-            type:
-              - string
-              - "null"
-      location:
-        type:
-          - object
-          - "null"
-        properties:
-          href:
-            type:
-              - string
-              - "null"
-      downloads:
-        type:
-          - object
-          - "null"
-        properties:
-          href:
-            type:
-              - string
-              - "null"
       technology:
         type:
           - object
@@ -914,24 +919,37 @@ schemas:
             type:
               - string
               - "null"
-    additionalProperties: true
-  timezones:
+  analytics_downloads:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    properties: {}
     additionalProperties: true
+    properties: {}
+  analytics_podcasts_listeners:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      total:
+        type:
+          - number
+          - "null"
+    required:
+      - id
   categories:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - value
+    additionalProperties: true
     properties:
       label:
         type:
           - string
           - "null"
-      value:
-        type: string
       rss_label:
         type:
           - string
@@ -954,38 +972,71 @@ schemas:
                   type:
                     - string
                     - "null"
-                value:
-                  type:
-                    - string
-                    - "null"
                 rss_label:
                   type:
                     - string
                     - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+      value:
+        type: string
+    required:
+      - value
+  distribution_channels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      href:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
     additionalProperties: true
+  timezones:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
   analytics_episodes:
     type: object
     $schema: http://json-schema.org/schema#
-    required:
-      - id
+    additionalProperties: true
     properties:
       type:
         type:
           - string
           - "null"
-      id:
-        type: string
+      downloads:
+        type:
+          - object
+          - "null"
+        properties:
+          total:
+            type:
+              - number
+              - "null"
       href:
         type:
           - string
           - "null"
-      title:
-        type:
-          - string
-          - "null"
+      id:
+        type: string
       number:
         type:
           - number
+          - "null"
+      published_at:
+        type:
+          - string
           - "null"
       season:
         type:
@@ -996,52 +1047,17 @@ schemas:
             type:
               - string
               - "null"
-          number:
-            type:
-              - number
-              - "null"
           next_episode_number:
             type:
               - number
               - "null"
-      downloads:
-        type:
-          - object
-          - "null"
-        properties:
-          total:
+          number:
             type:
               - number
               - "null"
-      published_at:
+      title:
         type:
           - string
           - "null"
-    additionalProperties: true
-  analytics_downloads:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties: {}
-    additionalProperties: true
-  distribution_channels:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    properties: {}
-    additionalProperties: true
-  analytics_podcasts_listeners:
-    type: object
-    $schema: http://json-schema.org/schema#
     required:
       - id
-    properties:
-      id:
-        type: string
-      href:
-        type:
-          - string
-          - "null"
-      total:
-        type:
-          - number
-          - "null"
-    additionalProperties: true
