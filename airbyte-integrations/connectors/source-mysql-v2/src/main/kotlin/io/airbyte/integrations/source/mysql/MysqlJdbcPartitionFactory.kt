@@ -8,9 +8,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
+import io.airbyte.cdk.read.DefaultJdbcSplittableSnapshotPartition
 import io.airbyte.cdk.read.DefaultJdbcStreamState
+import io.airbyte.cdk.read.DefaultJdbcUnsplittableSnapshotPartition
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
@@ -42,8 +45,19 @@ class MysqlJdbcPartitionFactory(
             stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH ||
                 sharedState.configuration.global
         ) {
-            // todo: implement this later
-            throw IllegalStateException("To be implemented.")
+            if (pkChosenFromCatalog.isEmpty()) {
+                return MysqlJdbcUnsplittableSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                )
+            }
+            return MysqlJdbcSplittableSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                pkChosenFromCatalog,
+                lowerBound = null,
+                upperBound = null,
+            )
         }
 
         val cursorChosenFromCatalog: Field =
@@ -84,7 +98,7 @@ class MysqlJdbcPartitionFactory(
 
         if (!isCursorBasedIncremental) {
             // todo: Implement me for cdc initial read states.
-            throw IllegalStateException("To be implemented.")
+            throw IllegalStateException("Should reset.")
         } else {
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user

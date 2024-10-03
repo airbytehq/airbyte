@@ -34,7 +34,6 @@ data class MysqlJdbcStreamStateValue(
             cursorCheckpoint: JsonNode,
             stream: Stream,
         ): OpaqueStateValue {
-            println("cursorcheckpoint json node: $cursorCheckpoint")
             return Jsons.valueToTree(
                 MysqlJdbcStreamStateValue(
                     cursorField = listOf(cursor.id),

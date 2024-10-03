@@ -21,7 +21,7 @@ class MysqlJdbcSelectQuerier(val base: JdbcSelectQuerier) : SelectQuerier by bas
         q: SelectQuery,
         parameters: SelectQuerier.Parameters
     ): SelectQuerier.Result {
-        log.info { "Executing query: ${q.sql}" }
+        log.info { "Executing query: ${q.sql}, bindings: ${q.bindings}" }
         return base.executeQuery(q, SelectQuerier.Parameters(fetchSize = Int.MIN_VALUE))
     }
 }
