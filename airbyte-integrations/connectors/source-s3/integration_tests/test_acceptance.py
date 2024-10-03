@@ -23,6 +23,9 @@ if TYPE_CHECKING:
     from airbyte_cdk import Source
 
 
+ACCEPTANCE_TEST_CONFIG_PATH = Path("acceptance-test-config.yml")
+
+
 class AcceptanceTestInstance(BaseModel):
     """Acceptance test instance.
 
@@ -47,7 +50,7 @@ class AcceptanceTestInstance(BaseModel):
 
 
 def _get_acceptance_tests(category: str) -> list[AcceptanceTestInstance]:
-    all_tests_config = yaml.safe_load(Path("acceptance-test-config.yml").read_text())
+    all_tests_config = yaml.safe_load(ACCEPTANCE_TEST_CONFIG_PATH.read_text())
     tests: list[AcceptanceTestInstance] = []
     if category == "basic_read" and category in all_tests_config["acceptance_tests"]:
         tests += [AcceptanceTestInstance.model_validate(test) for test in all_tests_config["acceptance_tests"][category]["tests"]]
