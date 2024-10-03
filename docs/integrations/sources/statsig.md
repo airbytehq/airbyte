@@ -41,8 +41,8 @@ See the [API docs](https://docs.statsig.com/http-api) for steps to generate the 
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-27 | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-27 | | Initial release by [@topefolorunso](https://github.com/topefolorunso) via Connector Builder |
 
 </details>

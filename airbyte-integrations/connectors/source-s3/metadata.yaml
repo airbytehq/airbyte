@@ -41,6 +41,7 @@ data:
     - language:python
     - cdk:python-file-based
   connectorTestSuitesOptions:
+    - suite: unitTests
     - suite: liveTests
       testConnections:
         - name: s3_v4_jsonl_config_dev_null

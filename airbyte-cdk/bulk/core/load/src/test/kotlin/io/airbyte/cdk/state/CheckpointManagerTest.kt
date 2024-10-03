@@ -5,16 +5,18 @@
 package io.airbyte.cdk.state
 
 import com.google.common.collect.Range
+import com.google.common.collect.TreeRangeSet
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
+import io.airbyte.cdk.message.Batch
+import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.MessageConverter
-import io.airbyte.cdk.message.MockStreamsManager
+import io.airbyte.cdk.message.SimpleBatch
 import io.micronaut.context.annotation.Prototype
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.function.Consumer
 import java.util.stream.Stream
@@ -26,7 +28,13 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 
-@MicronautTest(environments = ["MockStreamsManager"])
+@MicronautTest(
+    environments =
+        [
+            "CheckpointManagerTest",
+            "MockDestinationCatalog",
+        ]
+)
 class CheckpointManagerTest {
     @Inject lateinit var checkpointManager: TestCheckpointManager
     /**
@@ -71,8 +79,8 @@ class CheckpointManagerTest {
 
     @Prototype
     class TestCheckpointManager(
-        @Named("mockCatalog") override val catalog: DestinationCatalog,
-        override val streamsManager: MockStreamsManager,
+        override val catalog: DestinationCatalog,
+        override val syncManager: SyncManager,
         override val outputFactory: MessageConverter<MockCheckpointIn, MockCheckpointOut>,
         override val outputConsumer: MockOutputConsumer
     ) : StreamsCheckpointManager<MockCheckpointIn, MockCheckpointOut>()
@@ -431,8 +439,14 @@ class CheckpointManagerTest {
                     checkpointManager.addGlobalCheckpoint(it.streamIndexes, it.toMockCheckpointIn())
                 }
                 is FlushPoint -> {
+                    // Mock the persisted ranges by updating the state of the stream managers
                     it.persistedRanges.forEach { (stream, ranges) ->
-                        checkpointManager.streamsManager.addPersistedRanges(stream, ranges)
+                        val mockBatch = SimpleBatch(state = Batch.State.PERSISTED)
+                        val rangeSet = TreeRangeSet.create(ranges)
+                        val mockBatchEnvelope = BatchEnvelope(batch = mockBatch, ranges = rangeSet)
+                        checkpointManager.syncManager
+                            .getStreamManager(stream.descriptor)
+                            .updateBatchState(mockBatchEnvelope)
                     }
                     checkpointManager.flushReadyCheckpointMessages()
                 }
