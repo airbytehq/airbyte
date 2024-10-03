@@ -1,7 +1,7 @@
 # Incident
 This directory contains the manifest-only connector for `source-incident`.
 
-Source connector for Incident which is an on all, incident response and status pages tool. 
+Source connector for Incident which is an on call, incident response and status pages tool. 
 
 ## Usage
 There are multiple ways to use this connector:
