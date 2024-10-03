@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, FailureType, SyncMode
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
@@ -37,6 +38,8 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeSubStream,
 )
 
+from .authenticator import StripeOauth2Authenticator
+
 logger = logging.getLogger("airbyte")
 
 _MAX_CONCURRENCY = 20
@@ -47,7 +50,7 @@ STRIPE_TEST_ACCOUNT_PREFIX = "sk_test_"
 
 
 class SourceStripe(ConcurrentSourceAdapter):
-
+    _authenticator: StripeOauth2Authenticator | TokenAuthenticator = None
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
     _SLICE_BOUNDARY_FIELDS_BY_IMPLEMENTATION = {
         Events: ("created[gte]", "created[lte]"),
@@ -104,11 +107,87 @@ class SourceStripe(ConcurrentSourceAdapter):
             )
         return config
 
+    def has_oauth2_auth(self, config: Mapping[str, Any]) -> bool:
+        """
+        Check if the source connector uses OAuth2 authentication.
+
+        Args:
+            config: source connector configuration.
+        """
+        if "credentials" in config:
+            return config["credentials"]["credentials_title"] == "OAuth Credentials"
+
+        return False
+
+    def has_client_secret_auth(self, config: Mapping[str, Any]) -> bool:
+        """
+        Check if the source connector uses Client Secret authentication.
+
+        Args:
+            config: source connector configuration.
+        """
+        if "credentials" in config:
+            return config["credentials"]["credentials_title"] == "Client Secret Credentials"
+
+        return False
+
+    def set_authenticator(self, config: MutableMapping[str, Any]):
+        """
+        Set the authenticator for the source connector.
+
+        Args:
+            config: source connector configuration.
+        """
+        credentials = config["credentials"]
+        credentials_title = credentials["credentials_title"]
+
+        if self.has_oauth2_auth(config):
+            self._authenticator = StripeOauth2Authenticator(
+                token_refresh_endpoint="https://connect.stripe.com/oauth/token",
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
+            )
+        elif self.has_client_secret_auth(config):
+            self._authenticator = TokenAuthenticator(credentials["client_secret"])
+        else:
+            raise ValueError(f"Unknown credentials_title: {credentials_title}")
+
+    def get_authenticator(self, config: Mapping[str, Any]) -> StripeOauth2Authenticator | TokenAuthenticator:
+        """
+        Get the authenticator for the source connector.
+
+        Args:
+            config: source connector configuration.
+        """
+        if self._authenticator is None:
+            self.set_authenticator(config)
+
+        return self._authenticator
+
+    def get_access_token(self, config: Mapping[str, Any]) -> str:
+        """
+        Get the access token for the source connector.
+
+        Args:
+            config: source connector configuration.
+        """
+        authenticator = self.get_authenticator(config)
+
+        if self.has_oauth2_auth(config):
+            return authenticator.get_access_token()
+        elif self.has_client_secret_auth(config):
+            return authenticator._token
+        else:
+            raise ValueError("Unknown authentication")
+
     def check_connection(self, logger: logging.Logger, config: MutableMapping[str, Any]) -> Tuple[bool, Any]:
-        args = self._get_stream_base_args(config)
-        account_stream = StripeStream(name="accounts", path="accounts", use_cache=USE_CACHE, **args)
         try:
-            next(account_stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            access_token = self.get_access_token(config)
+            requests.get(
+                f"https://api.stripe.com/v1/accounts/{config['account_id']}",
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
         except AirbyteTracedException as error:
             if error.failure_type == FailureType.config_error:
                 return False, error.message
@@ -117,7 +196,7 @@ class SourceStripe(ConcurrentSourceAdapter):
 
     def _get_stream_base_args(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config = self.validate_and_fill_with_defaults(config)
-        authenticator = TokenAuthenticator(config["client_secret"])
+        authenticator = self.get_authenticator(config)
         start_timestamp = self._start_date_to_timestamp(config)
         args = {
             "authenticator": authenticator,
@@ -140,15 +219,15 @@ class SourceStripe(ConcurrentSourceAdapter):
             **args,
         )
 
-    @staticmethod
-    def is_test_account(config: Mapping[str, Any]) -> bool:
+    def is_test_account(self, config: Mapping[str, Any]) -> bool:
         """Check if configuration uses Stripe test account (https://stripe.com/docs/keys#obtain-api-keys)
 
         :param config:
         :return: True if configured to use a test account, False - otherwise
         """
+        access_token = self.get_access_token(config)
 
-        return str(config["client_secret"]).startswith(STRIPE_TEST_ACCOUNT_PREFIX)
+        return str(access_token).startswith(STRIPE_TEST_ACCOUNT_PREFIX)
 
     def get_api_call_budget(self, config: Mapping[str, Any]) -> AbstractAPIBudget:
         """Get API call budget which connector is allowed to use.

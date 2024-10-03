@@ -4,7 +4,7 @@ connectionSpecification:
   title: Stripe Source Spec
   type: object
   required:
-    - client_secret
+    - credentials
     - account_id
   properties:
     account_id:
@@ -14,14 +14,65 @@ connectionSpecification:
         Your Stripe account ID (starts with 'acct_', find yours <a
         href="https://dashboard.stripe.com/settings/account">here</a>).
       order: 0
-    client_secret:
-      type: string
-      title: Secret Key
-      description: >-
-        Stripe API key (usually starts with 'sk_live_'; find yours <a
-        href="https://dashboard.stripe.com/apikeys">here</a>).
-      airbyte_secret: true
-      order: 1
+    credentials:
+      title: Authentication
+      description: Choose how to authenticate to Stripe.
+      type: object
+      oneOf:
+        - type: object
+          title: OAuth
+          required:
+            - client_id
+            - client_secret
+            - refresh_token
+          properties:
+            credentials_title:
+              type: string
+              title: Auth Type
+              description: Name of the credentials
+              const: OAuth Credentials
+              order: 0
+            client_id:
+              title: Client ID
+              description: >-
+                The Client ID of your Stripe application.
+              type: string
+              examples:
+                - "ca_1234567890"
+            client_secret:
+              title: Client Secret
+              description: >-
+                The client secret for your Stripe application.
+              type: string
+              examples:
+                - "sk_live_1234567890"
+              airbyte_secret: true
+            refresh_token:
+              title: Refresh Token
+              description: >-
+                Refresh token to renew an expired access token.
+              type: string
+              examples:
+                - "rt_1234567890"
+              airbyte_secret: true
+        - type: object
+          title: Client Secret
+          required:
+            - client_secret
+          properties:
+            credentials_title:
+              type: string
+              title: Auth Type
+              description: Name of the credentials
+              const: Client Secret Credentials
+              order: 0
+            client_secret:
+              title: Client Secret
+              description: >-
+                Stripe API key (usually starts with 'sk_live_'; find yours <a
+                href="https://dashboard.stripe.com/apikeys">here</a>).
+              type: string
+              airbyte_secret: true
     start_date:
       type: string
       title: Replication start date

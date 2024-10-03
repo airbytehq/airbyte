@@ -12,6 +12,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 from orjson import orjson
 from source_stripe import SourceStripe
+from source_stripe.config_migration import StripeConfigMigration
 
 
 def _get_source(args: List[str]):
@@ -48,5 +49,6 @@ def _get_source(args: List[str]):
 def run():
     _args = sys.argv[1:]
     source = _get_source(_args)
+    StripeConfigMigration.migrate(_args, source)
     if source:
         launch(source, _args)
