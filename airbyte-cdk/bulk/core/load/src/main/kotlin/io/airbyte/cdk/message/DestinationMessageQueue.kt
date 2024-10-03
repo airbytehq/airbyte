@@ -5,8 +5,8 @@
 package io.airbyte.cdk.message
 
 import io.airbyte.cdk.command.DestinationCatalog
+import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.WriteConfiguration
 import io.airbyte.cdk.state.MemoryManager
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -51,10 +51,10 @@ data class StreamCompleteWrapped(
 @Singleton
 class DestinationMessageQueue(
     catalog: DestinationCatalog,
-    config: WriteConfiguration,
+    config: DestinationConfiguration,
     private val memoryManager: MemoryManager,
     private val queueChannelFactory: QueueChannelFactory<DestinationRecordWrapped>
-) : MessageQueue<DestinationStream, DestinationRecordWrapped> {
+) : MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped> {
     private val channels:
         ConcurrentHashMap<DestinationStream.Descriptor, QueueChannel<DestinationRecordWrapped>> =
         ConcurrentHashMap()
@@ -89,12 +89,10 @@ class DestinationMessageQueue(
     }
 
     override suspend fun getChannel(
-        key: DestinationStream,
+        key: DestinationStream.Descriptor,
     ): QueueChannel<DestinationRecordWrapped> {
-        return channels[key.descriptor]
-            ?: throw IllegalArgumentException(
-                "Reading from non-existent QueueChannel: ${key.descriptor}"
-            )
+        return channels[key]
+            ?: throw IllegalArgumentException("Reading from non-existent QueueChannel: ${key}")
     }
 
     private val log = KotlinLogging.logger {}

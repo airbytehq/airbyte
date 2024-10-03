@@ -4,38 +4,43 @@
 
 package io.airbyte.cdk.task
 
+import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface CloseStreamTask : Task
+interface CloseStreamTask : StreamTask
 
 /**
  * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the
  * teardown task.
  */
 class DefaultCloseStreamTask(
-    private val streamLoader: StreamLoader,
+    private val syncManager: SyncManager,
+    private val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher
 ) : CloseStreamTask {
 
     override suspend fun execute() {
+        val streamLoader = syncManager.getOrAwaitStreamLoader(stream.descriptor)
         streamLoader.close()
+        syncManager.getStreamManager(stream.descriptor).markClosed()
         taskLauncher.handleStreamClosed(streamLoader.stream)
     }
 }
 
 interface CloseStreamTaskFactory {
-    fun make(taskLauncher: DestinationTaskLauncher, streamLoader: StreamLoader): CloseStreamTask
+    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): CloseStreamTask
 }
 
 @Singleton
 @Secondary
-class DefaultCloseStreamTaskFactory : CloseStreamTaskFactory {
+class DefaultCloseStreamTaskFactory(private val syncManager: SyncManager) : CloseStreamTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        streamLoader: StreamLoader
+        stream: DestinationStream
     ): CloseStreamTask {
-        return DefaultCloseStreamTask(streamLoader, taskLauncher)
+        return DefaultCloseStreamTask(syncManager, stream, taskLauncher)
     }
 }
