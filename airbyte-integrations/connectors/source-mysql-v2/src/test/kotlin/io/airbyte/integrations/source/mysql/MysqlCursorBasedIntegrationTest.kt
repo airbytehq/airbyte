@@ -6,18 +6,14 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
-import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
-import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.MysqlContainerFactory.execAsRoot
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
-import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
@@ -33,6 +29,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
+import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper
 
 class MysqlCursorBasedIntegrationTest {
 
@@ -40,9 +38,19 @@ class MysqlCursorBasedIntegrationTest {
     fun testCursorBasedRead() {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config(), configuredCatalog).run()
-        println("Run1:" + run1.messages())
 
 
+        val lastStateMessageFromRun1 = run1.states().last()
+        val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
+
+        assertEquals("2", lastStreamStateFromRun1.get("cursor").asText())
+        assertEquals(2, lastStreamStateFromRun1.get("version").asInt())
+        assertEquals("cursor_based", lastStreamStateFromRun1.get("state_type").asText())
+        assertEquals("tbl", lastStreamStateFromRun1.get("stream_name").asText())
+        assertEquals(listOf("k"), lastStreamStateFromRun1.get("cursor_field").map { it.asText() })
+        assertEquals("test", lastStreamStateFromRun1.get("stream_namespace").asText())
+        assertEquals(0, lastStreamStateFromRun1.get("cursor_record_count").asInt())
+        
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { stmt: Statement ->
@@ -50,11 +58,11 @@ class MysqlCursorBasedIntegrationTest {
             }
         }
 
-        val run2InputState: List<AirbyteStateMessage> = listOf(run1.states().last())
+        val run2InputState: List<AirbyteStateMessage> = listOf(lastStateMessageFromRun1)
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config(), configuredCatalog, run2InputState).run()
-        println(run2.messages())
-
+        val recordMessageFromRun2: List<AirbyteRecordMessage> = run2.records()
+        assertEquals(recordMessageFromRun2.size, 1)
     }
 
     companion object {
@@ -62,7 +70,9 @@ class MysqlCursorBasedIntegrationTest {
         lateinit var dbContainer: MySQLContainer<*>
 
         fun config(): MysqlSourceConfigurationJsonObject =
-            MysqlContainerFactory.config(dbContainer).apply { setCursorMethodValue(UserDefinedCursor) }
+            MysqlContainerFactory.config(dbContainer).apply {
+                setCursorMethodValue(UserDefinedCursor)
+            }
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))

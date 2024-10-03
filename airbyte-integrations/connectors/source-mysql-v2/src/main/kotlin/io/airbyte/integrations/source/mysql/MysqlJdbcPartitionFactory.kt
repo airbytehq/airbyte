@@ -8,12 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
-import io.airbyte.cdk.read.DefaultJdbcSplittableSnapshotPartition
 import io.airbyte.cdk.read.DefaultJdbcStreamState
-import io.airbyte.cdk.read.DefaultJdbcUnsplittableSnapshotPartition
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
@@ -124,6 +121,10 @@ class MysqlJdbcPartitionFactory(
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
             val cursorCheckpoint: JsonNode = Jsons.valueToTree(sv.cursors)
+            if (cursorCheckpoint == streamState.cursorUpperBound) {
+                // Incremental complete.
+                return null
+            }
             return MysqlJdbcCursorIncrementalPartition(
                 selectQueryGenerator,
                 streamState,
