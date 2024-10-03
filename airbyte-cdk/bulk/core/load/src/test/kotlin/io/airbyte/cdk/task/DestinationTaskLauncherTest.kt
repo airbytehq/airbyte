@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test
     environments =
         [
             "DestinationTaskLauncherTest",
+            "MockDestinationConfiguration",
             "MockDestinationCatalog",
         ]
 )
@@ -53,6 +54,7 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
+    @Inject lateinit var forceFlushTaskFactory: MockForceFlushTaskFactory
 
     @Singleton
     @Replaces(DefaultSetupTaskFactory::class)
@@ -206,6 +208,24 @@ class DestinationTaskLauncherTest {
         }
     }
 
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockForceFlushTaskFactory : TimedForcedCheckpointFlushTaskFactory {
+        val ranWithDelay = Channel<Long?>(Channel.UNLIMITED)
+
+        override fun make(
+            taskLauncher: DestinationTaskLauncher,
+            delayMs: Long?
+        ): TimedForcedCheckpointFlushTask {
+            return object : TimedForcedCheckpointFlushTask {
+                override suspend fun execute() {
+                    ranWithDelay.send(delayMs)
+                }
+            }
+        }
+    }
+
     class MockBatch(override val state: Batch.State) : Batch
 
     @Singleton
@@ -231,6 +251,9 @@ class DestinationTaskLauncherTest {
 
         // Verify that spill to disk ran for each stream
         mockSpillToDiskTaskFactory.streamHasRun.values.forEach { it.receive() }
+
+        // Verify that we kicked off the timed force flush w/o a specific delay
+        Assertions.assertNull(forceFlushTaskFactory.ranWithDelay.receive())
 
         // Collect the tasks wrapped by the exception handler: expect one Setup and [nStreams]
         // SpillToDisk
@@ -321,6 +344,7 @@ class DestinationTaskLauncherTest {
         val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.LOCAL), range)
         taskLauncher.handleNewBatch(stream1, incompleteBatch)
         Assertions.assertFalse(streamManager.areRecordsPersistedUntil(100L))
+
         val batchReceived = processBatchTaskFactory.hasRun.receive()
         Assertions.assertEquals(incompleteBatch, batchReceived)
         delay(500)
@@ -355,6 +379,17 @@ class DestinationTaskLauncherTest {
         // This should run teardown unconditionally.
         launch { taskLauncher.handleStreamClosed(stream1) }
         teardownTaskFactory.hasRun.receive()
+
+        taskLauncher.stop()
+    }
+
+    @Test
+    fun testHandleScheduleForceFlush() = runTest {
+        launch { taskRunner.run() }
+
+        // This should run force flush task with delay.
+        taskLauncher.scheduleNextForceFlushAttempt(1000)
+        Assertions.assertEquals(1000, forceFlushTaskFactory.ranWithDelay.receive())
 
         taskLauncher.stop()
     }

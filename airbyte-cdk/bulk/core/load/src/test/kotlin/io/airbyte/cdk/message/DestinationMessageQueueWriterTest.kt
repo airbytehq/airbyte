@@ -10,7 +10,7 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.data.NullValue
-import io.airbyte.cdk.state.CheckpointManager
+import io.airbyte.cdk.state.MockCheckpointManager
 import io.airbyte.cdk.state.SyncManager
 import io.micronaut.context.annotation.Prototype
 import io.micronaut.context.annotation.Requires
@@ -23,7 +23,12 @@ import org.junit.jupiter.api.Test
 
 @MicronautTest(
     rebuildContext = true,
-    environments = ["DestinationMessageQueueWriterTest", "MockDestinationCatalog"]
+    environments =
+        [
+            "DestinationMessageQueueWriterTest",
+            "MockDestinationCatalog",
+            "MockCheckpointManager",
+        ]
 )
 class DestinationMessageQueueWriterTest {
     @Inject lateinit var queueWriterFactory: TestDestinationMessageQueueWriterFactory
@@ -85,35 +90,6 @@ class DestinationMessageQueueWriterTest {
 
         override suspend fun releaseQueueBytes(bytes: Long) {
             TODO("Not yet implemented")
-        }
-    }
-
-    @Prototype
-    @Requires(env = ["DestinationMessageQueueWriterTest"])
-    class MockCheckpointManager :
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage> {
-        val streamStates =
-            mutableMapOf<DestinationStream.Descriptor, MutableList<Pair<Long, CheckpointMessage>>>()
-        val globalStates =
-            mutableListOf<Pair<List<Pair<DestinationStream.Descriptor, Long>>, CheckpointMessage>>()
-
-        override fun addStreamCheckpoint(
-            key: DestinationStream.Descriptor,
-            index: Long,
-            checkpointMessage: CheckpointMessage
-        ) {
-            streamStates.getOrPut(key) { mutableListOf() }.add(index to checkpointMessage)
-        }
-
-        override fun addGlobalCheckpoint(
-            keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
-            checkpointMessage: CheckpointMessage
-        ) {
-            globalStates.add(keyIndexes to checkpointMessage)
-        }
-
-        override suspend fun flushReadyCheckpointMessages() {
-            throw NotImplementedError()
         }
     }
 
