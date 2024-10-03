@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonValue
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
@@ -20,8 +19,8 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.ConfigurationProperties
@@ -42,7 +41,7 @@ import jakarta.inject.Singleton
             "port",
             "username",
             "password",
-            "schemas",
+            "database",
             "jdbc_url_params",
             "encryption",
             "tunnel_method",
@@ -52,7 +51,7 @@ import jakarta.inject.Singleton
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
+class MysqlSourceConfigurationJsonObject : ConfigurationSpecification() {
     @JsonProperty("host")
     @JsonSchemaTitle("Host")
     @JsonSchemaInject(json = """{"order":1}""")
@@ -80,12 +79,11 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
     @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
 
-    @JsonProperty("schemas")
-    @JsonSchemaTitle("Schemas")
-    @JsonSchemaArrayWithUniqueItems("schemas")
-    @JsonPropertyDescription("The list of schemas to sync from. Defaults to user. Case sensitive.")
-    @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
-    var schemas: List<String>? = null
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    lateinit var database: String
 
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
@@ -118,7 +116,7 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
-    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationJsonObject()
+    val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
 
     @JsonIgnore var tunnelMethodJson: SshTunnelMethodConfiguration? = null
 
@@ -199,8 +197,8 @@ class MysqlSourceConfigurationJsonObject : ConfigurationJsonObjectBase() {
 @JsonSubTypes(
     JsonSubTypes.Type(value = EncryptionPreferred::class, name = "preferred"),
     JsonSubTypes.Type(value = EncryptionRequired::class, name = "required"),
-    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "Verify CA"),
-    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "Verify Identity"),
+    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "verify_ca"),
+    JsonSubTypes.Type(value = SslVerifyIdentity::class, name = "verify_identity"),
 )
 @JsonSchemaTitle("Encryption")
 @JsonSchemaDescription("The encryption method which is used when communicating with the database.")
@@ -218,7 +216,7 @@ data object EncryptionPreferred : Encryption
 )
 data object EncryptionRequired : Encryption
 
-@JsonSchemaTitle("Verify CA")
+@JsonSchemaTitle("verify_ca")
 @JsonSchemaDescription(
     "To always require encryption and verify that the source has a valid SSL certificate."
 )
@@ -232,13 +230,13 @@ class SslVerifyCertificate : Encryption {
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
     lateinit var sslCertificate: String
 
-    @JsonProperty("ssl_client_certificate")
+    @JsonProperty("ssl_client_certificate", required = false)
     @JsonSchemaTitle("Client certificate File")
     @JsonPropertyDescription(
         "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
-    lateinit var sslClientCertificate: String
+    var sslClientCertificate: String? = null
 
     @JsonProperty("ssl_client_key")
     @JsonSchemaTitle("Client Key")
@@ -246,7 +244,7 @@ class SslVerifyCertificate : Encryption {
         "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
-    lateinit var sslClientKey: String
+    var sslClientKey: String? = null
 
     @JsonProperty("ssl_client_key_password")
     @JsonSchemaTitle("Client key password")
@@ -254,7 +252,46 @@ class SslVerifyCertificate : Encryption {
         "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
     )
     @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
-    lateinit var sslClientPassword: String
+    var sslClientPassword: String? = null
+}
+
+@JsonSchemaTitle("verify_identity")
+@JsonSchemaDescription(
+    "To always require encryption and verify that the source has a valid SSL certificate."
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class SslVerifyIdentity : Encryption {
+    @JsonProperty("ssl_certificate", required = true)
+    @JsonSchemaTitle("CA certificate")
+    @JsonPropertyDescription(
+        "CA certificate",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslCertificate: String
+
+    @JsonProperty("ssl_client_certificate", required = false)
+    @JsonSchemaTitle("Client certificate File")
+    @JsonPropertyDescription(
+        "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientCertificate: String? = null
+
+    @JsonProperty("ssl_client_key")
+    @JsonSchemaTitle("Client Key")
+    @JsonPropertyDescription(
+        "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientKey: String? = null
+
+    @JsonProperty("ssl_client_key_password")
+    @JsonSchemaTitle("Client key password")
+    @JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientPassword: String? = null
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.encryption")
@@ -268,8 +305,7 @@ class MicronautPropertiesFriendlyEncryption {
             "preferred" -> EncryptionPreferred
             "required" -> EncryptionRequired
             "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
-            "verify_identity" ->
-                SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
+            "verify_identity" -> SslVerifyIdentity().also { it.sslCertificate = sslCertificate!! }
             else -> throw ConfigErrorException("invalid value $encryptionMethod")
         }
 }
@@ -277,7 +313,8 @@ class MicronautPropertiesFriendlyEncryption {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "user_defined"),
-    // TODO: add CDC support
+    JsonSubTypes.Type(value = CdcCursor::class, name = "cdc")
+    // TODO: port over additional Cdc options
     )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -299,7 +336,79 @@ data object UserDefinedCursor : CursorConfiguration
         "\"https://docs.airbyte.com/integrations/sources/mssql/#change-data-capture-cdc\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
-data object CdcCursor : CursorConfiguration
+class CdcCursor : CursorConfiguration {
+    @JsonProperty("initial_waiting_seconds")
+    @JsonSchemaTitle("Initial Waiting Time in Seconds (Advanced)")
+    @JsonSchemaDefault("300")
+    @JsonPropertyDescription(
+        "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\" +\n" +
+            "        \"\\\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\\\"\" +\n" +
+            "        \"> initial waiting time</a>.",
+    )
+    @JsonSchemaInject(json = """{"order":1, "max": 1200, "min": 120, "always_show": true}""")
+    var initialWaitTimeInSeconds: Int? = 300
+
+    @JsonProperty("server_timezone")
+    @JsonSchemaTitle("Configured server timezone for the MySQL source (Advanced)")
+    @JsonPropertyDescription(
+        "Enter the configured MySQL server timezone. This should only be done if the configured timezone in your MySQL instance does not conform to IANNA standard.",
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    var serverTimezone: String? = null
+
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "invalid_cdc_behavior")
+    var invalidCdcBehavior = MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration()
+
+    @JsonIgnore var invalidCdcPositionBehaviorJson: InvalidCdcPositionBehavior? = null
+
+    @JsonSetter("invalid_cdc_behavior")
+    fun setInvalidCdcBehaviorValue(value: InvalidCdcPositionBehavior) {
+        invalidCdcPositionBehaviorJson = value
+    }
+
+    @JsonGetter("invalid_cdc_behavior")
+    @JsonSchemaTitle("Invalid CDC position behavior (Advanced)")
+    @JsonPropertyDescription(
+        "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value into the WAL. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
+    )
+    @JsonSchemaInject(json = """{"order":3, "always_show": true}""")
+    fun getInvalidCdcBehaviorValue(): InvalidCdcPositionBehavior? =
+        invalidCdcPositionBehaviorJson ?: invalidCdcBehavior.asInvalidCdcPositionBehavior()
+
+    @JsonProperty("initial_load_timeout_hours")
+    @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
+    @JsonPropertyDescription(
+        "The amount of time an initial load is allowed to continue for before catching up on CDC logs.",
+    )
+    @JsonSchemaDefault("8")
+    @JsonSchemaInject(json = """{"order":4, "max": 24, "min": 4,"always_show": true}""")
+    var initialLoadTimeoutHours: Int? = 8
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "invalid_cdc_cursor_position_behavior")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = FailSync::class, name = "fail_sync"),
+    JsonSubTypes.Type(value = ResyncData::class, name = "resync")
+)
+@JsonSchemaTitle("Update Method")
+sealed interface InvalidCdcPositionBehavior
+
+@JsonSchemaTitle("Fail sync") data object FailSync : InvalidCdcPositionBehavior
+
+@JsonSchemaTitle("Re-sync data") data object ResyncData : InvalidCdcPositionBehavior
+
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.invalid_cdc_cursor_position_behavior")
+class MicronautPropertiesFriendlyInvalidCdcBehaviorConfiguration {
+    var invalidCdcBehavior: String = "fail_sync"
+
+    fun asInvalidCdcPositionBehavior(): InvalidCdcPositionBehavior =
+        when (invalidCdcBehavior) {
+            "fail_sync" -> FailSync
+            "resync" -> ResyncData
+            else -> throw ConfigErrorException("invalid value $invalidCdcBehavior")
+        }
+}
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.cursor")
 class MicronautPropertiesFriendlyCursorConfiguration {
@@ -308,7 +417,7 @@ class MicronautPropertiesFriendlyCursorConfiguration {
     fun asCursorConfiguration(): CursorConfiguration =
         when (cursorMethod) {
             "user_defined" -> UserDefinedCursor
-            "cdc" -> CdcCursor
+            "cdc" -> CdcCursor()
             else -> throw ConfigErrorException("invalid value $cursorMethod")
         }
 }

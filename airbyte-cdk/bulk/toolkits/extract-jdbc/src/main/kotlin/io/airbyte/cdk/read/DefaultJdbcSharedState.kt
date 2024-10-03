@@ -8,7 +8,6 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.output.OutputConsumer
 import jakarta.inject.Singleton
-import kotlinx.coroutines.sync.Semaphore
 
 /** Default implementation of [JdbcSharedState]. */
 @Singleton
@@ -17,6 +16,8 @@ class DefaultJdbcSharedState(
     override val outputConsumer: OutputConsumer,
     override val selectQuerier: SelectQuerier,
     val constants: DefaultJdbcConstants,
+    internal val concurrencyResource: ConcurrencyResource,
+    private val globalLockResource: GlobalLockResource,
 ) : JdbcSharedState {
 
     override val withSampling: Boolean
@@ -47,19 +48,33 @@ class DefaultJdbcSharedState(
             constants.estimatedFieldOverheadBytes,
         )
 
-    internal val semaphore = Semaphore(configuration.maxConcurrency)
-
-    override fun tryAcquireResourcesForCreator(): JdbcPartitionsCreator.AcquiredResources? =
-        if (semaphore.tryAcquire()) {
-            JdbcPartitionsCreator.AcquiredResources { semaphore.release() }
-        } else {
-            null
+    override fun tryAcquireResourcesForCreator(): JdbcPartitionsCreator.AcquiredResources? {
+        val acquiredLock: GlobalLockResource.AcquiredGlobalLock =
+            globalLockResource.tryAcquire() ?: return null
+        val acquiredThread: ConcurrencyResource.AcquiredThread =
+            concurrencyResource.tryAcquire()
+                ?: run {
+                    acquiredLock.close()
+                    return null
+                }
+        return JdbcPartitionsCreator.AcquiredResources {
+            acquiredThread.close()
+            acquiredLock.close()
         }
+    }
 
-    override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? =
-        if (semaphore.tryAcquire()) {
-            JdbcPartitionReader.AcquiredResources { semaphore.release() }
-        } else {
-            null
+    override fun tryAcquireResourcesForReader(): JdbcPartitionReader.AcquiredResources? {
+        val acquiredLock: GlobalLockResource.AcquiredGlobalLock =
+            globalLockResource.tryAcquire() ?: return null
+        val acquiredThread: ConcurrencyResource.AcquiredThread =
+            concurrencyResource.tryAcquire()
+                ?: run {
+                    acquiredLock.close()
+                    return null
+                }
+        return JdbcPartitionReader.AcquiredResources {
+            acquiredThread.close()
+            acquiredLock.close()
         }
+    }
 }
