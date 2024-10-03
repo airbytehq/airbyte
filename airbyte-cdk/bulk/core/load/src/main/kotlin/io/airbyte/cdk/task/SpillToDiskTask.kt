@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 
-interface SpillToDiskTask : Task
+interface SpillToDiskTask : StreamTask
 
 /**
  * Reads records from the message queue and writes them to disk. This task is internal and is not
@@ -36,7 +36,7 @@ class DefaultSpillToDiskTask(
     private val tmpFileProvider: TempFileProvider,
     private val queueReader:
         MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>,
-    private val stream: DestinationStream.Descriptor,
+    private val stream: DestinationStream,
     private val launcher: DestinationTaskLauncher
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
@@ -71,7 +71,7 @@ class DefaultSpillToDiskTask(
                     val result =
                         tmpFile.toFileWriter().use {
                             queueReader
-                                .readChunk(stream, config.recordBatchSizeBytes)
+                                .readChunk(stream.descriptor, config.recordBatchSizeBytes)
                                 .runningFold(ReadResult()) { (range, sizeBytes, _), wrapped ->
                                     when (wrapped) {
                                         is StreamRecordWrapped -> {
@@ -117,10 +117,7 @@ class DefaultSpillToDiskTask(
 }
 
 interface SpillToDiskTaskFactory {
-    fun make(
-        taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream.Descriptor
-    ): SpillToDiskTask
+    fun make(taskLauncher: DestinationTaskLauncher, stream: DestinationStream): SpillToDiskTask
 }
 
 @Singleton
@@ -132,7 +129,7 @@ class DefaultSpillToDiskTaskFactory(
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
-        stream: DestinationStream.Descriptor
+        stream: DestinationStream
     ): SpillToDiskTask {
         return DefaultSpillToDiskTask(config, tmpFileProvider, queueReader, stream, taskLauncher)
     }

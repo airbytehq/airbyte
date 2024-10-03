@@ -49,6 +49,7 @@ Authentication uses a pre-created API token which can be [created in the UI](htt
 
 | Version | Date       | Pull Request                                             | Subject                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------ |
+| 0.2.19 | 2024-09-28 | [46199](https://github.com/airbytehq/airbyte/pull/46199) | Update dependencies |
 | 0.2.18 | 2024-09-21 | [45735](https://github.com/airbytehq/airbyte/pull/45735) | Update dependencies |
 | 0.2.17 | 2024-09-14 | [45508](https://github.com/airbytehq/airbyte/pull/45508) | Update dependencies |
 | 0.2.16 | 2024-09-07 | [45309](https://github.com/airbytehq/airbyte/pull/45309) | Update dependencies |

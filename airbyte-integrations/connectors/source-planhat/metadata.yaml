@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 03fdd212-bd09-4e7b-b472-5b8f1b73969b
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-planhat
   githubIssueLabel: source-planhat
   icon: icon.svg

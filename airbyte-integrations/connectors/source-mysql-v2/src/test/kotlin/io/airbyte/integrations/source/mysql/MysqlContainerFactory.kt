@@ -50,8 +50,8 @@ object MysqlContainerFactory {
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationJsonObject =
-        MysqlSourceConfigurationJsonObject().apply {
+    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
             host = mySQLContainer.host
             port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
             username = mySQLContainer.username

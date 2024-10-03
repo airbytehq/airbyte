@@ -156,7 +156,8 @@ class MysqlSourceDatatypeIntegrationTest {
     companion object {
         lateinit var dbContainer: MySQLContainer<*>
 
-        fun config(): MysqlSourceConfigurationJsonObject = MysqlContainerFactory.config(dbContainer)
+        fun config(): MysqlSourceConfigurationSpecification =
+            MysqlContainerFactory.config(dbContainer)
 
         val connectionFactory: JdbcConnectionFactory by lazy {
             JdbcConnectionFactory(MysqlSourceConfigurationFactory().make(config()))

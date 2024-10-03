@@ -146,7 +146,7 @@ sealed interface CheckpointMessage : DestinationMessage {
                 .withStreamState(state)
     }
 
-    val sourceStats: Stats
+    val sourceStats: Stats?
     val destinationStats: Stats?
 
     fun withDestinationStats(stats: Stats): CheckpointMessage
@@ -154,7 +154,7 @@ sealed interface CheckpointMessage : DestinationMessage {
 
 data class StreamCheckpoint(
     val checkpoint: Checkpoint,
-    override val sourceStats: Stats,
+    override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     val additionalProperties: Map<String, Any>
 ) : CheckpointMessage {
@@ -183,10 +183,11 @@ data class StreamCheckpoint(
             AirbyteStateMessage()
                 .withType(AirbyteStateMessage.AirbyteStateType.STREAM)
                 .withStream(checkpoint.asProtocolObject())
-                .withSourceStats(
-                    AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
-                )
                 .also {
+                    if (sourceStats != null) {
+                        it.sourceStats =
+                            AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
+                    }
                     if (destinationStats != null) {
                         it.destinationStats =
                             AirbyteStateStats()
@@ -199,7 +200,7 @@ data class StreamCheckpoint(
 
 data class GlobalCheckpoint(
     val state: JsonNode,
-    override val sourceStats: Stats,
+    override val sourceStats: Stats?,
     override val destinationStats: Stats? = null,
     val checkpoints: List<Checkpoint> = emptyList(),
     val additionalProperties: MutableMap<String, Any> = mutableMapOf()
@@ -221,10 +222,11 @@ data class GlobalCheckpoint(
                         .withSharedState(state)
                         .withStreamStates(checkpoints.map { it.asProtocolObject() })
                 )
-                .withSourceStats(
-                    AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
-                )
                 .also {
+                    if (sourceStats != null) {
+                        it.sourceStats =
+                            AirbyteStateStats().withRecordCount(sourceStats.recordCount.toDouble())
+                    }
                     if (destinationStats != null) {
                         it.destinationStats =
                             AirbyteStateStats()
@@ -306,13 +308,17 @@ class DestinationMessageFactory(private val catalog: DestinationCatalog) {
                         StreamCheckpoint(
                             checkpoint = fromAirbyteStreamState(message.state.stream),
                             sourceStats =
-                                Stats(recordCount = message.state.sourceStats.recordCount.toLong()),
+                                message.state.sourceStats?.recordCount?.let {
+                                    Stats(recordCount = it.toLong())
+                                },
                             additionalProperties = message.state.additionalProperties
                         )
                     AirbyteStateMessage.AirbyteStateType.GLOBAL ->
                         GlobalCheckpoint(
                             sourceStats =
-                                Stats(recordCount = message.state.sourceStats.recordCount.toLong()),
+                                message.state.sourceStats?.recordCount?.let {
+                                    Stats(recordCount = it.toLong())
+                                },
                             state = message.state.global.sharedState,
                             checkpoints =
                                 message.state.global.streamStates.map {
