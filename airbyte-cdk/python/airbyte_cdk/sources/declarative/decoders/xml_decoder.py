@@ -7,7 +7,7 @@ import xmltodict
 import requests
 from xml.parsers.expat import ExpatError
 from dataclasses import InitVar, dataclass
-from typing import Any, Generator, Mapping
+from typing import Any, Generator, MutableMapping, Mapping
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 logger = logging.getLogger("airbyte")
@@ -24,10 +24,10 @@ class XmlDecoder(Decoder):
     def is_stream_response(self) -> bool:
         return False
 
-    def decode(self, response: requests.Response) -> Generator[Mapping[str, Any], None, None]:
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
         body_xml = response.text
         try:
-            body_json = dict(xmltodict.parse(body_xml))
+            body_json = xmltodict.parse(body_xml)
             if not isinstance(body_json, list):
                 body_json = [body_json]
             if len(body_json) == 0:
