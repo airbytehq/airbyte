@@ -94,6 +94,7 @@ class DefaultDestinationTaskLauncher(
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
+    private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
     private val exceptionHandler: TaskLauncherExceptionHandler<DestinationWriteTask>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
@@ -154,6 +155,10 @@ class DefaultDestinationTaskLauncher(
         batchUpdateLock.withLock {
             val streamManager = syncManager.getStreamManager(stream.descriptor)
             streamManager.updateBatchState(wrapped)
+
+            if (wrapped.batch.isPersisted()) {
+                enqueue(flushCheckpointsTaskFactory.make())
+            }
 
             if (wrapped.batch.state != Batch.State.COMPLETE) {
                 log.info {
@@ -223,6 +228,7 @@ class DefaultDestinationTaskLauncherExceptionHandler(
                     )
                 }
                 log.info { "Sync terminated, skipping task $innerTask." }
+
                 return
             }
 

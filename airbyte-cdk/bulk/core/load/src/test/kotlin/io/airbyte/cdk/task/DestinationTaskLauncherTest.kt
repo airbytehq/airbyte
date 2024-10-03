@@ -14,6 +14,7 @@ import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.state.SyncManager
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -51,6 +52,7 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var processBatchTaskFactory: MockProcessBatchTaskFactory
     @Inject lateinit var closeStreamTaskFactory: MockCloseStreamTaskFactory
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
+    @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
 
     @Singleton
     @Replaces(DefaultSetupTaskFactory::class)
@@ -189,6 +191,21 @@ class DestinationTaskLauncherTest {
         }
     }
 
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockFlushCheckpointsTaskFactory : FlushCheckpointsTaskFactory {
+        val hasRun: Channel<Boolean> = Channel(Channel.UNLIMITED)
+
+        override fun make(): FlushCheckpointsTask {
+            return object : FlushCheckpointsTask {
+                override suspend fun execute() {
+                    hasRun.send(true)
+                }
+            }
+        }
+    }
+
     class MockBatch(override val state: Batch.State) : Batch
 
     @Singleton
@@ -297,6 +314,7 @@ class DestinationTaskLauncherTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
         val streamManager = syncManager.getStreamManager(stream1.descriptor)
         repeat(100) { streamManager.countRecordIn() }
+
         streamManager.markEndOfStream()
 
         // Verify incomplete batch triggers process batch
@@ -305,6 +323,7 @@ class DestinationTaskLauncherTest {
         Assertions.assertTrue(streamManager.areRecordsPersistedUntil(100L))
         val batchReceived = processBatchTaskFactory.hasRun.receive()
         Assertions.assertEquals(incompleteBatch, batchReceived)
+        Assertions.assertTrue(flushCheckpointsTaskFactory.hasRun.receive())
 
         // Verify complete batch w/o batch processing complete does nothing
         val halfRange = TreeRangeSet.create(listOf(Range.closed(0L, 50L)))
