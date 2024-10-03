@@ -78,7 +78,7 @@ class DefaultSyncManager(
     }
 
     override suspend fun awaitAllStreamsCompletedSuccessfully(): Boolean {
-        return streamManagers.all { (_, manager) -> manager.awaitStreamCompletedSuccessfully() }
+        return streamManagers.all { (_, manager) -> manager.awaitStreamResult() is StreamSucceeded }
     }
 
     override suspend fun markFailed(causedBy: Exception): SyncFailure {

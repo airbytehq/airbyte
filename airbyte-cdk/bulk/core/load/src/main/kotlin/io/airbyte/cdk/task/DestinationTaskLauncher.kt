@@ -206,6 +206,7 @@ class DefaultDestinationTaskLauncherExceptionHandler(
     private val failStreamTaskFactory: FailStreamTaskFactory,
     private val failSyncTaskFactory: FailSyncTaskFactory,
 ) : DestinationTaskLauncherExceptionHandler {
+
     class SyncTaskWrapper(
         private val exceptionHandler: DestinationTaskLauncherExceptionHandler,
         private val syncManager: SyncManager,
@@ -222,6 +223,7 @@ class DefaultDestinationTaskLauncherExceptionHandler(
                     )
                 }
                 log.info { "Sync terminated, skipping task $innerTask." }
+                return
             }
 
             try {

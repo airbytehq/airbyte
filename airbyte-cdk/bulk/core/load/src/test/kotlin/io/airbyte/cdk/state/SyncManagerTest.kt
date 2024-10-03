@@ -44,8 +44,8 @@ class SyncManagerTest {
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
         val completionChannel = Channel<Boolean>(Channel.UNLIMITED)
 
-        manager1.countEndOfStream()
-        manager2.countEndOfStream()
+        manager1.markEndOfStream()
+        manager2.markEndOfStream()
 
         launch { completionChannel.send(syncManager.awaitAllStreamsCompletedSuccessfully()) }
 
@@ -67,8 +67,8 @@ class SyncManagerTest {
 
         launch { completionChannel.send(syncManager.awaitAllStreamsCompletedSuccessfully()) }
 
-        manager1.countEndOfStream()
-        manager2.countEndOfStream()
+        manager1.markEndOfStream()
+        manager2.markEndOfStream()
 
         delay(500)
         Assertions.assertTrue(completionChannel.tryReceive().isFailure)
@@ -84,8 +84,8 @@ class SyncManagerTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
 
-        manager1.countEndOfStream()
-        manager2.countEndOfStream()
+        manager1.markEndOfStream()
+        manager2.markEndOfStream()
 
         Assertions.assertTrue(syncManager.isActive())
         manager1.markSucceeded()
@@ -101,8 +101,8 @@ class SyncManagerTest {
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
 
-        manager1.countEndOfStream()
-        manager2.countEndOfStream()
+        manager1.markEndOfStream()
+        manager2.markEndOfStream()
 
         val completionChannel = Channel<SyncResult>(Channel.UNLIMITED)
 

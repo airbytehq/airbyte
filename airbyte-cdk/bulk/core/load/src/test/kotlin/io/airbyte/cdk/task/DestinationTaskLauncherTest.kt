@@ -297,7 +297,7 @@ class DestinationTaskLauncherTest {
         val range = TreeRangeSet.create(listOf(Range.closed(0L, 100L)))
         val streamManager = syncManager.getStreamManager(stream1.descriptor)
         repeat(100) { streamManager.countRecordIn() }
-        streamManager.countEndOfStream()
+        streamManager.markEndOfStream()
 
         // Verify incomplete batch triggers process batch
         val incompleteBatch = BatchEnvelope(MockBatch(Batch.State.PERSISTED), range)

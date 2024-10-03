@@ -62,12 +62,12 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { channel.send(manager.awaitStreamCompletedSuccessfully()) }
+        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
 
         delay(500)
         Assertions.assertTrue(channel.tryReceive().isFailure)
         Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
-        manager.countEndOfStream()
+        manager.markEndOfStream()
         manager.markSucceeded()
         Assertions.assertTrue(channel.receive())
 
@@ -79,7 +79,7 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { channel.send(manager.awaitStreamCompletedSuccessfully()) }
+        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
 
         delay(500)
         Assertions.assertTrue(channel.tryReceive().isFailure)
@@ -94,7 +94,7 @@ class StreamManagerTest {
         val manager = DefaultStreamManager(stream1)
         val channel = Channel<Boolean>(Channel.UNLIMITED)
 
-        launch { channel.send(manager.awaitStreamCompletedSuccessfully()) }
+        launch { channel.send(manager.awaitStreamResult() is StreamSucceeded) }
 
         delay(500)
         Assertions.assertTrue(channel.tryReceive().isFailure)
@@ -209,7 +209,7 @@ class StreamManagerTest {
             val manager = managers[stream.descriptor]!!
             when (event) {
                 is SetRecordCount -> repeat(event.count.toInt()) { manager.countRecordIn() }
-                is SetEndOfStream -> manager.countEndOfStream()
+                is SetEndOfStream -> manager.markEndOfStream()
                 is AddPersisted ->
                     manager.updateBatchState(
                         BatchEnvelope(
@@ -248,11 +248,11 @@ class StreamManagerTest {
         Assertions.assertThrows(IllegalStateException::class.java) { manager.markSucceeded() }
 
         manager.countRecordIn()
-        manager.countEndOfStream()
+        manager.markEndOfStream()
 
         // Can't update after end-of-stream
         Assertions.assertThrows(IllegalStateException::class.java) { manager.countRecordIn() }
-        Assertions.assertThrows(IllegalStateException::class.java) { manager.countEndOfStream() }
+        Assertions.assertThrows(IllegalStateException::class.java) { manager.markEndOfStream() }
 
         // Can close now
         Assertions.assertDoesNotThrow(manager::markSucceeded)

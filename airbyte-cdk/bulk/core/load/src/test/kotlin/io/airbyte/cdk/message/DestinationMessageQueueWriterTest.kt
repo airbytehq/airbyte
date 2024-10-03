@@ -184,8 +184,8 @@ class DestinationMessageQueueWriterTest {
         )
         Assertions.assertEquals(1L, manager2.recordCount())
 
-        Assertions.assertEquals(manager2.closedForReading(), false)
-        Assertions.assertEquals(manager1.closedForReading(), true)
+        Assertions.assertEquals(manager2.endOfStreamRead(), false)
+        Assertions.assertEquals(manager1.endOfStreamRead(), true)
         Assertions.assertEquals(11, channel1.messages.size)
         Assertions.assertEquals(channel1.messages[10], StreamCompleteWrapped(10))
     }

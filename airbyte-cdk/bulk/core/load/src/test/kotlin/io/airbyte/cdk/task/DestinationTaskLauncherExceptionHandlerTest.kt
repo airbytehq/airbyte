@@ -4,14 +4,18 @@
 
 package io.airbyte.cdk.task
 
+import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
+import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.test.util.CoroutineTestUtils
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -108,6 +112,114 @@ class DestinationTaskLauncherExceptionHandlerTest {
         launch { wrappedTask.execute() }
         val exception = mockFailSyncTaskFactory.didRunWith.receive()
         Assertions.assertTrue(exception is RuntimeException)
+
+        taskRunner.close()
+    }
+
+    @Test
+    fun testSyncFailureBlocksSyncTasks(
+        mockFailSyncTaskFactory: MockFailSyncTaskFactory,
+        syncManager: SyncManager
+    ) = runTest {
+        launch { taskRunner.run() }
+
+        val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
+        val mockTask =
+            object : SyncTask {
+                override suspend fun execute() {
+                    innerTaskRan.send(true)
+                }
+            }
+
+        val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
+        syncManager.markFailed(RuntimeException("dummy failure"))
+        launch { wrappedTask.execute() }
+        delay(1000)
+        Assertions.assertTrue(mockFailSyncTaskFactory.didRunWith.tryReceive().isFailure)
+        Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
+
+        taskRunner.close()
+    }
+
+    @Test
+    fun testSyncFailureAfterSuccessThrows(syncManager: SyncManager, catalog: DestinationCatalog) =
+        runTest {
+            launch { taskRunner.run() }
+
+            val mockTask =
+                object : SyncTask {
+                    override suspend fun execute() {
+                        // do nothing
+                    }
+                }
+
+            val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
+
+            for (stream in catalog.streams) {
+                val manager = syncManager.getStreamManager(stream.descriptor)
+                manager.markEndOfStream()
+                manager.markSucceeded()
+            }
+            syncManager.markSucceeded()
+            CoroutineTestUtils.assertThrows(IllegalStateException::class) { wrappedTask.execute() }
+
+            taskRunner.close()
+        }
+
+    @Test
+    fun testStreamFailureBlocksStreamTasks(
+        mockFailStreamTaskFactory: MockFailStreamTaskFactory,
+        syncManager: SyncManager
+    ) = runTest {
+        launch { taskRunner.run() }
+
+        val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
+        val mockTask =
+            object : StreamTask {
+                override val stream: DestinationStream = stream1
+
+                override suspend fun execute() {
+                    innerTaskRan.send(true)
+                }
+            }
+
+        val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
+        val manager = syncManager.getStreamManager(stream1.descriptor)
+        manager.markEndOfStream()
+        manager.markFailed(RuntimeException("dummy failure"))
+        launch { wrappedTask.execute() }
+        delay(1000)
+        Assertions.assertTrue(mockFailStreamTaskFactory.didRunFor.tryReceive().isFailure)
+        Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
+
+        taskRunner.close()
+    }
+
+    @Test
+    fun testStreamFailureAfterSuccessThrows(
+        mockFailSyncTaskFactory: MockFailSyncTaskFactory,
+        syncManager: SyncManager
+    ) = runTest {
+        launch { taskRunner.run() }
+
+        val mockTask =
+            object : StreamTask {
+                override val stream: DestinationStream = stream1
+
+                override suspend fun execute() {
+                    // do nothing
+                }
+            }
+
+        val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
+
+        val manager = syncManager.getStreamManager(stream1.descriptor)
+        manager.markEndOfStream()
+        manager.markSucceeded()
+
+        // This won't throw, because the sync wrapper will catch it and call it a sync error
+        CoroutineTestUtils.assertDoesNotThrow { wrappedTask.execute() }
+        Assertions.assertTrue(mockFailSyncTaskFactory.didRunWith.receive() is IllegalStateException)
 
         taskRunner.close()
     }

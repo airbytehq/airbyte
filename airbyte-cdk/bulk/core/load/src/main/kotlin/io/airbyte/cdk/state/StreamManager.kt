@@ -30,16 +30,20 @@ data object StreamSucceeded : StreamResult
 
 /** Manages the state of a single stream. */
 interface StreamManager {
-    /** Count incoming record and return the record's *index*. */
+    /**
+     * Count incoming record and return the record's *index*. If [markEndOfStream] has been called,
+     * this should throw an exception.
+     */
     fun countRecordIn(): Long
     fun recordCount(): Long
 
     /**
-     * Count the end-of-stream. Expect this exactly once. Expect no further `countRecordIn`, and
-     * expect that `markClosed` will always occur after this.
+     * Mark the end-of-stream and return the record count. Expect this exactly once. Expect no
+     * further `countRecordIn`, and expect that [markSucceeded] or [markFailed] or [markKilled] will
+     * alway occur after this.
      */
-    fun countEndOfStream(): Long
-    fun closedForReading(): Boolean
+    fun markEndOfStream(): Long
+    fun endOfStreamRead(): Boolean
 
     /**
      * Mark a checkpoint in the stream and return the current index and the number of records since
@@ -77,16 +81,10 @@ interface StreamManager {
     /** Mark that the stream itself failed. */
     fun markFailed(causedBy: Exception)
 
-    /**
-     * Suspend until the stream completes successfully. Returns false if the stream is
-     * killed/failed.
-     */
-    suspend fun awaitStreamCompletedSuccessfully(): Boolean
-
     /** Suspend until the stream completes, returning the result. */
     suspend fun awaitStreamResult(): StreamResult
 
-    /** True if the stream has not completed. */
+    /** True if the stream has not yet been marked successful, failed, or killed. */
     fun isActive(): Boolean
 }
 
@@ -100,7 +98,7 @@ class DefaultStreamManager(
     private val recordCount = AtomicLong(0)
     private val lastCheckpoint = AtomicLong(0L)
 
-    private val readIsClosed = AtomicBoolean(false)
+    private val markedEndOfStream = AtomicBoolean(false)
 
     private val rangesState: ConcurrentHashMap<Batch.State, RangeSet<Long>> = ConcurrentHashMap()
 
@@ -109,7 +107,7 @@ class DefaultStreamManager(
     }
 
     override fun countRecordIn(): Long {
-        if (readIsClosed.get()) {
+        if (markedEndOfStream.get()) {
             throw IllegalStateException("Stream is closed for reading")
         }
 
@@ -120,16 +118,16 @@ class DefaultStreamManager(
         return recordCount.get()
     }
 
-    override fun countEndOfStream(): Long {
-        if (readIsClosed.getAndSet(true)) {
+    override fun markEndOfStream(): Long {
+        if (markedEndOfStream.getAndSet(true)) {
             throw IllegalStateException("Stream is closed for reading")
         }
 
         return recordCount.get()
     }
 
-    override fun closedForReading(): Boolean {
-        return readIsClosed.get()
+    override fun endOfStreamRead(): Boolean {
+        return markedEndOfStream.get()
     }
 
     override fun markCheckpoint(): Pair<Long, Long> {
@@ -158,14 +156,12 @@ class DefaultStreamManager(
     /** True if all records in `[0, index)` have reached the given state. */
     private fun isProcessingCompleteForState(index: Long, state: Batch.State): Boolean {
         val completeRanges = rangesState[state]!!
-        println("completeRanges: $completeRanges")
-        println("encloses: ${completeRanges.encloses(Range.closedOpen(0L, index))}")
         return completeRanges.encloses(Range.closedOpen(0L, index))
     }
 
     override fun isBatchProcessingComplete(): Boolean {
         /* If the stream hasn't been fully read, it can't be done. */
-        if (!readIsClosed.get()) {
+        if (!markedEndOfStream.get()) {
             return false
         }
 
@@ -179,14 +175,10 @@ class DefaultStreamManager(
     }
 
     override fun markSucceeded() {
-        if (!readIsClosed.get()) {
+        if (!markedEndOfStream.get()) {
             throw IllegalStateException("Stream is not closed for reading")
         }
         streamResult.complete(StreamSucceeded)
-    }
-
-    override suspend fun awaitStreamCompletedSuccessfully(): Boolean {
-        return streamResult.await() == StreamSucceeded
     }
 
     override fun markKilled(causedBy: Exception) {

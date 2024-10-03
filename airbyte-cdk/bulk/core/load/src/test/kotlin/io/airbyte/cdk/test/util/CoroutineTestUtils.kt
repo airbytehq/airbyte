@@ -5,13 +5,12 @@
 package io.airbyte.cdk.test.util
 
 import kotlin.reflect.KClass
-import kotlinx.coroutines.runBlocking
 
 class CoroutineTestUtils {
     companion object {
-        fun <T : Throwable> assertThrows(clazz: KClass<T>, block: suspend () -> Unit) {
+        suspend fun <T : Throwable> assertThrows(clazz: KClass<T>, block: suspend () -> Unit) {
             try {
-                runBlocking { block() }
+                block()
             } catch (t: Throwable) {
                 if (t::class == clazz) {
                     return
@@ -19,6 +18,14 @@ class CoroutineTestUtils {
                 throw AssertionError("Expected block to throw $clazz, but it threw ${t::class}.")
             }
             throw AssertionError("Expected block to throw $clazz, but it completed successfully.")
+        }
+
+        suspend fun assertDoesNotThrow(block: suspend () -> Unit) {
+            try {
+                block()
+            } catch (t: Throwable) {
+                throw AssertionError("Expected block to not throw, but it threw ${t::class}.")
+            }
         }
     }
 }
