@@ -15,9 +15,8 @@ class PaginationDecoderDecorator(Decoder):
     """
     Decoder to wrap other decoders when instantiating a DefaultPaginator in order to bypass decoding if the response is streamed.
     """
-    def __init__(self, logger: logging.Logger, decoder: Decoder):
+    def __init__(self, decoder: Decoder):
         self._decoder = decoder
-        self._logger = logger
 
     @property
     def decoder(self):
