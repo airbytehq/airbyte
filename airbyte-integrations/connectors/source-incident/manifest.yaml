@@ -3,9 +3,16 @@ version: 5.8.1
 type: DeclarativeSource
 
 description: >-
-  Source connector for Incident which is an on all, incident response and status
-  pages tool. 
-
+  The Incident source connector which ingests data from the incident API.
+  Incident is an on call, status pages and incident response tool.
+  The source supports a number of API changes.
+  For more information, checkout the website https://incident.io/
+  
+  An API key is required for authentication and using this connector.
+  In order to obtain an API key, you must have a PRO or above account.
+  Once logged-in, you will find your API key your dashboard settings.
+  You can find more about their API here https://api-docs.incident.io/
+  
 check:
   type: CheckStream
   stream_names:
