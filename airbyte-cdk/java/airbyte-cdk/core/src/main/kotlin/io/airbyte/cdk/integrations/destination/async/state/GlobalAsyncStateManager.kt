@@ -108,6 +108,7 @@ class GlobalAsyncStateManager(private val memoryManager: GlobalMemoryManager) {
             convertToGlobalIfNeeded(message)
             preState = false
         }
+        logger.info {"SGX message=$message"}
         // stateType should not change after a conversion.
         Preconditions.checkArgument(stateType == extractStateType(message))
 
