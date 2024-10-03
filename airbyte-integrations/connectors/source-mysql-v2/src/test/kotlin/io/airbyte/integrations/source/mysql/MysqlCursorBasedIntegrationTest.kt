@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
+import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -29,8 +30,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.testcontainers.containers.MySQLContainer
-import org.testcontainers.shaded.com.fasterxml.jackson.core.type.TypeReference
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper
 
 class MysqlCursorBasedIntegrationTest {
 
@@ -38,7 +37,6 @@ class MysqlCursorBasedIntegrationTest {
     fun testCursorBasedRead() {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config(), configuredCatalog).run()
-
 
         val lastStateMessageFromRun1 = run1.states().last()
         val lastStreamStateFromRun1 = lastStateMessageFromRun1.stream.streamState
@@ -50,11 +48,11 @@ class MysqlCursorBasedIntegrationTest {
         assertEquals(listOf("k"), lastStreamStateFromRun1.get("cursor_field").map { it.asText() })
         assertEquals("test", lastStreamStateFromRun1.get("stream_namespace").asText())
         assertEquals(0, lastStreamStateFromRun1.get("cursor_record_count").asInt())
-        
+
         connectionFactory.get().use { connection: Connection ->
             connection.isReadOnly = false
             connection.createStatement().use { stmt: Statement ->
-                stmt.execute("INSERT INTO test.tbl (k, v) VALUES ('3', 'baz')")
+                stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
             }
         }
 
@@ -83,7 +81,7 @@ class MysqlCursorBasedIntegrationTest {
             val discoveredStream =
                 DiscoveredStream(
                     id = StreamIdentifier.Companion.from(desc),
-                    columns = listOf(Field("k", StringFieldType), Field("v", StringFieldType)),
+                    columns = listOf(Field("k", IntFieldType), Field("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream = JdbcAirbyteStreamFactory().createGlobal(discoveredStream)
@@ -120,10 +118,10 @@ class MysqlCursorBasedIntegrationTest {
             targetConnectionFactory.get().use { connection: Connection ->
                 connection.isReadOnly = false
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute("CREATE TABLE test.tbl(k VARCHAR(20) PRIMARY KEY, v VARCHAR(80))")
+                    stmt.execute("CREATE TABLE test.tbl(k INT PRIMARY KEY, v VARCHAR(80))")
                 }
                 connection.createStatement().use { stmt: Statement ->
-                    stmt.execute("INSERT INTO test.tbl (k, v) VALUES ('1', 'foo'), ('2', 'bar')")
+                    stmt.execute("INSERT INTO test.tbl (k, v) VALUES (1, 'foo'), (2, 'bar')")
                 }
             }
         }

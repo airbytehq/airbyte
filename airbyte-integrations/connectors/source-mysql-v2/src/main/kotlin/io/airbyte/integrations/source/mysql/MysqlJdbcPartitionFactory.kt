@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
@@ -118,9 +119,25 @@ class MysqlJdbcPartitionFactory(
             }
             // resume back to cursor based increment.
             val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
+            var cursorCheckpoint: JsonNode =
+                when (cursor.type.airbyteType) {
+                    is LeafAirbyteType ->
+                        when (cursor.type.airbyteType as LeafAirbyteType) {
+                            LeafAirbyteType.INTEGER -> {
+                                Jsons.valueToTree(sv.cursors.toInt())
+                            }
+                            LeafAirbyteType.NUMBER -> {
+                                Jsons.valueToTree(sv.cursors.toDouble())
+                            }
+                            else -> Jsons.valueToTree(sv.cursors)
+                        }
+                    else ->
+                        throw IllegalStateException(
+                            "Cursor field must be leaf type but is ${cursor.type.airbyteType}."
+                        )
+                }
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
-            val cursorCheckpoint: JsonNode = Jsons.valueToTree(sv.cursors)
             if (cursorCheckpoint == streamState.cursorUpperBound) {
                 // Incremental complete.
                 return null
