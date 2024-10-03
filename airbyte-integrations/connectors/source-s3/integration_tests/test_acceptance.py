@@ -27,11 +27,11 @@ ACCEPTANCE_TEST_CONFIG_PATH = Path("acceptance-test-config.yml")
 
 
 class AcceptanceTestInstance(BaseModel):
-    """Acceptance test instance.
+    """Acceptance test instance, as a Pydantic model.
 
     This class represents an acceptance test instance, which is a single test case
-    that can be run against a connector. It is used to validate the acceptance test
-    configuration file.
+    that can be run against a connector. It is used to deserialize and validate the
+    acceptance test configuration file.
     """
 
     class AcceptanceTestExpectRecords(BaseModel):
