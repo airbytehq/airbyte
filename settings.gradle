@@ -22,6 +22,78 @@ plugins {
     id 'com.github.burrunan.s3-build-cache' version "1.8.1"
 }
 
+gradle.settingsEvaluated { Settings settings ->
+    final File settingsDotGradleDir = file('.').toPath().toRealPath().toAbsolutePath().toFile()
+    if (rootDir == settingsDotGradleDir) {
+        // This is the typical case, i.e. when settings.gradle is not symlinked.
+        return
+    }
+    // At this point, we know we're in the airbyte-enterprise repo.
+    // Throw an exception if the buildSrc/ contents differ from that in the submodule..
+    // Ideally, this directory would simply be symlinked like the others.
+    // However, this is not possible because of a longstanding bug in IntelliJ
+    // https://youtrack.jetbrains.com/issue/IDEA-127410
+    // https://youtrack.jetbrains.com/issue/IDEA-329756
+    // https://youtrack.jetbrains.com/issue/IDEA-332475
+    // https://youtrack.jetbrains.com/issue/IDEA-353126
+    final File sourceDir = settingsDotGradleDir.toPath().resolve("buildSrc").toFile()
+    final File destinationDir = rootDir.toPath().resolve("buildSrc").toFile()
+
+    Closure check
+    check = { File src, File dst ->
+        // Check existence.
+        if (!dst.exists()) {
+            throw new GradleException("missing file or directory $dst")
+        }
+        if (!src.exists()) {
+            throw new GradleException("unknown file or directory $dst")
+        }
+        // Check if file or directory.
+        if (!src.isDirectory()) {
+            if (dst.isDirectory()) {
+                throw new GradleException("$dst is a directory but should be a file")
+            }
+            // At this point, both src and dst are files.
+            // Check that their contents are the same.
+            if (src.text != dst.text) {
+                throw new GradleException("$dst file contents are out of sync")
+            }
+            return
+        } else if (!dst.isDirectory()) {
+            throw new GradleException("$dst is a file but should be a directory")
+        }
+        // At this point, both src and dst are directories.
+        // List all children and recurse on the set union.
+        List<String> srcFileNames = src.listFiles().collect { it.name }.sort()
+        List<String> dstFileNames = dst.listFiles().collect { it.name }.sort()
+        List<String> allFileNames = (srcFileNames + dstFileNames).unique()
+        for (fileName in allFileNames) {
+            File srcChild = src.toPath().resolve(fileName).toFile()
+            File dstChild = dst.toPath().resolve(fileName).toFile()
+            if (srcChild.isDirectory()) {
+                if (srcChild.name == ".gradle" || srcChild.name == "build") {
+                    // Ignore .gradle and build directories.
+                    continue
+                }
+            } else {
+                if (!srcChild.name.endsWith(".gradle")) {
+                    // Ignore all files which are not *.gradle.
+                    continue
+                }
+            }
+            check(srcChild, dstChild)
+        }
+    }
+
+    // Check that the source and destination directories match.
+    try {
+        check(sourceDir, destinationDir)
+    } catch (GradleException e) {
+        println("ERROR: The buildSrc/ directory is out of sync with $sourceDir, copy and commit the changes.")
+        throw e
+    }
+}
+
 final boolean isCI = System.getenv().containsKey("CI") || System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
 
 dependencyResolutionManagement {
