@@ -860,6 +860,7 @@ class Schedules(SourceZendeskSupportFullRefreshStream):
 
 class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
     """Stream for checking of a request token and permissions"""
+    page_size = None
 
     def path(self, *args, **kwargs) -> str:
         return "account/settings.json"
