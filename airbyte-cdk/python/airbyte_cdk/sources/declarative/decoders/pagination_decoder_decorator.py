@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.decoders import Decoder
 
 logger = logging.getLogger("airbyte")
 
+
 class PaginationDecoderDecorator(Decoder):
     """
     Decoder to wrap other decoders when instantiating a DefaultPaginator in order to bypass decoding if the response is streamed.

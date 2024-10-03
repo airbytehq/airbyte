@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.decoders import XmlDecoder
         "response_body, expected",
         [
             ("<item name=\"item_1\"></item>", {"item": {"@name": "item_1"}}),
-            ("<data><item name=\"item_1\">Item 1</item><item name=\"item_2\">Item 2</item></data>", {"data": { "item": [{"@name": "item_1", "#text": "Item 1"}, {"@name": "item_2", "#text": "Item 2"}]}}),
+            ("<data><item name=\"item_1\">Item 1</item><item name=\"item_2\">Item 2</item></data>", {"data": {"item": [{"@name": "item_1", "#text": "Item 1"}, {"@name": "item_2", "#text": "Item 2"}]}}),
             (None, {}),
             ("<item name=\"item_1\">", {})
         ],
