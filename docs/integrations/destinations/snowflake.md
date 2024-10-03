@@ -269,7 +269,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.16.0          | 2024-10-03 |                                                              | add ability to enable change tracking
+| 3.16.0          | 2024-10-03 | [\#46356](https://github.com/airbytehq/airbyte/pull/46356)   | add ability to enable change tracking
 | 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437)   | upgrade all dependencies                                                                                                                                          |
 | 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                        |
 | 3.13.0          | 2024-09-17 | [\#45422](https://github.com/airbytehq/airbyte/pull/45422) | speed up metadata queries                                                                                                                                                        |
