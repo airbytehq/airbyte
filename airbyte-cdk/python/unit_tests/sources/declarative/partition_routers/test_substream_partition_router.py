@@ -850,8 +850,8 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
                 )
             ],
             [
-                {"first_stream_id": 1, "parent_slice": {}, "field_1": "value_1", "field_2.nested_field": "nested_value_1"},
-                {"first_stream_id": 2, "parent_slice": {}, "field_1": "value_2", "field_2.nested_field": "nested_value_2"}
+                {"field_1": "value_1", "field_2.nested_field": "nested_value_1"},
+                {"field_1": "value_2", "field_2.nested_field": "nested_value_2"}
             ],
         ),
         (
@@ -866,8 +866,8 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
                 )
             ],
             [
-                {"first_stream_id": 1, "parent_slice": {}, "field_1": "value_1"},
-                {"first_stream_id": 2, "parent_slice": {}, "field_1": "value_2"}
+                {"field_1": "value_1"},
+                {"field_1": "value_2"}
             ],
         )
     ],
@@ -878,5 +878,5 @@ def test_substream_using_resumable_full_refresh_parent_stream_slices(use_increme
 )
 def test_substream_partition_router_with_extra_keys(parent_stream_configs, expected_slices):
     partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={}, config={})
-    slices = [s for s in partition_router.stream_slices()]
+    slices = [s.extra_fields for s in partition_router.stream_slices()]
     assert slices == expected_slices
