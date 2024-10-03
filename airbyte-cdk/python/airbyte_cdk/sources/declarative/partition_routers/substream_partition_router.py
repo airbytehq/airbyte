@@ -36,7 +36,7 @@ class ParentStreamConfig:
     partition_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    extra_fields: Optional[List[List[Union[InterpolatedString, str]]]] = None  # List of field paths (arrays of strings)
+    extra_fields: Optional[Union[List[List[str]], List[List[InterpolatedString]]]] = None  # List of field paths (arrays of strings)
     request_option: Optional[RequestOption] = None
     incremental_dependency: bool = False
 
@@ -215,7 +215,9 @@ class SubstreamPartitionRouter(PartitionRouter):
 
                 yield from stream_slices_for_parent
 
-    def _extract_extra_fields(self, parent_record: Mapping[str, Any], extra_fields: Optional[List[List[str]]] = None) -> Mapping[str, Any]:
+    def _extract_extra_fields(
+        self, parent_record: Mapping[str, Any] | AirbyteMessage, extra_fields: Optional[List[List[str]]] = None
+    ) -> Mapping[str, Any]:
         """
         Extracts additional fields specified by their paths from the parent record.
 
