@@ -209,6 +209,7 @@ could be subject to change in future versions.
 dedicated transient database for Airbyte. For more information, refer
 to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
 
+**Note:** By default, change tracking is disabled on the final tables. By enabling `enable_change_tracking`, you can enable this functionality on the final tables that Airbyte creates
 ## Data type map
 
 | Airbyte type                        | Snowflake type |
@@ -268,6 +269,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                          |
 | :-------------- | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.16.0          | 2024-10-03 |                                                              | add ability to enable change tracking
 | 3.15.0          | 2024-09-18 | [\#45437](https://github.com/airbytehq/airbyte/pull/45437)   | upgrade all dependencies                                                                                                                                          |
 | 3.14.0          | 2024-09-18 | [\#45431](https://github.com/airbytehq/airbyte/pull/45431) | truncate large records queries                                                                                                                                                        |
 | 3.13.0          | 2024-09-17 | [\#45422](https://github.com/airbytehq/airbyte/pull/45422) | speed up metadata queries                                                                                                                                                        |

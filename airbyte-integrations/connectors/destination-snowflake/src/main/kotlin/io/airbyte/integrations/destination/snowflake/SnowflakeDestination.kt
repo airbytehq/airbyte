@@ -202,7 +202,10 @@ constructor(
             )
         val useMergeForUpsert =
             config.has(USE_MERGE_FOR_UPSERT) && config[USE_MERGE_FOR_UPSERT].asBoolean(false)
-        val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays, useMergeForUpsert)
+        val enableChangeTracking =
+            config.has(ENABLE_CHANGE_TRACKING) && config[ENABLE_CHANGE_TRACKING].asBoolean(false)
+
+        val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays, useMergeForUpsert, enableChangeTracking)
         val database = getDatabase(getDataSource(config))
         val databaseName = config[JdbcUtils.DATABASE_KEY].asText()
         val rawTableSchemaName: String =
@@ -362,6 +365,8 @@ constructor(
         const val RETENTION_PERIOD_DAYS: String = "retention_period_days"
         const val DISABLE_TYPE_DEDUPE: String = "disable_type_dedupe"
         const val USE_MERGE_FOR_UPSERT: String = "use_merge_for_upsert"
+        const val ENABLE_CHANGE_TRACKING: String = "enable_change_tracking"
+
         @JvmField
         val SCHEDULED_EXECUTOR_SERVICE: ScheduledExecutorService =
             Executors.newScheduledThreadPool(1)
