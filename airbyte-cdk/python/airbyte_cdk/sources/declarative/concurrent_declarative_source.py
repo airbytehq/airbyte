@@ -169,14 +169,19 @@ class ConcurrentDeclarativeSource(ManifestDeclarativeSource):
                         cursor_granularity=declarative_cursor_attributes.cursor_granularity,
                     )
 
-                    # todo: This needs to be replaced with a partition generator that invokes cursor.generate_slices()
                     partition_generator = CursorPartitionGenerator(
                         stream=declarative_stream,
                         message_repository=self.message_repository,
+                        cursor=cursor,
+                        connector_state_converter=CustomOutputFormatConcurrentStreamStateConverter(
+                            datetime_format=declarative_cursor_attributes.datetime_format,
+                            is_sequential_state=False,
+                            cursor_granularity=declarative_cursor_attributes.cursor_granularity,
+                        ),
                         cursor_field=[declarative_cursor_attributes.cursor_field]
                         if declarative_cursor_attributes.cursor_field is not None
                         else None,
-                        cursor=cursor,
+                        slice_boundary_fields=declarative_cursor_attributes.slice_boundary_fields,
                     )
 
                     concurrent_streams.append(

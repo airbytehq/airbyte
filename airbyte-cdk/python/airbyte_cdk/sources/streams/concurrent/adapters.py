@@ -31,6 +31,8 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import DateTimeStreamStateConverter
+
 """
 This module contains adapters to help enabling concurrency on Stream objects without needing to migrate to AbstractStream
 """
@@ -345,12 +347,17 @@ class CursorPartitionGenerator(PartitionGenerator):
     across partitions. Each partition represents a subset of the stream's data and is determined by the cursor's state.
     """
 
+    _START_BOUNDARY = 0
+    _END_BOUNDARY = 1
+
     def __init__(
         self,
         stream: Stream,
         message_repository: MessageRepository,
         cursor: Cursor,
+        connector_state_converter: DateTimeStreamStateConverter,
         cursor_field: Optional[List[str]],
+        slice_boundary_fields: Optional[Tuple[str, str]],
     ):
         """
         Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
@@ -366,6 +373,8 @@ class CursorPartitionGenerator(PartitionGenerator):
         self._cursor = cursor
         self._cursor_field = cursor_field
         self._state = self._cursor.state
+        self._slice_boundary_fields = slice_boundary_fields
+        self._connector_state_converter = connector_state_converter
 
     def generate(self) -> Iterable[Partition]:
         """
@@ -376,8 +385,16 @@ class CursorPartitionGenerator(PartitionGenerator):
 
         :return: An iterable of StreamPartition objects.
         """
-        for slice_start, slice_end in self._cursor.generate_slices():
-            stream_slice = StreamSlice(partition={}, cursor_slice={"start": slice_start, "end": slice_end})
+
+        start_boundary = self._slice_boundary_fields[self._START_BOUNDARY] if self._slice_boundary_fields else "start"
+        end_boundary = self._slice_boundary_fields[self._END_BOUNDARY] if self._slice_boundary_fields else "end"
+
+        wam = list(self._cursor.generate_slices())
+        for slice_start, slice_end in wam:
+            slice_start_str = self._connector_state_converter.output_format(slice_start)
+            slice_end_str = self._connector_state_converter.output_format(slice_end)
+
+            stream_slice = StreamSlice(partition={}, cursor_slice={start_boundary: slice_start_str, end_boundary: slice_end_str})
 
             yield StreamPartition(
                 self._stream,

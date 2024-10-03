@@ -21,12 +21,10 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     StreamDescriptor,
     SyncMode,
-    Type,
 )
 from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.adapters import CursorPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Record, StreamSlice
@@ -408,26 +406,6 @@ def test_separate_streams():
     assert synchronous_stream_1.name == "party_members_skills"
 
 
-def test_separate_streams_concurrent_only():
-    """
-    Test generation of a catalog that only contains concurrent streams. TBD if this is needed
-    """
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="party_members", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                sync_mode=SyncMode.full_refresh,
-                destination_sync_mode=DestinationSyncMode.append,
-            ),
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="locations", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                sync_mode=SyncMode.full_refresh,
-                destination_sync_mode=DestinationSyncMode.append,
-            )
-        ]
-    )
-
-
 @freezegun.freeze_time(time_to_freeze=datetime(2024, 9, 1, 0, 0, 0, 0, tzinfo=timezone.utc))
 def test_create_concurrent_cursor():
     """
@@ -594,11 +572,6 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
     concurrent state format
     """
 
-    # This test isn't working. It could be for one of two reasons:
-    #  - The state boundary of party_members is not set up right which is what is causing the party_members sync to even run
-    #    and this misconfiguration causes the stream to silently get skipped even though we pass it to the ConcurrentReadProcessor
-    #  - There is an actual bug in my new code somewhere that is preventing concurrent streams with incoming partial success from
-    #    running correctly
     state = [
         AirbyteStateMessage(
             type=AirbyteStateType.STREAM,
@@ -617,8 +590,9 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
                 stream_state=AirbyteStateBlob(
                     state_type="date-range",
                     slices=[
-                        {"start": "2024-07-16", "end": "2024-07-30"},  # WHYYYYYYYYYYYYYY
+                        {"start": "2024-07-16", "end": "2024-07-30"},
                         {"start": "2024-08-15", "end": "2024-08-29"},
+                        {"start": "2024-08-30", "end": "2024-09-09"},
                     ]
                 ),
             ),
@@ -645,13 +619,27 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
 
     messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
 
-    # Expects 12 records, 3 slices, 4 records each slice
+    # Expects 8 records, skip successful intervals and are left with 2 slices, 4 records each slice
     locations_records = get_records_for_stream("locations", messages)
     assert len(locations_records) == 8
 
-    # Expects 15 records, 5 slices, 3 records each slice
+    locations_states = get_states_for_stream(stream_name="locations", messages=messages)
+    assert len(locations_states) == 3
+    assert locations_states[2].stream.stream_state == AirbyteStateBlob(
+        state_type="date-range",
+        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]
+    )
+
+    # Expects 12 records, skip successful intervals and are left with 4 slices, 3 records each slice
     party_members_records = get_records_for_stream("party_members", messages)
-    assert len(party_members_records) == 9
+    assert len(party_members_records) == 12
+
+    party_members_states = get_states_for_stream(stream_name="party_members", messages=messages)
+    assert len(party_members_states) == 5
+    assert party_members_states[4].stream.stream_state == AirbyteStateBlob(
+        state_type="date-range",
+        slices=[{"start": "2024-07-01", "end": "2024-09-09"}]  # weird, why'd this end up as 2024-09-10 is it because of cursor granularity?
+    )
 
     # Expects 7 records, 1 empty slice, 7 records in slice
     palaces_records = get_records_for_stream("palaces", messages)
@@ -663,12 +651,63 @@ def test_read_with_concurrent_and_synchronous_streams_with_concurrent_state():
 
 
 @freezegun.freeze_time("2024-09-10T00:00:00")
-def test_read_with_concurrent_and_synchronous_streams_with_legacy_state():
+def test_read_with_concurrent_and_synchronous_streams_with_sequential_state():
     """
     Verifies that a ConcurrentDeclarativeSource processes concurrent streams correctly using the incoming
     legacy state format
     """
-    pass
+    state = [
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="locations", namespace=None),
+                stream_state=AirbyteStateBlob(updated_at="2024-08-06"),
+            ),
+        ),
+        AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(
+                stream_descriptor=StreamDescriptor(name="party_members", namespace=None),
+                stream_state=AirbyteStateBlob(updated_at="2024-08-20"),
+            ),
+        )
+    ]
+
+    source = ConcurrentDeclarativeSource(source_config=_MANIFEST, config=_CONFIG, catalog=_CATALOG, state=state)
+
+    for i, _ in enumerate(source._concurrent_streams):
+        stream = source._concurrent_streams[i]._stream_partition_generator._stream
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._concurrent_streams[i]._stream_partition_generator._stream = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    for i, _ in enumerate(source._synchronous_streams):
+        stream = source._synchronous_streams[i]
+        if isinstance(stream, DeclarativeStream):
+            decorated_stream = create_wrapped_stream(stream=stream)
+            source._synchronous_streams[i] = decorated_stream
+        else:
+            raise ValueError(f"Expecting stream as type DeclarativeStream, but got {type(stream)}")
+
+    messages = list(source.read(logger=source.logger, config=_CONFIG, catalog=_CATALOG, state=state))
+
+    # Expects 8 records, skip successful intervals and are left with 2 slices, 4 records each slice
+    locations_records = get_records_for_stream("locations", messages)
+    assert len(locations_records) == 8
+
+    # Expects 6 records, skip successful intervals and are left with 2 slices, 4 records each slice
+    party_members_records = get_records_for_stream("party_members", messages)
+    assert len(party_members_records) == 6
+
+    # Expects 7 records, 1 empty slice, 7 records in slice
+    palaces_records = get_records_for_stream("palaces", messages)
+    assert len(palaces_records) == 7
+
+    # Expects 3 records, 1 empty slice, 3 records in slice
+    party_members_skills_records = get_records_for_stream("party_members_skills", messages)
+    assert len(party_members_skills_records) == 3
 
 
 @freezegun.freeze_time("2024-09-10T00:00:00")
@@ -676,7 +715,7 @@ def test_read_concurrent_with_failing_partition_in_the_middle():
     """
     Verify that partial state is emitted when only some partitions are successful during a concurrent sync attempt
     """
-    pass
+
 
 
 @freezegun.freeze_time("2024-09-10T00:00:00")
@@ -780,9 +819,12 @@ def get_mocked_read_records_output(stream_name: str) -> Mapping[tuple[str, str],
                 StreamSlice(cursor_slice={"start": "2024-08-15", "end": "2024-08-29"}, partition={}),
                 StreamSlice(cursor_slice={"start": "2024-08-30", "end": "2024-09-09"}, partition={}),
 
-                # Slices used during incremental checkpoint sync
-                StreamSlice(cursor_slice={'start': '2024-07-26', 'end': '2024-08-25'}, partition={}),
-                StreamSlice(cursor_slice={'start': '2024-08-26', 'end': '2024-09-09'}, partition={}),
+                # Slices used during incremental checkpoint sync. Unsuccessful partitions use the P5D lookback window which explains
+                # the skew of records midway through
+                StreamSlice(cursor_slice={"start": "2024-07-01", "end": "2024-07-16"}, partition={}),
+                StreamSlice(cursor_slice={'start': '2024-07-30', 'end': '2024-08-13'}, partition={}),
+                StreamSlice(cursor_slice={'start': '2024-08-14', 'end': '2024-08-14'}, partition={}),
+                StreamSlice(cursor_slice={'start': '2024-09-04', 'end': '2024-09-10'}, partition={}),
             ]
 
             records = [
