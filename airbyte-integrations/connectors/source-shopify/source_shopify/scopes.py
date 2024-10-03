@@ -22,7 +22,6 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     # SCOPE: read_orders
     "OrderAgreements": ("read_orders",),
     "Orders": ("read_orders",),
-    
     "CustomerJourneySummary": ("read_orders",),
     "AbandonedCheckouts": ("read_orders",),
     "TenderTransactions": ("read_orders",),
@@ -32,7 +31,6 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "OrderRefunds": ("read_orders",),
     "OrderRisks": ("read_orders",),
     "MetafieldOrders": ("read_orders",),
-    
     # SCOPE: read_draft_orders
     "DraftOrders": ("read_draft_orders",),
     "MetafieldDraftOrders": ("read_draft_orders",),
@@ -74,7 +72,6 @@ SCOPES_MAPPING: Mapping[str, set[str]] = {
     "MetafieldArticles": ("read_online_store_pages",),
     "Blogs": ("read_online_store_pages",),
     "MetafieldBlogs": ("read_online_store_pages",),
-    
 }
 
 ALWAYS_PERMITTED_STREAMS: List[str] = [

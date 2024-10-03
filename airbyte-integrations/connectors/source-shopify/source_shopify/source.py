@@ -8,7 +8,6 @@ from typing import Any, Iterator, List, Mapping, Tuple
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
-
 from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream

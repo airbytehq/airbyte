@@ -33,13 +33,6 @@ class ConfigCreator:
 
     def _get_shopify_token(self, shopify_id: str, aws_credentials: dict) -> str:
         try:
-            '''
-            if self.env == 'prod':
-                
-            else:
-                session = boto3.session.Session(profile_name='rewardstyledev')
-
-            '''
             '''session = boto3.Session(aws_access_key_id=aws_credentials['aws_access_key_id'], 
                                     aws_secret_access_key=aws_credentials['aws_secret_access_key'], 
                                     aws_session_token=aws_credentials['aws_session_token'], 
