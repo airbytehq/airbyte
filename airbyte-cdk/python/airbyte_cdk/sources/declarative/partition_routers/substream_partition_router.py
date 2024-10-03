@@ -140,8 +140,9 @@ class SubstreamPartitionRouter(PartitionRouter):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)  # type: ignore # parent_key is always casted to an interpolated string
                 partition_field = parent_stream_config.partition_field.eval(self.config)  # type: ignore # partition_field is always casted to an interpolated string
+                extra_fields = None
                 if parent_stream_config.extra_fields:
-                    extra_fields = [[field_path_part.eval(self.config) for field_path_part in field_path] for field_path in parent_stream_config.extra_fields]
+                    extra_fields = [[field_path_part.eval(self.config) for field_path_part in field_path] for field_path in parent_stream_config.extra_fields]  # type: ignore # extra_fields is always casted to an interpolated string
 
                 incremental_dependency = parent_stream_config.incremental_dependency
 
@@ -230,12 +231,12 @@ class SubstreamPartitionRouter(PartitionRouter):
         if extra_fields:
             for extra_field_path in extra_fields:
                 try:
-                    extra_field_value = dpath.util.get(parent_record, extra_field_path)
+                    extra_field_value = dpath.get(parent_record, extra_field_path)
                 except KeyError:
                     self.logger.warning(f"Failed to extract extra_field_path: {extra_field_path}")
                     extra_field_value = None
                 extracted_extra_fields[".".join(extra_field_path)] = extra_field_value
-        return extracted_extra_field
+        return extracted_extra_fields
 
     def set_initial_state(self, stream_state: StreamState) -> None:
         """
