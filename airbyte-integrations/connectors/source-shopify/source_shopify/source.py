@@ -130,7 +130,6 @@ class ConnectionCheckTest:
 
 
 class SourceShopify(AbstractSource):
-
     @property
     def continue_sync_on_stream_failure(self) -> bool:
         return True
@@ -199,7 +198,6 @@ class SourceShopify(AbstractSource):
             return Transactions(config)
         else:
             return TransactionsGraphql(config)
-    
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
