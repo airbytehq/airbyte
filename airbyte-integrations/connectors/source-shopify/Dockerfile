@@ -1,4 +1,5 @@
-FROM airbyte/python-connector-base:1.2.0
+FROM --platform=linux/arm64 airbyte/python-connector-base:1.2.0
+#FROM airbyte/python-connector-base:1.2.0
 
 COPY pyproject.toml .
 COPY poetry.lock .

@@ -10,7 +10,6 @@ from urllib.parse import urlparse, parse_qs
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import Source
 from .auth import MissingAccessTokenError, ShopifyAuthenticator
-from .errors import DownloaderError
 from .constants import ADVERTISERS_QUERY, SHOPIFY_ACCESS_TOKEN_PATH
 
 class ConfigCreator:
@@ -36,16 +35,17 @@ class ConfigCreator:
         try:
             '''
             if self.env == 'prod':
-                session = boto3.session.Session()
+                
             else:
                 session = boto3.session.Session(profile_name='rewardstyledev')
 
             '''
-            session = boto3.Session(aws_access_key_id=aws_credentials['aws_access_key_id'], 
+            '''session = boto3.Session(aws_access_key_id=aws_credentials['aws_access_key_id'], 
                                     aws_secret_access_key=aws_credentials['aws_secret_access_key'], 
                                     aws_session_token=aws_credentials['aws_session_token'], 
                                     region_name="us-east-1")
-
+            '''
+            session = boto3.session.Session()
             client = session.client("secretsmanager")
             sid = SHOPIFY_ACCESS_TOKEN_PATH.format(shopify_id)
             resp = client.get_secret_value(SecretId=sid)
@@ -58,6 +58,7 @@ class ConfigCreator:
             return None
 
     def _get_shopy_store_info(self):
+        connection = None
         try:
             connection = mysql.connector.connect(
                 host = self.db_info['host'],     
@@ -66,7 +67,7 @@ class ConfigCreator:
                 database = self.db_info['database'], 
                 )
 
-            if connection.is_connected():
+            if connection and connection.is_connected():
                 cursor = connection.cursor(dictionary=True)
                 cursor.execute(ADVERTISERS_QUERY)
                 results = cursor.fetchall()
@@ -110,9 +111,10 @@ class LTKShopifyConfigCreator:
 
     @classmethod
     def modify_config(cls, config: Mapping[str, Any], source: Source = None) -> Mapping[str, Any]:
-        aws_credentials = {"aws_access_key_id": config['aws_access_key_id'],
-                           "aws_secret_access_key": config['aws_secret_access_key'],
-                           "aws_session_token": config['aws_session_token']}
+        aws_credentials = {"aws_access_key_id": config.get('aws_access_key_id', ""),
+                           "aws_secret_access_key": config.get('aws_secret_access_key', ""),
+                           "aws_session_token": config.get('aws_session_token', ""),
+                           }
         env = config.get('env', 'local')
         config[cls.migrate_key] = cls.cfg.gatherShopifyStores(config['db_uri'], env, aws_credentials)
         return config

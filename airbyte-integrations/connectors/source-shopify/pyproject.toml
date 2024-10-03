@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "2.5.0"
+version = "2.5.3"
 name = "source-shopify"
 description = "Source CDK implementation for Shopify."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -16,10 +16,13 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_shopify"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
-airbyte-cdk = "^5"
+python = "^3.9,<3.12"
+airbyte-cdk = "^3"
 sgqlc = "==16.3"
 graphql-query = "^1"
+boto3 = "^1.15"  
+botocore = "^1.18"  
+mysql-connector-python = "8.0.32"
 
 [tool.poetry.scripts]
 source-shopify = "source_shopify.run:run"

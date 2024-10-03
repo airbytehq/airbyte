@@ -17,7 +17,6 @@ def run() -> None:
     # migrate config at runtime
     #MigrateConfig.migrate(sys.argv[1:], source)
     
-    
     LTKShopifyConfigCreator.adjustConfig(sys.argv[1:], source)
     # run the connector
     launch(source, sys.argv[1:])
