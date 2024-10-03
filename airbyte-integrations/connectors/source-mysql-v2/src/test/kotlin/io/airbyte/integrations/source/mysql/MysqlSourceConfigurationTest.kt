@@ -14,16 +14,16 @@ import org.junit.jupiter.api.Test
 class MysqlSourceConfigurationTest {
     @Inject
     lateinit var pojoSupplier:
-        ConfigurationSpecificationSupplier<MysqlSourceConfigurationJsonObject>
+        ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>
 
     @Inject
     lateinit var factory:
-        SourceConfigurationFactory<MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration>
+        SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>
 
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG)
     fun testParseJdbcParameters() {
-        val pojo: MysqlSourceConfigurationJsonObject = pojoSupplier.get()
+        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 

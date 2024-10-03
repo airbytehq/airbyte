@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
-class MysqlSourceConfigurationJsonObjectTest {
+class MysqlSourceConfigurationSpecificationTest {
     @Inject
-    lateinit var supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationJsonObject>
+    lateinit var supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>
 
     @Test
     fun testSchemaViolation() {
@@ -25,7 +25,7 @@ class MysqlSourceConfigurationJsonObjectTest {
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON)
     fun testJson() {
-        val pojo: MysqlSourceConfigurationJsonObject = supplier.get()
+        val pojo: MysqlSourceConfigurationSpecification = supplier.get()
         Assertions.assertEquals("localhost", pojo.host)
         Assertions.assertEquals(12345, pojo.port)
         Assertions.assertEquals("FOO", pojo.username)

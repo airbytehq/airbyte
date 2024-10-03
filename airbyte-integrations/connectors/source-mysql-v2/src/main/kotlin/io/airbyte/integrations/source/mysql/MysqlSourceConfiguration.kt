@@ -44,17 +44,17 @@ data class MysqlSourceConfiguration(
         fun mysqlSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration>,
-            supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationJsonObject>,
+                    MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>,
         ): MysqlSourceConfiguration = factory.make(supplier.get())
     }
 }
 
 @Singleton
 class MysqlSourceConfigurationFactory :
-    SourceConfigurationFactory<MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration> {
+    SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
-        pojo: MysqlSourceConfigurationJsonObject,
+        pojo: MysqlSourceConfigurationSpecification,
     ): MysqlSourceConfiguration {
         val realHost: String = pojo.host
         val realPort: Int = pojo.port
