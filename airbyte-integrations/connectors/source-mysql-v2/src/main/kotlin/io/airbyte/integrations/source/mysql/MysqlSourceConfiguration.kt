@@ -2,6 +2,7 @@
 package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -29,7 +30,8 @@ data class MysqlSourceConfiguration(
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
-) : JdbcSourceConfiguration {
+    override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(1),
+) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = cursorConfiguration is CdcCursor
 }
 

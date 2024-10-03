@@ -15,7 +15,7 @@ from numpy import nan
 
 EMPTY_STR: str = ""
 DEFAULT_ENCODING: str = "utf-8"
-DOWNLOAD_CHUNK_SIZE: int = 1024 * 1024 * 10
+DOWNLOAD_CHUNK_SIZE: int = 1024 * 10
 
 
 class ResponseToFileExtractor(RecordExtractor):
