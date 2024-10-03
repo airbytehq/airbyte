@@ -17,7 +17,6 @@ definitions:
     required:
       - upgradeDeadline
       - message
-      - deadlineAction
     properties:
       upgradeDeadline:
         description: The deadline by which to upgrade before the breaking change takes effect.
