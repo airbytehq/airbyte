@@ -59,7 +59,7 @@ class DestinationMessageQueueWriter(
                     /* If an end-of-stream marker. */
                     is DestinationStreamComplete,
                     is DestinationStreamIncomplete -> {
-                        val wrapped = StreamCompleteWrapped(index = manager.countEndOfStream())
+                        val wrapped = StreamCompleteWrapped(index = manager.markEndOfStream())
                         messageQueue.getChannel(message.stream).send(wrapped)
                     }
                 }

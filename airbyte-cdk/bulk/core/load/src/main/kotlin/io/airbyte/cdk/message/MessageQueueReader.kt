@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flow
  * terminate when maxBytes has been read, or when the stream is complete.
  */
 interface MessageQueueReader<K, T> {
-    suspend fun readChunk(key: K, maxBytes: Long): Flow<T>
+    suspend fun read(key: K): Flow<T>
 }
 
 @Singleton
@@ -26,32 +26,22 @@ class DestinationMessageQueueReader(
 ) : MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped> {
     private val log = KotlinLogging.logger {}
 
-    override suspend fun readChunk(
-        key: DestinationStream.Descriptor,
-        maxBytes: Long
-    ): Flow<DestinationRecordWrapped> = flow {
-        log.info { "Reading chunk of $maxBytes bytes from stream $key" }
+    override suspend fun read(key: DestinationStream.Descriptor): Flow<DestinationRecordWrapped> =
+        flow {
+            log.info { "Reading from stream $key" }
 
-        var totalBytesRead = 0L
-        var recordsRead = 0L
-        while (totalBytesRead < maxBytes) {
-            when (val wrapped = messageQueue.getChannel(key).receive()) {
-                is StreamRecordWrapped -> {
-                    totalBytesRead += wrapped.sizeBytes
-                    emit(wrapped)
-                }
-                is StreamCompleteWrapped -> {
-                    messageQueue.getChannel(key).close()
-                    emit(wrapped)
-                    log.info { "Read end-of-stream for $key" }
-                    return@flow
+            while (true) {
+                when (val wrapped = messageQueue.getChannel(key).receive()) {
+                    is StreamRecordWrapped -> {
+                        emit(wrapped)
+                    }
+                    is StreamCompleteWrapped -> {
+                        messageQueue.getChannel(key).close()
+                        emit(wrapped)
+                        log.info { "Read end-of-stream for $key" }
+                        return@flow
+                    }
                 }
             }
-            recordsRead++
         }
-
-        log.info { "Read $recordsRead records (${totalBytesRead}b) from stream $key" }
-
-        return@flow
-    }
 }

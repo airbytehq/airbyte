@@ -21,7 +21,7 @@ interface OpenStreamTask : StreamTask
 class DefaultOpenStreamTask(
     private val destinationWriter: DestinationWriter,
     private val syncManager: SyncManager,
-    private val stream: DestinationStream,
+    override val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher
 ) : OpenStreamTask {
     override suspend fun execute() {

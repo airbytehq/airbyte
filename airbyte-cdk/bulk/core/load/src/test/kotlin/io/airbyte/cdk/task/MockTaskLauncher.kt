@@ -28,7 +28,8 @@ class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLau
 
     override suspend fun handleNewSpilledFile(
         stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
+        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
+        endOfStream: Boolean
     ) {
         spilledFiles.add(wrapped)
     }

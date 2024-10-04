@@ -17,7 +17,7 @@ interface ProcessBatchTask : StreamTask
 class DefaultProcessBatchTask(
     private val syncManager: SyncManager,
     private val batchEnvelope: BatchEnvelope<*>,
-    private val stream: DestinationStream,
+    override val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher
 ) : ProcessBatchTask {
     override suspend fun execute() {
