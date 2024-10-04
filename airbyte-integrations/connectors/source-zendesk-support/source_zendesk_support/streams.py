@@ -13,15 +13,15 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk import BackoffStrategy
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, FailureType, SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
-from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
+from source_zendesk_support.components import TicketMetricsStateMigration
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -501,6 +501,7 @@ class TicketMetrics(SourceZendeskSupportStream):
 
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs)
+        self._state_migrator = TicketMetricsStateMigration()
         self._parent_stream: SourceZendeskSupportStream = None
         self._stateless_ticket_metrics = StatelessTicketMetrics(
             subdomain=subdomain, start_date=start_date, ignore_pagination=ignore_pagination, **kwargs
@@ -540,6 +541,7 @@ class TicketMetrics(SourceZendeskSupportStream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
+        stream_state = self._state_migrator.migrate(stream_state)
         yield from self.parent_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:

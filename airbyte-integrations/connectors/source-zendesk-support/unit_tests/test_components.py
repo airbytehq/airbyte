@@ -9,6 +9,7 @@ from source_zendesk_support.components import (
     ZendeskSupportAttributeDefinitionsExtractor,
     ZendeskSupportAuditLogsIncrementalSync,
     ZendeskSupportExtractorEvents,
+    TicketMetricsStateMigration
 )
 
 
@@ -149,3 +150,18 @@ def test_attribute_definitions_extractor(response_data, expected_records):
 
     # Assert that the returned records match the expected records
     assert records == expected_records, f"Expected records to be {expected_records}, but got {records}"
+
+
+@pytest.mark.parametrize(
+        "initial_state_cursor_field",
+        [
+            "generated_timestamp",
+            "_ab_updated_at"
+        ]
+)
+def test_ticket_metrics_state_migrataion(initial_state_cursor_field):
+    state_migrator = TicketMetricsStateMigration()
+    initial_state = {initial_state_cursor_field: 1672531200}
+    expected_state = {"_ab_updated_at": 1672531200}
+    output_state = state_migrator.migrate(initial_state)
+    assert output_state == expected_state
