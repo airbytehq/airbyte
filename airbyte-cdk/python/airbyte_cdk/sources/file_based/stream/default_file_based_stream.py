@@ -7,7 +7,7 @@ import itertools
 import traceback
 from copy import deepcopy
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level
 from airbyte_cdk.models import Type as MessageType
@@ -20,6 +20,7 @@ from airbyte_cdk.sources.file_based.exceptions import (
     SchemaInferenceError,
     StopSyncPerValidationPolicy,
 )
+from airbyte_cdk.sources.file_based.file_types import BlobTransfer
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType, merge_schemas, schemaless_schema
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -29,6 +30,7 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import JsonSchema
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.sources.file_based.writers.stream_writer import FileTransferStreamWriter
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
@@ -41,8 +43,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
+    file_transfer_flag = "is_file_transfer_sync"
+    is_file_transfer_sync = False
 
     def __init__(self, **kwargs: Any):
+        if self.file_transfer_flag in kwargs:
+            self.is_file_transfer_sync  = kwargs.pop(self.file_transfer_flag, False)
         super().__init__(**kwargs)
 
     @property
@@ -68,6 +74,15 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def primary_key(self) -> PrimaryKeyType:
         return self.config.primary_key or self.get_parser().get_parser_defined_primary_key(self.config)
 
+    def _filter_schema_invalid_properties(self, configured_catalog_json_schema: Dict[str, Any]) -> Dict[str, Any]:
+        if self.is_file_transfer_sync:
+            return {
+                "type": "object",
+                "properties": {"file_path": {"type": "string"}, "file_size": {"type": "string"}, self.ab_file_name_col: {"type": "string"}},
+            }
+        else:
+            return super()._filter_schema_invalid_properties(configured_catalog_json_schema)
+
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Sort files by last_modified, uri and return them grouped by last_modified
         all_files = self.list_files()
@@ -80,6 +95,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         # adds _ab_source_file_last_modified and _ab_source_file_url to the record
         record[self.ab_last_mod_col] = last_updated
         record[self.ab_file_name_col] = file.uri
+        return record
+
+    def transform_record_for_sync_transfer(self, record: dict[str, Any], file: RemoteFile, last_updated: str) -> dict[str, Any]:
+        record["modified"] = last_updated
+        record["source_file_url"] = file.uri
         return record
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[AirbyteMessage]:
@@ -101,15 +121,30 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                for record in parser.parse_records(self.config, file, self.stream_reader, self.logger, schema):
-                    line_no += 1
-                    if self.config.schemaless:
-                        record = {"data": record}
-                    elif not self.record_passes_validation_policy(record):
-                        n_skipped += 1
-                        continue
-                    record = self.transform_record(record, file, file_datetime_string)
-                    yield stream_data_to_airbyte_message(self.name, record)
+                if self.is_file_transfer_sync:
+                    self.logger.info(f"{self.name}: {file} file-based syncing")
+                    # todo: complete here the code to not rely on local parser
+                    writer = FileTransferStreamWriter()
+                    blob_transfer = BlobTransfer()
+                    for record in blob_transfer.write_streams(
+                            self.config, file, self.stream_reader, self.logger, writer
+                    ):
+                        line_no += 1
+                        if not self.record_passes_validation_policy(record):
+                            n_skipped += 1
+                            continue
+                        record = self.transform_record_for_sync_transfer(record, file, file_datetime_string)
+                        yield stream_data_to_airbyte_message(self.name, record, is_file_transfer_message=True)
+                else:
+                    for record in parser.parse_records(self.config, file, self.stream_reader, self.logger, schema):
+                        line_no += 1
+                        if self.config.schemaless:
+                            record = {"data": record}
+                        elif not self.record_passes_validation_policy(record):
+                            n_skipped += 1
+                            continue
+                        record = self.transform_record(record, file, file_datetime_string)
+                        yield stream_data_to_airbyte_message(self.name, record)
                 self._cursor.add_file(file)
 
             except StopSyncPerValidationPolicy:

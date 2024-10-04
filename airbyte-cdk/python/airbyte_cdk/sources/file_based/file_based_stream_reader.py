@@ -92,6 +92,12 @@ class AbstractFileBasedStreamReader(ABC):
                     seen.add(file.uri)
                     yield file
 
+    def file_size(self, file: RemoteFile) -> int:
+        """
+        Utility method to get size of the read file, is required for stream writer implementation
+        """
+        ...
+
     @staticmethod
     def file_matches_globs(file: RemoteFile, globs: List[str]) -> bool:
         # Use the GLOBSTAR flag to enable recursive ** matching

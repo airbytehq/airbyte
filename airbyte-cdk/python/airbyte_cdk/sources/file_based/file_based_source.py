@@ -217,11 +217,11 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
                         CursorField(DefaultFileBasedStream.ab_last_mod_col),
                     )
                     stream = FileBasedStreamFacade.create_from_stream(
-                        self._make_default_stream(stream_config, cursor), self, self.logger, stream_state, cursor
+                        self._make_default_stream(stream_config, cursor, parsed_config.is_file_transfer_sync), self, self.logger, stream_state, cursor
                     )
                 else:
                     cursor = self.cursor_cls(stream_config)
-                    stream = self._make_default_stream(stream_config, cursor)
+                    stream = self._make_default_stream(stream_config, cursor, parsed_config.is_file_transfer_sync)
 
                 streams.append(stream)
             return streams
@@ -230,7 +230,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             raise ConfigValidationError(FileBasedSourceError.CONFIG_VALIDATION_ERROR) from exc
 
     def _make_default_stream(
-        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor], is_file_transfer_sync=False
     ) -> AbstractFileBasedStream:
         return DefaultFileBasedStream(
             config=stream_config,
@@ -242,6 +242,7 @@ class FileBasedSource(ConcurrentSourceAdapter, ABC):
             validation_policy=self._validate_and_get_validation_policy(stream_config),
             errors_collector=self.errors_collector,
             cursor=cursor,
+            is_file_transfer_sync=is_file_transfer_sync
         )
 
     def _get_stream_from_catalog(self, stream_config: FileBasedStreamConfig) -> Optional[AirbyteStream]:

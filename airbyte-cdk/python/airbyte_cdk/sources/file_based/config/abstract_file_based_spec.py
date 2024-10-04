@@ -7,6 +7,8 @@ from abc import abstractmethod
 from typing import Any, Dict, List, Optional
 
 import dpath
+
+from airbyte_cdk.sources.file_based.config.clients_config.base_sync_config import BaseSyncConfig
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.utils import schema_helpers
 from pydantic.v1 import AnyUrl, BaseModel, Field
@@ -33,6 +35,12 @@ class AbstractFileBasedSpec(BaseModel):
         description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
         order=10,
     )
+
+    sync_config: Optional[BaseSyncConfig] = Field(
+        title="Sync Configuration", description="Sync configuration"
+    )
+
+    is_file_transfer_sync: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
 
     @classmethod
     @abstractmethod
