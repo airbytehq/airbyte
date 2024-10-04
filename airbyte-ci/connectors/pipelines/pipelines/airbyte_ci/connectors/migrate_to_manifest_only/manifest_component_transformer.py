@@ -219,4 +219,4 @@ class ManifestComponentTransformer:
         if isinstance(component_type, list):
             # Handle nullable types, ie ["null", "object"]
             return "object" in component_type
-        return propagated_component.get("type") == "object"
+        return component_type == "object"
