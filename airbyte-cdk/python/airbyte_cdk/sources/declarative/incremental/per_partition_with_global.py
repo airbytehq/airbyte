@@ -76,13 +76,9 @@ class PerPartitionWithGlobalCursor(DeclarativeCursor):
         # Iterate through partitions and process slices
         for partition, is_last_partition in iterate_with_last_flag(self._partition_router.stream_slices()):
             # Generate slices for the current cursor and handle the last slice using the flag
-            if partition is None:
-                continue
             for slice, is_last_slice in iterate_with_last_flag(
                 self._get_active_cursor().generate_slices_from_partition(partition=partition)
             ):
-                if slice is None:
-                    continue
                 self._global_cursor.register_slice(is_last_slice and is_last_partition)
                 yield slice
 
