@@ -50,9 +50,7 @@ class SmartSheetAPIWrapper:
             # Reports do not support incremental sync, so fetch results in larger pages and implement pagination
             kwargs["page_size"] = 100
             page = 1
-            self._data = self._get_report(
-                self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs
-            )
+            self._data = self._get_report(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
             rows_fetched = len(self._data.rows)
             while rows_fetched < self._data.total_row_count:
                 page += 1
@@ -66,9 +64,7 @@ class SmartSheetAPIWrapper:
                 )
                 rows_fetched = len(self._data.rows)
         else:
-            self._data = self._get_sheet(
-                self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs
-            )
+            self._data = self._get_sheet(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
 
     @staticmethod
     def _column_to_property(column_type: str) -> Dict[str, any]:
@@ -80,26 +76,11 @@ class SmartSheetAPIWrapper:
         return type_mapping.get(column_type, {"type": "string"})
 
     def _construct_record(self, row: smartsheet.models.Row) -> Dict[str, str]:
-        values_column_map = {
-            cell.column_id: str(cell.value or "")
-            for cell in row.cells
-            if cell.column_id
-        }
+        values_column_map = {cell.column_id: str(cell.value or "") for cell in row.cells if cell.column_id}
         if self.is_report:
             # For reports, add the virtual column id as well
-            values_column_map.update(
-                {
-                    cell.virtual_column_id: str(cell.value or "")
-                    for cell in row.cells
-                    if cell.virtual_column_id
-                }
-            )
-        record = {
-            column.title: values_column_map[
-                column.id if column.id else column.virtual_id
-            ]
-            for column in self.data.columns
-        }
+            values_column_map.update({cell.virtual_column_id: str(cell.value or "") for cell in row.cells if cell.virtual_column_id})
+        record = {column.title: values_column_map[column.id if column.id else column.virtual_id] for column in self.data.columns}
         record["modifiedAt"] = row.modified_at.isoformat()
 
         if len(self._metadata):

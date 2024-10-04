@@ -33,9 +33,7 @@ class SmartsheetStream(SmartsheetStreamBase):
     def __init__(self, smartsheet: SmartSheetAPIWrapper, config: Mapping[str, Any]):
         super().__init__(smartsheet, config)
         self._state = {}
-        self._start_datetime = (
-            self._config.get("start_datetime") or "2020-01-01T00:00:00+00:00"
-        )
+        self._start_datetime = self._config.get("start_datetime") or "2020-01-01T00:00:00+00:00"
 
     @property
     def state(self) -> Mapping[str, Any]:
