@@ -5,6 +5,7 @@ This is the setup guide for the Incident source connector which ingests data fro
 ## Prerequisites
 
 An API key is required for authentication and using this connector. In order to obtain an API key, you must first create an Incident account.
+You can create an account here https://incident.io/
 
 Once logged-in, you will find your API key in the settings -> API KEY. Make sure to provide all of the appropriate permissions.
 You can find more about their API here https://api-docs.incident.io/
