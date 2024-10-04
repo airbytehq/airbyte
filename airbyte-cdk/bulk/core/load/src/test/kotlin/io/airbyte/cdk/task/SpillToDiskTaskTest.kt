@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.task
 
+import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
@@ -14,6 +15,7 @@ import io.airbyte.cdk.message.DestinationRecordWrapped
 import io.airbyte.cdk.message.MessageQueueReader
 import io.airbyte.cdk.message.StreamCompleteWrapped
 import io.airbyte.cdk.message.StreamRecordWrapped
+import io.airbyte.cdk.state.FlushStrategy
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -57,11 +59,9 @@ class SpillToDiskTaskTest {
         // Make enough records for a full batch + half a batch
         private val maxRecords = ((1024 * 1.5) / 8).toLong()
         private val recordsWritten = AtomicLong(0)
-        override suspend fun readChunk(
-            key: DestinationStream.Descriptor,
-            maxBytes: Long
+        override suspend fun read(
+            key: DestinationStream.Descriptor
         ): Flow<DestinationRecordWrapped> = flow {
-            var totalBytes = 0
             while (recordsWritten.get() < maxRecords) {
                 val index = recordsWritten.getAndIncrement()
                 emit(
@@ -78,12 +78,22 @@ class SpillToDiskTaskTest {
                             )
                     )
                 )
-                totalBytes += 8
-                if (totalBytes >= maxBytes) {
-                    return@flow
-                }
             }
             emit(StreamCompleteWrapped(index = maxRecords))
+        }
+    }
+
+    @Singleton
+    @Primary
+    @Requires(env = ["SpillToDiskTaskTest"])
+    class MockFlushStrategy : FlushStrategy {
+        override suspend fun shouldFlush(
+            stream: DestinationStream,
+            rangeRead: Range<Long>,
+            bytesProcessed: Long
+        ): Boolean {
+            println(bytesProcessed)
+            return bytesProcessed >= 1024
         }
     }
 
