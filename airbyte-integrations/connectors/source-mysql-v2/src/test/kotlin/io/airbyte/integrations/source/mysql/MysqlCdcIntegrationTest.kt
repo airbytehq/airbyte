@@ -139,7 +139,8 @@ class MysqlCdcIntegrationTest {
             targetContainer: MySQLContainer<*>,
             targetConnectionFactory: JdbcConnectionFactory
         ) {
-            val gtidOn = "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
+            val gtidOn = "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
+                "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
                 "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
                 "SET @@GLOBAL.GTID_MODE = 'ON';"
             val grant =
