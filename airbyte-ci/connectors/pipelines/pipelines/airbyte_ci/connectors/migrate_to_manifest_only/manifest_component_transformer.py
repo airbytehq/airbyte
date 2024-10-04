@@ -189,7 +189,6 @@ class ManifestComponentTransformer:
         # both exist
         for parameter_key, parameter_value in current_parameters.items():
             if parameter_key in valid_fields:
-                logger.info(f"Adding parameter {parameter_key} to {component_type}")
                 propagated_component[parameter_key] = propagated_component.get(parameter_key) or parameter_value
 
         for field_name, field_value in propagated_component.items():
