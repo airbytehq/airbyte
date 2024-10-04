@@ -6,10 +6,10 @@ import pytest
 import requests
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from source_zendesk_support.components import (
+    TicketMetricsStateMigration,
     ZendeskSupportAttributeDefinitionsExtractor,
     ZendeskSupportAuditLogsIncrementalSync,
     ZendeskSupportExtractorEvents,
-    TicketMetricsStateMigration
 )
 
 

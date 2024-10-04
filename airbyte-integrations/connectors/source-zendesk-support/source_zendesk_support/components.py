@@ -6,9 +6,9 @@ from typing import Any, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState, Config
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 @dataclass
@@ -80,6 +80,7 @@ class TicketMetricsStateMigration(StateMigration):
     In order to avoid a breaking change due to the change in the state cursor field, TicketMetrics will check
     for the streams' state and change the cursor field, if needed. The cursor datatype for both `generated_timestamp` and `_ab_updated_at` is an integer timestamp.
     """
+
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return "generated_timestamp" in stream_state
 
