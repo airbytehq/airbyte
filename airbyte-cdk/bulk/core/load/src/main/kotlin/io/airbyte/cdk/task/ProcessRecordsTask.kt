@@ -32,7 +32,7 @@ interface ProcessRecordsTask : StreamTask
  * moved to the task launcher.
  */
 class DefaultProcessRecordsTask(
-    private val stream: DestinationStream,
+    override val stream: DestinationStream,
     private val taskLauncher: DestinationTaskLauncher,
     private val fileEnvelope: BatchEnvelope<SpilledRawMessagesLocalFile>,
     private val deserializer: Deserializer<DestinationMessage>,

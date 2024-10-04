@@ -25,6 +25,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.types import StreamSlice
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
@@ -327,6 +328,59 @@ class StreamPartitionGenerator(PartitionGenerator):
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             yield StreamPartition(
                 self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state, self._cursor
+            )
+
+
+class CursorPartitionGenerator(PartitionGenerator):
+    """
+    This class generates partitions using the concurrent cursor and iterates through state slices to generate partitions.
+
+    It is used when synchronizing a stream in incremental or full-refresh mode where state information is maintained
+    across partitions. Each partition represents a subset of the stream's data and is determined by the cursor's state.
+    """
+
+    def __init__(
+        self,
+        stream: Stream,
+        message_repository: MessageRepository,
+        cursor: Cursor,
+        cursor_field: Optional[List[str]],
+    ):
+        """
+        Initialize the CursorPartitionGenerator with a stream, sync mode, and cursor.
+
+        :param stream: The stream to delegate to for partition generation.
+        :param message_repository: The message repository to use to emit non-record messages.
+        :param sync_mode: The synchronization mode.
+        :param cursor: A Cursor object that maintains the state and the cursor field.
+        """
+        self._stream = stream
+        self.message_repository = message_repository
+        self._sync_mode = SyncMode.full_refresh
+        self._cursor = cursor
+        self._cursor_field = cursor_field
+        self._state = self._cursor.state
+
+    def generate(self) -> Iterable[Partition]:
+        """
+        Generate partitions based on the slices in the cursor's state.
+
+        This method iterates through the list of slices found in the cursor's state, and for each slice, it generates
+        a `StreamPartition` object.
+
+        :return: An iterable of StreamPartition objects.
+        """
+        for slice_start, slice_end in self._cursor.generate_slices():
+            stream_slice = StreamSlice(partition={}, cursor_slice={"start": slice_start, "end": slice_end})
+
+            yield StreamPartition(
+                self._stream,
+                copy.deepcopy(stream_slice),
+                self.message_repository,
+                self._sync_mode,
+                self._cursor_field,
+                self._state,
+                self._cursor,
             )
 
 
