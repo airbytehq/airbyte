@@ -16,6 +16,7 @@ LOGGING_CONFIG = {
     "disable_existing_loggers": False,
     "formatters": {
         "airbyte": {"()": "airbyte_cdk.logger.AirbyteLogFormatter", "format": "%(message)s"},
+        "as-is": {"format": "%(message)s"},
     },
     "handlers": {
         "console": {
@@ -23,6 +24,18 @@ LOGGING_CONFIG = {
             "stream": "ext://sys.stdout",
             "formatter": "airbyte",
         },
+        "console_as-is": {
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "formatter": "as-is",
+        },
+    },
+    "loggers": {
+        "messagelogger": {
+            "handlers": ["console_as-is"],
+            "level": "INFO",
+            "propagate": False,
+        }
     },
     "root": {
         "handlers": ["console"],
@@ -60,7 +73,7 @@ class AirbyteLogFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Return a JSON representation of the log message"""
-        airbyte_level = self.level_mapping.get(record.levelno, "INFO")
+        airbyte_level = self.level_mapping.get(record.levelno, Level.INFO)
         if airbyte_level == Level.DEBUG:
             extras = self.extract_extra_args_from_record(record)
             debug_dict = {"type": "DEBUG", "message": record.getMessage(), "data": extras}

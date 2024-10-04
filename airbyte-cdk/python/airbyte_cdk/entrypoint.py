@@ -43,8 +43,6 @@ from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
 message_logger = logging.getLogger("messagelogger")
-message_logger.addHandler(logging.StreamHandler(stream=sys.stdout))
-message_logger.setLevel(logging.INFO)
 
 VALID_URL_SCHEMES = ["https"]
 CLOUD_DEPLOYMENT_MODE = "cloud"
