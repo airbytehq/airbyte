@@ -370,6 +370,12 @@
           "required": ["name", "format"]
         }
       },
+      "is_file_transfer_sync": {
+        "title": "File Sync (Experimental)",
+        "description": "Enable file-based bulk load",
+        "default": false,
+        "type": "boolean"
+      },
       "host": {
         "title": "Host Address",
         "description": "The server host address",
