@@ -5,7 +5,7 @@
 import copy
 import logging
 import typing
-from typing import Any, Mapping, Set, Type
+from typing import Any, Mapping, Optional, Set, Type
 
 from pydantic import BaseModel
 
@@ -133,7 +133,7 @@ logger = logging.getLogger(__name__)
 def get_model_fields(model_class: Optional[Type[BaseModel]]) -> Set[str]:
     """Fetches field names from a Pydantic model class if available."""
     if model_class is not None:
-        return set(model_class.__fields__.keys())
+        return set(model_class.model_fields.keys())
     return set()
 
 
@@ -216,4 +216,8 @@ class ManifestComponentTransformer:
 
     @staticmethod
     def _is_json_schema_object(propagated_component: Mapping[str, Any]) -> bool:
+        component_type = propagated_component.get("type")
+        if isinstance(component_type, list):
+            # Handle nullable types, ie ["null", "object"]
+            return "object" in component_type
         return propagated_component.get("type") == "object"
