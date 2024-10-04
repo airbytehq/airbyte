@@ -44,10 +44,9 @@ enum class TestDeploymentMode {
 
 abstract class DestinationProcessFactory {
     /**
-     * Ideally we'd take this in the constructor, but that's annoying because
-     * of how junit injects TestInfo, and how Micronaut injects everything else.
-     * Instead, we'll rely on [IntegrationTest] to set this in a BeforeEach
-     * function.
+     * Ideally we'd take this in the constructor, but that's annoying because of how junit injects
+     * TestInfo, and how Micronaut injects everything else. Instead, we'll rely on [IntegrationTest]
+     * to set this in a BeforeEach function.
      */
     lateinit var testName: String
 

@@ -149,11 +149,11 @@ abstract class IntegrationTest(
                                             .withStreamDescriptor(
                                                 StreamDescriptor()
                                                     .withName(it.descriptor.name)
-                                                    .withNamespace(it.descriptor.namespace)
+                                                    .withNamespace(it.descriptor.namespace),
                                             )
-                                            .withStatus(streamStatus)
-                                    )
-                            )
+                                            .withStatus(streamStatus),
+                                    ),
+                            ),
                     )
                 }
             }

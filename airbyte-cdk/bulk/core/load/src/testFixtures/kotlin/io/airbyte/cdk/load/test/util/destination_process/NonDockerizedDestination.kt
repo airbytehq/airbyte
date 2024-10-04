@@ -13,7 +13,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
 import java.io.PrintWriter
-import javax.inject.Singleton
 
 class NonDockerizedDestination(
     command: String,
@@ -70,7 +69,7 @@ class NonDockerizedDestination(
 // factory into our tests, not a pre-instantiated destination, because we want
 // to run multiple destination processes per test.
 // TODO only inject this when not running in CI, a la @Requires(notEnv = "CI_master_merge")
-//@Singleton
+// @Singleton
 class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
