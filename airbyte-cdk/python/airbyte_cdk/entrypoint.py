@@ -42,7 +42,6 @@ from orjson import orjson
 from requests import PreparedRequest, Response, Session
 
 logger = init_logger("airbyte")
-message_logger = logging.getLogger("messagelogger")
 
 VALID_URL_SCHEMES = ["https"]
 CLOUD_DEPLOYMENT_MODE = "cloud"
@@ -264,7 +263,7 @@ def launch(source: Source, args: List[str]) -> None:
     for message in source_entrypoint.run(parsed_args):
         # simply printing is creating issues for concurrent CDK as Python uses different two instructions to print: one for the message and
         # the other for the break line. Adding `\n` to the message ensure that both are printed at the same time
-        message_logger.info(message)
+        logger.info(message, extra={"as_is": True})
 
 
 def _init_internal_request_filter() -> None:
