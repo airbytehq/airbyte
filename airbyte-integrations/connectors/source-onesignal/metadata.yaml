@@ -1,44 +1,35 @@
+metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - onesignal.com
-  connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
-  connectorSubtype: api
-  connectorTestSuitesOptions:
-    - suite: liveTests
-      testConnections:
-        - name: onesignal_config_dev_null
-          id: c3a65bec-d1b9-45b9-b31e-893a3ce8e231
-    - suite: acceptanceTests
-      testSecrets:
-        - fileName: config.json
-          name: SECRET_SOURCE-ONESIGNAL__CREDS
-          secretStore:
-            alias: airbyte-connector-testing-secret-store
-            type: GSM
-  connectorType: source
-  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
-  dockerImageTag: 1.1.10
-  dockerRepository: airbyte/source-onesignal
-  documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
-  githubIssueLabel: source-onesignal
-  icon: onesignal.svg
-  license: MIT
-  name: OneSignal
+      - "onesignal.com"
   registryOverrides:
-    cloud:
-      enabled: true
     oss:
       enabled: true
-  releaseDate: 2023-08-31
-  releaseStage: alpha
+    cloud:
+      enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-onesignal
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-onesignal
+  githubIssueLabel: source-onesignal
+  icon: icon.svg
+  license: MIT
+  name: Onesignal
+  releaseDate: 2024-10-04
+  releaseStage: alpha
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
   tags:
-    - language:python
+    - language:manifest-only
     - cdk:low-code
-metadataSpecVersion: "1.0"
+  ab_internal:
+    ql: 100
+    sl: 100
