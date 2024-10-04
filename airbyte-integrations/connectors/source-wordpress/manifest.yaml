@@ -1,0 +1,4772 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: >-
+  The WordPress connector  enables seamless data synchronization between your
+  WordPress site and various destinations. With this connector, you can
+  effortlessly extract and integrate blog posts, pages, comments, and other
+  WordPress data into your preferred analytics or storage platform, enabling
+  streamlined data analysis and reporting.
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+definitions:
+  streams:
+    tags:
+      type: DeclarativeStream
+      name: tags
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/tags
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    media:
+      type: DeclarativeStream
+      name: media
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/media
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/media"
+    pages:
+      type: DeclarativeStream
+      name: pages
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/pages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/pages"
+    posts:
+      type: DeclarativeStream
+      name: posts
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/posts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/posts"
+    types:
+      type: DeclarativeStream
+      name: types
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/types
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/types"
+    users:
+      type: DeclarativeStream
+      name: users
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    blocks:
+      type: DeclarativeStream
+      name: blocks
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/blocks
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/blocks"
+    search:
+      type: DeclarativeStream
+      name: search
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/search
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search"
+    themes:
+      type: DeclarativeStream
+      name: themes
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/themes
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - stylesheet
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/themes"
+    plugins:
+      type: DeclarativeStream
+      name: plugins
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/plugins
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - plugin
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/plugins"
+    comments:
+      type: DeclarativeStream
+      name: comments
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/comments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/comments"
+    settings:
+      type: DeclarativeStream
+      name: settings
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/settings
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/settings"
+    statuses:
+      type: DeclarativeStream
+      name: statuses
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/statuses
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statuses"
+    revisions:
+      type: DeclarativeStream
+      name: revisions
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/pages/{{ config['parent_id'] }}/revisions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/revisions"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+    taxonomies:
+      type: DeclarativeStream
+      name: taxonomies
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: wp/v2/taxonomies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - category
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/taxonomies"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['domain'] }}/wp-json/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: "{{ config[\"password\"] }}"
+      username: "{{ config[\"username\"] }}"
+
+streams:
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/categories"
+  - $ref: "#/definitions/streams/plugins"
+  - $ref: "#/definitions/streams/blocks"
+  - $ref: "#/definitions/streams/comments"
+  - $ref: "#/definitions/streams/pages"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/revisions"
+  - $ref: "#/definitions/streams/media"
+  - $ref: "#/definitions/streams/taxonomies"
+  - $ref: "#/definitions/streams/types"
+  - $ref: "#/definitions/streams/themes"
+  - $ref: "#/definitions/streams/statuses"
+  - $ref: "#/definitions/streams/search"
+  - $ref: "#/definitions/streams/settings"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - domain
+      - password
+      - username
+      - parent_id
+    properties:
+      domain:
+        type: string
+        description: The domain of the WordPress site
+        name: domain
+        order: 0
+        title: Domain
+        default: http://biplab.great-site.net
+      password:
+        type: string
+        description: >-
+          Placeholder for basic HTTP auth password - should be set to empty
+          string
+        name: password
+        order: 1
+        title: Placeholder Password
+        default: x
+        airbyte_secret: true
+      username:
+        type: string
+        description: >-
+          Placeholder for basic HTTP auth username - should be set to empty
+          string
+        name: username
+        order: 2
+        title: Placeholder Username
+        default: x
+        airbyte_secret: true
+      parent_id:
+        type: string
+        order: 3
+        title: Parent Id
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://developer.wordpress.org/rest-api/reference/
+  testedStreams:
+    tags:
+      hasRecords: true
+      streamHash: 021675ab3237dd3b9f0776abc8528e573d2ae273
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    media:
+      hasRecords: true
+      streamHash: beafd9a4db96ac7edc9d57187172d5ebaf5878d8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    pages:
+      hasRecords: true
+      streamHash: 7bef7e6e0e4183ef0f448037d8a0de6bdc6b2ae6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    posts:
+      hasRecords: true
+      streamHash: e059bfc346baaa0c54e059a740cc6c8c2d13366f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    types:
+      hasRecords: true
+      streamHash: 645688df7dd861665d6b31e92d75ffdb20275afd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    users:
+      hasRecords: true
+      streamHash: 1aca8e4347ab106f8eead7b702e1c7317417099e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    blocks:
+      hasRecords: true
+      streamHash: 52ac4aec4f0fb60586a16ded2608d6ffecc8bf30
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    search:
+      hasRecords: true
+      streamHash: 882e2e25f16e22033644b1ba7c4c8a6b8e3afac6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    themes:
+      hasRecords: true
+      streamHash: bb7e95d3d52d068fed4e99249f1e1a1834991d8c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    plugins:
+      hasRecords: true
+      streamHash: 8d1355ea5bdddac3bd1669d72744b66eaecc3ec3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    comments:
+      hasRecords: true
+      streamHash: 1a00f7befc46bda6d2c473d091cb20e0310a3390
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    settings:
+      hasRecords: true
+      streamHash: 7d9255e544b79069c110540a2085f434b2b13542
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    statuses:
+      hasRecords: true
+      streamHash: 805c78d4c9fb5a0f744de1cad9c6e64383767222
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    revisions:
+      hasRecords: true
+      streamHash: ee8698066a0a54955e42d85bd0a3dd16aea48162
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    categories:
+      hasRecords: true
+      streamHash: 76f536b12e299171ee8bc033bbdeb889eccd9507
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    taxonomies:
+      hasRecords: true
+      streamHash: e345d1058c82443cbaceb5cb40eebf4ca5cedeb6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    tags: true
+    media: true
+    pages: true
+    posts: true
+    types: true
+    users: true
+    blocks: true
+    search: true
+    themes: true
+    plugins: true
+    comments: true
+    settings: true
+    statuses: true
+    revisions: true
+    categories: true
+    taxonomies: true
+
+schemas:
+  tags:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          curies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                templated:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          wp:post_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      taxonomy:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  media:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      id:
+        type: number
+      date:
+        type:
+          - string
+          - "null"
+      guid:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - array
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          author:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          replies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      author:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      caption:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      alt_text:
+        type:
+          - string
+          - "null"
+      date_gmt:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      mime_type:
+        type:
+          - string
+          - "null"
+      class_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      media_type:
+        type:
+          - string
+          - "null"
+      source_url:
+        type:
+          - string
+          - "null"
+      ping_status:
+        type:
+          - string
+          - "null"
+      modified_gmt:
+        type:
+          - string
+          - "null"
+      media_details:
+        type:
+          - object
+          - "null"
+        properties:
+          file:
+            type:
+              - string
+              - "null"
+          sizes:
+            type:
+              - object
+              - "null"
+            properties:
+              full:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+              large:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  filesize:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+              medium:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  filesize:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+              1536x1536:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  filesize:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+              2048x2048:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  filesize:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+              thumbnail:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  filesize:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+              medium_large:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  file:
+                    type:
+                      - string
+                      - "null"
+                  width:
+                    type:
+                      - number
+                      - "null"
+                  height:
+                    type:
+                      - number
+                      - "null"
+                  filesize:
+                    type:
+                      - number
+                      - "null"
+                  mime_type:
+                    type:
+                      - string
+                      - "null"
+                  source_url:
+                    type:
+                      - string
+                      - "null"
+          width:
+            type:
+              - number
+              - "null"
+          height:
+            type:
+              - number
+              - "null"
+          filesize:
+            type:
+              - number
+              - "null"
+          image_meta:
+            type:
+              - object
+              - "null"
+            properties:
+              iso:
+                type:
+                  - string
+                  - "null"
+              title:
+                type:
+                  - string
+                  - "null"
+              camera:
+                type:
+                  - string
+                  - "null"
+              credit:
+                type:
+                  - string
+                  - "null"
+              caption:
+                type:
+                  - string
+                  - "null"
+              aperture:
+                type:
+                  - string
+                  - "null"
+              keywords:
+                type:
+                  - array
+                  - "null"
+              copyright:
+                type:
+                  - string
+                  - "null"
+              orientation:
+                type:
+                  - string
+                  - "null"
+              focal_length:
+                type:
+                  - string
+                  - "null"
+              shutter_speed:
+                type:
+                  - string
+                  - "null"
+              created_timestamp:
+                type:
+                  - string
+                  - "null"
+      comment_status:
+        type:
+          - string
+          - "null"
+      featured_media:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  pages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      date:
+        type:
+          - string
+          - "null"
+      guid:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          footnotes:
+            type:
+              - string
+              - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          author:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          curies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                templated:
+                  type:
+                    - boolean
+                    - "null"
+          replies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          wp:attachment:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          version-history:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                count:
+                  type:
+                    - number
+                    - "null"
+      author:
+        type:
+          - number
+          - "null"
+      parent:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+          protected:
+            type:
+              - boolean
+              - "null"
+      excerpt:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+          protected:
+            type:
+              - boolean
+              - "null"
+      date_gmt:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      class_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      menu_order:
+        type:
+          - number
+          - "null"
+      ping_status:
+        type:
+          - string
+          - "null"
+      modified_gmt:
+        type:
+          - string
+          - "null"
+      comment_status:
+        type:
+          - string
+          - "null"
+      featured_media:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      date:
+        type:
+          - string
+          - "null"
+      guid:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          footnotes:
+            type:
+              - string
+              - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+      title:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          author:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          curies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                templated:
+                  type:
+                    - boolean
+                    - "null"
+          replies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          wp:term:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                taxonomy:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          wp:attachment:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          version-history:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                count:
+                  type:
+                    - number
+                    - "null"
+      author:
+        type:
+          - number
+          - "null"
+      format:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      sticky:
+        type:
+          - boolean
+          - "null"
+      content:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+          protected:
+            type:
+              - boolean
+              - "null"
+      excerpt:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+          protected:
+            type:
+              - boolean
+              - "null"
+      date_gmt:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      categories:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      class_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      ping_status:
+        type:
+          - string
+          - "null"
+      modified_gmt:
+        type:
+          - string
+          - "null"
+      comment_status:
+        type:
+          - string
+          - "null"
+      featured_media:
+        type:
+          - number
+          - "null"
+    additionalProperties: true
+  types:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      page:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          icon:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      post:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          icon:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_block:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      attachment:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          icon:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_template:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_font_face:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      nav_menu_item:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_navigation:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_font_family:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_global_styles:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_template_part:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          template:
+            type:
+              - array
+              - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          taxonomies:
+            type:
+              - array
+              - "null"
+          has_archive:
+            type:
+              - boolean
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          template_lock:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      avatar_urls:
+        type:
+          - object
+          - "null"
+        properties:
+          "24":
+            type:
+              - string
+              - "null"
+          "48":
+            type:
+              - string
+              - "null"
+          "96":
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  blocks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      date:
+        type:
+          - string
+          - "null"
+      guid:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          footnotes:
+            type:
+              - string
+              - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          curies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                templated:
+                  type:
+                    - boolean
+                    - "null"
+          wp:term:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                taxonomy:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          wp:attachment:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          version-history:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                count:
+                  type:
+                    - number
+                    - "null"
+      status:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          protected:
+            type:
+              - boolean
+              - "null"
+      excerpt:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+          protected:
+            type:
+              - boolean
+              - "null"
+      date_gmt:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      modified_gmt:
+        type:
+          - string
+          - "null"
+      wp_pattern_category:
+        type:
+          - array
+          - "null"
+      wp_pattern_sync_status:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      url:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      subtype:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  themes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - stylesheet
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      tags:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          curies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                templated:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          wp:user-global-styles:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      author:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - string
+          - "null"
+      theme_uri:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      author_uri:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      screenshot:
+        type:
+          - string
+          - "null"
+      stylesheet:
+        type: string
+      textdomain:
+        type:
+          - string
+          - "null"
+      requires_wp:
+        type:
+          - string
+          - "null"
+      requires_php:
+        type:
+          - string
+          - "null"
+      template_uri:
+        type:
+          - string
+          - "null"
+      is_block_theme:
+        type:
+          - boolean
+          - "null"
+      stylesheet_uri:
+        type:
+          - string
+          - "null"
+      theme_supports:
+        type:
+          - object
+          - "null"
+        properties:
+          html5:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          formats:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          title-tag:
+            type:
+              - boolean
+              - "null"
+          align-wide:
+            type:
+              - boolean
+              - "null"
+          custom-logo:
+            type:
+              - boolean
+              - "null"
+          custom-header:
+            type:
+              - boolean
+              - "null"
+          editor-styles:
+            type:
+              - boolean
+              - "null"
+          block-templates:
+            type:
+              - boolean
+              - "null"
+          post-thumbnails:
+            type:
+              - boolean
+              - "null"
+          wp-block-styles:
+            type:
+              - boolean
+              - "null"
+          custom-background:
+            type:
+              - boolean
+              - "null"
+          dark-editor-style:
+            type:
+              - boolean
+              - "null"
+          editor-font-sizes:
+            type:
+              - boolean
+              - "null"
+          responsive-embeds:
+            type:
+              - boolean
+              - "null"
+          automatic-feed-links:
+            type:
+              - boolean
+              - "null"
+          block-template-parts:
+            type:
+              - boolean
+              - "null"
+          editor-color-palette:
+            type:
+              - boolean
+              - "null"
+          editor-spacing-sizes:
+            type:
+              - boolean
+              - "null"
+          disable-custom-colors:
+            type:
+              - boolean
+              - "null"
+          disable-layout-styles:
+            type:
+              - boolean
+              - "null"
+          editor-gradient-presets:
+            type:
+              - boolean
+              - "null"
+          disable-custom-gradients:
+            type:
+              - boolean
+              - "null"
+          disable-custom-font-sizes:
+            type:
+              - boolean
+              - "null"
+          customize-selective-refresh-widgets:
+            type:
+              - boolean
+              - "null"
+    additionalProperties: true
+  plugins:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - plugin
+    properties:
+      version:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - object
+          - "null"
+        properties:
+          raw:
+            type:
+              - string
+              - "null"
+          rendered:
+            type:
+              - string
+              - "null"
+      name:
+        type:
+          - string
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      author:
+        type:
+          - string
+          - "null"
+      plugin:
+        type: string
+      status:
+        type:
+          - string
+          - "null"
+      author_uri:
+        type:
+          - string
+          - "null"
+      plugin_uri:
+        type:
+          - string
+          - "null"
+      textdomain:
+        type:
+          - string
+          - "null"
+      requires_wp:
+        type:
+          - string
+          - "null"
+      network_only:
+        type:
+          - boolean
+          - "null"
+      requires_php:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  comments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      date:
+        type:
+          - string
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - array
+          - "null"
+      post:
+        type:
+          - number
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          up:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                post_type:
+                  type:
+                    - string
+                    - "null"
+                embeddable:
+                  type:
+                    - boolean
+                    - "null"
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      author:
+        type:
+          - number
+          - "null"
+      parent:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      date_gmt:
+        type:
+          - string
+          - "null"
+      author_url:
+        type:
+          - string
+          - "null"
+      author_name:
+        type:
+          - string
+          - "null"
+      author_avatar_urls:
+        type:
+          - object
+          - "null"
+        properties:
+          "24":
+            type:
+              - string
+              - "null"
+          "48":
+            type:
+              - string
+              - "null"
+          "96":
+            type:
+              - string
+              - "null"
+    additionalProperties: true
+  settings:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      site_icon:
+        type:
+          - number
+          - "null"
+      date_format:
+        type:
+          - string
+          - "null"
+      time_format:
+        type:
+          - string
+          - "null"
+      use_smilies:
+        type:
+          - boolean
+          - "null"
+      page_on_front:
+        type:
+          - number
+          - "null"
+      show_on_front:
+        type:
+          - string
+          - "null"
+      start_of_week:
+        type:
+          - number
+          - "null"
+      page_for_posts:
+        type:
+          - number
+          - "null"
+      posts_per_page:
+        type:
+          - number
+          - "null"
+      default_category:
+        type:
+          - number
+          - "null"
+      default_ping_status:
+        type:
+          - string
+          - "null"
+      default_post_format:
+        type:
+          - string
+          - "null"
+      default_comment_status:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  statuses:
+    type: object
+    $schema: http://json-schema.org/schema#
+    properties:
+      draft:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              archives:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          queryable:
+            type:
+              - boolean
+              - "null"
+          date_floating:
+            type:
+              - boolean
+              - "null"
+      trash:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              archives:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          queryable:
+            type:
+              - boolean
+              - "null"
+          date_floating:
+            type:
+              - boolean
+              - "null"
+      future:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              archives:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          queryable:
+            type:
+              - boolean
+              - "null"
+          date_floating:
+            type:
+              - boolean
+              - "null"
+      pending:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              archives:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          queryable:
+            type:
+              - boolean
+              - "null"
+          date_floating:
+            type:
+              - boolean
+              - "null"
+      private:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              archives:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          queryable:
+            type:
+              - boolean
+              - "null"
+          date_floating:
+            type:
+              - boolean
+              - "null"
+      publish:
+        type:
+          - object
+          - "null"
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              archives:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          public:
+            type:
+              - boolean
+              - "null"
+          queryable:
+            type:
+              - boolean
+              - "null"
+          date_floating:
+            type:
+              - boolean
+              - "null"
+    additionalProperties: true
+  revisions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: number
+      date:
+        type:
+          - string
+          - "null"
+      guid:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          footnotes:
+            type:
+              - string
+              - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          parent:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      author:
+        type:
+          - number
+          - "null"
+      parent:
+        type:
+          - number
+          - "null"
+      content:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      excerpt:
+        type:
+          - object
+          - "null"
+        properties:
+          rendered:
+            type:
+              - string
+              - "null"
+      date_gmt:
+        type:
+          - string
+          - "null"
+      modified:
+        type:
+          - string
+          - "null"
+      modified_gmt:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      link:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      count:
+        type:
+          - number
+          - "null"
+      _links:
+        type:
+          - object
+          - "null"
+        properties:
+          self:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          about:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          curies:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                templated:
+                  type:
+                    - boolean
+                    - "null"
+          collection:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+          wp:post_type:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                href:
+                  type:
+                    - string
+                    - "null"
+      parent:
+        type:
+          - number
+          - "null"
+      taxonomy:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  taxonomies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - category
+    properties:
+      category:
+        type: object
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      nav_menu:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      post_tag:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+      wp_pattern_category:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          slug:
+            type:
+              - string
+              - "null"
+          types:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          _links:
+            type:
+              - object
+              - "null"
+            properties:
+              curies:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    templated:
+                      type:
+                        - boolean
+                        - "null"
+              wp:items:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+              collection:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    href:
+                      type:
+                        - string
+                        - "null"
+          rest_base:
+            type:
+              - string
+              - "null"
+          hierarchical:
+            type:
+              - boolean
+              - "null"
+          rest_namespace:
+            type:
+              - string
+              - "null"
+    additionalProperties: true
