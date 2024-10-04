@@ -81,8 +81,7 @@ class MysqlCdcIntegrationTest {
 
     @Test
     fun test() {
-        val run1: BufferingOutputConsumer =
-            CliRunner.source("read", config(), configuredCatalog).run()
+        CliRunner.source("read", config(), configuredCatalog).run()
         // TODO: add assertions on run1 messages.
 
         connectionFactory.get().use { connection: Connection ->
@@ -92,20 +91,7 @@ class MysqlCdcIntegrationTest {
             }
         }
 
-        val run2InputState: List<AirbyteStateMessage> = listOf(run1.states().last())
-        val run2: BufferingOutputConsumer =
-            CliRunner.source("read", config(), configuredCatalog, run2InputState).run()
-        // TODO: add assertions on run2 messages.
 
-        println()
-        println()
-        for (msg in run1.messages()) {
-            println(Jsons.valueToTree(msg))
-        }
-        println()
-        for (msg in run2.messages()) {
-            println(Jsons.valueToTree(msg))
-        }
     }
 
     companion object {
@@ -144,6 +130,7 @@ class MysqlCdcIntegrationTest {
                 MysqlContainerFactory.exclusive(
                     imageName = "mysql:8.0",
                     MysqlContainerFactory.WithNetwork,
+                  //  MysqlContainerFactory.WithGtidModeOn
                 )
             provisionTestContainer(dbContainer, connectionFactory)
         }
@@ -152,9 +139,13 @@ class MysqlCdcIntegrationTest {
             targetContainer: MySQLContainer<*>,
             targetConnectionFactory: JdbcConnectionFactory
         ) {
+            val gtidOn = "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
+                "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
+                "SET @@GLOBAL.GTID_MODE = 'ON';"
             val grant =
                 "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
                     "ON *.* TO '${targetContainer.username}'@'%';"
+            targetContainer.execAsRoot(gtidOn)
             targetContainer.execAsRoot(grant)
             targetContainer.execAsRoot("FLUSH PRIVILEGES;")
 

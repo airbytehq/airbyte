@@ -23,6 +23,15 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
 
     /** Builds a [DebeziumInput] using an incumbent [OpaqueStateValue]. */
     fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput
+
+    /* Validate the input state is still valid on DB. */
+    fun validate(debeziumInput: DebeziumInput): CdcStateValidateResult
+}
+
+enum class CdcStateValidateResult {
+    VALID,
+    INVALID_ABORT,
+    INVALID_RESET
 }
 
 interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
