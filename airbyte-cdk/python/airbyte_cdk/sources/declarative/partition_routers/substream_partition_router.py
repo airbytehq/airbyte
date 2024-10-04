@@ -234,8 +234,9 @@ class SubstreamPartitionRouter(PartitionRouter):
             for extra_field_path in extra_fields:
                 try:
                     extra_field_value = dpath.get(parent_record, extra_field_path)
+                    self.logger.debug(f"Extracted extra_field_path: {extra_field_path} with value: {extra_field_value}")
                 except KeyError:
-                    self.logger.warning(f"Failed to extract extra_field_path: {extra_field_path}")
+                    self.logger.debug(f"Failed to extract extra_field_path: {extra_field_path}")
                     extra_field_value = None
                 extracted_extra_fields[".".join(extra_field_path)] = extra_field_value
         return extracted_extra_fields
