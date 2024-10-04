@@ -37,7 +37,7 @@ class RecordFilter:
             "stream_state": stream_state,
             "stream_slice": stream_slice,
             "next_page_token": next_page_token,
-            "stream_slice.extra_fields": stream_slice.extra_fields,
+            "stream_slice.extra_fields": stream_slice.extra_fields if stream_slice else {},
         }
         for record in records:
             if self._filter_interpolator.eval(self.config, record=record, **kwargs):
