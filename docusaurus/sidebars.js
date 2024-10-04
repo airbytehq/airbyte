@@ -222,6 +222,7 @@ const buildAConnector = {
         "connector-development/connector-builder-ui/overview",
         "connector-development/connector-builder-ui/connector-builder-compatibility",
         "connector-development/connector-builder-ui/tutorial",
+        "connector-development/connector-builder-ui/ai-assist",
         {
           type: "category",
           label: "Concepts",
@@ -517,12 +518,12 @@ module.exports = {
     },
     {
       type: "doc",
-      id: "using-airbyte/core-concepts/readme",
+      label: "Quickstart",
+      id: "using-airbyte/getting-started/oss-quickstart",
     },
     {
       type: "doc",
-      label: "Quickstart",
-      id: "using-airbyte/getting-started/oss-quickstart",
+      id: "using-airbyte/core-concepts/readme",
     },
     {
       type: "category",
@@ -718,6 +719,8 @@ module.exports = {
         type: "generated-index",
       },
       items: [
+        "release_notes/v-1.1",
+        "release_notes/v-1.0",
         "release_notes/aug_2024",
         "release_notes/july_2024",
         "release_notes/june_2024",

@@ -32,7 +32,7 @@ class ReadOperation(
     val inputState: InputState,
     val stateManagerFactory: StateManagerFactory,
     val outputConsumer: OutputConsumer,
-    val partitionsCreatorFactory: PartitionsCreatorFactory,
+    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) : Operation {
     private val log = KotlinLogging.logger {}
 
@@ -45,7 +45,7 @@ class ReadOperation(
                 config.resourceAcquisitionHeartbeat,
                 config.checkpointTargetInterval,
                 outputConsumer,
-                partitionsCreatorFactory,
+                partitionsCreatorFactories,
             )
         runBlocking(ThreadRenamingCoroutineName("read") + Dispatchers.Default) {
             rootReader.read { feedJobs: Map<Feed, Job> ->

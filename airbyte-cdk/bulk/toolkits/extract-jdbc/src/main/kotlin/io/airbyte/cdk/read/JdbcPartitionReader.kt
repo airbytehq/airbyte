@@ -60,7 +60,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
-class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
+open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
@@ -99,7 +99,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
+open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 

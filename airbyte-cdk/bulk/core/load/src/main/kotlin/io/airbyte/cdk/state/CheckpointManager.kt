@@ -10,12 +10,14 @@ import io.airbyte.cdk.message.CheckpointMessage
 import io.airbyte.cdk.message.MessageConverter
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Secondary
 import io.micronaut.core.util.clhm.ConcurrentLinkedHashMap
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * Interface for checkpoint management. Should accept stream and global checkpoints, as well as
@@ -24,7 +26,7 @@ import java.util.function.Consumer
 interface CheckpointManager<K, T> {
     fun addStreamCheckpoint(key: K, index: Long, checkpointMessage: T)
     fun addGlobalCheckpoint(keyIndexes: List<Pair<K, Long>>, checkpointMessage: T)
-    fun flushReadyCheckpointMessages()
+    suspend fun flushReadyCheckpointMessages()
 }
 
 /**
@@ -39,27 +41,33 @@ interface CheckpointManager<K, T> {
  * TODO: Ensure that checkpoint is flushed at the end, and require that all checkpoints be flushed
  * before the destination can succeed.
  */
-abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationStream, T> {
+abstract class StreamsCheckpointManager<T, U>() :
+    CheckpointManager<DestinationStream.Descriptor, T> {
     private val log = KotlinLogging.logger {}
+    private val flushLock = Mutex()
 
     abstract val catalog: DestinationCatalog
-    abstract val streamsManager: StreamsManager
+    abstract val syncManager: SyncManager
     abstract val outputFactory: MessageConverter<T, U>
     abstract val outputConsumer: Consumer<U>
 
     data class GlobalCheckpoint<T>(
-        val streamIndexes: List<Pair<DestinationStream, Long>>,
+        val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         val checkpointMessage: T
     )
 
     private val checkpointsAreGlobal: AtomicReference<Boolean?> = AtomicReference(null)
     private val streamCheckpoints:
-        ConcurrentHashMap<DestinationStream, ConcurrentLinkedHashMap<Long, T>> =
+        ConcurrentHashMap<DestinationStream.Descriptor, ConcurrentLinkedHashMap<Long, T>> =
         ConcurrentHashMap()
     private val globalCheckpoints: ConcurrentLinkedQueue<GlobalCheckpoint<T>> =
         ConcurrentLinkedQueue()
 
-    override fun addStreamCheckpoint(key: DestinationStream, index: Long, checkpointMessage: T) {
+    override fun addStreamCheckpoint(
+        key: DestinationStream.Descriptor,
+        index: Long,
+        checkpointMessage: T
+    ) {
         if (checkpointsAreGlobal.updateAndGet { it == true } != false) {
             throw IllegalStateException(
                 "Global checkpoints cannot be mixed with non-global checkpoints"
@@ -93,7 +101,7 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
 
     // TODO: Is it an error if we don't get all the streams every time?
     override fun addGlobalCheckpoint(
-        keyIndexes: List<Pair<DestinationStream, Long>>,
+        keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         checkpointMessage: T
     ) {
         if (checkpointsAreGlobal.updateAndGet { it != false } != true) {
@@ -116,17 +124,25 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
         log.info { "Added global checkpoint with stream indexes: $keyIndexes" }
     }
 
-    override fun flushReadyCheckpointMessages() {
+    override suspend fun flushReadyCheckpointMessages() {
+        if (!flushLock.tryLock()) {
+            log.info { "Flush already in progress, skipping" }
+            return
+        }
         /*
            Iterate over the checkpoints in order, evicting each that passes
            the persistence check. If a checkpoint is not persisted, then
            we can break the loop since the checkpoints are ordered. For global
            checkpoints, all streams must be persisted up to the checkpoint.
         */
-        when (checkpointsAreGlobal.get()) {
-            null -> log.info { "No checkpoints to flush" }
-            true -> flushGlobalCheckpoints()
-            false -> flushStreamCheckpoints()
+        try {
+            when (checkpointsAreGlobal.get()) {
+                null -> log.info { "No checkpoints to flush" }
+                true -> flushGlobalCheckpoints()
+                false -> flushStreamCheckpoints()
+            }
+        } finally {
+            flushLock.unlock()
         }
     }
 
@@ -135,7 +151,7 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
             val head = globalCheckpoints.peek()
             val allStreamsPersisted =
                 head.streamIndexes.all { (stream, index) ->
-                    streamsManager.getManager(stream).areRecordsPersistedUntil(index)
+                    syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
                 }
             if (allStreamsPersisted) {
                 globalCheckpoints.poll()
@@ -149,8 +165,8 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
 
     private fun flushStreamCheckpoints() {
         for (stream in catalog.streams) {
-            val manager = streamsManager.getManager(stream)
-            val streamCheckpoints = streamCheckpoints[stream] ?: return
+            val manager = syncManager.getStreamManager(stream.descriptor)
+            val streamCheckpoints = streamCheckpoints[stream.descriptor] ?: return
             for (index in streamCheckpoints.keys) {
                 if (manager.areRecordsPersistedUntil(index)) {
                     val checkpointMessage =
@@ -168,9 +184,10 @@ abstract class StreamsCheckpointManager<T, U>() : CheckpointManager<DestinationS
 }
 
 @Singleton
+@Secondary
 class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,
-    override val streamsManager: StreamsManager,
+    override val syncManager: SyncManager,
     override val outputFactory: MessageConverter<CheckpointMessage, AirbyteMessage>,
     override val outputConsumer: Consumer<AirbyteMessage>
 ) : StreamsCheckpointManager<CheckpointMessage, AirbyteMessage>()

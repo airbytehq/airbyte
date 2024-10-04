@@ -3,7 +3,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
-import io.airbyte.cdk.StreamNamePair
+import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.EmptyInputState
 import io.airbyte.cdk.command.GlobalInputState
@@ -82,10 +82,9 @@ class StateManagerFactory(
             initialStreamStates =
                 streams.associateWith { stream: Stream ->
                     when (stream.configuredSyncMode) {
-                        ConfiguredSyncMode.INCREMENTAL ->
-                            inputState?.globalStreams?.get(stream.namePair)
+                        ConfiguredSyncMode.INCREMENTAL -> inputState?.globalStreams?.get(stream.id)
                         ConfiguredSyncMode.FULL_REFRESH ->
-                            inputState?.nonGlobalStreams?.get(stream.namePair)
+                            inputState?.nonGlobalStreams?.get(stream.id)
                     }
                 },
         )
@@ -96,9 +95,7 @@ class StateManagerFactory(
     ) =
         StateManager(
             initialStreamStates =
-                streams.associateWith { stream: Stream ->
-                    inputState?.streams?.get(stream.namePair)
-                },
+                streams.associateWith { stream: Stream -> inputState?.streams?.get(stream.id) },
         )
 
     private fun toStream(
@@ -107,16 +104,16 @@ class StateManagerFactory(
     ): Stream? {
         val stream: AirbyteStream = configuredStream.stream
         val jsonSchemaProperties: JsonNode = stream.jsonSchema["properties"]
-        val name: String = stream.name!!
-        val namespace: String? = stream.namespace
-        val streamNamePair = StreamNamePair(name, namespace)
-        val streamLabel: String = streamNamePair.toString()
-        when (metadataQuerier.streamNames(namespace).filter { it == name }.size) {
+        val streamID: StreamIdentifier = StreamIdentifier.from(configuredStream.stream)
+        val name: String = streamID.name
+        val namespace: String? = streamID.namespace
+        val streamLabel: String = streamID.toString()
+        when (metadataQuerier.streamNames(namespace).filter { it.name == name }.size) {
             0 -> {
-                handler.accept(StreamNotFound(name, namespace))
+                handler.accept(StreamNotFound(streamID))
                 outputConsumer.accept(
                     AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamNamePair.asProtocolStreamDescriptor())
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                         .withMessage("Stream '$streamLabel' not found or not accessible in source.")
                 )
@@ -124,10 +121,10 @@ class StateManagerFactory(
             }
             1 -> Unit
             else -> {
-                handler.accept(MultipleStreamsFound(name, namespace))
+                handler.accept(MultipleStreamsFound(streamID))
                 outputConsumer.accept(
                     AirbyteErrorTraceMessage()
-                        .withStreamDescriptor(streamNamePair.asProtocolStreamDescriptor())
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                         .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                         .withMessage("Multiple streams '$streamLabel' found in source.")
                 )
@@ -140,7 +137,7 @@ class StateManagerFactory(
                 id to airbyteTypeFromJsonSchema(schema)
             }
         val actualDataColumns: Map<String, Field> =
-            metadataQuerier.fields(name, namespace).associateBy { it.id }
+            metadataQuerier.fields(streamID).associateBy { it.id }
 
         fun dataColumnOrNull(id: String): Field? {
             if (MetaField.isMetaFieldID(id)) {
@@ -150,7 +147,7 @@ class StateManagerFactory(
             }
             val actualColumn: Field? = actualDataColumns[id]
             if (actualColumn == null) {
-                handler.accept(FieldNotFound(name, namespace, id))
+                handler.accept(FieldNotFound(streamID, id))
                 return null
             }
             val expectedAirbyteType: AirbyteType = expectedSchema[id] ?: return null
@@ -158,8 +155,7 @@ class StateManagerFactory(
             if (expectedAirbyteType != actualAirbyteType) {
                 handler.accept(
                     FieldTypeMismatch(
-                        name,
-                        namespace,
+                        streamID,
                         id,
                         expectedAirbyteType,
                         actualAirbyteType,
@@ -174,10 +170,10 @@ class StateManagerFactory(
                 dataColumnOrNull(it) ?: return@toStream null
             }
         if (streamFields.isEmpty()) {
-            handler.accept(StreamHasNoFields(name, namespace))
+            handler.accept(StreamHasNoFields(streamID))
             outputConsumer.accept(
                 AirbyteErrorTraceMessage()
-                    .withStreamDescriptor(streamNamePair.asProtocolStreamDescriptor())
+                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
                     .withFailureType(AirbyteErrorTraceMessage.FailureType.CONFIG_ERROR)
                     .withMessage("Stream '$streamLabel' has no accessible fields.")
             )
@@ -192,7 +188,7 @@ class StateManagerFactory(
                 pkColumnIDComponents.map { it.joinToString(separator = ".") }
             val pk: List<Field> = pkColumnIDs.mapNotNull(::dataColumnOrNull)
             if (pk.size < pkColumnIDComponents.size) {
-                handler.accept(InvalidPrimaryKey(name, namespace, pkColumnIDs))
+                handler.accept(InvalidPrimaryKey(streamID, pkColumnIDs))
                 return null
             }
             return pk
@@ -216,7 +212,7 @@ class StateManagerFactory(
             when (configuredStream.syncMode) {
                 SyncMode.INCREMENTAL ->
                     if (configuredCursor == null) {
-                        handler.accept(InvalidIncrementalSyncMode(name, namespace))
+                        handler.accept(InvalidIncrementalSyncMode(streamID))
                         ConfiguredSyncMode.FULL_REFRESH
                     } else {
                         ConfiguredSyncMode.INCREMENTAL
@@ -224,8 +220,7 @@ class StateManagerFactory(
                 else -> ConfiguredSyncMode.FULL_REFRESH
             }
         return Stream(
-            name,
-            namespace,
+            streamID,
             streamFields,
             configuredSyncMode,
             configuredPrimaryKey,

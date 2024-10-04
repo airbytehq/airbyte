@@ -3,8 +3,8 @@ package io.airbyte.cdk.check
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.discover.MetadataQuerier
@@ -18,8 +18,8 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
 @Requires(env = ["source"])
-class CheckOperation<T : ConfigurationJsonObjectBase>(
-    val configJsonObjectSupplier: ConfigurationJsonObjectSupplier<T>,
+class CheckOperation<T : ConfigurationSpecification>(
+    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: SourceConfigurationFactory<T, out SourceConfiguration>,
     val metadataQuerierFactory: MetadataQuerier.Factory<SourceConfiguration>,
     val outputConsumer: OutputConsumer,
@@ -64,17 +64,19 @@ class CheckOperation<T : ConfigurationJsonObjectBase>(
         var n = 0
         val namespaces: List<String?> = listOf<String?>(null) + metadataQuerier.streamNamespaces()
         for (namespace in namespaces) {
-            for (name in metadataQuerier.streamNames(namespace)) {
+            for (streamID in metadataQuerier.streamNames(namespace)) {
                 try {
-                    metadataQuerier.fields(name, namespace)
+                    metadataQuerier.fields(streamID)
                 } catch (e: Exception) {
                     log.info(e) {
-                        "Query failed on stream '$name' in '${namespace ?: ""}': ${e.message}"
+                        "Query failed on stream '${streamID.name}' in '${namespace ?: ""}': ${e.message}"
                     }
                     n++
                     continue
                 }
-                log.info { "Query successful on stream '$name' in '${namespace ?: ""}'." }
+                log.info {
+                    "Query successful on stream '${streamID.name}' in '${namespace ?: ""}'."
+                }
                 return
             }
         }
