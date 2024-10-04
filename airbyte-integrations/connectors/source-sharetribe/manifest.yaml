@@ -1,4 +1,4 @@
-version: 5.8.1
+version: 5.10.2
 
 type: DeclarativeSource
 
@@ -36,6 +36,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -78,6 +93,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -99,6 +129,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -120,6 +165,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: perPage
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 100
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -129,12 +189,14 @@ definitions:
     url_base: https://flex-api.sharetribe.com
     authenticator:
       type: OAuthAuthenticator
-      refresh_request_body: {}
-      token_refresh_endpoint: https://flex-api.sharetribe.com/v1/auth/token
-      grant_type: refresh_token
+      scopes:
+        - integ
       client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
       client_secret: "{{ config[\"client_secret\"] }}"
       refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      access_token_name: access_token
+      refresh_request_body: {}
       refresh_token_updater:
         refresh_token_name: refresh_token
         access_token_config_path:
@@ -143,9 +205,7 @@ definitions:
           - oauth_token_expiry_date
         refresh_token_config_path:
           - client_refresh_token
-      access_token_name: access_token
-      scopes:
-        - integ
+      token_refresh_endpoint: https://flex-api.sharetribe.com/v1/auth/token
 
 streams:
   - $ref: "#/definitions/streams/users"
@@ -166,36 +226,36 @@ spec:
     properties:
       client_id:
         type: string
+        order: 0
         title: Client ID
         airbyte_secret: true
-        order: 0
       client_secret:
         type: string
+        order: 1
         title: Client secret
         airbyte_secret: true
-        order: 1
       client_refresh_token:
         type: string
+        order: 2
         title: Refresh token
         airbyte_secret: true
-        order: 2
       oauth_access_token:
         type: string
         description: >-
           The current access token. This field might be overridden by the
           connector based on the token refresh endpoint response.
+        order: 3
         title: Access token
         airbyte_secret: true
-        order: 3
       oauth_token_expiry_date:
         type: string
         description: >-
           The date the current access token expires in. This field might be
           overridden by the connector based on the token refresh endpoint
           response.
+        order: 4
         title: Token expiry date
         format: date-time
-        order: 4
     additionalProperties: true
 
 metadata:
@@ -207,35 +267,35 @@ metadata:
     events: true
   testedStreams:
     users:
-      streamHash: 11fe42dc16e69638e413868303a4b1dbd88f9718
+      streamHash: 354022835e385dffd17f3109627b5ff31577c064
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     marketplace:
+      hasRecords: true
       streamHash: a7f18dd6670505d4ca1bc38c0db5abe743da84cb
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     listings:
-      streamHash: e28a1c0f131fbdae0024d0b39e0fb8b1194809f8
+      streamHash: c57db50a00164900bbeccaf5b3fb452b9611a94e
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     transactions:
-      streamHash: acbaaf401c9d3c471bf74a250f82ae5cf0c8342b
+      streamHash: 888b456f62c7232cad951d7566ec9f54fabbc1dd
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     events:
-      streamHash: 927a4152731e7959e95a3d11a6ca86f02aac33ac
+      streamHash: 8c2787bedd35f7793abae2e819b30ba699207a20
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
