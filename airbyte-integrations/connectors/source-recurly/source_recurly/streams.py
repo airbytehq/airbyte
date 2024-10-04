@@ -3,6 +3,7 @@
 #
 
 import re
+import time
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -17,6 +18,7 @@ DEFAULT_LIMIT = 200
 
 BEGIN_TIME_PARAM = "begin_time"
 END_TIME_PARAM = "end_time"
+RATE_LIMIT_SLEEP_IN_SECS = 0.16
 
 CAMEL_CASE_PATTERN = re.compile(r"(?<!^)(?=[A-Z])")
 
@@ -128,11 +130,15 @@ class BaseStream(Stream):
         if self.end_time:
             params.update({END_TIME_PARAM: self.end_time})
 
-        items = getattr(self._client, self.client_method_name)(params=params).items()
+        pages = getattr(self._client, self.client_method_name)(params=params).pages()
 
         # Call the Recurly client methods
-        for item in items:
-            yield self._item_to_dict(item)
+        for page in pages:
+            for item in page:
+                yield self._item_to_dict(item)
+            # slow down the API calls to avoid rate limiting
+            # https://recurly.com/developers/api-v2/v2.2/#section/Rate-Limits
+            time.sleep(RATE_LIMIT_SLEEP_IN_SECS)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -205,9 +211,12 @@ class BaseAccountResourceStream(BaseStream):
         # and log a warn
         try:
             for account in accounts:
-                items = getattr(self._client, self.client_method_name)(params=params, account_id=account.id).items()
-                for item in items:
-                    yield self._item_to_dict(item)
+                pages = getattr(self._client, self.client_method_name)(params=params, account_id=account.id).pages()
+                for page in pages:
+                    for item in page:
+                        yield self._item_to_dict(item)
+                    # slow down the API calls to avoid rate limiting
+                    time.sleep(RATE_LIMIT_SLEEP_IN_SECS)
         except MissingFeatureError as error:
             super().logger.warning(f"Missing feature error {error}")
 
@@ -330,8 +339,10 @@ class UniqueCoupons(BaseStream):
 
         for coupon in coupons:
             try:
-                items = self._client.list_unique_coupon_codes(params=params, coupon_id=coupon.id).items()
-                for item in items:
+                pages = self._client.list_unique_coupon_codes(params=params, coupon_id=coupon.id).pages()
+                for item in pages:
                     yield self._item_to_dict(item)
+                # slow down the API calls to avoid rate limiting
+                time.sleep(RATE_LIMIT_SLEEP_IN_SECS)
             except (NotFoundError, ValidationError):
                 pass
