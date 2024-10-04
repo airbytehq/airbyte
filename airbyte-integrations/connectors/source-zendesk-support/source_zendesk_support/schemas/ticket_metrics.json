@@ -167,6 +167,10 @@
       "description": "Cursor field managed by Airbyte to enable incremental mode for the stream",
       "type": ["null", "integer"]
     },
+    "generated_timestamp": {
+      "description": "Timestamp of when record was last updated",
+      "type": ["null", "integer"]
+    },
     "url": {
       "description": "URL link to the ticket details",
       "type": ["null", "string"]

@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 5.0.0
+  dockerImageTag: 4.3.0
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support
@@ -51,13 +51,6 @@ data:
           - scopeType: stream
             impactedScopes:
               - "tags"
-      5.0.0:
-        message: "This version includes breaking changes to the `TicketsMetric` stream.  The cursor field has been updated to `_ab_updated_at`. It is necessary to refresh the data and schema for the affected stream. Please see the migration guide for additional details."
-        upgradeDeadline: "2024-11-05"
-        scopedImpact:
-          - scopeType: stream
-            impactedScopes:
-              - "ticket_metrics"
   suggestedStreams:
     streams:
       - brands
