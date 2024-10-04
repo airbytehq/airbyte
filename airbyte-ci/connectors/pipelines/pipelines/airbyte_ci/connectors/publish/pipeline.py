@@ -543,7 +543,7 @@ async def _run_python_registry_publish_pipeline(context: PublishConnectorContext
     return results, False
 
 
-async def run_connector_rollback_pipeline(context: PublishConnectorContext) -> ConnectorReport:
+async def run_connector_rollback_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a rollback pipeline for a single connector.
 
     1. Check if the current metadata is a release candidate
@@ -554,19 +554,22 @@ async def run_connector_rollback_pipeline(context: PublishConnectorContext) -> C
     """
 
     results = []
-    async with context:
-        assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
-        assert context.connector.metadata.get("releases", {}).get(
-            "isReleaseCandidate", True
-        ), "This pipeline can only run for release candidates."
-        results.append(
-            await MetadataRollbackReleaseCandidate(context, context.metadata_bucket_name, context.metadata_service_gcs_credentials).run()
-        )
+    async with semaphore:
+        async with context:
+            assert context.rollout_mode == RolloutMode.ROLLBACK, "This pipeline can only run in rollback mode."
+            assert context.connector.metadata.get("releases", {}).get(
+                "isReleaseCandidate", True
+            ), "This pipeline can only run for release candidates."
+            results.append(
+                await MetadataRollbackReleaseCandidate(
+                    context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
+                ).run()
+            )
 
     return ConnectorReport(context, results, name="ROLLBACK RESULTS")
 
 
-async def run_connector_promote_pipeline(context: PublishConnectorContext) -> ConnectorReport:
+async def run_connector_promote_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a promote pipeline for a single connector.
 
     1. Publish the release candidate version docker image with the latest tag.
@@ -576,19 +579,20 @@ async def run_connector_promote_pipeline(context: PublishConnectorContext) -> Co
         ConnectorReport: The reports holding promote results.
     """
     results = []
-    async with context:
-        assert context.rollout_mode == RolloutMode.PROMOTE, "This pipeline can only run in promote mode."
-        assert context.connector.metadata.get("releases", {}).get(
-            "isReleaseCandidate", True
-        ), "This pipeline can only run for release candidates."
-        metadata_promote_result = await MetadataPromoteReleaseCandidate(
-            context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
-        ).run()
-        results.append(metadata_promote_result)
-        if metadata_promote_result.status is StepStatus.FAILURE:
-            return ConnectorReport(context, results, name="PROMOTE RESULTS")
-        publish_latest_tag_results = await PushVersionImageAsLatest(context).run()
-        results.append(publish_latest_tag_results)
+    async with semaphore:
+        async with context:
+            assert context.rollout_mode == RolloutMode.PROMOTE, "This pipeline can only run in promote mode."
+            assert context.connector.metadata.get("releases", {}).get(
+                "isReleaseCandidate", True
+            ), "This pipeline can only run for release candidates."
+            metadata_promote_result = await MetadataPromoteReleaseCandidate(
+                context, context.metadata_bucket_name, context.metadata_service_gcs_credentials
+            ).run()
+            results.append(metadata_promote_result)
+            if metadata_promote_result.status is StepStatus.FAILURE:
+                return ConnectorReport(context, results, name="PROMOTE RESULTS")
+            publish_latest_tag_results = await PushVersionImageAsLatest(context).run()
+            results.append(publish_latest_tag_results)
     return ConnectorReport(context, results, name="PROMOTE RESULTS")
 
 

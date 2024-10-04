@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
+import kotlinx.coroutines.sync.Mutex
 
 /**
  * Interface for checkpoint management. Should accept stream and global checkpoints, as well as
@@ -43,9 +44,10 @@ interface CheckpointManager<K, T> {
 abstract class StreamsCheckpointManager<T, U>() :
     CheckpointManager<DestinationStream.Descriptor, T> {
     private val log = KotlinLogging.logger {}
+    private val flushLock = Mutex()
 
     abstract val catalog: DestinationCatalog
-    abstract val streamsManager: StreamsManager
+    abstract val syncManager: SyncManager
     abstract val outputFactory: MessageConverter<T, U>
     abstract val outputConsumer: Consumer<U>
 
@@ -123,16 +125,24 @@ abstract class StreamsCheckpointManager<T, U>() :
     }
 
     override suspend fun flushReadyCheckpointMessages() {
+        if (!flushLock.tryLock()) {
+            log.info { "Flush already in progress, skipping" }
+            return
+        }
         /*
            Iterate over the checkpoints in order, evicting each that passes
            the persistence check. If a checkpoint is not persisted, then
            we can break the loop since the checkpoints are ordered. For global
            checkpoints, all streams must be persisted up to the checkpoint.
         */
-        when (checkpointsAreGlobal.get()) {
-            null -> log.info { "No checkpoints to flush" }
-            true -> flushGlobalCheckpoints()
-            false -> flushStreamCheckpoints()
+        try {
+            when (checkpointsAreGlobal.get()) {
+                null -> log.info { "No checkpoints to flush" }
+                true -> flushGlobalCheckpoints()
+                false -> flushStreamCheckpoints()
+            }
+        } finally {
+            flushLock.unlock()
         }
     }
 
@@ -141,7 +151,7 @@ abstract class StreamsCheckpointManager<T, U>() :
             val head = globalCheckpoints.peek()
             val allStreamsPersisted =
                 head.streamIndexes.all { (stream, index) ->
-                    streamsManager.getManager(stream).areRecordsPersistedUntil(index)
+                    syncManager.getStreamManager(stream).areRecordsPersistedUntil(index)
                 }
             if (allStreamsPersisted) {
                 globalCheckpoints.poll()
@@ -155,7 +165,7 @@ abstract class StreamsCheckpointManager<T, U>() :
 
     private fun flushStreamCheckpoints() {
         for (stream in catalog.streams) {
-            val manager = streamsManager.getManager(stream.descriptor)
+            val manager = syncManager.getStreamManager(stream.descriptor)
             val streamCheckpoints = streamCheckpoints[stream.descriptor] ?: return
             for (index in streamCheckpoints.keys) {
                 if (manager.areRecordsPersistedUntil(index)) {
@@ -177,7 +187,7 @@ abstract class StreamsCheckpointManager<T, U>() :
 @Secondary
 class DefaultCheckpointManager(
     override val catalog: DestinationCatalog,
-    override val streamsManager: StreamsManager,
+    override val syncManager: SyncManager,
     override val outputFactory: MessageConverter<CheckpointMessage, AirbyteMessage>,
     override val outputConsumer: Consumer<AirbyteMessage>
 ) : StreamsCheckpointManager<CheckpointMessage, AirbyteMessage>()
