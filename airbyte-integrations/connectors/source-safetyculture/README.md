@@ -1,7 +1,13 @@
 # SafetyCulture
 This directory contains the manifest-only connector for `source-safetyculture`.
 
-Setup guide for safetyculture source &lt;wip&gt;
+The Safetyculture source connector which ingests data from the Safetyculture API.
+Safetyculture is a workplace operations platform. The source supports a number of API changes.
+For more information, checkout the website https://www.safetyculture.com/
+
+This source uses the Authorization Bearer Token for handling requests.
+An API Token is required for using this connector.
+For more details about the API, check out https://developer.safetyculture.com/reference/introduction
 
 ## Usage
 There are multiple ways to use this connector:

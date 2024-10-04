@@ -1,5 +1,28 @@
 # SafetyCulture
-Setup guide for safetyculture source &lt;wip&gt;
+
+This is the setup guide for the Safetyculture source connector which ingests data from the Safetyculture API.
+
+## Prerequisites
+
+This source uses the Authorization Bearer Token for handling requests. In order to obtain the credientials, you must first create a Safetyculture account.
+The API usage is only availabe for paid plans https://www.Safetyculture.com/
+
+You can create an API token under Account Settings -> Integrations -> API Tokens
+You can find more about their API here https://www.Safetyculture.com/api-reference/
+
+## Set up the Adjust source connector
+
+1. Click **Sources** and then click **+ New source**.
+2. On the Set up the source page, select **Safetyculture** from the Source type dropdown.
+3. Enter a name for your new source.
+4. For **API Token**, enter your API token obtained in the previous step.
+5. Click **Set up source**.
+
+## Supported sync modes
+
+The source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- Full Refresh
 
 ## Configuration
 
