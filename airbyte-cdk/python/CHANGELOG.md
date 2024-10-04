@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.10.2
+Remove PrintBuffer optimization due to dropped records
+
+## 5.10.1
+Async job component: improve memory usage
+
+## 5.10.0
+concurrent-cdk: add cursor partition generator
+
 ## 5.9.0
 concurrent-cdk: change stream availability strategy to always available
 

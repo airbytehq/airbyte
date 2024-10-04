@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.SourceConfiguration
 import io.micronaut.context.annotation.DefaultImplementation
+import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.sync.Semaphore
 
@@ -19,12 +20,13 @@ fun interface Resource<T : Resource.Acquired> {
     fun tryAcquire(): T?
 }
 
-@Singleton
 /** A [Resource] used to manage concurrency. */
-class ConcurrencyResource(val config: SourceConfiguration) :
-    Resource<ConcurrencyResource.AcquiredThread> {
+@Singleton
+class ConcurrencyResource(maxConcurrency: Int) : Resource<ConcurrencyResource.AcquiredThread> {
 
-    private val semaphore = Semaphore(config.maxConcurrency)
+    @Inject constructor(configuration: SourceConfiguration) : this(configuration.maxConcurrency)
+
+    private val semaphore = Semaphore(maxConcurrency)
 
     val available: Int
         get() = semaphore.availablePermits

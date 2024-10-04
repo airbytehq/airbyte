@@ -35,11 +35,17 @@ class DefaultTeardownTask(
 
         // Run the task exactly once, and only after all streams have closed.
         if (teardownHasRun.compareAndSet(false, true)) {
-            syncManager.awaitAllStreamsClosed()
-            log.info { "Starting teardown task" }
+            log.info { "Teardown task awaiting stream completion" }
+            if (!syncManager.awaitAllStreamsCompletedSuccessfully()) {
+                log.info { "Streams failed to complete successfully, doing nothing." }
+                return
+            }
 
+            log.info { "Starting teardown task" }
             destination.teardown()
-            taskLauncher.handleTeardownComplete()
+            log.info { "Teardown task complete, marking sync succeeded." }
+            syncManager.markSucceeded()
+            taskLauncher.stop()
         }
     }
 }

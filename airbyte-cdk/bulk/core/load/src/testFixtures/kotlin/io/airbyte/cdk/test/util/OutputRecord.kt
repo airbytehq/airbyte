@@ -4,9 +4,8 @@
 
 package io.airbyte.cdk.test.util
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.data.ObjectValue
+import io.airbyte.cdk.message.DestinationRecord.Change
 import java.time.Instant
 import java.util.UUID
 
@@ -23,8 +22,17 @@ data class OutputRecord(
      * Destinations _must_ filter out the airbyte_* fields from this map.
      */
     val data: ObjectValue,
-    val airbyteMeta: JsonNode?,
+    val airbyteMeta: Meta?,
 ) {
+    /**
+     * Much like [io.airbyte.cdk.message.DestinationRecord.Meta], but includes the [syncId] field
+     * that we write to the destination.
+     */
+    data class Meta(
+        val changes: List<Change>? = null,
+        val syncId: Long? = null,
+    )
+
     /** Utility constructor with easier types to write by hand */
     constructor(
         rawId: String,
@@ -32,14 +40,14 @@ data class OutputRecord(
         loadedAt: Long?,
         generationId: Long?,
         data: Map<String, Any?>,
-        airbyteMeta: String?,
+        airbyteMeta: Meta?,
     ) : this(
         UUID.fromString(rawId),
         Instant.ofEpochMilli(extractedAt),
         loadedAt?.let { Instant.ofEpochMilli(it) },
         generationId,
         ObjectValue.from(data),
-        airbyteMeta?.let { ObjectMapper().readTree(it) },
+        airbyteMeta,
     )
 
     /**
@@ -51,13 +59,13 @@ data class OutputRecord(
         extractedAt: Long,
         generationId: Long?,
         data: Map<String, Any?>,
-        airbyteMeta: String?,
+        airbyteMeta: Meta?,
     ) : this(
         null,
         Instant.ofEpochMilli(extractedAt),
         loadedAt = null,
         generationId,
         ObjectValue.from(data),
-        airbyteMeta?.let { ObjectMapper().readTree(it) },
+        airbyteMeta,
     )
 }
