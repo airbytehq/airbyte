@@ -71,13 +71,14 @@ class NonDockerizedDestination(
 // to run multiple destination processes per test.
 // TODO only inject this when not running in CI, a la @Requires(notEnv = "CI_master_merge")
 //@Singleton
-class NonDockerizedDestinationFactory : DestinationProcessFactory {
+class NonDockerizedDestinationFactory : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
         deploymentMode: TestDeploymentMode,
     ): DestinationProcess {
+        // TODO pass test name into the destination process
         return NonDockerizedDestination(command, config, catalog, deploymentMode)
     }
 }

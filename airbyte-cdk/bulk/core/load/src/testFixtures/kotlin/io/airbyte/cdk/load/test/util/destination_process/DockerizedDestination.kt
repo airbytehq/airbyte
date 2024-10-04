@@ -38,10 +38,19 @@ class DockerizedDestination(
     config: ConfigurationSpecification?,
     catalog: ConfiguredAirbyteCatalog?,
     testDeploymentMode: TestDeploymentMode,
+    private val testName: String,
 ) : DestinationProcess {
     private val process: Process
     private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
     private val destinationStdin: BufferedWriter
+    // We use this suffix as part of the docker container name.
+    // We'll also add it to the log prefix, which helps with debugging tests
+    // that launch multiple containers.
+    private val randomSuffix =
+        RandomStringUtils.insecure().nextAlphanumeric(5).lowercase(Locale.getDefault())
+
+    private fun getMdcScope(): TestConnectorMdcScope =
+        TestConnectorMdcScope("$testName-$randomSuffix")
 
     private val stdoutDrained = CompletableDeferred<Unit>()
     private val stderrDrained = CompletableDeferred<Unit>()
@@ -65,10 +74,6 @@ class DockerizedDestination(
         // and is also mounted as a volume.
         val jobRoot = Files.createDirectories(workspaceRoot.resolve("job"))
 
-        val randomSuffix =
-            RandomStringUtils.insecure()
-                .nextAlphanumeric(5)
-                .lowercase(Locale.getDefault())
         // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
         // The old code had a ton of extra logic here, along with a max string
         // length (docker container names must be <128 chars) - none of that
@@ -138,7 +143,13 @@ class DockerizedDestination(
                     val destinationStdout = Scanner(process.inputStream)
                     while (destinationStdout.hasNextLine()) {
                         val line = destinationStdout.nextLine()
-                        val message = Jsons.readValue(line, AirbyteMessage::class.java)
+                        val message = try {
+                            Jsons.readValue(line, AirbyteMessage::class.java)
+                        } catch (e: Exception) {
+                            // If a destination logs non-json output, just echo it
+                            getMdcScope().use { logger.info { line } }
+                            continue
+                        }
                         if (message.type == AirbyteMessage.Type.LOG) {
                             // Don't capture logs, just echo them directly to our own stdout
                             val combinedMessage =
@@ -146,14 +157,20 @@ class DockerizedDestination(
                                     (if (message.log.stackTrace != null)
                                         (System.lineSeparator() + "Stack Trace: " + message.log.stackTrace)
                                     else "")
-                            when (message.log.level) {
-                                null, // this should be impossible, treat it as error
-                                AirbyteLogMessage.Level.FATAL, // klogger doesn't have a fatal level
-                                AirbyteLogMessage.Level.ERROR -> logger.error { combinedMessage }
-                                AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
-                                AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
-                                AirbyteLogMessage.Level.DEBUG -> logger.debug { combinedMessage }
-                                AirbyteLogMessage.Level.TRACE -> logger.trace { combinedMessage }
+                            getMdcScope().use {
+                                when (message.log.level) {
+                                    null, // this should be impossible, treat it as error
+                                    AirbyteLogMessage.Level
+                                        .FATAL, // klogger doesn't have a fatal level
+                                    AirbyteLogMessage.Level.ERROR ->
+                                        logger.error { combinedMessage }
+                                    AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
+                                    AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
+                                    AirbyteLogMessage.Level.DEBUG ->
+                                        logger.debug { combinedMessage }
+                                    AirbyteLogMessage.Level.TRACE ->
+                                        logger.trace { combinedMessage }
+                                }
                             }
                         } else {
                             destinationOutput.accept(message)
@@ -165,7 +182,7 @@ class DockerizedDestination(
                     // Consume stderr. Connectors shouldn't really use this,
                     // and whatever this stream contains, it's almost certainly not valid messages.
                     // Dump it straight to our own stderr.
-                    process.errorReader().forEachLine { logger.error { it } }
+                    getMdcScope().use { process.errorReader().forEachLine { logger.error { it } } }
                     stderrDrained.complete(Unit)
                 }
             }
@@ -225,7 +242,7 @@ class DockerizedDestinationFactory(
     // So we just hardcode 'dev' here; manual callers can pass in
     // whatever they want.
     @Value("dev") val imageVersion: String,
-) : DestinationProcessFactory {
+) : DestinationProcessFactory() {
     override fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification?,
@@ -238,6 +255,7 @@ class DockerizedDestinationFactory(
             config,
             catalog,
             deploymentMode,
+            testName,
         )
     }
 }

@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.test.util.destination_process
 
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 
@@ -41,8 +42,16 @@ enum class TestDeploymentMode {
     OSS
 }
 
-interface DestinationProcessFactory {
-    fun createDestinationProcess(
+abstract class DestinationProcessFactory {
+    /**
+     * Ideally we'd take this in the constructor, but that's annoying because
+     * of how junit injects TestInfo, and how Micronaut injects everything else.
+     * Instead, we'll rely on [IntegrationTest] to set this in a BeforeEach
+     * function.
+     */
+    lateinit var testName: String
+
+    abstract fun createDestinationProcess(
         command: String,
         config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,

@@ -60,7 +60,7 @@ abstract class SpecTest :
         val process =
             destinationProcessFactory.createDestinationProcess(
                 "spec",
-                deploymentMode = deploymentMode
+                deploymentMode = deploymentMode,
             )
         process.run()
         val messages = process.readMessages()
