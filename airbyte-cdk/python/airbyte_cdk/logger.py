@@ -60,9 +60,10 @@ class AirbyteLogFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         """Return a JSON representation of the log message"""
-        airbyte_level = self.level_mapping.get(record.levelno, Level.INFO)
         if "as_is" in record.__dict__.keys():
             return record.msg
+
+        airbyte_level = self.level_mapping.get(record.levelno, Level.INFO)
         if airbyte_level == Level.DEBUG:
             extras = self.extract_extra_args_from_record(record)
             debug_dict = {"type": "DEBUG", "message": record.getMessage(), "data": extras}
