@@ -133,7 +133,7 @@ logger = logging.getLogger(__name__)
 def get_model_fields(model_class: Optional[Type[BaseModel]]) -> Set[str]:
     """Fetches field names from a Pydantic model class if available."""
     if model_class is not None:
-        return set(model_class.model_fields.keys())
+        return set(model_class.__fields__.keys())
     return set()
 
 
