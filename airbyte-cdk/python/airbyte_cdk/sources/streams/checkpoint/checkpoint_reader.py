@@ -165,7 +165,11 @@ class CursorBasedCheckpointReader(CheckpointReader):
                         next_candidate_slice = self.read_and_convert_slice()
                         state_for_slice = self._cursor.select_state(next_candidate_slice)
                         has_more = state_for_slice == FULL_REFRESH_COMPLETE_STATE
-                    return StreamSlice(cursor_slice=state_for_slice or {}, partition=next_candidate_slice.partition)
+                    return StreamSlice(
+                        cursor_slice=state_for_slice or {},
+                        partition=next_candidate_slice.partition,
+                        extra_fields=next_candidate_slice.extra_fields,
+                    )
                 # The reader continues to process the current partition if it's state is still in progress
                 return StreamSlice(
                     cursor_slice=state_for_slice or {}, partition=self.current_slice.partition, extra_fields=self.current_slice.extra_fields
