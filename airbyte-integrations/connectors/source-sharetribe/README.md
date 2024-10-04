@@ -1,7 +1,13 @@
 # Sharetribe
 This directory contains the manifest-only connector for `source-sharetribe`.
 
-Sharetribe source connector for using the sharetribe API. 
+The Sharetribe source connector which ingests data from the sharetribe integrations API.
+Sharetribe is a no code marketplace builder tool. The source supports a number of API changes.
+For more information, checkout the website https://www.sharetribe.com/
+
+This source uses the OAuth configuration for handling requests.
+A client_ID and client_secret is required along with a refresh_token in order to setup a connection.
+For more details about the API, check out https://www.sharetribe.com/api-reference/integration.html
 
 ## Usage
 There are multiple ways to use this connector:
