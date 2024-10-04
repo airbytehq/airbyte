@@ -164,7 +164,7 @@ class SmartSheetAPIWrapper:
         }
         return json_schema
 
-    def read_records(self, from_dt: str) -> Iterable[Dict[str, str]]:
+    def read_records(self, from_dt: Optional[str] = None) -> Iterable[Dict[str, str]]:
         self._fetch_sheet(from_dt)
         for row in self.data.rows:
             yield self._construct_record(row)
