@@ -1,4 +1,4 @@
-# Ad-Roll
+# AdRoll
 This directory contains the manifest-only connector for `source-adroll`.
 
 This is the connector for AdRoll

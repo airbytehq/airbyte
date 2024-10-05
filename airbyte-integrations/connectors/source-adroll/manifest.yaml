@@ -14,6 +14,8 @@ definitions:
     Assets by EID:
       type: DeclarativeStream
       name: Assets by EID
+      primary_key:
+        - eid
       retriever:
         type: SimpleRetriever
         requester:
@@ -32,6 +34,8 @@ definitions:
     Segments:
       type: DeclarativeStream
       name: Segments
+      primary_key:
+        - segment_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -44,7 +48,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - segments
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -211,6 +216,8 @@ definitions:
     Pixel:
       type: DeclarativeStream
       name: Pixel
+      primary_key:
+        - eid
       retriever:
         type: SimpleRetriever
         requester:
@@ -223,7 +230,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - results
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -231,6 +239,8 @@ definitions:
     Segments for a Pixel:
       type: DeclarativeStream
       name: Segments for a Pixel
+      primary_key:
+        - eid
       retriever:
         type: SimpleRetriever
         requester:
@@ -243,7 +253,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - results
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -375,14 +386,14 @@ metadata:
     Segments for a Pixel: true
   testedStreams:
     Assets by EID:
-      streamHash: 2c54cd0907b47c932ec19deb1d43b527a23ab02b
+      streamHash: 5f80a5695a5c1cf049db594bbf0332ef21de5870
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Segments:
-      streamHash: ab996747ee1d3857b3c969425987785f94c2f68a
+      streamHash: 36b531a76ae4a5befee72c3e7454e7fdbd426dde
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -445,14 +456,14 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Pixel:
-      streamHash: 0d17ac32c8dceeafccceb934cb5c70dd0589df0f
+      streamHash: 304bb0116d64717aca5f4043eb17d96a5873320f
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     Segments for a Pixel:
-      streamHash: e09119190dc09c95c377a62c8e16690b1082a409
+      streamHash: c4023cf26107a7be4292137c0aef19b305e63433
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -489,9 +500,7 @@ schemas:
           - number
           - "null"
       eid:
-        type:
-          - string
-          - "null"
+        type: string
       filename:
         type:
           - string
@@ -532,72 +541,65 @@ schemas:
         type:
           - number
           - "null"
+    required:
+      - eid
   Segments:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      segments:
+      type:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            advertiser_id:
-              type:
-                - string
-                - "null"
-            created_date:
-              type:
-                - number
-                - "null"
-            duration:
-              type:
-                - number
-                - "null"
-            is_active:
-              type:
-                - boolean
-                - "null"
-            is_conversion:
-              type:
-                - boolean
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            pattern:
-              type:
-                - string
-                - "null"
-            segment_id:
-              type:
-                - string
-                - "null"
-            source:
-              type:
-                - string
-                - "null"
-            tags:
-              type:
-                - string
-                - "null"
-            threshold:
-              type:
-                - number
-                - "null"
-            url_match_id:
-              type:
-                - string
-                - "null"
+      advertiser_id:
+        type:
+          - string
+          - "null"
+      created_date:
+        type:
+          - number
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      is_conversion:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pattern:
+        type:
+          - string
+          - "null"
+      segment_id:
+        type: string
+      source:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - string
+          - "null"
+      threshold:
+        type:
+          - number
+          - "null"
+      url_match_id:
+        type:
+          - string
+          - "null"
+    required:
+      - segment_id
   AdGroup:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1553,123 +1555,96 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      results:
+      code:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          code:
-            type:
-              - string
-              - "null"
-          eid:
-            type:
-              - string
-              - "null"
-          is_consistent:
-            type:
-              - boolean
-              - "null"
-          status:
-            type:
-              - string
-              - "null"
+      eid:
+        type: string
+      is_consistent:
+        type:
+          - boolean
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - eid
   Segments for a Pixel:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      pagination:
+      type:
         type:
-          - object
+          - string
           - "null"
-        properties:
-          count:
-            type:
-              - number
-              - "null"
-          pages:
-            type:
-              - number
-              - "null"
-      results:
+      advertisable_eid:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            type:
-              type:
-                - string
-                - "null"
-            advertisable_eid:
-              type:
-                - string
-                - "null"
-            created_date:
-              type:
-                - string
-                - "null"
-            display_name:
-              type:
-                - string
-                - "null"
-            duration:
-              type:
-                - number
-                - "null"
-            duration_sec:
-              type:
-                - number
-                - "null"
-            eid:
-              type:
-                - string
-                - "null"
-            group:
-              type:
-                - number
-                - "null"
-            has_default_rule:
-              type:
-                - boolean
-                - "null"
-            is_active:
-              type:
-                - boolean
-                - "null"
-            match_method:
-              type:
-                - string
-                - "null"
-            name:
-              type:
-                - string
-                - "null"
-            pattern:
-              type:
-                - string
-                - "null"
-            recent_first_match:
-              type:
-                - boolean
-                - "null"
-            rule:
-              type:
-                - string
-                - "null"
-            rule_id:
-              type:
-                - number
-                - "null"
-            source:
-              type:
-                - string
-                - "null"
-            threshold:
-              type:
-                - number
-                - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      display_name:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      duration_sec:
+        type:
+          - number
+          - "null"
+      eid:
+        type: string
+      group:
+        type:
+          - number
+          - "null"
+      has_default_rule:
+        type:
+          - boolean
+          - "null"
+      is_active:
+        type:
+          - boolean
+          - "null"
+      match_method:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      pattern:
+        type:
+          - string
+          - "null"
+      recent_first_match:
+        type:
+          - boolean
+          - "null"
+      rule:
+        type:
+          - string
+          - "null"
+      rule_id:
+        type:
+          - number
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      threshold:
+        type:
+          - number
+          - "null"
+    required:
+      - eid

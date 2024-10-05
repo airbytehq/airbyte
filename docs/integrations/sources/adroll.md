@@ -1,4 +1,4 @@
-# Ad-Roll
+# AdRoll
 This is the connector for AdRoll
 
 ## Configuration
@@ -22,8 +22,8 @@ This is the connector for AdRoll
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| Assets by EID |  | No pagination | ✅ |  ❌  |
-| Segments |  | No pagination | ✅ |  ❌  |
+| Assets by EID | eid | No pagination | ✅ |  ❌  |
+| Segments | segment_id | No pagination | ✅ |  ❌  |
 | AdGroup |  | No pagination | ✅ |  ❌  |
 | Campaign |  | No pagination | ✅ |  ❌  |
 | Strategy |  | No pagination | ✅ |  ❌  |
@@ -32,8 +32,8 @@ This is the connector for AdRoll
 | Advertisable |  | No pagination | ✅ |  ❌  |
 | Active Pixels for an Advertisable |  | No pagination | ✅ |  ❌  |
 | Consent Banner Config for an Advertisable |  | No pagination | ✅ |  ❌  |
-| Pixel |  | No pagination | ✅ |  ❌  |
-| Segments for a Pixel |  | No pagination | ✅ |  ❌  |
+| Pixel | eid | No pagination | ✅ |  ❌  |
+| Segments for a Pixel | eid | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
