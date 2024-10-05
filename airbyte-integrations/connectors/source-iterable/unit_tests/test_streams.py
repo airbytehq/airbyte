@@ -21,7 +21,7 @@ def test_campaigns_metrics_csv():
 
 
 def test_campaigns_metrics_request_params():
-    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
+    stream = CampaignsMetrics(authenticator=None, region="US", start_date="2019-10-10T00:00:00")
     params = stream.request_params(stream_slice={"campaign_ids": "c101"}, stream_state=None)
     assert params == {"campaignId": "c101", "startDateTime": "2019-10-10T00:00:00"}
 
@@ -30,6 +30,7 @@ def test_campaigns_metrics_request_params():
 def test_stream_stops_on_401(config):
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}, {"id": 2}]})
     users_stream = next(filter(lambda x: x.name == "list_users", SourceIterable().streams(config=config)))
+    users_stream.region = "US"
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=2", json={}, status=401)
     slices = 0
@@ -42,6 +43,7 @@ def test_stream_stops_on_401(config):
 @responses.activate
 def test_listuser_stream_keep_working_on_500(config):
     stream = next(filter(lambda x: x.name == "list_users", SourceIterable().streams(config=config)))
+    stream.region = "US"
 
     msg_error = "An error occurred. Please try again later. If problem persists, please contact your CSM"
     generic_error1 = {"msg": msg_error, "code": "GenericError"}
@@ -82,6 +84,7 @@ def test_listuser_stream_keep_working_on_500(config):
 @responses.activate
 def test_events_read_full_refresh(config):
     stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
+    stream.region = "US"
 
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
     responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body="user1\nuser2\nuser3\nuser4")
@@ -116,6 +119,7 @@ def test_events_read_full_refresh(config):
 def test_events_memory_limit(config, large_events_response):
     lines_in_response, file_path = large_events_response
     stream = next(filter(lambda x: x.name == "events", SourceIterable().streams(config=config)))
+    stream.region = "US"
 
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
     responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body="user1\nuser2\nuser3\nuser4")
@@ -150,14 +154,14 @@ def test_campaigns_metric_slicer(config):
         json={"id": 1, "Total Email Sends": 1},
     )
 
-    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
+    stream = CampaignsMetrics(authenticator=None, region="US", start_date="2019-10-10T00:00:00")
     expected = [{"campaign_ids": [1]}]
 
     assert list(stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected
 
 
 def test_templates_parse_response():
-    stream = Templates(authenticator=None, start_date="2019-10-10T00:00:00")
+    stream = Templates(authenticator=None, region="US", start_date="2019-10-10T00:00:00")
     with responses.RequestsMock() as rsps:
         rsps.add(
             responses.GET,
@@ -182,7 +186,7 @@ def test_templates_parse_response():
     ],
 )
 def test_path(config, stream, date, slice, expected_path):
-    args = {"authenticator": None}
+    args = {"authenticator": None, "region": "US"}
     if date:
         args["start_date"] = "2019-10-10T00:00:00"
 
@@ -191,7 +195,7 @@ def test_path(config, stream, date, slice, expected_path):
 
 def test_campaigns_metrics_parse_response():
 
-    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
+    stream = CampaignsMetrics(authenticator=None, region="US", start_date="2019-10-10T00:00:00")
     with responses.RequestsMock() as rsps:
         rsps.add(
             responses.GET,

@@ -31,13 +31,19 @@ class IterableStream(HttpStream, ABC):
     # to prevent 429 error on other streams
     ignore_further_slices = False
 
-    url_base = "https://api.iterable.com/api/"
     primary_key = "id"
 
-    def __init__(self, authenticator):
+    def __init__(self, authenticator, region):
         self._cred = authenticator
+        self._region = region
         self._slice_retry = 0
         super().__init__(authenticator)
+
+    @property
+    def url_base(self) -> str:
+        if self._region.upper() == "EU":
+            return "https://api.eu.iterable.com/api/"
+        return "https://api.iterable.com/api/"
 
     @property
     def retry_factor(self) -> int:
@@ -378,7 +384,7 @@ class CampaignsMetrics(IterableStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        lists = Campaigns(authenticator=self._cred)
+        lists = Campaigns(authenticator=self._cred, region=self._region)
         campaign_ids = []
         for list_record in lists.read_records(sync_mode=kwargs.get("sync_mode", SyncMode.full_refresh)):
             campaign_ids.append(list_record["id"])

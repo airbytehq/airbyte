@@ -14,7 +14,8 @@ To set up the Iterable source connector, you'll need the Iterable [`Server-side`
 4. Enter the name for the Iterable connector.
 5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
 6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. Click **Set up source**.
+7. For **Iterable Region**, select the region where your Iterable data is hosted. Most Iterable customers use Iterable's US data center.
+8. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -83,6 +84,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.0 | 2024-09-04 | [44508](https://github.com/airbytehq/airbyte/pull/44508) | Add Iterable EU API support |
 | 0.6.12 | 2024-09-28 | [46155](https://github.com/airbytehq/airbyte/pull/46155) | Update dependencies |
 | 0.6.11 | 2024-09-21 | [45828](https://github.com/airbytehq/airbyte/pull/45828) | Update dependencies |
 | 0.6.10 | 2024-09-14 | [45518](https://github.com/airbytehq/airbyte/pull/45518) | Update dependencies |
