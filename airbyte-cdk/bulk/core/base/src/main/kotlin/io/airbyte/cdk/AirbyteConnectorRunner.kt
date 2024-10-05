@@ -5,8 +5,10 @@ import io.airbyte.cdk.command.ConnectorCommandLinePropertySource
 import io.airbyte.cdk.command.MetadataYamlPropertySource
 import io.micronaut.configuration.picocli.MicronautFactory
 import io.micronaut.context.ApplicationContext
+import io.micronaut.context.RuntimeBeanDefinition
 import io.micronaut.context.env.CommandLinePropertySource
 import io.micronaut.context.env.Environment
+import io.micronaut.context.env.MapPropertySource
 import io.micronaut.core.cli.CommandLine as MicronautCommandLine
 import java.nio.file.Path
 import kotlin.system.exitProcess
@@ -17,8 +19,11 @@ import picocli.CommandLine.Model.UsageMessageSpec
 
 /** Source connector entry point. */
 class AirbyteSourceRunner(
+    /** CLI args. */
     args: Array<out String>,
-) : AirbyteConnectorRunner("source", args) {
+    /** Micronaut bean definition overrides, used only for tests. */
+    vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
+) : AirbyteConnectorRunner("source", args, testBeanDefinitions) {
     companion object {
         @JvmStatic
         fun run(vararg args: String) {
@@ -29,8 +34,12 @@ class AirbyteSourceRunner(
 
 /** Destination connector entry point. */
 class AirbyteDestinationRunner(
+    /** CLI args. */
     args: Array<out String>,
-) : AirbyteConnectorRunner("destination", args) {
+    testEnvironments: Map<String, String> = emptyMap(),
+    /** Micronaut bean definition overrides, used only for tests. */
+    vararg testBeanDefinitions: RuntimeBeanDefinition<*>,
+) : AirbyteConnectorRunner("destination", args, testBeanDefinitions, testEnvironments) {
     companion object {
         @JvmStatic
         fun run(vararg args: String) {
@@ -46,6 +55,8 @@ class AirbyteDestinationRunner(
 sealed class AirbyteConnectorRunner(
     val connectorType: String,
     val args: Array<out String>,
+    val testBeanDefinitions: Array<out RuntimeBeanDefinition<*>>,
+    val testProperties: Map<String, String> = emptyMap(),
 ) {
     val envs: Array<String> = arrayOf(Environment.CLI, connectorType)
 
@@ -61,15 +72,20 @@ sealed class AirbyteConnectorRunner(
         val ctx: ApplicationContext =
             ApplicationContext.builder(R::class.java, *envs)
                 .propertySources(
-                    airbytePropertySource,
-                    commandLinePropertySource,
-                    MetadataYamlPropertySource(),
+                    *listOfNotNull(
+                            MapPropertySource("additional_properties", testProperties),
+                            airbytePropertySource,
+                            commandLinePropertySource,
+                            MetadataYamlPropertySource(),
+                        )
+                        .toTypedArray(),
                 )
+                .beanDefinitions(*testBeanDefinitions)
                 .start()
         val isTest: Boolean = ctx.environment.activeNames.contains(Environment.TEST)
         val picocliFactory: CommandLine.IFactory = MicronautFactory(ctx)
         val picocliCommandLine: CommandLine =
-            picocliCommandLineFactory.build<AirbyteConnectorRunnable>(picocliFactory, isTest)
+            picocliCommandLineFactory.build<AirbyteConnectorRunnable>(picocliFactory)
         val exitCode: Int = picocliCommandLine.execute(*args)
         if (!isTest) {
             // Required by the platform, otherwise syncs may hang.
@@ -82,10 +98,7 @@ sealed class AirbyteConnectorRunner(
 class PicocliCommandLineFactory(
     val runner: AirbyteConnectorRunner,
 ) {
-    inline fun <reified R : Runnable> build(
-        factory: CommandLine.IFactory,
-        isTest: Boolean,
-    ): CommandLine {
+    inline fun <reified R : Runnable> build(factory: CommandLine.IFactory): CommandLine {
         val commandSpec: CommandLine.Model.CommandSpec =
             CommandLine.Model.CommandSpec.wrapWithoutInspection(R::class.java, factory)
                 .name("airbyte-${runner.connectorType}-connector")
@@ -95,10 +108,6 @@ class PicocliCommandLineFactory(
                 .addOption(config)
                 .addOption(catalog)
                 .addOption(state)
-
-        if (isTest) {
-            commandSpec.addOption(output)
-        }
         return CommandLine(commandSpec, factory)
     }
 
@@ -167,11 +176,5 @@ class PicocliCommandLineFactory(
             "state",
             "path to the json-encoded state file",
             "Required by the following commands: read",
-        )
-    val output: OptionSpec =
-        fileOption(
-            "output",
-            "path to the output file",
-            "When present, the connector writes to this file instead of stdout",
         )
 }

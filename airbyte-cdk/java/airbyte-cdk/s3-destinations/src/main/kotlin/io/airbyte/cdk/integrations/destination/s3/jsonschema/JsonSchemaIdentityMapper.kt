@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.destination.s3.jsonschema
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.commons.jackson.MoreMappers
+import io.airbyte.commons.json.Jsons
 
 open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
     private fun makeType(
@@ -121,7 +122,7 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
             // Denormalize the (non-type) properties from the parent onto each type
             schema.fields().forEach { (key, value) ->
                 if (key != "type") {
-                    newTypeObj.set<ObjectNode>(key, value as ObjectNode)
+                    newTypeObj.set<ObjectNode>(key, value)
                 }
             }
 
@@ -145,5 +146,9 @@ open class JsonSchemaIdentityMapper : JsonSchemaMapper() {
         newUnionSchema.replace("oneOf", newOptions)
 
         return newUnionSchema
+    }
+
+    override fun mapUnknown(schema: ObjectNode): ObjectNode {
+        return Jsons.emptyObject() as ObjectNode
     }
 }

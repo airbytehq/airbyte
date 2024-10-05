@@ -84,22 +84,26 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.18  | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies                                     |
-| 0.2.17  | 2024-08-17 | [43898](https://github.com/airbytehq/airbyte/pull/43898) | Update dependencies |
-| 0.2.16  | 2024-08-10 | [43584](https://github.com/airbytehq/airbyte/pull/43584) | Update dependencies |
-| 0.2.15  | 2024-08-03 | [43093](https://github.com/airbytehq/airbyte/pull/43093) | Update dependencies |
-| 0.2.14  | 2024-07-27 | [42684](https://github.com/airbytehq/airbyte/pull/42684) | Update dependencies |
-| 0.2.13  | 2024-07-20 | [42263](https://github.com/airbytehq/airbyte/pull/42263) | Update dependencies |
-| 0.2.12  | 2024-07-13 | [41758](https://github.com/airbytehq/airbyte/pull/41758) | Update dependencies |
-| 0.2.11  | 2024-07-10 | [41368](https://github.com/airbytehq/airbyte/pull/41368) | Update dependencies |
-| 0.2.10  | 2024-07-09 | [41173](https://github.com/airbytehq/airbyte/pull/41173) | Update dependencies |
-| 0.2.9   | 2024-07-06 | [40836](https://github.com/airbytehq/airbyte/pull/40836) | Update dependencies |
-| 0.2.8   | 2024-06-29 | [40630](https://github.com/airbytehq/airbyte/pull/40630) | Update dependencies |
-| 0.2.7   | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
-| 0.2.6   | 2024-06-25 | [40468](https://github.com/airbytehq/airbyte/pull/40468) | Update dependencies |
-| 0.2.5   | 2024-06-23 | [40225](https://github.com/airbytehq/airbyte/pull/40225) | Update dependencies |
-| 0.2.4   | 2024-06-22 | [40047](https://github.com/airbytehq/airbyte/pull/40047) | Update dependencies |
-| 0.2.3   | 2024-06-04 | [38955](https://github.com/airbytehq/airbyte/pull/38955) | [autopull] Upgrade base image to v1.2.1 |
+| 0.2.22 | 2024-09-14 | [45489](https://github.com/airbytehq/airbyte/pull/45489) | Update dependencies |
+| 0.2.21 | 2024-09-07 | [45313](https://github.com/airbytehq/airbyte/pull/45313) | Update dependencies |
+| 0.2.20 | 2024-08-31 | [44982](https://github.com/airbytehq/airbyte/pull/44982) | Update dependencies |
+| 0.2.19 | 2024-08-24 | [44694](https://github.com/airbytehq/airbyte/pull/44694) | Update dependencies |
+| 0.2.18 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
+| 0.2.17 | 2024-08-17 | [43898](https://github.com/airbytehq/airbyte/pull/43898) | Update dependencies |
+| 0.2.16 | 2024-08-10 | [43584](https://github.com/airbytehq/airbyte/pull/43584) | Update dependencies |
+| 0.2.15 | 2024-08-03 | [43093](https://github.com/airbytehq/airbyte/pull/43093) | Update dependencies |
+| 0.2.14 | 2024-07-27 | [42684](https://github.com/airbytehq/airbyte/pull/42684) | Update dependencies |
+| 0.2.13 | 2024-07-20 | [42263](https://github.com/airbytehq/airbyte/pull/42263) | Update dependencies |
+| 0.2.12 | 2024-07-13 | [41758](https://github.com/airbytehq/airbyte/pull/41758) | Update dependencies |
+| 0.2.11 | 2024-07-10 | [41368](https://github.com/airbytehq/airbyte/pull/41368) | Update dependencies |
+| 0.2.10 | 2024-07-09 | [41173](https://github.com/airbytehq/airbyte/pull/41173) | Update dependencies |
+| 0.2.9 | 2024-07-06 | [40836](https://github.com/airbytehq/airbyte/pull/40836) | Update dependencies |
+| 0.2.8 | 2024-06-29 | [40630](https://github.com/airbytehq/airbyte/pull/40630) | Update dependencies |
+| 0.2.7 | 2024-06-27 | [40215](https://github.com/airbytehq/airbyte/pull/40215) | Replaced deprecated AirbyteLogger with logging.Logger |
+| 0.2.6 | 2024-06-25 | [40468](https://github.com/airbytehq/airbyte/pull/40468) | Update dependencies |
+| 0.2.5 | 2024-06-23 | [40225](https://github.com/airbytehq/airbyte/pull/40225) | Update dependencies |
+| 0.2.4 | 2024-06-22 | [40047](https://github.com/airbytehq/airbyte/pull/40047) | Update dependencies |
+| 0.2.3 | 2024-06-04 | [38955](https://github.com/airbytehq/airbyte/pull/38955) | [autopull] Upgrade base image to v1.2.1 |
 | 0.2.2   | 2024-06-04 | [#39092](https://github.com/airbytehq/airbyte/pull/39092) | Fix writing when multiple chunks exist for a document.
 | 0.2.1   | 2024-06-03 | [#38830](https://github.com/airbytehq/airbyte/pull/38830) | Add handling for unexpected/undefined state codes.
 | 0.2.0   | 2024-05-30 | [#38337](https://github.com/airbytehq/airbyte/pull/38337) | Fix `merge` behavior when multiple chunks exist for a document. Includes additional refactoring and improvements.

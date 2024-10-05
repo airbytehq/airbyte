@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.9.3
+
+Undo failure trace message test case changes from 3.9.1
+
 ## 3.9.2
 
 Relax test_oneof_usage criteria for constant value definitions.

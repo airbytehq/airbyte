@@ -11,6 +11,10 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
+from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.auth.jwt import JwtAlgorithm
@@ -27,7 +31,7 @@ from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
-from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
@@ -35,6 +39,7 @@ from airbyte_cdk.sources.declarative.incremental import (
     CursorFactory,
     DatetimeBasedCursor,
     DeclarativeCursor,
+    GlobalSubstreamCursor,
     PerPartitionCursor,
     ResumableFullRefreshCursor,
 )
@@ -45,6 +50,8 @@ from airbyte_cdk.sources.declarative.models import CustomStateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncJobStatusMap as AsyncJobStatusMapModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AsyncRetriever as AsyncRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
@@ -81,6 +88,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtAuthenticator as JwtAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtHeaders as JwtHeadersModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JwtPayload as JwtPayloadModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import KeysToLower as KeysToLowerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     LegacySessionTokenAuthenticator as LegacySessionTokenAuthenticatorModel,
 )
@@ -123,6 +131,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitTimeFromHeaderBackoffStrategy,
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
@@ -132,19 +141,25 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     StopConditionPaginationStrategyDecorator,
 )
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    DatetimeBasedRequestOptionsProvider,
+    DefaultRequestOptionsProvider,
+    InterpolatedRequestOptionsProvider,
+    RequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever, SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTransformation, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformation import KeysToLowerTransformation
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.sources.utils.transform import TypeTransformer
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
@@ -158,6 +173,7 @@ class ModelToComponentFactory:
         limit_slices_fetched: Optional[int] = None,
         emit_connector_builder_messages: bool = False,
         disable_retries: bool = False,
+        disable_cache: bool = False,
         message_repository: Optional[MessageRepository] = None,
     ):
         self._init_mappings()
@@ -165,6 +181,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._disable_cache = disable_cache
         self._message_repository = message_repository or InMemoryMessageRepository(  # type: ignore
             self._evaluate_log_level(emit_connector_builder_messages)
         )
@@ -205,6 +222,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonlDecoderModel: self.create_jsonl_decoder,
+            KeysToLowerModel: self.create_keys_to_lower_transformation,
             IterableDecoderModel: self.create_iterable_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
             JwtAuthenticatorModel: self.create_jwt_authenticator,
@@ -229,6 +247,7 @@ class ModelToComponentFactory:
             SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
+            AsyncRetrieverModel: self.create_async_retriever,
         }
 
         # Needed for the case where we need to perform a second parse on the fields of a custom component
@@ -287,6 +306,9 @@ class ModelToComponentFactory:
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
+
+    def create_keys_to_lower_transformation(self, model: KeysToLowerModel, config: Config, **kwargs: Any) -> KeysToLowerTransformation:
+        return KeysToLowerTransformation()
 
     @staticmethod
     def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type[Any]]:
@@ -629,12 +651,48 @@ class ModelToComponentFactory:
             and hasattr(model.incremental_sync, "is_client_side_incremental")
             and model.incremental_sync.is_client_side_incremental
         ):
-            if combined_slicers and not isinstance(combined_slicers, (DatetimeBasedCursor, PerPartitionCursor)):
+            supported_slicers = (DatetimeBasedCursor, GlobalSubstreamCursor, PerPartitionCursor)
+            if combined_slicers and not isinstance(combined_slicers, supported_slicers):
                 raise ValueError("Unsupported Slicer is used. PerPartitionCursor should be used here instead")
             client_side_incremental_sync = {
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "per_partition_cursor": combined_slicers if isinstance(combined_slicers, PerPartitionCursor) else None,
+                "is_global_substream_cursor": isinstance(combined_slicers, GlobalSubstreamCursor),
             }
+
+        if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
+            cursor_model = model.incremental_sync
+
+            end_time_option = (
+                RequestOption(
+                    inject_into=RequestOptionType(cursor_model.end_time_option.inject_into.value),
+                    field_name=cursor_model.end_time_option.field_name,
+                    parameters=cursor_model.parameters or {},
+                )
+                if cursor_model.end_time_option
+                else None
+            )
+            start_time_option = (
+                RequestOption(
+                    inject_into=RequestOptionType(cursor_model.start_time_option.inject_into.value),
+                    field_name=cursor_model.start_time_option.field_name,
+                    parameters=cursor_model.parameters or {},
+                )
+                if cursor_model.start_time_option
+                else None
+            )
+
+            request_options_provider = DatetimeBasedRequestOptionsProvider(
+                start_time_option=start_time_option,
+                end_time_option=end_time_option,
+                partition_field_start=cursor_model.partition_field_end,
+                partition_field_end=cursor_model.partition_field_end,
+                config=config,
+                parameters=model.parameters or {},
+            )
+        else:
+            request_options_provider = None
+
         transformations = []
         if model.transformations:
             for transformation_model in model.transformations:
@@ -645,6 +703,7 @@ class ModelToComponentFactory:
             name=model.name,
             primary_key=primary_key,
             stream_slicer=combined_slicers,
+            request_options_provider=request_options_provider,
             stop_condition_on_cursor=stop_condition_on_cursor,
             client_side_incremental_sync=client_side_incremental_sync,
             transformations=transformations,
@@ -686,6 +745,7 @@ class ModelToComponentFactory:
             and model.retriever.partition_router
         ):
             stream_slicer_model = model.retriever.partition_router
+
             if isinstance(stream_slicer_model, list):
                 stream_slicer = CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -695,12 +755,16 @@ class ModelToComponentFactory:
 
         if model.incremental_sync and stream_slicer:
             incremental_sync_model = model.incremental_sync
-            return PerPartitionCursor(
-                cursor_factory=CursorFactory(
-                    lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
-                ),
-                partition_router=stream_slicer,
-            )
+            if hasattr(incremental_sync_model, "global_substream_cursor") and incremental_sync_model.global_substream_cursor:
+                cursor_component = self._create_component_from_model(model=incremental_sync_model, config=config)
+                return GlobalSubstreamCursor(stream_cursor=cursor_component, partition_router=stream_slicer)
+            else:
+                return PerPartitionCursor(
+                    cursor_factory=CursorFactory(
+                        lambda: self._create_component_from_model(model=incremental_sync_model, config=config),
+                    ),
+                    partition_router=stream_slicer,
+                )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
@@ -817,6 +881,8 @@ class ModelToComponentFactory:
         assert model.use_cache is not None  # for mypy
         assert model.http_method is not None  # for mypy
 
+        use_cache = model.use_cache and not self._disable_cache
+
         return HttpRequester(
             name=name,
             url_base=model.url_base,
@@ -829,7 +895,7 @@ class ModelToComponentFactory:
             disable_retries=self._disable_retries,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
-            use_cache=model.use_cache,
+            use_cache=use_cache,
             decoder=decoder,
             stream_response=decoder.is_stream_response() if decoder else False,
         )
@@ -1101,6 +1167,7 @@ class ModelToComponentFactory:
         name: str,
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         stream_slicer: Optional[StreamSlicer],
+        request_options_provider: Optional[RequestOptionsProvider] = None,
         stop_condition_on_cursor: bool = False,
         client_side_incremental_sync: Optional[Dict[str, Any]] = None,
         transformations: List[RecordTransformation],
@@ -1115,10 +1182,20 @@ class ModelToComponentFactory:
             client_side_incremental_sync=client_side_incremental_sync,
         )
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
-        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 
         # Define cursor only if per partition or common incremental support is needed
         cursor = stream_slicer if isinstance(stream_slicer, DeclarativeCursor) else None
+
+        if not isinstance(stream_slicer, DatetimeBasedCursor) or type(stream_slicer) is not DatetimeBasedCursor:
+            # Many of the custom component implementations of DatetimeBasedCursor override get_request_params() (or other methods).
+            # Because we're decoupling RequestOptionsProvider from the Cursor, custom components will eventually need to reimplement
+            # their own RequestOptionsProvider. However, right now the existing StreamSlicer/Cursor still can act as the SimpleRetriever's
+            # request_options_provider
+            request_options_provider = stream_slicer or DefaultRequestOptionsProvider(parameters={})
+        elif not request_options_provider:
+            request_options_provider = DefaultRequestOptionsProvider(parameters={})
+
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
 
         cursor_used_for_stop_condition = cursor if stop_condition_on_cursor else None
         paginator = (
@@ -1143,6 +1220,7 @@ class ModelToComponentFactory:
                 requester=requester,
                 record_selector=record_selector,
                 stream_slicer=stream_slicer,
+                request_option_provider=request_options_provider,
                 cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched or 5,
@@ -1156,9 +1234,127 @@ class ModelToComponentFactory:
             requester=requester,
             record_selector=record_selector,
             stream_slicer=stream_slicer,
+            request_option_provider=request_options_provider,
             cursor=cursor,
             config=config,
             ignore_stream_slicer_parameters_on_paginated_requests=ignore_stream_slicer_parameters_on_paginated_requests,
+            parameters=model.parameters or {},
+        )
+
+    def _create_async_job_status_mapping(
+        self, model: AsyncJobStatusMapModel, config: Config, **kwargs: Any
+    ) -> Mapping[str, AsyncJobStatus]:
+        api_status_to_cdk_status = {}
+        for cdk_status, api_statuses in model.dict().items():
+            if cdk_status == "type":
+                # This is an element of the dict because of the typing of the CDK but it is not a CDK status
+                continue
+
+            for status in api_statuses:
+                if status in api_status_to_cdk_status:
+                    raise ValueError(
+                        f"API status {status} is already set for CDK status {cdk_status}. Please ensure API statuses are only provided once"
+                    )
+                api_status_to_cdk_status[status] = self._get_async_job_status(cdk_status)
+        return api_status_to_cdk_status
+
+    def _get_async_job_status(self, status: str) -> AsyncJobStatus:
+        match status:
+            case "running":
+                return AsyncJobStatus.RUNNING
+            case "completed":
+                return AsyncJobStatus.COMPLETED
+            case "failed":
+                return AsyncJobStatus.FAILED
+            case "timeout":
+                return AsyncJobStatus.TIMED_OUT
+            case _:
+                raise ValueError(f"Unsupported CDK status {status}")
+
+    def create_async_retriever(
+        self,
+        model: AsyncRetrieverModel,
+        config: Config,
+        *,
+        name: str,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],  # this seems to be needed to match create_simple_retriever
+        stream_slicer: Optional[StreamSlicer],
+        client_side_incremental_sync: Optional[Dict[str, Any]] = None,
+        transformations: List[RecordTransformation],
+        **kwargs: Any,
+    ) -> AsyncRetriever:
+
+        decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
+        record_selector = self._create_component_from_model(
+            model=model.record_selector,
+            config=config,
+            decoder=decoder,
+            transformations=transformations,
+            client_side_incremental_sync=client_side_incremental_sync,
+        )
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+        creation_requester = self._create_component_from_model(
+            model=model.creation_requester, decoder=decoder, config=config, name=f"job creation - {name}"
+        )
+        polling_requester = self._create_component_from_model(
+            model=model.polling_requester, decoder=decoder, config=config, name=f"job polling - {name}"
+        )
+        job_download_components_name = f"job download - {name}"
+        download_requester = self._create_component_from_model(
+            model=model.download_requester, decoder=decoder, config=config, name=job_download_components_name
+        )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
+            if model.download_paginator
+            else NoPagination(parameters={}),
+            config=config,
+            parameters={},
+        )
+        abort_requester = (
+            self._create_component_from_model(model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}")
+            if model.abort_requester
+            else None
+        )
+        delete_requester = (
+            self._create_component_from_model(model=model.delete_requester, decoder=decoder, config=config, name=f"job delete - {name}")
+            if model.delete_requester
+            else None
+        )
+        status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
+        urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
+        job_repository: AsyncJobRepository = AsyncHttpJobRepository(
+            creation_requester=creation_requester,
+            polling_requester=polling_requester,
+            download_retriever=download_retriever,
+            abort_requester=abort_requester,
+            delete_requester=delete_requester,
+            status_extractor=status_extractor,
+            status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
+            urls_extractor=urls_extractor,
+        )
+
+        return AsyncRetriever(
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                job_repository,
+                stream_slices,
+                JobTracker(1),  # FIXME eventually make the number of concurrent jobs in the API configurable. Until then, we limit to 1
+                self._message_repository,
+                has_bulk_parent=False,  # FIXME work would need to be done here in order to detect if a stream as a parent stream that is bulk
+            ),
+            record_selector=record_selector,
+            stream_slicer=stream_slicer,
+            config=config,
             parameters=model.parameters or {},
         )
 
@@ -1191,6 +1387,7 @@ class ModelToComponentFactory:
             limit_slices_fetched=self._limit_slices_fetched,
             emit_connector_builder_messages=self._emit_connector_builder_messages,
             disable_retries=self._disable_retries,
+            disable_cache=self._disable_cache,
             message_repository=LogAppenderMessageRepositoryDecorator(
                 {"airbyte_cdk": {"stream": {"is_substream": True}}, "http": {"is_auxiliary": True}},
                 self._message_repository,

@@ -98,7 +98,7 @@ Airbyte passes both the `data` payload along with text blocks that are intended 
 
 </details>
 <details>
-  <summary>Succesful Sync</summary>
+  <summary>Successful Sync</summary>
 
 ```
 {

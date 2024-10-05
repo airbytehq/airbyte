@@ -5,6 +5,7 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.jdbc.JDBC_PROPERTY_PREFIX
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
@@ -20,10 +21,10 @@ sealed class JdbcPartitionsCreatorFactory<
     override fun make(
         stateQuerier: StateQuerier,
         feed: Feed,
-    ): PartitionsCreator {
+    ): PartitionsCreator? {
         val opaqueStateValue: OpaqueStateValue? = stateQuerier.current(feed)
         return when (feed) {
-            is Global -> CreateNoPartitions
+            is Global -> null
             is Stream -> {
                 val partition: P? = partitionFactory.create(feed, opaqueStateValue)
                 if (partition == null) {
@@ -68,6 +69,4 @@ class JdbcConcurrentPartitionsCreatorFactory<
         JdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }
 
-const val JDBC_PROPERTY_PREFIX = "airbyte.connector.extract.jdbc"
-
-private const val MODE_PROPERTY = "$JDBC_PROPERTY_PREFIX.mode"
+private const val MODE_PROPERTY = "${JDBC_PROPERTY_PREFIX}.mode"

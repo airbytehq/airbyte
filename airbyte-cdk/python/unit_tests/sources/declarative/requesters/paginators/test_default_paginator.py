@@ -247,7 +247,7 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
     ids=[
         "test_reset_inject_on_first_request",
         "test_reset_no_inject_on_first_request",
-    ]
+    ],
 )
 def test_reset(inject_on_first_request):
     page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})

@@ -7,15 +7,15 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
@@ -41,6 +41,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.postgresql.PGProperty.CURRENT_SCHEMA;
 import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
+import static org.postgresql.PGProperty.TCP_KEEP_ALIVE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -52,6 +53,8 @@ import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -62,8 +65,6 @@ import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
@@ -72,6 +73,8 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageP
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -158,21 +161,32 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
       // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
       // https://github.com/airbytehq/airbyte/issues/24796
-      PREPARE_THRESHOLD, "0");
+      PREPARE_THRESHOLD, "0", TCP_KEEP_ALIVE, "true");
 
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource(PostgresSource source) {
     return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
   PostgresSource() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  PostgresSource(FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
+    this.featureFlags = featureFlags;
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
   }
 
   @Override

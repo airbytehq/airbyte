@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.44.15'
+    cdkVersionRequired = '0.46.1'
     features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
@@ -27,26 +27,27 @@ application {
 dependencies {
 
     // csv
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
-    implementation 'org.apache.commons:commons-csv:1.4'
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.772'
+    implementation 'com.amazonaws:aws-java-sdk-iam:1.12.772'
+    implementation 'org.apache.commons:commons-csv:1.11.0'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.4'
 
     // parquet
-    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
+    implementation ('org.apache.hadoop:hadoop-common:3.4.0') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
         exclude group: 'org.apache.zookeeper'
     }
-    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
+    implementation ('org.apache.hadoop:hadoop-aws:3.4.0') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.4.0') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
         exclude group: 'org.apache.zookeeper'
     }
-    implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
+    implementation ('org.apache.parquet:parquet-avro:1.14.2') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('com.github.airbytehq:json-avro-converter:1.1.3') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
     implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
-    testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
-    testImplementation "org.mockito:mockito-inline:4.1.0"
+    testImplementation 'org.apache.commons:commons-lang3:3.17.0'
+    testImplementation 'org.xerial.snappy:snappy-java:1.1.10.7'
+    testImplementation "org.mockito:mockito-inline:5.2.0"
 }

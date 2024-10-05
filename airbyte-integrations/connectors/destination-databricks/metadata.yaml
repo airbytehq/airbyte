@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 3.2.1
+  dockerImageTag: 3.3.0
   dockerRepository: airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
@@ -35,7 +35,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: certified
   supportsRefreshes: true
   connectorTestSuitesOptions:
     - suite: unitTests

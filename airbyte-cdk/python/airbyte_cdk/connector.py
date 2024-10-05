@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
+from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, ConnectorSpecificationSerializer
 
 
 def load_optional_package_file(package: str, filename: str) -> Optional[bytes]:
@@ -84,7 +84,7 @@ class BaseConnector(ABC, Generic[TConfig]):
         else:
             raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 
-        return ConnectorSpecification.parse_obj(spec_obj)
+        return ConnectorSpecificationSerializer.load(spec_obj)
 
     @abstractmethod
     def check(self, logger: logging.Logger, config: TConfig) -> AirbyteConnectionStatus:

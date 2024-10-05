@@ -15,22 +15,22 @@ interface JdbcSourceConfiguration : SourceConfiguration {
     /** Properties map (with username, password, etc.) passed along to the JDBC driver. */
     val jdbcProperties: Map<String, String>
 
-    /** Ordered set of schemas for the connector to consider. */
-    val schemas: Set<String>
+    /** Ordered set of namespaces (typically, schemas) for the connector to consider. */
+    val namespaces: Set<String>
 
     /** When set, each table is queried individually to check for SELECT privileges. */
     val checkPrivileges: Boolean
         get() = true
 
     /**
-     * Micronaut factory which glues [ConfigurationJsonObjectSupplier] and
+     * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [SourceConfigurationFactory] together to produce a [JdbcSourceConfiguration] singleton.
      */
     @Factory
     private class MicronautFactory {
         @Singleton
-        fun <I : ConfigurationJsonObjectBase> jdbcSourceConfig(
-            pojoSupplier: ConfigurationJsonObjectSupplier<I>,
+        fun <I : ConfigurationSpecification> jdbcSourceConfig(
+            pojoSupplier: ConfigurationSpecificationSupplier<I>,
             factory: SourceConfigurationFactory<I, out JdbcSourceConfiguration>,
         ): JdbcSourceConfiguration = factory.make(pojoSupplier.get())
     }

@@ -520,6 +520,17 @@ class CsvReaderTest(unittest.TestCase):
         data_generator = self._read_data()
         assert list(data_generator) == [{"header1": "1", "header2": long_string}]
 
+    def test_read_data_with_encoding_error(self) -> None:
+        self._stream_reader.open_file.return_value = CsvFileBuilder().with_data(["something"]).build()
+        self._csv_reader._get_headers = Mock(side_effect=UnicodeDecodeError("encoding", b"", 0, 1, "reason"))
+
+        with pytest.raises(AirbyteTracedException) as ate:
+            data_generator = self._read_data()
+            assert len(list(data_generator)) == 0
+
+        assert "encoding" in ate.value.message
+        assert self._csv_reader._get_headers.called
+
     def _read_data(self) -> Generator[Dict[str, str], None, None]:
         data_generator = self._csv_reader.read_data(
             self._config,

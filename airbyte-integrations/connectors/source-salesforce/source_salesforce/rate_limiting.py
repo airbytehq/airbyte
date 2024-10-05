@@ -9,9 +9,9 @@ from typing import Any, Mapping, Optional, Union
 
 import backoff
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, ResponseAction
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from airbyte_protocol.models import FailureType
 from requests import codes, exceptions  # type: ignore[import]
 
 RESPONSE_CONSUMPTION_EXCEPTIONS = (
@@ -78,6 +78,10 @@ class SalesforceErrorHandler(ErrorHandler):
             )
         elif isinstance(response, requests.Response):
             if response.ok:
+                if self._is_bulk_job_status_check(response) and response.json().get("state") == "Failed":
+                    # Important: this means that there are no retry for Salesforce jobs that once they fail. If we want to enable retry,
+                    # we will need to be more granular by reading the `errorMessage`
+                    raise BulkNotSupportedException(f"Query job with id: `{response.json().get('id')}` failed")
                 return ErrorResolution(ResponseAction.IGNORE, None, None)
 
             if not (400 <= response.status_code < 500) or response.status_code in _RETRYABLE_400_STATUS_CODES:
@@ -127,9 +131,15 @@ class SalesforceErrorHandler(ErrorHandler):
         )
 
     @staticmethod
+    def _is_bulk_job_status_check(response: requests.Response) -> bool:
+        """Regular string ensures format used only for job status: /services/data/vXX.X/jobs/query/<queryJobId>,
+        see https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/query_get_one_job.htm"""
+        return response.request.method == "GET" and bool(re.compile(r"/services/data/v\d{2}\.\d/jobs/query/[^/]+$").search(response.url))
+
+    @staticmethod
     def _is_bulk_job_creation(response: requests.Response) -> bool:
         # TODO comment on PR: I don't like that because it duplicates the format of the URL but with a test at least we should be fine to valide once it changes
-        return bool(re.compile(r"services/data/[A-Za-z0-9.]+/jobs/query/?$").search(response.url))
+        return response.request.method == "POST" and bool(re.compile(r"services/data/v\d{2}\.\d/jobs/query/?$").search(response.url))
 
     def _handle_bulk_job_creation_endpoint_specific_errors(
         self, response: requests.Response, error_code: Optional[str], error_message: str
