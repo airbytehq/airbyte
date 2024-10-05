@@ -27,10 +27,15 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
             when (message) {
                 is StreamCheckpoint ->
                     AirbyteStateMessage()
-                        .withSourceStats(
-                            AirbyteStateStats()
-                                .withRecordCount(message.sourceStats.recordCount.toDouble())
-                        )
+                        .also {
+                            if (message.sourceStats != null) {
+                                it.sourceStats =
+                                    AirbyteStateStats()
+                                        .withRecordCount(
+                                            message.sourceStats!!.recordCount.toDouble()
+                                        )
+                            }
+                        }
                         .withDestinationStats(
                             message.destinationStats?.let {
                                 AirbyteStateStats().withRecordCount(it.recordCount.toDouble())
@@ -48,10 +53,15 @@ class DefaultMessageConverter : MessageConverter<CheckpointMessage, AirbyteMessa
                         }
                 is GlobalCheckpoint ->
                     AirbyteStateMessage()
-                        .withSourceStats(
-                            AirbyteStateStats()
-                                .withRecordCount(message.sourceStats.recordCount.toDouble())
-                        )
+                        .also {
+                            if (message.sourceStats != null) {
+                                it.sourceStats =
+                                    AirbyteStateStats()
+                                        .withRecordCount(
+                                            message.sourceStats!!.recordCount.toDouble()
+                                        )
+                            }
+                        }
                         .withDestinationStats(
                             message.destinationStats?.let {
                                 AirbyteStateStats().withRecordCount(it.recordCount.toDouble())

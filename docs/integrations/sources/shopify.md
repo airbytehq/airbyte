@@ -27,6 +27,7 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 :::
 
 <HideInUI>
+
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -246,6 +247,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.3 | 2024-09-27 | [46095](https://github.com/airbytehq/airbyte/pull/46095) | Fixed duplicates for `Product Images`, `Metafield Product Images` and `Metafield Products` streams for Incremental syncs |
 | 2.5.2 | 2024-09-17 | [45633](https://github.com/airbytehq/airbyte/pull/45633) | Adds `read_inventory` as a required scope for `product_variants` stream |
 | 2.5.1 | 2024-09-14 | [45255](https://github.com/airbytehq/airbyte/pull/45255) | Update dependencies |
 | 2.5.0 | 2024-09-06 | [45190](https://github.com/airbytehq/airbyte/pull/45190) | Migrate to CDK v5 |
