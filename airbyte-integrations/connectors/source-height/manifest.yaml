@@ -1,0 +1,1610 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - workspace
+
+definitions:
+  streams:
+    workspace:
+      type: DeclarativeStream
+      name: workspace
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: workspace
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspace"
+    lists:
+      type: DeclarativeStream
+      name: lists
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: lists
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lists"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: tasks
+          http_method: GET
+          request_parameters:
+            filters: "{}"
+            usePagination: "true"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: activities
+          http_method: GET
+          request_parameters:
+            taskId: "{{ stream_partition['task_id'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: task_id
+              stream:
+                $ref: "#/definitions/streams/tasks"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    field_templates:
+      type: DeclarativeStream
+      name: field_templates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: fieldTemplates
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/field_templates"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: users
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    groups:
+      type: DeclarativeStream
+      name: groups
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: groups
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - list
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/groups"
+    search:
+      type: DeclarativeStream
+      name: search
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: search
+          http_method: GET
+          request_parameters:
+            q: "{{ config['search_query'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 2
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Rate limits hit...Retrying
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: createdAt
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/search"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.height.app/
+    authenticator:
+      type: ApiKeyAuthenticator
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: Authorization
+      api_token: api-key {{ config["api_key"] }}
+
+streams:
+  - $ref: "#/definitions/streams/workspace"
+  - $ref: "#/definitions/streams/lists"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/field_templates"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/groups"
+  - $ref: "#/definitions/streams/search"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+      search_query:
+        type: string
+        description: Search query to be used with search stream
+        title: search_query
+        default: task
+        order: 2
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    workspace: true
+    lists: true
+    tasks: true
+    activities: true
+    field_templates: true
+    users: true
+    groups: true
+    search: true
+  yamlComponents:
+    global:
+      - authenticator
+  testedStreams:
+    workspace:
+      streamHash: e2205c867b49727c17d311b82abfb7323dda6697
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    lists:
+      streamHash: 2e93b068b99cb473ac678ffae8d9b644d34dc232
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    tasks:
+      streamHash: d96e0bbaf3c38959a5bf70c3b4856af149aa2155
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    activities:
+      streamHash: 5a71f25d3ca9cd92eae303464a8232afa40d9d26
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    field_templates:
+      streamHash: cbf6cf86a463114f9b9dec85439f50eef7425810
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 9e2749d139ef155b9e073a3f7a9ee1d4d9bcdfa8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    groups:
+      streamHash: 07a4f444f4b2058c0c2fdc823b686351ce494410
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    search:
+      streamHash: b1418724ca633b6ecb909a1bfdaf5864af3aa47b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  workspace:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      allowedEmailDomains:
+        type:
+          - array
+          - "null"
+      allowedEmailDomainsEnabled:
+        type:
+          - boolean
+          - "null"
+      authMethods:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            enabled:
+              type:
+                - boolean
+                - "null"
+      basicActiveTasksCount:
+        type:
+          - number
+          - "null"
+      billingAnchorTimestamp:
+        type:
+          - number
+          - "null"
+      copilotEnabled:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type: string
+      createdUserId:
+        type:
+          - string
+          - "null"
+      frozen:
+        type:
+          - boolean
+          - "null"
+      hue:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      key:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      onboarding:
+        type:
+          - boolean
+          - "null"
+      restrictEmailDomainsEnabled:
+        type:
+          - boolean
+          - "null"
+      searchHistoryLimited:
+        type:
+          - boolean
+          - "null"
+      templatesEnabled:
+        type:
+          - boolean
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      urlType:
+        type:
+          - string
+          - "null"
+      v2:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - createdAt
+  lists:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      "@changed":
+        type:
+          - object
+          - "null"
+      appearance:
+        type:
+          - object
+          - "null"
+        properties:
+          hue:
+            type:
+              - number
+              - "null"
+          icon:
+            type:
+              - string
+              - "null"
+          iconUrl:
+            type:
+              - string
+              - "null"
+      calendarVisualizationOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          showWeekends:
+            type:
+              - boolean
+              - "null"
+      createdAt:
+        type: string
+      customToolbar:
+        type:
+          - array
+          - "null"
+      defaultList:
+        type:
+          - boolean
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            format:
+              type:
+                - object
+                - "null"
+              properties:
+                dateTextStyle:
+                  type:
+                    - string
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+      fieldsSummaries:
+        type:
+          - object
+          - "null"
+        properties:
+          completedAt:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+      filters:
+        type:
+          - object
+          - "null"
+        properties:
+          assigneesIds:
+            type:
+              - object
+              - "null"
+            properties:
+              values:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          completed:
+            type:
+              - object
+              - "null"
+            properties:
+              values:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - boolean
+                    - "null"
+          listIds:
+            type:
+              - object
+              - "null"
+            properties:
+              values:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              values:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - string
+                    - "null"
+          trashed:
+            type:
+              - object
+              - "null"
+            properties:
+              values:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - boolean
+                    - "null"
+      ganttVisualizationOptions:
+        type:
+          - object
+          - "null"
+        properties:
+          dateUnit:
+            type:
+              - string
+              - "null"
+          sidebarCollapsed:
+            type:
+              - boolean
+              - "null"
+          sidebarWidth:
+            type:
+              - number
+              - "null"
+          zoomLevel:
+            type:
+              - number
+              - "null"
+      id:
+        type: string
+      key:
+        type:
+          - string
+          - "null"
+      memberAccess:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notificationsSubscriptions:
+        type:
+          - array
+          - "null"
+      reserved:
+        type:
+          - boolean
+          - "null"
+      searchHighlightMode:
+        type:
+          - string
+          - "null"
+      searchTopResultCount:
+        type:
+          - number
+          - "null"
+      sectionsSummaries:
+        type:
+          - object
+          - "null"
+      showCompletedTasks:
+        type:
+          - string
+          - "null"
+      sortBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          sort:
+            type:
+              - string
+              - "null"
+          sorts:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                order:
+                  type:
+                    - string
+                    - "null"
+      subscribersIds:
+        type:
+          - array
+          - "null"
+      subtaskHierarchy:
+        type:
+          - string
+          - "null"
+      topActiveUsersIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      totalActiveUsersCount:
+        type:
+          - number
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      viewBy:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          order:
+            type:
+              - string
+              - "null"
+      viewByMobile:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          order:
+            type:
+              - string
+              - "null"
+      visualization:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - createdAt
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      appearance:
+        type:
+          - object
+          - "null"
+        properties:
+          icon:
+            type:
+              - string
+              - "null"
+      assigneesIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      commentedByUserIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      commentsAggregateCount:
+        type:
+          - number
+          - "null"
+      completed:
+        type:
+          - boolean
+          - "null"
+      completedAt:
+        type:
+          - string
+          - "null"
+      completedByUserId:
+        type:
+          - string
+          - "null"
+      completedIn:
+        type:
+          - string
+          - "null"
+      completedSubtasksIds:
+        type:
+          - array
+          - "null"
+      createdAt:
+        type: string
+      createdUserId:
+        type:
+          - string
+          - "null"
+      delayedFor:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      descriptionRichText:
+        type:
+          - string
+          - "null"
+      descriptionType:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            date:
+              type:
+                - string
+                - "null"
+            fieldTemplateId:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      gitBranches:
+        type:
+          - array
+          - "null"
+      gitPullRequests:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      inProgressFor:
+        type:
+          - string
+          - "null"
+      index:
+        type:
+          - number
+          - "null"
+      lastActivityAt:
+        type:
+          - string
+          - "null"
+      links:
+        type:
+          - array
+          - "null"
+      listIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      nameRichText:
+        type:
+          - string
+          - "null"
+      nameType:
+        type:
+          - string
+          - "null"
+      orderIndex:
+        type:
+          - number
+          - "null"
+      parentTaskId:
+        type:
+          - string
+          - "null"
+      parentTasks:
+        type:
+          - array
+          - "null"
+      startedAt:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subscribersIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      subtasksIds:
+        type:
+          - array
+          - "null"
+      teamIds:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - createdAt
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          sourceType:
+            type:
+              - string
+              - "null"
+          state:
+            type:
+              - string
+              - "null"
+          suggestions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                fieldId:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                message:
+                  type:
+                    - string
+                    - "null"
+                reason:
+                  type:
+                    - string
+                    - "null"
+                values:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - string
+                      - "null"
+      attachments:
+        type:
+          - array
+          - "null"
+      canceled:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type: string
+      createdUserId:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      message:
+        type:
+          - string
+          - "null"
+      messageRichText:
+        type:
+          - string
+          - "null"
+      messageType:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      newValue:
+        type:
+          - string
+          - "null"
+      objectId:
+        type:
+          - string
+          - "null"
+      objectType:
+        type:
+          - string
+          - "null"
+      oldValue:
+        type:
+          - string
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      reactjis:
+        type:
+          - array
+          - "null"
+      readUserIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      taskId:
+        type:
+          - string
+          - "null"
+      unfurls:
+        type:
+          - array
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - createdAt
+  field_templates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      metadata:
+        type:
+          - object
+          - "null"
+        properties:
+          dueColors:
+            type:
+              - boolean
+              - "null"
+          showTimerByDefault:
+            type:
+              - boolean
+              - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      defaultValue:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      labelSets:
+        type:
+          - array
+          - "null"
+      labels:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            archived:
+              type:
+                - boolean
+                - "null"
+            deleted:
+              type:
+                - boolean
+                - "null"
+            hue:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            model:
+              type:
+                - string
+                - "null"
+            statusState:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - string
+                - "null"
+      memberAccess:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      permissions:
+        type:
+          - string
+          - "null"
+      publicAccess:
+        type:
+          - string
+          - "null"
+      required:
+        type:
+          - boolean
+          - "null"
+      reverseFieldTemplateId:
+        type:
+          - string
+          - "null"
+      standardType:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      access:
+        type:
+          - string
+          - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      auth:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      botType:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type: string
+      deleted:
+        type:
+          - boolean
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      firstname:
+        type:
+          - string
+          - "null"
+      hue:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      key:
+        type:
+          - string
+          - "null"
+      lastname:
+        type:
+          - string
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+      pictureUrl:
+        type:
+          - string
+          - "null"
+      signedUpAt:
+        type:
+          - string
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - createdAt
+  groups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      "@changed":
+        type:
+          - object
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      handle:
+        type:
+          - string
+          - "null"
+      hue:
+        type:
+          - number
+          - "null"
+      id:
+        type: string
+      model:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      userIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
+  search:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      combined:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            highlight:
+              type:
+                - object
+                - "null"
+              properties:
+                description:
+                  type:
+                    - array
+                    - "null"
+                name:
+                  type:
+                    - array
+                    - "null"
+            id:
+              type:
+                - string
+                - "null"
+            key:
+              type:
+                - string
+                - "null"
+            memberAccess:
+              type:
+                - string
+                - "null"
+            model:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            resultType:
+              type:
+                - string
+                - "null"
+            userId:
+              type:
+                - string
+                - "null"
+      id:
+        type: string
+      limitedHistoryTasksNotReturnedCount:
+        type:
+          - number
+          - "null"
+      model:
+        type:
+          - string
+          - "null"
+    required:
+      - id

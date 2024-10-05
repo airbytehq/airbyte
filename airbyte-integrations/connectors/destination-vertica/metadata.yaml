@@ -1,9 +1,9 @@
 data:
-  registries:
+  registryOverrides:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-9678-af40-094cc31e5e42
@@ -17,4 +17,8 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vertica
   tags:
     - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
 metadataSpecVersion: "1.0"

@@ -1,70 +1,92 @@
 {
   "properties": {
     "sid": {
+      "description": "The SID of this phone number.",
       "type": ["null", "string"]
     },
     "account_sid": {
+      "description": "The SID of the account that owns this phone number.",
       "type": ["null", "string"]
     },
     "friendly_name": {
+      "description": "A user-assigned friendly name for this phone number.",
       "type": ["null", "string"]
     },
     "phone_number": {
+      "description": "The phone number.",
       "type": ["null", "string"]
     },
     "voice_url": {
+      "description": "URL to make requests to when an incoming voice call is received.",
       "type": ["null", "string"]
     },
     "voice_method": {
+      "description": "HTTP method to use when making requests to the voice_url.",
       "type": ["null", "string"]
     },
     "voice_fallback_url": {
+      "description": "URL to make requests to when an error occurs while processing an incoming voice call.",
       "type": ["null", "string"]
     },
     "voice_fallback_method": {
+      "description": "HTTP method to use when making requests to the voice_fallback_url.",
       "type": ["null", "string"]
     },
     "voice_caller_id_lookup": {
+      "description": "Caller ID lookup setting for voice calls made from this phone number.",
       "type": ["null", "boolean"]
     },
     "date_created": {
+      "description": "The date and time when this phone number was created.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "description": "The date and time when this phone number was last updated.",
       "format": "date-time",
       "type": ["null", "string"]
     },
     "sms_url": {
+      "description": "URL to make requests to when an incoming SMS message is received.",
       "type": ["null", "string"]
     },
     "sms_method": {
+      "description": "HTTP method to use when making requests to the sms_url.",
       "type": ["null", "string"]
     },
     "sms_fallback_url": {
+      "description": "URL to make requests to when an error occurs while processing an incoming SMS message.",
       "type": ["null", "string"]
     },
     "sms_fallback_method": {
+      "description": "HTTP method to use when making requests to the sms_fallback_url.",
       "type": ["null", "string"]
     },
     "address_requirements": {
+      "description": "Indicates the address requirements for this phone number.",
       "type": ["null", "string"]
     },
     "beta": {
+      "description": "Flag indicating beta status of this phone number.",
       "type": ["null", "boolean"]
     },
     "capabilities": {
+      "description": "Capabilities of this phone number.",
       "properties": {
         "voice": {
+          "description": "Capability for making and receiving voice calls.",
           "type": ["null", "boolean"]
         },
         "sms": {
+          "description": "Capability for sending and receiving SMS messages.",
           "type": ["null", "boolean"]
         },
         "mms": {
+          "description": "Capability for sending and receiving MMS messages.",
           "type": ["null", "boolean"]
         },
         "fax": {
+          "description": "Capability for faxing.",
           "type": ["null", "boolean"]
         }
       },
@@ -72,56 +94,74 @@
       "additionalProperties": true
     },
     "voice_receive_mode": {
+      "description": "Receive mode setting for this phone number.",
       "type": ["null", "string"]
     },
     "status_callback": {
+      "description": "URL to make requests to when certain events happen related to this phone number.",
       "type": ["null", "string"]
     },
     "status_callback_method": {
+      "description": "HTTP method to use when making requests to the status_callback URL.",
       "type": ["null", "string"]
     },
     "api_version": {
+      "description": "The version of the Twilio API being used for this phone number.",
       "type": ["null", "string"]
     },
     "voice_application_sid": {
+      "description": "The SID of the application to handle incoming voice calls for this phone number.",
       "type": ["null", "string"]
     },
     "sms_application_sid": {
+      "description": "The SID of the application to handle incoming SMS messages for this phone number.",
       "type": ["null", "string"]
     },
     "origin": {
+      "description": "Indicates the origin of this phone number.",
       "type": ["null", "string"]
     },
     "trunk_sid": {
+      "description": "The SID of the trunk associated with this phone number.",
       "type": ["null", "string"]
     },
     "emergency_status": {
+      "description": "Emergency status of this phone number.",
       "type": ["null", "string"]
     },
     "emergency_address_sid": {
+      "description": "The SID of the emergency address associated with this phone number.",
       "type": ["null", "string"]
     },
     "emergency_address_status": {
+      "description": "Status of the emergency address associated with this phone number.",
       "type": ["null", "string"]
     },
     "address_sid": {
+      "description": "The SID of the address associated with this phone number.",
       "type": ["null", "string"]
     },
     "identity_sid": {
+      "description": "The SID of the identity associated with this phone number.",
       "type": ["null", "string"]
     },
     "bundle_sid": {
+      "description": "The SID of the bundle associated with this phone number.",
       "type": ["null", "string"]
     },
     "uri": {
+      "description": "The URI of this phone number.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of this phone number.",
       "type": ["null", "string"]
     },
     "subresource_uris": {
+      "description": "URIs for related sub-resources.",
       "properties": {
         "assigned_add_ons": {
+          "description": "URI for accessing assigned add-ons for this phone number.",
           "type": ["null", "string"]
         }
       },

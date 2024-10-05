@@ -16,8 +16,7 @@
   </Match>
   <!-- Suppress warning about use if InputStream#readObject. The usage is safe because it is not from an untrusted source. -->
   <Match>
-    <Class name="io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore" />
+    <Class name="io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore" />
     <Bug code="SECOBDES" />
   </Match>
-
 </FindBugsFilter>

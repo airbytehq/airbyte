@@ -4,11 +4,34 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "seller-sku": { "type": ["null", "string"] },
-    "fulfillment-channel-sku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "condition-type": { "type": ["null", "string"] },
-    "Warehouse-Condition-code": { "type": ["null", "string"] },
-    "Quantity Available": { "type": ["null", "number"] }
+    "seller-sku": {
+      "description": "The Seller SKU for the item, which is unique within the seller's inventory.",
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel-sku": {
+      "description": "The SKU assigned to the item by the fulfillment network.",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "The unique identifier for the product in the Amazon catalog.",
+      "type": ["null", "string"]
+    },
+    "condition-type": {
+      "description": "The condition type of the item, such as 'New', 'Used', or 'Refurbished'.",
+      "type": ["null", "string"]
+    },
+    "Warehouse-Condition-code": {
+      "description": "The warehouse code indicating the storage location and condition of the item.",
+      "type": ["null", "string"]
+    },
+    "Quantity Available": {
+      "description": "The total quantity of this item available in the fulfillment center.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "The end time for the data provided, formatted as a date.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

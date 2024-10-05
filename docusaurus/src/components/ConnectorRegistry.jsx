@@ -1,8 +1,9 @@
 import React from "react";
 import { useEffect, useState } from "react";
-
-const registry_url =
-  "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+import styles from "./ConnectorRegistry.module.css";
+import { REGISTRY_URL } from "../connector_registry";
 
 const iconStyle = { maxWidth: 25 };
 
@@ -16,48 +17,36 @@ async function fetchCatalog(url, setter) {
 Sorts connectors by release stage and then name
 */
 function connectorSort(a, b) {
-  if (a.releaseStage_oss !== b.releaseStage_oss) {
-    if (a.releaseStage_oss === "generally_available") return -3;
-    if (b.releaseStage_oss === "generally_available") return 3;
-    if (a.releaseStage_oss === "beta") return -2;
-    if (b.releaseStage_oss === "beta") return 2;
-    if (a.releaseStage_oss === "alpha") return -1;
-    if (b.releaseStage_oss === "alpha") return 1;
+  if (a.supportLevel_oss !== b.supportLevel_oss) {
+    if (a.supportLevel_oss === "certified") return -3;
+    if (b.supportLevel_oss === "certified") return 3;
+    if (a.supportLevel_oss === "community") return -2;
+    if (b.supportLevel_oss === "community") return 2;
+    if (a.supportLevel_oss === "archived") return -1;
+    if (b.supportLevel_oss === "archived") return 1;
   }
 
   if (a.name_oss < b.name_oss) return -1;
   if (a.name_oss > b.name_oss) return 1;
 }
 
-export default function ConnectorRegistry({ type }) {
-  const [registry, setRegistry] = useState([]);
-
-  useEffect(() => {
-    fetchCatalog(registry_url, setRegistry);
-  }, []);
-
-  if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
-
-  const connectors = registry
-    .filter((c) => c.connector_type === type)
-    .filter((c) => c.name_oss);
-
+function ConnectorTable({ connectors, connectorSupportLevel }) {
   return (
-    <div>
-      <table>
-        <thead>
-          <tr>
-            <th>Connector Name</th>
-            <th>Icon</th>
-            <th>Links</th>
-            <th>Release Stage</th>
-            <th>OSS</th>
-            <th>Cloud</th>
-            <th>Docker Image</th>
-          </tr>
-        </thead>
-        <tbody>
-          {connectors.sort(connectorSort).map((connector) => {
+    <table>
+      <thead>
+        <tr>
+          <th>Connector Name</th>
+          <th>Links</th>
+          <th>OSS</th>
+          <th>Cloud</th>
+          <th>Docker Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {connectors
+          .sort(connectorSort)
+          .filter((c) => c.supportLevel_oss === connectorSupportLevel)
+          .map((connector) => {
             const docsLink = connector.documentationUrl_oss?.replace(
               "https://docs.airbyte.com",
               ""
@@ -66,23 +55,24 @@ export default function ConnectorRegistry({ type }) {
             return (
               <tr key={`${connector.definitionId}`}>
                 <td>
-                  <strong>
+                  <div className={styles.connectorName}>
+                    {connector.iconUrl_oss && (
+                      <img src={connector.iconUrl_oss} style={iconStyle} />
+                    )}
                     <a href={docsLink}>{connector.name_oss}</a>
-                  </strong>
-                </td>
-                <td>
-                  {connector.iconUrl_oss ? (
-                    <img src={connector.iconUrl_oss} style={iconStyle} />
-                  ) : null}
+                  </div>
                 </td>
                 {/* min width to prevent wrapping */}
                 <td style={{ minWidth: 75 }}>
                   <a href={docsLink}>📕</a>
-                  <a href={connector.github_url}>⚙️</a>
-                  <a href={connector.issue_url}>🐛</a>
-                </td>
-                <td>
-                  <small>{connector.releaseStage_oss}</small>
+                  {connector.supportLevel_oss != "archived" ? (
+                    <a href={connector.github_url}>⚙️</a>
+                  ) : (
+                    ""
+                  )}
+                  {connector.supportLevel_oss != "archived" ? (
+                    <a href={connector.issue_url}>🐛</a>
+                  ) : null}
                 </td>
                 <td>{connector.is_oss ? "✅" : "❌"}</td>
                 <td>{connector.is_cloud ? "✅" : "❌"}</td>
@@ -97,8 +87,46 @@ export default function ConnectorRegistry({ type }) {
               </tr>
             );
           })}
-        </tbody>
-      </table>
-    </div>
+      </tbody>
+    </table>
+  );
+}
+
+export default function ConnectorRegistry({ type }) {
+  const [registry, setRegistry] = useState([]);
+
+  useEffect(() => {
+    fetchCatalog(REGISTRY_URL, setRegistry);
+  }, []);
+
+  if (registry.length === 0) return <div>{`Loading ${type}s...`}</div>;
+
+  const connectors = registry
+    .filter((c) => c.connector_type === type)
+    .filter((c) => c.name_oss)
+    .filter((c) => c.supportLevel_oss); // at least one connector is missing a support level
+
+  return (
+    <Tabs>
+      <TabItem value="certified" label="Airbyte Connectors" default>
+        <ConnectorTable
+          connectors={connectors}
+          connectorSupportLevel={"certified"}
+        />
+      </TabItem>
+      <TabItem value="community" label="Marketplace" default>
+        <ConnectorTable
+          connectors={connectors}
+          connectorSupportLevel={"community"}
+        />
+      </TabItem>
+      {/* There are no archived connectors to show at the moment, so hiding for now */}
+      {/* <TabItem value="archived" label="Archived" default>
+        <ConnectorTable
+          connectors={connectors}
+          connectorSupportLevel={"archived"}
+        />
+      </TabItem> */}
+    </Tabs>
   );
 }

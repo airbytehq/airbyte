@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "enabled": {
+      "type": ["boolean", "null"]
+    },
+    "creationTime": {
+      "type": ["string", "null"]
+    },
+    "lastModified": {
+      "type": ["string", "null"]
+    },
+    "cpc": {
+      "type": ["number", "null"]
+    },
+    "autoArchived": {
+      "type": ["boolean", "null"]
+    },
+    "minimumCpc": {
+      "type": ["number", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "targeting": {
+      "type": "object",
+      "properties": {
+        "platform": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        },
+        "language": {
+          "type": ["string", "null"]
+        },
+        "excludeAdBlockUsers": {
+          "type": ["boolean", "null"]
+        },
+        "nativePlacements": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": ["boolean", "null"]
+            }
+          }
+        },
+        "includeCellularNetwork": {
+          "type": ["boolean", "null"]
+        },
+        "nativePlacementsEnabled": {
+          "type": ["boolean", "null"]
+        },
+        "locationsVersion": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "marketerId": {
+      "type": ["string", "null"]
+    },
+    "autoExpirationOfAds": {
+      "type": ["integer", "null"]
+    },
+    "contentType": {
+      "type": ["string", "null"]
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "shared": {
+          "type": ["boolean", "null"]
+        },
+        "amount": {
+          "type": ["number", "null"]
+        },
+        "currency": {
+          "type": ["string", "null"]
+        },
+        "creationTime": {
+          "type": ["string", "null"]
+        },
+        "lastModified": {
+          "type": ["string", "null"]
+        },
+        "startDate": {
+          "type": ["string", "null"]
+        },
+        "endDate": {
+          "type": ["string", "null"]
+        },
+        "runForever": {
+          "type": ["boolean", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        },
+        "pacing": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "prefixTrackingCode": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": ["string", "null"]
+        },
+        "encode": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "liveStatus": {
+      "type": "object",
+      "properties": {
+        "onAirReason": {
+          "type": ["string", "null"]
+        },
+        "campaignOnAir": {
+          "type": ["boolean", "null"]
+        },
+        "amountSpent": {
+          "type": ["number", "null"]
+        },
+        "onAirModificationTime": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "readonly": {
+      "type": ["boolean", "null"]
+    },
+    "startHour": {
+      "type": ["string", "null"]
+    },
+    "trackingPixels": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": ["boolean", "null"]
+        },
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "pixels": {
+      "type": "object",
+      "properties": {
+        "impressionPixels": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        },
+        "trackingPixels": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "onAirType": {
+      "type": ["string", "null"]
+    },
+    "objective": {
+      "type": ["string", "null"]
+    },
+    "creativeFormat": {
+      "type": ["string", "null"]
+    },
+    "dynamicRetargeting": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

@@ -5,7 +5,7 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -14,7 +14,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
@@ -27,6 +26,7 @@ TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
+TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -70,8 +70,9 @@ class TwilioStream(HttpStream, ABC):
             for record in records:
                 for field in self.changeable_fields:
                     record.pop(field, None)
-                    yield record
-        yield from records
+                yield record
+        else:
+            yield from records
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """This method is called if we run into the rate limit.
@@ -122,7 +123,7 @@ class IncrementalTwilioStream(TwilioStream, IncrementalMixin):
 
     def __init__(
         self,
-        authenticator: Union[AuthBase, HttpAuthenticator],
+        authenticator: AuthBase,
         start_date: str = None,
         lookback_window: int = 0,
         slice_step_map: Mapping[str, int] = None,
@@ -260,7 +261,7 @@ class TwilioNestedStream(TwilioStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self.authenticator)
+        return self.parent_stream(authenticator=self._session.auth)
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}
@@ -431,6 +432,23 @@ class Executions(TwilioNestedStream):
         return {"flow_sid": record["sid"]}
 
 
+class Step(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
+    """
+
+    parent_stream = Executions
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+    data_field = "steps"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -452,6 +470,20 @@ class Services(TwilioStream):
     """
 
     url_base = TWILIO_CHAT_BASE
+
+    def path(self, **kwargs):
+        return "Services"
+
+
+class VerifyServices(TwilioStream):
+    """
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """
+
+    # Unlike other endpoints, this one won't accept requests where pageSize >100
+    page_size = 100
+    data_field = "services"
+    url_base = TWILIO_VERIFY_BASE_V2
 
     def path(self, **kwargs):
         return "Services"
@@ -519,7 +551,7 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self.authenticator, start_date=self._start_date, lookback_window=self._lookback_window)
+        return self.parent_stream(authenticator=self._session.auth, start_date=self._start_date, lookback_window=self._lookback_window)
 
 
 class UsageNestedStream(TwilioNestedStream):
@@ -611,3 +643,28 @@ class ConversationMessages(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"conversation_sid": record["sid"]}
+
+
+class Users(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/user-resource"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class UserConversations(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations"""
+
+    parent_stream = Users
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "conversations"
+    primary_key = ["account_sid"]
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Users/{stream_slice['user_sid']}/Conversations"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"user_sid": record["sid"]}

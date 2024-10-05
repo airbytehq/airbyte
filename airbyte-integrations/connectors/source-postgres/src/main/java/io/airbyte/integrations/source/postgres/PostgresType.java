@@ -114,6 +114,15 @@ public enum PostgresType implements SQLType {
   }
 
   /**
+   * Returns true if the PostgresType is an array type, false otherwise.
+   *
+   * @return true if the PostgresType is an array type, false otherwise.
+   */
+  public boolean isArrayType() {
+    return type == Types.ARRAY;
+  }
+
+  /**
    * Returns the {@code JDBCType} that corresponds to the specified {@code Types} value
    *
    * @param type {@code Types} value

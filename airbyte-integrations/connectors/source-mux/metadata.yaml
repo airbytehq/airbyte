@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.mux.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-mux
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.7.4@sha256:48bf84274f0def1c368a798a588722914b275cbd3eddf3c358236bffed141760
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7bc19e81-14ee-43cb-a2ac-f3bcf6ba0459
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-mux
+  githubIssueLabel: source-mux
+  icon: icon.svg
+  license: MIT
+  name: Mux
+  releaseDate: 2024-09-27
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mux
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

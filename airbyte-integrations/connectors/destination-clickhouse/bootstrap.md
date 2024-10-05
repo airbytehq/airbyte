@@ -15,4 +15,3 @@ This destination connector uses ClickHouse official JDBC driver, which uses HTTP
 ## API Reference
 
 The ClickHouse reference documents: [https://clickhouse.com/docs/en/](https://clickhouse.com/docs/en/)
-

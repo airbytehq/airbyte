@@ -1,60 +1,78 @@
 {
   "properties": {
     "id": {
+      "description": "The unique identifier of the campaign",
       "type": ["null", "integer"]
     },
     "createdAt": {
+      "description": "The timestamp when the campaign was created",
       "type": ["null", "integer"]
     },
     "updatedAt": {
+      "description": "The timestamp when the campaign was last updated",
       "type": ["null", "integer"]
     },
     "startAt": {
+      "description": "The timestamp when the campaign will start",
       "type": ["null", "integer"]
     },
     "endedAt": {
+      "description": "The timestamp when the campaign ended",
       "type": ["null", "integer"]
     },
     "name": {
+      "description": "The name of the campaign",
       "type": ["null", "string"]
     },
     "templateId": {
+      "description": "The ID of the template used for the campaign",
       "type": ["null", "integer"]
     },
     "messageMedium": {
+      "description": "The medium used to deliver the campaign message (e.g., email, SMS)",
       "type": ["null", "string"]
     },
     "createdByUserId": {
+      "description": "The ID of the user who created the campaign",
       "type": ["null", "string"]
     },
     "updatedByUserId": {
+      "description": "The ID of the user who last updated the campaign",
       "type": ["null", "string"]
     },
     "campaignState": {
+      "description": "The current state of the campaign (e.g., draft, active, paused)",
       "type": ["null", "string"]
     },
     "listIds": {
+      "description": "List of IDs of the lists targeted by the campaign",
       "type": ["null", "array"],
       "items": {}
     },
     "suppressionListIds": {
+      "description": "List of IDs of suppression lists for the campaign",
       "type": ["null", "array"],
       "items": {}
     },
     "sendSize": {
+      "description": "The size of the audience targeted by the campaign",
       "type": ["null", "number"]
     },
     "recurringCampaignId": {
+      "description": "If the campaign is recurring, the ID of the parent recurring campaign",
       "type": ["null", "number"]
     },
     "workflowId": {
+      "description": "The ID of the workflow associated with the campaign",
       "type": ["null", "number"]
     },
     "labels": {
+      "description": "List of labels associated with the campaign",
       "type": ["null", "array"],
       "items": {}
     },
     "type": {
+      "description": "The type of campaign (e.g., one-time, recurring)",
       "type": ["null", "string"]
     }
   },

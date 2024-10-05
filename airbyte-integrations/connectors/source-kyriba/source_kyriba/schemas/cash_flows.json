@@ -3,37 +3,27 @@
   "required": ["uuid", "account", "flowAmount", "flowCode", "status"],
   "properties": {
     "uuid": {
-      "type": "string",
-      "format": "uuid",
-      "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-      "description": "UUID of the cash flow."
+      "description": "The unique identifier for the cash flow transaction",
+      "type": ["string", "null"]
     },
     "transactionDate": {
-      "type": "string",
-      "format": "date",
-      "example": "2021-04-01",
-      "description": "Transaction date"
+      "description": "The date on which the cash flow transaction occurred",
+      "type": ["string", "null"]
     },
     "valueDate": {
-      "type": "string",
-      "format": "date",
-      "example": "2021-04-02",
-      "description": "Value date"
+      "description": "The date on which the value of the cash flow is effective",
+      "type": ["string", "null"]
     },
     "accountingDate": {
-      "type": "string",
-      "format": "date",
-      "example": "2021-04-03",
-      "description": "Accounting date"
+      "description": "The date on which the cash flow is accounted for",
+      "type": ["string", "null"]
     },
     "updateDateTime": {
-      "type": "string",
-      "format": "date-time",
-      "example": "2020-01-02T13:04:35Z",
-      "description": "Update date time"
+      "description": "The date and time when the cash flow data was last updated",
+      "type": ["string", "null"]
     },
     "account": {
-      "description": "Bank account",
+      "description": "The account associated with the cash flow",
       "$ref": "_definitions.json#/definitions/ReferenceModel"
     },
     "flowCode": {
@@ -45,9 +35,8 @@
       "$ref": "_definitions.json#/definitions/ReferenceModel"
     },
     "status": {
-      "type": "string",
-      "example": "CONFIRMED",
-      "description": "Cash flow status"
+      "description": "The status of the cash flow transaction",
+      "type": ["string", "null"]
     },
     "flowAmount": {
       "description": "Flow amount",
@@ -58,43 +47,32 @@
       "$ref": "_definitions.json#/definitions/AmountModel"
     },
     "description": {
-      "type": ["null", "string"],
-      "description": "Cash flow's description",
-      "minLength": 0,
-      "maxLength": 2500
+      "description": "The description of the cash flow transaction",
+      "type": ["null", "string"]
     },
     "reference": {
-      "type": ["null", "string"],
-      "description": "Cash flow's reference",
-      "minLength": 0,
-      "maxLength": 250
+      "description": "A reference associated with the cash flow",
+      "type": ["null", "string"]
     },
     "origin": {
-      "type": "string",
-      "description": "Cash flow's origin",
-      "minLength": 0,
-      "maxLength": 250
+      "description": "The origin/source of the cash flow transaction",
+      "type": ["string", "null"]
     },
     "number": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Cash flow's number",
-      "minimum": 0,
-      "maximum": 250
+      "description": "The identification number of the cash flow transaction",
+      "type": ["integer", "null"]
     },
     "glStatus": {
-      "type": "string",
-      "example": "BALANCED",
-      "description": "Cash flow GL status"
+      "description": "The status of the general ledger related to the cash flow",
+      "type": ["string", "null"]
     },
     "userZones": {
       "description": "User zones of the cash flow",
       "$ref": "_definitions.json#/definitions/UserZonesModel"
     },
     "actualMode": {
-      "type": "string",
-      "example": "Manual",
-      "description": "Cash flow actual mode"
+      "description": "The actual mode of the cash flow transaction",
+      "type": ["string", "null"]
     }
   },
   "title": "CashFlowSearchModel",

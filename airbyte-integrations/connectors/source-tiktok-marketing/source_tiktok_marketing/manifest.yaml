@@ -1,0 +1,4311 @@
+version: 1.1.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - advertisers
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['credentials']['access_token'] if config.get('credentials') else config['access_token'] }}"
+    inject_into:
+      type: RequestOption
+      inject_into: header
+      field_name: Access-Token
+
+  requester:
+    type: HttpRequester
+    url_base: '"https://{{ "sandbox-ads" if config.get(''credentials'', {}).get(''auth_type'', "") == "sandbox_access_token" else "business-api" }}.tiktok.com/open_api/v1.3/"'
+    path: "{{ parameters['path'] }}"
+    http_method: GET
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - predicate: "{{ response.get('code') != 0 }}"
+          action: FAIL
+          error_message: "{{ response['message'] }}"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_body_json: {}
+
+  record_selector:
+    type: RecordSelector
+    schema_normalization: Default
+    extractor:
+      type: DpathExtractor
+      field_path: ["data", "list"]
+
+  record_selector_with_filter_by_modify_time:
+    $ref: "#/definitions/record_selector"
+    record_filter:
+      type: CustomRecordFilter
+      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
+      condition: "{{ record['modify_time'] >= stream_state.get('modify_time', config.get('start_date', '')) }}"
+      $parameters:
+        partition_field: advertiser_id
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+      request_headers: {}
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_body_json: {}
+    record_selector:
+      $ref: "#/definitions/requester"
+    paginator:
+      type: NoPagination
+    partition_router: []
+
+  paginator_page_increment:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page_size"
+    pagination_strategy:
+      type: "PageIncrement"
+      page_size: 100
+      start_from_page: 1
+    page_token_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page"
+
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "modify_time"
+    cursor_datetime_formats:
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d %H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
+      datetime_format: "%Y-%m-%d"
+
+  single_id_partition_router:
+    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.SingleAdvertiserIdPerPartition"
+      $parameters:
+        path_in_config:
+          - ["credentials", "advertiser_id"]
+          - ["environment", "advertiser_id"]
+        partition_field: advertiser_id
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: advertiser_id
+          request_option:
+            inject_into: request_parameter
+            type: RequestOption
+            field_name: advertiser_id
+          partition_field: advertiser_id
+          stream:
+            $ref: "#/definitions/advertiser_ids_stream"
+
+  multiple_id_partition_router:
+    - class_name: "source_tiktok_marketing.components.advertiser_ids_partition_router.MultipleAdvertiserIdsPerPartition"
+      $parameters:
+        path_in_config:
+          - ["credentials", "advertiser_id"]
+          - ["environment", "advertiser_id"]
+        partition_field: advertiser_ids
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          parent_key: advertiser_id
+          request_option:
+            inject_into: request_parameter
+            type: RequestOption
+            field_name: advertiser_ids
+          partition_field: advertiser_ids
+          stream:
+            $ref: "#/definitions/advertiser_ids_stream"
+
+  incremental_stream:
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: '{{ parameters.get("page_size", 1000) }}'
+          start_from_page: 1
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  advertiser_ids_stream:
+    type: DeclarativeStream
+    name: advertiser_ids
+    $parameters:
+      path: "oauth2/advertiser/get/"
+    primary_key:
+      - advertiser_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/advertiser_ids"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          secret: "{{ config.get('credentials', config.get('environment', {})).get('secret') }}"
+          app_id: "{{ config.get('credentials', config.get('environment', {})).get('app_id', 0) }}"
+        request_headers: {}
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        type: NoPagination
+      partition_router: []
+
+  advertisers_stream:
+    type: DeclarativeStream
+    name: advertisers
+    $parameters:
+      path: "advertiser/info/"
+    primary_key:
+      - advertiser_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/advertisers"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+      partition_router:
+        $ref: "#/definitions/multiple_id_partition_router"
+
+  audiences_stream:
+    type: DeclarativeStream
+    name: audiences
+    $parameters:
+      path: "dmp/custom_audience/list/"
+    primary_key:
+      - audience_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/audiences"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+
+  creative_assets_music_stream:
+    type: DeclarativeStream
+    name: creative_assets_music
+    $parameters:
+      path: "file/music/get/"
+    primary_key:
+      - music_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/creative_assets_music"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "musics"]
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+
+  creative_assets_portfolios_stream:
+    type: DeclarativeStream
+    name: creative_assets_portfolios
+    $parameters:
+      path: "creative/portfolio/list/"
+    primary_key:
+      - creative_portfolio_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/creative_assets_portfolios"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "creative_portfolios"]
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+
+  campaigns_stream:
+    type: DeclarativeStream
+    name: campaigns
+    $parameters:
+      path: "campaign/get/"
+    primary_key:
+      - campaign_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/campaigns"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          filtering: '{{ {"secondary_status": "CAMPAIGN_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+      paginator:
+        $ref: "#/definitions/incremental_stream/retriever/paginator"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  ad_groups_stream:
+    type: DeclarativeStream
+    name: ad_groups
+    $parameters:
+      path: "adgroup/get/"
+    primary_key:
+      - adgroup_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/ad_groups"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          filtering: '{{ {"secondary_status": "ADGROUP_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+      paginator:
+        $ref: "#/definitions/incremental_stream/retriever/paginator"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  ads_stream:
+    type: DeclarativeStream
+    name: ads
+    $parameters:
+      path: "ad/get/"
+    primary_key:
+      - ad_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/ads"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
+      record_selector:
+        $ref: "#/definitions/record_selector_with_filter_by_modify_time"
+      paginator:
+        $ref: "#/definitions/incremental_stream/retriever/paginator"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+
+  creative_assets_images_stream:
+    type: DeclarativeStream
+    name: creative_assets_images
+    $parameters:
+      path: "file/image/ad/search/"
+      page_size: 100
+    primary_key:
+      - image_id
+    $ref: "#/definitions/incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/creative_assets_images"
+
+  creative_assets_videos_stream:
+    type: DeclarativeStream
+    name: creative_assets_videos
+    $parameters:
+      path: "file/video/ad/search/"
+      page_size: 100
+    primary_key:
+      - video_id
+    $ref: "#/definitions/incremental_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/creative_assets_videos"
+
+  record_selector_for_daily_reports_streams:
+    $ref: "#/definitions/record_selector"
+    record_filter:
+      type: CustomRecordFilter
+      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
+      condition: "{{ record['dimensions']['stat_time_day'] >= stream_state.get('stat_time_day', config.get('start_date', '')) }}"
+      $parameters:
+        partition_field: advertiser_id
+
+  record_selector_for_hourly_reports_streams:
+    $ref: "#/definitions/record_selector"
+    record_filter:
+      type: CustomRecordFilter
+      class_name: "source_tiktok_marketing.components.semi_incremental_record_filter.PerPartitionRecordFilter"
+      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_state.get('stat_time_hour', config.get('start_date', '')) }}"
+      $parameters:
+        partition_field: advertiser_id
+
+  base_report_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+      request_parameters:
+        service_type: "AUCTION"
+        report_type: "BASIC"
+        data_level: '{{ parameters["data_level"] }}'
+        dimensions: '{{ parameters["dimensions"] | string }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+        start_date: "{{ stream_interval['start_time'] }}"
+        end_date: "{{ stream_interval['end_time'] }}"
+        filtering: '{{ parameters["filtering"] | string if parameters.get("filtering") and config.get("include_deleted", False)}}'
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_body_json: {}
+    record_selector:
+      $ref: "#/definitions/record_selector_for_daily_reports_streams"
+    paginator:
+      $ref: "#/definitions/paginator_page_increment"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+        start_from_page: 1
+    partition_router:
+      $ref: "#/definitions/single_id_partition_router"
+
+  report_daily_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "stat_time_day"
+    lookback_window: "P{{ config.get('attribution_window', 0) }}D"
+    cursor_granularity: "P1D"
+    step: P30D
+    cursor_datetime_formats:
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('end_date', today_utc()) }}"
+      datetime_format: "%Y-%m-%d"
+
+  report_hourly_incremental_sync:
+    type: CustomIncrementalSync
+    class_name: source_tiktok_marketing.components.hourly_datetime_based_cursor.HourlyDatetimeBasedCursor
+    cursor_field: "stat_time_hour"
+    lookback_window: "P{{ config.get('attribution_window', 0) }}D"
+    cursor_granularity: "PT1H"
+    step: P1D
+    cursor_datetime_formats:
+      - "%Y-%m-%d %H:%M:%S"
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%d"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', '2016-09-01') }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('end_date', today_utc()) }}"
+      datetime_format: "%Y-%m-%d"
+
+  base_report_daily:
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/base_report"
+    retriever:
+      $ref: "#/definitions/base_report_retriever"
+      record_selector:
+        $ref: "#/definitions/record_selector_for_daily_reports_streams"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_incremental_sync"
+
+  base_report_hourly:
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/base_report"
+    retriever:
+      $ref: "#/definitions/base_report_retriever"
+      record_selector:
+        $ref: "#/definitions/record_selector_for_hourly_reports_streams"
+    incremental_sync:
+      $ref: "#/definitions/report_hourly_incremental_sync"
+
+  base_report_lifetime:
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/base_report"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          service_type: "AUCTION"
+          report_type: "BASIC"
+          data_level: '{{ parameters["data_level"] }}'
+          dimensions: '{{ parameters["dimensions"] | string }}'
+          metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency", "video_play_actions", "video_watched_2s", "video_watched_6s", "average_video_play", "average_video_play_per_user", "video_views_p25", "video_views_p50", "video_views_p75", "video_views_p100", "profile_visits", "likes", "comments", "shares", "follows", "clicks_on_music_disc", "real_time_app_install", "real_time_app_install_cost", "app_install"]) | string }}'
+          query_lifetime: "true"
+          filters: '{{ [
+            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
+            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
+            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
+            ] | string if config.get("include_deleted", False)}}'
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+
+  ads_reports_daily_stream:
+    type: DeclarativeStream
+    name: ads_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      filtering:
+        [
+          {
+            "field_name": "ad_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+          "total_purchase_value",
+          "total_onsite_shopping_value",
+          "onsite_shopping",
+          "vta_purchase",
+          "vta_conversion",
+          "cta_purchase",
+          "cta_conversion",
+          "total_pageview",
+          "complete_payment",
+          "value_per_complete_payment",
+          "total_complete_payment_rate",
+        ]
+      dimensions: ["ad_id", "stat_time_day"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+    $ref: "#/definitions/base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_groups_reports_daily_stream:
+    type: DeclarativeStream
+    name: ad_groups_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      filtering:
+        [
+          {
+            "field_name": "adgroup_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+        ]
+      dimensions: ["adgroup_id", "stat_time_day"]
+    primary_key:
+      - adgroup_id
+      - stat_time_day
+    $ref: "#/definitions/base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["adgroup_id"]
+            value: "{{ record.dimensions.adgroup_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  advertisers_reports_daily_stream:
+    type: DeclarativeStream
+    name: advertisers_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      report_metrics: ["cash_spend", "voucher_spend"]
+      dimensions: ["advertiser_id", "stat_time_day"]
+    primary_key:
+      - advertiser_id
+      - stat_time_day
+    $ref: "#/definitions/base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  campaigns_reports_daily_stream:
+    type: DeclarativeStream
+    name: campaigns_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_CAMPAIGN"
+      filtering:
+        [
+          {
+            "field_name": "campaign_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics: ["campaign_name"]
+      dimensions: ["campaign_id", "stat_time_day"]
+    primary_key:
+      - campaign_id
+      - stat_time_day
+    $ref: "#/definitions/base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  audience_base_report_retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+      request_parameters:
+        service_type: "AUCTION"
+        report_type: "AUDIENCE"
+        data_level: '{{ parameters["data_level"] }}'
+        dimensions: '{{ parameters["dimensions"] | string }}'
+        metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
+        start_date: "{{ stream_interval['start_time'] }}"
+        end_date: "{{ stream_interval['end_time'] }}"
+        filters: '{{ [
+          {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
+          {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
+          {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
+          ] | string if config.get("include_deleted", False)}}'
+      authenticator:
+        $ref: "#/definitions/authenticator"
+      request_body_json: {}
+    record_selector:
+      $ref: "#/definitions/record_selector_for_daily_reports_streams"
+    paginator:
+      $ref: "#/definitions/paginator_page_increment"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 1000
+        start_from_page: 1
+    partition_router:
+      $ref: "#/definitions/single_id_partition_router"
+
+  audience_base_report_daily:
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/audience_report"
+    retriever:
+      $ref: "#/definitions/audience_base_report_retriever"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_incremental_sync"
+
+  campaigns_audience_reports_daily_stream:
+    type: DeclarativeStream
+    name: campaigns_audience_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_CAMPAIGN"
+      report_metrics: ["campaign_name"]
+      dimensions: ["campaign_id", "stat_time_day", "gender", "age"]
+    primary_key:
+      - campaign_id
+      - stat_time_day
+      - gender
+      - age
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+          - path: ["gender"]
+            value: "{{ record.dimensions.gender }}"
+          - path: ["age"]
+            value: "{{ record.dimensions.age }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_group_audience_reports_daily_stream:
+    type: DeclarativeStream
+    name: ad_group_audience_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+        ]
+      dimensions: ["adgroup_id", "stat_time_day", "gender", "age"]
+    primary_key:
+      - adgroup_id
+      - stat_time_day
+      - gender
+      - age
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["adgroup_id"]
+            value: "{{ record.dimensions.adgroup_id }}"
+          - path: ["gender"]
+            value: "{{ record.dimensions.gender }}"
+          - path: ["age"]
+            value: "{{ record.dimensions.age }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ads_audience_reports_daily_stream:
+    type: DeclarativeStream
+    name: ads_audience_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+        ]
+      dimensions: ["ad_id", "stat_time_day", "gender", "age"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+      - gender
+      - age
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: ["gender"]
+            value: "{{ record.dimensions.gender }}"
+          - path: ["age"]
+            value: "{{ record.dimensions.age }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  advertisers_audience_reports_daily_stream:
+    type: DeclarativeStream
+    name: advertisers_audience_reports_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      dimensions: ["advertiser_id", "stat_time_day", "gender", "age"]
+    primary_key:
+      - advertiser_id
+      - stat_time_day
+      - gender
+      - age
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+          - path: ["gender"]
+            value: "{{ record.dimensions.gender }}"
+          - path: ["age"]
+            value: "{{ record.dimensions.age }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  campaigns_audience_reports_by_country_daily_stream:
+    type: DeclarativeStream
+    name: campaigns_audience_reports_by_country_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_CAMPAIGN"
+      report_metrics: ["campaign_name"]
+      dimensions: ["campaign_id", "stat_time_day", "country_code"]
+    primary_key:
+      - campaign_id
+      - stat_time_day
+      - country_code
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+          - path: ["country_code"]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_group_audience_reports_by_country_daily_stream:
+    type: DeclarativeStream
+    name: ad_group_audience_reports_by_country_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+        ]
+      dimensions: ["adgroup_id", "stat_time_day", "country_code"]
+    primary_key:
+      - adgroup_id
+      - stat_time_day
+      - country_code
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["adgroup_id"]
+            value: "{{ record.dimensions.adgroup_id }}"
+          - path: ["country_code"]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ads_audience_reports_by_country_daily_stream:
+    type: DeclarativeStream
+    name: ads_audience_reports_by_country_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+        ]
+      dimensions: ["ad_id", "stat_time_day", "country_code"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+      - country_code
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: ["country_code"]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  advertisers_audience_reports_by_country_daily_stream:
+    type: DeclarativeStream
+    name: advertisers_audience_reports_by_country_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      dimensions: ["advertiser_id", "stat_time_day", "country_code"]
+    primary_key:
+      - advertiser_id
+      - stat_time_day
+      - country_code
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+          - path: ["country_code"]
+            value_type: "string"
+            value: "{{ record.dimensions.country_code }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  campaigns_audience_reports_by_platform_daily_stream:
+    type: DeclarativeStream
+    name: campaigns_audience_reports_by_platform_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_CAMPAIGN"
+      report_metrics: ["campaign_name"]
+      dimensions: ["campaign_id", "stat_time_day", "platform"]
+    primary_key:
+      - campaign_id
+      - stat_time_day
+      - platform
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+          - path: ["platform"]
+            value_type: "string"
+            value: "{{ record.dimensions.platform }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_group_audience_reports_by_platform_daily_stream:
+    type: DeclarativeStream
+    name: ad_group_audience_reports_by_platform_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+        ]
+      dimensions: ["adgroup_id", "stat_time_day", "platform"]
+    primary_key:
+      - adgroup_id
+      - stat_time_day
+      - platform
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["adgroup_id"]
+            value: "{{ record.dimensions.adgroup_id }}"
+          - path: ["platform"]
+            value_type: "string"
+            value: "{{ record.dimensions.platform }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ads_audience_reports_by_platform_daily_stream:
+    type: DeclarativeStream
+    name: ads_audience_reports_by_platform_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+        ]
+      dimensions: ["ad_id", "stat_time_day", "platform"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+      - platform
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: ["platform"]
+            value_type: "string"
+            value: "{{ record.dimensions.platform }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  advertisers_audience_reports_by_platform_daily_stream:
+    type: DeclarativeStream
+    name: advertisers_audience_reports_by_platform_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      dimensions: ["advertiser_id", "stat_time_day", "platform"]
+    primary_key:
+      - advertiser_id
+      - stat_time_day
+      - platform
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+          - path: ["platform"]
+            value_type: "string"
+            value: "{{ record.dimensions.platform }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ads_audience_reports_by_province_daily_stream:
+    type: DeclarativeStream
+    name: ads_audience_reports_by_province_daily
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+        ]
+      dimensions: ["ad_id", "stat_time_day", "province_id"]
+    primary_key:
+      - ad_id
+      - stat_time_day
+      - province_id
+    $ref: "#/definitions/audience_base_report_daily"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+          - path: ["province_id"]
+            value: "{{ record.dimensions.province_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ads_reports_hourly_stream:
+    type: DeclarativeStream
+    name: ads_reports_hourly
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      filtering:
+        [
+          {
+            "field_name": "ad_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+          "total_purchase_value",
+          "total_onsite_shopping_value",
+          "onsite_shopping",
+          "vta_purchase",
+          "vta_conversion",
+          "cta_purchase",
+          "cta_conversion",
+          "total_pageview",
+          "complete_payment",
+          "value_per_complete_payment",
+          "total_complete_payment_rate",
+        ]
+      dimensions: ["ad_id", "stat_time_hour"]
+    primary_key:
+      - ad_id
+      - stat_time_hour
+    $ref: "#/definitions/base_report_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_hour"]
+            value: "{{ record.dimensions.stat_time_hour }}"
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  advertisers_reports_hourly_stream:
+    type: DeclarativeStream
+    name: advertisers_reports_hourly
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      dimensions: ["advertiser_id", "stat_time_hour"]
+    primary_key:
+      - advertiser_id
+      - stat_time_hour
+    $ref: "#/definitions/base_report_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_hour"]
+            value: "{{ record.dimensions.stat_time_hour }}"
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  campaigns_reports_hourly_stream:
+    type: DeclarativeStream
+    name: campaigns_reports_hourly
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_CAMPAIGN"
+      filtering:
+        [
+          {
+            "field_name": "campaign_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics: ["campaign_name"]
+      dimensions: ["campaign_id", "stat_time_hour"]
+    primary_key:
+      - campaign_id
+      - stat_time_hour
+    $ref: "#/definitions/base_report_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_hour"]
+            value: "{{ record.dimensions.stat_time_hour }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_groups_reports_hourly_stream:
+    type: DeclarativeStream
+    name: ad_groups_reports_hourly
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      filtering:
+        [
+          {
+            "field_name": "adgroup_status",
+            "filter_type": "IN",
+            "filter_value": "[\\\"STATUS_ALL\\\"]",
+          },
+        ]
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+        ]
+      dimensions: ["adgroup_id", "stat_time_hour"]
+    primary_key:
+      - adgroup_id
+      - stat_time_hour
+    $ref: "#/definitions/base_report_hourly"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_hour"]
+            value: "{{ record.dimensions.stat_time_hour }}"
+          - path: ["adgroup_id"]
+            value: "{{ record.dimensions.adgroup_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ads_reports_lifetime_stream:
+    type: DeclarativeStream
+    name: ads_reports_lifetime
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_AD"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+          "adgroup_id",
+          "ad_name",
+          "ad_text",
+          "total_purchase_value",
+          "total_onsite_shopping_value",
+          "onsite_shopping",
+          "vta_purchase",
+          "vta_conversion",
+          "cta_purchase",
+          "cta_conversion",
+          "total_pageview",
+          "complete_payment",
+          "value_per_complete_payment",
+          "total_complete_payment_rate",
+        ]
+      dimensions: ["ad_id"]
+    primary_key:
+      - ad_id
+    $ref: "#/definitions/base_report_lifetime"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["ad_id"]
+            value: "{{ record.dimensions.ad_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  advertisers_reports_lifetime_stream:
+    type: DeclarativeStream
+    name: advertisers_reports_lifetime
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      dimensions: ["advertiser_id"]
+    primary_key:
+      - advertiser_id
+    $ref: "#/definitions/base_report_lifetime"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  campaigns_reports_lifetime_stream:
+    type: DeclarativeStream
+    name: campaigns_reports_lifetime
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_CAMPAIGN"
+      report_metrics: ["campaign_name"]
+      dimensions: ["campaign_id"]
+    primary_key:
+      - campaign_id
+    $ref: "#/definitions/base_report_lifetime"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  ad_groups_reports_lifetime_stream:
+    type: DeclarativeStream
+    name: ad_groups_reports_lifetime
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADGROUP"
+      report_metrics:
+        [
+          "campaign_name",
+          "campaign_id",
+          "adgroup_name",
+          "placement_type",
+          "tt_app_id",
+          "tt_app_name",
+          "mobile_app_id",
+          "promotion_type",
+          "dpa_target_audience_type",
+          "conversion",
+          "cost_per_conversion",
+          "conversion_rate",
+          "real_time_conversion",
+          "real_time_cost_per_conversion",
+          "real_time_conversion_rate",
+          "result",
+          "cost_per_result",
+          "result_rate",
+          "real_time_result",
+          "real_time_cost_per_result",
+          "real_time_result_rate",
+          "secondary_goal_result",
+          "cost_per_secondary_goal_result",
+          "secondary_goal_result_rate",
+        ]
+      dimensions: ["adgroup_id"]
+    primary_key:
+      - adgroup_id
+    $ref: "#/definitions/base_report_lifetime"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["adgroup_id"]
+            value: "{{ record.dimensions.adgroup_id }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  audience_base_report_lifetime:
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/audience_report"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          service_type: "AUCTION"
+          report_type: "AUDIENCE"
+          data_level: '{{ parameters["data_level"] }}'
+          dimensions: '{{ parameters["dimensions"] | string }}'
+          metrics: '{{ (parameters.get("report_metrics", []) + ["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]) | string  }}'
+          start_date: '{{ day_delta(-365, "%Y-%m-%d") if config.get("start_date", "2016-09-01") < day_delta(-365, "%Y-%m-%d") else config["start_date"] }}'
+          end_date: "{{ today_utc() }}"
+          lifetime: "true"
+          filters: '{{ [
+            {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
+            {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
+            {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
+            ] | string if config.get("include_deleted", False)}}'
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+          start_from_page: 1
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+
+  advertisers_audience_reports_lifetime_stream:
+    type: DeclarativeStream
+    name: advertisers_audience_reports_lifetime
+    $parameters:
+      path: "report/integrated/get/"
+      data_level: "AUCTION_ADVERTISER"
+      dimensions: ["advertiser_id", "gender", "age"]
+    primary_key:
+      - advertiser_id
+      - gender
+      - age
+    $ref: "#/definitions/audience_base_report_lifetime"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["advertiser_id"]
+            value: "{{ record.dimensions.advertiser_id }}"
+          - path: ["gender"]
+            value: "{{ record.dimensions.gender }}"
+          - path: ["age"]
+            value: "{{ record.dimensions.age }}"
+      - type: CustomTransformation
+        class_name: "source_tiktok_marketing.components.transformations.TransformEmptyMetrics"
+
+  schemas:
+    advertiser_ids:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        advertiser_id:
+          description:
+            The unique identifier for each advertiser in the TikTok marketing
+            platform.
+          type: string
+        advertiser_name:
+          description: The name of the advertiser registered in the TikTok marketing platform.
+          type: string
+    advertisers:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        advertiser_id:
+          description: Unique identifier for the advertiser.
+          type: integer
+        name:
+          description: The name of the advertiser or company.
+          type: string
+        address:
+          description: The physical address of the advertiser.
+          type:
+            - "null"
+            - string
+        company:
+          description: The name of the company associated with the advertiser.
+          type:
+            - "null"
+            - string
+        contacter:
+          description: The contact person for the advertiser.
+          type:
+            - "null"
+            - string
+        country:
+          description: The country where the advertiser is located.
+          type:
+            - "null"
+            - string
+        currency:
+          description: The currency used for transactions in the account.
+          type:
+            - "null"
+            - string
+        description:
+          description: A brief description or bio of the advertiser or company.
+          type:
+            - "null"
+            - string
+        email:
+          description: The email address associated with the advertiser.
+          type:
+            - "null"
+            - string
+        industry:
+          description: The industry or sector the advertiser operates in.
+          type:
+            - "null"
+            - string
+        language:
+          description: The preferred language of communication for the advertiser.
+          type:
+            - "null"
+            - string
+        license_no:
+          description: The license number of the advertiser.
+          type:
+            - "null"
+            - string
+        license_url:
+          description: The URL link to the advertiser's license documentation.
+          type:
+            - "null"
+            - string
+        cellphone_number:
+          description: The cellphone number of the advertiser.
+          type:
+            - "null"
+            - string
+        promotion_area:
+          description: The specific area or region where the advertiser focuses promotion.
+          type:
+            - "null"
+            - string
+        rejection_reason:
+          description: Reason for any advertisement rejection by the platform.
+          type:
+            - "null"
+            - string
+        role:
+          description: The role or position of the advertiser within the company.
+          type:
+            - "null"
+            - string
+        status:
+          description: The current status of the advertiser's account.
+          type:
+            - "null"
+            - string
+        timezone:
+          description: The timezone setting for the advertiser's activities.
+          type:
+            - "null"
+            - string
+        balance:
+          description: The current balance in the advertiser's account.
+          type: number
+        create_time:
+          description: The timestamp when the advertiser account was created.
+          type: integer
+        telephone_number:
+          description: The telephone number of the advertiser.
+          type:
+            - "null"
+            - string
+        display_timezone:
+          description: The timezone for display purposes.
+          type:
+            - "null"
+            - string
+        promotion_center_province:
+          description:
+            The province or state at the center of the advertiser's promotion
+            activities.
+          type:
+            - "null"
+            - string
+        advertiser_account_type:
+          description: The type of advertiser's account (e.g., individual, business).
+          type:
+            - "null"
+            - string
+        license_city:
+          description: The city where the advertiser's license is registered.
+          type:
+            - "null"
+            - string
+        brand:
+          description: The brand name associated with the advertiser.
+          type:
+            - "null"
+            - string
+        license_province:
+          description: The province or state where the advertiser's license is registered.
+          type:
+            - "null"
+            - string
+        promotion_center_city:
+          description: The city at the center of the advertiser's promotion activities.
+          type:
+            - "null"
+            - string
+    audiences:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        shared:
+          description: Flag indicating if the audience is shared with others
+          type:
+            - "null"
+            - boolean
+        is_creator:
+          description: Flag indicating if the audience creator is the user
+          type:
+            - "null"
+            - boolean
+        audience_id:
+          description: Unique identifier for the audience
+          type:
+            - "null"
+            - string
+        cover_num:
+          description: Number of audience members covered
+          type:
+            - "null"
+            - integer
+        create_time:
+          description: Timestamp indicating when the audience was created
+          type:
+            - "null"
+            - string
+          format: date-time
+        is_valid:
+          description: Flag indicating if the audience data is valid
+          type:
+            - "null"
+            - boolean
+        is_expiring:
+          description: Flag indicating if the audience data is expiring soon
+          type:
+            - "null"
+            - boolean
+        expired_time:
+          description: Timestamp indicating when the audience data expires
+          type:
+            - "null"
+            - string
+          format: date-time
+        name:
+          description: Name of the audience
+          type:
+            - "null"
+            - string
+        audience_type:
+          description: Type of audience (e.g., demographic, interest-based)
+          type:
+            - "null"
+            - string
+        calculate_type:
+          description: Method used to calculate audience data
+          type:
+            - "null"
+            - string
+    creative_assets_music:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        music_id:
+          description: The unique identifier for the music asset.
+          type:
+            - "null"
+            - string
+        material_id:
+          description: The unique ID assigned to the music asset.
+          type:
+            - "null"
+            - string
+        sources:
+          description:
+            The list of different sources or versions available for the music
+            asset.
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - string
+        author:
+          description: The author of the music asset.
+          type:
+            - "null"
+            - string
+        liked:
+          description: The number of likes received by the music asset.
+          type:
+            - "null"
+            - boolean
+        cover_url:
+          description: The URL to the cover image associated with the music asset.
+          type:
+            - "null"
+            - string
+        url:
+          description: The URL to access or play the music asset.
+          type:
+            - "null"
+            - string
+        duration:
+          description: The duration of the music asset in seconds.
+          type:
+            - "null"
+            - number
+        style:
+          description: The style or genre of the music asset.
+          type:
+            - "null"
+            - string
+        signature:
+          description: The digital signature associated with the music asset.
+          type:
+            - "null"
+            - string
+        name:
+          description: The name or title of the music asset.
+          type:
+            - "null"
+            - string
+        file_name:
+          description: The file name of the music asset.
+          type:
+            - "null"
+            - string
+        copyright:
+          description: The copyright information related to the music asset.
+          type:
+            - "null"
+            - string
+        create_time:
+          description: The timestamp indicating when the music asset was created.
+          type:
+            - "null"
+            - string
+          format: date-time
+        modify_time:
+          description: The timestamp indicating when the music asset was last modified.
+          type:
+            - "null"
+            - string
+          format: date-time
+    creative_assets_portfolios:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        creative_portfolio_id:
+          description: The unique identifier for the creative portfolio.
+          type:
+            - "null"
+            - string
+        creative_portfolio_type:
+          description: The type of the creative portfolio, such as image, video, or carousel.
+          type:
+            - "null"
+            - string
+        creative_portfolio_preview_url:
+          description: The URL pointing to a preview image or video of the creative portfolio.
+          type:
+            - "null"
+            - string
+    campaigns:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        campaign_id:
+          description: The unique identifier of the campaign
+          type: integer
+        campaign_name:
+          description: Name of the campaign for easy identification
+          type: string
+        campaign_type:
+          description: Type of campaign (e.g., awareness, conversion)
+          type: string
+        advertiser_id:
+          description: The unique identifier of the advertiser associated with the campaign
+          type: integer
+        budget:
+          description: Total budget allocated for the campaign
+          type: number
+        budget_mode:
+          description: Mode in which the budget is being managed (e.g., daily, lifetime)
+          type: string
+        secondary_status:
+          description: Additional status information of the campaign
+          type: string
+        operation_status:
+          description: Current operational status of the campaign (e.g., active, paused)
+          type:
+            - "null"
+            - string
+        objective:
+          description: The objective or goal of the campaign
+          type:
+            - "null"
+            - string
+        objective_type:
+          description:
+            Type of objective selected for the campaign (e.g., brand awareness,
+            app installs)
+          type:
+            - "null"
+            - string
+        budget_optimize_on:
+          description: The metric or event that the budget optimization is based on
+          type:
+            - "null"
+            - boolean
+        bid_type:
+          description: Type of bid strategy being used in the campaign
+          type:
+            - "null"
+            - string
+        deep_bid_type:
+          description: Advanced bid type used for campaign optimization
+          type:
+            - "null"
+            - string
+        optimization_goal:
+          description: Specific goal to be optimized for in the campaign
+          type:
+            - "null"
+            - string
+        split_test_variable:
+          description: Variable being tested in a split test campaign
+          type:
+            - "null"
+            - string
+        is_new_structure:
+          description: Flag indicating if the campaign utilizes a new campaign structure
+          type: boolean
+        create_time:
+          description: Timestamp when the campaign was created
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        modify_time:
+          description: Timestamp when the campaign was last modified
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        roas_bid:
+          description: Return on ad spend goal set for the campaign
+          type:
+            - "null"
+            - number
+        is_smart_performance_campaign:
+          description: Flag indicating if the campaign uses smart performance optimization
+          type:
+            - "null"
+            - boolean
+        is_search_campaign:
+          description: Flag indicating if the campaign is a search campaign
+          type:
+            - "null"
+            - boolean
+        app_promotion_type:
+          description: Type of app promotion being used in the campaign
+          type:
+            - "null"
+            - string
+        rf_campaign_type:
+          description: Type of RF (reach and frequency) campaign being run
+          type:
+            - "null"
+            - string
+    ad_groups:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        adgroup_id:
+          description: The unique identifier of the ad group
+          type: integer
+        campaign_id:
+          description: The unique identifier of the campaign
+          type: integer
+        advertiser_id:
+          description: The unique identifier of the advertiser
+          type: integer
+        adgroup_name:
+          description: The name of the ad group
+          type: string
+        placement_type:
+          description: The type of ad placement
+          type: string
+          enum:
+            - PLACEMENT_TYPE_AUTOMATIC
+            - PLACEMENT_TYPE_NORMAL
+        placements:
+          description: Information about the ad placements targeted
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        inventory_filter_enabled:
+          description: Flag indicating if inventory filter is enabled
+          type:
+            - "null"
+            - boolean
+        comment_disabled:
+          description: Flag indicating if comments are disabled
+          type: boolean
+        app_id:
+          description: The unique identifier of the app
+          type:
+            - "null"
+            - integer
+        promotion_type:
+          description: The type of promotion
+          type: string
+          enum:
+            - APP_ANDROID
+            - APP_IOS
+            - WEBSITE
+            - LEAD_GENERATION
+            - WEBSITE_OR_DISPLAY
+            - TIKTOK_SHOP
+            - VIDEO_SHOPPING
+            - LIVE_SHOPPING
+        app_download_url:
+          description: The URL for downloading the associated app
+          type:
+            - "null"
+            - string
+        package:
+          description: The package used for the ad group
+          type:
+            - "null"
+            - string
+        pixel_id:
+          description: The ID of the pixel used for tracking
+          type:
+            - "null"
+            - integer
+        optimization_event:
+          description: The event used for optimization
+          type:
+            - "null"
+            - string
+        secondary_optimization_event:
+          description: Additional event used for optimization
+          type:
+            - "null"
+            - string
+        creative_material_mode:
+          description: The mode for creative materials
+          type: string
+        modify_time:
+          description: The timestamp for when the ad group was last modified
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        create_time:
+          description: The timestamp for when the ad group was created
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        audience_ids:
+          description: The IDs of the targeted audience
+          type: array
+          items:
+            type: integer
+        excluded_audience_ids:
+          description: The IDs of excluded audiences
+          type: array
+          items:
+            type: integer
+        audience_type:
+          description: The type of audience being targeted
+          type:
+            - "null"
+            - string
+        location_ids:
+          description: The IDs of targeted locations
+          type: array
+          items:
+            type: integer
+        is_hfss:
+          description: Flag indicating if high-frequency short sequences are included
+          type: boolean
+        interest_category_ids:
+          description: The IDs of interest categories for targeting
+          type: array
+          items:
+            type: integer
+        interest_keyword_ids:
+          description: The IDs of interest keywords for targeting
+          type: array
+          items:
+            type: integer
+        age_groups:
+          description: The targeted age groups for the ad group
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        gender:
+          description: The targeted gender for the ad group
+          type:
+            - "null"
+            - string
+        languages:
+          description: The targeted languages for the ad group
+          type: array
+          items:
+            type: string
+        operating_systems:
+          description: The targeted operating systems
+          type: array
+          items:
+            type: string
+        network_types:
+          description: The types of networks targeted
+          type: array
+          items:
+            type: string
+        device_price_ranges:
+          description: The price ranges for devices
+          type:
+            - "null"
+            - array
+          items:
+            type: number
+        min_android_version:
+          description: The minimum required Android version
+          type:
+            - "null"
+            - string
+        ios14_targeting:
+          description: Information about iOS 14 targeting settings
+          type:
+            - "null"
+            - string
+        device_model_ids:
+          description: The IDs of targeted device models
+          type:
+            - "null"
+            - array
+          items:
+            type: integer
+        min_ios_version:
+          description: The minimum required iOS version
+          type:
+            - "null"
+            - string
+        budget_mode:
+          description: The mode for managing the budget
+          type: string
+        budget:
+          description: The allocated budget for the ad group
+          type: number
+        schedule_type:
+          description: The type of scheduling
+          type: string
+        schedule_start_time:
+          description: The start time of the scheduling
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        schedule_end_time:
+          description: The end time of the scheduling
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        dayparting:
+          description: Information about dayparting settings
+          type:
+            - "null"
+            - string
+        optimization_goal:
+          description: The goal set for optimization
+          type: string
+        cpv_video_duration:
+          description: The duration for cost-per-view video
+          type:
+            - "null"
+            - string
+        conversion_window:
+          description: The window for tracking conversions
+          type:
+            - "null"
+            - string
+        pacing:
+          description: Information about the pacing settings
+          type:
+            - "null"
+            - string
+        billing_event:
+          description: The event used for billing
+          type:
+            - "null"
+            - string
+        skip_learning_phase:
+          description: Flag indicating if the learning phase is skipped
+          type: integer
+        bid_type:
+          description: The type of bidding
+          type:
+            - "null"
+            - string
+        bid_price:
+          description: The price set for bidding
+          type: number
+        conversion_bid_price:
+          description: The bid price for conversions
+          type: number
+        deep_bid_type:
+          description: The type of deep bid strategy
+          type:
+            - "null"
+            - string
+        deep_cpa_bid:
+          description: The bid amount for deep cost-per-action
+          type: number
+        secondary_status:
+          description: The secondary status of the ad group
+          type: string
+        operation_status:
+          description: The status of the operation
+          type: string
+        frequency:
+          description: The frequency of ad display
+          type:
+            - "null"
+            - integer
+        frequency_schedule:
+          description: The schedule for frequency capping
+          type:
+            - "null"
+            - integer
+        statistic_type:
+          description: The type of statistics being tracked
+          type:
+            - "null"
+            - string
+        carrier_ids:
+          description: The IDs of the targeted carriers
+          type:
+            - "null"
+            - array
+          items:
+            type: integer
+        carriers:
+          description: Information about the targeted carriers
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        video_download_disabled:
+          description: Flag indicating if video downloads are disabled
+          type: boolean
+        blocked_pangle_app_ids:
+          description: The IDs of the blocked Pangle apps
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        action_category_ids:
+          description: The IDs of the action categories associated with the ad group
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        action_days:
+          description: The number of days the action has been performed
+          type:
+            - "null"
+            - integer
+        video_actions:
+          description: Information about video-specific actions
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        rf_purchased_type:
+          description: Type of purchased results
+          type:
+            - "null"
+            - string
+        purchased_impression:
+          description: Information about purchased impressions
+          type:
+            - "null"
+            - number
+        purchased_reach:
+          description: Information about purchased reach
+          type:
+            - "null"
+            - number
+        rf_estimated_cpr:
+          description: Estimated cost per result
+          type:
+            - "null"
+            - number
+        rf_estimated_frequency:
+          description: Estimated frequency of results
+          type:
+            - "null"
+            - number
+        included_pangle_audience_package_ids:
+          description: The IDs of included Pangle audience packages
+          type:
+            - "null"
+            - array
+          items:
+            type: number
+        excluded_pangle_audience_package_ids:
+          description: The IDs of excluded Pangle audience packages
+          type:
+            - "null"
+            - array
+          items:
+            type: number
+        is_new_structure:
+          description: Flag indicating if the ad group follows a new structure
+          type: boolean
+        is_smart_performance_campaign:
+          description: Flag indicating if the campaign is using smart performance
+          type:
+            - "null"
+            - boolean
+        catalog_id:
+          description: The unique identifier of the catalog
+          type:
+            - "null"
+            - integer
+        product_set_id:
+          description: The ID of the product set
+          type:
+            - "null"
+            - integer
+        catalog_authorized_bc_id:
+          description: The authorized Business Center ID for the catalog
+          type:
+            - "null"
+            - integer
+        audience_rule:
+          description: The rule set for targeting the audience
+          type:
+            - "null"
+            - object
+        included_custom_actions:
+          description: Custom actions that are included
+          type:
+            - "null"
+            - array
+          items:
+            type: object
+        excluded_custom_actions:
+          description: Custom actions that are excluded
+          type:
+            - "null"
+            - array
+          items:
+            type: object
+        shopping_ads_retargeting_type:
+          description: The type of retargeting used for shopping ads
+          type:
+            - "null"
+            - string
+        split_test_adgroup_ids:
+          description: The IDs of ad groups participating in split testing
+          type:
+            - "null"
+            - array
+          items:
+            type: number
+        brand_safety_type:
+          description: The type of brand safety measures
+          type:
+            - "null"
+            - string
+        brand_safety_partner:
+          description: Information about the brand safety partners
+          type:
+            - "null"
+            - string
+        promotion_website_type:
+          description: The type of website used for promotion
+          type:
+            - "null"
+            - string
+        ios_quota_type:
+          description: The type of iOS quota
+          type:
+            - "null"
+            - string
+        roas_bid:
+          description: The bid amount set for return on ad spend
+          type:
+            - "null"
+            - number
+        actions:
+          description: Information about the actions taken on the ad group
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - object
+            properties:
+              action_category_ids:
+                description: The IDs of the action categories for the specific action
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: integer
+              action_period:
+                description: The period during which the action was taken
+                type:
+                  - "null"
+                  - number
+              action_scene:
+                description: The scene in which the action took place
+                type:
+                  - "null"
+                  - string
+              video_user_actions:
+                description: User actions specific to video content
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: string
+        targeting_expansion:
+          description: Settings for targeting expansion
+          type:
+            - "null"
+            - object
+          properties:
+            expansion_enabled:
+              description: Flag indicating if targeting expansion is enabled
+              type: boolean
+            expansion_types:
+              description: Types of expansion enabled
+              type:
+                - "null"
+                - array
+              items:
+                type: string
+        schedule_infos:
+          description: Information about the scheduling arrangements
+          type:
+            - "null"
+            - array
+          items:
+            type: object
+        share_disabled:
+          description: Flag indicating if sharing is disabled
+          type:
+            - "null"
+            - boolean
+        auto_targeting_enabled:
+          description: Flag indicating if auto-targeting is enabled
+          type:
+            - "null"
+            - boolean
+        ios14_quota_type:
+          description: The type of iOS 14 quota
+          type:
+            - "null"
+            - string
+        campaign_name:
+          description: The name of the campaign
+          type:
+            - "null"
+            - string
+        bid_display_mode:
+          description: The display mode for bidding
+          type:
+            - "null"
+            - string
+        scheduled_budget:
+          description: The budget allocated for scheduling
+          type:
+            - "null"
+            - number
+        adgroup_app_profile_page_state:
+          description: The state of the app profile page related to the ad group
+          type:
+            - "null"
+            - string
+        keywords:
+          description: Keywords associated with the ad group
+          type:
+            - "null"
+            - string
+        next_day_retention:
+          description: Retention information for the next day
+          type:
+            - "null"
+            - number
+        category_id:
+          description: The ID of the category for the ad group
+          type:
+            - "null"
+            - integer
+        search_result_enabled:
+          description: Flag indicating if search results are enabled
+          type:
+            - "null"
+            - boolean
+        app_type:
+          description: The type of the associated app
+          type:
+            - "null"
+            - string
+        feed_type:
+          description: The type of feed used
+          type:
+            - "null"
+            - string
+        delivery_mode:
+          description: The mode for delivery
+          type:
+            - "null"
+            - string
+        category_exclusion_ids:
+          description: The IDs of the excluded categories
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        contextual_tag_ids:
+          description: The IDs of contextual tags for targeting
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - string
+        household_income:
+          description: The targeted household income groups
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - string
+        isp_ids:
+          description: The IDs of the targeted internet service providers
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - string
+        spending_power:
+          description: Information about the spending power targeted
+          type:
+            - "null"
+            - string
+        zipcode_ids:
+          description: The IDs of targeted ZIP codes
+          type:
+            - "null"
+            - array
+          items:
+            type:
+              - "null"
+              - string
+    ads:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        advertiser_id:
+          description: The unique identifier of the advertiser
+          type: integer
+        campaign_id:
+          description: The unique identifier of the campaign
+          type: integer
+        campaign_name:
+          description: The name of the campaign
+          type: string
+        adgroup_id:
+          description: The unique identifier of the ad group
+          type: integer
+        adgroup_name:
+          description: The name of the ad group
+          type: string
+        ad_id:
+          description: The unique identifier of the ad
+          type: integer
+        ad_name:
+          description: The name of the ad
+          type: string
+        tracking_app_id:
+          description: The unique identifier of the tracking app
+          type:
+            - "null"
+            - string
+        tracking_offline_event_set_ids:
+          description: The unique identifiers of offline event sets for tracking
+          type:
+            - "null"
+            - array
+          items:
+            description: Unique identifier of an offline event set
+            type:
+              - "null"
+              - string
+        call_to_action:
+          description: The call-to-action text for the ad
+          type:
+            - "null"
+            - string
+        call_to_action_id:
+          description: The identifier of the call-to-action
+          type:
+            - "null"
+            - string
+        disclaimer_type:
+          description: The type of disclaimer displayed
+          type:
+            - "null"
+            - string
+        disclaimer_text:
+          description: The disclaimer text
+          type:
+            - "null"
+            - object
+          properties:
+            text:
+              description: The text of the disclaimer
+              type:
+                - "null"
+                - string
+        disclaimer_clickable_texts:
+          description: Clickable disclaimer texts with URLs
+          type:
+            - "null"
+            - object
+          properties:
+            text:
+              description: The disclaimer text
+              type:
+                - "null"
+                - string
+            url:
+              description: The URL associated with the disclaimer text
+              type:
+                - "null"
+                - string
+        card_id:
+          description: The identifier of the card
+          type:
+            - "null"
+            - integer
+        secondary_status:
+          description: The secondary status of the ad
+          type: string
+        operation_status:
+          description: The operational status of the ad
+          type:
+            - "null"
+            - string
+        is_aco:
+          description: Indicates if the ad is under Automated Creative Optimization
+          type:
+            - "null"
+            - boolean
+        image_ids:
+          description: The unique identifiers of images used in the ad
+          type:
+            - "null"
+            - array
+          items:
+            description: Unique identifier of an image
+            type: string
+        image_mode:
+          description: The mode of displaying images
+          type:
+            - "null"
+            - string
+        ad_format:
+          description: The format of the ad (e.g., image, video, carousel)
+          type:
+            - "null"
+            - string
+        ad_text:
+          description: The text content of the ad
+          type:
+            - "null"
+            - string
+        ad_texts:
+          description: The text content of the ad in various languages
+          type:
+            - "null"
+            - array
+          items:
+            description: Text content in a specific language
+            type: string
+        video_id:
+          description: The unique identifier of the video
+          type:
+            - "null"
+            - string
+        tiktok_item_id:
+          description: The unique identifier of the TikTok item
+          type:
+            - "null"
+            - string
+        premium_badge_id:
+          description: The unique identifier of the premium badge
+          type:
+            - "null"
+            - string
+        app_name:
+          description: The name of the mobile app where the ad is displayed
+          type:
+            - "null"
+            - string
+        landing_page_url:
+          description: The URL of the landing page for the ad
+          type:
+            - "null"
+            - string
+        landing_page_urls:
+          description: The URLs of landing pages for the ad
+          type:
+            - "null"
+            - array
+          items:
+            description: URL of a landing page
+            type: string
+        display_name:
+          description: The display name of the ad
+          type:
+            - "null"
+            - string
+        profile_image_url:
+          description: The URL of the profile image associated with the ad
+          type:
+            - "null"
+            - string
+        impression_tracking_url:
+          description: The URL for tracking ad impressions
+          type:
+            - "null"
+            - string
+        click_tracking_url:
+          description: The URL for tracking ad clicks
+          type:
+            - "null"
+            - string
+        tracking_pixel_id:
+          description: The unique identifier of the tracking pixel
+          type:
+            - "null"
+            - integer
+        deeplink:
+          description: The deeplink URL for the ad
+          type:
+            - "null"
+            - string
+        deeplink_type:
+          description: The type of deeplink used
+          type:
+            - "null"
+            - string
+        fallback_type:
+          description: The type of fallback used
+          type:
+            - "null"
+            - string
+        playable_url:
+          description: The URL for a playable ad
+          type:
+            - "null"
+            - string
+        vast_moat_enabled:
+          description: Indicates if VAST MOAT is enabled
+          type:
+            - "null"
+            - boolean
+        page_id:
+          description: The unique identifier of the page
+          type:
+            - "null"
+            - number
+        creative_authorized:
+          description: Indicates if the creative is authorized
+          type:
+            - "null"
+            - boolean
+        is_new_structure:
+          description: Indicates if the ad is part of a new structure
+          type:
+            - "null"
+            - boolean
+        create_time:
+          description: The timestamp when the ad was created
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        modify_time:
+          description: The timestamp when the ad was last modified
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        shopping_ads_fallback_type:
+          description: The type of fallback for shopping ads
+          type:
+            - "null"
+            - string
+        shopping_deeplink_type:
+          description: The type of deeplink for shopping
+          type:
+            - "null"
+            - string
+        shopping_ads_video_package_id:
+          description: The unique identifier of the video package for shopping ads
+          type:
+            - "null"
+            - string
+        promotional_music_disabled:
+          description: Indicates if promotional music is disabled
+          type:
+            - "null"
+            - boolean
+        item_duet_status:
+          description: The status of item duet
+          type:
+            - "null"
+            - string
+        item_stitch_status:
+          description: The status of item stitch
+          type:
+            - "null"
+            - string
+        avatar_icon_web_uri:
+          description: The URL of the avatar icon for the ad
+          type:
+            - "null"
+            - string
+        brand_safety_postbid_partner:
+          description: Details about post-bidding partner for brand safety
+          type:
+            - "null"
+            - string
+        brand_safety_vast_url:
+          description: The VAST URL for brand safety tracking
+          type:
+            - "null"
+            - string
+        creative_type:
+          description: The type of creative used in the ad
+          type:
+            - "null"
+            - string
+        identity_id:
+          description: The identifier of the identity
+          type:
+            - "null"
+            - string
+        identity_type:
+          description: The type of identity
+          type:
+            - "null"
+            - string
+        identity_authorized_bc_id:
+          description: The authorized identity for branded content
+          type:
+            - "null"
+            - string
+        phone_region_code:
+          description: The region code for the phone number
+          type:
+            - "null"
+            - string
+        phone_region_calling_code:
+          description: The calling code region for the phone number
+          type:
+            - "null"
+            - string
+        optimization_event:
+          description: The event used for optimization
+          type:
+            - "null"
+            - string
+        phone_number:
+          description: The phone number associated with the ad
+          type:
+            - "null"
+            - string
+        carousel_image_index:
+          description: The index of the image in a carousel ad
+          type:
+            - "null"
+            - integer
+        viewability_postbid_partner:
+          description: Details about post-bidding partner for viewability tracking
+          type:
+            - "null"
+            - string
+        viewability_vast_url:
+          description: The VAST URL for viewability tracking
+          type:
+            - "null"
+            - string
+        music_id:
+          description: The unique identifier of the music used in the ad
+          type:
+            - "null"
+            - string
+        utm_params:
+          description: UTM parameters for tracking
+          type:
+            - "null"
+            - array
+          items:
+            description: Key-value pair for a UTM parameter
+            type:
+              - "null"
+              - object
+            properties:
+              key:
+                description: The key of the UTM parameter
+                type:
+                  - "null"
+                  - string
+              value:
+                description: The value of the UTM parameter
+                type:
+                  - "null"
+                  - string
+        shopping_ads_deeplink_type:
+          description: The type of deeplink for shopping ads
+          type:
+            - "null"
+            - string
+        dark_post_status:
+          description: The status of dark post
+          type:
+            - "null"
+            - string
+        branded_content_disabled:
+          description: Indicates if branded content is disabled
+          type:
+            - "null"
+            - string
+        product_specific_type:
+          description: The specific type of product
+          type:
+            - "null"
+            - string
+        catalog_id:
+          description: The unique identifier of the catalog
+          type:
+            - "null"
+            - string
+        item_group_ids:
+          description: The unique identifiers of item groups
+          type:
+            - "null"
+            - array
+          items:
+            description: Unique identifier of an item group
+            type:
+              - "null"
+              - string
+        product_set_id:
+          description: The unique identifier of the product set
+          type:
+            - "null"
+            - string
+        sku_ids:
+          description: The unique identifiers of SKUs associated with the ad
+          type:
+            - "null"
+            - array
+          items:
+            description: Unique identifier of a SKU
+            type:
+              - "null"
+              - string
+        dynamic_format:
+          description: The dynamic format of the ad
+          type:
+            - "null"
+            - string
+        vertical_video_strategy:
+          description: The strategy for displaying vertical videos
+          type:
+            - "null"
+            - string
+        dynamic_destination:
+          description: The dynamic destination of the ad
+          type:
+            - "null"
+            - string
+        showcase_products:
+          description: Products displayed in a showcase ad
+          type:
+            - "null"
+            - object
+          properties:
+            item_group_id:
+              description: The unique identifier of the item group
+              type:
+                - "null"
+                - string
+            store_id:
+              description: The unique identifier of the store
+              type:
+                - "null"
+                - string
+            catalog_id:
+              description: The unique identifier of the catalog
+              type:
+                - "null"
+                - string
+        tiktok_page_category:
+          description: The category of the TikTok page
+          type:
+            - "null"
+            - string
+    creative_assets_images:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        image_id:
+          description: The unique identifier for the image.
+          type:
+            - "null"
+            - string
+        format:
+          description: The format type of the image file.
+          type:
+            - "null"
+            - string
+        image_url:
+          description: The URL to access the image.
+          type:
+            - "null"
+            - string
+        height:
+          description: The height dimension of the image.
+          type:
+            - "null"
+            - integer
+        width:
+          description: The width dimension of the image.
+          type:
+            - "null"
+            - integer
+        signature:
+          description: The signature of the image for security purposes.
+          type:
+            - "null"
+            - string
+        size:
+          description: The size of the image file.
+          type:
+            - "null"
+            - integer
+        material_id:
+          description: The ID associated with the material of the image.
+          type:
+            - "null"
+            - string
+        is_carousel_usable:
+          description: Flag indicating if the image can be used in a carousel.
+          type:
+            - "null"
+            - boolean
+        file_name:
+          description: The name of the image file.
+          type:
+            - "null"
+            - string
+        create_time:
+          description: The timestamp when the creative asset image was created.
+          type:
+            - "null"
+            - string
+          format: date-time
+        modify_time:
+          description: The timestamp when the creative asset image was last modified.
+          type:
+            - "null"
+            - string
+          format: date-time
+        displayable:
+          description: Flag indicating if the image is displayable or not.
+          type:
+            - "null"
+            - boolean
+    creative_assets_videos:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        video_id:
+          description: ID of the video.
+          type:
+            - "null"
+            - string
+        video_cover_url:
+          description: URL for the cover image of the video.
+          type:
+            - "null"
+            - string
+        format:
+          description: Format of the video file.
+          type:
+            - "null"
+            - string
+        preview_url:
+          description: URL for previewing the video.
+          type:
+            - "null"
+            - string
+        preview_url_expire_time:
+          description: Timestamp when the preview URL expires.
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        duration:
+          description: Duration of the video in seconds.
+          type:
+            - "null"
+            - number
+        height:
+          description: Height of the video in pixels.
+          type:
+            - "null"
+            - integer
+        width:
+          description: Width of the video in pixels.
+          type:
+            - "null"
+            - integer
+        bit_rate:
+          description: The bitrate of the video.
+          type:
+            - "null"
+            - number
+        signature:
+          description: Signature for authenticating the video request.
+          type:
+            - "null"
+            - string
+        size:
+          description: Size of the video file in bytes.
+          type:
+            - "null"
+            - integer
+        material_id:
+          description: ID of the video material.
+          type:
+            - "null"
+            - string
+        allowed_placements:
+          description: List of placements where the video can be used.
+          type:
+            - "null"
+            - array
+          items:
+            description: Specific placement where the video is allowed.
+            type:
+              - "null"
+              - string
+        allow_download:
+          description: Indicates if the video can be downloaded by users.
+          type:
+            - "null"
+            - boolean
+        file_name:
+          description: Name of the video file.
+          type:
+            - "null"
+            - string
+        create_time:
+          description: Timestamp when the video was created.
+          type:
+            - "null"
+            - string
+          format: date-time
+        modify_time:
+          description: Timestamp when the video was last modified.
+          type:
+            - "null"
+            - string
+          format: date-time
+        displayable:
+          description: Indicates if the video is displayable.
+          type:
+            - "null"
+            - boolean
+    base_report:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        stat_time_day:
+          description: The date for which the statistical data is recorded.
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        stat_time_hour:
+          description: The hour of the day for which the statistical data is recorded.
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        campaign_id:
+          description: The unique identifier for a marketing campaign.
+          type:
+            - "null"
+            - integer
+        adgroup_id:
+          description: The unique identifier for an ad group.
+          type:
+            - "null"
+            - integer
+        ad_id:
+          description: The unique identifier for an advertisement.
+          type:
+            - "null"
+            - integer
+        advertiser_id:
+          description: The unique identifier for an advertiser.
+          type:
+            - "null"
+            - integer
+        metrics:
+          description:
+            A list of metrics for which data should be retrieved such as views,
+            likes, comments, or shares.
+          type:
+            - "null"
+            - object
+          properties:
+            campaign_name:
+              description: The name of the marketing campaign.
+              type:
+                - "null"
+                - string
+            campaign_id:
+              description:
+                The unique identifier for a marketing campaign within the metrics
+                level.
+              type:
+                - "null"
+                - integer
+            adgroup_name:
+              description: The name of the ad group.
+              type:
+                - "null"
+                - string
+            placement_type:
+              description: Type of advertisement placement.
+              type:
+                - "null"
+                - string
+            adgroup_id:
+              description: The unique identifier for an ad group within the metrics level.
+              type:
+                - "null"
+                - integer
+            ad_name:
+              description: The name of the advertisement.
+              type:
+                - "null"
+                - string
+            ad_text:
+              description: The content or text of the advertisement.
+              type:
+                - "null"
+                - string
+            tt_app_id:
+              description: The unique identifier for a TikTok application.
+              type:
+                - "null"
+                - integer
+            tt_app_name:
+              description: The name of the TikTok application.
+              type:
+                - "null"
+                - string
+            mobile_app_id:
+              description: The unique identifier for a mobile application.
+              type:
+                - "null"
+                - string
+            promotion_type:
+              description: Type of promotion.
+              type:
+                - "null"
+                - string
+            dpa_target_audience_type:
+              description: Dynamic product ad target audience type.
+              type:
+                - "null"
+                - string
+            spend:
+              description: Amount of money spent.
+              type:
+                - "null"
+                - string
+            cash_spend:
+              description: The amount of money spent in cash.
+              type:
+                - "null"
+                - string
+            voucher_spend:
+              description: Amount spent on vouchers.
+              type:
+                - "null"
+                - string
+            cpc:
+              description: Cost per click.
+              type:
+                - "null"
+                - string
+            cpm:
+              description: Cost per thousand impressions.
+              type:
+                - "null"
+                - string
+            impressions:
+              description: Number of times the advertisement is viewed.
+              type:
+                - "null"
+                - string
+            clicks:
+              description: The number of clicks on the advertisement.
+              type:
+                - "null"
+                - string
+            ctr:
+              description: Click-through rate.
+              type:
+                - "null"
+                - string
+            reach:
+              description: Total number of unique users reached.
+              type:
+                - "null"
+                - string
+            cost_per_1000_reached:
+              description: The cost per 1000 reached users.
+              type:
+                - "null"
+                - string
+            conversion:
+              description: The number of conversions.
+              type:
+                - "null"
+                - string
+            cost_per_conversion:
+              description: The cost per conversion.
+              type:
+                - "null"
+                - string
+            conversion_rate:
+              description: The rate of conversion.
+              type:
+                - "null"
+                - string
+            real_time_conversion:
+              description: Real-time conversions.
+              type:
+                - "null"
+                - string
+            real_time_cost_per_conversion:
+              description: Cost per conversion in real-time.
+              type:
+                - "null"
+                - string
+            real_time_conversion_rate:
+              description: Real-time conversion rate.
+              type:
+                - "null"
+                - string
+            result:
+              description: Number of results.
+              type:
+                - "null"
+                - string
+            cost_per_result:
+              description: The cost per result.
+              type:
+                - "null"
+                - string
+            result_rate:
+              description: Rate of results.
+              type:
+                - "null"
+                - string
+            real_time_result:
+              description: Real-time results.
+              type:
+                - "null"
+                - string
+            real_time_cost_per_result:
+              description: Cost per result in real-time.
+              type:
+                - "null"
+                - string
+            real_time_result_rate:
+              description: Real-time result rate.
+              type:
+                - "null"
+                - string
+            secondary_goal_result:
+              description: Results for secondary goals.
+              type:
+                - "null"
+                - string
+            cost_per_secondary_goal_result:
+              description: The cost per secondary goal result.
+              type:
+                - "null"
+                - string
+            secondary_goal_result_rate:
+              description: Rate of results for secondary goals.
+              type:
+                - "null"
+                - string
+            frequency:
+              description: Frequency of occurrence.
+              type:
+                - "null"
+                - string
+            total_purchase_value:
+              description: Total value of purchases made.
+              type:
+                - "null"
+                - string
+            total_onsite_shopping_value:
+              description: Total value of onsite shopping.
+              type:
+                - "null"
+                - string
+            onsite_shopping:
+              description: Shopping happening on the site.
+              type:
+                - "null"
+                - string
+            vta_purchase:
+              description: Purchase through vertical takeoff ad (VTA).
+              type:
+                - "null"
+                - string
+            cta_purchase:
+              description: Purchase through call-to-action.
+              type:
+                - "null"
+                - string
+            cta_conversion:
+              description: Conversion through call-to-action.
+              type:
+                - "null"
+                - string
+            vta_conversion:
+              description: Conversion through vertical takeoff ad (VTA).
+              type:
+                - "null"
+                - string
+            total_pageview:
+              description: Total number of page views.
+              type:
+                - "null"
+                - string
+            complete_payment:
+              description: The number of completed payments.
+              type:
+                - "null"
+                - string
+            value_per_complete_payment:
+              description: Value per completed payment.
+              type:
+                - "null"
+                - string
+            total_complete_payment_rate:
+              description: Rate of total completed payments.
+              type:
+                - "null"
+                - string
+            video_play_actions:
+              description: Actions related to video plays.
+              type:
+                - "null"
+                - number
+            video_watched_2s:
+              description: Number of viewers watching at least 2 seconds of the video.
+              type:
+                - "null"
+                - number
+            video_watched_6s:
+              description: Number of viewers watching at least 6 seconds of the video.
+              type:
+                - "null"
+                - number
+            average_video_play:
+              description: The average number of video plays.
+              type:
+                - "null"
+                - number
+            average_video_play_per_user:
+              description: The average number of video plays per user.
+              type:
+                - "null"
+                - number
+            video_views_p25:
+              description: Percentage of viewers watching at least 25% of the video.
+              type:
+                - "null"
+                - number
+            video_views_p50:
+              description: Percentage of viewers watching at least 50% of the video.
+              type:
+                - "null"
+                - number
+            video_views_p75:
+              description: Percentage of viewers watching at least 75% of the video.
+              type:
+                - "null"
+                - number
+            video_views_p100:
+              description: Percentage of viewers watching the entire video.
+              type:
+                - "null"
+                - number
+            profile_visits:
+              description: Number of visits to the profile.
+              type:
+                - "null"
+                - number
+            likes:
+              description: Number of likes received.
+              type:
+                - "null"
+                - number
+            comments:
+              description: The number of comments received.
+              type:
+                - "null"
+                - number
+            shares:
+              description: Number of shares.
+              type:
+                - "null"
+                - number
+            follows:
+              description: Number of follows.
+              type:
+                - "null"
+                - number
+            clicks_on_music_disc:
+              description: The number of clicks on the music disc.
+              type:
+                - "null"
+                - number
+            real_time_app_install:
+              description: Real-time app installations.
+              type:
+                - "null"
+                - number
+            real_time_app_install_cost:
+              description: Cost of real-time app installations.
+              type:
+                - "null"
+                - number
+            app_install:
+              description: The number of app installations.
+              type:
+                - "null"
+                - number
+            profile_visits_rate:
+              description: Rate of profile visits.
+              type:
+                - "null"
+                - number
+            purchase:
+              description: Number of purchases made.
+              type:
+                - "null"
+                - number
+            purchase_rate:
+              description: Rate of purchases.
+              type:
+                - "null"
+                - number
+            registration:
+              description: Number of registrations.
+              type:
+                - "null"
+                - number
+            registration_rate:
+              description: Rate of registrations.
+              type:
+                - "null"
+                - number
+            sales_lead:
+              description: Number of sales leads.
+              type:
+                - "null"
+                - number
+            sales_lead_rate:
+              description: Rate of sales leads.
+              type:
+                - "null"
+                - number
+            cost_per_app_install:
+              description: The cost per app installation.
+              type:
+                - "null"
+                - number
+            cost_per_purchase:
+              description: The cost per purchase.
+              type:
+                - "null"
+                - number
+            cost_per_registration:
+              description: The cost per registration.
+              type:
+                - "null"
+                - number
+            cost_per_sales_lead:
+              description: The cost per sales lead.
+              type:
+                - "null"
+                - number
+            cost_per_total_sales_lead:
+              description: The cost per total sales lead.
+              type:
+                - "null"
+                - number
+            cost_per_total_app_event_add_to_cart:
+              description: The cost per total app events adding to cart.
+              type:
+                - "null"
+                - number
+            total_app_event_add_to_cart:
+              description: Total app events adding items to cart.
+              type:
+                - "null"
+                - number
+        dimensions:
+          description:
+            A list of dimensions for which data should be retrieved such as time,
+            user demographics, or content type.
+          type:
+            - "null"
+            - object
+          properties:
+            stat_time_day:
+              description: The date for which the statistical data is recorded.
+              type:
+                - "null"
+                - string
+              format: date-time
+            stat_time_hour:
+              description: The hour of the day for which the statistical data is recorded.
+              type:
+                - "null"
+                - string
+              format: date-time
+            campaign_id:
+              description:
+                The unique identifier for a marketing campaign within the dimension
+                level.
+              type:
+                - "null"
+                - integer
+            adgroup_id:
+              description: The unique identifier for an ad group within the dimension level.
+              type:
+                - "null"
+                - integer
+            ad_id:
+              description:
+                The unique identifier for an advertisement within the dimension
+                level.
+              type:
+                - "null"
+                - integer
+            advertiser_id:
+              description:
+                The unique identifier for an advertiser within the dimension
+                level.
+              type:
+                - "null"
+                - integer
+    audience_report:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        advertiser_id:
+          description: Unique identifier for the advertiser
+          type:
+            - "null"
+            - integer
+        adgroup_id:
+          description: Unique identifier for the ad group
+          type:
+            - "null"
+            - integer
+        campaign_id:
+          description: Unique identifier for the campaign
+          type:
+            - "null"
+            - integer
+        ad_id:
+          description: Unique identifier for the ad
+          type:
+            - "null"
+            - integer
+        stat_time_day:
+          description: Day timestamp for the statistics
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        stat_time_hour:
+          description: Hour timestamp for the statistics
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        country_code:
+          description: Country code of the target audience
+          type:
+            - "null"
+            - string
+        platform:
+          description: Platform where the ad is displayed
+          type:
+            - "null"
+            - string
+        gender:
+          description: Gender of the target audience
+          type:
+            - "null"
+            - string
+        age:
+          description: Age group of the target audience
+          type:
+            - "null"
+            - string
+        province_id:
+          description: Province identifier of the target audience
+          type:
+            - "null"
+            - string
+        metrics:
+          description:
+            Defines the metrics or quantitative measurements of the audience
+            data such as number of views, engagement rate, share count, etc.
+          type:
+            - "null"
+            - object
+          properties:
+            campaign_name:
+              description: Name of the campaign
+              type:
+                - "null"
+                - string
+            campaign_id:
+              description: Campaign identifier within metrics
+              type:
+                - "null"
+                - integer
+            adgroup_name:
+              description: Name of the ad group
+              type:
+                - "null"
+                - string
+            placement_type:
+              description: Type of ad placement
+              type:
+                - "null"
+                - string
+            adgroup_id:
+              description: Unique identifier for the ad group within metrics
+              type:
+                - "null"
+                - integer
+            ad_name:
+              description: Name of the ad
+              type:
+                - "null"
+                - string
+            ad_text:
+              description: Text content of the ad
+              type:
+                - "null"
+                - string
+            tt_app_id:
+              description: TikTok app identifier
+              type:
+                - "null"
+                - string
+            tt_app_name:
+              description: TikTok app name
+              type:
+                - "null"
+                - string
+            mobile_app_id:
+              description: Mobile app identifier
+              type:
+                - "null"
+                - string
+            promotion_type:
+              description: Type of promotion
+              type:
+                - "null"
+                - string
+            dpa_target_audience_type:
+              description: Dynamic product ads target audience type
+              type:
+                - "null"
+                - string
+            spend:
+              description: Amount spent on the ad campaign
+              type:
+                - "null"
+                - string
+            cpc:
+              description: Cost per click
+              type:
+                - "null"
+                - string
+            cpm:
+              description: Cost per 1000 impressions
+              type:
+                - "null"
+                - string
+            impressions:
+              description: Number of times the ad was displayed
+              type:
+                - "null"
+                - string
+            clicks:
+              description: Number of clicks on the ad
+              type:
+                - "null"
+                - string
+            ctr:
+              description: Click-through rate
+              type:
+                - "null"
+                - string
+            reach:
+              description: Number of unique users who saw the ad
+              type:
+                - "null"
+                - string
+            cost_per_1000_reached:
+              description: Cost per 1000 impressions reached
+              type:
+                - "null"
+                - string
+            conversion:
+              description: Number of conversions from the ad
+              type:
+                - "null"
+                - string
+            cost_per_conversion:
+              description: Cost per conversion
+              type:
+                - "null"
+                - string
+            conversion_rate:
+              description: Rate of conversions from the ad
+              type:
+                - "null"
+                - string
+            real_time_conversion:
+              description: Real-time conversions from the ad
+              type:
+                - "null"
+                - string
+            real_time_cost_per_conversion:
+              description: Real-time cost per conversion
+              type:
+                - "null"
+                - string
+            real_time_conversion_rate:
+              description: Real-time conversion rate
+              type:
+                - "null"
+                - string
+            result:
+              description: Total results achieved
+              type:
+                - "null"
+                - string
+            cost_per_result:
+              description: Cost per result achieved
+              type:
+                - "null"
+                - string
+            result_rate:
+              description: Result rate
+              type:
+                - "null"
+                - string
+            real_time_result:
+              description: Real-time results achieved
+              type:
+                - "null"
+                - string
+            real_time_cost_per_result:
+              description: Real-time cost per result achieved
+              type:
+                - "null"
+                - string
+            real_time_result_rate:
+              description: Real-time result rate
+              type:
+                - "null"
+                - string
+            province_id:
+              description: Province identifier
+              type:
+                - "null"
+                - string
+        dimensions:
+          description:
+            Specifies the dimensions or attributes of the audience data being
+            reported such as age, gender, location, etc.
+          type:
+            - "null"
+            - object
+          properties:
+            stat_time_day:
+              description: Day timestamp for the statistics
+              type:
+                - "null"
+                - string
+              format: date-time
+            stat_time_hour:
+              description: Hour timestamp for the statistics
+              type:
+                - "null"
+                - string
+              format: date-time
+            country_code:
+              description: Country code within dimensions
+              type:
+                - "null"
+                - string
+            campaign_id:
+              description: Campaign identifier within dimensions
+              type:
+                - "null"
+                - integer
+            adgroup_id:
+              description: Unique identifier for the ad group within dimensions
+              type:
+                - "null"
+                - integer
+            ad_id:
+              description: Unique identifier for the ad within dimensions
+              type:
+                - "null"
+                - integer
+            advertiser_id:
+              description: Unique identifier for the advertiser within dimensions
+              type:
+                - "null"
+                - integer
+            gender:
+              description: Gender of the target audience within dimensions
+              type:
+                - "null"
+                - string
+            age:
+              description: Age group within dimensions
+              type:
+                - "null"
+                - string
+            ac:
+              description: AC description
+              type:
+                - "null"
+                - string
+            language:
+              description: Language of the target audience
+              type:
+                - "null"
+                - string
+            platform:
+              description: Platform type of the ad
+              type:
+                - "null"
+                - string
+            interest_category:
+              description: Interest category of the target audience
+              type:
+                - "null"
+                - string
+            placement:
+              description: Placement type of the ad
+              type:
+                - "null"
+                - string
+
+streams:
+  - $ref: "#/definitions/advertiser_ids_stream"
+  - $ref: "#/definitions/advertisers_stream"
+  - $ref: "#/definitions/audiences_stream"
+  - $ref: "#/definitions/creative_assets_music_stream"
+  - $ref: "#/definitions/creative_assets_portfolios_stream"
+  - $ref: "#/definitions/campaigns_stream"
+  - $ref: "#/definitions/ad_groups_stream"
+  - $ref: "#/definitions/ads_stream"
+  - $ref: "#/definitions/creative_assets_images_stream"
+  - $ref: "#/definitions/creative_assets_videos_stream"
+  - $ref: "#/definitions/ads_reports_daily_stream"
+  - $ref: "#/definitions/ad_groups_reports_daily_stream"
+  - $ref: "#/definitions/advertisers_reports_daily_stream"
+  - $ref: "#/definitions/campaigns_reports_daily_stream"
+  - $ref: "#/definitions/campaigns_audience_reports_daily_stream"
+  - $ref: "#/definitions/ad_group_audience_reports_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_daily_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_daily_stream"
+  - $ref: "#/definitions/campaigns_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/ad_group_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_by_country_daily_stream"
+  - $ref: "#/definitions/campaigns_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/ad_group_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_by_platform_daily_stream"
+  - $ref: "#/definitions/ads_audience_reports_by_province_daily_stream"
+  - $ref: "#/definitions/ads_reports_hourly_stream"
+  - $ref: "#/definitions/advertisers_reports_hourly_stream"
+  - $ref: "#/definitions/campaigns_reports_hourly_stream"
+  - $ref: "#/definitions/ad_groups_reports_hourly_stream"
+  - $ref: "#/definitions/ads_reports_lifetime_stream"
+  - $ref: "#/definitions/advertisers_reports_lifetime_stream"
+  - $ref: "#/definitions/campaigns_reports_lifetime_stream"
+  - $ref: "#/definitions/ad_groups_reports_lifetime_stream"
+  - $ref: "#/definitions/advertisers_audience_reports_lifetime_stream"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/tiktok-marketing
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: TikTok Marketing Source Spec
+    additionalProperties: true
+    type: object
+    properties:
+      credentials:
+        title: Authentication Method
+        description: Authentication method
+        default: {}
+        order: 0
+        type: object
+        oneOf:
+          - title: OAuth2.0
+            type: object
+            properties:
+              auth_type:
+                title: Auth Type
+                const: oauth2.0
+                order: 0
+                type: string
+              app_id:
+                title: App ID
+                description: The Developer Application App ID.
+                airbyte_secret: true
+                type: string
+              secret:
+                title: Secret
+                description: The Developer Application Secret.
+                airbyte_secret: true
+                type: string
+              access_token:
+                title: Access Token
+                description: Long-term Authorized Access Token.
+                airbyte_secret: true
+                type: string
+              advertiser_id:
+                title: Advertiser ID
+                description:
+                  The Advertiser ID to filter reports and streams. Let this
+                  empty to retrieve all.
+                type: string
+            required:
+              - app_id
+              - secret
+              - access_token
+          - title: Sandbox Access Token
+            type: object
+            properties:
+              auth_type:
+                title: Auth Type
+                const: sandbox_access_token
+                order: 0
+                type: string
+              advertiser_id:
+                title: Advertiser ID
+                description:
+                  The Advertiser ID which generated for the developer's Sandbox
+                  application.
+                type: string
+              access_token:
+                title: Access Token
+                description: The long-term authorized access token.
+                airbyte_secret: true
+                type: string
+            required:
+              - advertiser_id
+              - access_token
+      start_date:
+        title: Replication Start Date
+        description:
+          "The Start Date in format: YYYY-MM-DD. Any data before this date
+          will not be replicated. If this parameter is not set, all data will be replicated."
+        default: "2016-09-01"
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        order: 1
+        type: string
+        format: date
+      end_date:
+        title: End Date
+        description:
+          The date until which you'd like to replicate data for all incremental
+          streams, in the format YYYY-MM-DD. All data generated between start_date and
+          this date will be replicated. Not setting this option will result in always
+          syncing the data till the current date.
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        order: 2
+        type: string
+        format: date
+      attribution_window:
+        title: Attribution Window
+        description: The attribution window in days.
+        minimum: 0
+        maximum: 364
+        default: 3
+        order: 3
+        type: integer
+      include_deleted:
+        title: Include Deleted Data in Reports and Ads, Ad Groups and Campaign streams.
+        description: Set to active if you want to include deleted data in report based streams and Ads, Ad Groups and Campaign streams.
+        default: false
+        order: 4
+        type: boolean
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        title: CompleteOauthOutputSpecification
+        type: object
+        properties:
+          access_token:
+            title: Access Token
+            path_in_connector_config:
+              - credentials
+              - access_token
+            type: string
+        required:
+          - access_token
+      complete_oauth_server_input_specification:
+        title: CompleteOauthServerInputSpecification
+        type: object
+        properties:
+          app_id:
+            title: App Id
+            type: string
+          secret:
+            title: Secret
+            type: string
+        required:
+          - app_id
+          - secret
+      complete_oauth_server_output_specification:
+        title: CompleteOauthServerOutputSpecification
+        type: object
+        properties:
+          app_id:
+            title: App Id
+            path_in_connector_config:
+              - credentials
+              - app_id
+            type: string
+          secret:
+            title: Secret
+            path_in_connector_config:
+              - credentials
+              - secret
+            type: string
+        required:
+          - app_id
+          - secret
+
+metadata:
+  autoImportSchema:
+    advertiser_ids: true

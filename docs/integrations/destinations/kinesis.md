@@ -17,12 +17,12 @@ This connector maps an incoming data from a namespace and stream to a unique Kin
 
 ### Features
 
-| Feature                       | Support | Notes                                                                             |
-| :---------------------------- | :-----: | :-------------------------------------------------------------------------------- |
-| Full Refresh Sync             |   ❌    |                                                                                   |
-| Incremental - Append Sync     |   ✅    | Incoming messages are streamed/appended to a Kinesis stream as they are received. |
-| Incremental - Deduped History |   ❌    |                                                                                   |
-| Namespaces                    |   ✅    | Namespaces will be used to determine the Kinesis stream name.                     |
+| Feature                        | Support | Notes                                                                             |
+| :----------------------------- | :-----: | :-------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ❌    |                                                                                   |
+| Incremental - Append Sync      |   ✅    | Incoming messages are streamed/appended to a Kinesis stream as they are received. |
+| Incremental - Append + Deduped |   ❌    |                                                                                   |
+| Namespaces                     |   ✅    | Namespaces will be used to determine the Kinesis stream name.                     |
 
 ### Performance considerations
 
@@ -44,8 +44,13 @@ The connector buffer size should also be tweaked according to your data size and
 
 ### Setup guide
 
-## CHANGELOG
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                             | Subject                    |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------- |
 | 0.1.5   | 2022-09-22 | [16952](https://github.com/airbytehq/airbyte/pull/16952) | Add required config fields |
+
+</details>

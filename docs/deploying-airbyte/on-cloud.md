@@ -19,4 +19,3 @@ You will be provided 1000 credits to get your first few syncs going!
 ![](../.gitbook/assets/cloud_connection_onboarding.png)
 
 **4. You're done!**
-

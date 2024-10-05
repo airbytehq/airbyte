@@ -3,44 +3,57 @@
   "type": "object",
   "properties": {
     "repository": {
+      "description": "Information about the repository where the review is posted.",
       "type": "string"
     },
     "id": {
+      "description": "The unique identifier of the review.",
       "type": ["null", "integer"]
     },
     "node_id": {
+      "description": "The node identifier of the review.",
       "type": ["null", "string"]
     },
     "user": {
+      "description": "Information about the user who submitted the review.",
       "$ref": "user_graphql.json"
     },
     "body": {
+      "description": "The content of the review comment.",
       "type": ["null", "string"]
     },
     "state": {
+      "description": "The state of the review (e.g., open, closed).",
       "type": ["null", "string"]
     },
     "html_url": {
+      "description": "The URL of the review comment.",
       "type": ["null", "string"]
     },
     "pull_request_url": {
+      "description": "The URL of the pull request associated with the review.",
       "type": ["null", "string"]
     },
     "_links": {
+      "description": "Contains relevant hyperlinks related to the review data.",
       "type": ["null", "object"],
       "properties": {
         "html": {
+          "description": "URL for viewing the review data in HTML format.",
           "type": ["null", "object"],
           "properties": {
             "href": {
+              "description": "The URL of the HTML page for the review.",
               "type": ["null", "string"]
             }
           }
         },
         "pull_request": {
+          "description": "URL for accessing the pull request associated with the review data.",
           "type": ["null", "object"],
           "properties": {
             "href": {
+              "description": "The URL of the pull request associated with the review.",
               "type": ["null", "string"]
             }
           }
@@ -48,21 +61,26 @@
       }
     },
     "submitted_at": {
+      "description": "The date and time when the review was submitted.",
       "type": "string",
       "format": "date-time"
     },
     "created_at": {
+      "description": "The date and time when the review was created.",
       "type": "string",
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the review was last updated.",
       "type": "string",
       "format": "date-time"
     },
     "commit_id": {
+      "description": "The unique identifier of the commit associated with the review.",
       "type": ["null", "string"]
     },
     "author_association": {
+      "description": "The association of the author of the review with the repository.",
       "type": ["null", "string"]
     }
   }

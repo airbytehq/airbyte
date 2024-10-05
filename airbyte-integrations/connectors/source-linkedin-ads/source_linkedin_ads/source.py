@@ -1,118 +1,121 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from copy import deepcopy
+from typing import Any, List, Mapping, Optional, Tuple
 
-import backoff
-import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from source_linkedin_ads.streams import (
-    Accounts,
-    AccountUsers,
-    AdCampaignAnalytics,
-    AdCreativeAnalytics,
-    CampaignGroups,
-    Campaigns,
-    Creatives,
-)
+from airbyte_cdk.utils import AirbyteTracedException
 
-logger = logging.getLogger("airbyte")
+from .utils import update_specific_key
+
+"""
+This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
+source connector.
+
+WARNING: Do not modify this file.
+"""
 
 
-class LinkedinAdsOAuth2Authenticator(Oauth2Authenticator):
-    @backoff.on_exception(
-        backoff.expo,
-        DefaultBackoffException,
-        on_backoff=lambda details: logger.info(
-            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
-        ),
-        max_time=300,
-    )
-    def refresh_access_token(self) -> Tuple[str, int]:
-        try:
-            response = requests.request(
-                method="POST",
-                url=self.token_refresh_endpoint,
-                data=self.get_refresh_request_body(),
-                headers=self.get_refresh_access_token_headers(),
-            )
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
-        except requests.exceptions.RequestException as e:
-            if e.response.status_code == 429 or e.response.status_code >= 500:
-                raise DefaultBackoffException(request=e.response.request, response=e.response)
-            raise
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
-
-
-class SourceLinkedinAds(AbstractSource):
-    """
-    Abstract Source inheritance, provides:
-    - implementation for `check` connector's connectivity
-    - implementation to call each stream with it's input parameters.
-    """
-
-    @classmethod
-    def get_authenticator(cls, config: Mapping[str, Any]) -> Union[TokenAuthenticator, LinkedinAdsOAuth2Authenticator]:
+# Declarative Source
+class SourceLinkedinAds(YamlDeclarativeSource):
+    def __init__(self):
         """
-        Validate input parameters and generate a necessary Authentication object
-        This connectors support 2 auth methods:
-        1) direct access token with TTL = 2 months
-        2) refresh token (TTL = 1 year) which can be converted to access tokens,
-           Every new refresh revokes all previous access tokens
+        Initializes the SourceLinkedinAds class with the path to the YAML manifest.
         """
-        auth_method = config.get("credentials", {}).get("auth_method")
-        if not auth_method or auth_method == "access_token":
-            # support of backward compatibility with old exists configs
-            access_token = config["credentials"]["access_token"] if auth_method else config["access_token"]
-            return TokenAuthenticator(token=access_token)
-        elif auth_method == "oAuth2.0":
-            return LinkedinAdsOAuth2Authenticator(
-                token_refresh_endpoint="https://www.linkedin.com/oauth/v2/accessToken",
-                client_id=config["credentials"]["client_id"],
-                client_secret=config["credentials"]["client_secret"],
-                refresh_token=config["credentials"]["refresh_token"],
-            )
-        raise Exception("incorrect input parameters")
+        super().__init__(path_to_yaml="manifest.yaml")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
-        Testing connection availability for the connector.
-        :: for this check method the Customer must have the "r_liteprofile" scope enabled.
-        :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
-        """
+        Assess the availability of the connector's connection.
 
-        config["authenticator"] = self.get_authenticator(config)
-        stream = Accounts(config)
-        # need to load the first item only
-        stream.records_limit = 1
-        try:
-            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-            return True, None
-        except Exception as e:
-            return False, e
+        The customer must have the "r_liteprofile" scope enabled.
+        More info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
+
+        :param logger: Logger object to log the information.
+        :param config: Configuration mapping containing necessary parameters.
+        :return: A tuple containing a boolean indicating success or failure and an optional message or object.
+        """
+        self._validate_ad_analytics_reports(config)
+        return super().check_connection(logger, config)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        Mapping a input config of the user input configuration as defined in the connector spec.
-        Passing config to the streams.
+        Map the user input configuration as defined in the connector spec.
+        Pass config to the streams.
+
+        :param config: Configuration mapping containing necessary parameters.
+        :return: List of streams.
         """
-        config["authenticator"] = self.get_authenticator(config)
-        return [
-            Accounts(config),
-            AccountUsers(config),
-            AdCampaignAnalytics(config),
-            AdCreativeAnalytics(config),
-            CampaignGroups(config),
-            Campaigns(config),
-            Creatives(config),
+        self._validate_ad_analytics_reports(config)
+        streams = super().streams(config=config)
+        custom_ad_analytics_streams = self._create_custom_ad_analytics_streams(config)
+
+        return streams + custom_ad_analytics_streams
+
+    @staticmethod
+    def _validate_ad_analytics_reports(config: Mapping[str, Any]) -> None:
+        """
+        Validates that the ad analytics reports in the config have unique names.
+
+        :param config: Configuration mapping containing ad analytics reports.
+        :raises AirbyteTracedException: If duplicate report names are found.
+        """
+        report_names = [x["name"] for x in config.get("ad_analytics_reports", [])]
+        if len(report_names) != len(set(report_names)):
+            duplicate_streams = {name for name in report_names if report_names.count(name) > 1}
+            message = f"Stream names for Custom Ad Analytics reports should be unique, duplicated streams: {duplicate_streams}"
+            raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+    def _create_custom_ad_analytics_streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        """
+        Create custom ad analytics streams based on the user configuration.
+
+        :param config: Configuration mapping containing necessary parameters.
+        :return: List of custom ad analytics streams.
+        """
+        stream_configs = self._stream_configs(self._source_config)
+        custom_ad_analytics_configs = self._get_custom_ad_analytics_stream_configs(stream_configs, config)
+
+        custom_ad_analytics_streams = [
+            self._constructor.create_component(
+                DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages
+            )
+            for stream_config in self._initialize_cache_for_parent_streams(custom_ad_analytics_configs)
         ]
+
+        return custom_ad_analytics_streams
+
+    @staticmethod
+    def _get_custom_ad_analytics_stream_configs(stream_configs: List[dict], config: Mapping[str, Any]) -> List[dict]:
+        """
+        Generate custom ad analytics stream configurations.
+
+        :param stream_configs: List of default stream configurations.
+        :param config: Configuration mapping containing custom ad analytics report parameters.
+        :return: List of custom ad analytics stream configurations.
+        """
+
+        custom_stream_configs = []
+        for stream_config in stream_configs:
+            if stream_config["name"] == "ad_campaign_analytics":
+                for ad_report in config.get("ad_analytics_reports", []):
+                    updated_config = deepcopy(stream_config)
+                    update_specific_key(
+                        updated_config, "pivot", f"(value:{ad_report.get('pivot_by')})", condition_func=lambda d: d.get("q")
+                    )
+                    update_specific_key(
+                        updated_config, "value", f"{ad_report.get('pivot_by')}", condition_func=lambda d: d.get("path") == ["pivot"]
+                    )
+
+                    # TODO: to avoid breaking changes left as is, but need to update to more adaptive way to avoid words merging
+                    update_specific_key(updated_config, "name", f"custom_{ad_report.get('name')}")
+                    update_specific_key(updated_config, "timeGranularity", f"(value:{ad_report.get('time_granularity')})")
+
+                    custom_stream_configs.append(updated_config)
+        return custom_stream_configs
