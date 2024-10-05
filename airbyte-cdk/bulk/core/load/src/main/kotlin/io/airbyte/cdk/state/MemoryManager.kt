@@ -14,6 +14,31 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
+ * Releasable reservation of memory. For large blocks (ie, from [MemoryManager.reserveRatio],
+ * provides a submanager that can be used to manage allocating the reservation).
+ */
+class Reserved<T>(
+    private val memoryManager: MemoryManager,
+    val bytesReserved: Long,
+    val value: T,
+) : CloseableCoroutine {
+    private var released = AtomicBoolean(false)
+
+    suspend fun release() {
+        if (!released.compareAndSet(false, true)) {
+            return
+        }
+        memoryManager.release(bytesReserved)
+    }
+
+    fun getReservationManager(): MemoryManager = MemoryManager(bytesReserved)
+
+    override suspend fun close() {
+        release()
+    }
+}
+
+/**
  * Manages memory usage for the destination.
  *
  * TODO: Better initialization of available runtime memory?
@@ -36,32 +61,11 @@ class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
     private val mutex = Mutex()
     private val syncChannel = Channel<Unit>(Channel.UNLIMITED)
 
-    /**
-     * Releasable reservation of memory. For large blocks (ie, from [reserveRatio], provides a
-     * submanager that can be used to manage allocating the reservation).
-     */
-    inner class Reservation(val bytes: Long) : CloseableCoroutine {
-        private var released = AtomicBoolean(false)
-
-        suspend fun release() {
-            if (!released.compareAndSet(false, true)) {
-                return
-            }
-            release(bytes)
-        }
-
-        fun getReservationManager(): MemoryManager = MemoryManager(bytes)
-
-        override suspend fun close() {
-            release()
-        }
-    }
-
     val remainingMemoryBytes: Long
         get() = totalMemoryBytes - usedMemoryBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
-    suspend fun reserveBlocking(memoryBytes: Long): Reservation {
+    suspend fun <T> reserveBlocking(memoryBytes: Long, reservedFor: T): Reserved<T> {
         if (memoryBytes > totalMemoryBytes) {
             throw IllegalArgumentException(
                 "Requested ${memoryBytes}b memory exceeds ${totalMemoryBytes}b total"
@@ -74,14 +78,13 @@ class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
             }
             usedMemoryBytes.addAndGet(memoryBytes)
 
-            return Reservation(memoryBytes)
+            return Reserved(this, memoryBytes, reservedFor)
         }
     }
 
-    suspend fun reserveRatio(ratio: Double): Reservation {
+    suspend fun <T> reserveRatio(ratio: Double, reservedFor: T): Reserved<T> {
         val estimatedSize = (totalMemoryBytes.toDouble() * ratio).toLong()
-        reserveBlocking(estimatedSize)
-        return Reservation(estimatedSize)
+        return reserveBlocking(estimatedSize, reservedFor)
     }
 
     suspend fun release(memoryBytes: Long) {

@@ -16,10 +16,9 @@ interface CloseableCoroutine {
     suspend fun close()
 }
 
-suspend fun <T : CloseableCoroutine> T.use(block: suspend (T) -> Unit) {
+suspend fun <T : CloseableCoroutine, R> T.use(block: suspend (T) -> R) =
     try {
         block(this)
     } finally {
         close()
     }
-}
