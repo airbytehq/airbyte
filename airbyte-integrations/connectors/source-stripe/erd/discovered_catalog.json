@@ -4006,8 +4006,8 @@
       "supported_sync_modes": ["full_refresh", "incremental"],
       "source_defined_cursor": true,
       "default_cursor_field": ["updated"],
-      "source_defined_primary_key": [["payout"],["id"]],
-      "user_defined_primary_key": [["payout"],["id"]]
+      "source_defined_primary_key": [["payout"], ["id"]],
+      "user_defined_primary_key": [["payout"], ["id"]]
     },
     {
       "name": "files",

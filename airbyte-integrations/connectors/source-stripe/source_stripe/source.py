@@ -409,7 +409,7 @@ class SourceStripe(ConcurrentSourceAdapter):
                     "updated": stream_slice["parent"]["updated"],
                     **record,
                 },
-                extra_request_params=lambda self, stream_slice, *args, **kwargs: {"payout":f"{stream_slice['parent']['id']}"},
+                extra_request_params=lambda self, stream_slice, *args, **kwargs: {"payout": f"{stream_slice['parent']['id']}"},
                 **args,
             ),
             IncrementalStripeStream(
