@@ -38,6 +38,7 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream)
     suspend fun handleTeardownComplete()
+    suspend fun scheduleNextForceFlushAttempt(msFromNow: Long)
 }
 
 interface DestinationTaskLauncherExceptionHandler :
@@ -95,6 +96,7 @@ class DefaultDestinationTaskLauncher(
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
+    private val timedFlushTaskFactory: TimedForcedCheckpointFlushTaskFactory,
     private val exceptionHandler: TaskLauncherExceptionHandler<DestinationWriteTask>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
@@ -114,6 +116,8 @@ class DefaultDestinationTaskLauncher(
             val spillTask = spillToDiskTaskFactory.make(this, stream)
             enqueue(spillTask)
         }
+        val forceFlushTask = timedFlushTaskFactory.make(this)
+        enqueue(forceFlushTask)
     }
 
     /** Called when the initial destination setup completes. */
@@ -185,6 +189,12 @@ class DefaultDestinationTaskLauncher(
     /** Called when a stream is closed. */
     override suspend fun handleStreamClosed(stream: DestinationStream) {
         enqueue(teardownTaskFactory.make(this))
+    }
+
+    /** Called when a force flush is scheduled. */
+    override suspend fun scheduleNextForceFlushAttempt(msFromNow: Long) {
+        val task = timedFlushTaskFactory.make(this, msFromNow)
+        enqueue(task)
     }
 
     /** Called exactly once when all streams are closed. */
