@@ -204,7 +204,7 @@ definitions:
             stop_condition: "{{ 'page' not in last_record['meta'] }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: timestamp
+        cursor_field: sync_date
         lookback_window: P31D
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -232,7 +232,7 @@ definitions:
         - type: AddFields
           fields:
             - path:
-                - timestamp
+                - sync_date
               value: "{{ record['attributes']['timestamp'] }}"
       schema_loader:
         type: InlineSchemaLoader
