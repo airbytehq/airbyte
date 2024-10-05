@@ -22,8 +22,8 @@ Replicates the budgets, accounts, categories, payees, transactions, and category
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-25 | Initial release by [@bnmry](https://github.com/bnmry) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-25 | | Initial release by [@bnmry](https://github.com/bnmry) via Connector Builder |
 
 </details>

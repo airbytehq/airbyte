@@ -22,7 +22,7 @@ data:
   githubIssueLabel: source-free-agent-connector
   icon: icon.svg
   license: MIT
-  name: FreeAgent Connector
+  name: FreeAgent
   releaseDate: 2024-09-24
   releaseStage: alpha
   supportLevel: community

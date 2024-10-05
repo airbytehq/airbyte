@@ -22,7 +22,7 @@ import kotlinx.coroutines.delay
 class DevNullWriter(private val config: DevNullConfiguration) : DestinationWriter {
     private val log = KotlinLogging.logger {}
 
-    override fun getStreamLoader(stream: DestinationStream): StreamLoader {
+    override fun createStreamLoader(stream: DestinationStream): StreamLoader {
         return when (config.type) {
             is Logging -> {
                 log.info { "Creating LoggingStreamLoader for LoggingDestination" }

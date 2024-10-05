@@ -11,7 +11,6 @@ from airbyte_cdk.sources.concurrent_source.concurrent_source_adapter import Conc
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
 from airbyte_cdk.sources.streams.concurrent.cursor import FinalStateCursor
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -144,11 +143,6 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
     def set_message_repository(self, message_repository: MessageRepository) -> "ConcurrentSourceBuilder":
         self._message_repository = message_repository
         return self
-
-
-class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
-    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        return StreamAvailable()
 
 
 class NeverLogSliceLogger(SliceLogger):

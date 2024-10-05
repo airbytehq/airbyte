@@ -7,28 +7,38 @@ package io.airbyte.cdk.message
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream1
-import io.airbyte.cdk.command.MockCatalogFactory.Companion.stream2
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
+import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.data.NullValue
-import io.airbyte.cdk.state.CheckpointManager
+import io.airbyte.cdk.state.MockCheckpointManager
+import io.airbyte.cdk.state.SyncManager
 import io.micronaut.context.annotation.Prototype
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import jakarta.inject.Named
+import jakarta.inject.Singleton
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest(environments = ["MockStreamsManager"])
+@MicronautTest(
+    rebuildContext = true,
+    environments =
+        [
+            "DestinationMessageQueueWriterTest",
+            "MockDestinationCatalog",
+            "MockCheckpointManager",
+        ]
+)
 class DestinationMessageQueueWriterTest {
     @Inject lateinit var queueWriterFactory: TestDestinationMessageQueueWriterFactory
 
-    @Prototype
+    @Singleton
+    @Requires(env = ["DestinationMessageQueueWriterTest"])
     class TestDestinationMessageQueueWriterFactory(
-        @Named("mockCatalog") private val catalog: DestinationCatalog,
+        private val catalog: DestinationCatalog,
         val messageQueue: MockMessageQueue,
-        val streamsManager: MockStreamsManager,
+        val streamsManager: SyncManager,
         val checkpointManager: MockCheckpointManager
     ) {
         fun make(): DestinationMessageQueueWriter {
@@ -63,6 +73,7 @@ class DestinationMessageQueueWriterTest {
     }
 
     @Prototype
+    @Requires(env = ["DestinationMessageQueueWriterTest"])
     class MockMessageQueue : MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped> {
         private val channels =
             mutableMapOf<DestinationStream.Descriptor, QueueChannel<DestinationRecordWrapped>>()
@@ -79,35 +90,6 @@ class DestinationMessageQueueWriterTest {
 
         override suspend fun releaseQueueBytes(bytes: Long) {
             TODO("Not yet implemented")
-        }
-    }
-
-    @Prototype
-    @Requires(env = ["MockStreamsManager"])
-    class MockCheckpointManager :
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage> {
-        val streamStates =
-            mutableMapOf<DestinationStream.Descriptor, MutableList<Pair<Long, CheckpointMessage>>>()
-        val globalStates =
-            mutableListOf<Pair<List<Pair<DestinationStream.Descriptor, Long>>, CheckpointMessage>>()
-
-        override fun addStreamCheckpoint(
-            key: DestinationStream.Descriptor,
-            index: Long,
-            checkpointMessage: CheckpointMessage
-        ) {
-            streamStates.getOrPut(key) { mutableListOf() }.add(index to checkpointMessage)
-        }
-
-        override fun addGlobalCheckpoint(
-            keyIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
-            checkpointMessage: CheckpointMessage
-        ) {
-            globalStates.add(keyIndexes to checkpointMessage)
-        }
-
-        override suspend fun flushReadyCheckpointMessages() {
-            throw NotImplementedError()
         }
     }
 
@@ -154,10 +136,8 @@ class DestinationMessageQueueWriterTest {
         val channel2 =
             queueWriterFactory.messageQueue.getChannel(stream2.descriptor) as MockQueueChannel
 
-        val manager1 =
-            queueWriterFactory.streamsManager.getManager(stream1.descriptor) as MockStreamManager
-        val manager2 =
-            queueWriterFactory.streamsManager.getManager(stream2.descriptor) as MockStreamManager
+        val manager1 = queueWriterFactory.streamsManager.getStreamManager(stream1.descriptor)
+        val manager2 = queueWriterFactory.streamsManager.getStreamManager(stream2.descriptor)
 
         (0 until 10).forEach { writer.publish(makeRecord(stream1, "test${it}"), it * 2L) }
         Assertions.assertEquals(10, channel1.messages.size)
@@ -167,10 +147,10 @@ class DestinationMessageQueueWriterTest {
             }
 
         Assertions.assertEquals(expectedRecords, channel1.messages)
-        Assertions.assertEquals(10, manager1.countedRecords)
+        Assertions.assertEquals(10L, manager1.recordCount())
 
         Assertions.assertEquals(emptyList<DestinationRecordWrapped>(), channel2.messages)
-        Assertions.assertEquals(0, manager2.countedRecords)
+        Assertions.assertEquals(0L, manager2.recordCount())
 
         writer.publish(makeRecord(stream2, "test"), 1L)
         writer.publish(makeStreamComplete(stream1), 0L)
@@ -178,10 +158,11 @@ class DestinationMessageQueueWriterTest {
             listOf(StreamRecordWrapped(0, 1L, makeRecord(stream2, "test"))),
             channel2.messages
         )
-        Assertions.assertEquals(1, manager2.countedRecords)
+        Assertions.assertEquals(1L, manager2.recordCount())
 
-        Assertions.assertFalse(manager2.countedEndOfStream)
-        Assertions.assertTrue(manager1.countedEndOfStream)
+        Assertions.assertEquals(manager2.endOfStreamRead(), false)
+        Assertions.assertEquals(manager1.endOfStreamRead(), true)
+
         Assertions.assertEquals(11, channel1.messages.size)
         Assertions.assertEquals(channel1.messages[10], StreamCompleteWrapped(10))
     }

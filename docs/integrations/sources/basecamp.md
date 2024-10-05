@@ -28,8 +28,8 @@ To obtain a refresh token, you'd need to register an [oauth application](https:/
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-08-12 | Initial release by natikgadzhi via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-08-12 | | Initial release by natikgadzhi via Connector Builder |
 
 </details>
