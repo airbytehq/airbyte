@@ -219,36 +219,37 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
-| 2.6.0   | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components |
-| 2.5.34  | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies |
-| 2.5.33  | 2024-09-21 | [45779](https://github.com/airbytehq/airbyte/pull/45779) | Update dependencies |
-| 2.5.32  | 2024-09-14 | [45579](https://github.com/airbytehq/airbyte/pull/45579) | Update dependencies |
-| 2.5.31  | 2024-09-07 | [45329](https://github.com/airbytehq/airbyte/pull/45329) | Update dependencies |
-| 2.5.30  | 2024-08-31 | [44959](https://github.com/airbytehq/airbyte/pull/44959) | Update dependencies |
-| 2.5.29  | 2024-08-24 | [44747](https://github.com/airbytehq/airbyte/pull/44747) | Update dependencies |
-| 2.5.28  | 2024-08-17 | [44327](https://github.com/airbytehq/airbyte/pull/44327) | Update dependencies |
-| 2.5.27  | 2024-08-12 | [43732](https://github.com/airbytehq/airbyte/pull/43732) | Update dependencies |
-| 2.5.26  | 2024-08-10 | [43673](https://github.com/airbytehq/airbyte/pull/43673) | Update dependencies |
-| 2.5.25  | 2024-08-03 | [43211](https://github.com/airbytehq/airbyte/pull/43211) | Update dependencies |
-| 2.5.24  | 2024-07-27 | [42685](https://github.com/airbytehq/airbyte/pull/42685) | Update dependencies |
-| 2.5.23  | 2024-07-20 | [42166](https://github.com/airbytehq/airbyte/pull/42166) | Update dependencies |
-| 2.5.22  | 2024-07-13 | [41752](https://github.com/airbytehq/airbyte/pull/41752) | Update dependencies |
-| 2.5.21  | 2024-07-10 | [41529](https://github.com/airbytehq/airbyte/pull/41529) | Update dependencies |
-| 2.5.20  | 2024-07-09 | [41255](https://github.com/airbytehq/airbyte/pull/41255) | Update dependencies |
-| 2.5.19  | 2024-07-08 | [41043](https://github.com/airbytehq/airbyte/pull/41043) | Use the latest `CDK` version possible |
-| 2.5.18  | 2024-07-06 | [40835](https://github.com/airbytehq/airbyte/pull/40835) | Update dependencies |
-| 2.5.17  | 2024-06-25 | [40329](https://github.com/airbytehq/airbyte/pull/40329) | Update dependencies |
-| 2.5.16  | 2024-06-21 | [39927](https://github.com/airbytehq/airbyte/pull/39927) | Update dependencies |
-| 2.5.15  | 2024-06-16 | [39517](https://github.com/airbytehq/airbyte/pull/39517) | Salesforce refactor: add CheckpointMixin for state management |
-| 2.5.14  | 2024-06-06 | [39269](https://github.com/airbytehq/airbyte/pull/39269) | [autopull] Upgrade base image to v1.2.2 |
-| 2.5.13  | 2024-05-23 | [38563](https://github.com/airbytehq/airbyte/pull/38563) | Use HttpClient to perform HTTP requests for bulk, authentication and schema discovery |
-| 2.5.12  | 2024-05-16 | [38255](https://github.com/airbytehq/airbyte/pull/38255) | Replace AirbyteLogger with logging.Logger |
-| 2.5.11  | 2024-05-09 | [38205](https://github.com/airbytehq/airbyte/pull/38205) | Use new delete method of HttpMocker for test_bulk_stream |
-| 2.5.10  | 2024-05-09 | [38065](https://github.com/airbytehq/airbyte/pull/38065) | Replace deprecated authentication mechanism to up-to-date one |
-| 2.5.9   | 2024-05-02 | [37749](https://github.com/airbytehq/airbyte/pull/37749) | Adding mock server tests for bulk streams |
-| 2.5.8   | 2024-04-30 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs |
-| 2.5.7   | 2024-04-24 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Schema descriptions |
-| 2.5.6   | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type |
+| 2.6.1 | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies |
+| 2.6.0 | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components |
+| 2.5.34 | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies |
+| 2.5.33 | 2024-09-21 | [45779](https://github.com/airbytehq/airbyte/pull/45779) | Update dependencies |
+| 2.5.32 | 2024-09-14 | [45579](https://github.com/airbytehq/airbyte/pull/45579) | Update dependencies |
+| 2.5.31 | 2024-09-07 | [45329](https://github.com/airbytehq/airbyte/pull/45329) | Update dependencies |
+| 2.5.30 | 2024-08-31 | [44959](https://github.com/airbytehq/airbyte/pull/44959) | Update dependencies |
+| 2.5.29 | 2024-08-24 | [44747](https://github.com/airbytehq/airbyte/pull/44747) | Update dependencies |
+| 2.5.28 | 2024-08-17 | [44327](https://github.com/airbytehq/airbyte/pull/44327) | Update dependencies |
+| 2.5.27 | 2024-08-12 | [43732](https://github.com/airbytehq/airbyte/pull/43732) | Update dependencies |
+| 2.5.26 | 2024-08-10 | [43673](https://github.com/airbytehq/airbyte/pull/43673) | Update dependencies |
+| 2.5.25 | 2024-08-03 | [43211](https://github.com/airbytehq/airbyte/pull/43211) | Update dependencies |
+| 2.5.24 | 2024-07-27 | [42685](https://github.com/airbytehq/airbyte/pull/42685) | Update dependencies |
+| 2.5.23 | 2024-07-20 | [42166](https://github.com/airbytehq/airbyte/pull/42166) | Update dependencies |
+| 2.5.22 | 2024-07-13 | [41752](https://github.com/airbytehq/airbyte/pull/41752) | Update dependencies |
+| 2.5.21 | 2024-07-10 | [41529](https://github.com/airbytehq/airbyte/pull/41529) | Update dependencies |
+| 2.5.20 | 2024-07-09 | [41255](https://github.com/airbytehq/airbyte/pull/41255) | Update dependencies |
+| 2.5.19 | 2024-07-08 | [41043](https://github.com/airbytehq/airbyte/pull/41043) | Use the latest `CDK` version possible |
+| 2.5.18 | 2024-07-06 | [40835](https://github.com/airbytehq/airbyte/pull/40835) | Update dependencies |
+| 2.5.17 | 2024-06-25 | [40329](https://github.com/airbytehq/airbyte/pull/40329) | Update dependencies |
+| 2.5.16 | 2024-06-21 | [39927](https://github.com/airbytehq/airbyte/pull/39927) | Update dependencies |
+| 2.5.15 | 2024-06-16 | [39517](https://github.com/airbytehq/airbyte/pull/39517) | Salesforce refactor: add CheckpointMixin for state management |
+| 2.5.14 | 2024-06-06 | [39269](https://github.com/airbytehq/airbyte/pull/39269) | [autopull] Upgrade base image to v1.2.2 |
+| 2.5.13 | 2024-05-23 | [38563](https://github.com/airbytehq/airbyte/pull/38563) | Use HttpClient to perform HTTP requests for bulk, authentication and schema discovery |
+| 2.5.12 | 2024-05-16 | [38255](https://github.com/airbytehq/airbyte/pull/38255) | Replace AirbyteLogger with logging.Logger |
+| 2.5.11 | 2024-05-09 | [38205](https://github.com/airbytehq/airbyte/pull/38205) | Use new delete method of HttpMocker for test_bulk_stream |
+| 2.5.10 | 2024-05-09 | [38065](https://github.com/airbytehq/airbyte/pull/38065) | Replace deprecated authentication mechanism to up-to-date one |
+| 2.5.9 | 2024-05-02 | [37749](https://github.com/airbytehq/airbyte/pull/37749) | Adding mock server tests for bulk streams |
+| 2.5.8 | 2024-04-30 | [37340](https://github.com/airbytehq/airbyte/pull/37340) | Source Salesforce: reduce info logs |
+| 2.5.7 | 2024-04-24 | [36657](https://github.com/airbytehq/airbyte/pull/36657) | Schema descriptions |
+| 2.5.6 | 2024-04-19 | [37448](https://github.com/airbytehq/airbyte/pull/37448) | Ensure AirbyteTracedException in concurrent CDK are emitted with the right type |
 | 2.5.5   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37419) | Ensure python return code != 0 in case of error                                                                                     |
 | 2.5.4   | 2024-04-18 | [37392](https://github.com/airbytehq/airbyte/pull/37392) | Update CDK version to have partitioned state fix                                                                                    |
 | 2.5.3   | 2024-04-17 | [37376](https://github.com/airbytehq/airbyte/pull/37376) | Improve rate limit error message during check command                                                                               |
