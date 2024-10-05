@@ -1,0 +1,1675 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: This is the connector for AdRoll
+
+check:
+  type: CheckStream
+  stream_names:
+    - Assets by EID
+
+definitions:
+  streams:
+    Assets by EID:
+      type: DeclarativeStream
+      name: Assets by EID
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /ad/api/v1/assets/{{ config["eid_of_asset"] }}
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Assets by EID"
+    Segments:
+      type: DeclarativeStream
+      name: Segments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /audience/v1/segments
+          http_method: GET
+          request_parameters:
+            advertiser_id: "{{ config[\"advertisable\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Segments"
+    AdGroup:
+      type: DeclarativeStream
+      name: AdGroup
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activate/api/v3/adgroup
+          http_method: GET
+          request_parameters:
+            eid: "{{ config[\"adgroup_eid\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/AdGroup"
+    Campaign:
+      type: DeclarativeStream
+      name: Campaign
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activate/api/v3/campaign
+          http_method: GET
+          request_parameters:
+            advertisable_eid: "{{ config[\"advertisable\"] }}"
+            eid: "{{ config['campaign_eid'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Campaign"
+    Strategy:
+      type: DeclarativeStream
+      name: Strategy
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activate/api/v3/strategy
+          http_method: GET
+          request_parameters:
+            eid: "{{ config['strategy_eid'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Strategy"
+    All Startegies:
+      type: DeclarativeStream
+      name: All Startegies
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /activate/api/v3/strategy/all
+          http_method: GET
+          request_parameters:
+            advertisable_eid: "{{ config[\"advertisable\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All Startegies"
+    Geo Target:
+      type: DeclarativeStream
+      name: Geo Target
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: geo/api/search/v2/geo
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Geo Target"
+    Advertisable:
+      type: DeclarativeStream
+      name: Advertisable
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/advertisable/get
+          http_method: GET
+          request_parameters:
+            advertisable: "{{ config[\"advertisable\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Advertisable"
+    Active Pixels for an Advertisable:
+      type: DeclarativeStream
+      name: Active Pixels for an Advertisable
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/advertisable/get_pixel
+          http_method: GET
+          request_parameters:
+            advertisable: "{{ config[\"advertisable\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Active Pixels for an Advertisable"
+    Consent Banner Config for an Advertisable:
+      type: DeclarativeStream
+      name: Consent Banner Config for an Advertisable
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/consent_banner/get
+          http_method: GET
+          request_parameters:
+            advertisable: "{{ config[\"advertisable\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Consent Banner Config for an Advertisable"
+    Pixel:
+      type: DeclarativeStream
+      name: Pixel
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/pixel/get
+          http_method: GET
+          request_parameters:
+            pixel: "{{ config['pixel_eid'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Pixel"
+    Segments for a Pixel:
+      type: DeclarativeStream
+      name: Segments for a Pixel
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /api/v1/pixel/get_segments
+          http_method: GET
+          request_parameters:
+            pixel: "{{ config[\"pixel_eid\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Segments for a Pixel"
+  base_requester:
+    type: HttpRequester
+    url_base: https://services.adroll.com
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: refresh_token
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token\"] }}"
+      refresh_request_body: {}
+      refresh_token_updater:
+        refresh_token_name: refresh_token
+        access_token_config_path:
+          - oauth_access_token
+        token_expiry_date_config_path:
+          - oauth_token_expiry_date
+        refresh_token_config_path:
+          - client_refresh_token
+      token_refresh_endpoint: https://services.adroll.com/auth/token
+
+streams:
+  - $ref: "#/definitions/streams/Assets by EID"
+  - $ref: "#/definitions/streams/Segments"
+  - $ref: "#/definitions/streams/AdGroup"
+  - $ref: "#/definitions/streams/Campaign"
+  - $ref: "#/definitions/streams/Strategy"
+  - $ref: "#/definitions/streams/All Startegies"
+  - $ref: "#/definitions/streams/Geo Target"
+  - $ref: "#/definitions/streams/Advertisable"
+  - $ref: "#/definitions/streams/Active Pixels for an Advertisable"
+  - $ref: "#/definitions/streams/Consent Banner Config for an Advertisable"
+  - $ref: "#/definitions/streams/Pixel"
+  - $ref: "#/definitions/streams/Segments for a Pixel"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - Authorization
+      - client_id
+      - client_secret
+      - client_refresh_token
+    properties:
+      Authorization:
+        type: string
+        order: 0
+        title: Person Access Token (Authorization)
+      client_id:
+        type: string
+        order: 1
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        order: 2
+        title: Client secret
+        airbyte_secret: true
+      client_refresh_token:
+        type: string
+        order: 3
+        title: Refresh token
+        airbyte_secret: true
+      oauth_access_token:
+        type: string
+        description: >-
+          The current access token. This field might be overridden by the
+          connector based on the token refresh endpoint response.
+        order: 4
+        title: Access token
+        airbyte_secret: true
+      oauth_token_expiry_date:
+        type: string
+        description: >-
+          The date the current access token expires in. This field might be
+          overridden by the connector based on the token refresh endpoint
+          response.
+        order: 5
+        title: Token expiry date
+        format: date-time
+      advertisable:
+        type: string
+        order: 6
+        title: "Advertisable EID "
+      adgroup_eid:
+        type: string
+        title: AdGroup EID
+        order: 7
+      campaign_eid:
+        type: string
+        title: Campaign EID
+        order: 8
+      strategy_eid:
+        type: string
+        title: Strategy EID
+        order: 9
+      pixel_eid:
+        type: string
+        title: Pixel EID
+        order: 10
+      eid_of_asset:
+        type: string
+        title: EID of Asset
+        order: 11
+      eid_of_ad:
+        type: string
+        title: EID of Ad
+        order: 12
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    Assets by EID: true
+    Segments: true
+    AdGroup: true
+    Campaign: true
+    Strategy: true
+    All Startegies: true
+    Geo Target: true
+    Advertisable: true
+    Active Pixels for an Advertisable: true
+    Consent Banner Config for an Advertisable: true
+    Pixel: true
+    Segments for a Pixel: true
+  testedStreams:
+    Assets by EID:
+      streamHash: 2c54cd0907b47c932ec19deb1d43b527a23ab02b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Segments:
+      streamHash: ab996747ee1d3857b3c969425987785f94c2f68a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    AdGroup:
+      streamHash: 559f965449873b2d0a03187fffff31cbd85ff86f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Campaign:
+      streamHash: 3abfcdc3944938fbe68bef8ca85dda02300c1eca
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Strategy:
+      streamHash: caad044bce3e4e4a80cee98d1b83c0a655ad819b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    All Startegies:
+      streamHash: dc3090c22fa97fd8bea0ab87dd4736d834bb3aee
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Geo Target:
+      streamHash: 97d788b9ffb115dce2c0a26b35533fdb0b3a0051
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Advertisable:
+      streamHash: 7c7ea9436ef880c184bf7ae448599c3ceb37b5e3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Active Pixels for an Advertisable:
+      streamHash: a816668ca08c83e554b5d1580689e58bc1bf7610
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Consent Banner Config for an Advertisable:
+      streamHash: 521ae0aeb51f7242435318b86ea1e22f681ea6a5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Pixel:
+      streamHash: 0d17ac32c8dceeafccceb934cb5c70dd0589df0f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Segments for a Pixel:
+      streamHash: e09119190dc09c95c377a62c8e16690b1082a409
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.adroll.com/apis
+
+schemas:
+  Assets by EID:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      advertiser:
+        type:
+          - object
+          - "null"
+        properties:
+          eid:
+            type:
+              - string
+              - "null"
+      created_date:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      eid:
+        type:
+          - string
+          - "null"
+      filename:
+        type:
+          - string
+          - "null"
+      height:
+        type:
+          - number
+          - "null"
+      image_url:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      subtype:
+        type:
+          - string
+          - "null"
+      updated_date:
+        type:
+          - string
+          - "null"
+      used_in:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      width:
+        type:
+          - number
+          - "null"
+  Segments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      segments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            advertiser_id:
+              type:
+                - string
+                - "null"
+            created_date:
+              type:
+                - number
+                - "null"
+            duration:
+              type:
+                - number
+                - "null"
+            is_active:
+              type:
+                - boolean
+                - "null"
+            is_conversion:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            pattern:
+              type:
+                - string
+                - "null"
+            segment_id:
+              type:
+                - string
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            tags:
+              type:
+                - string
+                - "null"
+            threshold:
+              type:
+                - number
+                - "null"
+            url_match_id:
+              type:
+                - string
+                - "null"
+  AdGroup:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          ads:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                eid:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+          campaign_eid:
+            type:
+              - string
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          device_targets:
+            type:
+              - object
+              - "null"
+            properties: {}
+          eid:
+            type:
+              - string
+              - "null"
+          flights:
+            type:
+              - array
+              - "null"
+          geotargets:
+            type:
+              - array
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          segments:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                eid:
+                  type:
+                    - string
+                    - "null"
+                targeted:
+                  type:
+                    - boolean
+                    - "null"
+          service:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - number
+          - "null"
+  Campaign:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          adgroups:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                ads:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      eid:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+                campaign_eid:
+                  type:
+                    - string
+                    - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                device_targets:
+                  type:
+                    - object
+                    - "null"
+                  properties: {}
+                eid:
+                  type:
+                    - string
+                    - "null"
+                flights:
+                  type:
+                    - array
+                    - "null"
+                geotargets:
+                  type:
+                    - array
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                segments:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      eid:
+                        type:
+                          - string
+                          - "null"
+                      targeted:
+                        type:
+                          - boolean
+                          - "null"
+                service:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          dayparting:
+            type:
+              - object
+              - "null"
+            properties:
+              is_automatic:
+                type:
+                  - boolean
+                  - "null"
+              schedule:
+                type:
+                  - array
+                  - "null"
+          eid:
+            type:
+              - string
+              - "null"
+          kpi:
+            type:
+              - object
+              - "null"
+            properties:
+              metric:
+                type:
+                  - string
+                  - "null"
+          name:
+            type:
+              - string
+              - "null"
+          service:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+          uses_external_budget:
+            type:
+              - boolean
+              - "null"
+      status:
+        type:
+          - number
+          - "null"
+  Strategy:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          advertisable_eid:
+            type:
+              - string
+              - "null"
+          budget:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              goal:
+                type:
+                  - number
+                  - "null"
+          budget_balancing_automated:
+            type:
+              - boolean
+              - "null"
+          campaigns:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                adgroups:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      ads:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            eid:
+                              type:
+                                - string
+                                - "null"
+                            status:
+                              type:
+                                - string
+                                - "null"
+                      campaign_eid:
+                        type:
+                          - string
+                          - "null"
+                      created_at:
+                        type:
+                          - string
+                          - "null"
+                      device_targets:
+                        type:
+                          - object
+                          - "null"
+                        properties: {}
+                      eid:
+                        type:
+                          - string
+                          - "null"
+                      flights:
+                        type:
+                          - array
+                          - "null"
+                      geotargets:
+                        type:
+                          - array
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      segments:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            eid:
+                              type:
+                                - string
+                                - "null"
+                            targeted:
+                              type:
+                                - boolean
+                                - "null"
+                      service:
+                        type:
+                          - string
+                          - "null"
+                      status:
+                        type:
+                          - string
+                          - "null"
+                      updated_at:
+                        type:
+                          - string
+                          - "null"
+                created_at:
+                  type:
+                    - string
+                    - "null"
+                dayparting:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    is_automatic:
+                      type:
+                        - boolean
+                        - "null"
+                    schedule:
+                      type:
+                        - array
+                        - "null"
+                eid:
+                  type:
+                    - string
+                    - "null"
+                kpi:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    metric:
+                      type:
+                        - string
+                        - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+                service:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - string
+                    - "null"
+                updated_at:
+                  type:
+                    - string
+                    - "null"
+                uses_external_budget:
+                  type:
+                    - boolean
+                    - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          eid:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          spend_floor:
+            type:
+              - number
+              - "null"
+          start_date:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          updated_at:
+            type:
+              - string
+              - "null"
+      status:
+        type:
+          - number
+          - "null"
+  All Startegies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      data:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            advertisable_eid:
+              type:
+                - string
+                - "null"
+            budget:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                goal:
+                  type:
+                    - number
+                    - "null"
+            budget_balancing_automated:
+              type:
+                - boolean
+                - "null"
+            campaigns:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  adgroups:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        ads:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              eid:
+                                type:
+                                  - string
+                                  - "null"
+                              status:
+                                type:
+                                  - string
+                                  - "null"
+                        campaign_eid:
+                          type:
+                            - string
+                            - "null"
+                        created_at:
+                          type:
+                            - string
+                            - "null"
+                        eid:
+                          type:
+                            - string
+                            - "null"
+                        flights:
+                          type:
+                            - array
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                        segments:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              eid:
+                                type:
+                                  - string
+                                  - "null"
+                              targeted:
+                                type:
+                                  - boolean
+                                  - "null"
+                        service:
+                          type:
+                            - string
+                            - "null"
+                        status:
+                          type:
+                            - string
+                            - "null"
+                        updated_at:
+                          type:
+                            - string
+                            - "null"
+                  eid:
+                    type:
+                      - string
+                      - "null"
+                  key:
+                    type:
+                      - string
+                      - "null"
+                  kpi:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      metric:
+                        type:
+                          - string
+                          - "null"
+                  service:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  uses_external_budget:
+                    type:
+                      - boolean
+                      - "null"
+            created_at:
+              type:
+                - string
+                - "null"
+            currency:
+              type:
+                - string
+                - "null"
+            eid:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            spend_floor:
+              type:
+                - number
+                - "null"
+            start_date:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            updated_at:
+              type:
+                - string
+                - "null"
+      status:
+        type:
+          - number
+          - "null"
+  Geo Target:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - array
+          - "null"
+  Advertisable:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - object
+          - "null"
+        properties:
+          account:
+            type:
+              - string
+              - "null"
+          account_country_code:
+            type:
+              - string
+              - "null"
+          account_is_autobilled:
+            type:
+              - boolean
+              - "null"
+          account_is_prepaid:
+            type:
+              - boolean
+              - "null"
+          account_is_suspended:
+            type:
+              - boolean
+              - "null"
+          admin_page_permission:
+            type:
+              - boolean
+              - "null"
+          attached_users:
+            type:
+              - array
+              - "null"
+          blacklisted_sites:
+            type:
+              - array
+              - "null"
+          business_unit:
+            type:
+              - string
+              - "null"
+          click_through_conversion_window:
+            type:
+              - number
+              - "null"
+          company_phone:
+            type:
+              - string
+              - "null"
+          country_code:
+            type:
+              - string
+              - "null"
+          created_date:
+            type:
+              - string
+              - "null"
+          currency:
+            type:
+              - string
+              - "null"
+          default_homepage:
+            type:
+              - string
+              - "null"
+          default_utm:
+            type:
+              - string
+              - "null"
+          eid:
+            type:
+              - string
+              - "null"
+          enable_customer_multi_dur_segs:
+            type:
+              - boolean
+              - "null"
+          fb_offsite_pixels_tos_accepted:
+            type:
+              - boolean
+              - "null"
+          has_approved_consent_solution:
+            type:
+              - boolean
+              - "null"
+          has_approved_safari_add_on:
+            type:
+              - boolean
+              - "null"
+          has_created_campaign:
+            type:
+              - boolean
+              - "null"
+          has_offsite_pixels:
+            type:
+              - boolean
+              - "null"
+          has_sales_and_leads_automation:
+            type:
+              - boolean
+              - "null"
+          hide_optins_page:
+            type:
+              - boolean
+              - "null"
+          homepage_enabled:
+            type:
+              - boolean
+              - "null"
+          iab1_category_id:
+            type:
+              - number
+              - "null"
+          iab1_category_name:
+            type:
+              - string
+              - "null"
+          iab_content_id:
+            type:
+              - number
+              - "null"
+          ip_address_exclusions:
+            type:
+              - array
+              - "null"
+          is_abm_customer:
+            type:
+              - boolean
+              - "null"
+          is_active:
+            type:
+              - boolean
+              - "null"
+          is_b2b:
+            type:
+              - boolean
+              - "null"
+          is_html5_enabled:
+            type:
+              - boolean
+              - "null"
+          is_managed:
+            type:
+              - boolean
+              - "null"
+          is_salesforce_system_owned:
+            type:
+              - boolean
+              - "null"
+          is_suspended:
+            type:
+              - boolean
+              - "null"
+          is_trusted:
+            type:
+              - boolean
+              - "null"
+          is_twitter_syncing:
+            type:
+              - boolean
+              - "null"
+          logo_url:
+            type:
+              - string
+              - "null"
+          magellan_legacy:
+            type:
+              - boolean
+              - "null"
+          magellan_query:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          optimizer_email:
+            type:
+              - string
+              - "null"
+          organization:
+            type:
+              - string
+              - "null"
+          path_name:
+            type:
+              - string
+              - "null"
+          recent_theme_color:
+            type:
+              - string
+              - "null"
+          reskin_enabled:
+            type:
+              - boolean
+              - "null"
+          revshare_click_percent:
+            type:
+              - number
+              - "null"
+          revshare_view_percent:
+            type:
+              - number
+              - "null"
+          rollcrawl_enabled:
+            type:
+              - boolean
+              - "null"
+          rollworks_self_serve_ads:
+            type:
+              - boolean
+              - "null"
+          self_serve_prospecting_enabled:
+            type:
+              - boolean
+              - "null"
+          show_dpa:
+            type:
+              - boolean
+              - "null"
+          show_web_dynamic_ads:
+            type:
+              - boolean
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          uhura_enabled:
+            type:
+              - boolean
+              - "null"
+          updated_date:
+            type:
+              - string
+              - "null"
+          url:
+            type:
+              - string
+              - "null"
+          use_universal_campaigns:
+            type:
+              - boolean
+              - "null"
+          view_through_conversion_window:
+            type:
+              - number
+              - "null"
+          zvelo_category_id:
+            type:
+              - number
+              - "null"
+          zvelo_category_name:
+            type:
+              - string
+              - "null"
+  Active Pixels for an Advertisable:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          eid:
+            type:
+              - string
+              - "null"
+          is_consistent:
+            type:
+              - boolean
+              - "null"
+          pixel_version:
+            type:
+              - number
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+  Consent Banner Config for an Advertisable:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - object
+          - "null"
+        properties:
+          config_state_change_date:
+            type:
+              - string
+              - "null"
+          consent_banner_state:
+            type:
+              - string
+              - "null"
+  Pixel:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      results:
+        type:
+          - object
+          - "null"
+        properties:
+          code:
+            type:
+              - string
+              - "null"
+          eid:
+            type:
+              - string
+              - "null"
+          is_consistent:
+            type:
+              - boolean
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+  Segments for a Pixel:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      pagination:
+        type:
+          - object
+          - "null"
+        properties:
+          count:
+            type:
+              - number
+              - "null"
+          pages:
+            type:
+              - number
+              - "null"
+      results:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            advertisable_eid:
+              type:
+                - string
+                - "null"
+            created_date:
+              type:
+                - string
+                - "null"
+            display_name:
+              type:
+                - string
+                - "null"
+            duration:
+              type:
+                - number
+                - "null"
+            duration_sec:
+              type:
+                - number
+                - "null"
+            eid:
+              type:
+                - string
+                - "null"
+            group:
+              type:
+                - number
+                - "null"
+            has_default_rule:
+              type:
+                - boolean
+                - "null"
+            is_active:
+              type:
+                - boolean
+                - "null"
+            match_method:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            pattern:
+              type:
+                - string
+                - "null"
+            recent_first_match:
+              type:
+                - boolean
+                - "null"
+            rule:
+              type:
+                - string
+                - "null"
+            rule_id:
+              type:
+                - number
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            threshold:
+              type:
+                - number
+                - "null"
