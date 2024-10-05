@@ -1,5 +1,5 @@
 # Rootly
-Documentation: https://rootly.com/api#/
+Documentation: [https://rootly.com/api#/](https://rootly.com/api#/)
 
 ## Configuration
 
