@@ -49,7 +49,7 @@ def _a_valid_config():
 
 def test_streams_are_unique(config):
     stream_names = [s.name for s in SourceStripe(_ANY_CATALOG, _ANY_CONFIG, _NO_STATE).streams(config=config)]
-    assert len(stream_names) == len(set(stream_names)) == 46
+    assert len(stream_names) == len(set(stream_names)) == 47
 
 
 @pytest.mark.parametrize(
