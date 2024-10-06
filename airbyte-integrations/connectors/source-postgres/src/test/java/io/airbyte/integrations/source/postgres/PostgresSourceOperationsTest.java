@@ -10,14 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.Database;
-import io.airbyte.cdk.db.factory.DSLContextFactory;
-import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.BaseImage;
+import io.airbyte.integrations.source.postgres.PostgresTestDatabase.ContainerModifier;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,71 +22,30 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 class PostgresSourceOperationsTest {
 
   private final PostgresSourceOperations postgresSourceOperations = new PostgresSourceOperations();
-  private PostgreSQLContainer<?> container;
-  private Database database;
+  private PostgresTestDatabase testdb;
 
   private final String cursorColumn = "cursor_column";
 
   @BeforeEach
-  public void init() throws SQLException {
-    container = new PostgreSQLContainer<>("postgres:14-alpine")
-        .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
-            "/etc/postgresql/postgresql.conf")
-        .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
-    container.start();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "Standard")
-        .build());
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
-        .put("replication_method", replicationMethod)
-        .build());
-
-    final DSLContext dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES);
-    database = new Database(dslContext);
-    database.query(ctx -> {
-      ctx.execute(String.format("CREATE SCHEMA %S;", container.getDatabaseName()));
-      return null;
-    });
+  public void init() {
+    testdb = PostgresTestDatabase.in(BaseImage.POSTGRES_16, ContainerModifier.CONF);
   }
 
   @AfterEach
   public void tearDown() {
-    try {
-
-      container.close();
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+    testdb.close();
   }
 
   @Test
   public void numericColumnAsCursor() throws SQLException {
-    final String tableName = container.getDatabaseName() + ".numeric_table";
+    final String tableName = "numeric_table";
     final String createTableQuery = String.format("CREATE TABLE %s(id INTEGER PRIMARY KEY, %s NUMERIC(38, 0));",
         tableName,
         cursorColumn);
@@ -110,9 +65,9 @@ class PostgresSourceOperationsTest {
     }
 
     final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = container.createConnection("")) {
+    try (final Connection connection = testdb.getContainer().createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
-          "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
+          "SELECT * FROM " + tableName + " WHERE " + cursorColumn + " > ?");
       postgresSourceOperations.setCursorField(preparedStatement,
           1,
           PostgresType.NUMERIC,
@@ -134,7 +89,7 @@ class PostgresSourceOperationsTest {
 
   @Test
   public void timeColumnAsCursor() throws SQLException {
-    final String tableName = container.getDatabaseName() + ".time_table";
+    final String tableName = "time_table";
     final String createTableQuery = String.format("CREATE TABLE %s(id INTEGER PRIMARY KEY, %s TIME);",
         tableName,
         cursorColumn);
@@ -150,7 +105,7 @@ class PostgresSourceOperationsTest {
     }
 
     final List<JsonNode> actualRecords = new ArrayList<>();
-    try (final Connection connection = container.createConnection("")) {
+    try (final Connection connection = testdb.getContainer().createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
       postgresSourceOperations.setCursorField(preparedStatement,
@@ -182,13 +137,9 @@ class PostgresSourceOperationsTest {
     assertEquals("-1000000.001", PostgresSourceOperations.parseMoneyValue("-£1,000,000.001"));
   }
 
-  protected void executeQuery(final String query) {
-    try {
-      database.query(
-          ctx -> ctx
-              .execute(query));
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
+  protected void executeQuery(final String query) throws SQLException {
+    try (final Connection connection = testdb.getContainer().createConnection("")) {
+      connection.createStatement().execute(query);
     }
   }
 

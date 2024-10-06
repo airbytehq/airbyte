@@ -1,0 +1,54 @@
+{
+  "host": "localhost",
+  "port": 2222,
+  "username": "foo",
+  "credentials": {
+    "auth_type": "private_key",
+    "private_key": "key"
+  },
+  "file_type": "json",
+  "start_date": "2021-01-01T00:00:00.000000Z",
+  "folder_path": "/files",
+  "streams": [
+    {
+      "name": "test_stream",
+      "file_type": "csv",
+      "globs": ["**/test_1.csv"],
+      "legacy_prefix": "",
+      "validation_policy": "Emit Record",
+      "format": {
+        "filetype": "csv",
+        "delimiter": ",",
+        "quote_char": "\"",
+        "double_quote": true,
+        "null_values": [
+          "",
+          "#N/A",
+          "#N/A N/A",
+          "#NA",
+          "-1.#IND",
+          "-1.#QNAN",
+          "-NaN",
+          "-nan",
+          "1.#IND",
+          "1.#QNAN",
+          "N/A",
+          "NA",
+          "NULL",
+          "NaN",
+          "n/a",
+          "nan",
+          "null"
+        ],
+        "true_values": ["1", "True", "TRUE", "true"],
+        "false_values": ["0", "False", "FALSE", "false"],
+        "inference_type": "Primitive Types Only",
+        "strings_can_be_null": false,
+        "encoding": "utf8",
+        "header_definition": {
+          "header_definition_type": "From CSV"
+        }
+      }
+    }
+  ]
+}

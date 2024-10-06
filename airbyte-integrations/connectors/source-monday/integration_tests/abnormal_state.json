@@ -6,7 +6,7 @@
         "name": "items"
       },
       "stream_state": {
-        "updated_at": 1699041749,
+        "updated_at_int": 1699041749,
         "activity_logs": {
           "created_at_int": 1699041749
         }

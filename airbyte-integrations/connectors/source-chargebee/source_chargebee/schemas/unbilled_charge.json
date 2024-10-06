@@ -4,120 +4,138 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique ID of the unbilled charge",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "ID of the customer associated with the unbilled charge",
       "type": ["string", "null"]
     },
     "subscription_id": {
+      "description": "ID of the subscription associated with the charge",
       "type": ["string", "null"]
     },
     "date_from": {
+      "description": "Start date of the charge period",
       "type": ["integer", "null"]
     },
     "date_to": {
+      "description": "End date of the charge period",
       "type": ["integer", "null"]
     },
     "unit_amount": {
+      "description": "Unit amount for each unit of the charge",
       "type": ["integer", "null"]
     },
     "pricing_model": {
-      "type": ["string", "null"],
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+      "description": "Pricing model used for the charge",
+      "type": ["string", "null"]
     },
     "quantity": {
+      "description": "Quantity of units for the charge",
       "type": ["integer", "null"]
     },
     "amount": {
+      "description": "Total amount of the unbilled charge",
       "type": ["integer", "null"]
     },
     "currency_code": {
+      "description": "Currency code of the amount",
       "type": ["string", "null"]
     },
     "discount_amount": {
+      "description": "Amount of any discounts applied to the charge",
       "type": ["integer", "null"]
     },
     "description": {
+      "description": "Description of the unbilled charge",
       "type": ["string", "null"]
     },
     "entity_type": {
-      "type": ["string", "null"],
-      "enum": [
-        "adhoc",
-        "plan_item_price",
-        "addon_item_price",
-        "charge_item_price"
-      ]
+      "description": "Type of entity related to the charge",
+      "type": ["string", "null"]
     },
     "entity_id": {
+      "description": "ID of the entity related to the charge",
       "type": ["string", "null"]
     },
     "is_voided": {
+      "description": "Flag to indicate if the charge has been voided",
       "type": ["boolean", "null"]
     },
     "voided_at": {
+      "description": "Timestamp of when the charge was voided",
       "type": ["integer", "null"]
     },
     "unit_amount_in_decimal": {
+      "description": "Unit amount in decimal format for each unit of the charge",
       "type": ["string", "null"]
     },
     "quantity_in_decimal": {
+      "description": "Quantity of units in decimal format for the charge",
       "type": ["string", "null"]
     },
     "amount_in_decimal": {
+      "description": "Total amount in decimal format of the unbilled charge",
       "type": ["string", "null"]
     },
     "updated_at": {
+      "description": "Timestamp of when the charge was last updated",
       "type": ["integer", "null"]
     },
     "is_advance_charge": {
+      "description": "Flag to indicate if the charge is an advance charge",
       "type": ["boolean", "null"]
     },
     "deleted": {
+      "description": "Flag to indicate if the charge has been deleted",
       "type": ["boolean", "null"]
     },
     "tiers": {
+      "description": "Details about different tiers of unbilled charges",
       "type": ["object", "null"],
       "properties": {
         "starting_unit": {
+          "description": "Starting unit for the tier pricing",
           "type": ["integer", "null"]
         },
         "ending_unit": {
+          "description": "Ending unit for the tier pricing",
           "type": ["integer", "null"]
         },
         "quantity_used": {
+          "description": "Quantity of units used in the tier",
           "type": ["integer", "null"]
         },
         "unit_amount": {
+          "description": "Unit amount for the tier pricing",
           "type": ["integer", "null"]
         },
         "starting_unit_in_decimal": {
+          "description": "Starting unit in decimal format for the tier pricing",
           "type": ["string", "null"]
         },
         "ending_unit_in_decimal": {
+          "description": "Ending unit in decimal format for the tier pricing",
           "type": ["string", "null"]
         },
         "quantity_used_in_decimal": {
+          "description": "Quantity of units used in decimal format in the tier",
           "type": ["string", "null"]
         },
         "unit_amount_in_decimal": {
+          "description": "Unit amount in decimal format for the tier pricing",
           "type": ["string", "null"]
         }
       }
     },
+    "object": {
+      "description": "Type of object representing the unbilled charge",
+      "type": ["string", "null"]
+    },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Additional custom fields associated with the unbilled charge",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

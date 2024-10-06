@@ -4,117 +4,176 @@
   "type": "object",
   "properties": {
     "business_profile": {
+      "description": "Business profile information for the account",
       "type": ["null", "object"],
       "properties": {
+        "annual_revenue": {
+          "description": "Annual revenue of the business",
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "amount": {
+              "description": "The annual revenue amount.",
+              "type": ["null", "integer"]
+            },
+            "currency": {
+              "description": "The currency in which the annual revenue is denominated.",
+              "type": ["null", "string"]
+            },
+            "fiscal_year_end": {
+              "description": "The fiscal year end date for the annual revenue.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "estimated_worker_count": {
+          "description": "The estimated number of workers in the business.",
+          "type": ["null", "integer"]
+        },
         "mcc": {
+          "description": "Merchant Category Code representing the type of business.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the business.",
           "type": ["null", "string"]
         },
         "product_description": {
+          "description": "Description of the products/services offered by the business.",
           "type": ["null", "string"]
         },
         "support_address": {
+          "description": "Support address for the business.",
           "$ref": "address.json"
         },
         "support_email": {
+          "description": "Support email for the business.",
           "type": ["null", "string"]
         },
         "support_phone": {
+          "description": "Support phone number for the business.",
           "type": ["null", "string"]
         },
         "support_url": {
+          "description": "Support URL for the business.",
           "type": ["null", "string"]
         },
         "url": {
+          "description": "URL of the business.",
           "type": ["null", "string"]
         }
       }
     },
     "business_type": {
+      "description": "The type of business the account belongs to.",
       "type": ["null", "string"]
     },
     "capabilities": {
+      "description": "Capabilities of the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "afterpay_clearpay_payments": {
+          "description": "Capability for Afterpay Clearpay payments.",
           "type": ["null", "string"]
         },
         "au_becs_debit_payments": {
+          "description": "Capability for AU BECS debit payments.",
           "type": ["null", "string"]
         },
         "bacs_debit_payments": {
+          "description": "Capability for BACS debit payments.",
           "type": ["null", "string"]
         },
         "bancontact_payments": {
+          "description": "Capability for Bancontact payments.",
           "type": ["null", "string"]
         },
         "card_issuing": {
+          "description": "Capability for card issuing.",
           "type": ["null", "string"]
         },
         "card_payments": {
+          "description": "Capability for card payments.",
           "type": ["null", "string"]
         },
         "cartes_bancaires_payments": {
+          "description": "Capability for Cartes Bancaires payments.",
           "type": ["null", "string"]
         },
         "eps_payments": {
+          "description": "Capability for EPS payments.",
           "type": ["null", "string"]
         },
         "fpx_payments": {
+          "description": "Capability for FPX payments.",
           "type": ["null", "string"]
         },
         "giropay_payments": {
+          "description": "Capability for Giropay payments.",
           "type": ["null", "string"]
         },
         "grabpay_payments": {
+          "description": "Capability for Grabpay payments.",
           "type": ["null", "string"]
         },
         "ideal_payments": {
+          "description": "Capability for iDEAL payments.",
           "type": ["null", "string"]
         },
         "jcb_payments": {
+          "description": "Capability for JCB payments.",
           "type": ["null", "string"]
         },
         "legacy_payments": {
+          "description": "Capability for legacy payments.",
           "type": ["null", "string"]
         },
         "oxxo_payments": {
+          "description": "Capability for OXXO payments.",
           "type": ["null", "string"]
         },
         "p24_payments": {
+          "description": "Capability for P24 payments.",
           "type": ["null", "string"]
         },
         "sepa_debit_payments": {
+          "description": "Capability for SEPA debit payments.",
           "type": ["null", "string"]
         },
         "sofort_payments": {
+          "description": "Capability for SOFORT payments.",
           "type": ["null", "string"]
         },
         "tax_reporting_us_1099_k": {
+          "description": "Capability for tax reporting US 1099-K.",
           "type": ["null", "string"]
         },
         "tax_reporting_us_1099_misc": {
+          "description": "Capability for tax reporting US 1099-MISC.",
           "type": ["null", "string"]
         },
         "transfers": {
+          "description": "Capability for transfers.",
           "type": ["null", "string"]
         }
       }
     },
     "charges_enabled": {
+      "description": "Indicates if charges can be made on this account.",
       "type": ["null", "boolean"]
     },
     "company": {
+      "description": "Company information associated with the account",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "address": {
+          "description": "The address of the company.",
           "$ref": "address.json"
         },
         "address_kana": {
+          "description": "Japanese Kana address information of the company.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -142,6 +201,7 @@
           }
         },
         "address_kanji": {
+          "description": "Japanese Kanji address information of the company.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -169,64 +229,83 @@
           }
         },
         "directors_provided": {
+          "description": "Flag indicating whether director information is provided.",
           "type": ["null", "boolean"]
         },
         "executives_provided": {
+          "description": "Flag indicating whether executive information is provided.",
           "type": ["null", "boolean"]
         },
         "export_license_id": {
+          "description": "Export license ID of the company.",
           "type": ["null", "string"]
         },
         "export_purpose_code": {
+          "description": "Export purpose code of the company.",
           "type": ["null", "string"]
         },
         "name": {
+          "description": "The name of the company.",
           "type": ["null", "string"]
         },
         "name_kana": {
+          "description": "Japanese Kana name of the company.",
           "type": ["null", "string"]
         },
         "name_kanji": {
+          "description": "Japanese Kanji name of the company.",
           "type": ["null", "string"]
         },
         "owners_provided": {
+          "description": "Flag indicating whether owner information is provided.",
           "type": ["null", "boolean"]
         },
         "ownership_declaration": {
+          "description": "Information related to ownership declaration.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "date": {
+              "description": "Date of ownership declaration.",
               "type": ["null", "string"]
             },
             "ip": {
+              "description": "IP address of the owner declaring ownership.",
               "type": ["null", "string"]
             },
             "user_agent": {
+              "description": "User agent information of the owner declaring ownership.",
               "type": ["null", "string"]
             }
           }
         },
         "phone": {
+          "description": "The phone number of the company.",
           "type": ["null", "string"]
         },
         "structure": {
+          "description": "Legal structure of the company.",
           "type": ["null", "string"]
         },
         "tax_id_provided": {
+          "description": "Flag indicating whether tax ID is provided.",
           "type": ["null", "boolean"]
         },
         "tax_id_registrar": {
+          "description": "Registrar of the tax ID provided.",
           "type": ["null", "string"]
         },
         "vat_id_provided": {
+          "description": "Flag indicating whether VAT ID is provided.",
           "type": ["null", "boolean"]
         },
         "verification": {
+          "description": "Verification status and details.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "document": {
+              "description": "Verification document details.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
@@ -246,21 +325,27 @@
       }
     },
     "country": {
+      "description": "The country of the account.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp when the account was created.",
       "type": ["null", "integer"]
     },
     "default_currency": {
+      "description": "The default currency used for transactions.",
       "type": ["null", "string"]
     },
     "details_submitted": {
+      "description": "Specifies if details have been submitted for the account.",
       "type": ["null", "boolean"]
     },
     "email": {
+      "description": "The email associated with the account.",
       "type": ["null", "string"]
     },
     "external_accounts": {
+      "description": "External accounts information of the entity.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
@@ -280,26 +365,33 @@
       }
     },
     "id": {
+      "description": "The unique identifier of the account.",
       "type": ["null", "string"]
     },
     "individual": {
+      "description": "Information about an individual associated with the entity.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "id": {
+          "description": "Unique identifier of the individual.",
           "type": ["null", "string"]
         },
         "object": {
+          "description": "Object type representing the individual.",
           "type": ["null", "string"],
           "enum": ["person"]
         },
         "account": {
+          "description": "Associated account information of the individual.",
           "type": ["null", "string"]
         },
         "address": {
+          "description": "The address of the individual.",
           "$ref": "address.json"
         },
         "address_kana": {
+          "description": "Japanese Kana address information of the individual.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -327,6 +419,7 @@
           }
         },
         "address_kanji": {
+          "description": "Japanese Kanji address information of the individual.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -354,9 +447,11 @@
           }
         },
         "created": {
+          "description": "Creation date of the individual profile.",
           "type": ["null", "string"]
         },
         "dob": {
+          "description": "Date of birth of the individual.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
@@ -372,38 +467,47 @@
           }
         },
         "email": {
+          "description": "Email address of the individual.",
           "type": ["null", "string"]
         },
         "first_name": {
+          "description": "First name of the individual.",
           "type": ["null", "string"]
         },
         "first_name_kane": {
+          "description": "Phonetic Kana first name of the individual.",
           "type": ["null", "string"]
         },
         "first_name_kanji": {
+          "description": "Phonetic Kanji first name of the individual.",
           "type": ["null", "string"]
         },
         "full_name_aliases": {
+          "description": "Aliases of the full name of the individual.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "full_requirements": {
+          "description": "Full requirements status and details for the individual.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "alternatives": {
+              "description": "Alternative fields due for full requirements.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "alternative_fields_due": {
+                  "description": "Fields alternative to those currently due.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
                 },
                 "original_fields_due": {
+                  "description": "Original fields initially due.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
@@ -412,9 +516,11 @@
               }
             },
             "currently_due": {
+              "description": "Fields currently due for full requirements.",
               "type": ["null", "string"]
             },
             "errors": {
+              "description": "Errors related to full requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
@@ -433,18 +539,21 @@
               }
             },
             "eventually_due": {
+              "description": "Fields eventually due for full requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
               }
             },
             "past_due": {
+              "description": "Fields past due for full requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
               }
             },
             "pending_verification": {
+              "description": "Fields pending verification for full requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
@@ -453,81 +562,104 @@
           }
         },
         "gender": {
+          "description": "Gender of the individual.",
           "type": ["null", "string"]
         },
         "id_number_provided": {
+          "description": "Flag indicating whether ID number is provided.",
           "type": ["null", "boolean"]
         },
         "id_number_secondary_provided": {
+          "description": "Flag indicating whether secondary ID number is provided.",
           "type": ["null", "boolean"]
         },
         "last_name": {
+          "description": "Last name of the individual.",
           "type": ["null", "string"]
         },
         "last_name_kana": {
+          "description": "Phonetic Kana last name of the individual.",
           "type": ["null", "string"]
         },
         "last_name_kanji": {
+          "description": "Phonetic Kanji last name of the individual.",
           "type": ["null", "string"]
         },
         "maiden_name": {
+          "description": "Maiden name of the individual.",
           "type": ["null", "string"]
         },
         "metadata": {
+          "description": "Additional metadata about the individual.",
           "type": ["null", "object"],
           "additionalProperties": true
         },
         "nationality": {
+          "description": "Nationality of the individual.",
           "type": ["null", "string"]
         },
         "phone": {
+          "description": "Phone number of the individual.",
           "type": ["null", "string"]
         },
         "political_exposure": {
+          "description": "Political exposure status of the individual.",
           "type": ["null", "string"]
         },
         "registered_address": {
+          "description": "Registered address of the individual.",
           "$ref": "address.json"
         },
         "relationship": {
+          "description": "Relationship information of the individual with the entity.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "director": {
+              "description": "Indicator if the individual is a director.",
               "type": ["null", "boolean"]
             },
             "executive": {
+              "description": "Indicator if the individual is an executive.",
               "type": ["null", "boolean"]
             },
             "owner": {
+              "description": "Indicator if the individual is an owner.",
               "type": ["null", "boolean"]
             },
             "percent_ownership": {
+              "description": "Percentage ownership of the individual.",
               "type": ["null", "number"]
             },
             "representative": {
+              "description": "Indicator if the individual is a representative.",
               "type": ["null", "boolean"]
             },
             "title": {
+              "description": "Title/Role of the individual.",
               "type": ["null", "string"]
             }
           }
         },
         "requirements": {
+          "description": "Requirements status and details for the individual.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "alternatives": {
+              "description": "Alternative fields due for individual requirements.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
                 "alternative_fields_due": {
+                  "description": "Fields alternative to those currently due.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
                   }
                 },
                 "original_fields_due": {
+                  "description": "Original fields initially due.",
                   "type": ["null", "array"],
                   "items": {
                     "type": ["null", "string"]
@@ -536,12 +668,14 @@
               }
             },
             "currently_due": {
+              "description": "Fields currently due for individual requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
               }
             },
             "errors": {
+              "description": "Errors related to individual requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "object"],
@@ -560,18 +694,21 @@
               }
             },
             "eventually_due": {
+              "description": "Fields eventually due for individual requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
               }
             },
             "past_due": {
+              "description": "Fields past due for individual requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
               }
             },
             "pending_verification": {
+              "description": "Fields pending verification for individual requirements.",
               "type": ["null", "array"],
               "items": {
                 "type": ["null", "string"]
@@ -580,13 +717,16 @@
           }
         },
         "ssn_last_4_provided": {
+          "description": "Flag indicating whether the last 4 digits of SSN are provided.",
           "type": ["null", "boolean"]
         },
         "verification": {
+          "description": "Verification status and details for the individual.",
           "type": ["null", "object"],
           "additionalProperties": true,
           "properties": {
             "additional_document": {
+              "description": "Additional document verification details.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
@@ -608,6 +748,7 @@
               "type": ["null", "string"]
             },
             "document": {
+              "description": "Base document verification details.",
               "type": ["null", "object"],
               "additionalProperties": true,
               "properties": {
@@ -626,6 +767,7 @@
               }
             },
             "status": {
+              "description": "Verification status of the individual.",
               "type": ["null", "string"]
             }
           }
@@ -633,32 +775,39 @@
       }
     },
     "metadata": {
+      "description": "Additional information associated with the account.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "object": {
+      "description": "The object type representing the account.",
       "enum": ["account"],
       "type": ["null", "string"]
     },
     "payouts_enabled": {
+      "description": "Indicates if payouts are enabled for the account.",
       "type": ["null", "boolean"]
     },
     "requirements": {
+      "description": "Requirements status and details for the entity.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "alternatives": {
+          "description": "Alternative fields due for entity requirements.",
           "type": ["null", "array"],
           "items": {
             "additionalProperties": true,
             "properties": {
               "alternative_fields_due": {
+                "description": "Fields alternative to those currently due.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               "original_fields_due": {
+                "description": "Original fields initially due.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
@@ -668,15 +817,18 @@
           }
         },
         "currently_due": {
+          "description": "Fields currently due for entity requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "disabled_reason": {
+          "description": "Reason for entity requirements being disabled.",
           "type": ["null", "string"]
         },
         "errors": {
+          "description": "Errors related to entity requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -695,18 +847,21 @@
           }
         },
         "eventually_due": {
+          "description": "Fields eventually due for entity requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "past_due": {
+          "description": "Fields past due for entity requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "pending_verification": {
+          "description": "Fields pending verification for entity requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
@@ -715,46 +870,57 @@
       }
     },
     "settings": {
+      "description": "Settings specific to the account.",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "tos_acceptance": {
+      "description": "Details related to terms of service acceptance for the account.",
       "type": ["null", "object"],
       "additionalProperties": true,
       "properties": {
         "date": {
+          "description": "The date on which the terms of service were accepted.",
           "type": ["null", "string"]
         },
         "ip": {
+          "description": "The IP address of the user who accepted the terms of service.",
           "type": ["null", "string"]
         },
         "service_agreement": {
+          "description": "Specifies the agreement to the service terms.",
           "type": ["null", "string"]
         },
         "user_agent": {
+          "description": "The user agent used when accepting the terms of service.",
           "type": ["null", "string"]
         }
       }
     },
     "type": {
+      "description": "The type of account.",
       "enum": ["custom", "express", "standard"],
       "type": ["null", "string"]
     },
     "future_requirements": {
+      "description": "Details about future requirements for the entity.",
       "type": ["null", "object"],
       "properties": {
         "alternatives": {
+          "description": "Alternative fields due for future requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "alternative_fields_due": {
+                "description": "Fields alternative to those currently due.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               "original_fields_due": {
+                "description": "Original fields initially due.",
                 "type": ["null", "array"],
                 "items": {
                   "type": ["null", "string"]
@@ -764,18 +930,22 @@
           }
         },
         "current_deadline": {
+          "description": "Deadline for current requirements.",
           "type": ["null", "integer"]
         },
         "currently_due": {
+          "description": "Fields currently due for future requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "disabled_reason": {
+          "description": "Reason for future requirements being disabled.",
           "type": ["null", "string"]
         },
         "errors": {
+          "description": "Errors related to future requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
@@ -793,18 +963,21 @@
           }
         },
         "eventually_due": {
+          "description": "Fields eventually due for future requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "past_due": {
+          "description": "Fields past due for future requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "pending_verification": {
+          "description": "Fields pending verification for future requirements.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
@@ -813,12 +986,15 @@
       }
     },
     "controller": {
+      "description": "Information about the controller.",
       "type": ["null", "object"],
       "properties": {
         "is_controller": {
+          "description": "Flag indicating whether the entity is a controller.",
           "type": ["null", "boolean"]
         },
         "type": {
+          "description": "Type of controller entity.",
           "type": ["null", "string"]
         }
       }

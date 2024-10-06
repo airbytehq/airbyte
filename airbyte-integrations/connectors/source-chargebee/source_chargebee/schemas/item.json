@@ -4,107 +4,118 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Unique identifier for the item",
+      "type": ["string", "null"]
     },
     "name": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Name of the item",
+      "type": ["string", "null"]
     },
     "description": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "description": "Description of the item",
+      "type": ["string", "null"]
     },
     "status": {
+      "description": "Status of the item",
       "type": ["string", "null"]
     },
     "resource_version": {
+      "description": "Version of the resource",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Date and time when the item was last updated",
       "type": ["integer", "null"]
     },
     "item_family_id": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "ID of the item's family",
+      "type": ["string", "null"]
     },
     "type": {
+      "description": "Type of the item",
       "type": ["string", "null"]
     },
     "is_shippable": {
+      "description": "Flag indicating if the item is shippable",
       "type": ["boolean", "null"]
     },
     "is_giftable": {
+      "description": "Flag indicating if the item is giftable",
       "type": ["boolean", "null"]
     },
     "redirect_url": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "description": "URL to redirect for the item",
+      "type": ["string", "null"]
     },
     "enabled_for_checkout": {
+      "description": "Flag indicating if the item is enabled for checkout",
       "type": ["boolean", "null"]
     },
     "enabled_in_portal": {
+      "description": "Flag indicating if the item is enabled in the portal",
       "type": ["boolean", "null"]
     },
     "included_in_mrr": {
+      "description": "Flag indicating if the item is included in Monthly Recurring Revenue",
       "type": ["boolean", "null"]
     },
     "item_applicability": {
+      "description": "Applicability of the item",
       "type": ["string", "null"]
     },
     "gift_claim_redirect_url": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "description": "URL to redirect for gift claim",
+      "type": ["string", "null"]
     },
     "unit": {
-      "type": ["string", "null"],
-      "maxLength": 30
+      "description": "Unit associated with the item",
+      "type": ["string", "null"]
     },
     "metered": {
+      "description": "Flag indicating if the item is metered",
       "type": ["boolean", "null"]
     },
     "usage_calculation": {
+      "description": "Calculation method used for item usage",
       "type": ["string", "null"]
     },
     "archived_at": {
+      "description": "Date and time when the item was archived",
       "type": ["integer", "null"]
     },
     "metadata": {
+      "description": "Additional data associated with the item",
       "type": ["object", "null"],
       "properties": {}
     },
+    "external_name": {
+      "description": "Name of the item in an external system",
+      "type": ["string", "null"]
+    },
     "applicable_items": {
+      "description": "Items associated with the item",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "description": "Unique identifier for the item",
+            "type": ["string", "null"]
           }
         }
       }
     },
     "channel": {
+      "description": "Channel the item belongs to",
       "type": ["string", "null"]
     },
     "object": {
+      "description": "Type of object",
       "type": ["string", "null"]
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Custom fields associated with the item",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

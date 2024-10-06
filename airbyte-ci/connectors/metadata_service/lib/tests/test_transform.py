@@ -29,21 +29,38 @@ def get_all_dict_key_paths(dict_to_traverse, key_path=""):
     return key_paths
 
 
-def have_same_keys(dict1, dict2):
-    """Check if two dicts have the same keys.
+def have_same_keys(dict1, dict2, omitted_keys=None):
+    """Check if two dicts have the same keys, ignoring specified keys in the second dict.
 
     Args:
         dict1 (dict): A dict.
         dict2 (dict): A dict.
+        omitted_keys (list, optional): List of keys to ignore in dict2.
 
     Returns:
-        bool: True if the dicts have the same keys, False otherwise.
+        tuple: (bool, list) - True if the dicts have the same keys (considering omissions),
+               and a list of keys that are different or omitted.
     """
-    return set(get_all_dict_key_paths(dict1)) == set(get_all_dict_key_paths(dict2))
+    if omitted_keys is None:
+        omitted_keys = []
+
+    keys1 = set(get_all_dict_key_paths(dict1))
+    keys2 = set(get_all_dict_key_paths(dict2))
+
+    # Determine the difference in keys
+    different_keys = list(keys1.symmetric_difference(keys2))
+
+    # Remove omitted keys
+    different_keys = [key for key in different_keys if key not in omitted_keys]
+
+    return len(different_keys) == 0, different_keys
 
 
 def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, valid_metadata_yaml_files):
     all_valid_metadata_files = valid_metadata_upload_files + valid_metadata_yaml_files
+
+    fields_with_defaults = ["data.supportsRefreshes", "data.releases.isReleaseCandidate"]
+
     for file_path in all_valid_metadata_files:
         metadata_file_path = pathlib.Path(file_path)
         original_yaml_text = metadata_file_path.read_text()
@@ -56,4 +73,5 @@ def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, val
         new_yaml_dict = yaml.safe_load(new_yaml_text)
 
         # assert same keys in both dicts, deep compare, and that the values are the same
-        assert have_same_keys(metadata_yaml_dict, new_yaml_dict)
+        is_same, different_keys = have_same_keys(metadata_yaml_dict, new_yaml_dict, fields_with_defaults)
+        assert is_same, f"Different keys found: {different_keys}"

@@ -4,78 +4,107 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "Unique identifier for the file",
       "type": ["null", "string"]
     },
     "purpose": {
+      "description": "Purpose of the file",
       "type": ["null", "string"]
     },
     "type": {
+      "description": "Type of the file",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object represented by the file",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp indicating when the file was created",
       "type": ["null", "integer"]
     },
     "expires_at": {
+      "description": "Timestamp indicating when the file will expire",
       "type": ["null", "integer"]
     },
     "filename": {
+      "description": "Name of the file",
       "type": ["null", "string"]
     },
     "links": {
+      "description": "Object containing links data",
       "type": ["null", "object"],
       "properties": {
         "object": {
+          "description": "Type of object containing the linked data entries",
           "type": ["null", "string"]
         },
         "data": {
+          "description": "Array containing file data",
           "type": ["null", "array"],
           "items": {
+            "description": "Properties of the file object",
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "Unique identifier for the linked data entry",
                 "type": ["null", "string"]
               },
               "object": {
+                "description": "Type of object linked to the file",
                 "type": ["null", "string"]
               },
               "created": {
+                "description": "Timestamp indicating when the linked data entry was created",
                 "type": ["null", "integer"]
               },
               "expired": {
+                "description": "Boolean indicating whether the linked data entry is expired",
                 "type": ["null", "integer"]
               },
               "expires_at": {
+                "description": "Timestamp indicating when the linked data entry will expire",
                 "type": ["null", "integer"]
               },
               "file": {
+                "description": "Related file identifier",
                 "type": ["null", "string"]
               },
               "livemode": {
+                "description": "Boolean indicating if the linked data entry is in live mode",
                 "type": ["null", "boolean"]
               },
               "metadata": {
+                "description": "Additional information associated with the linked data entry",
                 "type": ["null", "object"]
               },
               "url": {
+                "description": "URL to access the linked data entry",
                 "type": ["null", "string"]
               }
             }
           }
         },
-        "has_more": { "type": ["null", "boolean"] },
-        "url": { "type": ["null", "string"] }
+        "has_more": {
+          "description": "Boolean indicating whether there are more linked data entries",
+          "type": ["null", "boolean"]
+        },
+        "url": {
+          "description": "URL to access the linked data entries",
+          "type": ["null", "string"]
+        }
       }
     },
     "size": {
+      "description": "Size of the file in bytes",
       "type": ["null", "integer"]
     },
     "title": {
+      "description": "Title of the file",
       "type": ["null", "string"]
     },
     "url": {
+      "description": "URL to access the file",
       "type": ["null", "string"]
     }
   }

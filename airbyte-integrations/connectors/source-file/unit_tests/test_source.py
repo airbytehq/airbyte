@@ -21,6 +21,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models.airbyte_protocol import Type as MessageType
 from source_file.source import SourceFile
 
 logger = logging.getLogger("airbyte")
@@ -63,6 +64,31 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
     assert stream.json_schema == expected_schema
 
 
+def test_zipped_csv_with_utf16_encoding(absolute_path, test_files):
+    config_local_zipped_csv_utf16 = {
+        "dataset_name": "AAA",
+        "format": "csv",
+        "reader_options": '{"encoding":"utf_16", "parse_dates": ["header5"]}',
+        "url": f"{absolute_path}/{test_files}/test_utf16.csv.zip",
+        "provider": {"storage": "local"},
+    }
+    expected_schema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+            "header1": {"type": ["string", "null"]},
+            "header2": {"type": ["number", "null"]},
+            "header3": {"type": ["number", "null"]},
+            "header4": {"type": ["boolean", "null"]},
+            "header5": {"type": ["string", "null"], "format": "date-time"},
+        },
+        "type": "object",
+    }
+
+    catalog = SourceFile().discover(logger=logger, config=config_local_zipped_csv_utf16)
+    stream = next(iter(catalog.streams))
+    assert stream.json_schema == expected_schema
+
+
 def get_catalog(properties):
     return ConfiguredAirbyteCatalog(
         streams=[
@@ -95,7 +121,8 @@ def test_nan_to_null(absolute_path, test_files):
 
     source = SourceFile()
     records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
-    records = [r.record.data for r in records]
+
+    records = [r.record.data for r in records if r.type == MessageType.RECORD]
     assert records == [
         {"col1": "key1", "col2": 1.11, "col3": None},
         {"col1": "key2", "col2": None, "col3": 2.22},
@@ -105,13 +132,14 @@ def test_nan_to_null(absolute_path, test_files):
 
     config.update({"format": "yaml", "url": f"{absolute_path}/{test_files}/formats/yaml/demo.yaml"})
     records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
-    records = [r.record.data for r in records]
+    records = [r.record.data for r in records if r.type == MessageType.RECORD]
     assert records == []
 
     config.update({"provider": {"storage": "SSH", "user": "user", "host": "host"}})
 
     with pytest.raises(Exception):
-        next(source.read(logger=logger, config=config, catalog=catalog))
+        for record in source.read(logger=logger, config=config, catalog=catalog):
+            pass
 
 
 def test_spec(source):
@@ -176,7 +204,7 @@ def test_pandas_header_not_none(absolute_path, test_files):
 
     source = SourceFile()
     records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
-    records = [r.record.data for r in records]
+    records = [r.record.data for r in records if r.type == MessageType.RECORD]
     assert records == [
         {"text11": "text21", "text12": "text22"},
     ]
@@ -195,7 +223,7 @@ def test_pandas_header_none(absolute_path, test_files):
 
     source = SourceFile()
     records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
-    records = [r.record.data for r in records]
+    records = [r.record.data for r in records if r.type == MessageType.RECORD]
     assert records == [
         {"0": "text11", "1": "text12"},
         {"0": "text21", "1": "text22"},
@@ -224,4 +252,4 @@ def test_incorrect_reader_options(absolute_path, test_files):
     ):
         catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
         records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
-        records = [r.record.data for r in records]
+        records = [r.record.data for r in records if r.type == MessageType.RECORD]

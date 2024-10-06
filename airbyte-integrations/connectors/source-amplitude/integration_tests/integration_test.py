@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from source_amplitude.source import SourceAmplitude
 
 
@@ -85,7 +86,8 @@ def test_empty_streams(stream_fixture_name, url, expected_records, request, requ
     due to free subscription plan for the sandbox
     """
     stream = request.getfixturevalue(stream_fixture_name)
-    records_reader = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice={})
+    empty_stream_slice = StreamSlice(partition={}, cursor_slice={})
+    records_reader = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=empty_stream_slice)
     requests_mock.get(url, status_code=200, json={"data": expected_records})
 
     # Sort actual and expected records by ID.

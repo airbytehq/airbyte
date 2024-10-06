@@ -8,20 +8,33 @@ Connectors built with the connector builder always make HTTP requests, receive t
 - Do optional post-processing (transformations)
 - Provide record meta data to the system to inform downstream processes (primary key and declared schema)
 
-## Record selection
+## Record Selection
 
 <iframe
-  width="640"
+  width="583"
   height="393"
-  src="https://www.loom.com/embed/06d0fe35d79b40c5b1aea29a7fa7f113"
+  src="https://www.loom.com/embed/f4a36e769a1d4f87a14e3982f59d1fb2"
   frameborder="0"
   webkitallowfullscreen
   mozallowfullscreen
   allowfullscreen
 ></iframe>
 
-When doing HTTP requests, the connector expects the records to be part of the response JSON body. The "Record selector" field of the stream needs to be set to the property of the response object that holds the records.
+When doing HTTP requests, the connector expects the records to be part of the response JSON body. The "Record Selector" component of the stream can be used to configure how records should be extracted from the response body.
 
+The Record Selector component contains a few different levers to configure this extraction:
+- Field Path
+- Record Filter
+- Cast Record Fields to Schema Types
+
+These will be explained below.
+
+### Field Path
+The Field Path feature lets you define a path into the fields of the response to point to the part of the response which should be treated as the record(s).
+
+Below are a few different examples of what this can look like depending on the API.
+
+#### Top-level key pointing to array
 Very often, the response body contains an array of records along with some suplementary information (for example meta data for pagination).
 
 For example the ["Most popular" NY Times API](https://developer.nytimes.com/docs/most-popular-product/1/overview) returns the following response body:
@@ -50,9 +63,9 @@ For example the ["Most popular" NY Times API](https://developer.nytimes.com/docs
 }`}
 </pre>
 
-**Setting the record selector to `results`** selects the array with the actual records, everything else is discarded.
+In this case, **setting the Field Path to `results`** selects the array with the actual records, everything else is discarded.
 
-### Nested objects
+#### Nested array
 
 In some cases the array of actual records is nested multiple levels deep in the response, like for the ["Archive" NY Times API](https://developer.nytimes.com/docs/archive-product/1/overview):
 
@@ -77,9 +90,9 @@ In some cases the array of actual records is nested multiple levels deep in the 
 }`}
 </pre>
 
-**Setting the record selector needs to be set to "`response`,`docs`"** selects the nested array.
+In this case, **setting the Field Path to `response`,`docs`** selects the nested array.
 
-### Root array
+#### Root array
 
 In some cases, the response body itself is an array of records, like in the [CoinAPI API](https://docs.coinapi.io/market-data/rest-api/quotes):
 
@@ -103,11 +116,11 @@ In some cases, the response body itself is an array of records, like in the [Coi
   <b>{`]`}</b>
 </pre>
 
-In this case, **the record selector can be omitted** and the whole response becomes the list of records.
+In this case, **the Field Path can be omitted** and the whole response becomes the list of records.
 
-### Single object
+#### Single object
 
-Sometimes, there is only one record returned per request from the API. In this case, the record selector can also point to an object instead of an array which will be handled as the only record, like in the case of the [Exchange Rates API](https://exchangeratesapi.io/documentation/#historicalrates):
+Sometimes, there is only one record returned per request from the API. In this case, the field path can also point to an object instead of an array which will be handled as the only record, like in the case of the [Exchange Rates API](https://exchangeratesapi.io/documentation/#historicalrates):
 
 <pre>
   {`{
@@ -128,11 +141,11 @@ Sometimes, there is only one record returned per request from the API. In this c
 }`}
 </pre>
 
-In this case, a record selector of `rates` will yield a single record which contains all the exchange rates in a single object.
+In this case, **setting the Field Path to `rates`** will yield a single record which contains all the exchange rates in a single object.
 
-### Fields nested in arrays
+#### Fields nested in arrays
 
-In some cases, records are selected in multiple branches of the response object (for example within each item of an array):
+In some cases, records are located in multiple branches of the response object (for example within each item of an array):
 
 ```
 
@@ -153,7 +166,7 @@ In some cases, records are selected in multiple branches of the response object 
 
 ```
 
-In this case a record selector with a placeholder `*` selects all children at the current position in the path, in this case **`data`, `*`, `record`** will return the following records:
+A Field Path with a placeholder `*` selects all children at the current position in the path, so in this case **setting Field Path to `data`,`*`,`record`** will return the following records:
 
 ```
 [
@@ -165,6 +178,87 @@ In this case a record selector with a placeholder `*` selects all children at th
   }
 ]
 ```
+
+### Record Filter
+In some cases, certain certain records should be excluded from the final output of the connector, which can be accomplished through the Record Filter feature within the Record Selector component.
+
+For example, say your API response looks like this:
+```
+[
+  {
+    "id": 1,
+    "status": "pending" 
+  },
+  {
+    "id": 2,
+    "status": "active" 
+  },
+  {
+    "id": 3,
+    "status": "expired" 
+  }
+]
+```
+and you only want to sync records for which the status is not `expired`.
+
+You can accomplish this by setting the Record Filter to `{{ record.status != 'expired' }}`
+
+Any records for which this expression evaluates to `true` will be emitted by the connector, and any for which it evaluates to `false` will be excluded from the output.
+
+Note that Record Filter value must be an [interpolated string](/connector-development/config-based/advanced-topics#string-interpolation) with the filtering condition placed inside double curly braces `{{ }}`.
+
+### Cast Record Fields to Schema Types
+Sometimes the type of a field in the record is not the desired type. If the existing field type can be simply cast to the desired type, this can be solved by setting the stream's declared schema to the desired type and enabling `Cast Record Fields to Schema Types`.
+
+For example, say the API response looks like this:
+```
+[
+  {
+    "street": "Kulas Light",
+    "city": "Gwenborough",
+    "geo": {
+      "lat": "-37.3159",
+      "lng": "81.1496"
+    }
+  },
+  {
+    "street": "Victor Plains",
+    "city": "Wisokyburgh",
+    "geo": {
+      "lat": "-43.9509",
+      "lng": "-34.4618"
+    }
+  }
+]
+```
+Notice that the `lat` and `lng` values are strings despite them all being numeric. If you would rather have these fields contain raw number values in your output records, you can do the following:
+- In the Declared Schema tab, disable `Automatically import detected schema`
+- Change the `type` of the `lat` and `lng` fields from `string` to `number`
+- Enable `Cast Record Fields to Schema Types` in the Record Selector component
+
+This will cause those fields in the output records to be cast to the type declared in the schema, so the output records will now look like this:
+```
+[
+  {
+    "street": "Kulas Light",
+    "city": "Gwenborough",
+    "geo": {
+      "lat": -37.3159,
+      "lng": 81.1496
+    }
+  },
+  {
+    "street": "Victor Plains",
+    "city": "Wisokyburgh",
+    "geo": {
+      "lat": -43.9509,
+      "lng": -34.4618
+    }
+  }
+]
+```
+Note that this casting is performed on a best-effort basis; if you tried to set the `city` field's type to `number` in the schema, for example, it would remain unchanged because those string values cannot be cast to numbers.
+
 
 ## Transformations
 
@@ -230,7 +324,7 @@ Setting the "Path" of the remove-transformation to `content` removes these field
 }
 ```
 
-Like in case of the record selector, properties of deeply nested objects can be removed as well by specifying the path of properties to the target field that should be removed.
+Like in case of the record selector's Field Path, properties of deeply nested objects can be removed as well by specifying the path of properties to the target field that should be removed.
 
 ### Removing fields that match a glob pattern
 
@@ -321,7 +415,7 @@ Besides bringing the records in the right shape, it's important to communicate s
 
 ### Primary key
 
-The "Primary key" field specifies how to uniquely identify a record. This is important for downstream de-duplication of records (e.g. by the [incremental sync - Append + Deduped sync mode](/understanding-airbyte/connections/incremental-append-deduped)).
+The "Primary key" field specifies how to uniquely identify a record. This is important for downstream de-duplication of records (e.g. by the [incremental sync - Append + Deduped sync mode](/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)).
 
 In a lot of cases, like for the EmailOctopus example from above, there is a dedicated id field that can be used for this purpose. It's important that the value of the id field is guaranteed to only occur once for a single record.
 

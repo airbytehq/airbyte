@@ -25,6 +25,9 @@ class Indexer(ABC):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         """
         Run before the sync starts. This method should be used to make sure all records in the destination that belong to streams with a destination mode of overwrite are deleted.
+
+        Each record has a metadata field with the name airbyte_cdk.destinations.vector_db_based.document_processor.METADATA_STREAM_FIELD which can be used to filter documents for deletion.
+        Use the airbyte_cdk.destinations.vector_db_based.utils.create_stream_identifier method to create the stream identifier based on the stream definition to use for filtering.
         """
         pass
 
@@ -35,9 +38,23 @@ class Indexer(ABC):
         return []
 
     @abstractmethod
-    def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
+    def index(self, document_chunks: List[Chunk], namespace: str, stream: str) -> None:
         """
-        Index a list of document chunks. This method should be used to index the documents in the destination. The delete_ids parameter contains a list of record ids - all chunks with a record id in this list should be deleted from the destination.
+        Index a list of document chunks.
+
+        This method should be used to index the documents in the destination. If page_content is None, the document should be indexed without the raw text.
+        All chunks belong to the stream and namespace specified in the parameters.
+        """
+        pass
+
+    @abstractmethod
+    def delete(self, delete_ids: List[str], namespace: str, stream: str) -> None:
+        """
+        Delete document chunks belonging to certain record ids.
+
+        This method should be used to delete documents from the destination.
+        The delete_ids parameter contains a list of record ids - all chunks with a record id in this list should be deleted from the destination.
+        All ids belong to the stream and namespace specified in the parameters.
         """
         pass
 

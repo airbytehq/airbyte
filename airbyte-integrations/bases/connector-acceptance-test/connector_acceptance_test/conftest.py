@@ -19,16 +19,25 @@ import dagger
 import pytest
 from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.config import (
+    ClientContainerConfig,
+    Config,
+    EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
+    IgnoredFieldsConfiguration,
+)
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
-    ConnectorRunner,
     SecretDict,
     build_configured_catalog_from_custom_catalog,
     build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    client_container_runner,
+    connector_runner,
     filter_output,
+    is_manifest_file,
     load_config,
     load_yaml_or_json_path,
+    parse_manifest_spec,
 )
 
 
@@ -38,7 +47,7 @@ def acceptance_test_config_fixture(pytestconfig) -> Config:
     return load_config(pytestconfig.getoption("--acceptance-test-config", skip=True))
 
 
-@pytest.fixture(name="base_path")
+@pytest.fixture(name="base_path", scope="session")
 def base_path_fixture(pytestconfig, acceptance_test_config) -> Path:
     """Fixture to define base path for every path-like fixture"""
     if acceptance_test_config.base_path:
@@ -112,16 +121,46 @@ def configured_catalog_fixture(
         return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, set())
 
 
-@pytest.fixture(name="image_tag")
+@pytest.fixture(name="image_tag", scope="session")
 def image_tag_fixture(acceptance_test_config) -> str:
     return acceptance_test_config.connector_image
 
 
 @pytest.fixture(name="connector_config")
-def connector_config_fixture(base_path, connector_config_path) -> SecretDict:
-    with open(str(connector_config_path), "r") as file:
-        contents = file.read()
-    return SecretDict(json.loads(contents))
+def connector_config_fixture(base_path, connector_config_path) -> Optional[SecretDict]:
+    try:
+        with open(str(connector_config_path), "r") as file:
+            contents = file.read()
+
+        return SecretDict(json.loads(contents))
+    except FileNotFoundError:
+        logging.warning(f"Connector config file not found at {connector_config_path}")
+        return None
+
+
+@pytest.fixture(name="client_container_config")
+def client_container_config_fixture(inputs, base_path, acceptance_test_config) -> Optional[ClientContainerConfig]:
+    """Fixture with connector's setup/teardown Dockerfile path, if it exists."""
+    if hasattr(inputs, "client_container_config") and inputs.client_container_config:
+        return inputs.client_container_config
+
+
+@pytest.fixture(name="client_container_config_global", scope="session")
+async def client_container_config_global_fixture(acceptance_test_config: Config) -> ClientContainerConfig:
+    if (
+        hasattr(acceptance_test_config.acceptance_tests, "client_container_config")
+        and acceptance_test_config.acceptance_tests.client_container_config
+    ):
+        return acceptance_test_config.acceptance_tests.client_container_config
+
+
+@pytest.fixture(name="client_container_config_secrets")
+def client_container_config_secrets_fixture(base_path, client_container_config) -> Optional[SecretDict]:
+    if client_container_config and hasattr(client_container_config, "secrets_path") and client_container_config.secrets_path:
+        with open(str(base_path / client_container_config.secrets_path), "r") as file:
+            contents = file.read()
+        return SecretDict(json.loads(contents))
+    return None
 
 
 @pytest.fixture(name="invalid_connector_config")
@@ -143,6 +182,9 @@ def malformed_connector_config_fixture(connector_config) -> MutableMapping[str, 
 def connector_spec_fixture(connector_spec_path) -> Optional[ConnectorSpecification]:
     try:
         spec_obj = load_yaml_or_json_path(connector_spec_path)
+        # handle the case where a manifest.yaml is specified as the spec file
+        if is_manifest_file(connector_spec_path):
+            return parse_manifest_spec(spec_obj)
         return ConnectorSpecification.parse_obj(spec_obj)
     except FileNotFoundError:
         return None
@@ -166,19 +208,94 @@ async def dagger_client(anyio_backend):
         yield client
 
 
+@pytest.fixture(scope="session")
+async def connector_container(dagger_client, image_tag):
+    connector_container = await connector_runner.get_connector_container(dagger_client, image_tag)
+    if cachebuster := os.environ.get("CACHEBUSTER"):
+        connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
+    return await connector_container
+
+
 @pytest.fixture(name="docker_runner", autouse=True)
-async def docker_runner_fixture(
-    image_tag, connector_config_path, custom_environment_variables, dagger_client, deployment_mode
-) -> ConnectorRunner:
-    runner = ConnectorRunner(
-        image_tag,
-        dagger_client,
+def docker_runner_fixture(
+    connector_container, connector_config_path, custom_environment_variables, deployment_mode
+) -> connector_runner.ConnectorRunner:
+    return connector_runner.ConnectorRunner(
+        connector_container,
         connector_configuration_path=connector_config_path,
         custom_environment_variables=custom_environment_variables,
         deployment_mode=deployment_mode,
     )
-    await runner.load_container()
-    return runner
+
+
+@pytest.fixture(autouse=True)
+async def client_container(
+    base_path: Path,
+    dagger_client: dagger.Client,
+    client_container_config: Optional[ClientContainerConfig],
+) -> Optional[dagger.Container]:
+    if client_container_config:
+        return await client_container_runner.get_client_container(
+            dagger_client,
+            base_path,
+            base_path / client_container_config.client_container_dockerfile_path,
+        )
+
+
+@pytest.fixture(scope="session")
+async def client_final_teardown_container(
+    base_path: Path,
+    dagger_client: dagger.Client,
+    client_container_config_global: Optional[ClientContainerConfig],
+) -> Optional[dagger.Container]:
+    if client_container_config_global:
+        return await client_container_runner.get_client_container(
+            dagger_client,
+            base_path,
+            base_path / client_container_config_global.client_container_dockerfile_path,
+        )
+
+
+@pytest.fixture(autouse=True)
+async def setup_and_teardown(
+    client_container: Optional[dagger.Container],
+    client_container_config: Optional[ClientContainerConfig],
+    client_container_config_secrets: Optional[SecretDict],
+    base_path: Path,
+):
+    if client_container and hasattr(client_container_config, "setup_command") and client_container_config.setup_command:
+        logging.info("Running setup")
+        setup_teardown_container = await client_container_runner.do_setup(
+            client_container,
+            client_container_config.setup_command,
+            client_container_config_secrets,
+            base_path,
+        )
+        logging.info(f"Setup stdout: {await setup_teardown_container.stdout()}")
+    yield None
+    if client_container and hasattr(client_container_config, "teardown_command") and client_container_config.teardown_command:
+        logging.info("Running teardown")
+        setup_teardown_container = await client_container_runner.do_teardown(
+            client_container,
+            client_container_config.teardown_command,
+        )
+        logging.info(f"Teardown stdout: {await setup_teardown_container.stdout()}")
+
+
+@pytest.fixture(scope="session")
+async def final_teardown(
+    client_container_config_global: Optional[ClientContainerConfig],
+    client_final_teardown_container: Optional[dagger.Container],
+):
+    yield
+    if client_final_teardown_container and client_container_config_global:
+        logging.info("Doing final teardown.")
+        if hasattr(client_container_config_global, "final_teardown_command"):
+            setup_teardown_container = await client_container_runner.do_teardown(
+                client_final_teardown_container,
+                client_container_config_global.final_teardown_command,
+            )
+            logging.info(f"Final teardown stdout: {await setup_teardown_container.stdout()}")
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -187,15 +304,26 @@ def previous_connector_image_name_fixture(image_tag, inputs) -> str:
     return f"{image_tag.split(':')[0]}:{inputs.backward_compatibility_tests_config.previous_connector_version}"
 
 
+@pytest.fixture()
+async def previous_version_connector_container(
+    dagger_client,
+    previous_connector_image_name,
+):
+    connector_container = await connector_runner.get_connector_container(dagger_client, previous_connector_image_name)
+    if cachebuster := os.environ.get("CACHEBUSTER"):
+        connector_container = connector_container.with_env_variable("CACHEBUSTER", cachebuster)
+    return await connector_container
+
+
 @pytest.fixture(name="previous_connector_docker_runner")
-async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client, deployment_mode) -> ConnectorRunner:
+async def previous_connector_docker_runner_fixture(
+    previous_version_connector_container, deployment_mode
+) -> connector_runner.ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
     Raise not found error if the previous connector image is not latest and expected to be published.
     """
-    runner = ConnectorRunner(previous_connector_image_name, dagger_client, deployment_mode=deployment_mode)
-    await runner.load_container()
-    return runner
+    return connector_runner.ConnectorRunner(previous_version_connector_container, deployment_mode=deployment_mode)
 
 
 @pytest.fixture(name="empty_streams")
@@ -277,12 +405,14 @@ def find_not_seeded_streams(
 @pytest.fixture(name="discovered_catalog")
 async def discovered_catalog_fixture(
     connector_config,
-    docker_runner: ConnectorRunner,
+    docker_runner: connector_runner.ConnectorRunner,
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
 
     output = await docker_runner.call_discover(config=connector_config)
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+    if len(catalogs) == 0:
+        raise ValueError("No catalog message was emitted")
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 
@@ -290,7 +420,7 @@ async def discovered_catalog_fixture(
 async def previous_discovered_catalog_fixture(
     connector_config,
     previous_connector_image_name,
-    previous_connector_docker_runner: ConnectorRunner,
+    previous_connector_docker_runner: connector_runner.ConnectorRunner,
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
     if previous_connector_docker_runner is None:
@@ -306,6 +436,8 @@ async def previous_discovered_catalog_fixture(
         )
         return None
     catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
+    if len(catalogs) == 0:
+        raise ValueError("No catalog message was emitted")
     return {stream.name: stream for stream in catalogs[-1].streams}
 
 
@@ -331,7 +463,7 @@ def detailed_logger() -> Logger:
 
 
 @pytest.fixture(name="actual_connector_spec")
-async def actual_connector_spec_fixture(docker_runner: ConnectorRunner) -> ConnectorSpecification:
+async def actual_connector_spec_fixture(docker_runner: connector_runner.ConnectorRunner) -> ConnectorSpecification:
     output = await docker_runner.call_spec()
     spec_messages = filter_output(output, Type.SPEC)
     assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
@@ -340,7 +472,7 @@ async def actual_connector_spec_fixture(docker_runner: ConnectorRunner) -> Conne
 
 @pytest.fixture(name="previous_connector_spec")
 async def previous_connector_spec_fixture(
-    request: BaseTest, previous_connector_docker_runner: ConnectorRunner
+    request: BaseTest, previous_connector_docker_runner: connector_runner.ConnectorRunner
 ) -> Optional[ConnectorSpecification]:
     if previous_connector_docker_runner is None:
         logging.warning(
@@ -379,3 +511,21 @@ def pytest_sessionfinish(session, exitstatus):
 @pytest.fixture(name="connector_metadata")
 def connector_metadata_fixture(base_path) -> dict:
     return load_yaml_or_json_path(base_path / "metadata.yaml")
+
+
+@pytest.fixture(name="docs_path")
+def docs_path_fixture(base_path, connector_metadata) -> Path:
+    path_to_docs = connector_metadata["data"]["documentationUrl"].replace("https://docs.airbyte.com", "docs") + ".md"
+    airbyte_path = Path(base_path).parents[6]
+    return airbyte_path / path_to_docs
+
+
+@pytest.fixture(name="connector_documentation")
+def connector_documentation_fixture(docs_path: str) -> str:
+    with open(docs_path, "r") as f:
+        return f.read().rstrip()
+
+
+@pytest.fixture(name="is_connector_certified")
+def connector_certification_status_fixture(connector_metadata: dict) -> bool:
+    return connector_metadata.get("data", {}).get("ab_internal", {}).get("ql", 0) >= 400

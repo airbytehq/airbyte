@@ -19,7 +19,7 @@ def test_streams(config):
 
 
 @responses.activate
-def test_check_connection(config, projects_response, labels_response):
+def test_check_connection_config_no_access_to_one_stream(config, caplog, projects_response, avatars_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
@@ -27,29 +27,18 @@ def test_check_connection(config, projects_response, labels_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
-        json=labels_response,
+        f"https://{config['domain']}/rest/api/3/applicationrole",
+        status=401,
     )
-    source = SourceJira()
-    logger_mock = MagicMock()
-
-    assert source.check_connection(logger=logger_mock, config=config) == (True, None)
-
-
-@responses.activate
-def test_check_connection_config_error(config, caplog):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
-        status=401,
+        f"https://{config['domain']}/rest/api/3/avatar/issuetype/system",
+        json=avatars_response,
     )
     responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/label?maxResults=50", status=401)
     source = SourceJira()
     logger_mock = MagicMock()
-    with pytest.raises(AirbyteTracedException):
-        source.check_connection(logger=logger_mock, config=config)
-
-    assert "Invalid creds were provided, please check your api token, domain and/or email." in caplog.text
+    assert source.check_connection(logger=logger_mock, config=config) == (True, None)
 
 
 @responses.activate
@@ -65,7 +54,9 @@ def test_check_connection_404_error(config):
     with pytest.raises(AirbyteTracedException) as e:
         source.check_connection(logger=logger_mock, config=config)
 
-    assert e.value.message == "Config validation error: please validate your domain."
+    assert (
+        e.value.message == "Config validation error: please check that your domain is valid and does not include protocol (e.g: https://)."
+    )
 
 
 def test_get_authenticator(config):

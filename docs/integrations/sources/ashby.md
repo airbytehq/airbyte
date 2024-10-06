@@ -43,6 +43,28 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 ## Changelog
 
-| Version | Date       | Pull Request                                         | Subject                    |
-| :------ | :--------- | :--------------------------------------------------- | :------------------------- |
-| 0.1.0   | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                     |
+|:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 0.2.0 | 2024-08-19 | [44420](https://github.com/airbytehq/airbyte/pull/44420) | Refactor connector to manifest-only format |
+| 0.1.16 | 2024-08-17 | [44288](https://github.com/airbytehq/airbyte/pull/44288) | Update dependencies |
+| 0.1.15 | 2024-08-12 | [43780](https://github.com/airbytehq/airbyte/pull/43780) | Update dependencies |
+| 0.1.14 | 2024-08-10 | [43491](https://github.com/airbytehq/airbyte/pull/43491) | Update dependencies |
+| 0.1.13 | 2024-08-03 | [43080](https://github.com/airbytehq/airbyte/pull/43080) | Update dependencies |
+| 0.1.12 | 2024-07-27 | [42658](https://github.com/airbytehq/airbyte/pull/42658) | Update dependencies |
+| 0.1.11 | 2024-07-20 | [42220](https://github.com/airbytehq/airbyte/pull/42220) | Update dependencies |
+| 0.1.10 | 2024-07-17 | [42028](https://github.com/airbytehq/airbyte/pull/42028) | Fix typo in application stream |
+| 0.1.9 | 2024-07-13 | [41818](https://github.com/airbytehq/airbyte/pull/41818) | Update dependencies |
+| 0.1.8 | 2024-07-10 | [41379](https://github.com/airbytehq/airbyte/pull/41379) | Update dependencies |
+| 0.1.7 | 2024-07-09 | [41271](https://github.com/airbytehq/airbyte/pull/41271) | Update dependencies |
+| 0.1.6 | 2024-07-06 | [40971](https://github.com/airbytehq/airbyte/pull/40971) | Update dependencies |
+| 0.1.5 | 2024-06-25 | [40469](https://github.com/airbytehq/airbyte/pull/40469) | Update dependencies |
+| 0.1.4 | 2024-06-22 | [40107](https://github.com/airbytehq/airbyte/pull/40107) | Update dependencies |
+| 0.1.3 | 2024-06-06 | [39159](https://github.com/airbytehq/airbyte/pull/39159) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.2 | 2024-05-28 | [38666](https://github.com/airbytehq/airbyte/pull/38666) | Make connector compatible with Builder |
+| 0.1.1 | 2024-05-20 | [38421](https://github.com/airbytehq/airbyte/pull/38421) | [autopull] base image + poetry + up_to_date |
+| 0.1.0 | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |
+
+</details>

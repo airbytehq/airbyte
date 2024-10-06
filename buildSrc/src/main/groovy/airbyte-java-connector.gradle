@@ -9,7 +9,7 @@ import org.gradle.api.tasks.testing.Test
 
 class AirbyteJavaConnectorExtension {
 
-    boolean useLocalCdk = false
+    boolean useLocalCdk
     String cdkVersionRequired
     List<String> features = []  // e.g. 'db-sources', 'db-destinations'
     Project project
@@ -18,60 +18,124 @@ class AirbyteJavaConnectorExtension {
         this.project = project
     }
 
+    void setUseLocalCdk(boolean useLocalCdk) {
+        this.useLocalCdk = useLocalCdk
+        addCdkDependencies()
+    }
+
+    static final List<String> PRE_V019_IMPLEMENTATION = [
+            'airbyte-commons',
+            'airbyte-json-validation',
+            'airbyte-commons-cli',
+            'airbyte-api',
+            'config-models-oss',
+            'init-oss',
+    ]
+
+    static final List<String> PRE_V019_TEST_IMPLEMENTATION = [
+            'airbyte-commons',
+            'airbyte-json-validation',
+            'airbyte-api',
+            'config-models-oss',
+    ]
+
+    static final List<String> PRE_V019_INTEGRATION_TEST_IMPLEMENTATION = [
+            'config-models-oss',
+            'init-oss',
+            'acceptance-test-harness',
+    ]
+
     void addCdkDependencies() {
-        // Create a list of CDK submodules to import
-        def submoduleNames = ['core']
-        features.each { feature ->
-            submoduleNames.add(feature)
-        }
-        project.dependencies {
-            // Import transitive (compileOnly) first party CDK dependencies.
-            // TODO: Bring these into the CDK or refactor them out.
-            implementation project.project(':airbyte-api')
-            implementation project.project(':airbyte-commons')
-            implementation project.project(':airbyte-commons-cli')
-            implementation project.project(':airbyte-config-oss:config-models-oss')
-            implementation project.project(':airbyte-config-oss:init-oss')
-            implementation project.project(':airbyte-json-validation')
-
-            testImplementation project.project(':airbyte-api')
-            testImplementation project.project(':airbyte-commons')
-            testImplementation project.project(':airbyte-config-oss:config-models-oss')
-            testImplementation project.project(':airbyte-test-utils')
-
-            integrationTestJavaImplementation project.project(':airbyte-config-oss:config-models-oss')
-            integrationTestJavaImplementation project.project(':airbyte-config-oss:init-oss')
-            integrationTestJavaImplementation project.project(':airbyte-connector-test-harnesses:acceptance-test-harness')
-        }
-        if (useLocalCdk) {
-            project.dependencies {
-                submoduleNames.each { submoduleName ->
-                    // Add the CDK module to the dependencies
-                    def cdkModule = project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}")
-                    def testFixturesRef = testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}"))
-                    implementation cdkModule
-                    testImplementation cdkModule
-                    testImplementation testFixturesRef
-                    integrationTestJavaImplementation cdkModule
-                    integrationTestJavaImplementation testFixturesRef
-                    performanceTestJavaImplementation cdkModule
-                    performanceTestJavaImplementation testFixturesRef
-                }
+        def projectName = { ":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-${it}" }
+        def jarName = { "io.airbyte.cdk:airbyte-cdk-${it}:${cdkVersionRequired}" }
+        project.processIntegrationTestJavaResources {
+            // The metadata.yaml file is required by DestinationAcceptanceTest.
+            from(project.projectDir) {
+                include 'metadata.yaml'
+                duplicatesStrategy DuplicatesStrategy.EXCLUDE
             }
-        } else {
-            project.dependencies {
-                submoduleNames.each { submoduleName ->
-                    // Add the cdkModule to the dependencies
-                    def cdkModule = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
-                    def testFixturesRef = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}:test-fixtures"
-                    implementation cdkModule
-                    testImplementation cdkModule
-                    testImplementation testFixturesRef
-                    integrationTestJavaImplementation cdkModule
-                    integrationTestJavaImplementation testFixturesRef
-                    performanceTestJavaImplementation cdkModule
-                    performanceTestJavaImplementation testFixturesRef
+        }
+        if (!cdkVersionRequired.matches("^[0-9]+\\.[0-9]+\\.[0-9]+")) {
+            throw new IllegalArgumentException("cdkVersionRequired should be a well-formed 3-part version number")
+        }
+        final int minor = Integer.parseInt(cdkVersionRequired.split('\\.')[1])
+
+        project.dependencies {
+            def dep = useLocalCdk
+                    ? { project.project(projectName(it)) }
+                    : { jarName(it) }
+            def testFixturesDep = (useLocalCdk || minor >= 29)
+                    ? { testFixtures(dep(it)) }
+                    : { "${jarName(it)}:test-fixtures" } // handle pre-v0.29 publications
+
+            if (useLocalCdk || minor >= 19) {
+                // v0.19+ module structure
+                compileOnly "org.projectlombok:lombok:1.18.30"
+                annotationProcessor "org.projectlombok:lombok:1.18.30"     // Lombok must be added BEFORE Micronaut
+                testCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+                testFixturesCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+                implementation dep("dependencies")
+                testImplementation dep("dependencies")
+                testFixturesImplementation dep("dependencies")
+                integrationTestJavaImplementation dep("dependencies")
+                integrationTestJavaImplementation testFixturesDep("dependencies")
+            } else {
+                compileOnly "org.projectlombok:lombok:1.18.30"
+                annotationProcessor "org.projectlombok:lombok:1.18.30"     // Lombok must be added BEFORE Micronaut
+                testCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+                testFixturesCompileOnly "org.projectlombok:lombok:1.18.30"
+                testAnnotationProcessor "org.projectlombok:lombok:1.18.30"
+                // pre-v0.19 module structure
+                implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
+                implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
+
+                implementation "com.fasterxml.jackson.core:jackson-annotations:2.15.2"
+                implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
+                implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2"
+                implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2"
+
+                implementation "com.google.guava:guava:31.1-jre"
+                implementation "commons-io:commons-io:2.7"
+                implementation "org.apache.commons:commons-compress:1.20"
+                implementation "org.apache.commons:commons-lang3:3.11"
+                implementation "org.slf4j:slf4j-api:2.0.9"
+
+                // SLF4J as a facade over Log4j2 required dependencies
+                implementation "org.apache.logging.log4j:log4j-api:2.21.1"
+                implementation "org.apache.logging.log4j:log4j-core:2.21.1"
+                implementation "org.apache.logging.log4j:log4j-slf4j2-impl:2.21.1"
+                implementation "org.apache.logging.log4j:log4j-web:2.21.1"
+                implementation "com.therealvan:appender-log4j2:3.6.0"
+
+                // Bridges from other logging implementations to SLF4J
+                implementation "org.slf4j:jcl-over-slf4j:2.0.9"
+                implementation "org.slf4j:jul-to-slf4j:2.0.9"
+                implementation "org.slf4j:log4j-over-slf4j:2.0.9"
+
+                // Airbyte dependencies.
+                implementation "io.airbyte.airbyte-protocol:protocol-models:0.3.6"
+
+                // CDK dependencies.
+                PRE_V019_IMPLEMENTATION.each {
+                    implementation jarName(it)
+                    testFixturesImplementation jarName(it)
                 }
+                PRE_V019_TEST_IMPLEMENTATION.each {testImplementation jarName(it) }
+                PRE_V019_INTEGRATION_TEST_IMPLEMENTATION.each {integrationTestJavaImplementation jarName(it) }
+            }
+            (["core"] + features).each {
+                implementation dep(it)
+                testFixturesImplementation dep(it)
+                testFixturesImplementation testFixturesDep(it)
+                testImplementation dep(it)
+                testImplementation testFixturesDep(it)
+                integrationTestJavaImplementation dep(it)
+                integrationTestJavaImplementation testFixturesDep(it)
+                performanceTestJavaImplementation dep(it)
+                performanceTestJavaImplementation testFixturesDep(it)
             }
         }
     }
@@ -82,24 +146,126 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        // def cdkTargetVersion = project.ext.getCdkTargetVersion(project)
-        def extension = project.extensions.create('airbyteJavaConnector', AirbyteJavaConnectorExtension, project)
 
-        project.plugins.apply(AirbyteIntegrationTestJavaPlugin)
-        project.plugins.apply(AirbytePerformanceTestJavaPlugin)
+        project.plugins.apply('application')
+
+        project.sourceSets {
+            integrationTestJava {
+                java {
+                    srcDir 'src/test-integration/java'
+                }
+                kotlin {
+                    srcDir 'src/test-integration/kotlin'
+                }
+                resources {
+                    srcDir 'src/test-integration/resources'
+                }
+            }
+            performanceTestJava {
+                java {
+                    srcDir 'src/test-performance/java'
+                }
+                kotlin {
+                    srcDir 'src/test-performance/kotlin'
+                }
+                resources {
+                    srcDir 'src/test-performance/resources'
+                }
+            }
+        }
+
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name ==~ /(compile|spotbugs)[a-zA-Z]*Java/ }
+        }
+
+        project.configurations {
+            testFixturesImplementation.extendsFrom implementation
+            testFixturesRuntimeOnly.extendsFrom runtimeOnly
+            integrationTestJavaImplementation.extendsFrom testImplementation
+            integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
+            performanceTestJavaImplementation.extendsFrom testImplementation
+            performanceTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
+        }
+
+        boolean withSlowTests = System.getProperty('skipSlowTests', 'false') == 'false'
+        project.test {
+            onlyIf { withSlowTests }
+        }
+
+        def integrationTestJava = project.tasks.register('integrationTestJava', Test) {
+            testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
+            classpath += project.sourceSets.integrationTestJava.runtimeClasspath
+
+            useJUnitPlatform()
+            testLogging() {
+                events 'skipped', 'started', 'passed', 'failed'
+                exceptionFormat 'full'
+                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
+            }
+
+            jvmArgs = project.test.jvmArgs
+            systemProperties = project.test.systemProperties
+            maxParallelForks = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
+
+            // Tone down the JIT when running the containerized connector to improve overall performance.
+            // The JVM default settings are optimized for long-lived processes in steady-state operation.
+            // Unlike in production, the connector containers in these tests are always short-lived.
+            // It's very much worth injecting a JAVA_OPTS environment variable into the container with
+            // flags which will reduce startup time at the detriment of long-term performance.
+            environment 'JOB_DEFAULT_ENV_JAVA_OPTS', '-XX:TieredStopAtLevel=1'
+
+            // Always re-run integration tests no matter what.
+            outputs.upToDateWhen { false }
+        }
+        integrationTestJava.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
+        }
+        project.tasks.register('integrationTest').configure {
+            dependsOn integrationTestJava
+        }
+        project.tasks.named('build').configure {
+            dependsOn integrationTestJava
+        }
+
+        def performanceTestJava = project.tasks.register('performanceTestJava', Test) {
+            testClassesDirs = project.sourceSets.performanceTestJava.output.classesDirs
+            classpath += project.sourceSets.performanceTestJava.runtimeClasspath
+
+            systemProperty "cpuLimit", System.getProperty("cpuLimit")
+            systemProperty "memoryLimit", System.getProperty("memoryLimit")
+            useJUnitPlatform()
+            testLogging() {
+                events "passed", "failed"
+                exceptionFormat "full"
+                showStandardStreams = true
+            }
+
+            outputs.upToDateWhen { false }
+            maxHeapSize = '3g'
+        }
+        performanceTestJava.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
+            onlyIf { withSlowTests }
+        }
+        project.tasks.register('performanceTest').configure {
+            dependsOn performanceTestJava
+        }
 
         project.dependencies {
             // Integration and performance tests should automatically
             // have access to the project's own main source sets.
             integrationTestJavaImplementation project
+            integrationTestJavaImplementation testFixtures(project)
             performanceTestJavaImplementation project
+            performanceTestJavaImplementation testFixtures(project)
         }
 
-        // TODO: figure out how to make this work.
-        // Currently fails with error:
-        //   "Cannot change dependencies of dependency configuration '...' after it has been included in dependency resolution."
-        // project.afterEvaluate(proj -> {
-        //     extension.addCdkDependencies();
-        // });
+
+        project.extensions.create('airbyteJavaConnector', AirbyteJavaConnectorExtension, project)
     }
 }

@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Ads Spec",
     "type": "object",
-    "required": ["credentials", "customer_id"],
+    "required": ["credentials"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -64,6 +64,18 @@
         "examples": ["6783948572,5839201945"],
         "order": 1
       },
+      "customer_status_filter": {
+        "title": "Customer Statuses Filter",
+        "description": "A list of customer statuses to filter on. For detailed info about what each status mean refer to Google Ads <a href=\"https://developers.google.com/google-ads/api/reference/rpc/v15/CustomerStatusEnum.CustomerStatus\">documentation</a>.",
+        "default": [],
+        "order": 2,
+        "type": "array",
+        "items": {
+          "title": "CustomerStatus",
+          "description": "An enumeration.",
+          "enum": ["UNKNOWN", "ENABLED", "CANCELED", "SUSPENDED", "CLOSED"]
+        }
+      },
       "start_date": {
         "type": "string",
         "title": "Start Date",
@@ -71,7 +83,7 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
         "examples": ["2017-01-25"],
-        "order": 2,
+        "order": 3,
         "format": "date"
       },
       "end_date": {
@@ -81,14 +93,14 @@
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "pattern_descriptor": "YYYY-MM-DD",
         "examples": ["2017-01-30"],
-        "order": 6,
+        "order": 4,
         "format": "date"
       },
-      "custom_queries": {
+      "custom_queries_array": {
         "type": "array",
         "title": "Custom GAQL Queries",
         "description": "",
-        "order": 3,
+        "order": 5,
         "items": {
           "type": "object",
           "required": ["query", "table_name"],
@@ -110,15 +122,6 @@
           }
         }
       },
-      "login_customer_id": {
-        "type": "string",
-        "title": "Login Customer ID for Managed Accounts",
-        "description": "If your access to the customer account is through a manager account, this field is required, and must be set to the 10-digit customer ID of the manager account. For more information about this field, refer to <a href=\"https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid\">Google's documentation</a>.",
-        "pattern_descriptor": ": 10 digits, with no dashes.",
-        "pattern": "^([0-9]{10})?$",
-        "examples": ["7349206847"],
-        "order": 4
-      },
       "conversion_window_days": {
         "title": "Conversion Window",
         "type": "integer",
@@ -127,7 +130,7 @@
         "maximum": 1095,
         "default": 14,
         "examples": [14],
-        "order": 5
+        "order": 6
       }
     }
   },

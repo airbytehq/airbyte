@@ -36,16 +36,15 @@ public class MySqlQueryUtils {
 
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
 
-  public static final String TABLE_ESTIMATE_QUERY =
-      """
-       SELECT
-         (data_length + index_length) as %s,
-         AVG_ROW_LENGTH as %s
-      FROM
-         information_schema.tables
-      WHERE
-         table_schema = '%s' AND table_name = '%s';
-       """;
+  public static final String TABLE_ESTIMATE_QUERY = """
+                                                     SELECT
+                                                       (data_length + index_length) as %s,
+                                                       AVG_ROW_LENGTH as %s
+                                                    FROM
+                                                       information_schema.tables
+                                                    WHERE
+                                                       table_schema = '%s' AND table_name = '%s';
+                                                    """;
 
   public static final String MAX_PK_VALUE_QUERY =
       """
@@ -84,7 +83,7 @@ public class MySqlQueryUtils {
       return storageEngines;
     } catch (final Exception e) {
       LOGGER.info("Storage engines could not be determined");
-      return Collections.EMPTY_SET;
+      return Collections.emptySet();
     }
   }
 
@@ -176,7 +175,9 @@ public class MySqlQueryUtils {
         }
 
         LOGGER.info("Querying max cursor value for {}.{}", namespace, name);
+
         final String cursorField = cursorInfoOptional.get().getCursorField();
+        LOGGER.info("cursor field", cursorField);
         final String quotedCursorField = getIdentifierWithQuoting(cursorField, quoteString);
         final String cursorBasedSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
             quotedCursorField,
@@ -213,6 +214,7 @@ public class MySqlQueryUtils {
     // Construct the table estimate query.
     final String tableEstimateQuery =
         String.format(TABLE_ESTIMATE_QUERY, TABLE_SIZE_BYTES_COL, AVG_ROW_LENGTH, namespace, name);
+    LOGGER.info("Querying for table size estimate: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);

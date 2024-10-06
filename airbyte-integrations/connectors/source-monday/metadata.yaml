@@ -1,28 +1,79 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 200
   allowedHosts:
     hosts:
       - api.monday.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 1.1.3
+  dockerImageTag: 2.1.4
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Source Monday has deprecated API version 2023-07. We have upgraded the connector to the latest API version 2024-01. In this new version, the Id field has changed from an integer to a string in the streams Boards, Items, Tags, Teams, Updates, Users and Workspaces. Please reset affected streams."
+        upgradeDeadline: "2024-01-15"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              [
+                "boards",
+                "items",
+                "tags",
+                "teams",
+                "updates",
+                "users",
+                "workspaces",
+              ]
   dockerRepository: airbyte/source-monday
+  documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   githubIssueLabel: source-monday
   icon: monday.svg
   license: MIT
+  maxSecondsBetweenMessages: 60
   name: Monday
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-monday
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/monday
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
   supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: monday_config_oauth_dev_null
+          id: 42a1b99a-0ef5-4442-945e-e4291376fb55
+        - name: monday_config_dev_null
+          id: 4533adbf-ea50-44ae-bafd-62bccad2ddf3
+        - name: monday_config_api_token_dev_null
+          id: 81b8f4db-d37f-4135-9a55-d62e0a163701
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE_MONDAY_API_CREDS
+          fileName: config_api_token.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MONDAY_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE_MONDAY_OAUTH_CREDS
+          fileName: config_oauth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

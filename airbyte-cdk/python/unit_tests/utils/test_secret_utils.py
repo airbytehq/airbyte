@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets, get_secret_paths, get_secrets, update_secrets
+from airbyte_cdk.utils.airbyte_secrets_utils import add_to_secrets, filter_secrets, get_secret_paths, get_secrets, update_secrets
 
 SECRET_STRING_KEY = "secret_key1"
 SECRET_STRING_VALUE = "secret_value"
@@ -121,3 +121,15 @@ def test_secret_filtering():
     update_secrets([SECRET_STRING_VALUE, SECRET_STRING_2_VALUE])
     filtered = filter_secrets(sensitive_str)
     assert filtered == f"**** {NOT_SECRET_VALUE} **** ****"
+
+
+def test_secrets_added_are_filtered():
+    ADDED_SECRET = "only_a_secret_if_added"
+    sensitive_str = f"{ADDED_SECRET} {NOT_SECRET_VALUE}"
+
+    filtered = filter_secrets(sensitive_str)
+    assert filtered == sensitive_str
+
+    add_to_secrets(ADDED_SECRET)
+    filtered = filter_secrets(sensitive_str)
+    assert filtered == f"**** {NOT_SECRET_VALUE}"

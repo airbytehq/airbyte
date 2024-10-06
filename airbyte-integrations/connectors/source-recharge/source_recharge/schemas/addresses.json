@@ -49,13 +49,82 @@
       "type": ["null", "string"]
     },
     "shipping_lines_override": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "type": ["null", "string"]
+          },
+          "price": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "shipping_lines_conserved": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "code": {
+            "type": ["null", "string"]
+          },
+          "price": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     },
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "zip": {
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "order_attributes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "order_note": {
+      "type": ["null", "string"]
+    },
+    "payment_method_id": {
+      "type": ["null", "integer"]
+    },
+    "presentment_currency": {
       "type": ["null", "string"]
     }
   }

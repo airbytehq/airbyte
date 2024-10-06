@@ -68,6 +68,26 @@ FullStory [API reference](https://api.fullstory.com) has v1 at present. The conn
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                       | Subject        |
 | :------ | :--------- | :------------------------------------------------- | :------------- |
+| 0.2.0 | 2024-08-23 | [44612](https://github.com/airbytehq/airbyte/pull/44612) | Refactor connector to manifest-only format |
+| 0.1.14 | 2024-08-17 | [44222](https://github.com/airbytehq/airbyte/pull/44222) | Update dependencies |
+| 0.1.13 | 2024-08-12 | [43781](https://github.com/airbytehq/airbyte/pull/43781) | Update dependencies |
+| 0.1.12 | 2024-08-10 | [43688](https://github.com/airbytehq/airbyte/pull/43688) | Update dependencies |
+| 0.1.11 | 2024-08-03 | [43197](https://github.com/airbytehq/airbyte/pull/43197) | Update dependencies |
+| 0.1.10 | 2024-07-27 | [42694](https://github.com/airbytehq/airbyte/pull/42694) | Update dependencies |
+| 0.1.9 | 2024-07-20 | [42299](https://github.com/airbytehq/airbyte/pull/42299) | Update dependencies |
+| 0.1.8 | 2024-07-13 | [41798](https://github.com/airbytehq/airbyte/pull/41798) | Update dependencies |
+| 0.1.7 | 2024-07-10 | [41387](https://github.com/airbytehq/airbyte/pull/41387) | Update dependencies |
+| 0.1.6 | 2024-07-09 | [41190](https://github.com/airbytehq/airbyte/pull/41190) | Update dependencies |
+| 0.1.5 | 2024-07-06 | [40867](https://github.com/airbytehq/airbyte/pull/40867) | Update dependencies |
+| 0.1.4 | 2024-06-25 | [40333](https://github.com/airbytehq/airbyte/pull/40333) | Update dependencies |
+| 0.1.3 | 2024-06-22 | [40192](https://github.com/airbytehq/airbyte/pull/40192) | Update dependencies |
+| 0.1.2 | 2024-06-06 | [39195](https://github.com/airbytehq/airbyte/pull/39195) | [autopull] Upgrade base image to v1.2.2 |
+| 0.1.1 | 2024-05-20 | [38420](https://github.com/airbytehq/airbyte/pull/38420) | [autopull] base image + poetry + up_to_date |
 | 0.1.0   | 2023-04-25 | [Init](https://github.com/airbytehq/airbyte/pull/) | Initial commit |
+
+</details>

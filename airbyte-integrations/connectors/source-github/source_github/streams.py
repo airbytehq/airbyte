@@ -2,20 +2,33 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
+import re
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk import BackoffStrategy, StreamSlice
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from requests.exceptions import HTTPError
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 
 from . import constants
+from .backoff_strategies import ContributorActivityBackoffStrategy, GithubStreamABCBackoffStrategy
+from .errors_handlers import (
+    GITHUB_DEFAULT_ERROR_MAPPING,
+    ContributorActivityErrorHandler,
+    GitHubGraphQLErrorHandler,
+    GithubStreamABCErrorHandler,
+)
 from .graphql import (
     CursorStorage,
     QueryReactions,
@@ -24,7 +37,7 @@ from .graphql import (
     get_query_pull_requests,
     get_query_reviews,
 )
-from .utils import getter
+from .utils import GitHubAPILimitException, getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -33,14 +46,20 @@ class GithubStreamABC(HttpStream, ABC):
 
     # Detect streams with high API load
     large_stream = False
-
+    max_retries: int = 5
     stream_base_params = {}
 
     def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
+        if kwargs.get("authenticator"):
+            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
         self.api_url = api_url
+        self.state = {}
+
+        if not self.supports_incremental:
+            self.cursor = SubstreamResumableFullRefreshCursor()
 
     @property
     def url_base(self) -> str:
@@ -85,56 +104,16 @@ class GithubStreamABC(HttpStream, ABC):
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
-    def should_retry(self, response: requests.Response) -> bool:
-        if super().should_retry(response):
-            return True
-
-        retry_flag = (
-            # The GitHub GraphQL API has limitations
-            # https://docs.github.com/en/graphql/overview/resource-limitations
-            (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
-            # Rate limit HTTP headers
-            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            or (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0")
-            # Secondary rate limits
-            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-            or "Retry-After" in response.headers
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return GithubStreamABCErrorHandler(
+            logger=self.logger, max_retries=self.max_retries, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING, stream=self
         )
-        if retry_flag:
-            headers = [
-                "X-RateLimit-Resource",
-                "X-RateLimit-Remaining",
-                "X-RateLimit-Reset",
-                "X-RateLimit-Limit",
-                "X-RateLimit-Used",
-                "Retry-After",
-            ]
-            headers = ", ".join([f"{h}: {response.headers[h]}" for h in headers if h in response.headers])
-            if headers:
-                headers = f"HTTP headers: {headers},"
 
-            self.logger.info(
-                f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code, {headers} with message: {response.text}"
-            )
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return GithubStreamABCBackoffStrategy(stream=self)
 
-        return retry_flag
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # This method is called if we run into the rate limit. GitHub limits requests to 5000 per hour and provides
-        # `X-RateLimit-Reset` header which contains time when this hour will be finished and limits will be reset so
-        # we again could have 5000 per another hour.
-
-        min_backoff_time = 60.0
-
-        retry_after = response.headers.get("Retry-After")
-        if retry_after is not None:
-            return max(float(retry_after), min_backoff_time)
-
-        reset_time = response.headers.get("X-RateLimit-Reset")
-        if reset_time:
-            return max(float(reset_time) - time.time(), min_backoff_time)
-
-    def check_graphql_rate_limited(self, response_json) -> bool:
+    @staticmethod
+    def check_graphql_rate_limited(response_json: dict) -> bool:
         errors = response_json.get("errors")
         if errors:
             for error in errors:
@@ -149,7 +128,7 @@ class GithubStreamABC(HttpStream, ABC):
         # Reading records while handling the errors
         try:
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        except HTTPError as e:
+        except DefaultBackoffException as e:
             # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
             # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
             # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
@@ -202,6 +181,12 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
+        except GitHubAPILimitException as e:
+            internal_message = (
+                f"Stream: `{self.name}`, slice: `{stream_slice}`. Limits for all provided tokens are reached, please try again later"
+            )
+            message = "Rate Limits for all provided tokens are reached. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/github#limitations--troubleshooting"
+            raise AirbyteTracedException(internal_message=internal_message, message=message, failure_type=FailureType.config_error) from e
 
 
 class GithubStream(GithubStreamABC):
@@ -234,7 +219,7 @@ class GithubStream(GithubStreamABC):
         return record
 
 
-class SemiIncrementalMixin:
+class SemiIncrementalMixin(CheckpointMixin):
     """
     Semi incremental streams are also incremental but with one difference, they:
       - read all records;
@@ -259,6 +244,14 @@ class SemiIncrementalMixin:
         self._starting_point_cache = {}
 
     @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
+    @property
     def slice_keys(self):
         if hasattr(self, "repositories"):
             return ["repository"]
@@ -274,7 +267,7 @@ class SemiIncrementalMixin:
         if self.is_sorted == "asc":
             return self.page_size
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
         object and returning an updated state object.
@@ -317,6 +310,7 @@ class SemiIncrementalMixin:
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
             if not start_point or cursor_value > start_point:
                 yield record
+                self.state = self._get_updated_state(self.state, record)
             elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
 
@@ -352,13 +346,13 @@ class RepositoryStats(GithubStream):
 
 class Assignees(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-assignees
+    API docs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees
     """
 
 
 class Branches(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-branches
+    API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
     """
 
     primary_key = ["repository", "name"]
@@ -369,13 +363,13 @@ class Branches(GithubStream):
 
 class Collaborators(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+    API docs: https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
     """
 
 
 class IssueLabels(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -384,7 +378,7 @@ class IssueLabels(GithubStream):
 
 class Organizations(GithubStreamABC):
     """
-    API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
+    API docs: https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
     """
 
     # GitHub pagination could be from 1 to 100.
@@ -412,7 +406,7 @@ class Organizations(GithubStreamABC):
 
 class Repositories(SemiIncrementalMixin, Organizations):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
     """
 
     is_sorted = "desc"
@@ -421,17 +415,23 @@ class Repositories(SemiIncrementalMixin, Organizations):
         "direction": "desc",
     }
 
+    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
+        self._pattern = re.compile(pattern) if pattern else pattern
+        super().__init__(*args, **kwargs)
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/repos"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record, stream_slice=stream_slice)
+            record = self.transform(record=record, stream_slice=stream_slice)
+            if not self._pattern or self._pattern.match(record["full_name"]):
+                yield record
 
 
 class Tags(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
+    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
     """
 
     primary_key = ["repository", "name"]
@@ -442,7 +442,7 @@ class Tags(GithubStream):
 
 class Teams(Organizations):
     """
-    API docs: https://docs.github.com/en/rest/reference/teams#list-teams
+    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
     """
 
     use_cache = True
@@ -457,7 +457,7 @@ class Teams(Organizations):
 
 class Users(Organizations):
     """
-    API docs: https://docs.github.com/en/rest/reference/orgs#list-organization-members
+    API docs: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#list-organization-members
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -473,7 +473,7 @@ class Users(Organizations):
 
 class Releases(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-releases
+    API docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
     """
 
     cursor_field = "created_at"
@@ -491,7 +491,7 @@ class Releases(SemiIncrementalMixin, GithubStream):
 
 class Events(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/activity#list-repository-events
+    API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
     """
 
     cursor_field = "created_at"
@@ -499,7 +499,7 @@ class Events(SemiIncrementalMixin, GithubStream):
 
 class PullRequests(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/pulls/pulls#list-pull-requests
+    API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
     """
 
     use_cache = True
@@ -548,7 +548,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
 
 class CommitComments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
+    API docs: https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository
     """
 
     use_cache = True
@@ -559,7 +559,7 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
 
 class IssueMilestones(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
+    API docs: https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28#list-milestones
     """
 
     is_sorted = "desc"
@@ -575,7 +575,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
 
 class Stargazers(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/activity#list-stargazers
+    API docs: https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers
     """
 
     primary_key = "user_id"
@@ -601,7 +601,7 @@ class Stargazers(SemiIncrementalMixin, GithubStream):
 
 class Projects(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
+    API docs: https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects
     """
 
     use_cache = True
@@ -620,7 +620,7 @@ class Projects(SemiIncrementalMixin, GithubStream):
 
 class IssueEvents(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/events?apiVersion=2022-11-28#list-issue-events-for-a-repository
     """
 
     cursor_field = "created_at"
@@ -634,7 +634,7 @@ class IssueEvents(SemiIncrementalMixin, GithubStream):
 
 class Comments(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
     """
 
     use_cache = True
@@ -647,7 +647,7 @@ class Comments(IncrementalMixin, GithubStream):
 
 class Commits(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-commits
+    API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-commits
 
     Pull commits from each branch of each repository, tracking state for each branch
     """
@@ -656,10 +656,13 @@ class Commits(IncrementalMixin, GithubStream):
     cursor_field = "created_at"
     slice_keys = ["repository", "branch"]
 
-    def __init__(self, branches_to_pull: Mapping[str, List[str]], default_branches: Mapping[str, str], **kwargs):
+    def __init__(self, branches_to_pull: List[str], **kwargs):
         super().__init__(**kwargs)
-        self.branches_to_pull = branches_to_pull
-        self.default_branches = default_branches
+        kwargs.pop("start_date")
+        self.branches_to_repos = {}
+        self.branches_to_pull = set(branches_to_pull)
+        self.branches_stream = Branches(**kwargs)
+        self.repositories_stream = RepositoryStats(**kwargs)
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
@@ -670,9 +673,10 @@ class Commits(IncrementalMixin, GithubStream):
         return params
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._validate_branches_to_pull()
         for stream_slice in super().stream_slices(**kwargs):
             repository = stream_slice["repository"]
-            for branch in self.branches_to_pull.get(repository, []):
+            for branch in self.branches_to_repos.get(repository, []):
                 yield {"branch": branch, "repository": repository}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -688,7 +692,7 @@ class Commits(IncrementalMixin, GithubStream):
 
         return record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         branch = latest_record["branch"]
         updated_state = latest_record[self.cursor_field]
@@ -698,10 +702,34 @@ class Commits(IncrementalMixin, GithubStream):
         current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
         return current_stream_state
 
+    def _validate_branches_to_pull(self):
+        # Get the default branch for each repository
+        default_branches = {}
+        for stream_slice in self.repositories_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for repo_stats in self.repositories_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh):
+                default_branches[repo_stats["full_name"]] = repo_stats["default_branch"]
+
+        all_branches = []
+        for stream_slice in self.branches_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+            for branch in self.branches_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                all_branches.append(f"{branch['repository']}/{branch['name']}")
+
+        # Create mapping of repository to list of branches to pull commits for
+        # If no branches are specified for a repo, use its default branch
+        for repo in self.repositories:
+            repo_branches = []
+            for branch in self.branches_to_pull:
+                branch_parts = branch.split("/", 2)
+                if "/".join(branch_parts[:2]) == repo and branch in all_branches:
+                    repo_branches.append(branch_parts[-1])
+            if not repo_branches:
+                repo_branches = [default_branches[repo]]
+            self.branches_to_repos[repo] = repo_branches
+
 
 class Issues(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/issues/issues#list-repository-issues
+    API docs: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
     """
 
     use_cache = True
@@ -717,7 +745,7 @@ class Issues(IncrementalMixin, GithubStream):
 
 class ReviewComments(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
+    API docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository
     """
 
     use_cache = True
@@ -736,8 +764,10 @@ class GitHubGraphQLStream(GithubStream, ABC):
     ) -> str:
         return "graphql"
 
-    def should_retry(self, response: requests.Response) -> bool:
-        return True if response.json().get("errors") else super().should_retry(response)
+    def get_error_handler(self) -> Optional[ErrorHandler]:
+        return GitHubGraphQLErrorHandler(
+            logger=self.logger, max_retries=self.max_retries, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING, stream=self
+        )
 
     def _get_repository_name(self, repository: Mapping[str, Any]) -> str:
         return repository["owner"]["login"] + "/" + repository["name"]
@@ -799,7 +829,7 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
 
 class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
     """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
+    API docs: https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request
     """
 
     is_sorted = False
@@ -873,7 +903,7 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
 
 class PullRequestCommits(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request
+    API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request
     """
 
     primary_key = "sha"
@@ -906,7 +936,7 @@ class PullRequestCommits(GithubStream):
 
 class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
     """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
+    API docs: https://docs.github.com/en/graphql/reference/objects#projectv2
     """
 
     is_sorted = "asc"
@@ -945,7 +975,7 @@ class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
 # Reactions streams
 
 
-class ReactionStream(GithubStream, ABC):
+class ReactionStream(GithubStream, CheckpointMixin, ABC):
 
     parent_key = "id"
     copy_parent_key = "comment_id"
@@ -964,6 +994,14 @@ class ReactionStream(GithubStream, ABC):
         Specify the class of the parent stream for which receive reactions
         """
 
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        self._state = value
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         parent_path = self._parent_stream.path(stream_slice=stream_slice, **kwargs)
         return f"{parent_path}/{stream_slice[self.copy_parent_key]}/reactions"
@@ -973,7 +1011,7 @@ class ReactionStream(GithubStream, ABC):
             for parent_record in self._parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {self.copy_parent_key: parent_record[self.parent_key], "repository": stream_slice["repository"]}
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         parent_id = str(latest_record[self.copy_parent_key])
         updated_state = latest_record[self.cursor_field]
@@ -1007,6 +1045,7 @@ class ReactionStream(GithubStream, ABC):
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
+                self.state = self._get_updated_state(self.state, record)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record = super().transform(record, stream_slice)
@@ -1016,7 +1055,7 @@ class ReactionStream(GithubStream, ABC):
 
 class CommitCommentReactions(ReactionStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment
+    API docs: https://docs.github.com/en/rest/reference/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment
     """
 
     parent_entity = CommitComments
@@ -1024,7 +1063,7 @@ class CommitCommentReactions(ReactionStream):
 
 class IssueCommentReactions(ReactionStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment
+    API docs: https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue-comment
     """
 
     parent_entity = Comments
@@ -1213,7 +1252,7 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
 
 class Deployments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
+    API docs: https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1222,7 +1261,7 @@ class Deployments(SemiIncrementalMixin, GithubStream):
 
 class ProjectColumns(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/projects#list-project-columns
+    API docs: https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns
     """
 
     use_cache = True
@@ -1262,6 +1301,7 @@ class ProjectColumns(GithubStream):
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
+                self.state = self._get_updated_state(self.state, record)
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
@@ -1274,7 +1314,7 @@ class ProjectColumns(GithubStream):
                 return stream_state_value
         return self._start_date
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         project_id = str(latest_record["project_id"])
         updated_state = latest_record[self.cursor_field]
@@ -1292,7 +1332,7 @@ class ProjectColumns(GithubStream):
 
 class ProjectCards(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/projects#list-project-cards
+    API docs: https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards
     """
 
     cursor_field = "updated_at"
@@ -1332,6 +1372,7 @@ class ProjectCards(GithubStream):
         ):
             if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
+                self.state = self._get_updated_state(self.state, record)
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
         if stream_state:
@@ -1345,7 +1386,7 @@ class ProjectCards(GithubStream):
                 return stream_state_value
         return self._start_date
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         repository = latest_record["repository"]
         project_id = str(latest_record["project_id"])
         column_id = str(latest_record["column_id"])
@@ -1368,7 +1409,7 @@ class ProjectCards(GithubStream):
 class Workflows(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
+    API documentation: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1386,7 +1427,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflow runs for a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
+    API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record
@@ -1418,6 +1459,8 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         # only to look behind on 30 days to find all records which were updated.
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
         break_point = None
+        # the state is updated only in the end of the sync as records are sorted in reverse order
+        new_state = self.state
         if start_point:
             break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
         for record in super(SemiIncrementalMixin, self).read_records(
@@ -1427,14 +1470,16 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
             created_at = record["created_at"]
             if not start_point or cursor_value > start_point:
                 yield record
+                new_state = self._get_updated_state(new_state, record)
             if break_point and created_at < break_point:
                 break
+        self.state = new_state
 
 
 class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     """
     Get all workflow jobs for a workflow run
-    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
+    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
     """
 
     cursor_field = "completed_at"
@@ -1488,7 +1533,7 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
 
 class TeamMembers(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
+    API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#list-team-members
     """
 
     use_cache = True
@@ -1522,7 +1567,7 @@ class TeamMembers(GithubStream):
 
 class TeamMemberships(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user
+    API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#get-team-membership-for-a-user
     """
 
     primary_key = ["url"]
@@ -1575,16 +1620,12 @@ class ContributorActivity(GithubStream):
         record.update(record.pop("author"))
         return record
 
-    def should_retry(self, response: requests.Response) -> bool:
-        """
-        If the data hasn't been cached when you query a repository's statistics, you'll receive a 202 response, need to retry to get results
-        see for more info https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#a-word-about-caching
-        """
-        if super().should_retry(response) or response.status_code == requests.codes.ACCEPTED:
-            return True
+    def get_error_handler(self) -> Optional[ErrorHandler]:
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return 60 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
+        return ContributorActivityErrorHandler(logger=self.logger, max_retries=5, error_mapping=GITHUB_DEFAULT_ERROR_MAPPING)
+
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        return ContributorActivityBackoffStrategy()
 
     def parse_response(
         self,
@@ -1600,10 +1641,33 @@ class ContributorActivity(GithubStream):
                 response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             )
 
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        repository = stream_slice.get("repository", "")
+        try:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        except UserDefinedBackoffException as e:
+            if e.response.status_code == requests.codes.ACCEPTED:
+                yield AirbyteMessage(
+                    type=MessageType.LOG,
+                    log=AirbyteLogMessage(
+                        level=Level.INFO,
+                        message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
+                    ),
+                )
+
+                # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
+                # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
+                # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
+                partition_obj = stream_slice.get("partition")
+                if self.cursor and partition_obj:
+                    self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+            else:
+                raise e
+
 
 class IssueTimelineEvents(GithubStream):
     """
-    API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28
+    API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28#list-timeline-events-for-an-issue
     """
 
     primary_key = ["repository", "issue_number"]

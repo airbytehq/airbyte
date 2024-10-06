@@ -7,15 +7,15 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
 import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
+import static io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
-import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
@@ -26,16 +26,25 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_B
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.filterStreamsUnderVacuumForCtidSync;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getCursorBasedSyncStatusForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isCdc;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.isXmin;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.cdcCtidIteratorsCombined;
+import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getCtidInitialLoadGlobalStateManager;
+import static io.airbyte.integrations.source.postgres.cdc.PostgresCdcCtidInitializer.getSavedOffsetAfterReplicationSlotLSN;
+import static io.airbyte.integrations.source.postgres.ctid.CtidUtils.createInitialLoader;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.postgresql.PGProperty.CURRENT_SCHEMA;
+import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
+import static org.postgresql.PGProperty.TCP_KEEP_ALIVE;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -44,22 +53,25 @@ import datadog.trace.api.Trace;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.cdk.db.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
-import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.cdk.integrations.source.relationaldb.InitialLoadHandler;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.NonResumableStateMessageProducer;
+import io.airbyte.cdk.integrations.source.relationaldb.state.SourceStateMessageProducer;
 import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatusTraceEmitterIterator;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -67,13 +79,14 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
-import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
+import io.airbyte.integrations.source.postgres.cdc.PostgresReplicationConnection;
+import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
-import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
-import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
@@ -93,10 +106,15 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -115,6 +133,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.PGProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,32 +151,64 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
 
+  public static final String TUNNEL_METHOD = "tunnel_method";
+  public static final String NO_TUNNEL = "NO_TUNNEL";
+  public static final String SSL_MODE_ALLOW = "allow";
+  public static final String SSL_MODE_PREFER = "prefer";
+  public static final String SSL_MODE_DISABLE = "disable";
+  public static final String SSL_MODE_REQUIRE = "require";
+
+  public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
+      // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
+      // https://github.com/airbytehq/airbyte/issues/24796
+      PREPARE_THRESHOLD, "0", TCP_KEEP_ALIVE, "true");
+
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
-  private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
   private int stateEmissionFrequency;
-  private XminStatus xminStatus;
+  private final FeatureFlags featureFlags;
 
-  public static Source sshWrappedSource() {
-    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
+  public static Source sshWrappedSource(PostgresSource source) {
+    return new SshWrappedSource(source, JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY, "security");
   }
 
   PostgresSource() {
+    this(new EnvVariableFeatureFlags());
+  }
+
+  PostgresSource(FeatureFlags featureFlags) {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
-    this.featureFlags = new EnvVariableFeatureFlags();
+    this.featureFlags = featureFlags;
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  public FeatureFlags getFeatureFlags() {
+    return featureFlags;
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    if (cloudDeploymentMode()) {
+      final ConnectorSpecification spec = Jsons.clone(super.spec());
+      final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
+      ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
+
+      return spec;
+    }
+    return super.spec();
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
-    // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
-    // https://github.com/airbytehq/airbyte/issues/24796
-    additionalParameters.add("prepareThreshold=0");
+    for (var e : JDBC_CONNECTION_PARAMS.entrySet()) {
+      additionalParameters.add(e.getKey().getName() + EQUALS + e.getValue());
+    }
 
-    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
+    final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
@@ -165,7 +216,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         encodedDatabaseName));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
+      additionalParameters.add(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final Map<String, String> sslParameters = parseSSLConfig(config);
@@ -183,12 +234,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     if (schemas != null && !schemas.isEmpty()) {
-      additionalParameters.add("currentSchema=" + String.join(",", schemas));
+      additionalParameters.add(CURRENT_SCHEMA.getName() + EQUALS + String.join(",", schemas));
     }
-
-    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-
-    jdbcUrl.append(toJDBCQueryParams(sslParameters));
+    additionalParameters.addAll(toJDBCQueryParams(sslParameters));
+    jdbcUrl.append(String.join(AMPERSAND, additionalParameters));
     LOGGER.debug("jdbc url: {}", jdbcUrl);
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -202,8 +251,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  public String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? ""
+  public List<String> toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams)
+        ? List.of()
         : sslParams.entrySet()
             .stream()
             .map((entry) -> {
@@ -220,7 +270,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               }
             })
             .filter(s -> Objects.nonNull(s) && !s.isEmpty())
-            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
+            .toList();
   }
 
   @Override
@@ -255,19 +305,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       indexInfo.close();
     }
 
-    // Log and save the xmin status
-    this.xminStatus = PostgresQueryUtils.getXminStatus(database);
-    LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
-        xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
-
   }
 
   @Override
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  public AirbyteCatalog discover(final JsonNode config) throws Exception {
+  public AirbyteCatalog discover(final JsonNode config) {
     final AirbyteCatalog catalog = super.discover(config);
 
-    if (PostgresUtils.isCdc(config)) {
+    if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(PostgresCatalogHelper::overrideSyncModes)
           .map(PostgresCatalogHelper::removeIncrementalWithoutPk)
@@ -280,30 +325,36 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(toList());
 
       catalog.setStreams(streams);
-    } else if (PostgresUtils.isXmin(config)) {
-      // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
-      // from being able to pick their own cursor.
-      final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresCatalogHelper::overrideSyncModes)
-          .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
-          .collect(toList());
-
-      catalog.setStreams(streams);
+    } else if (isXmin(config)) {
+      try {
+        JdbcDatabase database = createDatabase(config);
+        Map<String, List<String>> viewsBySchema = PostgresCatalogHelper.getViewsForAllSchemas(database, schemas);
+        // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
+        // from being able to pick their own cursor.
+        final List<AirbyteStream> streams = catalog.getStreams().stream()
+            .map(stream -> PostgresCatalogHelper.overrideSyncModes(stream, viewsBySchema))
+            .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
+            .collect(toList());
+        catalog.setStreams(streams);
+      } catch (SQLException e) {
+        LOGGER.error("Error checking if stream is a view", e);
+      }
     }
-
     return catalog;
   }
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    final Map<String, String> connectionProperties = getConnectionProperties(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        driverClass,
+        driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(sourceConfig));
+        connectionProperties,
+        getConnectionTimeout(connectionProperties, driverClassName));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -312,7 +363,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         sourceOperations,
         streamingQueryConfigProvider);
 
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    setQuoteString((getQuoteString() == null ? database.getMetaData().getIdentifierQuoteString() : getQuoteString()));
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
 
@@ -401,7 +452,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
         super.getCheckOperations(config));
 
-    if (PostgresUtils.isCdc(config)) {
+    if (isCdc(config)) {
       checkOperations.add(database -> {
         final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
@@ -446,6 +497,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       });
     }
 
+    if (isXmin(config)) {
+      checkOperations.add(database -> {
+        if (PostgresQueryUtils.getXminStatus(database).getNumWraparound() > 0) {
+          throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+              "which makes this sync option inefficient and can lead to higher credit consumption. " +
+              "Please change the replication method to CDC or cursor based.");
+        }
+      });
+    }
+
     return checkOperations;
   }
 
@@ -456,72 +517,67 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (PostgresUtils.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
+    if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("Using ctid + CDC");
       return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
-          getReplicationSlot(database, sourceConfig).get(0));
+          (CtidGlobalStateManager) ctidStateManager, savedOffsetAfterReplicationSlotLSN);
     }
 
-    if (isAnyStreamIncrementalSyncMode(catalog) && PostgresUtils.isXmin(sourceConfig)) {
-      final StreamsCategorised<XminStreams> streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
-      final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
-          streamsCategorised.ctidStreams().streamsForCtidSync(),
-          getQuoteString());
+    if (isAnyStreamIncrementalSyncMode(catalog) && isXmin(sourceConfig)) {
+      // Log and save the xmin status
+      final XminStatus xminStatus;
+      try {
+        xminStatus = PostgresQueryUtils.getXminStatus(database);
+        if (xminStatus.getNumWraparound() > 0) {
+          throw new ConfigErrorException("We detected XMIN transaction wraparound in the database, " +
+              "which makes this sync option inefficient and can lead to higher credit consumption. " +
+              "Please change the replication method to CDC or cursor based.");
+        }
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
 
-      // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
-      // are reclassified as xmin since we cannot guarantee that ctid will be possible.
-      reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
+      finalListOfStreamsToBeSyncedViaCtid = finalListOfStreamsToBeSyncedViaCtid.stream()
+          .filter(streamUnderCheck -> streamUnderCheck.getSyncMode() == SyncMode.INCREMENTAL).collect(toList());
 
-      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
-          filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
       final FileNodeHandler fileNodeHandler =
           PostgresQueryUtils.fileNodeForStreams(database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
 
-      // In case we failed to query for fileNode, streams will get reclassified as xmin
-      if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
-        reclassifyCategorisedCtidStreams(streamsCategorised, fileNodeHandler.getFailedToQuery());
-        finalListOfStreamsToBeSyncedViaCtid =
-            filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
-      }
+      ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(xminStatus));
+      final PostgresCtidHandler ctidHandler =
+          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager,
+              Optional.empty());
 
-      final CtidStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-          PostgresQueryUtils.getTableBlockSizeForStreams(
-              database,
-              finalListOfStreamsToBeSyncedViaCtid,
-              getQuoteString());
-
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
-          CtidUtils.isTidRangeScanCapableDBServer(database) ? null
-              : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
-      if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
+      if (!xminStreamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
         LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
       } else {
         LOGGER.info("No Streams will be synced via ctid.");
       }
 
-      if (!streamsCategorised.remainingStreams().streamsForXminSync().isEmpty()) {
-        LOGGER.info("Streams to be synced via xmin : {}", streamsCategorised.remainingStreams().streamsForXminSync().size());
-        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streamsCategorised.remainingStreams().streamsForXminSync()));
+      var xminStreams = xminStreamsCategorised.remainingStreams();
+
+      if (!xminStreams.streamsForXminSync().isEmpty()) {
+        LOGGER.info("Streams to be synced via xmin : {}", xminStreams.streamsForXminSync().size());
+        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(xminStreams.streamsForXminSync()));
       } else {
         LOGGER.info("No Streams will be synced via xmin.");
       }
 
-      final XminStateManager xminStateManager = new XminStateManager(streamsCategorised.remainingStreams().statesFromXminSync());
+      final XminStateManager xminStateManager = new XminStateManager(xminStreams.statesFromXminSync());
       final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
 
-      final PostgresCtidHandler ctidHandler =
-          new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
-              fileNodeHandler, tableBlockSizes, tablesMaxTuple, ctidStateManager,
-              namespacePair -> Jsons.jsonNode(xminStatus));
-
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(ctidHandler.getInitialSyncCtidIterator(
-          new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
+          new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt, /*
+                                                                                                                         * decorateWithStartedStatus=
+                                                                                                                         */ true, /*
+                                                                                                                                   * decorateWithCompletedStatus=
+                                                                                                                                   */ true,
+          Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>(xminHandler.getIncrementalIterators(
-          new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.remainingStreams().streamsForXminSync()), tableNameToTable, emittedAt));
+          new ConfiguredAirbyteCatalog().withStreams(xminStreams.streamsForXminSync()), tableNameToTable, emittedAt));
 
       return Stream
           .of(initialSyncCtidIterators, xminIterators)
@@ -531,40 +587,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     } else if (isAnyStreamIncrementalSyncMode(catalog)) {
       final PostgresCursorBasedStateManager postgresCursorBasedStateManager =
           new PostgresCursorBasedStateManager(stateManager.getRawStateMessages(), catalog);
-      final StreamsCategorised<CursorBasedStreams> streamsCategorised = categoriseStreams(postgresCursorBasedStateManager, catalog);
-      final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
-          streamsCategorised.ctidStreams().streamsForCtidSync(),
-          getQuoteString());
+      recategoriseForCursorBased(database, catalog, stateManager, true);
 
-      // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
-      // are reclassified as standard since we cannot guarantee that ctid will be possible.
-      reclassifyCategorisedCtidStreams(streamsCategorised, streamsUnderVacuum.failed());
-
-      List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid =
-          filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
       final FileNodeHandler fileNodeHandler =
           PostgresQueryUtils.fileNodeForStreams(database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
 
-      // Streams we failed to query for fileNode - such as in the case of Views are reclassified as
-      // standard
-      if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
-        reclassifyCategorisedCtidStreams(streamsCategorised, fileNodeHandler.getFailedToQuery());
-        finalListOfStreamsToBeSyncedViaCtid =
-            filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), streamsCategorised.ctidStreams());
-      }
-      final CtidStateManager ctidStateManager =
-          new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
-          PostgresQueryUtils.getTableBlockSizeForStreams(
-              database,
-              finalListOfStreamsToBeSyncedViaCtid,
-              getQuoteString());
-
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
-          CtidUtils.isTidRangeScanCapableDBServer(database) ? null
-              : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap =
+          getCursorBasedSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresCursorBasedStateManager, getQuoteString());
 
       if (finalListOfStreamsToBeSyncedViaCtid.isEmpty()) {
         LOGGER.info("No Streams will be synced via ctid.");
@@ -573,34 +604,25 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
       }
 
-      if (!streamsCategorised.remainingStreams().streamsForCursorBasedSync().isEmpty()) {
-        LOGGER.info("Streams to be synced via cursor : {}", streamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
-        LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(streamsCategorised.remainingStreams().streamsForCursorBasedSync()));
+      if (!cursorBasedStreamsCategorised.remainingStreams().streamsForCursorBasedSync().isEmpty()) {
+        LOGGER.info("Streams to be synced via cursor : {}", cursorBasedStreamsCategorised.remainingStreams().streamsForCursorBasedSync().size());
+        LOGGER.info("Streams: {}",
+            prettyPrintConfiguredAirbyteStreamList(cursorBasedStreamsCategorised.remainingStreams().streamsForCursorBasedSync()));
       } else {
         LOGGER.info("No streams to be synced via cursor");
       }
 
-      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap =
-          getCursorBasedSyncStatusForStreams(database, finalListOfStreamsToBeSyncedViaCtid, postgresCursorBasedStateManager, getQuoteString());
-
+      ctidStateManager.setStreamStateIteratorFields(namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
       final PostgresCtidHandler cursorBasedCtidHandler =
-          new PostgresCtidHandler(sourceConfig,
-              database,
-              new CtidPostgresSourceOperations(Optional.empty()),
-              getQuoteString(),
-              fileNodeHandler,
-              tableBlockSizes,
-              tablesMaxTuple,
-              ctidStateManager,
-              namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
+          createInitialLoader(database, finalListOfStreamsToBeSyncedViaCtid, fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(
           cursorBasedCtidHandler.getInitialSyncCtidIterator(new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid),
               tableNameToTable,
-              emittedAt));
+              emittedAt, /* decorateWithStartedStatus= */ true, /* decorateWithCompletedStatus= */ true, Optional.empty()));
       final List<AutoCloseableIterator<AirbyteMessage>> cursorBasedIterators = new ArrayList<>(super.getIncrementalIterators(database,
           new ConfiguredAirbyteCatalog().withStreams(
-              streamsCategorised.remainingStreams()
+              cursorBasedStreamsCategorised.remainingStreams()
                   .streamsForCursorBasedSync()),
           tableNameToTable,
           postgresCursorBasedStateManager, emittedAt));
@@ -670,10 +692,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
-    return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   @Override
@@ -687,16 +706,36 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   public static void main(final String[] args) throws Exception {
-    final Source source = PostgresSource.sshWrappedSource();
+    final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
+    final PostgresSourceExceptionHandler exceptionHandler = new PostgresSourceExceptionHandler();
     LOGGER.info("starting source: {}", PostgresSource.class);
-    new IntegrationRunner(source).run(args);
+    new IntegrationRunner(source).run(args, exceptionHandler);
     LOGGER.info("completed source: {}", PostgresSource.class);
   }
 
   @Override
   @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    if (PostgresUtils.isCdc(config)) {
+    // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
+    // and not over SSH tunnel
+    if (cloudDeploymentMode()) {
+      LOGGER.info("Source configured as in Cloud Deployment mode");
+      if (config.has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
+          && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
+        // If no SSH tunnel
+        if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
+          if (Set.of(SSL_MODE_DISABLE, SSL_MODE_ALLOW, SSL_MODE_PREFER).contains(config.get(SSL_MODE).get(MODE).asText())) {
+            // Fail in case SSL mode is disable, allow or prefer
+            return new AirbyteConnectionStatus()
+                .withStatus(Status.FAILED)
+                .withMessage(
+                    "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full");
+          }
+        }
+      }
+    }
+    if (isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
         final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
@@ -709,6 +748,176 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
     }
     return super.check(config);
+  }
+
+  private CtidStateManager ctidStateManager = null;
+  private boolean savedOffsetAfterReplicationSlotLSN = false;
+  private List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid;
+
+  private StreamsCategorised<CursorBasedStreams> cursorBasedStreamsCategorised;
+  private StreamsCategorised<XminStreams> xminStreamsCategorised;
+
+  private void recategoriseStreamsForXmin(final JdbcDatabase database,
+                                          final ConfiguredAirbyteCatalog catalog,
+                                          final StateManager stateManager,
+                                          final boolean incrementalModeOnly) {
+    final XminStatus xminStatus;
+    try {
+      xminStatus = PostgresQueryUtils.getXminStatus(database);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+    LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
+        xminStatus.getNumWraparound(), xminStatus.getXminXidValue(), xminStatus.getXminRawValue()));
+    xminStreamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
+    final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
+        xminStreamsCategorised.ctidStreams().streamsForCtidSync(),
+        getQuoteString());
+
+    // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
+    // are reclassified as xmin since we cannot guarantee that ctid will be possible.
+    reclassifyCategorisedCtidStreams(xminStreamsCategorised, streamsUnderVacuum.failed());
+
+    finalListOfStreamsToBeSyncedViaCtid =
+        filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), xminStreamsCategorised.ctidStreams());
+    final FileNodeHandler fileNodeHandler =
+        PostgresQueryUtils.fileNodeForStreams(database,
+            finalListOfStreamsToBeSyncedViaCtid,
+            getQuoteString());
+    if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+      reclassifyCategorisedCtidStreams(xminStreamsCategorised, fileNodeHandler.getFailedToQuery());
+      finalListOfStreamsToBeSyncedViaCtid =
+          filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), xminStreamsCategorised.ctidStreams());
+    }
+    if (incrementalModeOnly) {
+      finalListOfStreamsToBeSyncedViaCtid = filterIncrementalSyncModeStreams(finalListOfStreamsToBeSyncedViaCtid);
+    }
+  }
+
+  private void recategoriseForCursorBased(final JdbcDatabase database,
+                                          final ConfiguredAirbyteCatalog catalog,
+                                          final StateManager postgresCursorBasedStateManager,
+                                          final boolean incrementalModeOnly) {
+
+    cursorBasedStreamsCategorised = categoriseStreams(postgresCursorBasedStateManager, catalog);
+
+    final ResultWithFailed<List<AirbyteStreamNameNamespacePair>> streamsUnderVacuum = streamsUnderVacuum(database,
+        cursorBasedStreamsCategorised.ctidStreams().streamsForCtidSync(),
+        getQuoteString());
+
+    // Streams we failed to query for Vacuum - such as in the case of an unsupported postgres server
+    // are reclassified as standard since we cannot guarantee that ctid will be possible.
+    reclassifyCategorisedCtidStreams(cursorBasedStreamsCategorised, streamsUnderVacuum.failed());
+
+    finalListOfStreamsToBeSyncedViaCtid =
+        filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), cursorBasedStreamsCategorised.ctidStreams());
+
+    final FileNodeHandler fileNodeHandler =
+        PostgresQueryUtils.fileNodeForStreams(database,
+            finalListOfStreamsToBeSyncedViaCtid,
+            getQuoteString());
+
+    // Streams we failed to query for fileNode - such as in the case of Views are reclassified as
+    // standard
+    if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+      reclassifyCategorisedCtidStreams(cursorBasedStreamsCategorised, fileNodeHandler.getFailedToQuery());
+      finalListOfStreamsToBeSyncedViaCtid =
+          filterStreamsUnderVacuumForCtidSync(streamsUnderVacuum.result(), cursorBasedStreamsCategorised.ctidStreams());
+    }
+    if (incrementalModeOnly) {
+      finalListOfStreamsToBeSyncedViaCtid = filterIncrementalSyncModeStreams(finalListOfStreamsToBeSyncedViaCtid);
+    }
+  }
+
+  private List<ConfiguredAirbyteStream> filterIncrementalSyncModeStreams(final List<ConfiguredAirbyteStream> allStreams) {
+    return allStreams.stream().filter(streamUnderCheck -> streamUnderCheck.getSyncMode() == SyncMode.INCREMENTAL).collect(toList());
+  }
+
+  @Override
+  protected void initializeForStateManager(final JdbcDatabase database,
+                                           final ConfiguredAirbyteCatalog catalog,
+                                           final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+                                           final StateManager stateManager) {
+    if (ctidStateManager != null) {
+      return;
+    }
+    var sourceConfig = database.getSourceConfig();
+
+    if (isCdc(sourceConfig)) {
+      savedOffsetAfterReplicationSlotLSN =
+          getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0));
+      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN);
+    } else {
+      if (isXmin(sourceConfig)) {
+        recategoriseStreamsForXmin(database, catalog, stateManager, /* incrementalOnly= */false);
+        final FileNodeHandler fileNodeHandler =
+            PostgresQueryUtils.fileNodeForStreams(database,
+                finalListOfStreamsToBeSyncedViaCtid,
+                getQuoteString());
+        ctidStateManager = new CtidPerStreamStateManager(xminStreamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
+        ctidStateManager.setFileNodeHandler(fileNodeHandler);
+      } else {
+        recategoriseForCursorBased(database, catalog, stateManager, /* incrementalOnly= */false);
+        final FileNodeHandler fileNodeHandler =
+            PostgresQueryUtils.fileNodeForStreams(database,
+                finalListOfStreamsToBeSyncedViaCtid,
+                getQuoteString());
+
+        ctidStateManager =
+            new CtidPerStreamStateManager(cursorBasedStreamsCategorised.ctidStreams().statesFromCtidSync(), fileNodeHandler);
+        ctidStateManager.setFileNodeHandler(fileNodeHandler);
+      }
+    }
+  }
+
+  @Override
+  protected SourceStateMessageProducer<AirbyteMessage> getSourceStateProducerForNonResumableFullRefreshStream(final JdbcDatabase database) {
+    return new NonResumableStateMessageProducer<>(isCdc(database.getSourceConfig()), ctidStateManager);
+  }
+
+  @Override
+  public boolean supportResumableFullRefresh(final JdbcDatabase database, final ConfiguredAirbyteStream airbyteStream) {
+    // finalListOfStreamsToBeSyncedViaCtid will be initialized as part of state manager initialization
+    // for non CDC only.
+    // ctidStateManager will only be initialized in read operation. It will not be there for discover.
+    if (ctidStateManager != null) {
+      if (!ctidStateManager.getFileNodeHandler().hasFileNode(new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(
+          airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
+        LOGGER.info("stream " + airbyteStream + " will not sync in resumeable full refresh mode.");
+        return false;
+      }
+    }
+
+    final FileNodeHandler fileNodeHandler =
+        PostgresQueryUtils.fileNodeForStreams(database,
+            List.of(airbyteStream),
+            getQuoteString());
+
+    // We do not support RFR on views.
+    if (!fileNodeHandler.getFailedToQuery().isEmpty()) {
+      if (fileNodeHandler.getFailedToQuery()
+          .contains(new AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace()))) {
+        LOGGER.info("stream " + airbyteStream + " will not sync in resumeable full refresh mode.");
+        return false;
+      }
+    }
+
+    LOGGER.info("stream " + airbyteStream + " will sync in resumeable full refresh mode.");
+
+    return true;
+  }
+
+  @Override
+  public InitialLoadHandler<PostgresType> getInitialLoadHandler(final JdbcDatabase database,
+                                                                final ConfiguredAirbyteStream stream,
+                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                final StateManager stateManager) {
+    final FileNodeHandler fileNodeHandler =
+        PostgresQueryUtils.fileNodeForStreams(database,
+            List.of(stream),
+            getQuoteString());
+
+    return createInitialLoader(database, List.of(stream), fileNodeHandler, getQuoteString(), ctidStateManager, Optional.empty());
   }
 
   protected String toSslJdbcParam(final SslMode sslMode) {
@@ -787,6 +996,18 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
+  @Override
+  public AutoCloseableIterator<AirbyteMessage> augmentWithStreamStatus(final ConfiguredAirbyteStream airbyteStream,
+                                                                       final AutoCloseableIterator<AirbyteMessage> streamIterator) {
+    final var pair =
+        new io.airbyte.protocol.models.AirbyteStreamNameNamespacePair(airbyteStream.getStream().getName(), airbyteStream.getStream().getNamespace());
+    final var starterStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED));
+    final var completeStatus =
+        new StreamStatusTraceEmitterIterator(new AirbyteStreamStatusHolder(pair, AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE));
+    return AutoCloseableIterators.concatWithEagerClose(starterStatus, streamIterator, completeStatus);
+  }
+
   private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
                                               final String fullTableName,
                                               final String schemaName,
@@ -800,6 +1021,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
+  }
+
+  private boolean cloudDeploymentMode() {
+    return AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(getFeatureFlags().deploymentMode());
   }
 
 }

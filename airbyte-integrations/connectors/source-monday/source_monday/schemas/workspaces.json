@@ -4,14 +4,14 @@
   "properties": {
     "created_at": { "type": ["null", "string"], "format": "date-time" },
     "description": { "type": ["null", "string"] },
-    "id": { "type": ["null", "integer"] },
+    "id": { "type": ["null", "string"] },
     "kind": { "type": ["null", "string"] },
     "name": { "type": ["null", "string"] },
     "state": { "type": ["null", "string"] },
     "account_product": {
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "integer"] },
+        "id": { "type": ["null", "string"] },
         "kind": { "type": ["null", "string"] }
       }
     },
@@ -21,7 +21,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
@@ -43,7 +43,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] },
+          "id": { "type": ["null", "string"] },
           "name": { "type": ["null", "string"] }
         }
       }
@@ -54,7 +54,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] },
+          "id": { "type": ["null", "string"] },
           "name": { "type": ["null", "string"] }
         }
       }
@@ -65,7 +65,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     }

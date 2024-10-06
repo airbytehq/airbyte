@@ -12,11 +12,11 @@ data:
     normalizationIntegrationType: tidb
     normalizationRepository: airbyte/normalization-tidb
     normalizationTag: 0.4.3
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
   supportsDbt: true
@@ -25,5 +25,5 @@ data:
   ab_internal:
     sl: 100
     ql: 100
-  supportLevel: community
+  supportLevel: archived
 metadataSpecVersion: "1.0"

@@ -9,7 +9,6 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
@@ -43,7 +42,7 @@ class Helpers(object):
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
     @staticmethod
-    def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
+    def headers_to_airbyte_stream(logger: logging.Logger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
         """
         Parses sheet headers from the provided row. This method assumes that data is contiguous
         i.e: every cell contains a value and the first cell which does not contain a value denotes the end
@@ -52,7 +51,7 @@ class Helpers(object):
         """
         fields, duplicate_fields = Helpers.get_valid_headers_and_duplicates(header_row_values)
         if duplicate_fields:
-            logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
+            logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them: {duplicate_fields}")
 
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -85,8 +84,8 @@ class Helpers(object):
     @staticmethod
     def get_formatted_row_values(row_data: RowData) -> List[str]:
         """
-        Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet. It can be a raw
-        string input by the user, or the result of a sheets function call.
+        Gets the formatted values of all cell data in this row. A formatted value is the final value a user sees in a spreadsheet.
+        It can be a raw string input by the user, or the result of a sheets function call.
         """
         return [value.formattedValue for value in row_data.values]
 
@@ -151,6 +150,9 @@ class Helpers(object):
                 first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
                 if names_conversion:
                     first_row = [safe_name_conversion(h) for h in first_row]
+                    # When performing names conversion, they won't match what is listed in catalog for the majority of cases,
+                    # so they should be cast here in order to have them in records
+                    columns = {safe_name_conversion(c) for c in columns}
                 # Find the column index of each header value
                 idx = 0
                 for cell_value in first_row:
@@ -191,7 +193,9 @@ class Helpers(object):
                 non_grid_sheets.append(sheet_title)
 
         if non_grid_sheets:
-            AirbyteLogger().log("WARN", "Skip non-grid sheets: " + ", ".join(non_grid_sheets))
+            # logging.getLogger(...).log() expects an integer level. The level for WARN is 30
+            # Reference: https://docs.python.org/3.10/library/logging.html#levels
+            logging.getLogger("airbyte").log(30, "Skip non-grid sheets: " + ", ".join(non_grid_sheets))
 
         return grid_sheets
 

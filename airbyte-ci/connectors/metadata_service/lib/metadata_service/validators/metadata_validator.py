@@ -8,7 +8,7 @@ from typing import Callable, List, Optional, Tuple, Union
 
 import semver
 import yaml
-from metadata_service.docker_hub import is_image_on_docker_hub
+from metadata_service.docker_hub import get_latest_version_on_dockerhub, is_image_on_docker_hub
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 from pydash.objects import get
@@ -18,38 +18,30 @@ from pydash.objects import get
 class ValidatorOptions:
     docs_path: str
     prerelease_tag: Optional[str] = None
+    disable_dockerhub_checks: bool = False
 
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 Validator = Callable[[ConnectorMetadataDefinitionV0, ValidatorOptions], ValidationResult]
 
-# TODO: Remove these when each of these connectors ship any new version
-ALREADY_ON_MAJOR_VERSION_EXCEPTIONS = [
-    ("airbyte/source-prestashop", "1.0.0"),
-    ("airbyte/source-onesignal", "1.0.0"),
-    ("airbyte/source-yandex-metrica", "1.0.0"),
-    ("airbyte/destination-meilisearch", "1.0.0"),
-    ("airbyte/destination-csv", "1.0.0"),
-    ("airbyte/source-metabase", "1.0.0"),
-    ("airbyte/source-typeform", "1.0.0"),
-    ("airbyte/source-recharge", "1.0.0"),
-    ("airbyte/source-pipedrive", "1.0.0"),
-    ("airbyte/source-paypal-transaction", "2.0.0"),
-]
+_SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID = "64a2f99c-542f-4af8-9a6f-355f1217b436"
 
 
 def validate_metadata_images_in_dockerhub(
     metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
 ) -> ValidationResult:
+    if validator_opts.disable_dockerhub_checks:
+        return True, None
+
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
     base_docker_version = get(metadata_definition_dict, "data.dockerImageTag")
 
-    oss_docker_image = get(metadata_definition_dict, "data.registries.oss.dockerRepository", base_docker_image)
-    oss_docker_version = get(metadata_definition_dict, "data.registries.oss.dockerImageTag", base_docker_version)
+    oss_docker_image = get(metadata_definition_dict, "data.registryOverrides.oss.dockerRepository", base_docker_image)
+    oss_docker_version = get(metadata_definition_dict, "data.registryOverrides.oss.dockerImageTag", base_docker_version)
 
-    cloud_docker_image = get(metadata_definition_dict, "data.registries.cloud.dockerRepository", base_docker_image)
-    cloud_docker_version = get(metadata_definition_dict, "data.registries.cloud.dockerImageTag", base_docker_version)
+    cloud_docker_image = get(metadata_definition_dict, "data.registryOverrides.cloud.dockerRepository", base_docker_image)
+    cloud_docker_version = get(metadata_definition_dict, "data.registryOverrides.cloud.dockerImageTag", base_docker_version)
 
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
@@ -71,7 +63,7 @@ def validate_metadata_images_in_dockerhub(
 
     print(f"Checking that the following images are on dockerhub: {images_to_check}")
     for image, version in images_to_check:
-        if not is_image_on_docker_hub(image, version):
+        if not is_image_on_docker_hub(image, version, retries=3):
             return False, f"Image {image}:{version} does not exist in DockerHub"
 
     return True, None
@@ -116,14 +108,14 @@ def validate_major_version_bump_has_breaking_change_entry(
     if not is_major_version(image_tag):
         return True, None
 
-    # Some connectors had just done major version bumps when this check was introduced.
-    # These do not need breaking change entries for these specific versions.
-    # Future versions will still be validated to make sure an entry exists.
-    # See comment by ALREADY_ON_MAJOR_VERSION_EXCEPTIONS for how to get rid of this list.
-    docker_repo = get(metadata_definition_dict, "data.dockerRepository")
-    if (docker_repo, image_tag) in ALREADY_ON_MAJOR_VERSION_EXCEPTIONS:
+    # We are updating the same version since connector builder projects have a different concept of
+    # versioning.
+    # We do not check for breaking changes for source-declarative-connector in the metadata because the conenctor isn't directly used by any workspace.
+    # Breaking changes are instead tracked at the CDK level
+    if str(metadata_definition.data.definitionId) == _SOURCE_DECLARATIVE_MANIFEST_DEFINITION_ID:
         return True, None
 
+    docker_repo = get(metadata_definition_dict, "data.dockerRepository")
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
         return (
@@ -146,11 +138,82 @@ def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0
     return True, None
 
 
+def validate_metadata_base_images_in_dockerhub(
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+) -> ValidationResult:
+    metadata_definition_dict = metadata_definition.dict()
+
+    image_address = get(metadata_definition_dict, "data.connectorBuildOptions.baseImage")
+    if image_address is None:
+        return True, None
+
+    try:
+        image_name, tag_with_sha_prefix, digest = image_address.split(":")
+        # As we query the DockerHub API we need to remove the docker.io prefix
+        image_name = image_name.replace("docker.io/", "")
+    except ValueError:
+        return False, f"Image {image_address} is not in the format <image>:<tag>@<sha>"
+    tag = tag_with_sha_prefix.split("@")[0]
+
+    print(f"Checking that the base images is on dockerhub: {image_address}")
+
+    if not is_image_on_docker_hub(image_name, tag, digest, retries=3):
+        return False, f"Image {image_address} does not exist in DockerHub"
+
+    return True, None
+
+
+def validate_pypi_only_for_python(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    """Ensure that if pypi publishing is enabled for a connector, it has a python language tag."""
+
+    pypi_enabled = get(metadata_definition, "data.remoteRegistries.pypi.enabled", False)
+    if not pypi_enabled:
+        return True, None
+
+    tags = get(metadata_definition, "data.tags", [])
+    if "language:python" not in tags and "language:low-code" not in tags:
+        return False, "If pypi publishing is enabled, the connector must have a python language tag."
+
+    return True, None
+
+
+def validate_docker_image_tag_is_not_decremented(
+    metadata_definition: ConnectorMetadataDefinitionV0, _validator_opts: ValidatorOptions
+) -> ValidationResult:
+    if _validator_opts and _validator_opts.prerelease_tag:
+        return True, None
+    docker_image_name = get(metadata_definition, "data.dockerRepository")
+    if not docker_image_name:
+        return False, "The dockerRepository field is not set"
+    docker_image_tag = get(metadata_definition, "data.dockerImageTag")
+    if not docker_image_tag:
+        return False, "The dockerImageTag field is not set."
+    latest_released_version = get_latest_version_on_dockerhub(docker_image_name)
+    # This is happening when the connector has never been released to DockerHub
+    if not latest_released_version:
+        return True, None
+    if docker_image_tag == latest_released_version:
+        return True, None
+    current_semver_version = semver.Version.parse(docker_image_tag)
+    latest_released_semver_version = semver.Version.parse(latest_released_version)
+    if current_semver_version < latest_released_semver_version:
+        return (
+            False,
+            f"The dockerImageTag value ({current_semver_version}) can't be decremented: it should be equal to or above {latest_released_version}.",
+        )
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
+    validate_metadata_base_images_in_dockerhub,
+    validate_pypi_only_for_python,
+    validate_docker_image_tag_is_not_decremented,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

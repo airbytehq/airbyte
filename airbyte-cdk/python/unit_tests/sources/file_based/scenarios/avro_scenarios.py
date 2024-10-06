@@ -6,6 +6,7 @@ import datetime
 import decimal
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryAvroFilesStreamReader
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _single_avro_file = {
@@ -209,8 +210,11 @@ single_avro_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_check_status("SUCCEEDED")
     .set_expected_records(
         [
@@ -251,6 +255,7 @@ single_avro_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -272,8 +277,11 @@ multiple_avro_combine_schema_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -347,6 +355,7 @@ multiple_avro_combine_schema_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -368,8 +377,11 @@ avro_all_types_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -402,7 +414,7 @@ avro_all_types_scenario = (
                     "col_date": "2022-05-29",
                     "col_time_millis": "06:00:00.456000",
                     "col_time_micros": "12:00:00.456789",
-                    "col_timestamp_millis": "2022-05-29T00:00:00.456000+00:00",
+                    "col_timestamp_millis": "2022-05-29T00:00:00.456+00:00",
                     "col_timestamp_micros": "2022-05-30T00:00:00.456789+00:00",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.avro",
@@ -452,6 +464,7 @@ avro_all_types_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -479,8 +492,11 @@ multiple_streams_avro_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -602,6 +618,7 @@ multiple_streams_avro_scenario = (
                     "name": "songs_stream",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
@@ -625,6 +642,7 @@ multiple_streams_avro_scenario = (
                     "name": "festivals_stream",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 },
             ]
         }
@@ -646,8 +664,11 @@ avro_file_with_double_as_number_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -721,6 +742,7 @@ avro_file_with_double_as_number_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

@@ -1,0 +1,80 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - zapier_supported_storage
+definitions:
+  streams:
+    zapier_supported_storage:
+      type: DeclarativeStream
+      name: zapier_supported_storage
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://store.zapier.com/api
+          path: /records
+          http_method: GET
+          request_parameters:
+            secret: "{{ config['secret'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          additionalProperties: true
+          properties: {}
+  base_requester:
+    type: HttpRequester
+    url_base: https://store.zapier.com/api
+streams:
+  - type: DeclarativeStream
+    name: zapier_supported_storage
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://store.zapier.com/api
+        path: /records
+        http_method: GET
+        request_parameters:
+          secret: "{{ config['secret'] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        additionalProperties: true
+        properties: {}
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - secret
+    properties:
+      secret:
+        type: string
+        title: Secret Key
+        description: Secret key supplied by zapier
+        airbyte_secret: true
+        order: 0
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    zapier_supported_storage: false
+schemas:
+  zapier_supported_storage:
+    type: object
+    additionalProperties: true
+    properties: {}

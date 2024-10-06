@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_pinecone.config import ConfigModel
-from destination_pinecone.destination import DestinationPinecone, embedder_map
+from destination_pinecone.destination import DestinationPinecone
 
 
 class TestDestinationPinecone(unittest.TestCase):
@@ -23,14 +23,14 @@ class TestDestinationPinecone(unittest.TestCase):
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     @patch("destination_pinecone.destination.PineconeIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check(self, MockedPineconeIndexer):
+    @patch("destination_pinecone.destination.create_from_config")
+    def test_check(self, MockedEmbedder, MockedPineconeIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedPineconeIndexer.return_value = mock_indexer
 
         mock_embedder.check.return_value = None
@@ -44,11 +44,11 @@ class TestDestinationPinecone(unittest.TestCase):
         mock_indexer.check.assert_called_once()
 
     @patch("destination_pinecone.destination.PineconeIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check_with_errors(self, MockedPineconeIndexer):
+    @patch("destination_pinecone.destination.create_from_config")
+    def test_check_with_errors(self, MockedEmbedder, MockedPineconeIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedPineconeIndexer.return_value = mock_indexer
 
         embedder_error_message = "Embedder Error"
@@ -66,15 +66,35 @@ class TestDestinationPinecone(unittest.TestCase):
         mock_embedder.check.assert_called_once()
         mock_indexer.check.assert_called_once()
 
+    def test_check_with_config_errors(self):
+        bad_config = {
+            "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
+            "embedding_2": {"mode": "openai", "openai_key": "mykey"},
+            "indexing": {
+                "pinecone_key": "mykey",
+                "pinecone_environment": "myenv",
+                "index": "myindex",
+            },
+        }
+        destination = DestinationPinecone()
+        result = destination.check(self.logger, bad_config)
+        self.assertEqual(result.status, Status.FAILED)
+
+    def test_check_with_init_indexer_errors(self):
+        destination = DestinationPinecone()
+        with patch("destination_pinecone.destination.PineconeIndexer", side_effect=Exception("Indexer Error")):
+            result = destination.check(self.logger, self.config)
+        self.assertEqual(result.status, Status.FAILED)
+
     @patch("destination_pinecone.destination.Writer")
     @patch("destination_pinecone.destination.PineconeIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_write(self, MockedPineconeIndexer, MockedWriter):
+    @patch("destination_pinecone.destination.create_from_config")
+    def test_write(self, MockedEmbedder, MockedPineconeIndexer, MockedWriter):
         mock_embedder = Mock()
         mock_indexer = Mock()
+        MockedEmbedder.return_value = mock_embedder
         mock_writer = Mock()
 
-        embedder_map["openai"].return_value = mock_embedder
         MockedPineconeIndexer.return_value = mock_indexer
         MockedWriter.return_value = mock_writer
 
@@ -86,7 +106,7 @@ class TestDestinationPinecone(unittest.TestCase):
         destination = DestinationPinecone()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=32)
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=32, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
 
     def test_spec(self):

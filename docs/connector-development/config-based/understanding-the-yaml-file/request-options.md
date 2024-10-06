@@ -13,24 +13,24 @@ The options can be configured as key value pairs:
 Schema:
 
 ```yaml
-  RequestOptionsProvider:
-    type: object
-    anyOf:
-      - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-  InterpolatedRequestOptionsProvider:
-    type: object
-    additionalProperties: true
-    properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      request_parameters:
-        "$ref": "#/definitions/RequestInput"
-      request_headers:
-        "$ref": "#/definitions/RequestInput"
-      request_body_data:
-        "$ref": "#/definitions/RequestInput"
-      request_body_json:
-        "$ref": "#/definitions/RequestInput"
+RequestOptionsProvider:
+  type: object
+  anyOf:
+    - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+InterpolatedRequestOptionsProvider:
+  type: object
+  additionalProperties: true
+  properties:
+    "$parameters":
+      "$ref": "#/definitions/$parameters"
+    request_parameters:
+      "$ref": "#/definitions/RequestInput"
+    request_headers:
+      "$ref": "#/definitions/RequestInput"
+    request_body_data:
+      "$ref": "#/definitions/RequestInput"
+    request_body_json:
+      "$ref": "#/definitions/RequestInput"
 ```
 
 Example:
@@ -68,25 +68,25 @@ Some components can add request options to the requests sent to the API endpoint
 Schema:
 
 ```yaml
-  RequestOption:
-    description: A component that specifies the key field and where in the request a component's value should be inserted into.
-    type: object
-    required:
-      - type
-      - field_name
-      - inject_into
-    properties:
-      type:
-        type: string
-        enum: [RequestOption]
-      field_name:
-        type: string
-      inject_into:
-        enum:
-          - request_parameter
-          - header
-          - body_data
-          - body_json
+RequestOption:
+  description: A component that specifies the key field and where in the request a component's value should be inserted into.
+  type: object
+  required:
+    - type
+    - field_name
+    - inject_into
+  properties:
+    type:
+      type: string
+      enum: [RequestOption]
+    field_name:
+      type: string
+    inject_into:
+      enum:
+        - request_parameter
+        - header
+        - body_data
+        - body_json
 ```
 
 ### Request Path
@@ -97,15 +97,15 @@ modify the HTTP path of the API endpoint being accessed.
 Schema:
 
 ```yaml
-  RequestPath:
-    description: A component that specifies where in the request path a component's value should be inserted into.
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [RequestPath]
+RequestPath:
+  description: A component that specifies where in the request path a component's value should be inserted into.
+  type: object
+  required:
+    - type
+  properties:
+    type:
+      type: string
+      enum: [RequestPath]
 ```
 
 ## Authenticators

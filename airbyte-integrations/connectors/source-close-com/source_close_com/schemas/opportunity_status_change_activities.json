@@ -21,6 +21,27 @@
     "date_created": {
       "type": ["null", "string"]
     },
+    "activity_at": {
+      "type": ["null", "string"]
+    },
+    "new_pipeline_name": {
+      "type": ["null", "string"]
+    },
+    "users": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "opportunity_value_period": {
+      "type": ["null", "string"]
+    },
+    "old_pipeline_name": {
+      "type": ["null", "string"]
+    },
+    "opportunity_confidence": {
+      "type": ["null", "integer"]
+    },
     "date_updated": {
       "type": ["null", "string"]
     },

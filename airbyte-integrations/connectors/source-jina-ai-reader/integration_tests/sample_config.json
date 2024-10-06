@@ -1,0 +1,7 @@
+{
+  "api_key": "jina_xxxxx",
+  "read_prompt": "https://abccs.web.app",
+  "search_prompt": "One%20More%20Thing%20Apple%20Fan",
+  "gather_links": true,
+  "gather_images": true
+}

@@ -1,6 +1,0 @@
-plugins {
-    // airbyte-docker is kept to support /legacy-publish until airbyte-ci cat publish command exists.
-    id 'airbyte-docker-legacy'
-}
-
-

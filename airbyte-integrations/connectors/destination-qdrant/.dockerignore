@@ -1,6 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_qdrant
-!airbyte-cdk
-!setup.py

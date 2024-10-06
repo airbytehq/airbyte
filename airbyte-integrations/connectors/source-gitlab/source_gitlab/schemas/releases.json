@@ -3,83 +3,105 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "Name of the release",
       "type": ["null", "string"]
     },
     "tag_name": {
+      "description": "Name of the tag associated with the release",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the release",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the release was created",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "released_at": {
+      "description": "Date and time when the release was published",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "upcoming_release": {
+      "description": "Indicator if the release is an upcoming release",
       "type": ["null", "boolean"]
     },
     "milestones": {
+      "description": "List of milestones related to the release",
       "type": ["null", "array"],
       "items": {
         "type": "integer"
       }
     },
     "commit_path": {
+      "description": "Path to the commit related to the release",
       "type": ["null", "string"]
     },
     "tag_path": {
+      "description": "Path to the tag associated with the release",
       "type": ["null", "string"]
     },
     "assets": {
+      "description": "Information about assets related to the release",
       "type": ["null", "object"],
       "properties": {
         "count": {
+          "description": "Number of assets in the release",
           "type": ["null", "integer"]
         },
         "sources": {
+          "description": "List of sources for the assets",
           "type": ["null", "array"],
           "items": {
             "type": "object",
             "properties": {
               "format": {
+                "description": "Format of the asset",
                 "type": ["null", "string"]
               },
               "url": {
+                "description": "URL of the asset file",
                 "type": ["null", "string"]
               }
             }
           }
         },
         "links": {
+          "description": "Links related to the assets",
           "type": "array"
         }
       }
     },
     "evidences": {
+      "description": "Any evidences associated with the release",
       "type": ["null", "array"]
     },
     "_links": {
+      "description": "Links related to the releases data",
       "type": ["null", "object"]
     },
     "author": {
+      "description": "Name of the author of the release",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "author_id": {
+      "description": "ID of the author of the release",
       "type": ["null", "integer"]
     },
     "commit": {
+      "description": "Commit details related to the release",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "commit_id": {
+      "description": "ID of the commit related to the release",
       "type": ["null", "string"]
     },
     "project_id": {
+      "description": "ID of the project associated with the release",
       "type": ["null", "integer"]
     }
   }

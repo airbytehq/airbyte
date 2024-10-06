@@ -3,42 +3,54 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier of the dispute",
       "type": ["null", "integer"]
     },
     "order_id": {
+      "description": "The identifier of the order associated with the dispute",
       "type": ["null", "integer"]
     },
     "type": {
+      "description": "The type of dispute (e.g., chargeback, refund request)",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency in which the dispute amount is represented",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The disputed amount in the currency specified",
       "type": ["null", "string"]
     },
     "reason": {
+      "description": "The reason provided for the dispute",
       "type": ["null", "string"]
     },
     "network_reason_code": {
+      "description": "The reason code provided by the network for the dispute",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "The current status of the dispute",
       "type": ["null", "string"]
     },
     "initiated_at": {
+      "description": "The date and time when the dispute was initiated",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "evidence_due_by": {
+      "description": "The date by which evidence needs to be submitted for the dispute",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "evidence_sent_on": {
+      "description": "The date when evidence was sent for the dispute",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "finalized_on": {
+      "description": "The date when the dispute was finalized",
       "type": ["null", "string"],
       "format": "date-time"
     }

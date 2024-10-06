@@ -1,21 +1,44 @@
+---
+displayed_sidebar: docs
+---
+
 # Welcome to Airbyte Docs
 
-Whether you are an Airbyte user or contributor, we have docs for you!
+<Grid columns="1">
 
-## For Airbyte Cloud users
+<CardWithIcon title="What is Airbyte?" description="Airbyte is an open-source data movement infrastructure for building extract and load (EL) data pipelines. It is designed for versatility, scalability, and ease-of-use." icon="enterprise"/>
 
-Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
+</Grid>
 
-Next, check out the [step-by-step tutorial](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud) to sign up for Airbyte Cloud, understand Airbyte [concepts](https://docs.airbyte.com/cloud/core-concepts), and run your first sync. Then learn how to [use your Airbyte Cloud account](https://docs.airbyte.com/category/using-airbyte-cloud).
+<Arcade id="8UUaeQOILatZ38Rjh8cs" title="Airbyte Demo: Get Started Creating Connections" paddingBottom="calc(61.416666666666664% + 41px)" />
 
-## For Airbyte Open Source users
+### Why Airbyte?
+ 
+Today, teams and organizations require efficient and timely data access to an ever-growing list of data sources. In-house data pipelines are brittle and costly to build and maintain. Airbyte's unique open-source approach enables your data stack to adapt as your data needs evolve.
 
-Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](https://docs.airbyte.com/connector-development/).
+- **Wide connector availability:** Airbyte’s connector catalog comes “out-of-the-box” with over 350 pre-built connectors. These connectors can be used to start replicating data from a source to a destination in just a few minutes. 
+- **Long-tail connector coverage:** You can easily extend Airbyte’s functionality to support your custom use cases through Airbyte's [No-Code Connector Builder](./connector-development/connector-builder-ui/overview).
 
-Next, check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
+- **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
 
-## For Airbyte contributors
+- **Accessible User Interfaces** through the UI, [**PyAirbyte**](./using-airbyte/pyairbyte/getting-started) (Python library), [**API**](./api-documentation), and [**Terraform Provider**](./terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
 
-To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](https://docs.airbyte.com/contributing-to-airbyte/).
+Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own application or platform to power your product.
+
+
+## Get Started
+
+<Grid columns="3">
+
+<CardWithIcon title="Start Syncing Data" description="Deploy locally or sign up for Airbyte Cloud to sync data in minutes" ctaText="Get Started" ctaLink="./using-airbyte/getting-started/" icon="enterprise" />
+
+<CardWithIcon title="Connector Catalog" description="Browse the extensive Connector Catalog of over 350+ sources and destinations" ctaText="Browse" ctaLink="./integrations/" icon="oss" ctaVariant="secondary" />
+
+<CardWithIcon title="Connector Development Guide" description="Learn how to build and customize connectors
+" ctaText="Learn More" ctaLink="./connector-development/" icon="cloud" ctaVariant="secondary" />
+
+</Grid>
+
+<br/><br/>
 
 [![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)

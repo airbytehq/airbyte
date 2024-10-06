@@ -1,28 +1,3 @@
 plugins {
-    id 'java-library'
     id 'airbyte-docker-legacy'
-}
-
-dependencies {
-    implementation libs.airbyte.protocol
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-commons-cli')
-    implementation project(':airbyte-json-validation')
-
-    implementation 'commons-cli:commons-cli:1.4'
-    implementation 'net.i2p.crypto:eddsa:0.3.0'
-    implementation 'org.apache.sshd:sshd-mina:2.8.0'
-    // bouncycastle is pinned to version-match the transitive dependency from kubernetes client-java
-    // because a version conflict causes "parameter object not a ECParameterSpec" on ssh tunnel initiation
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
-    implementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
-    implementation 'org.bouncycastle:bctls-jdk15on:1.66'
-
-    implementation libs.jackson.annotations
-    implementation libs.testcontainers
-    implementation libs.testcontainers.jdbc
-    implementation libs.bundles.datadog
-
-    testImplementation 'commons-lang:commons-lang:2.6'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
 }

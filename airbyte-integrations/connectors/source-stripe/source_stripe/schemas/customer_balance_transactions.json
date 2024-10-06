@@ -3,43 +3,56 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier of the balance transaction",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, in this case, 'balance_transaction'",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The transaction amount in the smallest currency unit",
       "type": ["null", "number"]
     },
     "created": {
+      "description": "The date and time when the transaction was created",
       "type": ["null", "integer"]
     },
     "credit_note": {
+      "description": "Credit note related to the balance transaction",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency code of the transaction amount",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "ID of the customer associated with the transaction",
       "type": ["null", "string"]
     },
     "description": {
+      "description": "Description of the balance transaction",
       "type": ["null", "string"]
     },
     "ending_balance": {
+      "description": "The ending balance after the transaction",
       "type": ["null", "number"]
     },
     "invoice": {
+      "description": "ID of the invoice associated with the transaction",
       "type": ["null", "string"]
     },
     "livemode": {
+      "description": "Boolean indicating whether the balance transaction is in live mode",
       "type": ["null", "boolean"]
     },
     "metadata": {
+      "description": "Custom metadata attached to the balance transaction",
       "type": ["null", "object"],
       "additionalProperties": true
     },
     "type": {
+      "description": "Type of the balance transaction (e.g., charge, refund, adjustment)",
       "type": ["null", "string"]
     }
   }

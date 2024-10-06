@@ -2,149 +2,403 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": ["null", "object"],
   "properties": {
-    "id": { "type": ["null", "string"] },
-    "checkout_session_id": { "type": ["null", "string"] },
-    "checkout_session_expires_at": { "type": ["null", "integer"] },
-    "object": { "type": ["null", "string"] },
-    "amount_subtotal": { "type": ["null", "integer"] },
-    "amount_tax": { "type": ["null", "integer"] },
-    "amount_discount": { "type": ["null", "integer"] },
-    "amount_total": { "type": ["null", "integer"] },
-    "currency": { "type": ["null", "string"] },
-    "description": { "type": ["null", "string"] },
+    "id": {
+      "description": "The unique identifier of the line item.",
+      "type": ["null", "string"]
+    },
+    "checkout_session_id": {
+      "description": "The unique identifier of the checkout session.",
+      "type": ["null", "string"]
+    },
+    "checkout_session_expires_at": {
+      "description": "The expiration timestamp of the checkout session.",
+      "type": ["null", "integer"]
+    },
+    "checkout_session_created": {
+      "description": "The timestamp when the checkout session was created.",
+      "type": ["null", "integer"]
+    },
+    "checkout_session_updated": {
+      "description": "The timestamp when the checkout session was last updated.",
+      "type": ["null", "integer"]
+    },
+    "object": {
+      "description": "The type of object, in this case, it will be 'checkout_sessions_line_items'.",
+      "type": ["null", "string"]
+    },
+    "amount_subtotal": {
+      "description": "The subtotal amount of the line item before any discounts or taxes.",
+      "type": ["null", "integer"]
+    },
+    "amount_tax": {
+      "description": "The total tax amount applied to the line item.",
+      "type": ["null", "integer"]
+    },
+    "amount_discount": {
+      "description": "The total discount amount applied to the line item.",
+      "type": ["null", "integer"]
+    },
+    "amount_total": {
+      "description": "The total amount of the line item including discounts and taxes.",
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "description": "The currency code used for the line item.",
+      "type": ["null", "string"]
+    },
+    "description": {
+      "description": "The description of the line item.",
+      "type": ["null", "string"]
+    },
     "discounts": {
+      "description": "Information about any discounts applied to this checkout session",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual discount item",
         "type": ["null", "object"],
         "properties": {
-          "amount": { "type": ["null", "integer"] },
+          "amount": {
+            "description": "The amount of discount applied",
+            "type": ["null", "integer"]
+          },
           "discount": {
+            "description": "Details about the discount applied",
             "type": ["null", "object"],
             "properties": {
-              "id": { "type": ["null", "string"] },
+              "id": {
+                "description": "ID of the discount",
+                "type": ["null", "string"]
+              },
               "coupon": {
+                "description": "Details of the coupon used for the discount",
                 "type": ["null", "object"],
                 "properties": {
-                  "id": { "type": ["null", "string"] },
-                  "amount_off": { "type": ["null", "integer"] },
-                  "currency": { "type": ["null", "string"] },
-                  "duration": { "type": ["null", "string"] },
-                  "duration_in_months": { "type": ["null", "integer"] },
+                  "id": {
+                    "description": "ID of the coupon",
+                    "type": ["null", "string"]
+                  },
+                  "amount_off": {
+                    "description": "The amount off provided by the coupon",
+                    "type": ["null", "integer"]
+                  },
+                  "currency": {
+                    "description": "Currency of the coupon",
+                    "type": ["null", "string"]
+                  },
+                  "duration": {
+                    "description": "Duration of the coupon validity",
+                    "type": ["null", "string"]
+                  },
+                  "duration_in_months": {
+                    "description": "Duration in months for which the coupon is valid",
+                    "type": ["null", "integer"]
+                  },
                   "metadata": {
+                    "description": "Additional information about the coupon",
                     "type": ["null", "object"],
                     "properties": {}
                   },
-                  "name": { "type": ["null", "string"] },
-                  "percent_off": { "type": ["null", "number"] },
-                  "object": { "type": ["null", "string"] },
+                  "name": {
+                    "description": "Name of the coupon",
+                    "type": ["null", "string"]
+                  },
+                  "percent_off": {
+                    "description": "Percentage off provided by the coupon",
+                    "type": ["null", "number"]
+                  },
+                  "object": {
+                    "description": "Type of object, in this case, 'coupon'",
+                    "type": ["null", "string"]
+                  },
                   "applies_to": {
+                    "description": "Products to which the coupon is applicable",
                     "type": ["null", "object"],
                     "properties": {
                       "products": {
+                        "description": "List of product IDs to which the coupon applies",
                         "type": ["null", "array"],
-                        "items": { "type": ["null", "string"] }
+                        "items": {
+                          "type": ["null", "string"]
+                        }
                       }
                     }
                   },
-                  "created": { "type": ["null", "integer"] },
-                  "livemode": { "type": ["null", "boolean"] },
-                  "max_redemptions": { "type": ["null", "integer"] },
-                  "redeem_by": { "type": ["null", "integer"] },
-                  "times_redeemed": { "type": ["null", "integer"] },
-                  "valid": { "type": ["null", "boolean"] }
+                  "created": {
+                    "description": "Timestamp of when the coupon was created",
+                    "type": ["null", "integer"]
+                  },
+                  "livemode": {
+                    "description": "Indicates if the coupon is in live mode",
+                    "type": ["null", "boolean"]
+                  },
+                  "max_redemptions": {
+                    "description": "Maximum number of times the coupon can be redeemed",
+                    "type": ["null", "integer"]
+                  },
+                  "redeem_by": {
+                    "description": "Timestamp until which the coupon can be redeemed",
+                    "type": ["null", "integer"]
+                  },
+                  "times_redeemed": {
+                    "description": "Number of times the coupon has been redeemed",
+                    "type": ["null", "integer"]
+                  },
+                  "valid": {
+                    "description": "Indicates if the coupon is currently valid",
+                    "type": ["null", "boolean"]
+                  }
                 }
               },
-              "customer": { "type": ["null", "string"] },
-              "end": { "type": ["null", "integer"] },
-              "start": { "type": ["null", "integer"] },
-              "subscription": { "type": ["null", "string"] },
-              "object": { "type": ["null", "string"] },
-              "checkout_session": { "type": ["null", "string"] },
-              "invoice": { "type": ["null", "string"] },
-              "invoice_item": { "type": ["null", "string"] },
-              "promotion_code": { "type": ["null", "string"] }
+              "customer": {
+                "description": "Customer associated with the discount",
+                "type": ["null", "string"]
+              },
+              "end": {
+                "description": "Timestamp of the discount end time",
+                "type": ["null", "integer"]
+              },
+              "start": {
+                "description": "Timestamp of the discount start time",
+                "type": ["null", "integer"]
+              },
+              "subscription": {
+                "description": "Subscription associated with the discount",
+                "type": ["null", "string"]
+              },
+              "object": {
+                "description": "Type of object, in this case, 'discount'",
+                "type": ["null", "string"]
+              },
+              "checkout_session": {
+                "description": "The checkout session ID associated with this discount",
+                "type": ["null", "string"]
+              },
+              "invoice": {
+                "description": "Invoice ID associated with the discount",
+                "type": ["null", "string"]
+              },
+              "invoice_item": {
+                "description": "Invoice item ID associated with the discount",
+                "type": ["null", "string"]
+              },
+              "promotion_code": {
+                "description": "Promotion code associated with the discount",
+                "type": ["null", "string"]
+              }
             }
           }
         }
       }
     },
     "price": {
+      "description": "Details about the pricing of the products in the checkout session",
       "type": ["null", "object"],
       "properties": {
-        "id": { "type": ["null", "string"] },
-        "object": { "type": ["null", "string"] },
-        "active": { "type": ["null", "boolean"] },
-        "billing_scheme": { "type": ["null", "string"] },
-        "created": { "type": ["null", "integer"] },
-        "currency": { "type": ["null", "string"] },
-        "livemode": { "type": ["null", "boolean"] },
-        "lookup_key": { "type": ["null", "string"] },
+        "id": {
+          "description": "ID of the price",
+          "type": ["null", "string"]
+        },
+        "object": {
+          "description": "Type of object, in this case, 'price'",
+          "type": ["null", "string"]
+        },
+        "active": {
+          "description": "Indicates if the price is currently active",
+          "type": ["null", "boolean"]
+        },
+        "billing_scheme": {
+          "description": "Billing scheme used for the price",
+          "type": ["null", "string"]
+        },
+        "created": {
+          "description": "Timestamp of when the price was created",
+          "type": ["null", "integer"]
+        },
+        "currency": {
+          "description": "Currency of the price",
+          "type": ["null", "string"]
+        },
+        "livemode": {
+          "description": "Indicates if the price is in live mode",
+          "type": ["null", "boolean"]
+        },
+        "lookup_key": {
+          "description": "Lookup key for the price",
+          "type": ["null", "string"]
+        },
         "metadata": {
+          "description": "Additional information about the price",
           "type": ["null", "object"],
           "properties": {}
         },
-        "nickname": { "type": ["null", "string"] },
-        "product": { "type": ["null", "string"] },
+        "nickname": {
+          "description": "Nickname of the price",
+          "type": ["null", "string"]
+        },
+        "product": {
+          "description": "Product associated with the price",
+          "type": ["null", "string"]
+        },
         "recurring": {
+          "description": "Details about the recurring nature of the pricing",
           "type": ["null", "object"],
           "properties": {
-            "aggregate_usage": { "type": ["null", "string"] },
-            "interval": { "type": ["null", "string"] },
-            "interval_count": { "type": ["null", "integer"] },
-            "usage_type": { "type": ["null", "string"] }
+            "aggregate_usage": {
+              "description": "Usage count type for the price",
+              "type": ["null", "string"]
+            },
+            "interval": {
+              "description": "Interval for the price recurrence",
+              "type": ["null", "string"]
+            },
+            "interval_count": {
+              "description": "Number of intervals",
+              "type": ["null", "integer"]
+            },
+            "usage_type": {
+              "description": "Type of usage of the price",
+              "type": ["null", "string"]
+            }
           }
         },
-        "tax_behavior": { "type": ["null", "string"] },
+        "tax_behavior": {
+          "description": "Tax behavior for the price",
+          "type": ["null", "string"]
+        },
         "tiers": {
+          "description": "Tiers information for the price",
           "type": ["null", "object"],
           "properties": {
-            "flat_amount": { "type": ["null", "integer"] },
-            "flat_amount_decimal": { "type": ["null", "string"] },
-            "unit_amount": { "type": ["null", "integer"] },
-            "unit_amount_decimal": { "type": ["null", "string"] },
-            "up_to": { "type": ["null", "integer"] }
+            "flat_amount": {
+              "description": "Flat amount for the tier",
+              "type": ["null", "integer"]
+            },
+            "flat_amount_decimal": {
+              "description": "Flat amount in decimal for the tier",
+              "type": ["null", "string"]
+            },
+            "unit_amount": {
+              "description": "Unit amount for the tier",
+              "type": ["null", "integer"]
+            },
+            "unit_amount_decimal": {
+              "description": "Unit amount in decimal for the tier",
+              "type": ["null", "string"]
+            },
+            "up_to": {
+              "description": "Determines the upper limit of the tier",
+              "type": ["null", "integer"]
+            }
           }
         },
-        "tiers_mode": { "type": ["null", "string"] },
+        "tiers_mode": {
+          "description": "Tiers mode for the price",
+          "type": ["null", "string"]
+        },
         "transform_quantity": {
+          "description": "Information on transforming the quantity",
           "type": ["null", "object"],
           "properties": {
-            "divide_by": { "type": ["null", "integer"] },
-            "round": { "type": ["null", "string"] }
+            "divide_by": {
+              "description": "Value to divide the quantity by",
+              "type": ["null", "integer"]
+            },
+            "round": {
+              "description": "Rounding behavior for the quantity",
+              "type": ["null", "string"]
+            }
           }
         },
-        "type": { "type": ["null", "string"] },
-        "unit_amount": { "type": ["null", "integer"] },
-        "unit_amount_decimal": { "type": ["null", "string"] }
+        "type": {
+          "description": "Type of price",
+          "type": ["null", "string"]
+        },
+        "unit_amount": {
+          "description": "Unit amount of the price",
+          "type": ["null", "integer"]
+        },
+        "unit_amount_decimal": {
+          "description": "Unit amount in decimal",
+          "type": ["null", "string"]
+        }
       }
     },
-    "quantity": { "type": ["null", "integer"] },
+    "quantity": {
+      "description": "The quantity of the line item purchased.",
+      "type": ["null", "integer"]
+    },
     "taxes": {
+      "description": "Information about any taxes applied to this checkout session",
       "type": ["null", "array"],
       "items": {
+        "description": "Individual tax item",
         "type": ["null", "object"],
         "properties": {
-          "amount": { "types": ["null", "integer"] },
+          "amount": {
+            "description": "The amount of tax applied",
+            "types": ["null", "integer"]
+          },
           "rate": {
+            "description": "Details about the tax rate",
             "type": ["null", "object"],
             "properties": {
-              "id": { "type": ["null", "string"] },
-              "object": { "type": ["null", "string"] },
-              "active": { "type": ["null", "boolean"] },
-              "country": { "type": ["null", "string"] },
-              "created": { "type": ["null", "integer"] },
-              "description": { "type": ["null", "string"] },
-              "display_name": { "type": ["null", "string"] },
-              "inclusive": { "type": ["null", "boolean"] },
-              "jurisdiction": { "type": ["null", "string"] },
-              "livemode": { "type": ["null", "boolean"] },
+              "id": {
+                "description": "ID of the tax rate",
+                "type": ["null", "string"]
+              },
+              "object": {
+                "description": "Type of object, in this case, 'tax_rate'",
+                "type": ["null", "string"]
+              },
+              "active": {
+                "description": "Indicates if the tax rate is currently active",
+                "type": ["null", "boolean"]
+              },
+              "country": {
+                "description": "Country for which the tax rate applies",
+                "type": ["null", "string"]
+              },
+              "created": {
+                "description": "Timestamp of when the tax rate was created",
+                "type": ["null", "integer"]
+              },
+              "description": {
+                "description": "Description of the tax rate",
+                "type": ["null", "string"]
+              },
+              "display_name": {
+                "description": "Display name for the tax rate",
+                "type": ["null", "string"]
+              },
+              "inclusive": {
+                "description": "Indicates if tax is inclusive in the price",
+                "type": ["null", "boolean"]
+              },
+              "jurisdiction": {
+                "description": "Jurisdiction to which the tax rate applies",
+                "type": ["null", "string"]
+              },
+              "livemode": {
+                "description": "Indicates if the tax rate is in live mode",
+                "type": ["null", "boolean"]
+              },
               "metadata": {
+                "description": "Additional information about the tax rate",
                 "type": ["null", "object"],
                 "properties": {}
               },
-              "percentage": { "type": ["null", "number"] },
-              "state": { "type": ["null", "string"] },
-              "tax_type": { "type": ["null", "string"] }
+              "percentage": {
+                "description": "Percentage of the tax rate",
+                "type": ["null", "number"]
+              },
+              "state": {
+                "description": "State for which the tax rate applies",
+                "type": ["null", "string"]
+              },
+              "tax_type": {
+                "description": "Type of tax rate",
+                "type": ["null", "string"]
+              }
             }
           }
         }

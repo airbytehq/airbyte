@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from unittest.mock import patch
+
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
@@ -10,11 +13,15 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    ContactsListMemberships,
     ContactsMergedAudit,
+    ContactsPropertyHistory,
+    ContactsWebAnalytics,
     CustomObject,
     DealPipelines,
     Deals,
     DealsArchived,
+    DealSplits,
     EmailEvents,
     EmailSubscriptions,
     EngagementsCalls,
@@ -91,6 +98,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
+        (DealSplits, "deal_split", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EmailSubscriptions, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -126,6 +134,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             }
         }
     ]
+
     properties_response = [
         {
             "json": [
@@ -135,7 +144,8 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
-    contact_reponse = [
+
+    contact_response = [
         {
             "json": {
                 stream.data_field: [
@@ -144,6 +154,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             }
         }
     ]
+
     read_batch_contact_v1_response = [
         {
             "json": {
@@ -152,19 +163,84 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
+
+    contact_lists_v1_response = [
+        {
+            "json": {
+                "contacts": [
+                    {"vid": "test_id", "merge-audits": [{"canonical-vid": 2, "vid-to-merge": 5608, "timestamp": 1653322839932}]}
+                ]
+            },
+            "status_code": 200,
+        }
+    ]
+
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
     stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
 
     requests_mock.register_uri("GET", stream_url, responses)
-    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_reponse)
+    requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
+    requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
 
     records = read_full_refresh(stream)
+    assert records
+
+@pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
+def test_crm_search_streams_with_no_associations(sync_mode, common_params,  requests_mock, fake_properties_list):
+    stream = DealSplits(**common_params)
+    stream_state = {
+        "type": "STREAM",
+        "stream": {
+            "stream_descriptor": { "name": "deal_splits" },
+            "stream_state": { "updatedAt": "2021-01-01T00:00:00.000000Z" }
+        }
+    }
+    cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                    }
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+    if sync_mode == SyncMode.full_refresh:
+        stream.set_sync(SyncMode.full_refresh, stream_state=None)
+        endpoint_path = f"/crm/v3/objects/{stream.entity}"
+        requests_mock.register_uri("GET", endpoint_path, responses)
+    else:
+        stream.set_sync(SyncMode.incremental, stream_state)
+        endpoint_path = f"/crm/v3/objects/{stream.entity}/search"
+        requests_mock.register_uri("POST", endpoint_path, responses)
+    properties_path = f"/properties/v2/{stream.entity}/properties"
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    stream._sync_mode = sync_mode
+    requests_mock.register_uri("POST", endpoint_path, responses)
+    requests_mock.register_uri("GET", properties_path, properties_response)
+    if sync_mode == SyncMode.incremental:
+        records, state = read_incremental(stream, stream_state=stream_state)
+        assert state
+    else:
+        records = read_full_refresh(stream)
     assert records
 
 
@@ -174,6 +250,7 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
         {"json": {}, "status_code": 429},
         {"json": {}, "status_code": 502},
         {"json": {}, "status_code": 504},
+        {"text": "Not a JSON", "status_code": 200},
     ],
 )
 def test_common_error_retry(error_response, requests_mock, common_params, fake_properties_list):
@@ -210,6 +287,7 @@ def test_common_error_retry(error_response, requests_mock, common_params, fake_p
     records = read_full_refresh(stream)
 
     assert [response[stream.data_field][0]] == records
+    assert len(requests_mock.request_history) > 1
 
 
 def test_contact_lists_transform(requests_mock, common_params):
@@ -503,3 +581,79 @@ def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema
 def test_records_unnester(input_data, unnest_fields, expected_output):
     unnester = RecordUnnester(fields=unnest_fields)
     assert list(unnester.unnest(input_data)) == expected_output
+
+
+def test_web_analytics_stream_slices(common_params, mocker):
+    parent_slicer_mock = mocker.patch("airbyte_cdk.sources.streams.http.HttpSubStream.stream_slices")
+    parent_slicer_mock.return_value = (_ for _ in [{"parent": {"id": 1}}])
+
+    pendulum_now_mock = mocker.patch("pendulum.now")
+    pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=50)
+
+    stream = ContactsWebAnalytics(**common_params)
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field="occurredAt"))
+
+    assert len(slices) == 2
+    assert all(map(lambda slice: slice["objectId"] == 1, slices))
+
+    assert [("2021-01-10T00:00:00Z", "2021-02-09T00:00:00Z"), ("2021-02-09T00:00:00Z", "2021-03-01T00:00:00Z")] == [
+        (s["occurredAfter"], s["occurredBefore"]) for s in slices
+    ]
+
+
+def test_web_analytics_latest_state(common_params, mocker):
+    parent_slicer_mock = mocker.patch("airbyte_cdk.sources.streams.http.HttpSubStream.stream_slices")
+    parent_slicer_mock.return_value = (_ for _ in [{"parent": {"id": "1"}}])
+
+    pendulum_now_mock = mocker.patch("pendulum.now")
+    pendulum_now_mock.return_value = pendulum.parse(common_params["start_date"]).add(days=10)
+
+    parent_slicer_mock = mocker.patch("source_hubspot.streams.Stream.read_records")
+    parent_slicer_mock.return_value = (_ for _ in [{"objectId": "1", "occurredAt": "2021-01-02T00:00:00Z"}])
+
+    stream = ContactsWebAnalytics(**common_params)
+    stream.state = {"1": {"occurredAt": "2021-01-01T00:00:00Z"}}
+    slices = list(stream.stream_slices(SyncMode.incremental, cursor_field="occurredAt"))
+    records = [
+        list(stream.read_records(SyncMode.incremental, cursor_field="occurredAt", stream_slice=stream_slice)) for stream_slice in slices
+    ]
+
+    assert len(slices) == 1
+    assert len(records) == 1
+    assert len(records[0]) == 1
+    assert records[0][0]["objectId"] == "1"
+    assert stream.state["1"]["occurredAt"] == "2021-01-02T00:00:00Z"
+
+
+def test_property_history_transform(common_params):
+    stream = ContactsPropertyHistory(**common_params)
+    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
+    records = [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
+        }
+    ]
+    assert [
+        {"vid": 1, "canonical-vid": 1, "portal-id": 1, "is-contact": True, "property": "hs_country", **version} for version in versions
+    ] == list(stream._transform(records=records))
+
+
+def test_contacts_membership_transform(common_params):
+    stream = ContactsListMemberships(**common_params)
+    versions = [{"value": "Georgia", "timestamp": 1645135236625}]
+    memberships = [{"membership": 1}]
+    records = [
+        {
+            "vid": 1,
+            "canonical-vid": 1,
+            "portal-id": 1,
+            "is-contact": True,
+            "properties": {"hs_country": {"versions": versions}, "lastmodifieddate": {"value": 1645135236625}},
+            "list-memberships": memberships,
+        }
+    ]
+    assert [{"membership": 1, "canonical-vid": 1} for _ in versions] == list(stream._transform(records=records))

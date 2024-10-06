@@ -33,21 +33,12 @@ acceptance_tests:
         timeout_seconds: 9000
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
         empty_streams:
           - name: export
             bypass_reason: "Data expired too often"
           - name: annotations
             bypass_reason: "Data expired too often"
-        ignored_fields:
-          funnels:
-            - name: date
-              bypass_reason: "Data changes too often"
-          revenue:
-            - name: date
-              bypass_reason: "Data changes too often"
   full_refresh:
     tests:
       - config_path: "secrets/config_project_secret.json"
@@ -56,9 +47,9 @@ acceptance_tests:
   incremental:
     tests:
       - config_path: "secrets/config_incremental.json"
-        # engage stream is not part of incremental catalog as it is semi incremental,
-        # so cursor filter is not inside request, but results are filtered based on cursor state
-        # also engage can produce records without cursor field, so abnormal state test will fail
+        # The `Engage` and `CohortMembers` streams are not part of incremental catalog as they are semi-incremental,
+        # so cursor filter is not inside request, but results are filtered based on the cursor value.
+        # Also, these streams can produce records without cursor field, so abnormal state test would fail.
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

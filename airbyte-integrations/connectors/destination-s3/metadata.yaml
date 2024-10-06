@@ -2,29 +2,65 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 0.5.1
+  dockerImageTag: 1.2.1
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
   license: ELv2
   name: S3
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: >
+          **This release includes breaking changes, including major revisions to the schema of stored data. Do not upgrade without reviewing the migration guide.**
+        upgradeDeadline: "2024-10-08"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 1Gi
-          memory_request: 1Gi
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   tags:
     - language:java
   ab_internal:
     sl: 300
-    ql: 400
+    ql: 300
   supportLevel: certified
+  supportsRefreshes: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-S3-ASSUME-ROLE-CONFIG
+          fileName: s3_dest_assume_role_config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_MIN_REQUIRED_PERMISSIONS_CREDS
+          fileName: s3_dest_min_required_permissions_creds.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_POLICY_MANAGER_CREDENTIALS
+          fileName: s3_dest_policy_manager_credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-S3_DEST_IAM_ROLE_CREDENTIALS_FOR_ASSUME_ROLE_AUTH
+          fileName: s3_dest_iam_role_credentials_for_assume_role_auth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
