@@ -4,13 +4,10 @@ type: DeclarativeSource
 
 description: >
   This is the setup guide for the Campaign Monitor source.
-
-
   Campaign Monitor is an email marketing and services platform
   https://www.campaignmonitor.com/
 
   This connector ingests a variety of endpoints from the Campaign Monitor API.
-
   In order to use the API, you must first create an account. You can generate
   your API key in the account settings.
 
