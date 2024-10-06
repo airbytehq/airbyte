@@ -11,3 +11,15 @@ fun <T> Flow<T>.takeUntilInclusive(predicate: (T) -> Boolean): Flow<T> = transfo
     emit(value)
     !predicate(value)
 }
+
+interface CloseableCoroutine {
+    suspend fun close()
+}
+
+suspend fun <T : CloseableCoroutine> T.use(block: suspend (T) -> Unit) {
+    try {
+        block(this)
+    } finally {
+        close()
+    }
+}

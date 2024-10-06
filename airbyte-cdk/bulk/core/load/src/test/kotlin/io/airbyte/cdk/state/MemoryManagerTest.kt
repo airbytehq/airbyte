@@ -17,11 +17,11 @@ import kotlinx.coroutines.withTimeout
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-@MicronautTest
+@MicronautTest(environments = ["MemoryManagerTest"])
 class MemoryManagerTest {
     @Singleton
     @Replaces(MemoryManager::class)
-    @Requires(env = ["test"])
+    @Requires(env = ["MemoryManagerTest"])
     class MockAvailableMemoryProvider : AvailableMemoryProvider {
         override val availableMemoryBytes: Long = 1000
     }
