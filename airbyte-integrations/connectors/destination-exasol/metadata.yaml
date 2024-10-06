@@ -7,11 +7,17 @@ data:
   githubIssueLabel: destination-exasol
   license: MIT
   name: Exasol
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/exasol
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/exasol
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
 metadataSpecVersion: "1.0"

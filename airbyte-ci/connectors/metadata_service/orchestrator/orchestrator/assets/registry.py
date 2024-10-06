@@ -1,166 +1,69 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import copy
 import json
-from typing import List
-from pydash.objects import get
+from typing import List, Union
 
-import pandas as pd
-from dagster import asset, OpExecutionContext, MetadataValue, Output
-
-from metadata_service.spec_cache import get_cached_spec
-
-from orchestrator.models.metadata import MetadataDefinition
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.utils.object_helpers import deep_copy_params, to_json_sanitized_dict
-
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-
+import sentry_sdk
+from dagster import AutoMaterializePolicy, MetadataValue, OpExecutionContext, Output, asset
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from metadata_service.models.transform import to_json_sanitized_dict
+from orchestrator.assets.registry_entry import ConnectorTypePrimaryKey, ConnectorTypes, read_registry_entry_blob
+from orchestrator.logging import sentry
+from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from orchestrator.utils.object_helpers import default_none_to_dict
+from pydash.objects import set_with
 
+PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 
 GROUP_NAME = "registry"
 
-# ERRORS
 
+def _get_registry_entry_id(registry_entry: dict, connector_type: ConnectorTypes) -> str:
+    """Get the registry entry ID.
 
-class MissingCachedSpecError(Exception):
-    pass
+    A function is needed to get the registry entry ID because the primary key field is different for each connector type.
 
-
-# HELPERS
-
-
-@deep_copy_params
-def apply_overrides_from_registry(metadata_data: dict, override_registry_key: str) -> dict:
-    """Apply the overrides from the registry to the metadata data.
+    e.g. for sources, the primary key field is "sourceDefinitionId", and for destinations, the primary key field is "destinationDefinitionId".
 
     Args:
-        metadata_data (dict): The metadata data field.
-        override_registry_key (str): The key of the registry to override the metadata with.
+        registry_entry (dict): The registry entry.
+        connector_type (ConnectorTypes): The connector type.
 
     Returns:
-        dict: The metadata data field with the overrides applied.
+        str: The registry entry ID.
     """
-    override_registry = metadata_data["registries"][override_registry_key]
-    del override_registry["enabled"]
-
-    # remove any None values from the override registry
-    override_registry = {k: v for k, v in override_registry.items() if v is not None}
-
-    metadata_data.update(override_registry)
-
-    return metadata_data
+    pk_field = ConnectorTypePrimaryKey[connector_type.value]
+    return registry_entry[pk_field]
 
 
-@deep_copy_params
-def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, override_registry_key: str) -> dict:
-    """Convert the metadata definition to a registry entry.
+@sentry_sdk.trace
+def apply_metrics_to_registry_entry(registry_entry_dict: dict, connector_type: ConnectorTypes, latest_metrics_dict: dict) -> dict:
+    """Apply the metrics to the registry entry.
 
     Args:
-        metadata_definition (dict): The metadata definition.
-        connector_type (str): One of "source" or "destination".
-        override_registry_key (str): The key of the registry to override the metadata with.
+        registry_entry_dict (dict): The registry entry.
+        latest_metrics_dict (dict): The metrics.
 
     Returns:
-        dict: The registry equivalent of the metadata definition.
+        dict: The registry entry with metrics.
     """
-    metadata_data = metadata_definition["data"]
+    connector_id = _get_registry_entry_id(registry_entry_dict, connector_type)
+    metrics = latest_metrics_dict.get(connector_id, {})
 
-    overrode_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
-    del overrode_metadata_data["registries"]
+    # Safely add metrics to ["generated"]["metrics"], knowing that the key may not exist, or might be None
+    registry_entry_dict = set_with(registry_entry_dict, "generated.metrics", metrics, default_none_to_dict)
 
-    del overrode_metadata_data["connectorType"]
-
-    # rename field connectorSubtype to sourceType
-    connection_type = overrode_metadata_data.get("connectorSubtype")
-    if connection_type:
-        overrode_metadata_data["sourceType"] = overrode_metadata_data["connectorSubtype"]
-        del overrode_metadata_data["connectorSubtype"]
-
-    # rename supportUrl to documentationUrl
-    support_url = overrode_metadata_data.get("supportUrl")
-    if support_url:
-        overrode_metadata_data["documentationUrl"] = overrode_metadata_data["supportUrl"]
-        del overrode_metadata_data["supportUrl"]
-
-    # rename definitionId field to sourceDefinitionId or destinationDefinitionId
-    id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
-    overrode_metadata_data[id_field] = overrode_metadata_data["definitionId"]
-    del overrode_metadata_data["definitionId"]
-
-    # add in useless fields that are currently required for porting to the actor definition spec
-    overrode_metadata_data["tombstone"] = False
-    overrode_metadata_data["custom"] = False
-    overrode_metadata_data["public"] = True
-
-    # if there is no releaseStage, set it to "alpha"
-    # Note: this is something our current cloud registry generator does
-    # Note: We will not once this is live
-    if not overrode_metadata_data.get("releaseStage"):
-        overrode_metadata_data["releaseStage"] = "alpha"
-
-    return overrode_metadata_data
+    return registry_entry_dict
 
 
-def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) -> bool:
-    return get(metadata_definition, f"data.registries.{registry_name}.enabled", False)
-
-
-def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
-    return metadata_definition["data"]["connectorType"] == connector_type
-
-
-def construct_registry_from_metadata(
-    legacy_registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str
-) -> ConnectorRegistryV0:
-    """Construct the registry from the metadata definitions.
-
-    Args:
-        legacy_registry_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
-        registry_name (str): The name of the registry to construct. One of "cloud" or "oss".
-
-    Returns:
-        dict: The registry.
-    """
-    registry_derived_metadata_dicts = [metadata_definition.dict() for metadata_definition in legacy_registry_derived_metadata_definitions]
-    registry_sources = [
-        metadata_to_registry_entry(metadata, "source", registry_name)
-        for metadata in registry_derived_metadata_dicts
-        if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "source")
-    ]
-    registry_destinations = [
-        metadata_to_registry_entry(metadata, "destination", registry_name)
-        for metadata in registry_derived_metadata_dicts
-        if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "destination")
-    ]
-
-    return {"sources": registry_sources, "destinations": registry_destinations}
-
-
-def construct_registry_with_spec_from_registry(registry: dict, cached_specs: OutputDataFrame) -> dict:
-    entries = [("source", entry) for entry in registry["sources"]] + [("destinations", entry) for entry in registry["destinations"]]
-
-    cached_connector_version = {
-        (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
-        for cached_spec in cached_specs.to_dict(orient="records")
-    }
-    registry_with_specs = {"sources": [], "destinations": []}
-    for connector_type, entry in entries:
-        try:
-            spec_path = cached_connector_version[(entry["dockerRepository"], entry["dockerImageTag"])]
-            entry_with_spec = copy.deepcopy(entry)
-            entry_with_spec["spec"] = get_cached_spec(spec_path)
-            if connector_type == "source":
-                registry_with_specs["sources"].append(entry_with_spec)
-            else:
-                registry_with_specs["destinations"].append(entry_with_spec)
-        except KeyError:
-            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRepository']}:{entry['dockerImageTag']}")
-    return registry_with_specs
-
-
+@sentry_sdk.trace
 def persist_registry_to_json(
     registry: ConnectorRegistryV0, registry_name: str, registry_directory_manager: GCSFileManager
 ) -> GCSFileHandle:
@@ -181,117 +84,192 @@ def persist_registry_to_json(
     return file_handle
 
 
+@sentry_sdk.trace
+def apply_release_candidates(
+    latest_registry_entry: dict,
+    release_candidate_registry_entry: PolymorphicRegistryEntry,
+) -> dict:
+    updated_registry_entry = copy.deepcopy(latest_registry_entry)
+    updated_registry_entry.setdefault("releases", {})
+    updated_registry_entry["releases"]["releaseCandidates"] = {
+        release_candidate_registry_entry.dockerImageTag: to_json_sanitized_dict(release_candidate_registry_entry)
+    }
+    return updated_registry_entry
+
+
+def apply_release_candidate_entries(registry_entry_dict: dict, docker_repository_to_rc_registry_entry: dict) -> dict:
+    """Apply the optionally existing release candidate entries to the registry entry.
+    We need both the release candidate metadata entry and the release candidate registry entry because the metadata entry contains the rollout configuration, and the registry entry contains the actual RC registry entry.
+
+    Args:
+        registry_entry_dict (dict): The registry entry.
+        docker_repository_to_rc_registry_entry (dict): Mapping of docker repository to release candidate registry entry.
+
+    Returns:
+        dict: The registry entry with release candidates applied.
+    """
+    registry_entry_dict = copy.deepcopy(registry_entry_dict)
+    if registry_entry_dict["dockerRepository"] in docker_repository_to_rc_registry_entry:
+        release_candidate_registry_entry = docker_repository_to_rc_registry_entry[registry_entry_dict["dockerRepository"]]
+        registry_entry_dict = apply_release_candidates(registry_entry_dict, release_candidate_registry_entry)
+    return registry_entry_dict
+
+
+def get_connector_type_from_registry_entry(registry_entry: PolymorphicRegistryEntry) -> ConnectorTypes:
+    if hasattr(registry_entry, "sourceDefinitionId"):
+        return ConnectorTypes.SOURCE
+    elif hasattr(registry_entry, "destinationDefinitionId"):
+        return ConnectorTypes.DESTINATION
+    else:
+        raise ValueError("Registry entry is not a source or destination")
+
+
+@sentry_sdk.trace
 def generate_and_persist_registry(
-    metadata_definitions: List[MetadataDefinition],
-    cached_specs: OutputDataFrame,
+    context: OpExecutionContext,
+    latest_registry_entries: List,
+    release_candidate_registry_entries: List,
     registry_directory_manager: GCSFileManager,
     registry_name: str,
+    latest_connector_metrics: dict,
 ) -> Output[ConnectorRegistryV0]:
     """Generate the selected registry from the metadata files, and persist it to GCS.
 
     Args:
         context (OpExecutionContext): The execution context.
-        metadata_definitions (List[MetadataDefinition]): The metadata definitions.
-        cached_specs (OutputDataFrame): The cached specs.
+        registry_entry_file_blobs (storage.Blob): The registry entries.
 
     Returns:
         Output[ConnectorRegistryV0]: The registry.
     """
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.IN_PROGRESS,
+        f"Generating {registry_name} registry...",
+    )
 
-    from_metadata = construct_registry_from_metadata(metadata_definitions, registry_name)
-    registry_dict = construct_registry_with_spec_from_registry(from_metadata, cached_specs)
+    registry_dict = {"sources": [], "destinations": []}
+
+    docker_repository_to_rc_registry_entry = {
+        release_candidate_registry_entries.dockerRepository: release_candidate_registry_entries
+        for release_candidate_registry_entries in release_candidate_registry_entries
+    }
+
+    for latest_registry_entry in latest_registry_entries:
+        connector_type = get_connector_type_from_registry_entry(latest_registry_entry)
+        plural_connector_type = f"{connector_type.value}s"
+
+        # We sanitize the registry entry to ensure its in a format
+        # that can be parsed by pydantic.
+        registry_entry_dict = to_json_sanitized_dict(latest_registry_entry)
+        enriched_registry_entry_dict = apply_metrics_to_registry_entry(registry_entry_dict, connector_type, latest_connector_metrics)
+        enriched_registry_entry_dict = apply_release_candidate_entries(enriched_registry_entry_dict, docker_repository_to_rc_registry_entry)
+
+        registry_dict[plural_connector_type].append(enriched_registry_entry_dict)
+
     registry_model = ConnectorRegistryV0.parse_obj(registry_dict)
 
     file_handle = persist_registry_to_json(registry_model, registry_name, registry_directory_manager)
 
     metadata = {
-        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+        "gcs_path": MetadataValue.url(file_handle.public_url),
     }
+
+    PublishConnectorLifecycle.log(
+        context,
+        PublishConnectorLifecycleStage.REGISTRY_GENERATION,
+        StageStatus.SUCCESS,
+        f"New {registry_name} registry available at {file_handle.public_url}",
+    )
 
     return Output(metadata=metadata, value=registry_model)
 
 
-# New Registry Generation
+# Registry Generation
 
 
-@asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def cloud_registry_from_metadata(
-    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
+@asset(
+    required_resource_keys={
+        "slack",
+        "registry_directory_manager",
+        "latest_oss_registry_entries_file_blobs",
+        "release_candidate_oss_registry_entries_file_blobs",
+        "latest_metrics_gcs_blob",
+    },
+    group_name=GROUP_NAME,
+)
+@sentry.instrument_asset_op
+def persisted_oss_registry(
+    context: OpExecutionContext,
+    latest_connector_metrics: dict,
+    latest_oss_registry_entries: List,
+    release_candidate_oss_registry_entries: List,
 ) -> Output[ConnectorRegistryV0]:
     """
-    This asset is used to generate the cloud registry from the metadata definitions.
-    """
-    registry_name = "cloud"
-    registry_directory_manager = context.resources.registry_directory_manager
-
-    return generate_and_persist_registry(
-        metadata_definitions=metadata_definitions,
-        cached_specs=cached_specs,
-        registry_directory_manager=registry_directory_manager,
-        registry_name=registry_name,
-    )
-
-
-@asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def oss_registry_from_metadata(
-    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
-) -> Output[ConnectorRegistryV0]:
-    """
-    This asset is used to generate the oss registry from the metadata definitions.
+    This asset is used to generate the oss registry from the registry entries.
     """
     registry_name = "oss"
     registry_directory_manager = context.resources.registry_directory_manager
-
     return generate_and_persist_registry(
-        metadata_definitions=metadata_definitions,
-        cached_specs=cached_specs,
+        context=context,
+        latest_registry_entries=latest_oss_registry_entries,
+        release_candidate_registry_entries=release_candidate_oss_registry_entries,
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
+        latest_connector_metrics=latest_connector_metrics,
     )
 
 
-@asset(group_name=GROUP_NAME)
-def cloud_sources_dataframe(cloud_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    cloud_registry_from_metadata_dict = to_json_sanitized_dict(cloud_registry_from_metadata)
-    sources = cloud_registry_from_metadata_dict["sources"]
-    return output_dataframe(pd.DataFrame(sources))
-
-
-@asset(group_name=GROUP_NAME)
-def oss_sources_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
-    sources = oss_registry_from_metadata_dict["sources"]
-    return output_dataframe(pd.DataFrame(sources))
-
-
-@asset(group_name=GROUP_NAME)
-def cloud_destinations_dataframe(cloud_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    cloud_registry_from_metadata_dict = to_json_sanitized_dict(cloud_registry_from_metadata)
-    destinations = cloud_registry_from_metadata_dict["destinations"]
-    return output_dataframe(pd.DataFrame(destinations))
-
-
-@asset(group_name=GROUP_NAME)
-def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) -> OutputDataFrame:
-    oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
-    destinations = oss_registry_from_metadata_dict["destinations"]
-    return output_dataframe(pd.DataFrame(destinations))
+@asset(
+    required_resource_keys={
+        "slack",
+        "registry_directory_manager",
+        "latest_cloud_registry_entries_file_blobs",
+        "release_candidate_cloud_registry_entries_file_blobs",
+        "latest_metrics_gcs_blob",
+    },
+    group_name=GROUP_NAME,
+)
+@sentry.instrument_asset_op
+def persisted_cloud_registry(
+    context: OpExecutionContext,
+    latest_connector_metrics: dict,
+    latest_cloud_registry_entries: List,
+    release_candidate_cloud_registry_entries: List,
+) -> Output[ConnectorRegistryV0]:
+    """
+    This asset is used to generate the cloud registry from the registry entries.
+    """
+    registry_name = "cloud"
+    registry_directory_manager = context.resources.registry_directory_manager
+    return generate_and_persist_registry(
+        context=context,
+        latest_registry_entries=latest_cloud_registry_entries,
+        release_candidate_registry_entries=release_candidate_cloud_registry_entries,
+        registry_directory_manager=registry_directory_manager,
+        registry_name=registry_name,
+        latest_connector_metrics=latest_connector_metrics,
+    )
 
 
 # Registry from JSON
 
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
-def latest_cloud_registry(latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
+@sentry.instrument_asset_op
+def latest_cloud_registry(_context: OpExecutionContext, latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
-def latest_oss_registry(latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
+@sentry.instrument_asset_op
+def latest_oss_registry(_context: OpExecutionContext, latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
     return ConnectorRegistryV0.parse_obj(latest_oss_registry_dict)
 
 
 @asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")
@@ -300,6 +278,7 @@ def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
 
 
 @asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+@sentry.instrument_asset_op
 def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
     oss_registry_file = context.resources.latest_oss_registry_gcs_blob
     json_string = oss_registry_file.download_as_string().decode("utf-8")

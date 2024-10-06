@@ -8,11 +8,17 @@ data:
   icon: mqtt.svg
   license: MIT
   name: MQTT
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/mqtt
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mqtt
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
 metadataSpecVersion: "1.0"

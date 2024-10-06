@@ -4,11 +4,34 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "seller-sku": { "type": ["null", "string"] },
-    "fulfillment-channel-sku": { "type": ["null", "string"] },
-    "asin": { "type": ["null", "string"] },
-    "condition-type": { "type": ["null", "string"] },
-    "country": { "type": ["null", "string"] },
-    "quantity-for-local-fulfillment": { "type": ["null", "number"] }
+    "seller-sku": {
+      "description": "Unique SKU assigned by the seller for the product",
+      "type": ["null", "string"]
+    },
+    "fulfillment-channel-sku": {
+      "description": "Unique SKU assigned by the seller for fulfillment",
+      "type": ["null", "string"]
+    },
+    "asin": {
+      "description": "Unique Amazon Standard Identification Number assigned to the product",
+      "type": ["null", "string"]
+    },
+    "condition-type": {
+      "description": "Type of condition (new, used, refurbished, etc.) of the product",
+      "type": ["null", "string"]
+    },
+    "country": {
+      "description": "Country code identifying the country the inventory data pertains to",
+      "type": ["null", "string"]
+    },
+    "quantity-for-local-fulfillment": {
+      "description": "Quantity of the product available for local fulfillment",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "Timestamp indicating when the data was last updated",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

@@ -8,11 +8,20 @@ data:
   icon: redis.svg
   license: MIT
   name: Redis
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/redis
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/redis
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

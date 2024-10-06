@@ -3,45 +3,41 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer",
       "description": "The ID of the screen scheme.",
-      "format": "int64"
+      "type": "integer"
     },
     "name": {
-      "type": "string",
-      "description": "The name of the screen scheme."
+      "description": "The name of the screen scheme.",
+      "type": "string"
     },
     "description": {
-      "type": "string",
-      "description": "The description of the screen scheme."
+      "description": "The description of the screen scheme.",
+      "type": "string"
     },
     "screens": {
       "description": "The IDs of the screens for the screen types of the screen scheme.",
       "type": "object",
       "properties": {
         "edit": {
-          "type": "integer",
           "description": "The ID of the edit screen.",
-          "format": "int64"
+          "type": "integer"
         },
         "create": {
-          "type": "integer",
           "description": "The ID of the create screen.",
-          "format": "int64"
+          "type": "integer"
         },
         "view": {
-          "type": "integer",
           "description": "The ID of the view screen.",
-          "format": "int64"
+          "type": "integer"
         },
         "default": {
-          "type": "integer",
           "description": "The ID of the default screen. Required when creating a screen scheme.",
-          "format": "int64"
+          "type": "integer"
         }
       }
     },
     "issueTypeScreenSchemes": {
+      "description": "Issue type screen schemes associated with the screen scheme.",
       "type": "object"
     }
   },

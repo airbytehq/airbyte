@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from unittest.mock import MagicMock
 
 from source_google_ads.custom_query_stream import CustomQueryMixin, IncrementalCustomQuery
@@ -27,29 +28,33 @@ class Obj:
 
 
 def test_get_json_schema():
-    query_object = MagicMock(return_value={
-        'a': Obj(data_type=Obj(name='ENUM'), is_repeated=False, enum_values=['a', 'aa']),
-        'b': Obj(data_type=Obj(name='ENUM'), is_repeated=True,  enum_values=['b', 'bb']),
-        'c': Obj(data_type=Obj(name='MESSAGE'), is_repeated=False),
-        'd': Obj(data_type=Obj(name='MESSAGE'), is_repeated=True),
-        'e': Obj(data_type=Obj(name='STRING')),
-        'f': Obj(data_type=Obj(name='DATE')),
-    })
-    instance = CustomQueryMixin(config={'query': Obj(fields=['a', 'b', 'c', 'd', 'e', 'f'])})
+    query_object = MagicMock(
+        return_value={
+            "a": Obj(data_type=Obj(name="ENUM"), is_repeated=False, enum_values=["a", "aa"]),
+            "b": Obj(data_type=Obj(name="ENUM"), is_repeated=True, enum_values=["b", "bb"]),
+            "c": Obj(data_type=Obj(name="MESSAGE"), is_repeated=False),
+            "d": Obj(data_type=Obj(name="MESSAGE"), is_repeated=True),
+            "e": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+            "f": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+            "segments.month": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+        }
+    )
+    instance = CustomQueryMixin(config={"query": Obj(fields=["a", "b", "c", "d", "e", "f", "segments.month"])})
     instance.cursor_field = None
     instance.google_ads_client = Obj(get_fields_metadata=query_object)
     schema = instance.get_json_schema()
 
     assert schema == {
-        '$schema': 'http://json-schema.org/draft-07/schema#',
-        'additionalProperties': True,
-        'type': 'object',
-        'properties': {
-            'a': {'type': 'string', 'enum': ['a', 'aa']},
-            'b': {'type': ['null', 'array'], 'items': {'type': 'string', 'enum': ['b', 'bb']}},
-            'c': {'type': ['string', 'null'], 'protobuf_message': True},
-            'd': {'type': ['array', 'null'], 'protobuf_message': True},
-            'e': {'type': ['string', 'null']},
-            'f': {'type': ['string', 'null'], 'format': 'date'},
-        }
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": True,
+        "type": "object",
+        "properties": {
+            "a": {"type": "string", "enum": ["a", "aa"]},
+            "b": {"type": ["null", "array"], "items": {"type": "string", "enum": ["b", "bb"]}},
+            "c": {"type": ["string", "null"]},
+            "d": {"type": ["null", "array"], "items": {"type": ["string", "null"]}},
+            "e": {"type": ["string", "null"]},
+            "f": {"type": ["string", "null"]},
+            "segments.month": {"type": ["string", "null"], "format": "date"},
+        },
     }

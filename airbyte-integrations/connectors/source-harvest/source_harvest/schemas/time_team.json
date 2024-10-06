@@ -3,30 +3,39 @@
   "type": "object",
   "properties": {
     "user_id": {
+      "description": "The unique identifier of the user",
       "type": ["null", "integer"]
     },
     "user_name": {
+      "description": "The name of the user",
       "type": ["null", "string"]
     },
     "is_contractor": {
+      "description": "Flag indicating if the user is a contractor",
       "type": ["null", "boolean"]
     },
     "total_hours": {
+      "description": "The total number of hours worked for the time period",
       "type": ["null", "number"]
     },
     "billable_hours": {
+      "description": "The number of hours that can be billed for the time period",
       "type": ["null", "number"]
     },
     "currency": {
+      "description": "The currency used for billing",
       "type": ["null", "string"]
     },
     "billable_amount": {
+      "description": "The amount that can be billed for the time period",
       "type": ["null", "number"]
     },
     "from": {
+      "description": "The start date and time of the time period",
       "type": ["null", "string"]
     },
     "to": {
+      "description": "The end date and time of the time period",
       "type": ["null", "string"]
     }
   }

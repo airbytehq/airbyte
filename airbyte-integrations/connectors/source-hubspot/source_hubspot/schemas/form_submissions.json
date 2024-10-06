@@ -3,32 +3,40 @@
   "type": ["null", "object"],
   "properties": {
     "submittedAt": {
+      "description": "The timestamp when the form was submitted.",
       "type": ["null", "integer"]
     },
     "updatedAt": {
+      "description": "The timestamp when the form submission data was last updated.",
       "type": ["null", "integer"]
     },
     "values": {
+      "description": "An array of form field values submitted in the form.",
       "type": ["null", "array"],
       "items": {
         "type": "object",
         "properties": {
           "name": {
+            "description": "The name or identifier of the form field.",
             "type": ["null", "string"]
           },
           "value": {
+            "description": "The actual value submitted for the form field.",
             "type": ["null", "string"]
           },
           "objectTypeId": {
+            "description": "The type identifier of the form field value.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "pageUrl": {
+      "description": "The URL of the web page where the form was submitted.",
       "type": ["null", "string"]
     },
     "formId": {
+      "description": "The unique identifier of the form associated with the submission.",
       "type": ["null", "string"]
     }
   }

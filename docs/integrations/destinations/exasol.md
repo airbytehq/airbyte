@@ -16,15 +16,15 @@ Each Airbyte Stream becomes an Exasol table and each Airbyte Field becomes an Ex
 
 The Exasol destination supports the following features:
 
-| Feature                       | Supported? (Yes/No) | Notes |
-| :---------------------------- | :------------------ | :---- |
-| Full Refresh Sync             | Yes                 |       |
-| Incremental - Append Sync     | Yes                 |       |
-| Incremental - Deduped History | No                  |       |
-| Normalization                 | No                  |       |
-| Namespaces                    | Yes                 |       |
-| SSL connection                | Yes                 | TLS   |
-| SSH Tunnel Support            | No                  |       |
+| Feature                        | Supported? (Yes/No) | Notes |
+| :----------------------------- | :------------------ | :---- |
+| Full Refresh Sync              | Yes                 |       |
+| Incremental - Append Sync      | Yes                 |       |
+| Incremental - Append + Deduped | No                  |       |
+| Normalization                  | No                  |       |
+| Namespaces                     | Yes                 |       |
+| SSL connection                 | Yes                 | TLS   |
+| SSH Tunnel Support             | No                  |       |
 
 ### Limitations
 
@@ -67,7 +67,12 @@ You should now have all the requirements needed to configure Exasol as a destina
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                   |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------- |
 | 0.1.1   | 2023-02-21 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Fix the build                             |
 | 0.1.0   | 2023-01-?? | [21200](https://github.com/airbytehq/airbyte/pull/21200) | Initial version of the Exasol destination |
+
+</details>

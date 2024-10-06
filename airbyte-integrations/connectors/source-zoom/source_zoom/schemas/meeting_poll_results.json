@@ -3,35 +3,42 @@
   "type": "object",
   "properties": {
     "meeting_uuid": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "meeting_id": {
+      "type": ["null", "integer"]
     },
     "email": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
     },
     "question_details": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "answer": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "date_time": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "polling_id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "question": {
-            "type": "string"
+            "type": ["null", "string"]
           }
-        },
-        "required": []
+        }
       }
     }
-  },
-  "required": []
+  }
 }

@@ -1,5 +1,13 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "modifiedAt": "2050-10-31T02:00:22.240+01:00"
+      },
+      "stream_descriptor": {
+        "name": "contacts"
+      }
+    }
   }
-}
+]

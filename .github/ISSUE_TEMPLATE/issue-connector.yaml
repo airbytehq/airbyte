@@ -1,15 +1,8 @@
 name: Connector Issue
-description: Use this when you're facing issue with connector
-title: "Connector Issue: <REMOVE WITH ISSUE TITLE>"
+about: Use this when you're facing issue with connector
+title: "Connector Issue: "
 labels: [type/bug, area/connectors, needs-triage]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
-        Make sure you update the title with a concise title and provide all information you have to 
-        help us debugging the problem together.
-        Issues not following the pattern will be closed.
   - type: input
     id: connector-name
     attributes:
@@ -21,7 +14,7 @@ body:
     id: connector-version
     attributes:
       label: Connector Version
-      description: Give the connector version you're using. (eg. 0.2.63, 0.1.0)
+      description: Give the connector version you're using.
     validations:
       required: true
   - type: dropdown
@@ -54,5 +47,5 @@ body:
       label: Contribute
       description: Are you willing to submit the fix?
       options:
-        - label: Yes, I want to contribute
-          required: false
+        - label: Yes
+          required: true

@@ -4,7 +4,7 @@ connector_image: airbyte/source-senseforce:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_senseforce/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -22,9 +22,7 @@ acceptance_tests:
   # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"
-  #          extra_fields: no
   #          exact_order: no
-  #          extra_records: yes
   incremental:
     tests:
       - config_path: "secrets/config.json"

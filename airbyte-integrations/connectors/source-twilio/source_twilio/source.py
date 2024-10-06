@@ -3,10 +3,10 @@
 #
 
 import datetime
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -36,16 +36,23 @@ from source_twilio.streams import (
     OutgoingCallerIds,
     Queues,
     Recordings,
+    Roles,
+    Services,
+    Step,
     Transcriptions,
+    Trunks,
     UsageRecords,
     UsageTriggers,
+    UserConversations,
+    Users,
+    VerifyServices,
 )
 
 RETENTION_WINDOW_LIMIT = 400
 
 
 class SourceTwilio(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = HttpBasicAuthenticator(
                 (
@@ -110,8 +117,15 @@ class SourceTwilio(AbstractSource):
             OutgoingCallerIds(**full_refresh_stream_kwargs),
             Queues(**full_refresh_stream_kwargs),
             Recordings(**incremental_stream_kwargs),
+            Roles(**full_refresh_stream_kwargs),
+            Services(**full_refresh_stream_kwargs),
+            Step(**full_refresh_stream_kwargs),
             Transcriptions(**full_refresh_stream_kwargs),
+            Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
+            Users(**full_refresh_stream_kwargs),
+            UserConversations(**full_refresh_stream_kwargs),
+            VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams

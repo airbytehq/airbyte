@@ -4,52 +4,116 @@
 
 import csv
 import ctypes
-import math
-import os
-import time
 import urllib.parse
 from abc import ABC
-from contextlib import closing
+from datetime import timedelta
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
+from airbyte_cdk import (
+    BearerAuthenticator,
+    CursorPaginationStrategy,
+    DeclarativeStream,
+    DefaultPaginator,
+    DpathExtractor,
+    HttpMethod,
+    HttpRequester,
+    JsonDecoder,
+    MessageRepository,
+    RecordSelector,
+    RequestOption,
+    RequestOptionType,
+    SimpleRetriever,
+    StreamSlice,
+)
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
+from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
+from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
+from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStringTokenProvider
+from airbyte_cdk.sources.declarative.decoders import NoopDecoder
+from airbyte_cdk.sources.declarative.extractors import ResponseToFileExtractor
+from airbyte_cdk.sources.declarative.requesters.http_job_repository import AsyncHttpJobRepository
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.retrievers import AsyncRetriever
+from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
+from airbyte_cdk.sources.declarative.stream_slicers import StreamSlicer
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import IsoMillisConcurrentStreamStateConverter
+from airbyte_cdk.sources.streams.core import CheckpointMixin, Stream, StreamData
+from airbyte_cdk.sources.streams.http import HttpClient, HttpStream, HttpSubStream
+from airbyte_cdk.sources.types import StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
-from requests import codes, exceptions
+from requests import exceptions
 
-from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .api import PARENT_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
 from .availability_strategy import SalesforceAvailabilityStrategy
-from .exceptions import SalesforceException, TmpFileIOError
-from .rate_limiting import default_backoff_handler
+from .rate_limiting import BulkNotSupportedException, SalesforceErrorHandler, default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
 DEFAULT_ENCODING = "utf-8"
+LOOKBACK_SECONDS = 600  # based on https://trailhead.salesforce.com/trailblazer-community/feed/0D54V00007T48TASAZ
+_JOB_TRANSIENT_ERRORS_MAX_RETRY = 1
 
 
 class SalesforceStream(HttpStream, ABC):
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
 
     def __init__(
-        self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
+        self,
+        sf_api: Salesforce,
+        pk: str,
+        stream_name: str,
+        job_tracker: JobTracker,
+        message_repository: MessageRepository,
+        sobject_options: Mapping[str, Any] = None,
+        schema: dict = None,
+        start_date=None,
+        **kwargs,
     ):
-        super().__init__(**kwargs)
-        self.sf_api = sf_api
-        self.pk = pk
         self.stream_name = stream_name
+        self.pk = pk
+        self.sf_api = sf_api
+        super().__init__(**kwargs)
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
+        self.start_date = self.format_start_date(start_date)
+        self._job_tracker = job_tracker
+        self._message_repository = message_repository
+        self._http_client = HttpClient(
+            self.stream_name,
+            self.logger,
+            session=self._http_client._session,  # no need to specific api_budget and authenticator as HttpStream sets them in self._session
+            error_handler=SalesforceErrorHandler(stream_name=self.stream_name, sobject_options=self.sobject_options),
+        )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        """
+        In order to avoid RFR which does uses `_read_single_page` instead of `_read_pages`
+        """
+        yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+
+    @staticmethod
+    def format_start_date(start_date: Optional[str]) -> Optional[str]:
+        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
+        if start_date:
+            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
+        return None
 
     @property
     def max_properties_length(self) -> int:
@@ -66,10 +130,6 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.sf_api.instance_url
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return SalesforceAvailabilityStrategy()
 
     @property
     def too_many_properties(self):
@@ -90,6 +150,16 @@ class SalesforceStream(HttpStream, ABC):
             return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
         return super().get_error_display_message(exception)
 
+    def get_start_date_from_state(self, stream_state: Mapping[str, Any] = None) -> pendulum.DateTime:
+        if self.state_converter.is_state_message_compatible(stream_state):
+            # stream_state is in the concurrent format
+            if stream_state.get("slices", []):
+                return stream_state["slices"][0]["end"]
+        elif stream_state and not self.state_converter.is_state_message_compatible(stream_state):
+            # stream_state has not been converted to the concurrent format; this is not expected
+            return pendulum.parse(stream_state.get(self.cursor_field), tz="UTC")
+        return pendulum.parse(self.start_date, tz="UTC")
+
 
 class PropertyChunk:
     """
@@ -109,6 +179,8 @@ class PropertyChunk:
 
 
 class RestSalesforceStream(SalesforceStream):
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         assert self.primary_key or not self.too_many_properties
@@ -138,13 +210,17 @@ class RestSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
         if next_page_token:
-            """
-            If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
-            """
+            # If `next_page_token` is set, subsequent requests use `nextRecordsUrl`, and do not include any parameters.
             return {}
 
         property_chunk = property_chunk or {}
         query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
+
+        if self.name in PARENT_SALESFORCE_OBJECTS:
+            # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', ...)"
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
+            query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
@@ -257,6 +333,7 @@ class RestSalesforceStream(SalesforceStream):
         # Always return an empty generator just in case no records were ever yielded
         yield from []
 
+    @default_backoff_handler(max_tries=5)  # FIXME remove once HttpStream relies on the HttpClient
     def _fetch_next_page_for_chunk(
         self,
         stream_slice: Mapping[str, Any] = None,
@@ -265,221 +342,430 @@ class RestSalesforceStream(SalesforceStream):
         property_chunk: Mapping[str, Any] = None,
     ) -> Tuple[requests.PreparedRequest, requests.Response]:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+        return self._http_client.send_request(
+            http_method=self.http_method,
+            url=self._join_url(
+                self.url_base,
+                self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            ),
+            headers=dict(request_headers),
             params=self.request_params(
                 stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
             ),
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
             data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            request_kwargs={},
         )
-        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        response = self._send_request(request, request_kwargs)
-        return request, response
+
+
+class BatchedSubStream(HttpSubStream):
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
+    SLICE_BATCH_SIZE = 200
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Instead of yielding one parent record at a time, make stream slice contain a batch of parent records.
+
+        It allows to get <SLICE_BATCH_SIZE> records by one requests (instead of only one).
+        """
+        batched_slice = []
+        for stream_slice in super().stream_slices(sync_mode, cursor_field, stream_state):
+            if len(batched_slice) == self.SLICE_BATCH_SIZE:
+                yield {"parents": batched_slice}
+                batched_slice = []
+            batched_slice.append(stream_slice["parent"])
+        if batched_slice:
+            yield {"parents": batched_slice}
+
+
+class RestSalesforceSubStream(BatchedSubStream, RestSalesforceStream):
+    pass
+
+
+class BulkDatetimeStreamSlicer(StreamSlicer):
+    def __init__(self, cursor: Optional[ConcurrentCursor]) -> None:
+        self._cursor = cursor
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return {}
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        if not self._cursor:
+            yield from [StreamSlice(partition={}, cursor_slice={})]
+            return
+
+        for slice_start, slice_end in self._cursor.generate_slices():
+            yield StreamSlice(
+                partition={},
+                cursor_slice={
+                    "start_date": slice_start.isoformat(timespec="milliseconds"),
+                    "end_date": slice_end.isoformat(timespec="milliseconds"),
+                },
+            )
+
+
+class BulkParentStreamStreamSlicer(StreamSlicer):
+    def __init__(
+        self,
+        batched_substream: BatchedSubStream,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]],
+        stream_state: Optional[Mapping[str, Any]],
+        parend_id_field: str,
+    ) -> None:
+        self._batched_substream = batched_substream
+        self._sync_mode = sync_mode
+        self._cursor_field = cursor_field
+        self._stream_state = stream_state
+        self._parend_id_field = parend_id_field
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return {}
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {}
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        for batched_parents in self._batched_substream.stream_slices(
+            sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._stream_state
+        ):
+            yield StreamSlice(
+                partition={"parents": [parent[self._parend_id_field] for parent in batched_parents["parents"]]}, cursor_slice={}
+            )
 
 
 class BulkSalesforceStream(SalesforceStream):
-    page_size = 15000
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
+    def __init__(self, **kwargs) -> None:
+        self._stream_slicer_cursor = None
+        self._switch_from_bulk_to_rest = False
+        self._rest_stream = None
+        super().__init__(**kwargs)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        """
+        This method needs to be there as `HttpStream.next_page_token` is abstract but it will never get called
+        """
+        pass
+
+    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
+        """
+        This method needs to be there as `HttpStream.path` is abstract but it will never get called
+        """
+        pass
+
+    def _instantiate_declarative_stream(self, stream_slicer: StreamSlicer, has_bulk_parent: bool) -> None:
+        """
+        For streams with a replication key and where filtering is supported, we need to have the cursor in order to instantiate the
+        DeclarativeStream hence why this isn't called in the __init__
+        """
+        config = {}
+        parameters = {}
+        url_base = self.sf_api.instance_url
+        job_query_path = f"/services/data/{self.sf_api.version}/jobs/query"
+        decoder = JsonDecoder(parameters=parameters)
+        authenticator = BearerAuthenticator(
+            token_provider=InterpolatedStringTokenProvider(api_token=self.sf_api.access_token, config=config, parameters=parameters),
+            config=config,
+            parameters=parameters,
+        )
+        error_handler = SalesforceErrorHandler()
+        select_fields = self.get_query_select_fields()
+        query = f"SELECT {select_fields} FROM {self.name}"  # FIXME "def request_params" is also handling `next_token` (I don't know why, I think it's always None) and parent streams
+        if self.cursor_field:
+            where_in_query = '{{ " WHERE " if stream_slice["start_date"] or stream_slice["end_date"] else "" }}'
+            lower_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' >= " + stream_slice["start_date"] if stream_slice["start_date"] else "" }}'
+            )
+            and_keyword_interpolation = '{{" AND " if stream_slice["start_date"] and stream_slice["end_date"] else "" }}'
+            upper_boundary_interpolation = (
+                '{{ "' f"{self.cursor_field}" ' < " + stream_slice["end_date"] if stream_slice["end_date"] else "" }}'
+            )
+            query = query + where_in_query + lower_boundary_interpolation + and_keyword_interpolation + upper_boundary_interpolation
+        elif isinstance(stream_slicer, BulkParentStreamStreamSlicer):
+            where_in_query = " WHERE ContentDocumentId IN ('"
+            parents_interpolation = '{{ "\', \'".join(stream_slice["parents"]) }}'
+            closing_parenthesis = "')"
+            query = query + where_in_query + parents_interpolation + closing_parenthesis
+        creation_requester = HttpRequester(
+            name=f"{self.name} - creation requester",
+            url_base=url_base,
+            path=job_query_path,
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.POST,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json={
+                    "operation": "queryAll",
+                    "query": query,
+                    "contentType": "CSV",
+                    "columnDelimiter": "COMMA",
+                    "lineEnding": "LF",
+                },
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            decoder=decoder,
+            stream_response=False,
+        )
+        polling_id_interpolation = "{{stream_slice['create_job_response'].json()['id'] }}"
+        polling_requester = HttpRequester(
+            name=f"{self.name} - polling requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.GET,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json=None,
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            decoder=decoder,
+            stream_response=False,
+        )
+        # "GET", url, headers = {"Accept-Encoding": "gzip"}, request_kwargs = {"stream": True}
+        download_id_interpolation = "{{stream_slice['url']}}"
+        job_download_components_name = f"{self.name} - download requester"
+        download_requester = HttpRequester(
+            name=job_download_components_name,
+            url_base=url_base,
+            path=f"{job_query_path}/{download_id_interpolation}/results",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.GET,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json=None,
+                request_headers={"Accept-Encoding": "gzip"},
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=True,
+        )
+        download_retriever = SimpleRetriever(
+            requester=download_requester,
+            record_selector=RecordSelector(
+                extractor=ResponseToFileExtractor(),
+                record_filter=None,
+                transformations=[],
+                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
+                config=config,
+                parameters={},
+            ),
+            primary_key=None,
+            name=job_download_components_name,
+            paginator=DefaultPaginator(
+                decoder=NoopDecoder(),
+                page_size_option=None,
+                page_token_option=RequestOption(
+                    field_name="locator",
+                    inject_into=RequestOptionType.request_parameter,
+                    parameters={},
+                ),
+                pagination_strategy=CursorPaginationStrategy(
+                    cursor_value="{{ headers['Sforce-Locator'] }}",
+                    stop_condition="{{ headers.get('Sforce-Locator', None) == 'null' or not headers.get('Sforce-Locator', None) }}",
+                    decoder=NoopDecoder(),
+                    config=config,
+                    parameters={},
+                ),
+                url_base=url_base,
+                config=config,
+                parameters={},
+            ),
+            config=config,
+            parameters={},
+        )
+
+        abort_requester = HttpRequester(
+            name=f"{self.name} - abort requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.PATCH,
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_body_data=None,
+                request_body_json={"state": "Aborted"},
+                request_headers=None,
+                request_parameters=None,
+                config=config,
+                parameters=parameters,
+            ),
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
+        delete_requester = HttpRequester(
+            name=f"{self.name} - delete requester",
+            url_base=url_base,
+            path=f"{job_query_path}/{polling_id_interpolation}",
+            authenticator=authenticator,
+            error_handler=error_handler,
+            http_method=HttpMethod.DELETE,
+            request_options_provider=None,
+            config=config,
+            parameters=parameters,
+            disable_retries=False,
+            message_repository=self._message_repository,
+            use_cache=False,
+            stream_response=False,
+        )
+        status_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["state"], config={}, parameters={})
+        urls_extractor = DpathExtractor(decoder=JsonDecoder(parameters={}), field_path=["id"], config={}, parameters={})
+        job_repository = AsyncHttpJobRepository(
+            creation_requester=creation_requester,
+            polling_requester=polling_requester,
+            download_retriever=download_retriever,
+            abort_requester=abort_requester,
+            delete_requester=delete_requester,
+            status_extractor=status_extractor,
+            status_mapping={
+                "InProgress": AsyncJobStatus.RUNNING,
+                "UploadComplete": AsyncJobStatus.RUNNING,
+                "JobComplete": AsyncJobStatus.COMPLETED,
+                "Aborted": AsyncJobStatus.FAILED,
+                "Failed": AsyncJobStatus.FAILED,
+            },
+            urls_extractor=urls_extractor,
+            job_timeout=self.DEFAULT_WAIT_TIMEOUT,
+        )
+        record_selector = RecordSelector(
+            extractor=None,  # FIXME typing won't like that but it is not used
+            record_filter=None,
+            transformations=[],
+            schema_normalization=self.transformer,
+            config=config,
+            parameters=parameters,
+        )
+        self._bulk_job_stream = DeclarativeStream(
+            retriever=AsyncRetriever(
+                config={},
+                parameters={},
+                record_selector=record_selector,
+                stream_slicer=stream_slicer,
+                job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
+                    job_repository,
+                    stream_slices,
+                    self._job_tracker,
+                    self._message_repository,
+                    exceptions_to_break_on=[BulkNotSupportedException],
+                    has_bulk_parent=has_bulk_parent,
+                ),
+            ),
+            config={},
+            parameters={},
+            name=self.name,
+            primary_key=self.pk,
+            schema_loader=InlineSchemaLoader({}, {}),  # FIXME call get_json_schema?
+            # the interface mentions that this is Optional,
+            # but I get `'NoneType' object has no attribute 'eval'` by passing None
+            stream_cursor_field="",
+        )
+
+    DEFAULT_WAIT_TIMEOUT = timedelta(hours=24)
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
-    def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
-        return f"/services/data/{self.sf_api.version}/jobs/query"
-
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
-    @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
-        headers = self.authenticator.get_auth_header()
-        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
-        if response.status_code not in [200, 204]:
-            self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
-        response.raise_for_status()
-        return response
-
-    def create_stream_job(self, query: str, url: str) -> Optional[str]:
-        """
-        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
-        """
-        json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
-        try:
-            response = self._send_http_request("POST", url, json=json)
-            job_id: str = response.json()["id"]
-            return job_id
-        except exceptions.HTTPError as error:
-            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-                # A part of streams can't be used by BULK API. Every API version can have a custom list of
-                # these sobjects. Another part of them can be generated dynamically. That's why we can't track
-                # them preliminarily and there is only one way is to except error with necessary messages about
-                # their limitations. Now we know about 3 different reasons of similar errors:
-                # 1) some SaleForce sobjects(streams) is not supported by the BULK API simply (as is).
-                # 2) Access to a sobject(stream) is not available
-                # 3) sobject is not queryable. It means this sobject can't be called directly.
-                #    We can call it as part of response from another sobject only.  E.g.:
-                #        initial query: "Select Id, Subject from ActivityHistory" -> error
-                #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
-                #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
-                #    And the main problem is these subqueries doesn't support CSV response format.
-                error_data = error.response.json()[0]
-                error_code = error_data.get("errorCode")
-                error_message = error_data.get("message", "")
-                if error_message == "Selecting compound data not supported in Bulk Query" or (
-                    error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
-                ):
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' using BULK API, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                elif error.response.status_code == codes.FORBIDDEN and error_code != "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
-                    )
-                elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
-                    self.logger.error(
-                        f"The stream '{self.name}' is not queryable, "
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                elif error.response.status_code == codes.BAD_REQUEST and error_code == "LIMIT_EXCEEDED":
-                    self.logger.error(
-                        f"Cannot receive data for stream '{self.name}' ,"
-                        f"sobject options: {self.sobject_options}, error message: '{error_message}'"
-                    )
-                else:
-                    raise error
-            else:
-                raise error
-        return None
-
-    def wait_for_job(self, url: str) -> str:
-        expiration_time: DateTime = pendulum.now().add(seconds=self.DEFAULT_WAIT_TIMEOUT_SECONDS)
-        job_status = "InProgress"
-        delay_timeout = 0.0
-        delay_cnt = 0
-        job_info = None
-        # minimal starting delay is 0.5 seconds.
-        # this value was received empirically
-        time.sleep(0.5)
-        while pendulum.now() < expiration_time:
-            job_info = self._send_http_request("GET", url=url).json()
-            job_status = job_info["state"]
-            if job_status in ["JobComplete", "Aborted", "Failed"]:
-                if job_status != "JobComplete":
-                    # this is only job metadata without payload
-                    error_message = job_info.get("errorMessage")
-                    if not error_message:
-                        # not all failed response can have "errorMessage" and we need to show full response body
-                        error_message = job_info
-                    self.logger.error(f"JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
-
-                return job_status
-
-            if delay_timeout < self.MAX_CHECK_INTERVAL_SECONDS:
-                delay_timeout = 0.5 + math.exp(delay_cnt) / 1000.0
-                delay_cnt += 1
-
-            time.sleep(delay_timeout)
-            job_id = job_info["id"]
-            self.logger.info(
-                f"Sleeping {delay_timeout} seconds while waiting for Job: {self.name}/{job_id} to complete. Current state: {job_status}"
-            )
-
-        self.logger.warning(f"Not wait the {self.name} data for {self.DEFAULT_WAIT_TIMEOUT_SECONDS} seconds, data: {job_info}!!")
-        return job_status
-
-    def execute_job(self, query: str, url: str) -> Tuple[Optional[str], Optional[str]]:
-        job_status = "Failed"
-        for i in range(0, self.MAX_RETRY_NUMBER):
-            job_id = self.create_stream_job(query=query, url=url)
-            if not job_id:
-                return None, job_status
-            job_full_url = f"{url}/{job_id}"
-            job_status = self.wait_for_job(url=job_full_url)
-            if job_status not in ["UploadComplete", "InProgress"]:
-                break
-            self.logger.error(f"Waiting error. Try to run this job again {i + 1}/{self.MAX_RETRY_NUMBER}...")
-            self.abort_job(url=job_full_url)
-            job_status = "Aborted"
-
-        if job_status in ["Aborted", "Failed"]:
-            self.delete_job(url=job_full_url)
-            return None, job_status
-        return job_full_url, job_status
-
-    def filter_null_bytes(self, b: bytes):
-        """
-        https://github.com/airbytehq/airbyte/issues/8300
-        """
-        res = b.replace(b"\x00", b"")
-        if len(res) < len(b):
-            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
-        return res
-
-    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str]:
-        """
-        Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
-        @ url: string - the url of the `executed_job`
-        @ chunk_size: int - the buffer size for each chunk to fetch from stream, in bytes, default: 1024 bytes
-        Return the tuple containing string with file path of downloaded binary data (Saved temporarily) and file encoding.
-        """
-        # set filepath for binary data from response
-        tmp_file = os.path.realpath(os.path.basename(url))
-        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.apparent_encoding or response.encoding or self.encoding
-            for chunk in response.iter_content(chunk_size=chunk_size):
-                data_file.write(self.filter_null_bytes(chunk))
-        # check the file exists
-        if os.path.isfile(tmp_file):
-            return tmp_file, response_encoding
-        else:
-            raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
-
-    def read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        """
-        Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
-        @ path: string - the path to the downloaded temporarily binary data.
-        @ file_encoding: string - encoding for binary data file according to Standard Encodings from codecs module
-        @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
-        """
-        try:
-            with open(path, "r", encoding=file_encoding) as data:
-                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
-                for chunk in chunks:
-                    chunk = chunk.replace({nan: None}).to_dict(orient="records")
-                    for row in chunk:
-                        yield row
-        except pd.errors.EmptyDataError as e:
-            self.logger.info(f"Empty data received. {e}")
-            yield from []
-        except IOError as ioe:
-            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
-        finally:
-            # remove binary tmp file, after data is read
-            os.remove(path)
-
-    def abort_job(self, url: str):
-        data = {"state": "Aborted"}
-        self._send_http_request("PATCH", url=url, json=data)
-        self.logger.warning("Broken job was aborted")
-
-    def delete_job(self, url: str):
-        self._send_http_request("DELETE", url=url)
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "}  # type: ignore[index]
-        return None
+    def get_query_select_fields(self) -> str:
+        return ", ".join(
+            {
+                key: value
+                for key, value in self.get_json_schema().get("properties", {}).items()
+                if value.get("format") != "base64" and "object" not in value["type"]
+            }
+        )
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -488,13 +774,17 @@ class BulkSalesforceStream(SalesforceStream):
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
         """
 
-        selected_properties = self.get_json_schema().get("properties", {})
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        select_fields = self.get_query_select_fields()
+        query = f"SELECT {select_fields} FROM {self.name}"
         if next_page_token:
             query += next_page_token["next_token"]
 
-        if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
+        if self.name in PARENT_SALESFORCE_OBJECTS:
+            # add where clause: " WHERE ContentDocumentId IN ('06905000000NMXXXXX', '06905000000Mxp7XXX', ...)"
+            parent_field = PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            parent_ids = [f"'{parent_record[parent_field]}'" for parent_record in stream_slice["parents"]]
+            query += f" WHERE ContentDocumentId IN ({','.join(parent_ids)})"
+
         return {"q": query}
 
     def read_records(
@@ -503,49 +793,38 @@ class BulkSalesforceStream(SalesforceStream):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
+        call_count: int = 0,
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = stream_state or {}
-        next_page_token = None
+        if self._is_async_job_slice(stream_slice):
+            if self._switch_from_bulk_to_rest:
+                # ignore as we have switched to rest
+                pass
+            else:
+                yield from self._bulk_job_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        else:
+            yield from self._rest_stream.read_records(sync_mode, cursor_field, stream_slice, stream_state)
 
-        while True:
-            params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            job_full_url, job_status = self.execute_job(query=params["q"], url=f"{self.url_base}{path}")
-            if not job_full_url:
-                if job_status == "Failed":
-                    # As rule as BULK logic returns unhandled error. For instance:
-                    # error message: 'Unexpected exception encountered in query processing.
-                    #                 Please contact support with the following id: 326566388-63578 (-436445966)'"
-                    # Thus we can try to switch to GET sync request because its response returns obvious error message
-                    standard_instance = self.get_standard_instance()
-                    self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
-                    stream_is_available, error = standard_instance.check_availability(self.logger, None)
-                    if not stream_is_available:
-                        self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
-                        return
-                    yield from standard_instance.read_records(
-                        sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-                    )
-                    return
-                raise SalesforceException(f"Job for {self.name} stream using BULK API was failed.")
+    def _is_async_job_slice(self, stream_slice):
+        return isinstance(stream_slice, StreamSlice) and "partition" in stream_slice.partition
 
-            count = 0
-            record: Mapping[str, Any] = {}
-            for record in self.read_with_chunks(*self.download_data(url=job_full_url)):
-                count += 1
-                yield record
-            self.delete_job(url=job_full_url)
-
-            if count < self.page_size:
-                # Salesforce doesn't give a next token or something to know the request was
-                # the last page. The connectors will sync batches in `page_size` and
-                # considers that batch is smaller than the `page_size` it must be the last page.
-                break
-
-            next_page_token = self.next_page_token(record)
-            if not next_page_token:
-                # not found a next page data.
-                break
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream(BulkDatetimeStreamSlicer(self._stream_slicer_cursor), has_bulk_parent=False)
+        try:
+            yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        except BulkNotSupportedException:
+            self.logger.warning(
+                "attempt to switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status"
+            )
+            self._switch_from_bulk_to_rest = True
+            self._rest_stream = self.get_standard_instance()
+            stream_is_available, error = SalesforceAvailabilityStrategy().check_availability(self._rest_stream, self.logger, None)
+            if not stream_is_available:
+                self.logger.warning(f"Skipped syncing stream '{self._rest_stream.name}' because it was unavailable. Error: {error}")
+                yield from []
+            else:
+                yield from self._rest_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_standard_instance(self) -> SalesforceStream:
         """Returns a instance of standard logic(non-BULK) with same settings"""
@@ -555,14 +834,32 @@ class BulkSalesforceStream(SalesforceStream):
             stream_name=self.stream_name,
             schema=self.schema,
             sobject_options=self.sobject_options,
-            authenticator=self.authenticator,
+            authenticator=self._http_client._session.auth,
+            job_tracker=self._job_tracker,
+            message_repository=self._message_repository,
         )
         new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
             new_cls = IncrementalRestSalesforceStream
 
-        return new_cls(**stream_kwargs)
+        standard_instance = new_cls(**stream_kwargs)
+        if hasattr(standard_instance, "set_cursor"):
+            standard_instance.set_cursor(self._stream_slicer_cursor)
+        return standard_instance
+
+
+class BulkSalesforceSubStream(BatchedSubStream, BulkSalesforceStream):
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._instantiate_declarative_stream(
+            BulkParentStreamStreamSlicer(
+                super(BulkSalesforceSubStream, self), sync_mode, cursor_field, stream_state, PARENT_SALESFORCE_OBJECTS[self.name]["field"]
+            ),
+            has_bulk_parent=True,
+        )
+        yield from self._bulk_job_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
 
 @BulkSalesforceStream.transformer.registerCustomTransform
@@ -577,35 +874,35 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
     return instance
 
 
-class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
+class IncrementalRestSalesforceStream(RestSalesforceStream, CheckpointMixin, ABC):
     state_checkpoint_interval = 500
-    STREAM_SLICE_STEP = 120
+    _slice = None
 
-    def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, replication_key: str, stream_slice_step: str = "P30D", **kwargs):
         self.replication_key = replication_key
-        self.start_date = self.format_start_date(start_date)
+        super().__init__(**kwargs)
+        self._stream_slice_step = stream_slice_step
+        self._stream_slicer_cursor = None
+        self._state = {}
 
-    @staticmethod
-    def format_start_date(start_date: Optional[str]) -> Optional[str]:
-        """Transform the format `2021-07-25` into the format `2021-07-25T00:00:00Z`"""
-        if start_date:
-            return pendulum.parse(start_date).strftime("%Y-%m-%dT%H:%M:%SZ")  # type: ignore[attr-defined,no-any-return]
-        return None
+    def set_cursor(self, cursor: ConcurrentCursor) -> None:
+        self._stream_slicer_cursor = cursor
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start, end = (None, None)
-        now = pendulum.now(tz="UTC")
-        initial_date = pendulum.parse((stream_state or {}).get(self.cursor_field, self.start_date), tz="UTC")
+        if not self._stream_slicer_cursor:
+            raise ValueError("Cursor should be set at this point")
 
-        slice_number = 1
-        while not end == now:
-            start = initial_date.add(days=(slice_number - 1) * self.STREAM_SLICE_STEP)
-            end = min(now, initial_date.add(days=slice_number * self.STREAM_SLICE_STEP))
-            yield {"start_date": start.isoformat(timespec="milliseconds"), "end_date": end.isoformat(timespec="milliseconds")}
-            slice_number = slice_number + 1
+        for slice_start, slice_end in self._stream_slicer_cursor.generate_slices():
+            yield {
+                "start_date": slice_start.isoformat(timespec="milliseconds"),
+                "end_date": slice_end.isoformat(timespec="milliseconds"),
+            }
+
+    @property
+    def stream_slice_step(self) -> pendulum.Duration:
+        return pendulum.parse(self._stream_slice_step)
 
     def request_params(
         self,
@@ -632,17 +929,14 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
         select_fields = ",".join(property_chunk.keys())
         table_name = self.name
         where_conditions = []
-        order_by_clause = ""
 
         if start_date:
             where_conditions.append(f"{self.cursor_field} >= {start_date}")
         if end_date:
             where_conditions.append(f"{self.cursor_field} < {end_date}")
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            order_by_clause = f"ORDER BY {self.cursor_field} ASC"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
-        query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
 
         return {"q": query}
 
@@ -650,51 +944,49 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     def cursor_field(self) -> str:
         return self.replication_key
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state = value
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state
-        object and returning an updated state object.
+        object and returning an updated state object. Check if latest record is IN stream slice interval => ignore if not
         """
-        latest_benchmark = latest_record[self.cursor_field]
+        latest_record_value: pendulum.DateTime = pendulum.parse(latest_record[self.cursor_field])
+        slice_max_value: pendulum.DateTime = pendulum.parse(self._slice.get("end_date"))
+        max_possible_value = min(latest_record_value, slice_max_value)
         if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+            if latest_record_value > slice_max_value:
+                return {self.cursor_field: max_possible_value.isoformat()}
+            max_possible_value = max(latest_record_value, pendulum.parse(current_stream_state[self.cursor_field]))
+        return {self.cursor_field: max_possible_value.isoformat()}
 
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
-    def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": last_record[self.cursor_field], "primary_key": last_record.get(self.primary_key)}
-        return None
+    state_checkpoint_interval = None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        start_date = max(
-            (stream_state or {}).get(self.cursor_field, ""),
-            (stream_slice or {}).get("start_date", ""),
-            (next_page_token or {}).get("start_date", ""),
-        )
+        start_date = stream_slice["start_date"]
         end_date = stream_slice["end_date"]
 
-        select_fields = ", ".join(self.get_json_schema().get("properties", {}).keys())
+        select_fields = self.get_query_select_fields()
         table_name = self.name
         where_conditions = [f"{self.cursor_field} >= {start_date}", f"{self.cursor_field} < {end_date}"]
-        order_by_clause = ""
-
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            last_primary_key = (next_page_token or {}).get("primary_key", "")
-            if last_primary_key:
-                where_conditions.append(f"{self.primary_key} > '{last_primary_key}'")
-            order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
-            order_by_clause = f"ORDER BY {order_by_fields} ASC LIMIT {self.page_size}"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
-        query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
+        query = f"SELECT {select_fields} FROM {table_name} {where_clause}"
         return {"q": query}
 
 
 class Describe(Stream):
+    state_converter = IsoMillisConcurrentStreamStateConverter(is_sequential_state=False)
     """
     Stream of sObjects' (Salesforce Objects) describe:
     https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm

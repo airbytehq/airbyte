@@ -1,0 +1,30 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/ConnectorMetrics.yaml
+title: ConnectorMetrics
+description: Information about the source file that generated the registry entry
+type: object
+properties:
+  all:
+    type: ConnectorMetric
+  cloud:
+    type: ConnectorMetric
+  oss:
+    type: ConnectorMetric
+definitions:
+  ConnectorMetric:
+    type: object
+    properties:
+      usage:
+        oneOf:
+          - type: string
+          - type: string
+            enum: [low, medium, high]
+      sync_success_rate:
+        oneOf:
+          - type: string
+          - type: string
+            enum: [low, medium, high]
+      connector_version:
+        type: string
+    additionalProperties: true

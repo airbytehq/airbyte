@@ -8,11 +8,26 @@ data:
   icon: googlepubsub.svg
   license: MIT
   name: Google PubSub
-  registries:
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/pubsub
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-PUBSUB_CREDENTIALS__CREDS
+          fileName: credentials.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

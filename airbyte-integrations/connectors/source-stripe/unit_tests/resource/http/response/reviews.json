@@ -1,0 +1,23 @@
+{
+  "object": "list",
+  "url": "/v1/reviews",
+  "has_more": false,
+  "data": [
+    {
+      "id": "prv_1NVyFt2eZvKYlo2CjubqF1xm",
+      "object": "review",
+      "billing_zip": null,
+      "charge": null,
+      "closed_reason": null,
+      "created": 1689864901,
+      "ip_address": null,
+      "ip_address_location": null,
+      "livemode": false,
+      "open": true,
+      "opened_reason": "rule",
+      "payment_intent": "pi_3NVy8c2eZvKYlo2C055h7pkd",
+      "reason": "rule",
+      "session": null
+    }
+  ]
+}
