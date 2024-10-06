@@ -3,8 +3,7 @@ data:
     ql: 100
     sl: 100
   connectorBuildOptions:
-    baseImage: 
-      docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
   connectorSubtype: api
   connectorType: source
   definitionId: cde75ca1-1e28-4a0f-85bb-90c546de9f1f
@@ -27,18 +26,18 @@ data:
       packageName: airbyte-source-postmarkapp
   supportLevel: community
   tags:
-  - cdk:low-code
-  - language:manifest-only
+    - cdk:low-code
+    - language:manifest-only
   connectorTestSuitesOptions:
-  - suite: liveTests
-    testConnections:
-    - name: postmarkapp_config_dev_null
-      id: 2c3b45cb-13d7-4883-a982-17188cf3dcae
-  - suite: acceptanceTests
-    testSecrets:
-    - name: SECRET_SOURCE-POSTMARKAPP__CREDS
-      fileName: config.json
-      secretStore:
-        type: GSM
-        alias: airbyte-connector-testing-secret-store
+    - suite: liveTests
+      testConnections:
+        - name: postmarkapp_config_dev_null
+          id: 2c3b45cb-13d7-4883-a982-17188cf3dcae
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-POSTMARKAPP__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"
