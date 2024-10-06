@@ -1,23 +1,29 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-pokeapi:dev
-test_strictness_level: high
 acceptance_tests:
   spec:
-    bypass_reason: "The spec is currently invalid: it has additionalProperties set to false"
+    tests:
+      - spec_path: "manifest.yaml"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.5"
   connection:
     tests:
-      - config_path: "integration_tests/config.json"
+      - config_path: "secrets/config.json"
         status: "succeed"
   discovery:
     tests:
-      - config_path: "integration_tests/config.json"
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.5"
   basic_read:
     tests:
-      - config_path: "integration_tests/config.json"
-        expect_records:
-          bypass_reason: "We should create an expected_records file"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
   full_refresh:
     tests:
-      - config_path: "integration_tests/config.json"
+      - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-  incremental:
-    bypass_reason: "This connector does not support incremental syncs."

@@ -3,9 +3,11 @@
   "type": "object",
   "properties": {
     "siteUrl": {
+      "description": "The URL of the site data being fetched",
       "type": ["null", "string"]
     },
     "permissionLevel": {
+      "description": "The user's permission level for the site (owner, full, restricted, etc.)",
       "type": ["null", "string"]
     }
   }

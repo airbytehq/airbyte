@@ -5,14 +5,20 @@ data:
   connectorSubtype: database
   dockerRepository: airbyte/destination-selectdb
   githubIssueLabel: destination-selectdb
-  icon: select.db
+  icon: selectdb.svg
   license: MIT
   name: SelectDB
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/selectdb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/selectdb
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: archived
 metadataSpecVersion: "1.0"

@@ -3,19 +3,20 @@
 #
 
 import json
+import operator
 from contextlib import nullcontext as does_not_raise
-from datetime import datetime
+from logging import Logger
 from pathlib import Path
 from typing import Any, Optional
 from unittest.mock import MagicMock, patch
 
-import pendulum
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateBlob,
     AirbyteStateMessage,
+    AirbyteStateStats,
     AirbyteStateType,
     AirbyteStream,
     AirbyteStreamState,
@@ -26,14 +27,20 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
+from connector_acceptance_test.config import (
+    Config,
+    EmptyStreamConfiguration,
+    FutureStateConfig,
+    FutureStateCursorFormatConfiguration,
+    IncrementalConfig,
+)
 from connector_acceptance_test.tests import test_incremental
 from connector_acceptance_test.tests.test_incremental import TestIncremental as _TestIncremental
-from connector_acceptance_test.tests.test_incremental import (
-    compare_cursor_with_threshold,
-    future_state_configuration_fixture,
-    future_state_fixture,
-)
+from connector_acceptance_test.tests.test_incremental import future_state_configuration_fixture, future_state_fixture
+
+pytestmark = [
+    pytest.mark.anyio,
+]
 
 
 def build_messages_from_record_data(stream: str, records: list[dict]) -> list[AirbyteMessage]:
@@ -49,91 +56,85 @@ def build_state_message(state: dict) -> AirbyteMessage:
 
 
 def build_per_stream_state_message(
-    descriptor: StreamDescriptor, stream_state: Optional[dict[str, Any]], data: Optional[dict[str, Any]] = None
+    descriptor: StreamDescriptor, stream_state: Optional[dict[str, Any]], data: Optional[dict[str, Any]] = None, source_stats: Optional[dict[str, Any]] = None
 ) -> AirbyteMessage:
     if data is None:
         data = stream_state
+    if source_stats is None:
+        source_stats = {"recordCount": 0.0}
+
     stream_state_blob = AirbyteStateBlob.parse_obj(stream_state) if stream_state else None
     return AirbyteMessage(
         type=Type.STATE,
         state=AirbyteStateMessage(
-            type=AirbyteStateType.STREAM, stream=AirbyteStreamState(stream_descriptor=descriptor, stream_state=stream_state_blob), data=data
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(stream_descriptor=descriptor, stream_state=stream_state_blob),
+            sourceStats=AirbyteStateStats(**source_stats),
+            data=data
         ),
     )
 
 
-@pytest.mark.parametrize(
-    "record_value, state_value, threshold_days, expected_result",
-    [
-        (datetime(2020, 10, 10), datetime(2020, 10, 9), 0, True),
-        (datetime(2020, 10, 10), datetime(2020, 10, 11), 0, False),
-        (datetime(2020, 10, 10), datetime(2020, 10, 11), 1, True),
-        (pendulum.parse("2020-10-10"), pendulum.parse("2020-10-09"), 0, True),
-        (pendulum.parse("2020-10-10"), pendulum.parse("2020-10-11"), 0, False),
-        (pendulum.parse("2020-10-10"), pendulum.parse("2020-10-11"), 1, True),
-        ("2020-10-10", "2020-10-09", 0, True),
-        ("2020-10-10", "2020-10-11", 0, False),
-        ("2020-10-10", "2020-10-11", 1, True),
-        (1602288000000, 1602201600000, 0, True),
-        (1602288000000, 1602374400000, 0, False),
-        (1602288000000, 1602374400000, 1, True),
-        (1602288000, 1602201600, 0, True),
-        (1602288000, 1602374400, 0, False),
-        (1602288000, 1602374400, 1, True),
-        ("aaa", "bbb", 0, False),
-        ("bbb", "aaa", 0, True),
-    ],
-)
-def test_compare_cursor_with_threshold(record_value, state_value, threshold_days, expected_result):
-    assert compare_cursor_with_threshold(record_value, state_value, threshold_days) == expected_result
-
-
 @pytest.mark.parametrize("cursor_type", ["date", "string"])
 @pytest.mark.parametrize(
-    "records1, records2, latest_state, threshold_days, expected_error",
+    "records1, records2, latest_state, namespace, expected_error",
     [
-        ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-02", 0, does_not_raise()),
+        ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-01", None, does_not_raise()),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-02",
-            0,
-            pytest.raises(AssertionError, match="First incremental sync should produce records younger"),
+            "public",
+            does_not_raise(),
+        ),
+        (
+            [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
+            [],
+            "2020-01-02",
+            None,
+            does_not_raise(),
         ),
         (
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
-            "2020-01-02",
-            0,
-            does_not_raise(),
-        ),
-        (
-            [{"date": "2020-01-01"}],
-            [{"date": "2020-01-01"}],
-            "2020-01-02",
-            0,
-            pytest.raises(AssertionError, match="Second incremental sync should produce records older"),
-        ),
-        (
-            [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
-            [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             "2020-01-03",
-            2,
+            None,
             does_not_raise(),
+        ),
+        (
+            [],
+            [{"date": "2020-01-01"}],
+            "2020-01-04",
+            None,
+            pytest.raises(AssertionError, match="First Read should produce at least one record"),
+        ),
+        (
+            [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
+            [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
+            "2020-01-05",
+            None,
+            pytest.raises(AssertionError, match="Records should change between reads but did not."),
         ),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
-            "2020-01-02",
-            2,
-            pytest.raises(AssertionError, match="First incremental sync should produce records younger"),
+            "2020-01-06",
+            None,
+            does_not_raise(),
         ),
         (
             [{"date": "2020-01-01"}],
             [{"date": "2020-01-02"}],
-            "2020-01-06",
-            3,
-            pytest.raises(AssertionError, match="Second incremental sync should produce records older"),
+            "2020-01-07",
+            "public",
+            does_not_raise(),
+        ),
+        (
+            [{"date": "2020-01-01"}],
+            [{"date": "2020-01-02"}],
+            "someunparseablenonsensestate",
+            None,
+            does_not_raise(),
         ),
     ],
 )
@@ -144,11 +145,9 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
-def test_incremental_two_sequential_reads(
-    records1, records2, latest_state, threshold_days, cursor_type, expected_error, run_per_stream_test
+async def test_incremental_two_sequential_reads(
+    mocker, records1, records2, latest_state, namespace, cursor_type, expected_error, run_per_stream_test
 ):
-    input_config = IncrementalConfig(threshold_days=threshold_days)
-    cursor_paths = {"test_stream": ["date"]}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -165,9 +164,10 @@ def test_incremental_two_sequential_reads(
     )
 
     if run_per_stream_test:
+        stream_descriptor = StreamDescriptor(name="test_stream", namespace=namespace)
         call_read_output_messages = [
             *build_messages_from_record_data("test_stream", records1),
-            build_per_stream_state_message(descriptor=StreamDescriptor(name="test_stream"), stream_state={"date": latest_state}),
+            build_per_stream_state_message(descriptor=stream_descriptor, stream_state={"date": latest_state}),
         ]
         call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
     else:
@@ -178,433 +178,184 @@ def test_incremental_two_sequential_reads(
         call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
 
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = call_read_output_messages
-    docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(return_value=call_read_with_state_output_messages)
 
     t = _TestIncremental()
     with expected_error:
-        t.test_two_sequential_reads(
-            inputs=input_config,
+        await t.test_two_sequential_reads(
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
-            cursor_paths=cursor_paths,
             docker_runner=docker_runner_mock,
+            client_container=None,
+            client_container_config=None,
+            detailed_logger=Logger("test"),
         )
 
 
 @pytest.mark.parametrize(
-    "stream_name, cursor_type, cursor_paths, records1, records2, latest_state, expected_error",
-    [
-        (
-            "test_stream",
-            {
-                    "dateCreated": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-            },
-            {'test_stream': ['dateCreated']},
-            [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
-            [],
-            {"dateCreated": "2020-01-02T01:01:01.000000Z"},
-            does_not_raise(),
-        ),
-        (
-            "test_stream",
-            {
-                    "dateCreated": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-            },
-            {'test_stream': ['dateCreated']},
-            [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
-            [],
-            {},
-            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path")
-        ),
-    ],
-)
-@pytest.mark.parametrize(
-    "run_per_stream_test",
-    [
-        pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
-        pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
-    ],
-)
-def test_incremental_two_sequential_reads_state_invalid(
-    stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test
-):
-    input_config = IncrementalConfig()
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(
-                    name=stream_name,
-                    json_schema={"type": "object", "properties": cursor_type},
-                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
-                ),
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-                default_cursor_field=["dateCreated"],
-                cursor_field=["dateCreated"],
-            )
-        ]
-    )
-
-    if run_per_stream_test:
-        call_read_output_messages = [
-            *build_messages_from_record_data(stream_name, records1),
-            build_per_stream_state_message(descriptor=StreamDescriptor(name=stream_name), stream_state=latest_state),
-        ]
-    else:
-        stream_state = dict()
-        stream_state[stream_name] = latest_state
-        call_read_output_messages = [
-            *build_messages_from_record_data(stream_name, records1),
-            build_state_message(stream_state),
-        ]
-
-    call_read_with_state_output_messages = build_messages_from_record_data(stream_name, records2)
-
-    docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = call_read_output_messages
-    docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
-
-    t = _TestIncremental()
-    with expected_error:
-        t.test_two_sequential_reads(
-            inputs=input_config,
-            connector_config=MagicMock(),
-            configured_catalog_for_incremental=catalog,
-            cursor_paths=cursor_paths,
-            docker_runner=docker_runner_mock,
-        )
-
-
-@pytest.mark.parametrize(
-    "records, state_records, threshold_days, expected_error",
+    "first_records, subsequent_records, inputs, expected_error",
     [
         pytest.param(
             [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-            ],
-            0,
-            does_not_raise(),
-            id="test_incremental_with_2_states",
-        ),
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-13"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-13"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-13"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                ],
-            ],
-            0,
-            pytest.raises(AssertionError),
-            id="test_first_incremental_only_younger_records",
-        ),
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                ],
-            ],
-            3,
-            does_not_raise(),
-            id="test_incremental_with_threshold",
-        ),
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},  # out of order
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},  # out of order
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}},
-                ],
-            ],
-            0,
-            pytest.raises(AssertionError),
-            id="test_incremental_with_incorrect_messages",
-        ),
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
                 {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-11"}},
-                {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-12"}},
-                {
-                    "type": Type.STATE,
-                    "name": "test_stream_2",
-                    "stream_state": {"date": "2022-05-13"},
-                    "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-13"}},
-                },
-                {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-13"}},
-                {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-14"}},
-                {
-                    "type": Type.STATE,
-                    "name": "test_stream_2",
-                    "stream_state": {"date": "2022-05-15"},
-                    "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-15"}},
-                },
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
             ],
             [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-12"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-13"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-13"}},
-                    },
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-13"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-14"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-15"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-15"}},
-                    },
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-12"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-13"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-13"}},
-                    },
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-13"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-14"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-15"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-15"}},
-                    },
-                ],
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-11"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-12"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-13"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-13"}},
-                    },
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-13"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-14"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-15"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-15"}},
-                    },
-                ],
-                [
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-13"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-13"}},
-                    },
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-13"}},
-                    {"type": Type.RECORD, "name": "test_stream_2", "data": {"date": "2022-05-14"}},
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-15"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-15"}},
-                    },
-                ],
-                [
-                    {
-                        "type": Type.STATE,
-                        "name": "test_stream_2",
-                        "stream_state": {"date": "2022-05-15"},
-                        "data": {"test_stream": {"date": "2022-05-11"}, "test_stream_2": {"date": "2022-05-15"}},
-                    },
-                ],
-            ],
-            0,
-            does_not_raise(),
-            id="test_incremental_with_multiple_streams",
-        ),
-        pytest.param(
-            [
-                {"type": Type.STATE, "name": "test_stream", "stream_state": None},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-            ],
-            [
-                [
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": None},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
-                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
-                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-09"}},
-                ],
                 [],
             ],
-            0,
+            IncrementalConfig(),
             does_not_raise(),
-            id="test_incremental_with_none_state",
+            id="test_incremental_with_amount_of_states_less_than_3_whith_latest_only_state_checked",
+        ),
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 1.0}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 2.0}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+            ],
+            [
+                # Read after 2022-05-08. The first state is expected to be skipped as empty. So, subsequent reads will start with the second state message.
+                [
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 2.0}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+                ],
+                # Read after 2022-05-10. This is the second (last) subsequent read.
+                [
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 2.0}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+                ]
+            ],
+            IncrementalConfig(),
+            does_not_raise(),
+            id="test_incremental_with_4_states_with_state_variation_checked",
+        ),
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 0.0}},
+            ],
+            [
+                []
+            ],
+            IncrementalConfig(),
+            does_not_raise(),
+            id="test_incremental_no_records_on_first_read_skips_stream",
+        ),
+        pytest.param(
+            [
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-09"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+            ],
+            [
+                []
+            ],
+            IncrementalConfig(),
+            does_not_raise(),
+            id="test_incremental_no_states_on_first_read_skips_stream",
+        ),
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-13"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}, "sourceStats": {"recordCount": 2.0}},
+            ],
+            [
+                [
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+                    {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-13"}},
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}, "sourceStats": {"recordCount": 2.0}},
+                ],
+                [
+                    {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-13"}, "sourceStats": {"recordCount": 2.0}},
+                ],
+            ],
+            IncrementalConfig(),
+            does_not_raise(),
+            id="test_first_incremental_only_younger_records",
+        ),
+        # pytest.param(
+        #     [
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-05"}, "sourceStats": {"recordCount": 2.0}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+        #         {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+        #         {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+        #     ],
+        #     [
+        #         [
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-04"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-05"}},
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-05"}, "sourceStats": {"recordCount": 2.0}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-10"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-11"}},
+        #             {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-12"}},
+        #             {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}},
+        #         ]
+        #     ],
+        #     IncrementalConfig(),
+        #     pytest.raises(AssertionError, match="Records for subsequent reads with new state should be different"),
+        #     id="test_incremental_returns_identical",
+        # ),
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-07"}},
+                {"type": Type.RECORD, "name": "test_stream", "data": {"date": "2022-05-08"}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+            ],
+            [
+                [],
+            ],
+            IncrementalConfig(),
+            does_not_raise(),
+            id="test_incremental_with_empty_second_read",
         ),
     ],
 )
-@pytest.mark.parametrize(
-    "run_per_stream_test",
-    [
-        pytest.param(False, id="test_read_with_multiple_states_using_a_mock_connector_emitting_legacy_state"),
-        pytest.param(True, id="test_read_with_multiple_states_using_a_mock_connector_emitting_per_stream_state"),
-    ],
-)
-def test_per_stream_read_with_multiple_states(records, state_records, threshold_days, expected_error, run_per_stream_test):
-    input_config = IncrementalConfig(threshold_days=threshold_days)
-    cursor_paths = {"test_stream": ["date"], "test_stream_2": ["date"]}
+async def test_per_stream_read_with_multiple_states(mocker, first_records, subsequent_records, inputs, expected_error):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -616,78 +367,122 @@ def test_per_stream_read_with_multiple_states(records, state_records, threshold_
                 sync_mode=SyncMode.incremental,
                 destination_sync_mode=DestinationSyncMode.overwrite,
                 cursor_field=["date"],
-            ),
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(
-                    name="test_stream_2",
-                    json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
-                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
-                ),
-                sync_mode=SyncMode.incremental,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-                cursor_field=["date"],
-            ),
+            )
         ]
     )
 
-    if run_per_stream_test:
-        call_read_output_messages = [
+    call_read_output_messages = [
+        build_per_stream_state_message(
+            descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None), source_stats=record.get("sourceStats")
+        )
+        if record["type"] == Type.STATE
+        else build_record_message(record["name"], record["data"])
+        for record in list(first_records)
+    ]
+    call_read_with_state_output_messages = [
+        [
             build_per_stream_state_message(
-                descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None)
+                descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None), source_stats=record.get("sourceStats")
             )
             if record["type"] == Type.STATE
-            else build_record_message(record["name"], record["data"])
-            for record in list(records)
-        ]
-        call_read_with_state_output_messages = [
-            [
-                build_per_stream_state_message(
-                    descriptor=StreamDescriptor(name=record["name"]), stream_state=record["stream_state"], data=record.get("data", None)
-                )
-                if record["type"] == Type.STATE
-                else build_record_message(stream=record["name"], data=record["data"])
-                for record in state_records_group
-            ]
-            for state_records_group in list(state_records)
-        ]
-    else:
-        call_read_output_messages = [
-            build_state_message(state=record.get("data") or {record["name"]: record["stream_state"]})
-            if record["type"] == Type.STATE
             else build_record_message(stream=record["name"], data=record["data"])
-            for record in list(records)
+            for record in state_records_group
         ]
-        call_read_with_state_output_messages = [
-            [
-                build_state_message(state=record.get("data") or {record["name"]: record["stream_state"]})
-                if record["type"] == Type.STATE
-                else build_record_message(stream=record["name"], data=record["data"])
-                for record in state_records_group
-            ]
-            for state_records_group in list(state_records)
-        ]
+        for state_records_group in list(subsequent_records)
+    ]
 
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = call_read_output_messages
-    docker_runner_mock.call_read_with_state.side_effect = call_read_with_state_output_messages
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=call_read_output_messages)
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(side_effect=call_read_with_state_output_messages)
 
     t = _TestIncremental()
+    # test if skipped
     with expected_error:
-        t.test_read_sequential_slices(
-            inputs=input_config,
+        await t.test_read_sequential_slices(
             connector_config=MagicMock(),
             configured_catalog_for_incremental=catalog,
-            cursor_paths=cursor_paths,
             docker_runner=docker_runner_mock,
+            inputs=inputs,
+            client_container=None,
+            client_container_config=None,
+            detailed_logger=Logger("test"),
         )
 
 
-def test_config_skip_test():
+@pytest.mark.parametrize(
+    "non_unique_states, expected_unique_states, expected_record_count_per_state",
+    [
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}}
+            ],
+            [],
+            [],
+            id="combine_three_duplicates_into_a_single_state_message"
+        ),
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}}
+            ],
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}}
+            ],
+            [0.0],
+            id="multiple_equal_states_with_different_sourceStats_considered_to_be_equal"
+        ),
+        pytest.param(
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 0.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 7.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
+            ],
+            [
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-08"}, "sourceStats": {"recordCount": 2.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-10"}, "sourceStats": {"recordCount": 7.0}},
+                {"type": Type.STATE, "name": "test_stream", "stream_state": {"date": "2022-05-12"}, "sourceStats": {"recordCount": 3.0}}
+            ],
+            [10.0, 3.0, 0.0]
+        )
+    ],
+)
+async def test_get_unique_state_messages(non_unique_states, expected_unique_states, expected_record_count_per_state):
+    non_unique_states = [
+        build_per_stream_state_message(
+            descriptor=StreamDescriptor(name=state["name"]), stream_state=state["stream_state"], data=state.get("data", None), source_stats=state.get("sourceStats")
+        )
+        for state in non_unique_states
+    ]
+    expected_unique_states = [
+        build_per_stream_state_message(
+            descriptor=StreamDescriptor(name=state["name"]), stream_state=state["stream_state"], data=state.get("data", None), source_stats=state.get("sourceStats")
+        )
+        for state in expected_unique_states
+    ]
+    actual_unique_states = _TestIncremental()._get_unique_state_messages_with_record_count(non_unique_states)
+    assert len(actual_unique_states) == len(expected_unique_states)
+
+    if len(expected_unique_states):
+        for actual_state_data, expected_state, expected_record_count in zip(actual_unique_states, expected_unique_states, expected_record_count_per_state):
+            actual_state, actual_record_count = actual_state_data
+            assert actual_state == expected_state
+            assert actual_record_count == expected_record_count
+
+
+async def test_config_skip_test(mocker):
     docker_runner_mock = MagicMock()
-    docker_runner_mock.call_read.return_value = []
+    docker_runner_mock.call_read = mocker.AsyncMock(return_value=[])
     t = _TestIncremental()
     with patch.object(pytest, "skip", return_value=None):
-        t.test_read_sequential_slices(
+        await t.test_read_sequential_slices(
             inputs=IncrementalConfig(skip_comprehensive_incremental_tests=True),
             connector_config=MagicMock(),
             configured_catalog_for_incremental=ConfiguredAirbyteCatalog(
@@ -704,8 +499,10 @@ def test_config_skip_test():
                     )
                 ]
             ),
-            cursor_paths={},
             docker_runner=docker_runner_mock,
+            client_container=None,
+            client_container_config=None,
+            detailed_logger=Logger("test"),
         )
 
     # This is guaranteed to fail when the test gets executed
@@ -713,9 +510,15 @@ def test_config_skip_test():
 
 
 @pytest.mark.parametrize(
-    "read_output, expectation",
+    "read_output, inputs, abnormal_state, json_schema, expectation",
     [
-        pytest.param([], pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"),
+        pytest.param(
+            [],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
+            pytest.raises(AssertionError), id="Error because incremental stream should always emit state messages"
+        ),
         pytest.param(
             [
                 AirbyteMessage(
@@ -733,6 +536,9 @@ def test_config_skip_test():
                     ),
                 ),
             ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
             pytest.raises(AssertionError),
             id="Error because incremental sync with abnormally large state value should not produce record.",
         ),
@@ -750,23 +556,162 @@ def test_config_skip_test():
                     ),
                 )
             ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": "2222-10-12"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
             does_not_raise(),
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": "2022-10-04"}),
+                        ),
+                        data={"date": "2022-10-04"},
+                    ),
+                )
+            ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration(format="^\\d{4}-\\d{2}-\\d{2}$"))),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": "2222-10-12"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
+            does_not_raise(),
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": "2022-10-04"}),
+                        ),
+                        data={"date": "2022-10-04"},
+                    ),
+                )
+            ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": "2222-05-08T03:04:45.139-0700"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": "str"}}},
+            pytest.raises(AssertionError),
+            id="Error because cursor formats do not match.",
+        ),
+        pytest.param(
+            [
+                AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name="test_stream"),
+                            stream_state=AirbyteStateBlob.parse_obj({"date": 10000000}),
+                        ),
+                        data={"date": 10000000},
+                    ),
+                )
+            ],
+            IncrementalConfig(future_state=FutureStateConfig(cursor_format=FutureStateCursorFormatConfiguration())),
+            [
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {
+                            "name": "test_stream"
+                        },
+                        "stream_state": {
+                            "states": [
+                                {
+                                    "partition": {},
+                                    "cursor": {
+                                        "date": 10000000.0
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            {"type": "object", "properties": {"date": {"type": ["int", "null"]}}},
+            pytest.raises(AssertionError),
+            id="Error because cursor numeric types do not match.",
         ),
     ],
 )
-def test_state_with_abnormally_large_values(mocker, read_output, expectation):
+async def test_state_with_abnormally_large_values(mocker, read_output, inputs, abnormal_state, json_schema, expectation):
     docker_runner_mock = mocker.MagicMock()
-    docker_runner_mock.call_read_with_state.return_value = read_output
+    docker_runner_mock.call_read_with_state = mocker.AsyncMock(return_value=read_output)
     t = _TestIncremental()
     with expectation:
-        t.test_state_with_abnormally_large_values(
+        await t.test_state_with_abnormally_large_values(
+            inputs,
             connector_config=mocker.MagicMock(),
             configured_catalog=ConfiguredAirbyteCatalog(
                 streams=[
                     ConfiguredAirbyteStream(
                         stream=AirbyteStream(
                             name="test_stream",
-                            json_schema={"type": "object", "properties": {"date": {"type": "date"}}},
+                            json_schema=json_schema,
                             supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
                         ),
                         sync_mode=SyncMode.incremental,
@@ -775,7 +720,7 @@ def test_state_with_abnormally_large_values(mocker, read_output, expectation):
                     )
                 ]
             ),
-            future_state=mocker.MagicMock(),
+            future_state=abnormal_state,
             docker_runner=docker_runner_mock,
         )
 
@@ -834,8 +779,12 @@ def test_future_state_configuration_fixture(mocker, test_strictness_level, input
         test_incremental.pytest.fail.assert_not_called()
 
 
-TEST_AIRBYTE_STREAM_A = AirbyteStream(name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
-TEST_AIRBYTE_STREAM_B = AirbyteStream(name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental])
+TEST_AIRBYTE_STREAM_A = AirbyteStream(
+    name="test_stream_a", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+)
+TEST_AIRBYTE_STREAM_B = AirbyteStream(
+    name="test_stream_b", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+)
 
 TEST_CONFIGURED_AIRBYTE_STREAM_A = ConfiguredAirbyteStream(
     stream=TEST_AIRBYTE_STREAM_A,

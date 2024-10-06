@@ -1,0 +1,81 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "Domain history",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["date"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "Domains summary",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["domain"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "Domain keywords",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["keyword"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "Domain keywords by region",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["db_name"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "Domain competitors",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["domain"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "Domain top pages",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

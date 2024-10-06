@@ -2,105 +2,234 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
-import json
-from copy import deepcopy
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, FailureType
+from airbyte_cdk.sources.streams.http.http import HttpStatusErrorHandler
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import Status
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
-
-json_credentials = """
-{
-    "type": "service_account",
-    "project_id": "unittest-project-id",
-    "private_key_id": "9qf98e52oda52g5ne23al6evnf13649c2u077162c",
-    "private_key": "-----BEGIN PRIVATE KEY-----\\nMIIBVQIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7AgEAAkEA3slcXL+dA36ESmOi\\n1xBhZmp5Hn0WkaHDtW4naba3plva0ibloBNWhFhjQOh7Ff01PVjhT4D5jgqXBIgc\\nz9Gv3QIDAQABAkEArlhYPoD5SB2/O1PjwHgiMPrL1C9B9S/pr1cH4vPJnpY3VKE3\\n5hvdil14YwRrcbmIxMkK2iRLi9lM4mJmdWPy4QIhAPsRFXZSGx0TZsDxD9V0ZJmZ\\n0AuDCj/NF1xB5KPLmp7pAiEA4yoFox6w7ql/a1pUVaLt0NJkDfE+22pxYGNQaiXU\\nuNUCIQCsFLaIJZiN4jlgbxlyLVeya9lLuqIwvqqPQl6q4ad12QIgS9gG48xmdHig\\n8z3IdIMedZ8ZCtKmEun6Cp1+BsK0wDUCIF0nHfSuU+eTQ2qAON2SHIrJf8UeFO7N\\nzdTN1IwwQqjI\\n-----END PRIVATE KEY-----\\n",
-    "client_email": "google-analytics-access@unittest-project-id.iam.gserviceaccount.com",
-    "client_id": "213243192021686092537",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-analytics-access%40unittest-project-id.iam.gserviceaccount.com"
-}
-"""
+from source_google_analytics_data_api.api_quota import GoogleAnalyticsApiQuotaBase
+from source_google_analytics_data_api.source import GoogleAnalyticsDatApiErrorHandler, MetadataDescriptor
+from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_CUSTOM_REPORT_CONFIG, WRONG_JSON_SYNTAX
 
 
-@pytest.fixture
-def patch_base_class():
-    return {
-        "config": {
-            "property_id": "108176369",
-            "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
-            "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
-        }
-    }
+@pytest.mark.parametrize(
+    "config_values, is_successful, message",
+    [
+        ({}, Status.SUCCEEDED, None),
+        ({"custom_reports_array": ...}, Status.SUCCEEDED, None),
+        ({"custom_reports_array": "[]"}, Status.SUCCEEDED, None),
+        ({"custom_reports_array": "invalid"}, Status.FAILED, f"'{WRONG_JSON_SYNTAX}'"),
+        ({"custom_reports_array": "{}"}, Status.FAILED, f"'{WRONG_JSON_SYNTAX}'"),
+        ({"custom_reports_array": "[{}]"}, Status.FAILED, f"'{NO_NAME}'"),
+        ({"custom_reports_array": '[{"name": "name"}]'}, Status.FAILED, f"'{NO_DIMENSIONS}'"),
+        ({"custom_reports_array": '[{"name": "daily_active_users", "dimensions": ["date"]}]'}, Status.FAILED, f"'{NO_METRICS}'"),
+        (
+            {"custom_reports_array": '[{"name": "daily_active_users", "metrics": ["totalUsers"], "dimensions": [{"name": "city"}]}]'},
+            Status.FAILED,
+            "\"The custom report daily_active_users entered contains invalid dimensions: {'name': 'city'} is not of type 'string'. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).\"",
+        ),
+        ({"date_ranges_start_date": "2022-20-20"}, Status.FAILED, "\"time data '2022-20-20' does not match format '%Y-%m-%d'\""),
+        (
+            {"credentials": {"auth_type": "Service", "credentials_json": "invalid"}},
+            Status.FAILED,
+            "'credentials.credentials_json is not valid JSON'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "name", "dimensions": [], "metrics": []}]'},
+            Status.FAILED,
+            "'The custom report name entered contains invalid dimensions: [] is too short. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]'},
+            Status.FAILED,
+            "'Custom reports: daily_active_users already exist as a default report(s).'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "name", "dimensions": ["unknown"], "metrics": ["totalUsers"]}]'},
+            Status.FAILED,
+            "'The custom report name entered contains invalid dimensions: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "name", "dimensions": ["date"], "metrics": ["unknown"]}]'},
+            Status.FAILED,
+            "'The custom report name entered contains invalid metrics: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'",
+        ),
+        (
+            {
+                "custom_reports_array": '[{"name": "pivot_report", "dateRanges": [{ "startDate": "2020-09-01", "endDate": "2020-09-15" }], "dimensions": ["browser", "country", "language"], "metrics": ["sessions"], "pivots": {}}]'
+            },
+            Status.FAILED,
+            "\"The custom report pivot_report entered contains invalid pivots: {} is not of type 'null', 'array'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).\"",
+        ),
+    ],
+)
+def test_check(requests_mock, config_gen, config_values, is_successful, message):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
 
-
-@pytest.fixture
-def config():
-    return {
-        "property_id": "108176369",
-        "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
-        "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
-        "custom_reports": json.dumps([{
-            "name": "report1",
-            "dimensions": ["date", "country"],
-            "metrics": ["totalUsers", "screenPageViews"]
-        }]),
-    }
-
-
-@pytest.fixture
-def config_gen(config):
-    def inner(**kwargs):
-        new_config = deepcopy(config)
-        # WARNING, no support deep dictionaries
-        new_config.update(kwargs)
-        return {k: v for k, v in new_config.items() if v is not ...}
-    return inner
-
-
-def test_check(requests_mock, config_gen):
-    requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
-    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata", json={
-        "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
-        "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
-    })
-    requests_mock.register_uri("POST", "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
-                               json={"dimensionHeaders": [{"name": "date"}, {"name": "country"}],
-                                     "metricHeaders": [{"name": "totalUsers", "type": "s"},
-                                                       {"name": "screenPageViews", "type": "m"}],
-                                     "rows": []
-                                     })
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+        json={
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        },
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
+        json={
+            "dimensionHeaders": [{"name": "date"}, {"name": "country"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "s"}, {"name": "screenPageViews", "type": "m"}],
+            "rows": [],
+        },
+    )
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
-
-    assert source.check(logger, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert source.check(logger, config_gen(custom_reports=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert source.check(logger, config_gen(custom_reports="[]")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert source.check(logger, config_gen(custom_reports="invalid")) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports is not valid JSON'")
-    assert source.check(logger, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports: {} is not of type \'array\'"')
-    assert source.check(logger, config_gen(custom_reports="[{}]")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'name\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name"}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'dimensions\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": [], "metrics": []}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports.0.dimensions: [] is too short'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: daily_active_users already exist as a default report(s).'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["unknown"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid dimension(s): unknown for the custom report: name'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["date"], "metrics": ["unknown"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid metric(s): unknown for the custom report: name'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "cohort_report", "dimensions": ["cohort", "cohortNthDay"], "metrics": ["cohortActiveUsers"], "cohortSpec": {"cohorts": [{"dimension": "firstSessionDate", "dateRange": {"startDate": "2023-01-01", "endDate": "2023-01-01"}}], "cohortsRange": {"endOffset": 100}}}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0.cohortSpec.cohortsRange: \'granularity\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "pivot_report", "dateRanges": [{ "startDate": "2020-09-01", "endDate": "2020-09-15" }], "dimensions": ["browser", "country", "language"], "metrics": ["sessions"], "pivots": {}}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0.pivots: {} is not of type \'null\', \'array\'"')
-    assert source.check(logger, config_gen(credentials={"auth_type": "Service", "credentials_json": "invalid"})) == AirbyteConnectionStatus(status=Status.FAILED, message="'credentials.credentials_json is not valid JSON'")
-    assert source.check(logger, config_gen(date_ranges_start_date="2022-20-20")) == AirbyteConnectionStatus(status=Status.FAILED, message='"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"')
+    assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=is_successful, message=message)
 
 
-def test_streams(mocker, patch_base_class):
+@pytest.mark.parametrize("error_code", (400, 403))
+def test_check_failure_throws_exception(requests_mock, config_gen, error_code):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=error_code
+    )
     source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check(logger, config_gen(property_ids=["UA-11111111"]))
+    assert e.value.failure_type == FailureType.config_error
+    assert "Access was denied to the property ID entered." in e.value.message
 
-    config_mock = MagicMock()
-    config_mock.__getitem__.side_effect = patch_base_class["config"].__getitem__
 
-    streams = source.streams(patch_base_class["config"])
-    expected_streams_number = 8
-    assert len(streams) == expected_streams_number
+def test_exhausted_quota_recovers_after_two_retries(requests_mock, config_gen):
+    """
+        If the account runs out of quota the api will return a message asking us to back off for one hour.
+        We have set backoff time for this scenario to 30 minutes to check if quota is already recovered, if not
+        it will backoff again  30 minutes and quote should be reestablished by then.
+        Now, we don't want wait one hour to test out this retry behavior so we will fix time dividing by 600 the quota
+        recovery time and also the backoff time.
+    """
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    error_response = {"error": {"message":"Exhausted potentially thresholded requests quota. This quota will refresh in under an hour. To learn more, see"}}
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata",
+        # first try we get 429 t=~0
+        [{"json": error_response, "status_code": 429},
+         # first retry we get 429 t=~1800
+         {"json": error_response, "status_code": 429},
+         # second retry quota is recovered, t=~3600
+         {"json": {
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        }, "status_code": 200}
+         ]
+    )
+    def fix_time(time):
+        return int(time / 600 )
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    max_time_fixed = fix_time(GoogleAnalyticsDatApiErrorHandler.QUOTA_RECOVERY_TIME)
+    potentially_thresholded_requests_per_hour_mapping = GoogleAnalyticsApiQuotaBase.quota_mapping["potentiallyThresholdedRequestsPerHour"]
+    threshold_backoff_time = potentially_thresholded_requests_per_hour_mapping["backoff"]
+    fixed_threshold_backoff_time = fix_time(threshold_backoff_time)
+    potentially_thresholded_requests_per_hour_mapping_fixed = {
+        **potentially_thresholded_requests_per_hour_mapping,
+        "backoff": fixed_threshold_backoff_time,
+        }
+    with (
+          patch.object(GoogleAnalyticsDatApiErrorHandler, 'QUOTA_RECOVERY_TIME', new=max_time_fixed),
+          patch.object(GoogleAnalyticsApiQuotaBase, 'quota_mapping', new={**GoogleAnalyticsApiQuotaBase.quota_mapping,"potentiallyThresholdedRequestsPerHour": potentially_thresholded_requests_per_hour_mapping_fixed})):
+        output = source.check(logger, config_gen(property_ids=["UA-11111111"]))
+        assert output == AirbyteConnectionStatus(status=Status.SUCCEEDED, message=None)
+
+
+@pytest.mark.parametrize("error_code", (402, 404, 405))
+def test_check_failure(requests_mock, config_gen, error_code):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=error_code
+    )
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    with patch.object(HttpStatusErrorHandler, 'max_retries', new=0):
+        airbyte_status = source.check(logger, config_gen(property_ids=["UA-11111111"]))
+        assert airbyte_status.status == Status.FAILED
+        assert airbyte_status.message == repr("Failed to get metadata, over quota, try later")
+
+
+@pytest.mark.parametrize(
+    ("status_code", "response_error_message"),
+    (
+        (403, "Forbidden for some reason"),
+        (400, "Granularity in the cohortsRange is required."),
+    ),
+)
+def test_check_incorrect_custom_reports_config(requests_mock, config_gen, status_code, response_error_message):
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+        json={
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        },
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
+        status_code=status_code,
+        json={"error": {"message": response_error_message}},
+    )
+    report_name = "cohort_report"
+    config = {"custom_reports_array": f'[{{"name": "{report_name}", "dimensions": ["date"], "metrics": ["totalUsers"]}}]'}
+    friendly_message = WRONG_CUSTOM_REPORT_CONFIG.format(report=report_name)
+    source = SourceGoogleAnalyticsDataApi()
+    logger = MagicMock()
+    status, message = source.check_connection(logger, config_gen(**config))
+    assert status is False
+    assert message == f"{friendly_message} {response_error_message}"
+
+
+@pytest.mark.parametrize("status_code", (403, 401))
+def test_missing_metadata(requests_mock, status_code):
+    # required for MetadataDescriptor $instance input
+    class TestConfig:
+        config = {
+            "authenticator": None,
+            "property_id": 123,
+        }
+
+    # mocking the url for metadata
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/123/metadata", json={}, status_code=status_code
+    )
+
+    metadata_descriptor = MetadataDescriptor()
+    with pytest.raises(AirbyteTracedException) as e:
+        metadata_descriptor.__get__(TestConfig(), None)
+    assert e.value.failure_type == FailureType.config_error
+
+
+def test_streams(patch_base_class, config_gen):
+    config = config_gen(property_ids=["Prop1", "PropN"])
+    source = SourceGoogleAnalyticsDataApi()
+    streams = source.streams(config)
+    expected_streams_number = 57 * 2
+    assert len([stream for stream in streams if "_property_" in stream.name]) == 57
+    assert len(set(streams)) == expected_streams_number

@@ -1,0 +1,1770 @@
+version: 4.6.2
+
+type: DeclarativeSource
+
+description: >-
+  7shifts is a scheduling, payroll, and employee retention app designed to
+  improve performance for restaurants.
+
+check:
+  type: CheckStream
+  stream_names:
+    - companies
+
+definitions:
+  streams:
+    companies:
+      type: DeclarativeStream
+      name: companies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/companies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+    locations:
+      type: DeclarativeStream
+      name: locations
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/company/{{ stream_partition['company_id'] }}/locations
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/locations"
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/company/{{ stream_partition['company_id'] }}/departments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/departments"
+    roles:
+      type: DeclarativeStream
+      name: roles
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/company/{{ stream_partition['company_id'] }}/roles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+0000"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/roles"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/company/{{ stream_partition['company_id'] }}/users
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    wages:
+      type: DeclarativeStream
+      name: wages
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/company/{{ stream_partition['company_id'] }}/users/{{
+            stream_partition['user_id'] }}/wages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: user_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: company_id
+                partition_field: company_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/wages"
+    assignments:
+      type: DeclarativeStream
+      name: assignments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/company/{{ stream_partition['company_id'] }}/users/{{
+            stream_partition['user_id'] }}/assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: user_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: company_id
+                partition_field: company_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/assignments"
+    location_assignments:
+      type: DeclarativeStream
+      name: location_assignments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/company/{{ stream_partition['company_id'] }}/users/{{
+            stream_partition['user_id'] }}/location_assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: user_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: company_id
+                partition_field: company_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/location_assignments"
+    department_assignments:
+      type: DeclarativeStream
+      name: department_assignments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/company/{{ stream_partition['company_id'] }}/users/{{
+            stream_partition['user_id'] }}/department_assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: user_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: company_id
+                partition_field: company_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/department_assignments"
+    role_assignments:
+      type: DeclarativeStream
+      name: role_assignments
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: >-
+            /v2/company/{{ stream_partition['company_id'] }}/users/{{
+            stream_partition['user_id'] }}/role_assignments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: user_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: company_id
+                partition_field: company_id
+                stream:
+                  $ref: "#/definitions/streams/users"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - user_id
+              value: "{{ stream_partition['user_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/role_assignments"
+    time_punches:
+      type: DeclarativeStream
+      name: time_punches
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/company/{{ stream_partition['company_id'] }}/time_punches
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S+00:00"
+        datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/time_punches"
+    shifts:
+      type: DeclarativeStream
+      name: shifts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/company/{{ stream_partition['company_id'] }}/shifts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: limit
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get('meta', {}).get('cursor', {}).get('next') }}"
+            stop_condition: >-
+              {{ response.get('meta', {}).get('cursor', {}).get('next') is none
+              }}
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: company_id
+              stream:
+                $ref: "#/definitions/streams/companies"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: modified
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: '{{ config["start_date"] }}'
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: modified_since
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/shifts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.7shifts.com
+    authenticator:
+      type: BearerAuthenticator
+      api_token: '{{ config["access_token"] }}'
+
+streams:
+  - $ref: "#/definitions/streams/companies"
+  - $ref: "#/definitions/streams/locations"
+  - $ref: "#/definitions/streams/departments"
+  - $ref: "#/definitions/streams/roles"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/wages"
+  - $ref: "#/definitions/streams/assignments"
+  - $ref: "#/definitions/streams/location_assignments"
+  - $ref: "#/definitions/streams/department_assignments"
+  - $ref: "#/definitions/streams/role_assignments"
+  - $ref: "#/definitions/streams/time_punches"
+  - $ref: "#/definitions/streams/shifts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - access_token
+      - start_date
+    properties:
+      access_token:
+        type: string
+        description: >-
+          Access token to use for authentication. Generate it in the 7shifts
+          Developer Tools.
+        name: access_token
+        title: Access Token
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        title: Start date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        order: 1
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    companies: true
+    locations: true
+    departments: true
+    roles: true
+    users: true
+    wages: true
+    assignments: true
+    location_assignments: true
+    department_assignments: true
+    role_assignments: true
+    time_punches: true
+    shifts: true
+  testedStreams:
+    companies:
+      streamHash: ad9a2d76e4656ad566f9cb7ec33dae5797da1839
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    locations:
+      streamHash: 6dd2c1302ec06fe1319fbeb607e45e450a5c0c97
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    departments:
+      streamHash: b2649f09623de66794b56279d832860e066a8496
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    roles:
+      streamHash: 781493cff9927b0560221af09cc61e3917712633
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users:
+      streamHash: 59dfd71dfa0ba38849b40abb68b5164d954f0db7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    wages:
+      streamHash: f33cf6e94666c08b1d1919ab1d07b0ef9bea775d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    assignments:
+      streamHash: 3f9c95451a68da4b69b0ce24b67e062a5ad2bcb9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    location_assignments:
+      streamHash: 0ef4de309362d5be81bfd0400d18be512890ef82
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    department_assignments:
+      streamHash: 039fcef9141b3462ea849f9d35fba639dd57aa97
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    role_assignments:
+      streamHash: 1775714b1442d7d61dafd9a80d059c5463a94ad7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    time_punches:
+      streamHash: da623a21b07dac68942a0c41987f6f151e5dd95c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    shifts:
+      streamHash: 4ce349aa0e881c91aca9d8e4f96ec0cf044e2c4d
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://developers.7shifts.com/reference/introduction
+
+schemas:
+  companies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active:
+        type:
+          - boolean
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      days_to_expire:
+        type:
+          - number
+          - "null"
+      expires:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          ai_importer_invoked:
+            type:
+              - boolean
+              - "null"
+          buy_now:
+            type:
+              - boolean
+              - "null"
+          declared_number_of_locations:
+            type:
+              - string
+              - "null"
+          employee_count_range:
+            type:
+              - string
+              - "null"
+          icp_segment:
+            type:
+              - string
+              - "null"
+          onboarding_complete:
+            type:
+              - boolean
+              - "null"
+          signup_content_source:
+            type:
+              - string
+              - "null"
+          signup_utm_source:
+            type:
+              - string
+              - "null"
+          trial_checklist_stored_locally:
+            type:
+              - boolean
+              - "null"
+          utm_source:
+            type:
+              - string
+              - "null"
+      modified:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      photo:
+        type:
+          - string
+          - "null"
+      plan_id:
+        type:
+          - string
+          - "null"
+      pos:
+        type:
+          - string
+          - "null"
+      start_week_on:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      trial:
+        type:
+          - boolean
+          - "null"
+      uuid:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified
+  locations:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      auto_send_log_book_time:
+        type:
+          - string
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      country:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      department_based_budget:
+        type:
+          - boolean
+          - "null"
+      formatted_address:
+        type:
+          - string
+          - "null"
+      fri_hours_close:
+        type:
+          - string
+          - "null"
+      fri_hours_open:
+        type:
+          - string
+          - "null"
+      hash:
+        type:
+          - string
+          - "null"
+      holiday_pay:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      mapping_id:
+        type:
+          - string
+          - "null"
+      message:
+        type:
+          - string
+          - "null"
+      modified:
+        type: string
+      mon_hours_close:
+        type:
+          - string
+          - "null"
+      mon_hours_open:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      sat_hours_close:
+        type:
+          - string
+          - "null"
+      sat_hours_open:
+        type:
+          - string
+          - "null"
+      shift_feedback:
+        type:
+          - boolean
+          - "null"
+      state:
+        type:
+          - string
+          - "null"
+      sun_hours_close:
+        type:
+          - string
+          - "null"
+      sun_hours_open:
+        type:
+          - string
+          - "null"
+      thu_hours_close:
+        type:
+          - string
+          - "null"
+      thu_hours_open:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      timezone_updated:
+        type:
+          - boolean
+          - "null"
+      tue_hours_close:
+        type:
+          - string
+          - "null"
+      tue_hours_open:
+        type:
+          - string
+          - "null"
+      wed_hours_close:
+        type:
+          - string
+          - "null"
+      wed_hours_open:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified
+  departments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      company_id:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      default:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      location_id:
+        type:
+          - number
+          - "null"
+      modified:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified
+  roles:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      department_id:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_tipped_role:
+        type:
+          - boolean
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      modified:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      num_stations:
+        type:
+          - number
+          - "null"
+      sort:
+        type:
+          - number
+          - "null"
+      stations:
+        type:
+          - array
+          - "null"
+    required:
+      - id
+      - modified
+  users:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      active:
+        type:
+          - boolean
+          - "null"
+      address:
+        type:
+          - string
+          - "null"
+      appear_as_employee:
+        type:
+          - boolean
+          - "null"
+      city:
+        type:
+          - string
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      employee_id:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      home_number:
+        type:
+          - string
+          - "null"
+      hourly_wage:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      identity_id:
+        type:
+          - number
+          - "null"
+      invite_status:
+        type:
+          - string
+          - "null"
+      is_new:
+        type:
+          - boolean
+          - "null"
+      language:
+        type:
+          - string
+          - "null"
+      last_login:
+        type:
+          - string
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      max_weekly_hours:
+        type:
+          - string
+          - "null"
+      mobile_number:
+        type:
+          - string
+          - "null"
+      modified:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      onboarding_required:
+        type:
+          - boolean
+          - "null"
+      permissions_template_id:
+        type:
+          - number
+          - "null"
+      photo:
+        type:
+          - string
+          - "null"
+      postal_zip:
+        type:
+          - string
+          - "null"
+      preferred_first_name:
+        type:
+          - string
+          - "null"
+      preferred_last_name:
+        type:
+          - string
+          - "null"
+      prov_state:
+        type:
+          - string
+          - "null"
+      punch_id:
+        type:
+          - string
+          - "null"
+      push:
+        type:
+          - boolean
+          - "null"
+      skill_level:
+        type:
+          - number
+          - "null"
+      subscribe_to_updates:
+        type:
+          - boolean
+          - "null"
+      wage_type:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+      - modified
+  wages:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      current_wages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            effective_date:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            modified:
+              type:
+                - string
+                - "null"
+            wage_cents:
+              type:
+                - number
+                - "null"
+            wage_type:
+              type:
+                - string
+                - "null"
+      upcoming_wages:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            created:
+              type:
+                - string
+                - "null"
+            effective_date:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            modified:
+              type:
+                - string
+                - "null"
+            wage_cents:
+              type:
+                - number
+                - "null"
+            wage_type:
+              type:
+                - string
+                - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+  assignments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      departments:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            appear_on_schedule:
+              type:
+                - boolean
+                - "null"
+            company_id:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            location_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+      locations:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            city:
+              type:
+                - string
+                - "null"
+            company_id:
+              type:
+                - number
+                - "null"
+            country:
+              type:
+                - string
+                - "null"
+            formatted_address:
+              type:
+                - string
+                - "null"
+            hash:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            state:
+              type:
+                - string
+                - "null"
+            timezone:
+              type:
+                - string
+                - "null"
+      roles:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            company_id:
+              type:
+                - number
+                - "null"
+            department_id:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            is_primary:
+              type:
+                - boolean
+                - "null"
+            location_id:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            skill_level:
+              type:
+                - number
+                - "null"
+            sort:
+              type:
+                - number
+                - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+  location_assignments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      location_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+  department_assignments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      appear_on_schedule:
+        type:
+          - boolean
+          - "null"
+      department_id:
+        type:
+          - number
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+  role_assignments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      department_id:
+        type:
+          - number
+          - "null"
+      is_primary:
+        type:
+          - boolean
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      skill_level:
+        type:
+          - number
+          - "null"
+      sort:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+  time_punches:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      approved:
+        type:
+          - boolean
+          - "null"
+      auto_clocked_out:
+        type:
+          - boolean
+          - "null"
+      breaks:
+        type:
+          - array
+          - "null"
+      clocked_in:
+        type:
+          - string
+          - "null"
+      clocked_in_offline:
+        type:
+          - boolean
+          - "null"
+      clocked_out_offline:
+        type:
+          - boolean
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      department_id:
+        type:
+          - number
+          - "null"
+      editable_punch:
+        type:
+          - boolean
+          - "null"
+      hourly_wage:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      location_id:
+        type:
+          - number
+          - "null"
+      modified:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      pos_type:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      shift_id:
+        type:
+          - number
+          - "null"
+      tips:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified
+  shifts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      attendance_status:
+        type:
+          - string
+          - "null"
+      breaks:
+        type:
+          - array
+          - "null"
+      business_decline:
+        type:
+          - boolean
+          - "null"
+      close:
+        type:
+          - boolean
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      department_id:
+        type:
+          - number
+          - "null"
+      draft:
+        type:
+          - boolean
+          - "null"
+      end:
+        type:
+          - string
+          - "null"
+      hourly_wage:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      late_minutes:
+        type:
+          - number
+          - "null"
+      location_id:
+        type:
+          - number
+          - "null"
+      modified:
+        type: string
+      notes:
+        type:
+          - string
+          - "null"
+      notified:
+        type:
+          - boolean
+          - "null"
+      open:
+        type:
+          - boolean
+          - "null"
+      open_offer_type:
+        type:
+          - string
+          - "null"
+      publish_status:
+        type:
+          - string
+          - "null"
+      role_id:
+        type:
+          - number
+          - "null"
+      start:
+        type:
+          - string
+          - "null"
+      station:
+        type:
+          - number
+          - "null"
+      station_id:
+        type:
+          - number
+          - "null"
+      station_name:
+        type:
+          - string
+          - "null"
+      unassigned:
+        type:
+          - boolean
+          - "null"
+      unassigned_skill_level:
+        type:
+          - number
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+      - modified

@@ -1,15 +1,16 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "consumer": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "displayName": {
           "type": ["string", "null"]
@@ -23,10 +24,10 @@
       }
     },
     "businessUnit": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "identifyingName": {
           "type": ["string", "null"]
@@ -106,9 +107,9 @@
       }
     },
     "tags": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "group": {
             "type": ["string", "null"]
@@ -120,63 +121,63 @@
       }
     },
     "findReviewer": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "isEligible": {
-            "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "requests": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "status": {
-                  "type": ["string", "null"]
-                },
-                "consumerResponse": {
-                  "type": ["object","null"],
-                  "properties": {
-                    "referenceId": {
-                      "type": ["string", "null"]
-                    },
-                    "name": {
-                      "type": ["string", "null"]
-                    },
-                    "submittedAt": {
-                      "type": ["string", "null"],
-                      "format": "date-time"
-                    },
-                    "phoneNumber": {
-                      "type": ["string", "null"]
-                    },
-                    "address": {
-                      "type": ["string", "null"]
-                    },
-                    "message": {
-                      "type": ["string", "null"]
-                    },
-                    "email": {
-                      "type": ["string", "null"]
-                    }
+          "type": ["array", "null"],
+          "items": {
+            "type": ["object", "null"],
+            "properties": {
+              "status": {
+                "type": ["string", "null"]
+              },
+              "consumerResponse": {
+                "type": ["object", "null"],
+                "properties": {
+                  "referenceId": {
+                    "type": ["string", "null"]
+                  },
+                  "name": {
+                    "type": ["string", "null"]
+                  },
+                  "submittedAt": {
+                    "type": ["string", "null"],
+                    "format": "date-time"
+                  },
+                  "phoneNumber": {
+                    "type": ["string", "null"]
+                  },
+                  "address": {
+                    "type": ["string", "null"]
+                  },
+                  "message": {
+                    "type": ["string", "null"]
+                  },
+                  "email": {
+                    "type": ["string", "null"]
                   }
-                },
-                "businessUserMessage": {
-                  "type": ["string", "null"]
-                },
-                "id": {
-                  "type": ["string", "null"]
-                },
-                "created": {
-                  "type": ["string", "null"],
-                  "format": "date-time"
                 }
+              },
+              "businessUserMessage": {
+                "type": ["string", "null"]
+              },
+              "id": {
+                "type": ["string", "null"]
+              },
+              "created": {
+                "type": ["string", "null"],
+                "format": "date-time"
+              }
             }
           }
         }
       }
     },
     "isVerified": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "numberOfLikes": {
       "type": "integer"
@@ -198,7 +199,7 @@
           "format": "date-time"
         },
         "reasons": {
-          "type": "array",
+          "type": ["array", "null"],
           "items": {
             "type": "null",
             "$comment": "Data structure at this point is unknown"
@@ -207,19 +208,19 @@
       }
     },
     "complianceLabels": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "string"
+        "type": ["string", "null"]
       }
     },
     "countsTowardsTrustScore": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "countsTowardsLocationTrustScore": {
       "type": ["boolean", "null"]
     },
     "invitation": {
-      "type": ["object","null"],
+      "type": ["object", "null"],
       "properties": {
         "businessUnitId": {
           "type": ["string", "null"]
@@ -227,9 +228,9 @@
       }
     },
     "businessUnitHistory": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
-        "type": "object",
+        "type": ["object", "null"],
         "properties": {
           "identifyingName": {
             "type": ["string", "null"]

@@ -39,11 +39,23 @@ def test_rest_api_with_unknown_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_unknown_load == actual_sleep_time
+
+
+def test_rest_api_with_very_low_load(requests_mock):
+    """
+    Test simulates very low load 2/40 points of rate limit.
+    """
+    test_response_header = {"X-Shopify-Shop-Api-Call-Limit": "1/40"}
+
+    requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
+    test_response = requests.get("https://test.myshopify.com/")
+
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
+
+    assert limiter.on_very_low_load == actual_sleep_time
 
 
 def test_rest_api_with_low_load(requests_mock):
@@ -55,9 +67,7 @@ def test_rest_api_with_low_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_low_load == actual_sleep_time
 
@@ -71,9 +81,7 @@ def test_rest_api_with_mid_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_mid_load == actual_sleep_time
 
@@ -87,9 +95,7 @@ def test_rest_api_with_high_load(requests_mock):
     requests_mock.get("https://test.myshopify.com/", headers=test_response_header)
     test_response = requests.get("https://test.myshopify.com/")
 
-    actual_sleep_time = limiter.get_rest_api_wait_time(
-        test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER
-    )
+    actual_sleep_time = limiter.get_rest_api_wait_time(test_response, threshold=TEST_THRESHOLD, rate_limit_header=TEST_RATE_LIMIT_HEADER)
 
     assert limiter.on_high_load == actual_sleep_time
 
@@ -104,6 +110,20 @@ def test_graphql_api_with_unknown_load(requests_mock):
     actual_sleep_time = limiter.get_graphql_api_wait_time(test_response, threshold=TEST_THRESHOLD)
 
     assert limiter.on_unknown_load == actual_sleep_time
+
+
+def test_graphql_api_with_very_low_load(requests_mock):
+    """
+    Test simulates very low load (2000-1800)/2000=0.1 points of rate limit.
+    """
+
+    api_response = get_graphql_api_response(maximum_available=2000, currently_available=1800)
+    requests_mock.get("https://test.myshopify.com/", json=api_response)
+    test_response = requests.get("https://test.myshopify.com/")
+
+    actual_sleep_time = limiter.get_graphql_api_wait_time(test_response, threshold=TEST_THRESHOLD)
+
+    assert limiter.on_very_low_load == actual_sleep_time
 
 
 def test_graphql_api_with_low_load(requests_mock):

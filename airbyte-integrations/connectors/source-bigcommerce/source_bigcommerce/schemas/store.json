@@ -35,6 +35,9 @@
     "country": {
       "type": ["null", "string"]
     },
+    "country_code": {
+      "type": ["null", "string"]
+    },
     "phone": {
       "type": ["null", "string"]
     },
@@ -91,7 +94,7 @@
       "type": ["null", "string"]
     },
     "decimal_places": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "currency_symbol_location": {
       "type": ["null", "string"]
@@ -103,7 +106,7 @@
       "type": ["null", "string"]
     },
     "dimension_decimal_places": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "dimension_decimal_token": {
       "type": ["null", "string"]
@@ -116,6 +119,9 @@
     },
     "plan_level": {
       "type": ["null", "string"]
+    },
+    "plan_is_trial": {
+      "type": ["null", "boolean"]
     },
     "industry": {
       "type": ["null", "string"]

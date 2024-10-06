@@ -25,12 +25,12 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 
 #### Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes                                                                                        |
-| :---------------------------- | :------------------- | :------------------------------------------------------------------------------------------- |
-| Full Refresh Sync             | No                   |                                                                                              |
-| Incremental - Append Sync     | Yes                  |                                                                                              |
-| Incremental - Deduped History | No                   | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces                    | Yes                  |                                                                                              |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | No                   |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
+| Namespaces                     | Yes                  |       |
 
 ## Getting started
 
@@ -100,6 +100,9 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------------------- |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state |
@@ -112,3 +115,5 @@ _NOTE_: Some configurations for SSL are not available yet.
 | 0.1.2   | 2021-09-14 | [6040](https://github.com/airbytehq/airbyte/pull/6040)   | Change spec.json and config parser                                            |
 | 0.1.1   | 2021-07-30 | [5125](https://github.com/airbytehq/airbyte/pull/5125)   | Enable `additionalPropertities` in spec.json                                  |
 | 0.1.0   | 2021-07-21 | [3746](https://github.com/airbytehq/airbyte/pull/3746)   | Initial Release                                                               |
+
+</details>

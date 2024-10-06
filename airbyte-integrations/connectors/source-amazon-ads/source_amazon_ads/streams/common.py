@@ -7,7 +7,6 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
@@ -25,22 +24,26 @@ airbyte_cdk.sources.streams.core.Stream
     ├── airbyte_cdk.sources.streams.http.HttpStream
     │   └── AmazonAdsStream
     │       ├── Profiles
+    │       ├── Portfolios
     │       └── SubProfilesStream
     │           ├── SponsoredDisplayAdGroups
     │           ├── SponsoredDisplayCampaigns
     │           ├── SponsoredDisplayProductAds
     │           ├── SponsoredDisplayTargetings
-    │           ├── SponsoredProductAdGroups
-    │           ├── SponsoredProductAds
-    │           ├── SponsoredProductCampaigns
-    │           ├── SponsoredProductKeywords
-    │           ├── SponsoredProductNegativeKeywords
-    │           ├── SponsoredProductTargetings
-    │           ├── SponsoredBrandsCampaigns
-    │           ├── SponsoredBrandsAdGroups
+    │           ├── SponsoredProductsV3
+    │           |    ├── SponsoredProductAdGroups
+    │           |    ├── SponsoredProductAds
+    │           |    ├── SponsoredProductCampaigns
+    │           |    ├── SponsoredProductKeywords
+    │           |    ├── SponsoredProductNegativeKeywords
+    │           |    └── SponsoredProductTargetings
+    │           ├── SponsoredBrandsV4
+    │           |    ├── SponsoredBrandsCampaigns
+    │           |    └── SponsoredBrandsAdGroups
     │           └── SponsoredBrandsKeywords
     └── ReportStream
         ├── SponsoredBrandsReportStream
+        ├── SponsoredBrandsV3ReportStream
         ├── SponsoredDisplayReportStream
         └── SponsoredProductsReportStream
 
@@ -49,11 +52,11 @@ for storing list of profiles that later be used by all the streams to get
 profile id. Also it stores pydantic model and API url for requests.
 
 AmazonAdsStream is Http based class, it used for making request that could be
-accomlished by single http call (any but report streams).
+accomplished by single http call (any but report streams).
 
 SubProfilesStream is subclass for http streams to perform read_records from
 basic class for EACH profile from self._profiles list. Also provides support
-for Amazon Ads API pagintaion. This is base class for all the sync http streams
+for Amazon Ads API pagination. This is base class for all the sync http streams
 that used by source.
 
 ReportStream (It implemented on report_stream.py file) is subclass for async
@@ -66,7 +69,7 @@ reports for profiles from BasicAmazonAdsStream _profiles list.
 class ErrorResponse(BaseModel):
     code: str
     details: str
-    requestId: str
+    requestId: Optional[str]
 
 
 class BasicAmazonAdsStream(Stream, ABC):
@@ -90,10 +93,6 @@ class BasicAmazonAdsStream(Stream, ABC):
         schema = self.model.schema()
         expand_refs(schema)
         return schema
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
 
 # Basic full refresh stream
@@ -120,7 +119,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
+    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
         return {"Amazon-Advertising-API-ClientId": self._client_id}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -174,9 +173,9 @@ class SubProfilesStream(AmazonAdsStream):
 
     page_size = 100
 
-    def __init__(self, *args, **kvargs):
+    def __init__(self, *args, **kwargs):
         self._current_offset = 0
-        super().__init__(*args, **kvargs)
+        super().__init__(*args, **kwargs)
 
     def next_page_token(self, response: requests.Response) -> Optional[int]:
         if not response:
@@ -202,15 +201,15 @@ class SubProfilesStream(AmazonAdsStream):
             "count": self.page_size,
         }
 
-    def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         """
         Iterate through self._profiles list and send read all records for each profile.
         """
         for profile in self._profiles:
             self._current_profile_id = profile.profileId
-            yield from super().read_records(*args, **kvargs)
+            yield from super().read_records(*args, **kwargs)
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kvargs)
+    def request_headers(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        headers = super().request_headers(*args, **kwargs)
         headers["Amazon-Advertising-API-Scope"] = str(self._current_profile_id)
         return headers

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
     "id": {
@@ -17,24 +17,19 @@
     "field_type": {
       "type": ["null", "string"]
     },
+    "json_column_flag": {
+      "type": ["null", "boolean"]
+    },
     "add_time": {
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "type": ["null", "string"]
     },
     "last_updated_by_user_id": {
       "type": ["null", "integer"]
     },
-    "active_flag": {
-      "type": ["null", "boolean"]
-    },
     "edit_flag": {
-      "type": ["null", "boolean"]
-    },
-    "index_visible_flag": {
       "type": ["null", "boolean"]
     },
     "details_visible_flag": {
@@ -49,31 +44,46 @@
     "bulk_edit_allowed": {
       "type": ["null", "boolean"]
     },
-    "searchable_flag": {
-      "type": ["null", "boolean"]
-    },
     "filtering_allowed": {
       "type": ["null", "boolean"]
     },
     "sortable_flag": {
       "type": ["null", "boolean"]
     },
+    "mandatory_flag": {
+      "type": ["null", "boolean"]
+    },
+    "link": {
+      "type": ["null", "string"]
+    },
+    "use_field": {
+      "type": ["null", "string"]
+    },
+    "display_field": {
+      "type": ["null", "string"]
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "index_visible_flag": {
+      "type": ["null", "boolean"]
+    },
+    "searchable_flag": {
+      "type": ["null", "boolean"]
+    },
     "options": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"],
+        "type": "object",
         "properties": {
           "id": {
-            "type": ["null", "integer", "string", "boolean"]
+            "type": ["null", "boolean", "integer"]
           },
           "label": {
             "type": ["null", "string"]
           }
         }
       }
-    },
-    "mandatory_flag": {
-      "type": ["null", "boolean"]
     }
   }
 }
