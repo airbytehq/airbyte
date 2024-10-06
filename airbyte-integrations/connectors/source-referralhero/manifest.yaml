@@ -1,4 +1,4 @@
-version: 5.8.1
+version: 5.10.2
 
 type: DeclarativeSource
 
@@ -29,17 +29,6 @@ definitions:
             field_path:
               - data
               - lists
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 10
-            start_from_page: 1
-            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -51,7 +40,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v2/lists/{{ config['uuid'] }}/leaderboard
+          path: /api/v2/lists/{{stream_partition.uuid_id}}/leaderboard
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -60,6 +49,14 @@ definitions:
             field_path:
               - data
               - ranking
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uuid
+              partition_field: uuid_id
+              stream:
+                $ref: "#/definitions/streams/lists"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -71,7 +68,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v2/lists/{{ config['uuid'] }}/bonuses
+          path: /api/v2/lists/{{stream_partition.uuid_id}}/bonuses
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -79,6 +76,14 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uuid
+              partition_field: uuid_id
+              stream:
+                $ref: "#/definitions/streams/lists"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -92,7 +97,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /api/v2/lists/{{ config['uuid'] }}/subscribers
+          path: /api/v2/lists/{{stream_partition.uuid_id}}/subscribers
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -112,6 +117,14 @@ definitions:
             page_size: 50
             start_from_page: 1
             inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: uuid
+              partition_field: uuid_id
+              stream:
+                $ref: "#/definitions/streams/lists"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -162,28 +175,28 @@ metadata:
     subscribers: false
   testedStreams:
     lists:
-      streamHash: 645a0581e54e6dd9b6c3e4fb23b14c9421162291
+      streamHash: e53dc4593801be38e67a797fdb99c1d8a8babc59
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     leaderboard:
-      streamHash: 2dc6d4faa3295f6efabd715525db40441f2e3a25
+      streamHash: 2f289d5f4e233ae54c2492c0a24f497da21d4fac
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     bonuses:
-      streamHash: d18a0d8b59a93408f2649ede7d77416abd6c8478
+      streamHash: 3b0ccb35b4581eef5cc99f09bf03c3bae42f5665
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     subscribers:
-      streamHash: 5526a6b363f4d673e4768a36a1203c6ad54ebef6
+      streamHash: ac874f96a6047a008b66e3add372b003a588adce
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true

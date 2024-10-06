@@ -16,14 +16,14 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
   connectorSubtype: api
   connectorType: source
-  definitionId: ad5c23ab-a5a3-4729-a845-517a2f9f38ef
+  definitionId: 0c329c01-5218-4876-b45f-23e9c07e6947
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-referralhero
   githubIssueLabel: source-referralhero
   icon: icon.svg
   license: MIT
   name: referralhero
-  releaseDate: 2024-10-03
+  releaseDate: 2024-10-06
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/referralhero
