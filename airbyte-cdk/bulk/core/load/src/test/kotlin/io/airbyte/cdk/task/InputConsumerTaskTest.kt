@@ -16,11 +16,11 @@ import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.DestinationRecord
 import io.airbyte.cdk.message.DestinationRecordWrapped
 import io.airbyte.cdk.message.DestinationStreamComplete
+import io.airbyte.cdk.message.DestinationStreamIncomplete
 import io.airbyte.cdk.message.GlobalCheckpoint
 import io.airbyte.cdk.message.GlobalCheckpointWrapped
 import io.airbyte.cdk.message.MessageQueue
 import io.airbyte.cdk.message.MessageQueueSupplier
-import io.airbyte.cdk.message.Sized
 import io.airbyte.cdk.message.StreamCheckpoint
 import io.airbyte.cdk.message.StreamCheckpointWrapped
 import io.airbyte.cdk.message.StreamCompleteWrapped
@@ -28,6 +28,7 @@ import io.airbyte.cdk.message.StreamRecordWrapped
 import io.airbyte.cdk.state.MemoryManager
 import io.airbyte.cdk.state.Reserved
 import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.test.util.CoroutineTestUtils
 import io.airbyte.cdk.util.takeUntilInclusive
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -101,6 +102,10 @@ class InputConsumerTaskTest {
         return DestinationStreamComplete(stream = stream.descriptor, emittedAtMs = 0)
     }
 
+    private fun makeStreamIncomplete(stream: DestinationStream): DestinationStreamIncomplete {
+        return DestinationStreamIncomplete(stream = stream.descriptor, emittedAtMs = 0)
+    }
+
     private fun makeStreamState(stream: DestinationStream, recordCount: Long): CheckpointMessage {
         return StreamCheckpoint(
             checkpoint =
@@ -119,10 +124,6 @@ class InputConsumerTaskTest {
             sourceStats = CheckpointMessage.Stats(recordCount),
             checkpoints = emptyList()
         )
-    }
-
-    private fun Sized.bytesReserved(): Long {
-        return (sizeBytes * config.estimatedRecordMemoryOverheadRatio).toLong()
     }
 
     @Test
@@ -272,6 +273,14 @@ class InputConsumerTaskTest {
                 }
             }
         }
+        mockInputFlow.stop()
+    }
+
+    @Test
+    fun testStreamIncompleteThrows() = runTest {
+        mockInputFlow.addMessage(makeRecord(stream1, "test"), 1L)
+        mockInputFlow.addMessage(makeStreamIncomplete(stream1), 0L)
+        CoroutineTestUtils.assertThrows(IllegalStateException::class) { task.execute() }
         mockInputFlow.stop()
     }
 }
