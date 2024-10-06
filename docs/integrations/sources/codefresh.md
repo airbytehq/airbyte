@@ -1,6 +1,9 @@
 # Codefresh
 This connector integrates Codefresh with Airbyte, enabling seamless data synchronization for CI/CD analytics and pipeline monitoring. It provides streams like agents, builds, audit, analytics etc.
 
+## Authentication
+First, create an account on [codefresh](https://codefresh.io/) if you don't  already have one. Then follow [this](https://g.codefresh.io/api/#section/Authentication/API-key) step to get the API key.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
