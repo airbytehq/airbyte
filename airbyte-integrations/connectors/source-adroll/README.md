@@ -1,7 +1,7 @@
 # AdRoll
 This directory contains the manifest-only connector for `source-adroll`.
 
-This is the connector for AdRoll
+Docs : https://developers.adroll.com/apis
 
 ## Usage
 There are multiple ways to use this connector:

@@ -1,5 +1,5 @@
 # AdRoll
-This is the connector for AdRoll
+Docs : https://developers.adroll.com/apis
 
 ## Configuration
 
@@ -34,6 +34,11 @@ This is the connector for AdRoll
 | Consent Banner Config for an Advertisable |  | No pagination | ✅ |  ❌  |
 | Pixel | eid | No pagination | ✅ |  ❌  |
 | Segments for a Pixel | eid | No pagination | ✅ |  ❌  |
+| All Campaigns | eid | No pagination | ✅ |  ❌  |
+| All AdGroups | eid | No pagination | ✅ |  ❌  |
+| All Ads | eid | No pagination | ✅ |  ❌  |
+| All Ads by AdGroup | eid | No pagination | ✅ |  ❌  |
+| All AdGroups by Campaign |  | No pagination | ✅ |  ❌  |
 
 ## Changelog
 
@@ -42,6 +47,6 @@ This is the connector for AdRoll
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-05 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
+| 0.0.1 | 2024-10-06 | | Initial release by [@ombhardwajj](https://github.com/ombhardwajj) via Connector Builder |
 
 </details>

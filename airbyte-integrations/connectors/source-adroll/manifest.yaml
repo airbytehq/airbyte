@@ -2,7 +2,7 @@ version: 5.10.2
 
 type: DeclarativeSource
 
-description: This is the connector for AdRoll
+description: "Docs : https://developers.adroll.com/apis"
 
 check:
   type: CheckStream
@@ -84,8 +84,8 @@ definitions:
           path: /activate/api/v3/campaign
           http_method: GET
           request_parameters:
-            advertisable_eid: "{{ config[\"advertisable\"] }}"
             eid: "{{ config['campaign_eid'] }}"
+            advertisable_eid: "{{ config[\"advertisable\"] }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -259,6 +259,157 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Segments for a Pixel"
+    All Campaigns:
+      type: DeclarativeStream
+      name: All Campaigns
+      primary_key:
+        - eid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/api/v1/query
+          http_method: POST
+          request_body_json:
+            query: >-
+              query CampaignsForAdvertisables($advertisable: String!) {
+              advertisable { byEID(advertisable: $advertisable) { name eid
+              campaigns { eid name type channel status } } } }
+            variables:
+              advertisable: "{{ config['advertisable'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - advertisable
+              - byEID
+              - campaigns
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All Campaigns"
+    All AdGroups:
+      type: DeclarativeStream
+      name: All AdGroups
+      primary_key:
+        - eid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/api/v1/query
+          http_method: POST
+          request_body_json:
+            query: >-
+              query AdgroupsForAdvertisables($advertisableEID: String!) {
+              advertisable { byEID(advertisable: $advertisableEID) { name eid
+              adgroups { eid name status createdDate updatedDate } } } }
+            variables:
+              advertisableEID: "{{ config['advertisable'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - advertisable
+              - byEID
+              - adgroups
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All AdGroups"
+    All Ads:
+      type: DeclarativeStream
+      name: All Ads
+      primary_key:
+        - eid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/api/v1/query
+          http_method: POST
+          request_body_json:
+            query: >-
+              query AdsForAdvertisables($advertisableEID: String!) {
+              advertisable { byEID(advertisable: $advertisableEID) { name eid
+              ads { eid name status type createdDate updatedDate } } } }
+            variables:
+              advertisableEID: "{{ config['advertisable'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - advertisable
+              - byEID
+              - ads
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All Ads"
+    All Ads by AdGroup:
+      type: DeclarativeStream
+      name: All Ads by AdGroup
+      primary_key:
+        - eid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/api/v1/query
+          http_method: POST
+          request_body_json:
+            query: >-
+              query GetAdsByAdgroup($adgroupEID: String!) { ad {
+              byAdgroup(adgroup: $adgroupEID) { eid name status type isActive
+              createdDate updatedDate adFormat destinationURL } } }
+            variables:
+              adgroupEID: "{{ config['adgroup_eid'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - ad
+              - byAdgroup
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All Ads by AdGroup"
+    All AdGroups by Campaign:
+      type: DeclarativeStream
+      name: All AdGroups by Campaign
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /reporting/api/v1/query
+          http_method: POST
+          request_body_json:
+            query: >-
+              query GetAdgroupsByCampaign($campaignEID: String!) { adgroup {
+              byCampaign(campaign: $campaignEID) { eid name isActive status
+              createdDate updatedDate } } }
+            variables:
+              campaignEID: "{{ config['campaign_eid'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - adgroup
+              - byCampaign
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/All AdGroups by Campaign"
   base_requester:
     type: HttpRequester
     url_base: https://services.adroll.com
@@ -292,6 +443,11 @@ streams:
   - $ref: "#/definitions/streams/Consent Banner Config for an Advertisable"
   - $ref: "#/definitions/streams/Pixel"
   - $ref: "#/definitions/streams/Segments for a Pixel"
+  - $ref: "#/definitions/streams/All Campaigns"
+  - $ref: "#/definitions/streams/All AdGroups"
+  - $ref: "#/definitions/streams/All Ads"
+  - $ref: "#/definitions/streams/All Ads by AdGroup"
+  - $ref: "#/definitions/streams/All AdGroups by Campaign"
 
 spec:
   type: Spec
@@ -346,28 +502,28 @@ spec:
         title: "Advertisable EID "
       adgroup_eid:
         type: string
-        title: AdGroup EID
         order: 7
+        title: AdGroup EID
       campaign_eid:
         type: string
-        title: Campaign EID
         order: 8
+        title: Campaign EID
       strategy_eid:
         type: string
-        title: Strategy EID
         order: 9
+        title: Strategy EID
       pixel_eid:
         type: string
-        title: Pixel EID
         order: 10
+        title: Pixel EID
       eid_of_asset:
         type: string
-        title: EID of Asset
         order: 11
+        title: EID of Asset
       eid_of_ad:
         type: string
-        title: EID of Ad
         order: 12
+        title: EID of Ad
     additionalProperties: true
 
 metadata:
@@ -384,86 +540,126 @@ metadata:
     Consent Banner Config for an Advertisable: true
     Pixel: true
     Segments for a Pixel: true
+    All Campaigns: true
+    All AdGroups: true
+    All Ads: true
+    All Ads by AdGroup: true
+    All AdGroups by Campaign: true
   testedStreams:
     Assets by EID:
+      hasRecords: true
       streamHash: 5f80a5695a5c1cf049db594bbf0332ef21de5870
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Segments:
+      hasRecords: true
       streamHash: 36b531a76ae4a5befee72c3e7454e7fdbd426dde
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     AdGroup:
+      hasRecords: true
       streamHash: 559f965449873b2d0a03187fffff31cbd85ff86f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Campaign:
+      hasRecords: true
       streamHash: 3abfcdc3944938fbe68bef8ca85dda02300c1eca
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Strategy:
+      hasRecords: true
       streamHash: caad044bce3e4e4a80cee98d1b83c0a655ad819b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     All Startegies:
+      hasRecords: true
       streamHash: dc3090c22fa97fd8bea0ab87dd4736d834bb3aee
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Geo Target:
+      hasRecords: true
       streamHash: 97d788b9ffb115dce2c0a26b35533fdb0b3a0051
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Advertisable:
+      hasRecords: true
       streamHash: 7c7ea9436ef880c184bf7ae448599c3ceb37b5e3
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Active Pixels for an Advertisable:
+      hasRecords: true
       streamHash: a816668ca08c83e554b5d1580689e58bc1bf7610
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Consent Banner Config for an Advertisable:
+      hasRecords: true
       streamHash: 521ae0aeb51f7242435318b86ea1e22f681ea6a5
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     Pixel:
+      hasRecords: true
       streamHash: 304bb0116d64717aca5f4043eb17d96a5873320f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    Segments for a Pixel:
+      hasRecords: true
+      streamHash: c4023cf26107a7be4292137c0aef19b305e63433
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    All Campaigns:
+      streamHash: 5addadca23466436f48045998a2cf861646d95c0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Segments for a Pixel:
-      streamHash: c4023cf26107a7be4292137c0aef19b305e63433
+    All AdGroups:
+      streamHash: d3c30d98316a5eb8f0b04735b9413e5b88302538
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    All Ads:
+      streamHash: ca1384f55afd5c4747deb44488fd6bef3e2804c9
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    All Ads by AdGroup:
+      streamHash: 926b822ecbef74fe94bdadefd0d2a426b87657ce
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    All AdGroups by Campaign:
+      streamHash: 3d8eb8018157b7140df4ef98425a3044e8508129
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1648,3 +1844,152 @@ schemas:
           - "null"
     required:
       - eid
+  All Campaigns:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      channel:
+        type:
+          - string
+          - "null"
+      eid:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+    required:
+      - eid
+  All AdGroups:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdDate:
+        type:
+          - string
+          - "null"
+      eid:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedDate:
+        type:
+          - string
+          - "null"
+    required:
+      - eid
+  All Ads:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      createdDate:
+        type:
+          - string
+          - "null"
+      eid:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedDate:
+        type:
+          - string
+          - "null"
+    required:
+      - eid
+  All Ads by AdGroup:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      adFormat:
+        type:
+          - string
+          - "null"
+      createdDate:
+        type:
+          - string
+          - "null"
+      destinationURL:
+        type:
+          - string
+          - "null"
+      eid:
+        type: string
+      isActive:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedDate:
+        type:
+          - string
+          - "null"
+    required:
+      - eid
+  All AdGroups by Campaign:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      createdDate:
+        type:
+          - string
+          - "null"
+      eid:
+        type:
+          - string
+          - "null"
+      isActive:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      updatedDate:
+        type:
+          - string
+          - "null"
