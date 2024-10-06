@@ -6,6 +6,7 @@ package io.airbyte.cdk.task
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlin.time.measureTime
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -34,8 +35,8 @@ class TaskRunner {
         queue.consumeAsFlow().collect { task ->
             launch {
                 log.info { "Executing task: $task" }
-                task.execute()
-                log.info { "Task completed: $task" }
+                val elapsed = measureTime { task.execute() }
+                log.info { "Task completed: $task after ${elapsed.inWholeMilliseconds}ms" }
             }
         }
     }

@@ -88,6 +88,7 @@ class DefaultDestinationTaskLauncher(
     private val catalog: DestinationCatalog,
     private val syncManager: SyncManager,
     override val taskRunner: TaskRunner,
+    private val inputConsumerTask: InputConsumerTask,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
@@ -109,6 +110,10 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun start() {
+        // Start the input consumer ASAP
+        log.info { "Starting input consumer task" }
+        enqueue(inputConsumerTask)
+
         // Launch the client interface setup task
         log.info { "Starting startup task" }
         val setupTask = setupTaskFactory.make(this)
@@ -120,6 +125,8 @@ class DefaultDestinationTaskLauncher(
             val spillTask = spillToDiskTaskFactory.make(this, stream)
             enqueue(spillTask)
         }
+
+        // Start the timed force flush task
         val forceFlushTask = timedFlushTaskFactory.make(this)
         enqueue(forceFlushTask)
 

@@ -46,6 +46,7 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var syncManager: SyncManager
     @Inject lateinit var mockExceptionHandler: MockExceptionHandler
 
+    @Inject lateinit var mockInputConsumerTask: MockInputConsumerTask
     @Inject lateinit var mockSetupTaskFactory: MockSetupTaskFactory
     @Inject lateinit var mockSpillToDiskTaskFactory: MockSpillToDiskTaskFactory
     @Inject lateinit var mockOpenStreamTaskFactory: MockOpenStreamTaskFactory
@@ -56,6 +57,17 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
     @Inject lateinit var forceFlushTaskFactory: MockForceFlushTaskFactory
     @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
+
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockInputConsumerTask : InputConsumerTask {
+        val hasRun: Channel<Boolean> = Channel(Channel.UNLIMITED)
+
+        override suspend fun execute() {
+            hasRun.send(true)
+        }
+    }
 
     @Singleton
     @Replaces(DefaultSetupTaskFactory::class)
@@ -256,8 +268,14 @@ class DestinationTaskLauncherTest {
     fun testStart() = runTest {
         launch { taskRunner.run() }
 
-        // Verify that setup has run
         taskLauncher.start()
+
+        Assertions.assertTrue(
+            mockInputConsumerTask.hasRun.receive(),
+            "input consumer task was started"
+        )
+
+        // Verify that setup has run
         mockSetupTaskFactory.hasRun.receive()
 
         // Verify that spill to disk ran for each stream
