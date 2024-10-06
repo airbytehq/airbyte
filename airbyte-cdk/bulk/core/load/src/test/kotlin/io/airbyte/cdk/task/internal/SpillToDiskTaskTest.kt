@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.internal
 
 import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationStream
@@ -17,6 +17,7 @@ import io.airbyte.cdk.message.StreamRecordWrapped
 import io.airbyte.cdk.state.FlushStrategy
 import io.airbyte.cdk.state.MemoryManager
 import io.airbyte.cdk.state.Reserved
+import io.airbyte.cdk.task.MockTaskLauncher
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -37,7 +38,6 @@ import org.junit.jupiter.api.Test
         ]
 )
 class SpillToDiskTaskTest {
-    @Inject lateinit var taskRunner: TaskRunner
     @Inject lateinit var memoryManager: MemoryManager
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject lateinit var mockTempFileProvider: MockTempFileProvider
@@ -94,7 +94,7 @@ class SpillToDiskTaskTest {
         val bytesReserved = primeMessageQueue()
         Assertions.assertEquals(availableMemory - bytesReserved, memoryManager.remainingMemoryBytes)
 
-        val mockTaskLauncher = MockTaskLauncher(taskRunner)
+        val mockTaskLauncher = MockTaskLauncher()
         spillToDiskTaskFactory.make(mockTaskLauncher, stream1).execute()
         Assertions.assertEquals(1, mockTaskLauncher.spilledFiles.size)
         spillToDiskTaskFactory.make(mockTaskLauncher, stream1).execute()

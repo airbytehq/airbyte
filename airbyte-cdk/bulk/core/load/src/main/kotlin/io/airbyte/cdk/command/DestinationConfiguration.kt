@@ -25,6 +25,15 @@ abstract class DestinationConfiguration : Configuration {
      */
     open val maxCheckpointFlushTimeMs: Long = 15 * 60 * 1000L // 15 minutes
 
+    /** The max number of threads to use for implementor tasks (e.g. open, processBatch). */
+    open val maxNumImplementorTaskThreads = 64
+
+    /**
+     * The amount of time given to implementor tasks (e.g. open, processBatch) to complete their
+     * current work after a failure.
+     */
+    open val gracefulCancellationTimeoutMs: Long = 60 * 1000L // 1 minutes
+
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.

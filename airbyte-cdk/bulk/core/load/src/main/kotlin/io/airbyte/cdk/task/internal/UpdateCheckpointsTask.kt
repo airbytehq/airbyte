@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.internal
 
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.CheckpointMessage
@@ -12,6 +12,7 @@ import io.airbyte.cdk.message.MessageQueue
 import io.airbyte.cdk.message.StreamCheckpointWrapped
 import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.state.Reserved
+import io.airbyte.cdk.task.SyncTask
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton

@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.implementor
 
 import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationStream
@@ -16,6 +16,7 @@ import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.message.DestinationRecord
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.task.MockTaskLauncher
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
