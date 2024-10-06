@@ -13,11 +13,11 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| colors |  | No pagination | ✅ |  ❌  |
+| colors | calendar.event | No pagination | ✅ |  ❌  |
 | settings | id | DefaultPaginator | ✅ |  ❌  |
 | calendarlist | id | DefaultPaginator | ✅ |  ❌  |
 | calendars | id | DefaultPaginator | ✅ |  ❌  |
-| events |  | DefaultPaginator | ✅ |  ❌  |
+| events | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -26,6 +26,6 @@ Solves https://github.com/airbytehq/airbyte/issues/45995
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-02 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-10-06 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>
