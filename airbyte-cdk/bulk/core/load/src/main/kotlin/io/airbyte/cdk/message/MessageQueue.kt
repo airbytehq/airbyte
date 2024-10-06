@@ -4,21 +4,28 @@
 
 package io.airbyte.cdk.message
 
+import io.airbyte.cdk.util.CloseableCoroutine
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 
-interface MessageQueue<T> {
-    suspend fun publish(message: T)
+interface QueueReader<T> {
     suspend fun consume(): Flow<T>
-    suspend fun close()
+    suspend fun poll(): T?
 }
+
+interface QueueWriter<T> : CloseableCoroutine {
+    suspend fun publish(message: T)
+}
+
+interface MessageQueue<T> : QueueReader<T>, QueueWriter<T>
 
 abstract class ChannelMessageQueue<T> : MessageQueue<T> {
     val channel = Channel<T>(Channel.UNLIMITED)
 
     override suspend fun publish(message: T) = channel.send(message)
     override suspend fun consume(): Flow<T> = channel.receiveAsFlow()
+    override suspend fun poll(): T? = channel.tryReceive().getOrNull()
     override suspend fun close() {
         channel.close()
     }

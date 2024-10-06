@@ -7,7 +7,7 @@ package io.airbyte.cdk.task
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.file.MockTimeProvider
-import io.airbyte.cdk.state.EventConsumer
+import io.airbyte.cdk.message.QueueReader
 import io.airbyte.cdk.state.MockCheckpointManager
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -32,7 +32,7 @@ class TimedForcedCheckpointFlushTaskTest {
     @Inject lateinit var timeProvider: MockTimeProvider
     @Inject lateinit var checkpointManager: MockCheckpointManager
     @Inject lateinit var config: DestinationConfiguration
-    @Inject lateinit var eventConsumer: EventConsumer<ForceFlushEvent>
+    @Inject lateinit var queueReader: QueueReader<ForceFlushEvent>
 
     @Test
     fun testTaskWillNotFlushIfTimeNotElapsed() = runTest {
@@ -52,10 +52,7 @@ class TimedForcedCheckpointFlushTaskTest {
             checkpointManager.flushedAtMs,
             "task tried to flush"
         )
-        Assertions.assertNull(
-            eventConsumer.consumeMaybe(),
-            "task did not produce a force flush event"
-        )
+        Assertions.assertNull(queueReader.poll(), "task did not produce a force flush event")
         val mockTimeSinceLastFlush = timeProvider.currentTimeMillis() - mockLastFlushTime
         val nextRun = config.maxCheckpointFlushTimeMs - mockTimeSinceLastFlush
         Assertions.assertEquals(
@@ -86,7 +83,7 @@ class TimedForcedCheckpointFlushTaskTest {
             checkpointManager.flushedAtMs,
             "task tried to flush"
         )
-        val flushEvent = eventConsumer.consumeMaybe()
+        val flushEvent = queueReader.poll()
         Assertions.assertEquals(
             expectedMap,
             flushEvent?.indexes,

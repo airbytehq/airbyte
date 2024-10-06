@@ -10,8 +10,8 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.file.TempFileProvider
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.DestinationRecordWrapped
-import io.airbyte.cdk.message.MessageQueue
 import io.airbyte.cdk.message.MessageQueueSupplier
+import io.airbyte.cdk.message.QueueReader
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.message.StreamCompleteWrapped
 import io.airbyte.cdk.message.StreamRecordWrapped
@@ -39,7 +39,7 @@ interface SpillToDiskTask : StreamTask
 class DefaultSpillToDiskTask(
     private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queue: MessageQueue<Reserved<DestinationRecordWrapped>>,
+    private val queue: QueueReader<Reserved<DestinationRecordWrapped>>,
     private val flushStrategy: FlushStrategy,
     override val stream: DestinationStream,
     private val launcher: DestinationTaskLauncher,

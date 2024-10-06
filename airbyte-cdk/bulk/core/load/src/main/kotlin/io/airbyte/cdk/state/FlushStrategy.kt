@@ -8,6 +8,7 @@ import com.google.common.collect.Range
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
+import io.airbyte.cdk.message.QueueReader
 import io.airbyte.cdk.task.ForceFlushEvent
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
@@ -34,7 +35,7 @@ interface FlushStrategy {
 @Secondary
 class DefaultFlushStrategy(
     private val config: DestinationConfiguration,
-    private val eventConsumer: EventConsumer<ForceFlushEvent>
+    private val eventQueue: QueueReader<ForceFlushEvent>
 ) : FlushStrategy {
     private val forceFlushIndexes = ConcurrentHashMap<DestinationStream.Descriptor, Long>()
 
@@ -48,7 +49,7 @@ class DefaultFlushStrategy(
         }
 
         // Listen to the event stream for a new force flush index
-        val nextFlushIndex = eventConsumer.consumeMaybe()?.indexes?.get(stream.descriptor)
+        val nextFlushIndex = eventQueue.poll()?.indexes?.get(stream.descriptor)
 
         // Always update the index if the new one is not null
         return when (

@@ -7,13 +7,11 @@ package io.airbyte.cdk.task
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.file.TimeProvider
+import io.airbyte.cdk.message.ChannelMessageQueue
+import io.airbyte.cdk.message.QueueWriter
 import io.airbyte.cdk.state.CheckpointManager
-import io.airbyte.cdk.state.EventConsumer
-import io.airbyte.cdk.state.EventProducer
-import io.micronaut.context.annotation.Prototype
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import kotlinx.coroutines.delay
 
 interface TimedForcedCheckpointFlushTask : SyncTask
 
@@ -21,7 +19,7 @@ class DefaultTimedForcedCheckpointFlushTask(
     private val delayMs: Long,
     private val cadenceMs: Long,
     private val checkpointManager: CheckpointManager<DestinationStream.Descriptor, *>,
-    private val eventProducer: EventProducer<ForceFlushEvent>,
+    private val eventQueue: QueueWriter<ForceFlushEvent>,
     private val timeProvider: TimeProvider,
     private val taskLauncher: DestinationTaskLauncher
 ) : TimedForcedCheckpointFlushTask {
@@ -42,7 +40,7 @@ class DefaultTimedForcedCheckpointFlushTask(
             // If the max time has elapsed, emit a force flush event with provided next checkpoint
             // indexes
             val nextIndexes = checkpointManager.getNextCheckpointIndexes()
-            eventProducer.produce(ForceFlushEvent(nextIndexes))
+            eventQueue.publish(ForceFlushEvent(nextIndexes))
             taskLauncher.scheduleNextForceFlushAttempt(cadenceMs)
         } else {
             // Otherwise schedule the next attempt to run at {time of last flush + configured
@@ -64,7 +62,7 @@ interface TimedForcedCheckpointFlushTaskFactory {
 class DefaultTimedForcedCheckpointFlushTaskFactory(
     private val config: DestinationConfiguration,
     private val checkpointManager: CheckpointManager<DestinationStream.Descriptor, *>,
-    private val eventProducer: EventProducer<ForceFlushEvent>,
+    private val eventQueue: QueueWriter<ForceFlushEvent>,
     private val timeProvider: TimeProvider
 ) : TimedForcedCheckpointFlushTaskFactory {
     override fun make(
@@ -75,7 +73,7 @@ class DefaultTimedForcedCheckpointFlushTaskFactory(
             delayMs ?: config.maxCheckpointFlushTimeMs,
             config.maxCheckpointFlushTimeMs,
             checkpointManager,
-            eventProducer,
+            eventQueue,
             timeProvider,
             taskLauncher
         )
@@ -84,9 +82,6 @@ class DefaultTimedForcedCheckpointFlushTaskFactory(
 
 data class ForceFlushEvent(val indexes: Map<DestinationStream.Descriptor, Long>)
 
-@Singleton @Secondary class DefaultForceFlushEventProducer : EventProducer<ForceFlushEvent>()
-
-@Prototype
+@Singleton
 @Secondary
-class DefaultForceFlushEventConsumer(private val eventProducer: EventProducer<ForceFlushEvent>) :
-    EventConsumer<ForceFlushEvent>(eventProducer)
+class DefaultForceFlushEventMessageQueue : ChannelMessageQueue<ForceFlushEvent>()
