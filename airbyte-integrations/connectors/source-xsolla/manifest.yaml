@@ -1,4 +1,4 @@
-version: 5.7.5
+version: 5.10.2
 
 type: DeclarativeSource
 
@@ -10,13 +10,13 @@ description: >-
 check:
   type: CheckStream
   stream_names:
-    - Games Catalog
+    - games_catalog
 
 definitions:
   streams:
-    Games Catalog:
+    games_catalog:
       type: DeclarativeStream
-      name: Games Catalog
+      name: games_catalog
       primary_key:
         - item_id
       retriever:
@@ -44,10 +44,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Games Catalog"
-    DRM:
+          $ref: "#/schemas/games_catalog"
+    drm:
       type: DeclarativeStream
-      name: DRM
+      name: drm
       primary_key:
         - drm_id
       retriever:
@@ -65,10 +65,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/DRM"
-    Virtual Items:
+          $ref: "#/schemas/drm"
+    virtual_items:
       type: DeclarativeStream
-      name: Virtual Items
+      name: virtual_items
       primary_key:
         - item_id
       retriever:
@@ -96,10 +96,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Virtual Items"
-    Virtual Currency:
+          $ref: "#/schemas/virtual_items"
+    virtual_currencies:
       type: DeclarativeStream
-      name: Virtual Currency
+      name: virtual_currencies
       primary_key:
         - item_id
       retriever:
@@ -127,10 +127,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Virtual Currency"
-    Virtual Currency Package:
+          $ref: "#/schemas/virtual_currencies"
+    virtual_currency_packages:
       type: DeclarativeStream
-      name: Virtual Currency Package
+      name: virtual_currency_packages
       primary_key:
         - item_id
       retriever:
@@ -158,10 +158,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Virtual Currency Package"
-    Bundles:
+          $ref: "#/schemas/virtual_currency_packages"
+    bundles:
       type: DeclarativeStream
-      name: Bundles
+      name: bundles
       primary_key:
         - item_id
       retriever:
@@ -189,10 +189,10 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Bundles"
-    Reward Chains:
+          $ref: "#/schemas/bundles"
+    reward_chains:
       type: DeclarativeStream
-      name: Reward Chains
+      name: reward_chains
       primary_key:
         - reward_chain_id
       retriever:
@@ -220,7 +220,7 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/Reward Chains"
+          $ref: "#/schemas/reward_chains"
   base_requester:
     type: HttpRequester
     url_base: https://store.xsolla.com/api/v2/project
@@ -229,13 +229,13 @@ definitions:
       api_token: "{{ config[\"api_key\"] }}"
 
 streams:
-  - $ref: "#/definitions/streams/Games Catalog"
-  - $ref: "#/definitions/streams/DRM"
-  - $ref: "#/definitions/streams/Virtual Items"
-  - $ref: "#/definitions/streams/Virtual Currency"
-  - $ref: "#/definitions/streams/Virtual Currency Package"
-  - $ref: "#/definitions/streams/Bundles"
-  - $ref: "#/definitions/streams/Reward Chains"
+  - $ref: "#/definitions/streams/games_catalog"
+  - $ref: "#/definitions/streams/drm"
+  - $ref: "#/definitions/streams/virtual_items"
+  - $ref: "#/definitions/streams/virtual_currencies"
+  - $ref: "#/definitions/streams/virtual_currency_packages"
+  - $ref: "#/definitions/streams/bundles"
+  - $ref: "#/definitions/streams/reward_chains"
 
 spec:
   type: Spec
@@ -263,68 +263,68 @@ spec:
 
 metadata:
   autoImportSchema:
-    Games Catalog: true
-    DRM: true
-    Virtual Items: true
-    Virtual Currency: true
-    Virtual Currency Package: true
-    Bundles: true
-    Reward Chains: true
+    games_catalog: true
+    drm: true
+    virtual_items: true
+    virtual_currencies: true
+    virtual_currency_packages: true
+    bundles: true
+    reward_chains: true
   testedStreams:
-    Games Catalog:
+    games_catalog:
+      hasRecords: true
       streamHash: faec6bf685575de259040e2e22c96d946025e499
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    DRM:
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    drm:
+      hasRecords: true
       streamHash: 67a6c66af617f0f780be11f5ffa1ef58615a13bc
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Virtual Items:
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    virtual_items:
+      hasRecords: true
       streamHash: ea2c3ed5569de5cbf662a75dd9b2bfe5c80db78c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Virtual Currency:
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    virtual_currencies:
+      hasRecords: true
       streamHash: 8affb3d5a7ffc9e4419a1de7620b03875d72b29e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Virtual Currency Package:
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    virtual_currency_packages:
+      hasRecords: true
       streamHash: 805a8d7c4e01fe7399406352af6e336068412cda
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Bundles:
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    bundles:
+      hasRecords: true
       streamHash: 85db979f7cbdf3ee2a5cf06170c87dca8a01502b
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
-    Reward Chains:
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    reward_chains:
+      hasRecords: true
       streamHash: 5e585cea19508d7ba03eddc4ffbdb339a0612f85
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developers.xsolla.com/api/igs-bb/overview/#section/Overview
 
 schemas:
-  Games Catalog:
+  games_catalog:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -485,7 +485,7 @@ schemas:
           - "null"
     required:
       - item_id
-  DRM:
+  drm:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -510,7 +510,7 @@ schemas:
           - "null"
     required:
       - drm_id
-  Virtual Items:
+  virtual_items:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -822,7 +822,7 @@ schemas:
                 - "null"
     required:
       - item_id
-  Virtual Currency:
+  virtual_currencies:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -914,7 +914,7 @@ schemas:
           - "null"
     required:
       - item_id
-  Virtual Currency Package:
+  virtual_currency_packages:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1047,7 +1047,7 @@ schemas:
           - "null"
     required:
       - item_id
-  Bundles:
+  bundles:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
@@ -1399,7 +1399,7 @@ schemas:
           - "null"
     required:
       - item_id
-  Reward Chains:
+  reward_chains:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
