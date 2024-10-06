@@ -1,7 +1,17 @@
 # Google Calendar
+[Google Calendar Connector](https://developers.google.com/calendar/api/v3/reference) source connector will syncs data between your Google Calendar and airbyte destination connector.
 This directory contains the manifest-only connector for `source-google-calendar`.
 
 Solves https://github.com/airbytehq/airbyte/issues/45995
+
+# Create Credentials 
+Follow the steps mentioned in the link [here](https://developers.google.com/workspace/guides/create-credentials#oauth-client-id) and get the below required credentials to connect with your Google calendar connector
+
+- Client ID
+- Client secret
+- Refresh token
+- Calendar Id (Gmail address of the calendar you want to connect to)
+
 
 ## Usage
 There are multiple ways to use this connector:
