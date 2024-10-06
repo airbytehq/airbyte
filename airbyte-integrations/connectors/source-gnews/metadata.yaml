@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   dockerRepository: airbyte/source-gnews
   githubIssueLabel: source-gnews
   icon: gnews.svg
