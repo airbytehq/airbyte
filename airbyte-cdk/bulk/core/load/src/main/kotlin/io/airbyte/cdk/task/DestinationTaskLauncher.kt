@@ -97,6 +97,7 @@ class DefaultDestinationTaskLauncher(
     private val teardownTaskFactory: TeardownTaskFactory,
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
     private val timedFlushTaskFactory: TimedForcedCheckpointFlushTaskFactory,
+    private val updateCheckpointsTask: UpdateCheckpointsTask,
     private val exceptionHandler: TaskLauncherExceptionHandler<DestinationWriteTask>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
@@ -108,9 +109,12 @@ class DefaultDestinationTaskLauncher(
     }
 
     override suspend fun start() {
+        // Launch the client interface setup task
         log.info { "Starting startup task" }
         val setupTask = setupTaskFactory.make(this)
         enqueue(setupTask)
+
+        // Start a spill-to-disk task for each record stream
         catalog.streams.forEach { stream ->
             log.info { "Starting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)
@@ -118,6 +122,9 @@ class DefaultDestinationTaskLauncher(
         }
         val forceFlushTask = timedFlushTaskFactory.make(this)
         enqueue(forceFlushTask)
+
+        // Start a single checkpoint updating task
+        enqueue(updateCheckpointsTask)
     }
 
     /** Called when the initial destination setup completes. */
