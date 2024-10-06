@@ -6,7 +6,6 @@ airbyte connector developed using airbyte 1.0 UI Connector development
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
 | `api_key` | `string` | API Key.  |  |
-| `uuid` | `string` | uuid.  |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |

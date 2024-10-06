@@ -153,7 +153,6 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_key
-      - uuid
     properties:
       api_key:
         type: string
@@ -161,10 +160,6 @@ spec:
         order: 0
         title: API Key
         airbyte_secret: true
-      uuid:
-        type: string
-        order: 1
-        title: uuid
     additionalProperties: true
 
 metadata:
@@ -175,33 +170,33 @@ metadata:
     subscribers: false
   testedStreams:
     lists:
+      hasRecords: true
       streamHash: e53dc4593801be38e67a797fdb99c1d8a8babc59
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     leaderboard:
+      hasRecords: true
       streamHash: 2f289d5f4e233ae54c2492c0a24f497da21d4fac
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     bonuses:
+      hasRecords: true
       streamHash: 3b0ccb35b4581eef5cc99f09bf03c3bae42f5665
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     subscribers:
+      hasRecords: true
       streamHash: ac874f96a6047a008b66e3add372b003a588adce
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://support.referralhero.com/integrate/rest-api/endpoints-reference
 
