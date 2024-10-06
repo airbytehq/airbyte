@@ -9,7 +9,7 @@ from airbyte_cdk.sources.file_based.config.clients_config.local_sync_config impo
 
 
 class LocalFileTransferClient:
-    def __init__(self, config: Optional[Union[LocalSyncConfig, Mapping[str, Any]]] = None, local_directory: Optional[str] = "tmp"):
+    def __init__(self, config: Optional[Union[LocalSyncConfig, Mapping[str, Any]]] = None, local_directory: Optional[str] = "/tmp/airbyte-file-transfer"):
         """
         Initialize the LocalFileTransferClient. It uses a default local directory for file saving.
         """
@@ -42,10 +42,12 @@ class LocalFileTransferClient:
         # Get the absolute path
         absolute_file_path = os.path.abspath(local_file_path)
 
+        relative_file_path = os.path.relpath(absolute_file_path)
+
         logger.info(f"Writing file to {local_file_path}.")
 
         with open(local_file_path, "wb") as f:
             f.write(fp.read())
         logger.info(f"File {file_uri} successfully written to {local_file_path}.")
 
-        return {"file_url": absolute_file_path, "size": file_size, "file_relative_path": local_file_path}
+        return {"file_url": absolute_file_path, "size": file_size, "file_relative_path": relative_file_path}

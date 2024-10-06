@@ -48,9 +48,9 @@ class BlobTransfer(FileTypeParser):
         file_no = 0
         try:
             data_generator = self._file_reader.read_data(config, file, stream_reader, logger, self.file_read_mode)
-            for file, file_size in data_generator:
-                file_uri = f"{config.name}_{str(uuid4())}"
-                yield from stream_writer.write(file_uri, file, file_size, logger)
+            for file_opened, file_size in data_generator:
+                file_uri = file.uri.lstrip("/")
+                yield from stream_writer.write(file_uri, file_opened, file_size, logger)
                 file_no += 1
         except RecordParseError as parse_err:
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri, lineno=file_no) from parse_err
