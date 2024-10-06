@@ -55,7 +55,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - customers
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -118,7 +118,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - locations
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -181,7 +181,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - shifts
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -229,7 +229,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - team_members
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -280,7 +280,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - team_member_wages
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -298,7 +298,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: "{{ [parameters['object_type']] }}"
+            object_types: ITEM
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -387,7 +387,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: "{{ [parameters['object_type']] }}"
+            object_types: CATEGORY
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -476,7 +476,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: "{{ [parameters['object_type']] }}"
+            object_types: DISCOUNT
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -565,7 +565,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: "{{ [parameters['object_type']] }}"
+            object_types: TAX
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -654,7 +654,7 @@ definitions:
             Content-Type: application/json
             Square-Version: "2022-10-19"
           request_body_json:
-            object_types: "{{ [parameters['object_type']] }}"
+            object_types: MODIFIER_LIST
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             include_related_objects: "{{ False }}"
           error_handler:
@@ -776,7 +776,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - refunds
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -916,7 +916,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - payments
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -1013,7 +1013,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - orders
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1079,7 +1079,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - "{{ parameters['name'] }}"
+              - bank_accounts
         paginator:
           type: DefaultPaginator
           page_token_option:
