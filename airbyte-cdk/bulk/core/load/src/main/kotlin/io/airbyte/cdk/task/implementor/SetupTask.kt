@@ -2,13 +2,16 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.implementor
 
+import io.airbyte.cdk.task.DestinationTaskLauncher
+import io.airbyte.cdk.task.ImplementorTask
+import io.airbyte.cdk.task.SyncTask
 import io.airbyte.cdk.write.DestinationWriter
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface SetupTask : SyncTask
+interface SetupTask : SyncTask, ImplementorTask
 
 /**
  * Wraps @[DestinationWriter.setup] and starts the open stream tasks.

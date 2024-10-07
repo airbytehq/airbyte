@@ -20,10 +20,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 
 /**
  * Interface for checkpoint management. Should accept stream and global checkpoints, as well as
@@ -197,11 +195,10 @@ abstract class StreamsCheckpointManager<T> : CheckpointManager<DestinationStream
         }
     }
 
-    private suspend fun sendMessage(checkpointMessage: T) =
-        withContext(Dispatchers.IO) {
-            lastFlushTimeMs.set(timeProvider.currentTimeMillis())
-            outputConsumer.invoke(checkpointMessage)
-        }
+    private suspend fun sendMessage(checkpointMessage: T) {
+        lastFlushTimeMs.set(timeProvider.currentTimeMillis())
+        outputConsumer.invoke(checkpointMessage)
+    }
 
     override suspend fun getLastSuccessfulFlushTimeMs(): Long =
         // Return inside the lock to ensure the value reflects flushes in progress

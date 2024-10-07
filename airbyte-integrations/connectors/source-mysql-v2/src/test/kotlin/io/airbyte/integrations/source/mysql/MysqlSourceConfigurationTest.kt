@@ -3,6 +3,8 @@ package io.airbyte.integrations.source.mysql
 
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
+import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -30,6 +32,7 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(config.realHost, "localhost")
         Assertions.assertEquals(config.realPort, 12345)
         Assertions.assertEquals(config.namespaces, setOf("SYSTEM"))
+        Assertions.assertTrue(config.sshTunnel is SshPasswordAuthTunnelMethod)
 
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
@@ -38,10 +41,33 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(config.jdbcProperties["useCursorFetch"], "true")
         Assertions.assertEquals(config.jdbcProperties["sessionVariables"], "autocommit=0")
 
-        Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
-
         Assertions.assertEquals(config.jdbcProperties["theAnswerToLiveAndEverything"], "42")
         Assertions.assertEquals(config.jdbcProperties["foo"], "bar")
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_V1)
+    fun testParseConfigFromV1() {
+        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
+
+        val config = factory.makeWithoutExceptionHandling(pojo)
+
+        Assertions.assertEquals(config.realHost, "localhost")
+        Assertions.assertEquals(config.realPort, 12345)
+        Assertions.assertEquals(config.namespaces, setOf("SYSTEM"))
+
+        Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
+        Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
+        Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
+        Assertions.assertTrue(config.cursorMethodConfiguration is CdcCursor)
+
+        val cdcCursor = config.cursorMethodConfiguration as CdcCursor
+
+        Assertions.assertEquals(cdcCursor.initialWaitTimeInSeconds, 300)
+        Assertions.assertEquals(cdcCursor.initialLoadTimeoutHours, 8)
+        Assertions.assertEquals(cdcCursor.invalidCdcCursorPositionBehavior, "Re-sync data")
+
+        Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
 }
 
@@ -53,8 +79,8 @@ const val CONFIG: String =
   "username": "FOO",
   "password": "BAR",
   "database": "SYSTEM",
-  "encryption": {
-    "encryption_method": "preferred"
+  "ssl_mode": {
+    "mode": "preferred"
   },
   "tunnel_method": {
     "tunnel_method": "SSH_PASSWORD_AUTH",
@@ -63,11 +89,34 @@ const val CONFIG: String =
     "tunnel_user": "sshuser",
     "tunnel_user_password": "***"
   },
-  "cursor": {
-    "cursor_method": "user_defined"
+  "replication_method": {
+    "method": "STANDARD"
   },
   "checkpoint_target_interval_seconds": 60,
   "jdbc_url_params": "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
   "concurrency": 2
+}
+"""
+
+const val CONFIG_V1: String =
+    """
+{
+  "host": "localhost",
+  "port": 12345,
+  "database": "SYSTEM",
+  "password": "BAR",
+  "ssl_mode": {
+    "mode": "required"
+  },
+  "username": "FOO",
+  "tunnel_method": {
+    "tunnel_method": "NO_TUNNEL"
+  },
+  "replication_method": {
+    "method": "CDC",
+    "initial_waiting_seconds": 300,
+    "initial_load_timeout_hours": 8,
+    "invalid_cdc_cursor_position_behavior": "Re-sync data"
+  }
 }
 """

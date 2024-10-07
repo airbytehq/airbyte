@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
-class MysqlSourceConfigurationSpecificationTest {
+class MysqlSourceConfigurationSpecificationTestTest {
     @Inject
     lateinit var supplier: ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>
 
@@ -43,7 +43,7 @@ class MysqlSourceConfigurationSpecificationTest {
     }
 }
 
-const val CONFIG_JSON =
+const val CONFIG_JSON: String =
     """
 {
   "host": "localhost",
@@ -51,8 +51,8 @@ const val CONFIG_JSON =
   "username": "FOO",
   "password": "BAR",
   "database": "SYSTEM",
-  "encryption": {
-    "encryption_method": "preferred"
+  "ssl_mode": {
+    "mode": "preferred"
   },
   "tunnel_method": {
     "tunnel_method": "SSH_PASSWORD_AUTH",
@@ -61,10 +61,11 @@ const val CONFIG_JSON =
     "tunnel_user": "sshuser",
     "tunnel_user_password": "***"
   },
-  "cursor": {
-    "cursor_method": "user_defined"
+  "replication_method": {
+    "method": "STANDARD"
   },
   "checkpoint_target_interval_seconds": 60,
+  "jdbc_url_params": "theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar&",
   "concurrency": 2
 }
 """

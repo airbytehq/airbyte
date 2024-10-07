@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.util
 
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transformWhile
 
@@ -22,3 +23,6 @@ suspend fun <T : CloseableCoroutine, R> T.use(block: suspend (T) -> R) =
     } finally {
         close()
     }
+
+/** Set the latch exactly once. Return true iff this is the first time we've set it. */
+fun AtomicBoolean.setOnce() = compareAndSet(false, true)
