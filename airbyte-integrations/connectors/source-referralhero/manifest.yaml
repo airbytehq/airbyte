@@ -29,6 +29,20 @@ definitions:
             field_path:
               - data
               - lists
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 50
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -49,6 +63,20 @@ definitions:
             field_path:
               - data
               - ranking
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 50
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -76,6 +104,20 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 0
+            page_size: 50
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -112,6 +154,10 @@ definitions:
             type: RequestOption
             inject_into: request_parameter
             field_name: page
+          page_size_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page_size
           pagination_strategy:
             type: PageIncrement
             page_size: 50
@@ -170,33 +216,33 @@ metadata:
     subscribers: false
   testedStreams:
     lists:
-      hasRecords: true
-      streamHash: e53dc4593801be38e67a797fdb99c1d8a8babc59
+      streamHash: ef688075347cbc7519bc0f4a84110f72208fa303
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     leaderboard:
-      hasRecords: true
-      streamHash: 2f289d5f4e233ae54c2492c0a24f497da21d4fac
+      streamHash: 4a677f97aa53b86ac398ea845daf4565fdde9858
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     bonuses:
-      hasRecords: true
-      streamHash: 3b0ccb35b4581eef5cc99f09bf03c3bae42f5665
+      streamHash: 783055e8247359f432712a55a56795e25ee9c309
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     subscribers:
-      hasRecords: true
-      streamHash: ac874f96a6047a008b66e3add372b003a588adce
+      streamHash: 1fad0a1c5e10e58f86990b12891fe1b9c6149ddc
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://support.referralhero.com/integrate/rest-api/endpoints-reference
 

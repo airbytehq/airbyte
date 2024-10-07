@@ -1,16 +1,7 @@
 # referralhero
-[Referral Hero](https://referralhero.com) is a tool for creating, managing, and analyzing referral programs to boost customer acquisition and engagement.
-With this connector, you can streamline the transfer of campaign-related data for better integration into your analytics, CRM, or marketing platforms.
-
-Referral Hero Source Connector is a designed to sync referral data between your Referral Hero campaigns and your destination airbyte connectors.
-
 This directory contains the manifest-only connector for `source-referralhero`.
 
 airbyte connector developed using airbyte 1.0 UI Connector development
-
-## Generate API Token
-Please follow the instructions in the following [referralhero](https://support.referralhero.com/integrate/rest-api) page to generate the api token
-
 
 ## Usage
 There are multiple ways to use this connector:

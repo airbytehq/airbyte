@@ -10,9 +10,9 @@ airbyte connector developed using airbyte 1.0 UI Connector development
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| lists | uuid | No pagination | ✅ |  ❌  |
-| leaderboard |  | No pagination | ✅ |  ❌  |
-| bonuses |  | No pagination | ✅ |  ❌  |
+| lists | uuid | DefaultPaginator | ✅ |  ❌  |
+| leaderboard |  | DefaultPaginator | ✅ |  ❌  |
+| bonuses |  | DefaultPaginator | ✅ |  ❌  |
 | subscribers | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
@@ -22,6 +22,6 @@ airbyte connector developed using airbyte 1.0 UI Connector development
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-06 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
+| 0.0.1 | 2024-10-07 | | Initial release by [@bala-ceg](https://github.com/bala-ceg) via Connector Builder |
 
 </details>
