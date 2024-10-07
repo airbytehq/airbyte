@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.10.3
+do not raise exception on missing stream by default
+
 ## 5.10.2
 Remove PrintBuffer optimization due to dropped records
 
