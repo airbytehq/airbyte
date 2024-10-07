@@ -1,4 +1,4 @@
-version: 5.10.2
+version: 5.10.3
 
 type: DeclarativeSource
 
@@ -117,7 +117,14 @@ spec:
 metadata:
   autoImportSchema:
     price: false
-  testedStreams: {}
+  testedStreams:
+    price:
+      streamHash: a0a230cd5819407ed14498207b281b51be6545d3
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
