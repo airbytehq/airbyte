@@ -5,7 +5,6 @@
 from typing import List
 
 import asyncclick as click
-
 from pipelines.airbyte_ci.connectors.up_to_date.pipeline import run_connector_up_to_date_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.connectors.command import run_connector_pipeline

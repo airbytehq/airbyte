@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import dagger
 from jinja2 import Environment, PackageLoader, select_autoescape
-
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
@@ -26,7 +25,6 @@ if TYPE_CHECKING:
 
     from anyio import Semaphore
     from github import PullRequest
-
     from pipelines.models.steps import StepResult
 
 UP_TO_DATE_PR_LABEL = "up-to-date"
