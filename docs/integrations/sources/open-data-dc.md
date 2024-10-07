@@ -1,7 +1,25 @@
 # Open Data DC
+
 Open Data DC source connector which ingests data from the MAR 2 API.
-The District of Columbia government uses the Master Address Repository (MAR) to implement intelligent search functionality for finding and verifying addresses, place names, blocks and intersections.
-More information can be found here https://developers.data.dc.gov/
+
+## Prerequisites
+
+Create a developer MAR account at https://developers.data.dc.gov/ to obtain your API key.
+
+The MAR 2 API allows users to search for addresses, place names, blocks and intersections within the DC boundary.
+In order to use this search, input the string in the `location` field.
+
+MARID is the Master Address Repository ID associated with all addresses within the DC boundary. 
+
+## Set up the Adjust source connector
+
+1. Click **Sources** and then click **+ New source**.
+2. On the Set up the source page, select **Open Data DC** from the Source type dropdown.
+3. Enter a name for your new source.
+4. For **API Key**, enter your API key obtained in the previous step.
+5. For **location**, enter any string to search for a location as explained in the previous step.
+6. For **marid**, enter your MARID as explained in the previous step.
+7. Click **Set up source**.
 
 ## Configuration
 
