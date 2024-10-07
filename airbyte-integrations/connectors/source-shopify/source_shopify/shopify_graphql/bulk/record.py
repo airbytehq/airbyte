@@ -5,6 +5,7 @@
 
 import logging
 from dataclasses import dataclass, field
+from functools import cached_property
 from io import TextIOWrapper
 from json import loads
 from os import remove
@@ -18,6 +19,12 @@ from .tools import END_OF_FILE, BulkTools
 @dataclass
 class ShopifyBulkRecord:
     query: ShopifyBulkQuery
+    parent_stream_name: Optional[str] = None
+    parent_stream_cursor: Optional[str] = None
+
+    # We track the parent state outside of the main methods,
+    # to be able to update the moving parent state when there are no substream records to emit.
+    _parent_stream_cursor_value: Optional[Any] = None
 
     # default buffer
     buffer: List[MutableMapping[str, Any]] = field(init=False, default_factory=list)
@@ -32,9 +39,43 @@ class ShopifyBulkRecord:
         # how many records composed
         self.record_composed: int = 0
 
-    @property
+    @cached_property
     def tools(self) -> BulkTools:
         return BulkTools()
+
+    @cached_property
+    def has_parent_stream(self) -> bool:
+        return True if self.parent_stream_name and self.parent_stream_cursor else False
+
+    @cached_property
+    def parent_cursor_key(self) -> Optional[str]:
+        if self.has_parent_stream:
+            return f"{self.parent_stream_name}_{self.parent_stream_cursor}"
+
+    def _track_parent_cursor(self, record: MutableMapping[str, Any]) -> None:
+        """
+        Updates the parent stream cursor value if the provided record contains a cursor value
+        that is greater than the current parent stream cursor value.
+
+        Args:
+            record (MutableMapping[str, Any]): The record containing the cursor value to compare.
+        """
+
+        if self.has_parent_stream:
+            cursor_value: Optional[str] = record.get(self.parent_cursor_key, None)
+
+            if cursor_value:
+                if not self._parent_stream_cursor_value:
+                    self._parent_stream_cursor_value = cursor_value
+                else:
+                    self._parent_stream_cursor_value = max(self._parent_stream_cursor_value, cursor_value)
+
+    def _get_parent_stream_state(self, to_rfc3339: bool = True) -> Optional[Union[str, Mapping[str, Any]]]:
+        if self.has_parent_stream and self._parent_stream_cursor_value:
+            parent_state_value = (
+                self.tools._datetime_str_to_rfc3339(self._parent_stream_cursor_value) if to_rfc3339 else self._parent_stream_cursor_value
+            )
+            return {self.parent_stream_cursor: parent_state_value}
 
     @staticmethod
     def check_type(record: Mapping[str, Any], types: Union[List[str], str]) -> bool:
@@ -65,6 +106,8 @@ class ShopifyBulkRecord:
     def buffer_flush(self) -> Iterable[Mapping[str, Any]]:
         if len(self.buffer) > 0:
             for record in self.buffer:
+                # track the parent state
+                self._track_parent_cursor(record)
                 # resolve id from `str` to `int`
                 record = self.record_resolve_id(record)
                 # process record components

@@ -32,6 +32,9 @@ class ShopifyBulkManager:
     job_size: float
     job_checkpoint_interval: int
 
+    parent_stream_name: Optional[str] = None
+    parent_stream_cursor: Optional[str] = None
+
     # default logger
     logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
@@ -94,7 +97,7 @@ class ShopifyBulkManager:
         # how many records should be collected before we use the checkpoining
         self._job_checkpoint_interval = self.job_checkpoint_interval
         # define Record Producer instance
-        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query)
+        self.record_producer: ShopifyBulkRecord = ShopifyBulkRecord(self.query, self.parent_stream_name, self.parent_stream_cursor)
 
     @property
     def _tools(self) -> BulkTools:
