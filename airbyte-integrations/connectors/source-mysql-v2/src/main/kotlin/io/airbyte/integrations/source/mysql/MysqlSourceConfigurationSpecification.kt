@@ -87,7 +87,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "ssl_mode")
-    val encryption = MicronautPropertiesFriendlyEncryption()
+    var encryption = MicronautPropertiesFriendlyEncryption()
 
     @JsonIgnore var encryptionJson: Encryption? = null
 
@@ -127,7 +127,7 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "replication_method")
-    val replicationMethod = MicronautPropertiesFriendlyCursorMethodConfiguration()
+    var replicationMethod = MicronautPropertiesFriendlyCursorMethodConfiguration()
 
     @JsonIgnore var replicationMethodJson: CursorMethodConfiguration? = null
 
@@ -300,7 +300,7 @@ class MicronautPropertiesFriendlyEncryption {
         }
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "replication_method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
     JsonSubTypes.Type(value = CdcCursor::class, name = "CDC")
@@ -354,7 +354,7 @@ class CdcCursor : CursorMethodConfiguration {
     @JsonSchemaInject(
         json = """{"order":3,"always_show":true, "enum": ["Fail sync","Re-sync data"]}"""
     )
-    var invalidCdcCursorPositionBehavior: String? = "Fail Sync"
+    var invalidCdcCursorPositionBehavior: String? = "Fail sync"
 
     @JsonProperty("initial_load_timeout_hours")
     @JsonSchemaTitle("Initial Load Timeout in Hours (Advanced)")
