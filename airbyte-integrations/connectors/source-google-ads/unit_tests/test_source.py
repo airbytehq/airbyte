@@ -10,10 +10,8 @@ from unittest.mock import Mock, call
 
 import pendulum
 import pytest
-from airbyte_cdk.models import FailureType
-
 from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
 from pendulum import duration, today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
