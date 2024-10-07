@@ -52,6 +52,7 @@ class CustomOauth2Authenticator(DeclarativeOauth2Authenticator):
         }
 
     def refresh_access_token(self) -> Tuple[str, int]:
+        print(self.token_refresh_endpoint)
         try:
             response = requests.request(
                 method="POST",
@@ -80,6 +81,7 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
 
     @property
     def token(self) -> str:
+        sub_domain = self.config["sub_domain"]
         domain = self.config["domain"]
         client_id = self.config["credentials"]["client_id"]
         key_id = self.config["credentials"]["key_id"]
@@ -90,7 +92,7 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
         jwt_payload = {
             "iss": client_id,
             "sub": client_id,
-            "aud": f"https://{domain}.okta.com/oauth2/v1/token",
+            "aud": f"https://{sub_domain}.{domain}/oauth2/v1/token",
             "iat": now,
             "exp": now + 3600,
             "jti": str(uuid.uuid4()),
@@ -98,7 +100,7 @@ class CustomOauth2PrivateKeyAuthenticator(DeclarativeAuthenticator):
         jwt_headers = {"kid": key_id, "alg": "RS256"}
 
         client_assertion = jwt.encode(jwt_payload, private_key, algorithm="RS256", headers=jwt_headers)
-        token_url = f"https://{domain}.okta.com/oauth2/v1/token"
+        token_url = f"https://{sub_domain}.{domain}/oauth2/v1/token"
         token_response = requests.post(
             token_url,
             data={
