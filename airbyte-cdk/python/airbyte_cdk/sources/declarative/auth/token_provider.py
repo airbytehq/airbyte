@@ -65,7 +65,7 @@ class SessionTokenProvider(TokenProvider):
         session_token = dpath.get(next(self.decoder.decode(response)), self.session_token_path)
         if self.expiration_duration is not None:
             self._next_expiration_time = pendulum.now() + self.expiration_duration
-        self._token = session_token # type: ignore # Returned decoded response will be Mapping and therefore session_token will be str or None
+        self._token = session_token  # type: ignore # Returned decoded response will be Mapping and therefore session_token will be str or None
 
 
 @dataclass
