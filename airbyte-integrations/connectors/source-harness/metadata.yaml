@@ -8,9 +8,9 @@ data:
       packageName: airbyte-source-harness
   registryOverrides:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: b0e46f61-e143-47cc-a595-4bb73bfa8a15
