@@ -9,9 +9,10 @@ Okta is the complete identity solution for all your apps and people that’s uni
 ## Airbyte Open Source
 
 - Name
-- Okta-Domain
 - Start Date
 - Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
+- Okta Subdomain (example : `myorg`)
+- Okta-Domain (example : `okta.com`)
 
 ## Airbyte Cloud
 
@@ -36,12 +37,13 @@ Okta is the complete identity solution for all your apps and people that’s uni
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
 4. Add **Name**
-5. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
-6. Add **Start date** (defaults to 7 days if no date is included)
-7. Choose the method of authentication
-8. If you select Token authentication - fill the field **Personal Api Token**
-9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
-10. Click `Set up source`.
+5. Add **Okta Sub Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta sub domain.)
+6. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `okta.com` is your Okta domain.)
+7. Add **Start date** (defaults to 7 days if no date is included)
+8. Choose the method of authentication
+9. If you select Token authentication - fill the field **Personal Api Token**
+10. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
+11. Click `Set up source`.
 
 ### For Airbyte Open Source:
 
@@ -86,6 +88,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.4.0 | 2024-10-07 | [46535](https://github.com/airbytehq/airbyte/pull/46535) | Support for custom okta domains |
 | 0.3.7 | 2024-09-28 | [46148](https://github.com/airbytehq/airbyte/pull/46148) | Update dependencies |
 | 0.3.6 | 2024-09-21 | [45763](https://github.com/airbytehq/airbyte/pull/45763) | Update dependencies |
 | 0.3.5 | 2024-09-14 | [45543](https://github.com/airbytehq/airbyte/pull/45543) | Update dependencies |
