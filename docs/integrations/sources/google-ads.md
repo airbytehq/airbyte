@@ -60,9 +60,8 @@ Each Google Ads API developer token is assigned an access level and "permissible
 <!-- /env:oss -->
 
 <!-- env:cloud -->
-<HideInUI>
+
 #### For Airbyte Cloud:
-</HideInUI>
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -119,6 +118,7 @@ If you are accessing your account through a Google Ads Manager account, you must
 
 <!-- /env:oss -->
 <HideInUI>
+
 ## Supported sync modes
 
 The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
