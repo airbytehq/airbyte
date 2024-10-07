@@ -5,7 +5,6 @@
 package io.airbyte.cdk.write
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.message.DestinationMessage
 import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.state.SyncFailure
@@ -30,7 +29,6 @@ import kotlinx.coroutines.runBlocking
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "write")
 class WriteOperation(
-    private val inputConsumer: InputConsumer<DestinationMessage>,
     private val taskLauncher: TaskLauncher,
     private val taskRunner: TaskRunner,
     private val syncManager: SyncManager,
@@ -42,8 +40,6 @@ class WriteOperation(
     override fun execute() {
         runCatching {
                 runBlocking {
-                    launch { inputConsumer.run() }
-
                     launch { taskLauncher.start() }
 
                     launch { taskRunner.run() }
@@ -70,7 +66,7 @@ class WriteOperation(
 
 /** Override to provide a custom input stream. */
 @Factory
-class InputStreamFactory {
+class InputStreamProvider {
     @Singleton
     @Secondary
     @Requires(property = Operation.PROPERTY, value = "write")

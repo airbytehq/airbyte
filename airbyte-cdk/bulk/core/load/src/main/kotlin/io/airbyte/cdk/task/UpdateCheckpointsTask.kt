@@ -21,7 +21,7 @@ interface UpdateCheckpointsTask : SyncTask
 @Singleton
 @Secondary
 class DefaultUpdateCheckpointsTask(
-    val checkpointManager:
+    private val checkpointManager:
         CheckpointManager<DestinationStream.Descriptor, Reserved<CheckpointMessage>>,
     private val checkpointMessageQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
 ) : UpdateCheckpointsTask {
@@ -32,11 +32,11 @@ class DefaultUpdateCheckpointsTask(
             when (it.value) {
                 is StreamCheckpointWrapped -> {
                     val (_, stream, index, message) = it.value
-                    checkpointManager.addStreamCheckpoint(stream, index, it.map { message })
+                    checkpointManager.addStreamCheckpoint(stream, index, it.replace(message))
                 }
                 is GlobalCheckpointWrapped -> {
                     val (_, streamIndexes, message) = it.value
-                    checkpointManager.addGlobalCheckpoint(streamIndexes, it.map { message })
+                    checkpointManager.addGlobalCheckpoint(streamIndexes, it.replace(message))
                 }
             }
         }
