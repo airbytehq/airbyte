@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.internal
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
@@ -29,6 +29,8 @@ import io.airbyte.cdk.message.Undefined
 import io.airbyte.cdk.state.MemoryManager
 import io.airbyte.cdk.state.Reserved
 import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.task.InternalTask
+import io.airbyte.cdk.task.SyncTask
 import io.airbyte.cdk.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -37,7 +39,7 @@ import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
-interface InputConsumerTask : SyncTask
+interface InputConsumerTask : SyncTask, InternalTask
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @

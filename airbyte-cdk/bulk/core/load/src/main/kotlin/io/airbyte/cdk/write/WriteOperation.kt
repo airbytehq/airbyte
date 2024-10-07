@@ -11,7 +11,6 @@ import io.airbyte.cdk.state.SyncFailure
 import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.state.SyncSuccess
 import io.airbyte.cdk.task.TaskLauncher
-import io.airbyte.cdk.task.TaskRunner
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -19,7 +18,6 @@ import io.micronaut.context.annotation.Secondary
 import java.io.InputStream
 import javax.inject.Singleton
 import kotlin.system.exitProcess
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -30,7 +28,6 @@ import kotlinx.coroutines.runBlocking
 @Requires(property = Operation.PROPERTY, value = "write")
 class WriteOperation(
     private val taskLauncher: TaskLauncher,
-    private val taskRunner: TaskRunner,
     private val syncManager: SyncManager,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer
@@ -40,12 +37,13 @@ class WriteOperation(
     override fun execute() {
         runCatching {
                 runBlocking {
-                    launch { taskLauncher.start() }
-
-                    launch { taskRunner.run() }
+                    taskLauncher.start()
 
                     when (val result = syncManager.awaitSyncResult()) {
-                        is SyncSuccess -> exitProcess(0)
+                        is SyncSuccess -> {
+                            log.info { "Sync completed successfully" }
+                            exitProcess(0)
+                        }
                         is SyncFailure -> {
                             log.error { "Caught exception during sync: ${result.syncFailure}" }
                             val errorMessage = exceptionHandler.handle(result.syncFailure)

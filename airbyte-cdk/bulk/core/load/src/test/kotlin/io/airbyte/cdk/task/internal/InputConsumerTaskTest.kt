@@ -2,7 +2,7 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.internal
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.command.DestinationConfiguration

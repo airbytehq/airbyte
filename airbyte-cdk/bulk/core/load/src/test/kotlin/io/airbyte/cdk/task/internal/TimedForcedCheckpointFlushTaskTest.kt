@@ -2,13 +2,14 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.internal
 
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.file.MockTimeProvider
 import io.airbyte.cdk.message.QueueReader
 import io.airbyte.cdk.state.MockCheckpointManager
+import io.airbyte.cdk.task.MockTaskLauncher
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import kotlinx.coroutines.test.runTest
@@ -27,7 +28,7 @@ import org.junit.jupiter.api.Test
         ]
 )
 class TimedForcedCheckpointFlushTaskTest {
-    @Inject lateinit var flushTaskFactory: DefaultTimedForcedCheckpointFlushTaskFactory
+    @Inject lateinit var flushTask: DefaultTimedForcedCheckpointFlushTask
     @Inject lateinit var taskLauncher: MockTaskLauncher
     @Inject lateinit var timeProvider: MockTimeProvider
     @Inject lateinit var checkpointManager: MockCheckpointManager
@@ -36,63 +37,55 @@ class TimedForcedCheckpointFlushTaskTest {
 
     @Test
     fun testTaskWillNotFlushIfTimeNotElapsed() = runTest {
-        val delayMs = 100L
-        val task = flushTaskFactory.make(taskLauncher, delayMs)
+        checkpointManager.maxNumFlushAttempts = 1 // One loop at most
+
+        val delayMs = config.maxCheckpointFlushTimeMs
         timeProvider.setCurrentTime(0L)
-        val mockLastFlushTime = delayMs + config.maxCheckpointFlushTimeMs - 1L
+        val mockLastFlushTime = 1L
         checkpointManager.mockLastFlushTimeMs = mockLastFlushTime
-        task.execute()
-        Assertions.assertEquals(
-            delayMs,
-            timeProvider.currentTimeMillis(),
-            "task delayed the specified time"
-        )
+        try {
+            flushTask.execute()
+        } catch (e: IllegalStateException) {
+            // do nothing
+        }
         Assertions.assertEquals(
             mutableListOf(delayMs),
             checkpointManager.flushedAtMs,
-            "task tried to flush"
+            "task tried to flush at delay time"
         )
         Assertions.assertNull(queueReader.poll(), "task did not produce a force flush event")
-        val mockTimeSinceLastFlush = timeProvider.currentTimeMillis() - mockLastFlushTime
-        val nextRun = config.maxCheckpointFlushTimeMs - mockTimeSinceLastFlush
-        Assertions.assertEquals(
-            listOf(nextRun),
-            taskLauncher.scheduledForcedFlushes,
-            "task scheduled next flush for remaining interval"
-        )
+        Assertions.assertEquals(delayMs + mockLastFlushTime, timeProvider.currentTimeMillis())
     }
 
     @Test
     fun testTaskWillFlushIfTimeElapsed() = runTest {
-        val delayMs =
-            config.maxCheckpointFlushTimeMs // task uses flush interval as delay by default
-        val task = flushTaskFactory.make(taskLauncher)
+        checkpointManager.maxNumFlushAttempts = 1
+        val delayMs = config.maxCheckpointFlushTimeMs
         timeProvider.setCurrentTime(0L)
         checkpointManager.mockLastFlushTimeMs = 0L
         val expectedMap =
             mutableMapOf(DestinationStream.Descriptor(name = "test", namespace = "testing") to 999L)
         checkpointManager.mockCheckpointIndexes = expectedMap
-        task.execute()
+        try {
+            flushTask.execute()
+        } catch (e: IllegalStateException) {
+            // do nothing
+        }
         Assertions.assertEquals(
-            delayMs,
+            delayMs * 2,
             timeProvider.currentTimeMillis(),
-            "task delayed for the configured interval"
+            "task delayed for the configured interval twice (once at the beginning, once after successfully flushing)"
         )
         Assertions.assertEquals(
             listOf(delayMs),
             checkpointManager.flushedAtMs,
-            "task tried to flush"
+            "task tried to flush immediately"
         )
         val flushEvent = queueReader.poll()
         Assertions.assertEquals(
             expectedMap,
             flushEvent?.indexes,
             "task produced a force flush event with indexes provided by the checkpoint manager"
-        )
-        Assertions.assertEquals(
-            listOf(config.maxCheckpointFlushTimeMs),
-            taskLauncher.scheduledForcedFlushes,
-            "task scheduled next flush for full interval"
         )
     }
 }

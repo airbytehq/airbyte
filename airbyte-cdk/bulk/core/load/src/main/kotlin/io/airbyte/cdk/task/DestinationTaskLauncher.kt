@@ -10,22 +10,23 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
-import io.airbyte.cdk.state.StreamSucceeded
 import io.airbyte.cdk.state.SyncManager
-import io.airbyte.cdk.state.SyncSuccess
+import io.airbyte.cdk.task.implementor.CloseStreamTaskFactory
+import io.airbyte.cdk.task.implementor.OpenStreamTaskFactory
+import io.airbyte.cdk.task.implementor.ProcessBatchTaskFactory
+import io.airbyte.cdk.task.implementor.ProcessRecordsTaskFactory
+import io.airbyte.cdk.task.implementor.SetupTaskFactory
+import io.airbyte.cdk.task.implementor.TeardownTaskFactory
+import io.airbyte.cdk.task.internal.FlushCheckpointsTaskFactory
+import io.airbyte.cdk.task.internal.InputConsumerTask
+import io.airbyte.cdk.task.internal.SpillToDiskTaskFactory
+import io.airbyte.cdk.task.internal.TimedForcedCheckpointFlushTask
+import io.airbyte.cdk.task.internal.UpdateCheckpointsTask
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-
-sealed interface DestinationWriteTask : Task
-
-interface SyncTask : DestinationWriteTask
-
-interface StreamTask : DestinationWriteTask {
-    val stream: DestinationStream
-}
 
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
@@ -38,14 +39,6 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream)
     suspend fun handleTeardownComplete()
-    suspend fun scheduleNextForceFlushAttempt(msFromNow: Long)
-}
-
-interface DestinationTaskLauncherExceptionHandler :
-    TaskLauncherExceptionHandler<DestinationWriteTask> {
-    suspend fun handleSyncFailure(e: Exception)
-    suspend fun handleStreamFailure(stream: DestinationStream, e: Exception)
-    suspend fun stop()
 }
 
 /**
@@ -85,28 +78,36 @@ interface DestinationTaskLauncherExceptionHandler :
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
 class DefaultDestinationTaskLauncher(
+    private val taskScopeProvider: TaskScopeProvider<ScopedTask>,
     private val catalog: DestinationCatalog,
     private val syncManager: SyncManager,
-    override val taskRunner: TaskRunner,
+
+    // Internal Tasks
     private val inputConsumerTask: InputConsumerTask,
+    private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
+
+    // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
-    private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
     private val teardownTaskFactory: TeardownTaskFactory,
+
+    // Checkpoint Tasks
     private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
-    private val timedFlushTaskFactory: TimedForcedCheckpointFlushTaskFactory,
+    private val timedFlushTask: TimedForcedCheckpointFlushTask,
     private val updateCheckpointsTask: UpdateCheckpointsTask,
-    private val exceptionHandler: TaskLauncherExceptionHandler<DestinationWriteTask>
+
+    // Exception handling
+    private val exceptionHandler: TaskExceptionHandler<LeveledTask, ScopedTask>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
     private val batchUpdateLock = Mutex()
 
-    private suspend fun enqueue(task: DestinationWriteTask) {
-        taskRunner.enqueue(exceptionHandler.withExceptionHandling(task))
+    private suspend fun enqueue(task: LeveledTask) {
+        taskScopeProvider.launch(exceptionHandler.withExceptionHandling(task))
     }
 
     override suspend fun start() {
@@ -126,11 +127,10 @@ class DefaultDestinationTaskLauncher(
             enqueue(spillTask)
         }
 
-        // Start the timed force flush task
-        val forceFlushTask = timedFlushTaskFactory.make(this)
-        enqueue(forceFlushTask)
+        log.info { "Starting timed flush task" }
+        enqueue(timedFlushTask)
 
-        // Start a single checkpoint updating task
+        log.info { "Starting checkpoint update task" }
         enqueue(updateCheckpointsTask)
     }
 
@@ -205,124 +205,8 @@ class DefaultDestinationTaskLauncher(
         enqueue(teardownTaskFactory.make(this))
     }
 
-    /** Called when a force flush is scheduled. */
-    override suspend fun scheduleNextForceFlushAttempt(msFromNow: Long) {
-        val task = timedFlushTaskFactory.make(this, msFromNow)
-        enqueue(task)
-    }
-
     /** Called exactly once when all streams are closed. */
     override suspend fun handleTeardownComplete() {
-        stop()
-    }
-}
-
-/**
- * The exception handler takes over the workflow in the event of an exception. Its contract is
- * * provide a wrapper that directs exceptions to the correct handler (by task type)
- * * close the task runner when the cleanup workflow is complete
- *
- * Handling works as follows:
- * * a failure in a sync-level task (setup/teardown) triggers a fail sync task
- * * a failure in a stream task triggers a fails stream task THEN a fail sync task
- * * the wrappers will skip tasks if the sync/stream has already failed
- */
-@Singleton
-@Secondary
-class DefaultDestinationTaskLauncherExceptionHandler(
-    private val taskRunner: TaskRunner,
-    private val syncManager: SyncManager,
-    private val failStreamTaskFactory: FailStreamTaskFactory,
-    private val failSyncTaskFactory: FailSyncTaskFactory,
-) : DestinationTaskLauncherExceptionHandler {
-
-    class SyncTaskWrapper(
-        private val exceptionHandler: DestinationTaskLauncherExceptionHandler,
-        private val syncManager: SyncManager,
-        private val innerTask: SyncTask,
-    ) : Task {
-        val log = KotlinLogging.logger {}
-
-        override suspend fun execute() {
-            if (!syncManager.isActive()) {
-                val result = syncManager.awaitSyncResult()
-                if (result is SyncSuccess) {
-                    throw IllegalStateException(
-                        "Task $innerTask run after sync has succeeded. This should not happen."
-                    )
-                }
-                log.info { "Sync terminated, skipping task $innerTask." }
-
-                return
-            }
-
-            try {
-                innerTask.execute()
-            } catch (e: Exception) {
-                exceptionHandler.handleSyncFailure(e)
-            }
-        }
-
-        override fun toString(): String {
-            return "SyncTaskWrapper(innerTask=$innerTask)"
-        }
-    }
-
-    class StreamTaskWrapper(
-        private val exceptionHandler: DestinationTaskLauncherExceptionHandler,
-        private val syncManager: SyncManager,
-        private val innerTask: StreamTask,
-    ) : SyncTask {
-        val log = KotlinLogging.logger {}
-
-        override suspend fun execute() {
-            // Stop dispatching tasks if the stream has been killed by a failure elsewhere.
-            // Specifically fail if the stream was marked succeeded: we should not be in this state.
-            val streamManager = syncManager.getStreamManager(innerTask.stream.descriptor)
-            if (!streamManager.isActive()) {
-                val result = streamManager.awaitStreamResult()
-                if (result is StreamSucceeded) {
-                    throw IllegalStateException(
-                        "Task $innerTask run after its stream ${innerTask.stream.descriptor} has succeeded. This should not happen."
-                    )
-                }
-                log.info {
-                    "Stream ${innerTask.stream.descriptor} terminated with $result, skipping task $innerTask."
-                }
-                return
-            }
-
-            try {
-                innerTask.execute()
-            } catch (e: Exception) {
-                exceptionHandler.handleStreamFailure(innerTask.stream, e)
-            }
-        }
-
-        override fun toString(): String {
-            return "StreamTaskWrapper(innerTask=$innerTask)"
-        }
-    }
-
-    override fun withExceptionHandling(task: DestinationWriteTask): Task {
-        return when (task) {
-            is SyncTask -> SyncTaskWrapper(this, syncManager, task)
-            is StreamTask ->
-                SyncTaskWrapper(this, syncManager, StreamTaskWrapper(this, syncManager, task))
-        }
-    }
-
-    override suspend fun handleSyncFailure(e: Exception) {
-        val failSyncTask = failSyncTaskFactory.make(this, e)
-        taskRunner.enqueue(failSyncTask)
-    }
-
-    override suspend fun handleStreamFailure(stream: DestinationStream, e: Exception) {
-        val failStreamTask = failStreamTaskFactory.make(this, e, stream)
-        taskRunner.enqueue(failStreamTask)
-    }
-
-    override suspend fun stop() {
-        taskRunner.close()
+        taskScopeProvider.close()
     }
 }

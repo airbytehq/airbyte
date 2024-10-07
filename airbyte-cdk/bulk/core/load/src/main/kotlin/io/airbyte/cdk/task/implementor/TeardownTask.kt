@@ -2,10 +2,12 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.implementor
 
 import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.task.DestinationTaskLauncher
+import io.airbyte.cdk.task.SyncTask
 import io.airbyte.cdk.write.DestinationWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Secondary
@@ -45,7 +47,7 @@ class DefaultTeardownTask(
             destination.teardown()
             log.info { "Teardown task complete, marking sync succeeded." }
             syncManager.markSucceeded()
-            taskLauncher.stop()
+            taskLauncher.handleTeardownComplete()
         }
     }
 }

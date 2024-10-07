@@ -9,7 +9,7 @@ import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.message.ChannelMessageQueue
-import io.airbyte.cdk.task.ForceFlushEvent
+import io.airbyte.cdk.task.internal.ForceFlushEvent
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
