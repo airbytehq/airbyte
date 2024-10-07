@@ -17,6 +17,7 @@ import jakarta.inject.Singleton
 class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLauncher {
     val spilledFiles = mutableListOf<BatchEnvelope<SpilledRawMessagesLocalFile>>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
+    val scheduledForcedFlushes = mutableListOf<Long>()
 
     override suspend fun handleSetupComplete() {
         throw NotImplementedError()
@@ -48,5 +49,9 @@ class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLau
 
     override suspend fun start() {
         throw NotImplementedError()
+    }
+
+    override suspend fun scheduleNextForceFlushAttempt(msFromNow: Long) {
+        scheduledForcedFlushes.add(msFromNow)
     }
 }
