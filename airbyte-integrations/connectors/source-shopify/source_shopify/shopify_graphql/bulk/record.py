@@ -3,7 +3,6 @@
 #
 
 
-import logging
 from dataclasses import dataclass, field
 from functools import cached_property
 from io import TextIOWrapper
@@ -11,9 +10,11 @@ from json import loads
 from os import remove
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
+from source_shopify.utils import LOGGER
+
 from .exceptions import ShopifyBulkExceptions
 from .query import ShopifyBulkQuery
-from .tools import END_OF_FILE, LOGGER, BulkTools
+from .tools import END_OF_FILE, BulkTools
 
 
 @dataclass

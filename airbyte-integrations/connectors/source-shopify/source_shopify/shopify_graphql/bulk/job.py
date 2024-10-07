@@ -11,7 +11,7 @@ import pendulum as pdm
 import requests
 from airbyte_cdk.sources.streams.http import HttpClient
 from requests.exceptions import JSONDecodeError
-from source_shopify.utils import ApiTypeEnum
+from source_shopify.utils import LOGGER, ApiTypeEnum
 from source_shopify.utils import ShopifyRateLimiter as limiter
 
 from .exceptions import AirbyteTracedException, ShopifyBulkExceptions
@@ -19,7 +19,7 @@ from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .record import ShopifyBulkRecord
 from .retry import bulk_retry_on_exception
 from .status import ShopifyBulkJobStatus
-from .tools import END_OF_FILE, LOGGER, BulkTools
+from .tools import END_OF_FILE, BulkTools
 
 
 @dataclass

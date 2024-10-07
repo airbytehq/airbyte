@@ -1,12 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import logging
 from functools import wraps
 from time import sleep
 from typing import Any, Callable, Final, Optional, Tuple, Type
 
+from source_shopify.utils import LOGGER
+
 from .exceptions import ShopifyBulkExceptions
-from .tools import LOGGER
 
 BULK_RETRY_ERRORS: Final[Tuple] = (
     ShopifyBulkExceptions.BulkJobBadResponse,
@@ -18,7 +18,6 @@ def bulk_retry_on_exception(more_exceptions: Optional[Tuple[Type[Exception], ...
     """
     A decorator to retry a function when specified exceptions are raised.
 
-    :param logger: Number of times to retry.
     :param more_exceptions: A tuple of exception types to catch.
     """
 

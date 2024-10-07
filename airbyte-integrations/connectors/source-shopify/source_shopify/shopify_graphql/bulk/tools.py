@@ -3,9 +3,8 @@
 #
 
 
-import logging
 import re
-from typing import Any, Final, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum as pdm
@@ -15,9 +14,6 @@ from .exceptions import ShopifyBulkExceptions
 # default end line tag
 END_OF_FILE: str = "<end_of_file>"
 BULK_PARENT_KEY: str = "__parentId"
-
-# default logger instance
-LOGGER: Final[logging.Logger] = logging.getLogger("airbyte")
 
 
 class BulkTools:
