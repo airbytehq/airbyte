@@ -9,7 +9,7 @@ definitions:
     client_secret: "{{ config['credentials']['client_secret'] }}"
     refresh_token: "{{ config['credentials']['refresh_token'] }}"
     refresh_request_body: {}
-    token_refresh_endpoint: "https://{{ config['domain'] }}.okta.com/oauth2/v1/token"
+    token_refresh_endpoint: "https://{{ config['sub_domain'] }}.{{ config['domain'] }}/oauth2/v1/token"
     grant_type: refresh_token
 
   custom_oauth_private_key_authenticator:
@@ -63,7 +63,7 @@ definitions:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/groups
         http_method: GET
         request_parameters:
@@ -157,7 +157,7 @@ definitions:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/users
         http_method: GET
         request_parameters:
@@ -469,7 +469,7 @@ definitions:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/iam/roles
         http_method: GET
         request_parameters: {}
@@ -570,7 +570,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/groups/{{ stream_partition['parent_id'] }}/users
         http_method: GET
         request_parameters: {}
@@ -884,7 +884,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/groups/{{ stream_partition['parent_id'] }}/roles
         http_method: GET
         request_parameters: {}
@@ -1031,7 +1031,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/logs
         http_method: GET
         request_parameters:
@@ -1426,7 +1426,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/iam/resource-sets
         http_method: GET
         request_parameters: {}
@@ -1551,7 +1551,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/users/{{ stream_partition['parent_id'] }}/roles
         http_method: GET
         request_parameters: {}
@@ -1698,7 +1698,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://{{ config['domain'] }}.okta.com
+        url_base: https://{{ config['sub_domain'] }}.{{ config['domain'] }}
         path: /api/v1/iam/roles/{{ stream_partition['parent_id'] }}/permissions
         http_method: GET
         request_parameters: {}

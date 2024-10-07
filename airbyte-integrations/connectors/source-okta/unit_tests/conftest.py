@@ -131,7 +131,8 @@ def oauth_config():
             "client_id": "test_client_id",
             "refresh_token": "test_refresh_token",
         },
-        "domain": "test_domain",
+        "domain": "okta.com",
+        "sub_domain": "test_domain",
     }
 
 
@@ -148,7 +149,8 @@ def wrong_oauth_config_bad_credentials_record():
             "client_id": "test_client_id",
             "refresh_token": "test_refresh_token",
         },
-        "domain": "test_domain",
+        "domain": "okta.com",
+        "sub_domain": "test_domain",
     }
 
 
@@ -164,7 +166,8 @@ def wrong_oauth_config_bad_auth_type():
             "client_id": "test_client_id",
             "refresh_token": "test_refresh_token",
         },
-        "domain": "test_domain",
+        "domain": "okta.com",
+        "sub_domain": "test_domain",
     }
 
 

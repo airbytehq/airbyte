@@ -1,5 +1,6 @@
 {
-  "domain": "myorg",
+  "domain": "okta.com",
+  "sub_domain": "myorg",
   "start_date": "2024-08-02T00:00:00Z",
   "credentials": {
     "auth_type": "oauth2.0_private_key",

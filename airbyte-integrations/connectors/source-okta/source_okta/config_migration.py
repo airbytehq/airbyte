@@ -31,11 +31,12 @@ class OktaConfigMigration:
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
-        return "domain" not in config
+        return "sub_domain" not in config and "domain" not in config
 
     @classmethod
     def modify(cls, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        config["domain"] = config["base_url"].split("https://")[1].split(".")[0]
+        config["sub_domain"] = config["base_url"].split("https://")[1].split(".")[0]
+        config["domain"] = ".".join(config["base_url"].split("https://")[1].split(".")[1:])
         if "credentials" not in config:
             if "token" in config:
                 config["credentials"] = {
