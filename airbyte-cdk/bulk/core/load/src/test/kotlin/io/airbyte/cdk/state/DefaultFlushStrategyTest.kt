@@ -8,6 +8,7 @@ import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.MockDestinationCatalogFactory
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
+import io.airbyte.cdk.message.ChannelMessageQueue
 import io.airbyte.cdk.task.ForceFlushEvent
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -30,7 +31,7 @@ class DefaultFlushStrategyTest {
     @Singleton
     @Primary
     @Requires(env = ["FlushStrategyTest"])
-    class MockForceFlushEventProducer : EventProducer<ForceFlushEvent>()
+    class MockForceFlushEventQueue : ChannelMessageQueue<ForceFlushEvent>()
 
     @Test
     fun testFlushByByteSize(flushStrategy: DefaultFlushStrategy, config: DestinationConfiguration) =
@@ -50,7 +51,7 @@ class DefaultFlushStrategyTest {
     fun testFlushByIndex(
         flushStrategy: DefaultFlushStrategy,
         config: DestinationConfiguration,
-        forceFlushEventProducer: MockForceFlushEventProducer
+        forceFlushEventProducer: MockForceFlushEventQueue
     ) = runTest {
         // Ensure the size trigger is not a factor
         val insufficientSize = config.recordBatchSizeBytes - 1L
@@ -60,7 +61,7 @@ class DefaultFlushStrategyTest {
             "Should not flush even with whole range if no event"
         )
 
-        forceFlushEventProducer.produce(ForceFlushEvent(mapOf(stream1.descriptor to 42L)))
+        forceFlushEventProducer.publish(ForceFlushEvent(mapOf(stream1.descriptor to 42L)))
         Assertions.assertFalse(
             flushStrategy.shouldFlush(stream1, Range.closed(0, 41), insufficientSize),
             "Should not flush if index is not in range"
@@ -74,7 +75,7 @@ class DefaultFlushStrategyTest {
             flushStrategy.shouldFlush(stream2, Range.closed(0, 42), insufficientSize),
             "Should not flush other streams"
         )
-        forceFlushEventProducer.produce(ForceFlushEvent(mapOf(stream2.descriptor to 200L)))
+        forceFlushEventProducer.publish(ForceFlushEvent(mapOf(stream2.descriptor to 200L)))
         Assertions.assertTrue(
             flushStrategy.shouldFlush(stream2, Range.closed(0, 200), insufficientSize),
             "(Unless they also have flush points)"
@@ -89,7 +90,7 @@ class DefaultFlushStrategyTest {
             "Should not flush if index has been passed"
         )
 
-        forceFlushEventProducer.produce(ForceFlushEvent(mapOf(stream1.descriptor to 100L)))
+        forceFlushEventProducer.publish(ForceFlushEvent(mapOf(stream1.descriptor to 100L)))
         Assertions.assertFalse(
             flushStrategy.shouldFlush(stream1, Range.closed(0, 42), insufficientSize),
             "New events indexes should invalidate old ones"

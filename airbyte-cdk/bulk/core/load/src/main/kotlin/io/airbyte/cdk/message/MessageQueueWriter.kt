@@ -35,7 +35,7 @@ class DestinationMessageQueueWriter(
     private val catalog: DestinationCatalog,
     private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
-    private val checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>,
+    private val checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
     systemMemoryManager: MemoryManager
 ) : MessageQueueWriter<DestinationMessage> {
