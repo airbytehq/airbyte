@@ -20,6 +20,12 @@ abstract class DestinationConfiguration : Configuration {
         0.1 // 0 => No overhead, 1.0 => 100% overhead
 
     /**
+     * If we have not flushed state checkpoints in this amount of time, make a best-effort attempt
+     * to force a flush.
+     */
+    open val maxCheckpointFlushTimeMs: Long = 15 * 60 * 1000L // 15 minutes
+
+    /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.
      */
