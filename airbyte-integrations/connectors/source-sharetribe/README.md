@@ -6,7 +6,7 @@ Sharetribe is a no code marketplace builder tool. The source supports a number o
 For more information, checkout the website https://www.sharetribe.com/
 
 This source uses the OAuth configuration for handling requests.
-A client_ID and client_secret is required along with a refresh_token in order to setup a connection.
+A client_ID and client_secret is required in order to setup a connection.
 For more details about the API, check out https://www.sharetribe.com/api-reference/integration.html
 
 ## Usage
