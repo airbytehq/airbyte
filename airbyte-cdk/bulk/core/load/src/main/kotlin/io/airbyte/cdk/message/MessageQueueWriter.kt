@@ -6,10 +6,14 @@ package io.airbyte.cdk.message
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
+import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.CheckpointManager
+import io.airbyte.cdk.state.MemoryManager
+import io.airbyte.cdk.state.Reserved
 import io.airbyte.cdk.state.SyncManager
 import jakarta.inject.Singleton
+import kotlinx.coroutines.runBlocking
 
 /** A publishing interface for writing messages to a message queue. */
 interface MessageQueueWriter<T : Any> {
@@ -28,12 +32,26 @@ interface MessageQueueWriter<T : Any> {
 )
 @Singleton
 class DestinationMessageQueueWriter(
+    private val config: DestinationConfiguration,
     private val catalog: DestinationCatalog,
-    private val messageQueue: MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped>,
+    private val queueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
     private val syncManager: SyncManager,
     private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>
+        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
+    systemMemoryManager: MemoryManager
 ) : MessageQueueWriter<DestinationMessage> {
+    private val queueReservation = runBlocking {
+        systemMemoryManager.reserveRatio(config.maxMessageQueueMemoryUsageRatio, this)
+    }
+    private val memoryManager = queueReservation.getReservationManager()
+
+    private suspend fun reserve(sized: DestinationRecordWrapped) =
+        memoryManager.reserveBlocking(
+            (sized.sizeBytes * config.estimatedRecordMemoryOverheadRatio).toLong(),
+            sized
+        )
+
     /**
      * Deserialize and route the message to the appropriate channel.
      *
@@ -53,14 +71,16 @@ class DestinationMessageQueueWriter(
                                 sizeBytes = sizeBytes,
                                 record = message
                             )
-                        messageQueue.getChannel(message.stream).send(wrapped)
+                        queueSupplier.get(message.stream).publish(reserve(wrapped))
                     }
 
                     /* If an end-of-stream marker. */
                     is DestinationStreamComplete,
                     is DestinationStreamIncomplete -> {
                         val wrapped = StreamCompleteWrapped(index = manager.markEndOfStream())
-                        messageQueue.getChannel(message.stream).send(wrapped)
+                        val queue = queueSupplier.get(message.stream)
+                        queue.publish(memoryManager.reserveBlocking(0L, wrapped))
+                        queue.close()
                     }
                 }
             }

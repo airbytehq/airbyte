@@ -5,15 +5,16 @@
 package io.airbyte.cdk.message
 
 import io.airbyte.cdk.command.DestinationCatalog
-import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.MemoryManager
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.airbyte.cdk.state.Reserved
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.locks.ReentrantLock
-import kotlinx.coroutines.runBlocking
+
+interface Sized {
+    val sizeBytes: Long
+}
 
 /**
  * Wrapper for record messages published to the message queue, containing metadata like index and
@@ -37,56 +38,25 @@ data class StreamCompleteWrapped(
     override val sizeBytes: Long = 0L
 }
 
+class DestinationRecordQueue : ChannelMessageQueue<Reserved<DestinationRecordWrapped>>()
+
 /**
- * Message queue to which @[DestinationRecordWrapped] messages can be published on a @
- * [DestinationStream] key.
- *
- * It maintains a map of @[QueueChannel]s by stream, and tracks the memory usage across all
- * channels, blocking when the maximum is reached.
- *
- * This maximum is expected to be low, as the assumption is that data will be spooled to disk as
- * quickly as possible.
+ * A supplier of message queues to which ([MemoryManager.reserveBlocking]'d) @
+ * [DestinationRecordWrapped] messages can be published on a @ [DestinationStream] key. The queues
+ * themselves do not manage memory.
  */
 @Singleton
-class DestinationMessageQueue(
-    catalog: DestinationCatalog,
-    config: DestinationConfiguration,
-    private val memoryManager: MemoryManager,
-    private val queueChannelFactory: QueueChannelFactory<DestinationRecordWrapped>
-) : MessageQueue<DestinationStream.Descriptor, DestinationRecordWrapped> {
-    private val channels:
-        ConcurrentHashMap<DestinationStream.Descriptor, QueueChannel<DestinationRecordWrapped>> =
-        ConcurrentHashMap()
-
-    private val totalQueueSizeBytes = AtomicLong(0L)
-    private val reservedMemory: MemoryManager.Reservation
-    private val reservedMemoryManager: MemoryManager
-    private val memoryLock = ReentrantLock()
-    private val memoryLockCondition = memoryLock.newCondition()
+@Secondary
+class DestinationRecordQueueSupplier(catalog: DestinationCatalog) :
+    MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>> {
+    private val queues = ConcurrentHashMap<DestinationStream.Descriptor, DestinationRecordQueue>()
 
     init {
-        catalog.streams.forEach { channels[it.descriptor] = queueChannelFactory.make(this) }
-        val adjustedRatio =
-            config.maxMessageQueueMemoryUsageRatio /
-                (1.0 + config.estimatedRecordMemoryOverheadRatio)
-        reservedMemory = runBlocking { memoryManager.reserveRatio(adjustedRatio) }
-        reservedMemoryManager = reservedMemory.getReservationManager()
+        catalog.streams.forEach { queues[it.descriptor] = DestinationRecordQueue() }
     }
 
-    override suspend fun acquireQueueBytesBlocking(bytes: Long) {
-        reservedMemoryManager.reserveBlocking(bytes)
+    override fun get(key: DestinationStream.Descriptor): DestinationRecordQueue {
+        return queues[key]
+            ?: throw IllegalArgumentException("Reading from non-existent record stream: $key")
     }
-
-    override suspend fun releaseQueueBytes(bytes: Long) {
-        reservedMemoryManager.release(bytes)
-    }
-
-    override suspend fun getChannel(
-        key: DestinationStream.Descriptor,
-    ): QueueChannel<DestinationRecordWrapped> {
-        return channels[key]
-            ?: throw IllegalArgumentException("Reading from non-existent QueueChannel: ${key}")
-    }
-
-    private val log = KotlinLogging.logger {}
 }
