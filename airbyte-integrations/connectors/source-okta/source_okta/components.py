@@ -2,6 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import time
 import uuid
 from dataclasses import InitVar, dataclass
@@ -12,6 +13,8 @@ import requests
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.types import Config
+
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
