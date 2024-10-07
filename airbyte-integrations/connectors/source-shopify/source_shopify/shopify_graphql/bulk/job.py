@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from time import sleep, time
@@ -20,7 +19,7 @@ from .query import ShopifyBulkQuery, ShopifyBulkTemplates
 from .record import ShopifyBulkRecord
 from .retry import bulk_retry_on_exception
 from .status import ShopifyBulkJobStatus
-from .tools import END_OF_FILE, BulkTools
+from .tools import END_OF_FILE, LOGGER, BulkTools
 
 
 @dataclass
@@ -34,9 +33,6 @@ class ShopifyBulkManager:
 
     parent_stream_name: Optional[str] = None
     parent_stream_cursor: Optional[str] = None
-
-    # default logger
-    logger: Final[logging.Logger] = logging.getLogger("airbyte")
 
     # 10Mb chunk size to save the file
     _retrieve_chunk_size: Final[int] = 1024 * 1024 * 10
@@ -254,9 +250,9 @@ class ShopifyBulkManager:
     def _log_state(self, message: Optional[str] = None) -> None:
         pattern = f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` is {self._job_state}"
         if message:
-            self.logger.info(f"{pattern}. {message}.")
+            LOGGER.info(f"{pattern}. {message}.")
         else:
-            self.logger.info(pattern)
+            LOGGER.info(pattern)
 
     def _job_get_result(self, response: Optional[requests.Response] = None) -> Optional[str]:
         parsed_response = response.json().get("data", {}).get("node", {}) if response else None
@@ -312,13 +308,13 @@ class ShopifyBulkManager:
         sleep(self._job_check_interval)
 
     def _cancel_on_long_running_job(self) -> None:
-        self.logger.info(
+        LOGGER.info(
             f"Stream: `{self.http_client.name}` the BULK Job: {self._job_id} runs longer than expected ({self._job_max_elapsed_time} sec). Retry with the reduced `Slice Size` after self-cancelation."
         )
         self._job_cancel()
 
     def _cancel_on_checkpointing(self) -> None:
-        self.logger.info(f"Stream: `{self.http_client.name}`, checkpointing after >= `{self._job_checkpoint_interval}` rows collected.")
+        LOGGER.info(f"Stream: `{self.http_client.name}`, checkpointing after >= `{self._job_checkpoint_interval}` rows collected.")
         # set the flag to adjust the next slice from the checkpointed cursor value
         self._job_cancel()
 
@@ -437,7 +433,7 @@ class ShopifyBulkManager:
             return True
         return False
 
-    @bulk_retry_on_exception(logger)
+    @bulk_retry_on_exception()
     def _job_check_state(self) -> None:
         while not self._job_completed():
             if self._job_canceled():
@@ -447,7 +443,7 @@ class ShopifyBulkManager:
             else:
                 self._job_track_running()
 
-    @bulk_retry_on_exception(logger)
+    @bulk_retry_on_exception()
     def create_job(self, stream_slice: Mapping[str, str], filter_field: str) -> None:
         if stream_slice:
             query = self.query.get(filter_field, stream_slice["start"], stream_slice["end"])
@@ -487,7 +483,7 @@ class ShopifyBulkManager:
             self._job_id = bulk_response.get("id")
             self._job_created_at = bulk_response.get("createdAt")
             self._job_state = ShopifyBulkJobStatus.CREATED.value
-            self.logger.info(f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
+            LOGGER.info(f"Stream: `{self.http_client.name}`, the BULK Job: `{self._job_id}` is {ShopifyBulkJobStatus.CREATED.value}")
 
     def job_size_normalize(self, start: datetime, end: datetime) -> datetime:
         # adjust slice size when it's bigger than the loop point when it should end,
@@ -525,7 +521,7 @@ class ShopifyBulkManager:
             final_message = final_message + lines_collected_message
 
         # emit final Bulk job status message
-        self.logger.info(f"{final_message}")
+        LOGGER.info(f"{final_message}")
 
     def _process_bulk_results(self) -> Iterable[Mapping[str, Any]]:
         if self._job_result_filename:
