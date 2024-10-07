@@ -3,9 +3,9 @@
 connector_image: airbyte/source-flexport:dev
 test_strictness_level: low
 acceptance_tests:
-  # spec:
-  #   tests:
-  #     - spec_path: "source_flexport/manifest.yaml"
+  spec:
+    tests:
+      - spec_path: "manifest.yaml"
   # Airbyte doesn't have a test account to test against Flexport API
   connection:
     tests:
