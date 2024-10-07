@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.11.1
+Low Code: Consolidate manifest decoder selection under , , and 
+
 ## 5.11.0
 concurrent-cdk: add per slice tracking of the most recent cursor
 
