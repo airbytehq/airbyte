@@ -300,7 +300,7 @@ class MicronautPropertiesFriendlyEncryption {
         }
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "replication_method")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
     JsonSubTypes.Type(value = UserDefinedCursor::class, name = "STANDARD"),
     JsonSubTypes.Type(value = CdcCursor::class, name = "CDC")
