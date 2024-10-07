@@ -7,14 +7,16 @@ from typing import Optional, Union, Any, Mapping
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.clients_config.local_sync_config import LocalSyncConfig
 
+AIRBYTE_STAGING_DIRECTORY = os.getenv("AIRBYTE_STAGING_DIRECTORY", "/staging/files")
+DEFAULT_LOCAL_DIRECTORY = "/tmp/airbyte-file-transfer"
 
 class LocalFileTransferClient:
-    def __init__(self, config: Optional[Union[LocalSyncConfig, Mapping[str, Any]]] = None, local_directory: Optional[str] = "/tmp/airbyte-file-transfer"):
+    def __init__(self, config: Optional[Union[LocalSyncConfig, Mapping[str, Any]]] = None):
         """
         Initialize the LocalFileTransferClient. It uses a default local directory for file saving.
         """
         self._config = config
-        self._local_directory = local_directory
+        self._local_directory = AIRBYTE_STAGING_DIRECTORY if os.path.exists(AIRBYTE_STAGING_DIRECTORY) else DEFAULT_LOCAL_DIRECTORY
 
     @property
     def connection(self) -> None:
@@ -24,11 +26,11 @@ class LocalFileTransferClient:
         return None
 
     @classmethod
-    def get_client(cls, config: AbstractFileBasedSpec, local_directory: Optional[str] = "/tmp"):
+    def get_client(cls, config: AbstractFileBasedSpec):
         """
         Return an instance of the LocalFileTransferClient.
         """
-        return cls(config.sync_config, local_directory)
+        return cls(config.sync_config)
 
     def write(self, file_uri: str, fp, file_size: int, logger: logging.Logger):
         """
