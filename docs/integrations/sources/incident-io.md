@@ -1,13 +1,13 @@
 # Incident.io
 
-This is the setup guide for the Incident.io source connector which ingests data from the incident API.
+This is the Incident.io source connector which ingests data from the incident API.
+The important streams are `incidents`, `follow-ups` and `severities`
 
 ## Prerequisites
 
 An API key is required for authentication and using this connector. In order to obtain an API key, you must first create an Incident.io account.
 You can create an account here https://incident.io/
-
-Once logged-in, you will find your API key in the settings -> API KEY. Make sure to provide all of the appropriate permissions.
+Once you create an account and log in , you will find your API keys section in the settings sidebar under the `extends` heading. Make sure to provide all of the appropriate permissions.
 You can find more about their API here https://api-docs.incident.io/
 
 ## Set up the Adjust source connector
