@@ -113,6 +113,7 @@ class CdcPartitionsCreatorTest {
             )
         every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
             deserializedInput
+        every { creatorOps.validate(deserializedInput) } returns CdcStateValidateResult.VALID
         upperBoundReference.set(1_000_000L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
@@ -138,13 +139,14 @@ class CdcPartitionsCreatorTest {
             )
         every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
             deserializedInput
+        every { creatorOps.validate(deserializedInput) } returns CdcStateValidateResult.VALID
         upperBoundReference.set(1L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(emptyList<PartitionReader>(), readers)
     }
 
     @Test
-    fun testCreateWithConfigError() {
+    fun testCreateWithFailedValidation() {
         every { stateQuerier.feeds } returns listOf(global, stream)
         val incumbentGlobalStateValue: OpaqueStateValue = Jsons.nullNode()
         every { stateQuerier.current(global) } returns incumbentGlobalStateValue
@@ -152,6 +154,15 @@ class CdcPartitionsCreatorTest {
         every { stateQuerier.current(stream) } returns incumbentStreamStateValue
         val incumbentOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
         every { creatorOps.position(incumbentOffset) } returns 123L
+        val syntheticOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
+        val syntheticInput =
+            DebeziumInput(
+                properties = emptyMap(),
+                state = DebeziumState(offset = syntheticOffset, schemaHistory = null),
+                isSynthetic = true,
+            )
+        every { creatorOps.synthesize() } returns syntheticInput
+
         val deserializedInput =
             DebeziumInput(
                 properties = emptyMap(),
@@ -160,11 +171,9 @@ class CdcPartitionsCreatorTest {
             )
         every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
             deserializedInput
-        every {creatorOps.validate(deserializedInput) } returns CdcStateValidateResult.INVALID_ABORT
+        every { creatorOps.validate(deserializedInput) } returns
+            CdcStateValidateResult.INVALID_ABORT
 
-        assertThrows(ConfigErrorException::class.java) {
-            runBlocking { creator.run() }
-        }
-
+        assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
     }
 }
