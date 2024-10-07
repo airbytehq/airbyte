@@ -27,7 +27,7 @@ data class MysqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
-    val cursorConfiguration: CursorConfiguration,
+    val cursorMethodConfiguration: CursorMethodConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
@@ -35,7 +35,7 @@ data class MysqlSourceConfiguration(
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
-    override val global = cursorConfiguration is CdcCursor
+    override val global = cursorMethodConfiguration is CdcCursor
 
     /** Required to inject [MysqlSourceConfiguration] directly. */
     @Factory
@@ -80,14 +80,13 @@ class MysqlSourceConfigurationFactory :
         }
         // Determine protocol and configure encryption.
         val encryption: Encryption = pojo.getEncryptionValue()
-        val sslMode = SSLMode.fromJdbcPropertyName(pojo.encryption.encryptionMethod)
         val jdbcEncryption =
             when (encryption) {
-                is EncryptionPreferred,
-                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = sslMode)
+                is EncryptionPreferred -> MysqlJdbcEncryption(sslMode = SSLMode.PREFERRED)
+                is EncryptionRequired -> MysqlJdbcEncryption(sslMode = SSLMode.REQUIRED)
                 is SslVerifyCertificate ->
                     MysqlJdbcEncryption(
-                        sslMode = sslMode,
+                        sslMode = SSLMode.VERIFY_CA,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
@@ -95,7 +94,7 @@ class MysqlSourceConfigurationFactory :
                     )
                 is SslVerifyIdentity ->
                     MysqlJdbcEncryption(
-                        sslMode = sslMode,
+                        sslMode = SSLMode.VERIFY_IDENTITY,
                         caCertificate = encryption.sslCertificate,
                         clientCertificate = encryption.sslClientCertificate,
                         clientKey = encryption.sslClientKey,
@@ -128,7 +127,7 @@ class MysqlSourceConfigurationFactory :
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
-            cursorConfiguration = pojo.getCursorConfigurationValue(),
+            cursorMethodConfiguration = pojo.getCursorMethodConfigurationValue(),
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
