@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.11.0
+concurrent-cdk: add per slice tracking of the most recent cursor
+
 ## 5.10.3
 do not raise exception on missing stream by default
 
