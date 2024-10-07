@@ -9,6 +9,8 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.LeafAirbyteType
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.output.CatalogValidationFailureHandler
+import io.airbyte.cdk.output.InvalidState
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -23,7 +25,8 @@ import javax.inject.Singleton
 @Singleton
 class MysqlJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
-    val selectQueryGenerator: MysqlSourceOperations
+    val selectQueryGenerator: MysqlSourceOperations,
+    val handler: CatalogValidationFailureHandler,
 ) :
     JdbcPartitionFactory<
         DefaultJdbcSharedState,
@@ -95,8 +98,7 @@ class MysqlJdbcPartitionFactory(
                 !sharedState.configuration.global
 
         if (!isCursorBasedIncremental) {
-            // todo: Implement me for cdc initial read states.
-            throw IllegalStateException("Should reset.")
+            return null
         } else {
             if (sv.stateType != "cursor_based") {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
