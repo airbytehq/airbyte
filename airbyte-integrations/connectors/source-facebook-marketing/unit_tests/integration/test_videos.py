@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_protocol.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy

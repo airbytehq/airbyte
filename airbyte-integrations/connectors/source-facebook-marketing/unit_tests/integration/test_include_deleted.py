@@ -12,7 +12,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
-from airbyte_protocol.models import SyncMode
+from airbyte_cdk.models import SyncMode
 
 from .config import ACCOUNT_ID, ConfigBuilder
 from .request_builder import get_account_request, get_ad_sets_request, get_ads_request, get_campaigns_request
