@@ -14,11 +14,9 @@ import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.BufferingOutputConsumer
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.mysql.MysqlContainerFactory.execAsRoot
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.CatalogHelpers
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
@@ -90,8 +88,6 @@ class MysqlCdcIntegrationTest {
                 stmt.execute("INSERT INTO test.tbl (k, v) VALUES (3, 'baz')")
             }
         }
-
-
     }
 
     companion object {
@@ -130,8 +126,8 @@ class MysqlCdcIntegrationTest {
                 MysqlContainerFactory.exclusive(
                     imageName = "mysql:8.0",
                     MysqlContainerFactory.WithNetwork,
-                  //  MysqlContainerFactory.WithGtidModeOn
-                )
+                    //  MysqlContainerFactory.WithGtidModeOn
+                    )
             provisionTestContainer(dbContainer, connectionFactory)
         }
 
@@ -139,10 +135,11 @@ class MysqlCdcIntegrationTest {
             targetContainer: MySQLContainer<*>,
             targetConnectionFactory: JdbcConnectionFactory
         ) {
-            val gtidOn = "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
-                "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
-                "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
-                "SET @@GLOBAL.GTID_MODE = 'ON';"
+            val gtidOn =
+                "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
+                    "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
+                    "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
+                    "SET @@GLOBAL.GTID_MODE = 'ON';"
             val grant =
                 "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
                     "ON *.* TO '${targetContainer.username}'@'%';"
