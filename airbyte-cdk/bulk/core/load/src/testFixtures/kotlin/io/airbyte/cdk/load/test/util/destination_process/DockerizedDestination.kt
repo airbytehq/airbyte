@@ -6,28 +6,45 @@ package io.airbyte.cdk.load.test.util.destination_process
 
 import com.google.common.collect.Lists
 import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.output.BufferingOutputConsumer
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteLogMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.BufferedWriter
+import java.io.OutputStreamWriter
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Clock
 import java.util.Locale
+import java.util.Scanner
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.RandomStringUtils
 
 private val logger = KotlinLogging.logger {}
 
 // TODO define a factory for this class + @Require(env = CI_master_merge)
 class DockerizedDestination(
-    private val imageName: String,
-    private val command: String,
-    private val config: ConfigurationSpecification?,
-    private val catalog: ConfiguredAirbyteCatalog?,
-    private val testDeploymentMode: TestDeploymentMode,
+    imageName: String,
+    command: String,
+    config: ConfigurationSpecification?,
+    catalog: ConfiguredAirbyteCatalog?,
+    testDeploymentMode: TestDeploymentMode,
 ) : DestinationProcess {
-    private lateinit var process: Process
+    private val process: Process
+    private val destinationOutput = BufferingOutputConsumer(Clock.systemDefaultZone())
+    private val destinationStdin: BufferedWriter
 
-    override fun run() {
+    private val stdoutDrained = CompletableDeferred<Unit>()
+    private val stderrDrained = CompletableDeferred<Unit>()
+
+    init {
         // This is largely copied from the old cdk's DockerProcessFactory /
         // AirbyteIntegrationLauncher / DestinationAcceptanceTest,
         // but cleaned up, consolidated, and simplified.
@@ -50,7 +67,7 @@ class DockerizedDestination(
             RandomStringUtils.insecure()
                 .nextAlphanumeric(5)
                 .lowercase(Locale.getDefault())
-        // Extract "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3"
+        // Extract the string "destination-foo" from "gcr.io/airbyte/destination-foo:1.2.3".
         // The old code had a ton of extra logic here, along with a max string
         // length (docker container names must be <128 chars) - none of that
         // seems necessary here.
@@ -106,20 +123,89 @@ class DockerizedDestination(
 
         logger.info { "Executing command: ${cmd.joinToString(" ")}" }
         process = ProcessBuilder(cmd).start()
+        // Annoyingly, the process's stdin is called "outputStream"
+        destinationStdin = BufferedWriter(OutputStreamWriter(process.outputStream))
+    }
+
+    override fun run() {
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                launch {
+                    // Consume stdout. These should all be properly-formatted messages.
+                    // Annoyingly, the process's stdout is called "inputStream".
+                    val destinationStdout = Scanner(process.inputStream)
+                    while (destinationStdout.hasNextLine()) {
+                        val line = destinationStdout.nextLine()
+                        val message = Jsons.readValue(line, AirbyteMessage::class.java)
+                        if (message.type == AirbyteMessage.Type.LOG) {
+                            // Don't capture logs, just echo them directly to our own stdout
+                            val combinedMessage =
+                                message.log.message +
+                                    (if (message.log.stackTrace != null)
+                                        (System.lineSeparator() + "Stack Trace: " + message.log.stackTrace)
+                                    else "")
+                            when (message.log.level) {
+                                null, // this should be impossible, treat it as error
+                                AirbyteLogMessage.Level.FATAL, // klogger doesn't have a fatal level
+                                AirbyteLogMessage.Level.ERROR -> logger.error { combinedMessage }
+                                AirbyteLogMessage.Level.WARN -> logger.warn { combinedMessage }
+                                AirbyteLogMessage.Level.INFO -> logger.info { combinedMessage }
+                                AirbyteLogMessage.Level.DEBUG -> logger.debug { combinedMessage }
+                                AirbyteLogMessage.Level.TRACE -> logger.trace { combinedMessage }
+                            }
+                        } else {
+                            destinationOutput.accept(message)
+                        }
+                    }
+                    stdoutDrained.complete(Unit)
+                }
+                launch {
+                    // Consume stderr. Connectors shouldn't really use this,
+                    // and whatever this stream contains, it's almost certainly not valid messages.
+                    // Dump it straight to our own stderr.
+                    process.errorReader().forEachLine { logger.error { it } }
+                    stderrDrained.complete(Unit)
+                }
+            }
+        }
     }
 
     override fun sendMessage(message: AirbyteMessage) {
-        // push a message to the docker process' stdin
-        TODO("Not yet implemented")
+        destinationStdin.write(Jsons.writeValueAsString(message))
+        destinationStdin.newLine()
     }
 
     override fun readMessages(): List<AirbyteMessage> {
-        // read everything from the process' stdout
-        TODO("Not yet implemented")
+        return destinationOutput.newMessages()
     }
 
     override fun shutdown() {
-        // close stdin, wait until process exits
-        TODO("Not yet implemented")
+        destinationStdin.close()
+        // The old cdk had a 1-minute timeout here. That seems... weird?
+        // We can just rely on the junit timeout, presumably?
+        process.waitFor()
+        // Wait for ourselves to drain stdout/stderr. Otherwise we won't capture
+        // all the destination output (logs/trace messages).
+        runBlocking {
+            stdoutDrained.join()
+            stderrDrained.join()
+        }
+        val exitCode = process.exitValue()
+        if (exitCode != 0) {
+            // Hey look, it's possible to extract the error from a failed destination process!
+            // because "destination exit code 1" is the least-helpful error message.
+            val filteredTraces =
+                destinationOutput.traces()
+                    .filter { it.type == AirbyteTraceMessage.Type.ERROR }
+                    .map { it.error }
+            throw RuntimeException(
+                """
+                    Destination process exited uncleanly: $exitCode
+                    Trace messages:
+                    """.trimIndent()
+                    // explicit concat because otherwise trimIndent behaves badly
+                    + filteredTraces,
+            )
+        }
     }
 }
