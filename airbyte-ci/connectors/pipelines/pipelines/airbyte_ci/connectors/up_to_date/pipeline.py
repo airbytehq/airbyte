@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import dagger
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
@@ -25,6 +26,7 @@ if TYPE_CHECKING:
 
     from anyio import Semaphore
     from github import PullRequest
+
     from pipelines.models.steps import StepResult
 
 UP_TO_DATE_PR_LABEL = "up-to-date"
@@ -88,7 +90,6 @@ async def run_connector_up_to_date_pipeline(
     specific_dependencies: List[str] = [],
     bump_connector_version: bool = True,
 ) -> ConnectorReport:
-
     async with semaphore:
         async with context:
             step_results: List[StepResult] = []
@@ -122,6 +123,9 @@ async def run_connector_up_to_date_pipeline(
                     all_modified_files.update(exported_modified_files)
 
             one_previous_step_is_successful = any(step_result.success for step_result in step_results)
+
+            # NOTE:
+            # BumpConnectorVersion will already work for manifest-only and Java connectors too
             if bump_connector_version and one_previous_step_is_successful:
                 bump_version = BumpConnectorVersion(context, BUMP_TYPE, connector_directory=connector_directory)
                 bump_version_result = await bump_version.run()
@@ -134,15 +138,21 @@ async def run_connector_up_to_date_pipeline(
                     context.logger.info(f"Exported files following the version bump: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
 
+            # Only create the PR if the flag is on, and if there's anything to contribute
             create_pull_request = create_pull_request and one_previous_step_is_successful and bump_version_result.success
-            # We run build and get dependency updates only if we are creating a pull request, to fill the PR body with the correct information
+
+            # We run build and get dependency updates only if we are creating a pull request,
+            # to fill the PR body with the correct information about what exactly got updated.
             if create_pull_request:
+                # Building connector images is also universal across connector technologies.
                 build_result = await BuildConnectorImages(context).run()
                 step_results.append(build_result)
                 dependency_updates: List[DependencyUpdate] = []
 
                 if build_result.success:
                     built_connector_container = build_result.output[LOCAL_BUILD_PLATFORM]
+
+                    # Dependencies here mean Syft deps in the container image itself, not framework-level deps.
                     get_dependency_updates = GetDependencyUpdates(context)
                     dependency_updates_result = await get_dependency_updates.run(built_connector_container)
                     step_results.append(dependency_updates_result)

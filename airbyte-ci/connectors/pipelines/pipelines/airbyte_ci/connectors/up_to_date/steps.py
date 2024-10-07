@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 import dagger
 from connector_ops.utils import POETRY_LOCK_FILE_NAME, PYPROJECT_FILE_NAME  # type: ignore
 from deepdiff import DeepDiff  # type: ignore
+
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -106,7 +107,6 @@ class DependencyUpdate:
 
 
 class GetDependencyUpdates(Step):
-
     SYFT_DOCKER_IMAGE = "anchore/syft:v1.6.0"
     context: ConnectorContext
     title: str = "Get dependency updates"
