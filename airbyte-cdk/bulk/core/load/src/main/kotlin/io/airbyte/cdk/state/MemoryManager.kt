@@ -4,8 +4,10 @@
 
 package io.airbyte.cdk.state
 
+import io.airbyte.cdk.util.CloseableCoroutine
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
@@ -19,17 +21,47 @@ import kotlinx.coroutines.sync.withLock
  * TODO: Some degree of logging/monitoring around how accurate we're actually being?
  */
 @Singleton
-class MemoryManager(private val availableMemoryProvider: AvailableMemoryProvider) {
-    private val totalMemoryBytes: Long = availableMemoryProvider.availableMemoryBytes
+class MemoryManager(availableMemoryProvider: AvailableMemoryProvider) {
+    // This is slightly awkward, but Micronaut only injects the primary constructor
+    constructor(
+        availableMemory: Long
+    ) : this(
+        object : AvailableMemoryProvider {
+            override val availableMemoryBytes: Long = availableMemory
+        }
+    )
+
+    private val totalMemoryBytes = availableMemoryProvider.availableMemoryBytes
     private var usedMemoryBytes = AtomicLong(0L)
     private val mutex = Mutex()
     private val syncChannel = Channel<Unit>(Channel.UNLIMITED)
+
+    /**
+     * Releasable reservation of memory. For large blocks (ie, from [reserveRatio], provides a
+     * submanager that can be used to manage allocating the reservation).
+     */
+    inner class Reservation(val bytes: Long) : CloseableCoroutine {
+        private var released = AtomicBoolean(false)
+
+        suspend fun release() {
+            if (!released.compareAndSet(false, true)) {
+                return
+            }
+            release(bytes)
+        }
+
+        fun getReservationManager(): MemoryManager = MemoryManager(bytes)
+
+        override suspend fun close() {
+            release()
+        }
+    }
 
     val remainingMemoryBytes: Long
         get() = totalMemoryBytes - usedMemoryBytes.get()
 
     /* Attempt to reserve memory. If enough memory is not available, waits until it is, then reserves. */
-    suspend fun reserveBlocking(memoryBytes: Long) {
+    suspend fun reserveBlocking(memoryBytes: Long): Reservation {
         if (memoryBytes > totalMemoryBytes) {
             throw IllegalArgumentException(
                 "Requested ${memoryBytes}b memory exceeds ${totalMemoryBytes}b total"
@@ -41,13 +73,15 @@ class MemoryManager(private val availableMemoryProvider: AvailableMemoryProvider
                 syncChannel.receive()
             }
             usedMemoryBytes.addAndGet(memoryBytes)
+
+            return Reservation(memoryBytes)
         }
     }
 
-    suspend fun reserveRatio(ratio: Double): Long {
+    suspend fun reserveRatio(ratio: Double): Reservation {
         val estimatedSize = (totalMemoryBytes.toDouble() * ratio).toLong()
         reserveBlocking(estimatedSize)
-        return estimatedSize
+        return Reservation(estimatedSize)
     }
 
     suspend fun release(memoryBytes: Long) {

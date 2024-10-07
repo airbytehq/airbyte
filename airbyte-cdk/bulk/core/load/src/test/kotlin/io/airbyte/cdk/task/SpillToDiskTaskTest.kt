@@ -5,7 +5,6 @@
 package io.airbyte.cdk.task
 
 import com.google.common.collect.Range
-import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.data.NullValue
@@ -21,7 +20,6 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -33,6 +31,7 @@ import org.junit.jupiter.api.Test
     environments =
         [
             "SpillToDiskTaskTest",
+            "MockDestinationConfiguration",
             "MockTempFileProvider",
             "MockTaskLauncher",
         ]
@@ -41,16 +40,6 @@ class SpillToDiskTaskTest {
     @Inject lateinit var taskRunner: TaskRunner
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject lateinit var mockTempFileProvider: MockTempFileProvider
-
-    @Singleton
-    @Primary
-    @Requires(env = ["SpillToDiskTaskTest"])
-    class MockWriteConfiguration : DestinationConfiguration() {
-        override val recordBatchSizeBytes: Long = 1024L
-        override val tmpFileDirectory: Path = Path.of("/tmp-test")
-        override val firstStageTmpFilePrefix: String = "spilled"
-        override val firstStageTmpFileSuffix: String = ".jsonl"
-    }
 
     @Singleton
     @Requires(env = ["SpillToDiskTaskTest"])
@@ -92,7 +81,6 @@ class SpillToDiskTaskTest {
             rangeRead: Range<Long>,
             bytesProcessed: Long
         ): Boolean {
-            println(bytesProcessed)
             return bytesProcessed >= 1024
         }
     }

@@ -104,6 +104,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.15 | 2024-10-05 | [46478](https://github.com/airbytehq/airbyte/pull/46478) | Update dependencies |
 | 0.6.14 | 2024-10-03 | [46343](https://github.com/airbytehq/airbyte/pull/46343) | Added `incremental dependency` for substreams with `Incremental` parent streams |
 | 0.6.13 | 2024-10-01 | [46294](https://github.com/airbytehq/airbyte/pull/46294) | Update CDK version to `^5`, increased the `maxSecondsBetweenMessages` to 6 hours |
 | 0.6.12 | 2024-09-28 | [46169](https://github.com/airbytehq/airbyte/pull/46169) | Update dependencies |

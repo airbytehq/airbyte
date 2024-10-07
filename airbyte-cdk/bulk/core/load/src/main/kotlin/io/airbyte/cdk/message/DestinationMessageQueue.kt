@@ -13,7 +13,6 @@ import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -60,7 +59,8 @@ class DestinationMessageQueue(
         ConcurrentHashMap()
 
     private val totalQueueSizeBytes = AtomicLong(0L)
-    private val maxQueueSizeBytes: Long
+    private val reservedMemory: MemoryManager.Reservation
+    private val reservedMemoryManager: MemoryManager
     private val memoryLock = ReentrantLock()
     private val memoryLockCondition = memoryLock.newCondition()
 
@@ -69,23 +69,16 @@ class DestinationMessageQueue(
         val adjustedRatio =
             config.maxMessageQueueMemoryUsageRatio /
                 (1.0 + config.estimatedRecordMemoryOverheadRatio)
-        maxQueueSizeBytes = runBlocking { memoryManager.reserveRatio(adjustedRatio) }
+        reservedMemory = runBlocking { memoryManager.reserveRatio(adjustedRatio) }
+        reservedMemoryManager = reservedMemory.getReservationManager()
     }
 
     override suspend fun acquireQueueBytesBlocking(bytes: Long) {
-        memoryLock.withLock {
-            while (totalQueueSizeBytes.get() + bytes > maxQueueSizeBytes) {
-                memoryLockCondition.await()
-            }
-            totalQueueSizeBytes.addAndGet(bytes)
-        }
+        reservedMemoryManager.reserveBlocking(bytes)
     }
 
     override suspend fun releaseQueueBytes(bytes: Long) {
-        memoryLock.withLock {
-            totalQueueSizeBytes.addAndGet(-bytes)
-            memoryLockCondition.signalAll()
-        }
+        reservedMemoryManager.release(bytes)
     }
 
     override suspend fun getChannel(
