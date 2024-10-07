@@ -1,12 +1,12 @@
 # Thinkific
-Airbyte connector for Thinkific, allowing you to seamlessly sync data like users, course participants, and instructors from Thinkific to other platforms. It&#39;s designed to make managing and analyzing your online courses and communities even easier!
+Airbyte connector for [Thinkific](https://thinkific.com/), allowing you to seamlessly sync data like users, course participants, and instructors from Thinkific to other platforms. It's designed to make managing and analyzing your online courses and communities even easier!
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `api_key` | `string` | API Key.  |  |
-| `subdomain` | `string` | subdomain. superb |  |
+| `api_key` | `string` | Your Thinkific API key for authentication.	  |  |
+| `subdomain` | `string` | The subdomain of your Thinkific URL (e.g., if your URL is `example.thinkific.com`, your subdomain is `example` |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
