@@ -128,7 +128,7 @@ constructor(
 
     /**
      * Get the window step function row_number() over (partition by primary_key order by
-     * cursor_field) as row_number.
+     * cursor_field) as _airbyte_row_number.
      *
      * @param primaryKey list of primary keys
      * @param cursorField cursor field used for ordering
@@ -628,7 +628,7 @@ constructor(
     }
 
     companion object {
-        const val ROW_NUMBER_COLUMN_NAME: String = "row_number"
+        const val ROW_NUMBER_COLUMN_NAME: String = "_airbyte_row_number"
         private const val TYPING_CTE_ALIAS = "intermediate_data"
         private const val NUMBERED_ROWS_CTE_ALIAS = "numbered_rows"
     }
