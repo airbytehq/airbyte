@@ -10,8 +10,6 @@ import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
@@ -123,56 +121,5 @@ class DockerizedDestination(
     override fun shutdown() {
         // close stdin, wait until process exits
         TODO("Not yet implemented")
-    }
-}
-
-// This is currently unused, but we'll need it for the Docker version.
-// it exists right now b/c I wrote it prior to the CliRunner retooling.
-/**
- * There doesn't seem to be a built-in equivalent to this? Scanner and BufferedReader both have
- * `hasNextLine` methods which block until the stream has data to read, which we don't want to do.
- *
- * This class simply buffers the next line in-memory until it reaches a newline or EOF.
- */
-private class LazyInputStreamReader(private val input: InputStream) {
-    private val buffer: ByteArrayOutputStream = ByteArrayOutputStream()
-    private var eof = false
-
-    /**
-     * Returns the next line of data, or null if no line is available. Doesn't block if the
-     * inputstream has no data.
-     */
-    fun nextLine(): MaybeLine {
-        if (eof) {
-            return NoLine.EOF
-        }
-        while (input.available() != 0) {
-            when (val read = input.read()) {
-                -1 -> {
-                    eof = true
-                    val line = Line(buffer.toByteArray().toString(Charsets.UTF_8))
-                    buffer.reset()
-                    return line
-                }
-                '\n'.code -> {
-                    val bytes = buffer.toByteArray()
-                    buffer.reset()
-                    return Line(bytes.toString(Charsets.UTF_8))
-                }
-                else -> {
-                    buffer.write(read)
-                }
-            }
-        }
-        return NoLine.NOT_YET_AVAILABLE
-    }
-
-    companion object {
-        sealed interface MaybeLine
-        enum class NoLine : MaybeLine {
-            EOF,
-            NOT_YET_AVAILABLE
-        }
-        data class Line(val line: String) : MaybeLine
     }
 }
