@@ -555,3 +555,16 @@ def test_backoff_strategy_endless(exit_on_rate_limit, expected_call_count, expec
                 http_method="get", url="https://test_base_url.com/v1/endpoint", request_kwargs={}, exit_on_rate_limit=exit_on_rate_limit
             )
         assert mocked_send.call_count == expected_call_count
+
+
+def test_given_different_headers_then_response_is_not_cached(requests_mock):
+    http_client = HttpClient(name="test", logger=MagicMock(), use_cache=True)
+    first_request_headers = {"header_key": "first"}
+    second_request_headers = {"header_key": "second"}
+    requests_mock.register_uri("GET", "https://google.com/", request_headers=first_request_headers, json={"test": "first response"})
+    requests_mock.register_uri("GET", "https://google.com/", request_headers=second_request_headers, json={"test": "second response"})
+
+    http_client.send_request("GET", "https://google.com/", headers=first_request_headers, request_kwargs={})
+    _, second_response = http_client.send_request("GET", "https://google.com/", headers=second_request_headers, request_kwargs={})
+
+    assert second_response.json()["test"] == "second response"
