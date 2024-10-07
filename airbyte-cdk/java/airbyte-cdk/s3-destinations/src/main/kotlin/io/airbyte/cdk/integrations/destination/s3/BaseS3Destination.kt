@@ -78,7 +78,8 @@ protected constructor(
                 s3Config,
                 catalog,
                 memoryRatio,
-                nThreads
+                nThreads,
+                featureFlags
             )
     }
 

@@ -6,6 +6,13 @@ import com.google.common.collect.ImmutableMap
 import com.google.common.collect.Lists
 import io.airbyte.cdk.integrations.base.JavaBaseConstants
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.JOB_ATTEMPT
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.JOB_ID
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.convertProtocolObject
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.getRecordMessagesWithNewNamespace
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.readCatalogFromFile
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.readMessagesFromFile
+import io.airbyte.cdk.integrations.standardtest.destination.RecordBasedDestinationAcceptanceTestInterface.Companion.specialNumericTypesSupportTest
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil
@@ -37,23 +44,8 @@ import kotlin.test.assertNotNull
 
 private val LOGGER = KotlinLogging.logger {}
 
-abstract class DestinationAcceptanceTest(
-    verifyIndividualStateAndCounts: Boolean = false,
-    useV2Fields: Boolean = false,
-    supportsChangeCapture: Boolean = false,
-    expectNumericTimestamps: Boolean = false,
-    expectSchemalessObjectsCoercedToStrings: Boolean = false,
-    expectUnionsPromotedToDisjointRecords: Boolean = false
-): AbstractDestinationAcceptanceTest(
-    verifyIndividualStateAndCounts = verifyIndividualStateAndCounts,
-    useV2Fields = useV2Fields,
-    supportsChangeCapture = supportsChangeCapture,
-    expectNumericTimestamps = expectNumericTimestamps,
-    expectSchemalessObjectsCoercedToStrings = expectSchemalessObjectsCoercedToStrings,
-    expectUnionsPromotedToDisjointRecords = expectUnionsPromotedToDisjointRecords
-) {
-
-    /** Verify that when the integrations returns a valid spec. */
+interface RecordBasedDestinationAcceptanceTest: RecordBasedDestinationAcceptanceTestInterface {
+        /** Verify that when the integrations returns a valid spec. */
     @Test
     @Throws(TestHarnessException::class)
     fun testGetSpec() {
@@ -775,7 +767,7 @@ abstract class DestinationAcceptanceTest(
         }
     }
 
-    protected open val maxRecordValueLimit: Int
+    open val maxRecordValueLimit: Int
         /** @return the max limit length allowed for values in the destination. */
         get() = 1000000000
 
@@ -1034,7 +1026,7 @@ abstract class DestinationAcceptanceTest(
      * - broad catch of exception to hydrate log information with additional test case context.
      */
     @ParameterizedTest
-    @ArgumentsSource(NamespaceTestCaseProvider::class)
+    @ArgumentsSource(RecordBasedDestinationAcceptanceTestInterface.NamespaceTestCaseProvider::class)
     @Throws(Exception::class)
     fun testNamespaces(testCaseId: String?, namespaceInCatalog: String, namespaceInDst: String?) {
         val nameTransformer = getNameTransformer()
