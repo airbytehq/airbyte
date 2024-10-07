@@ -14,7 +14,7 @@ from airbyte_cdk.sources.types import Record, StreamSlice, StreamState
 T = TypeVar("T")
 
 
-def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[Optional[T], bool]]:
+def iterate_with_last_flag(generator: Iterable[T]) -> Iterable[tuple[T, bool]]:
     """
     Iterates over the given generator and returns a tuple containing the element and a flag
     indicating whether it's the last element in the generator. If the generator is empty,
