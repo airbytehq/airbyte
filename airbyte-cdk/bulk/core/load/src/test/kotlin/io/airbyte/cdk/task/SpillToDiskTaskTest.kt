@@ -4,25 +4,24 @@
 
 package io.airbyte.cdk.task
 
-import io.airbyte.cdk.command.DestinationConfiguration
+import com.google.common.collect.Range
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.data.NullValue
 import io.airbyte.cdk.file.MockTempFileProvider
 import io.airbyte.cdk.message.DestinationRecord
 import io.airbyte.cdk.message.DestinationRecordWrapped
-import io.airbyte.cdk.message.MessageQueueReader
+import io.airbyte.cdk.message.MessageQueueSupplier
 import io.airbyte.cdk.message.StreamCompleteWrapped
 import io.airbyte.cdk.message.StreamRecordWrapped
+import io.airbyte.cdk.state.FlushStrategy
+import io.airbyte.cdk.state.MemoryManager
+import io.airbyte.cdk.state.Reserved
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.nio.file.Path
-import java.util.concurrent.atomic.AtomicLong
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -31,40 +30,45 @@ import org.junit.jupiter.api.Test
     environments =
         [
             "SpillToDiskTaskTest",
+            "MockDestinationConfiguration",
+            "MockDestinationCatalog",
             "MockTempFileProvider",
             "MockTaskLauncher",
         ]
 )
 class SpillToDiskTaskTest {
     @Inject lateinit var taskRunner: TaskRunner
+    @Inject lateinit var memoryManager: MemoryManager
     @Inject lateinit var spillToDiskTaskFactory: DefaultSpillToDiskTaskFactory
     @Inject lateinit var mockTempFileProvider: MockTempFileProvider
+    @Inject
+    lateinit var queueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
 
     @Singleton
     @Primary
     @Requires(env = ["SpillToDiskTaskTest"])
-    class MockWriteConfiguration : DestinationConfiguration() {
-        override val recordBatchSizeBytes: Long = 1024L
-        override val tmpFileDirectory: Path = Path.of("/tmp-test")
-        override val firstStageTmpFilePrefix: String = "spilled"
-        override val firstStageTmpFileSuffix: String = ".jsonl"
+    class MockFlushStrategy : FlushStrategy {
+        override suspend fun shouldFlush(
+            stream: DestinationStream,
+            rangeRead: Range<Long>,
+            bytesProcessed: Long
+        ): Boolean {
+            return bytesProcessed >= 1024
+        }
     }
 
-    @Singleton
-    @Requires(env = ["SpillToDiskTaskTest"])
-    class MockQueueReader :
-        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped> {
-        // Make enough records for a full batch + half a batch
-        private val maxRecords = ((1024 * 1.5) / 8).toLong()
-        private val recordsWritten = AtomicLong(0)
-        override suspend fun readChunk(
-            key: DestinationStream.Descriptor,
-            maxBytes: Long
-        ): Flow<DestinationRecordWrapped> = flow {
-            var totalBytes = 0
-            while (recordsWritten.get() < maxRecords) {
-                val index = recordsWritten.getAndIncrement()
-                emit(
+    private suspend fun primeMessageQueue(): Long {
+        val queue = queueSupplier.get(stream1.descriptor)
+        val maxRecords = ((1024 * 1.5) / 8).toLong()
+        var recordsWritten = 0L
+        var bytesReserved = 0L
+        while (recordsWritten < maxRecords) {
+            val index = recordsWritten++
+            bytesReserved++
+            queue.publish(
+                memoryManager.reserveBlocking(
+                    1L,
                     StreamRecordWrapped(
                         index = index,
                         sizeBytes = 8,
@@ -78,17 +82,18 @@ class SpillToDiskTaskTest {
                             )
                     )
                 )
-                totalBytes += 8
-                if (totalBytes >= maxBytes) {
-                    return@flow
-                }
-            }
-            emit(StreamCompleteWrapped(index = maxRecords))
+            )
         }
+        queue.publish(memoryManager.reserveBlocking(0L, StreamCompleteWrapped(index = maxRecords)))
+        return bytesReserved
     }
 
     @Test
     fun testSpillToDiskTask() = runTest {
+        val availableMemory = memoryManager.remainingMemoryBytes
+        val bytesReserved = primeMessageQueue()
+        Assertions.assertEquals(availableMemory - bytesReserved, memoryManager.remainingMemoryBytes)
+
         val mockTaskLauncher = MockTaskLauncher(taskRunner)
         spillToDiskTaskFactory.make(mockTaskLauncher, stream1).execute()
         Assertions.assertEquals(1, mockTaskLauncher.spilledFiles.size)
@@ -113,5 +118,7 @@ class SpillToDiskTaskTest {
 
         Assertions.assertEquals(expectedLinesFirst, file1.writtenLines)
         Assertions.assertEquals(expectedLinesSecond, file2.writtenLines)
+
+        Assertions.assertEquals(availableMemory, memoryManager.remainingMemoryBytes)
     }
 }

@@ -10,11 +10,12 @@ import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
+import io.airbyte.cdk.file.TimeProvider
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.MessageConverter
 import io.airbyte.cdk.message.SimpleBatch
-import io.micronaut.context.annotation.Prototype
+import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -22,6 +23,7 @@ import java.util.function.Consumer
 import java.util.stream.Stream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -29,6 +31,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 
 @MicronautTest(
+    rebuildContext = true,
     environments =
         [
             "CheckpointManagerTest",
@@ -37,6 +40,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 )
 class CheckpointManagerTest {
     @Inject lateinit var checkpointManager: TestCheckpointManager
+    @Inject lateinit var syncManager: SyncManager
     /**
      * Test state messages.
      *
@@ -54,6 +58,7 @@ class CheckpointManagerTest {
     data class MockGlobalCheckpointOut(val payload: String) : MockCheckpointOut()
 
     @Singleton
+    @Requires(env = ["CheckpointManagerTest"])
     class MockStateMessageFactory : MessageConverter<MockCheckpointIn, MockCheckpointOut> {
         override fun from(message: MockCheckpointIn): MockCheckpointOut {
             return when (message) {
@@ -64,25 +69,31 @@ class CheckpointManagerTest {
         }
     }
 
-    @Prototype
+    @Singleton
+    @Requires(env = ["CheckpointManagerTest"])
     class MockOutputConsumer : Consumer<MockCheckpointOut> {
-        val collectedStreamOutput = mutableMapOf<DestinationStream, MutableList<String>>()
+        val collectedStreamOutput =
+            mutableMapOf<DestinationStream.Descriptor, MutableList<String>>()
         val collectedGlobalOutput = mutableListOf<String>()
         override fun accept(t: MockCheckpointOut) {
             when (t) {
                 is MockStreamCheckpointOut ->
-                    collectedStreamOutput.getOrPut(t.stream) { mutableListOf() }.add(t.payload)
+                    collectedStreamOutput
+                        .getOrPut(t.stream.descriptor) { mutableListOf() }
+                        .add(t.payload)
                 is MockGlobalCheckpointOut -> collectedGlobalOutput.add(t.payload)
             }
         }
     }
 
-    @Prototype
+    @Singleton
+    @Requires(env = ["CheckpointManagerTest"])
     class TestCheckpointManager(
         override val catalog: DestinationCatalog,
         override val syncManager: SyncManager,
         override val outputFactory: MessageConverter<MockCheckpointIn, MockCheckpointOut>,
-        override val outputConsumer: MockOutputConsumer
+        override val outputConsumer: MockOutputConsumer,
+        override val timeProvider: TimeProvider
     ) : StreamsCheckpointManager<MockCheckpointIn, MockCheckpointOut>()
 
     sealed class TestEvent
@@ -104,7 +115,7 @@ class CheckpointManagerTest {
         val name: String,
         val events: List<TestEvent>,
         // Order matters, but only per stream
-        val expectedStreamOutput: Map<DestinationStream, List<String>> = mapOf(),
+        val expectedStreamOutput: Map<DestinationStream.Descriptor, List<String>> = mapOf(),
         val expectedGlobalOutput: List<String> = listOf(),
         val expectedException: Class<out Throwable>? = null
     )
@@ -124,7 +135,7 @@ class CheckpointManagerTest {
                                         mapOf(stream1 to listOf(Range.closed(0L, 20L)))
                                 )
                             ),
-                        expectedStreamOutput = mapOf(stream1 to listOf("1", "2"))
+                        expectedStreamOutput = mapOf(stream1.descriptor to listOf("1", "2"))
                     ),
                     TestCase(
                         name = "One stream, two messages, flush only the first",
@@ -137,7 +148,7 @@ class CheckpointManagerTest {
                                         mapOf(stream1 to listOf(Range.closed(0L, 10L)))
                                 )
                             ),
-                        expectedStreamOutput = mapOf(stream1 to listOf("1"))
+                        expectedStreamOutput = mapOf(stream1.descriptor to listOf("1"))
                     ),
                     TestCase(
                         name = "Two streams, two messages each, flush all",
@@ -156,7 +167,10 @@ class CheckpointManagerTest {
                                 )
                             ),
                         expectedStreamOutput =
-                            mapOf(stream1 to listOf("11", "12"), stream2 to listOf("22", "21"))
+                            mapOf(
+                                stream1.descriptor to listOf("11", "12"),
+                                stream2.descriptor to listOf("22", "21")
+                            )
                     ),
                     TestCase(
                         name = "One stream, only later range persisted",
@@ -335,7 +349,7 @@ class CheckpointManagerTest {
                                 TestStreamMessage(stream1, 30L, 3),
                                 FlushPoint(mapOf(stream1 to listOf(Range.closed(10L, 30L))))
                             ),
-                        expectedStreamOutput = mapOf(stream1 to listOf("1", "2", "3"))
+                        expectedStreamOutput = mapOf(stream1.descriptor to listOf("1", "2", "3"))
                     ),
                     TestCase(
                         name = "Global checkpoint, multiple flush points, no output",
@@ -402,7 +416,7 @@ class CheckpointManagerTest {
 
     @ParameterizedTest
     @ArgumentsSource(CheckpointManagerTestArgumentsProvider::class)
-    suspend fun testAddingAndFlushingCheckpoints(testCase: TestCase) = runTest {
+    fun testAddingAndFlushingCheckpoints(testCase: TestCase) = runTest {
         if (testCase.expectedException != null) {
             try {
                 runTestCase(testCase)
@@ -429,6 +443,15 @@ class CheckpointManagerTest {
         testCase.events.forEach {
             when (it) {
                 is TestStreamMessage -> {
+                    /**
+                     * Mock the correct state of the stream manager by advancing the record count to
+                     * the index of the message.
+                     */
+                    val streamManager = syncManager.getStreamManager(it.stream.descriptor)
+                    val recordCount = streamManager.recordCount()
+                    (recordCount until it.index).forEach { _ ->
+                        syncManager.getStreamManager(it.stream.descriptor).countRecordIn()
+                    }
                     checkpointManager.addStreamCheckpoint(
                         it.stream.descriptor,
                         it.index,
@@ -444,7 +467,7 @@ class CheckpointManagerTest {
                         val mockBatch = SimpleBatch(state = Batch.State.PERSISTED)
                         val rangeSet = TreeRangeSet.create(ranges)
                         val mockBatchEnvelope = BatchEnvelope(batch = mockBatch, ranges = rangeSet)
-                        checkpointManager.syncManager
+                        syncManager
                             .getStreamManager(stream.descriptor)
                             .updateBatchState(mockBatchEnvelope)
                     }
@@ -452,5 +475,151 @@ class CheckpointManagerTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun testGetLastFlushTimeMs() = runTest {
+        val startTime = System.currentTimeMillis()
+        checkpointManager.addStreamCheckpoint(
+            stream1.descriptor,
+            1L,
+            MockStreamCheckpointIn(stream1, 1)
+        )
+        syncManager.markPersisted(stream1, Range.closed(0L, 1L))
+        Assertions.assertTrue(startTime >= checkpointManager.getLastSuccessfulFlushTimeMs())
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertTrue(startTime < checkpointManager.getLastSuccessfulFlushTimeMs())
+    }
+
+    @Test
+    fun testGetNextStreamCheckpoints() = runTest {
+        Assertions.assertEquals(
+            emptyMap<DestinationStream.Descriptor, Long>(),
+            checkpointManager.getNextCheckpointIndexes()
+        )
+
+        checkpointManager.addStreamCheckpoint(
+            stream1.descriptor,
+            1L,
+            MockStreamCheckpointIn(stream1, 1)
+        )
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L),
+            checkpointManager.getNextCheckpointIndexes()
+        )
+
+        checkpointManager.addStreamCheckpoint(
+            stream2.descriptor,
+            10L,
+            MockStreamCheckpointIn(stream2, 10)
+        )
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes()
+        )
+
+        checkpointManager.addStreamCheckpoint(
+            stream1.descriptor,
+            2L,
+            MockStreamCheckpointIn(stream1, 2)
+        )
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "only the first checkpoint is returned"
+        )
+
+        syncManager.markPersisted(stream1, Range.singleton(0))
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "marking persisted is not sufficient"
+        )
+
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 2L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "flushing the first checkpoint reveals the second one"
+        )
+
+        checkpointManager.addStreamCheckpoint(
+            stream2.descriptor,
+            20L,
+            MockStreamCheckpointIn(stream2, 20)
+        )
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 2L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "but only on the stream that was flushed"
+        )
+
+        syncManager.markPersisted(stream2, Range.closed(0L, 19L))
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 2L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "flushing all the checkpoints clears the stream from the map"
+        )
+
+        syncManager.markPersisted(stream1, Range.singleton(1))
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            emptyMap<DestinationStream.Descriptor, Long>(),
+            checkpointManager.getNextCheckpointIndexes(),
+            "flushing all the checkpoints clears the map"
+        )
+    }
+
+    @Test
+    fun testGetNextGlobalCheckpoints() = runTest {
+        Assertions.assertEquals(
+            emptyMap<DestinationStream.Descriptor, Long>(),
+            checkpointManager.getNextCheckpointIndexes()
+        )
+
+        checkpointManager.addGlobalCheckpoint(
+            listOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            MockGlobalCheckpointIn(1)
+        )
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes()
+        )
+
+        checkpointManager.addGlobalCheckpoint(
+            listOf(stream1.descriptor to 2L, stream2.descriptor to 20L),
+            MockGlobalCheckpointIn(2)
+        )
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "only the first checkpoint is returned"
+        )
+
+        syncManager.markPersisted(stream1, Range.singleton(0))
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "if only 1 stream is persisted, neither are returned"
+        )
+
+        syncManager.markPersisted(stream2, Range.closed(0L, 19L))
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            mapOf(stream1.descriptor to 2L, stream2.descriptor to 20L),
+            checkpointManager.getNextCheckpointIndexes(),
+            "persisting the second stream triggers both to flush, revealing the next pair"
+        )
+
+        syncManager.markPersisted(stream1, Range.singleton(1))
+        checkpointManager.flushReadyCheckpointMessages()
+        Assertions.assertEquals(
+            emptyMap<DestinationStream.Descriptor, Long>(),
+            checkpointManager.getNextCheckpointIndexes(),
+            "flushing all the checkpoints clears the map"
+        )
     }
 }

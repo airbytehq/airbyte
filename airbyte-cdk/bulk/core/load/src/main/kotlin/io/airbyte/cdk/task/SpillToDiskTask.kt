@@ -10,16 +10,22 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.file.TempFileProvider
 import io.airbyte.cdk.message.BatchEnvelope
 import io.airbyte.cdk.message.DestinationRecordWrapped
-import io.airbyte.cdk.message.MessageQueueReader
+import io.airbyte.cdk.message.MessageQueue
+import io.airbyte.cdk.message.MessageQueueSupplier
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.message.StreamCompleteWrapped
 import io.airbyte.cdk.message.StreamRecordWrapped
+import io.airbyte.cdk.state.FlushStrategy
+import io.airbyte.cdk.state.Reserved
+import io.airbyte.cdk.util.takeUntilInclusive
+import io.airbyte.cdk.util.use
+import io.airbyte.cdk.util.withNextAdjacentValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.runningFold
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.withContext
 
 interface SpillToDiskTask : StreamTask
@@ -33,10 +39,10 @@ interface SpillToDiskTask : StreamTask
 class DefaultSpillToDiskTask(
     private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queueReader:
-        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>,
+    private val queue: MessageQueue<Reserved<DestinationRecordWrapped>>,
+    private val flushStrategy: FlushStrategy,
     override val stream: DestinationStream,
-    private val launcher: DestinationTaskLauncher
+    private val launcher: DestinationTaskLauncher,
 ) : SpillToDiskTask {
     private val log = KotlinLogging.logger {}
 
@@ -44,18 +50,8 @@ class DefaultSpillToDiskTask(
         val range: Range<Long>? = null,
         val sizeBytes: Long = 0,
         val hasReadEndOfStream: Boolean = false,
+        val forceFlush: Boolean = false,
     )
-
-    // Necessary because Guava's Range/sets have no "empty" range
-    private fun withIndex(range: Range<Long>?, index: Long): Range<Long> {
-        return if (range == null) {
-            Range.singleton(index)
-        } else if (index != range.upperEndpoint() + 1) {
-            throw IllegalStateException("Expected index ${range.upperEndpoint() + 1}, got $index")
-        } else {
-            range.span(Range.singleton(index))
-        }
-    }
 
     override suspend fun execute() {
         val (path, result) =
@@ -67,27 +63,43 @@ class DefaultSpillToDiskTask(
                         config.firstStageTmpFileSuffix
                     )
                 val result =
-                    tmpFile.toFileWriter().use {
-                        queueReader
-                            .readChunk(stream.descriptor, config.recordBatchSizeBytes)
-                            .runningFold(ReadResult()) { (range, sizeBytes, _), wrapped ->
-                                when (wrapped) {
-                                    is StreamRecordWrapped -> {
-                                        val nextRange = withIndex(range, wrapped.index)
-                                        it.write(wrapped.record.serialized)
-                                        it.write("\n")
-                                        ReadResult(nextRange, sizeBytes + wrapped.sizeBytes)
-                                    }
-                                    is StreamCompleteWrapped -> {
-                                        val nextRange = withIndex(range, wrapped.index)
-                                        return@runningFold ReadResult(nextRange, sizeBytes, true)
+                    tmpFile.toFileWriter().use { writer ->
+                        queue
+                            .consume()
+                            .runningFold(ReadResult()) { (range, sizeBytes, _), reserved ->
+                                reserved.use {
+                                    when (val wrapped = it.value) {
+                                        is StreamRecordWrapped -> {
+                                            writer.write(wrapped.record.serialized)
+                                            writer.write("\n")
+                                            val nextRange =
+                                                range.withNextAdjacentValue(wrapped.index)
+                                            val nextSize = sizeBytes + wrapped.sizeBytes
+                                            val forceFlush =
+                                                flushStrategy.shouldFlush(
+                                                    stream,
+                                                    nextRange,
+                                                    nextSize
+                                                )
+                                            ReadResult(nextRange, nextSize, forceFlush = forceFlush)
+                                        }
+                                        is StreamCompleteWrapped -> {
+                                            val nextRange =
+                                                range.withNextAdjacentValue(wrapped.index)
+                                            ReadResult(
+                                                nextRange,
+                                                sizeBytes,
+                                                hasReadEndOfStream = true
+                                            )
+                                        }
                                     }
                                 }
                             }
                             .flowOn(Dispatchers.IO)
-                            .toList()
+                            .takeUntilInclusive { it.hasReadEndOfStream || it.forceFlush }
+                            .last()
                     }
-                Pair(tmpFile, result.last())
+                Pair(tmpFile, result)
             }
 
         /** Handle the result */
@@ -115,13 +127,21 @@ interface SpillToDiskTaskFactory {
 class DefaultSpillToDiskTaskFactory(
     private val config: DestinationConfiguration,
     private val tmpFileProvider: TempFileProvider,
-    private val queueReader:
-        MessageQueueReader<DestinationStream.Descriptor, DestinationRecordWrapped>
+    private val queueSupplier:
+        MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+    private val flushStrategy: FlushStrategy,
 ) : SpillToDiskTaskFactory {
     override fun make(
         taskLauncher: DestinationTaskLauncher,
         stream: DestinationStream
     ): SpillToDiskTask {
-        return DefaultSpillToDiskTask(config, tmpFileProvider, queueReader, stream, taskLauncher)
+        return DefaultSpillToDiskTask(
+            config,
+            tmpFileProvider,
+            queueSupplier.get(stream.descriptor),
+            flushStrategy,
+            stream,
+            taskLauncher,
+        )
     }
 }
