@@ -9,32 +9,43 @@ import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
-import io.airbyte.cdk.message.CheckpointMessage
 import io.airbyte.cdk.message.SpilledRawMessagesLocalFile
-import io.airbyte.cdk.state.CheckpointManager
-import io.airbyte.cdk.state.StreamsManager
-import io.airbyte.cdk.write.StreamLoader
+import io.airbyte.cdk.state.StreamSucceeded
+import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.state.SyncSuccess
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.DefaultImplementation
-import io.micronaut.context.annotation.Factory
-import jakarta.inject.Provider
+import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+sealed interface DestinationWriteTask : Task
+
+interface SyncTask : DestinationWriteTask
+
+interface StreamTask : DestinationWriteTask {
+    val stream: DestinationStream
+}
+
 interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleSetupComplete()
-    suspend fun handleStreamOpen(streamLoader: StreamLoader)
+    suspend fun handleStreamStarted(stream: DestinationStream)
     suspend fun handleNewSpilledFile(
-        stream: DestinationStream.Descriptor,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
+        stream: DestinationStream,
+        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
+        endOfStream: Boolean
     )
-    suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>)
+    suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream)
     suspend fun handleTeardownComplete()
+    suspend fun scheduleNextForceFlushAttempt(msFromNow: Long)
+}
+
+interface DestinationTaskLauncherExceptionHandler :
+    TaskLauncherExceptionHandler<DestinationWriteTask> {
+    suspend fun handleSyncFailure(e: Exception)
+    suspend fun handleStreamFailure(stream: DestinationStream, e: Exception)
+    suspend fun stop()
 }
 
 /**
@@ -67,46 +78,46 @@ interface DestinationTaskLauncher : TaskLauncher {
  *
  * // TODO: Capture failures, retry, and call into close(failure=true) if can't recover.
  */
+@Singleton
+@Secondary
 @SuppressFBWarnings(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "arguments are guaranteed to be non-null by Kotlin's type system"
 )
 class DefaultDestinationTaskLauncher(
     private val catalog: DestinationCatalog,
-    private val streamsManager: StreamsManager,
+    private val syncManager: SyncManager,
     override val taskRunner: TaskRunner,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
     private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
-    private val teardownTaskFactory: TeardownTaskFactory
+    private val teardownTaskFactory: TeardownTaskFactory,
+    private val flushCheckpointsTaskFactory: FlushCheckpointsTaskFactory,
+    private val timedFlushTaskFactory: TimedForcedCheckpointFlushTaskFactory,
+    private val exceptionHandler: TaskLauncherExceptionHandler<DestinationWriteTask>
 ) : DestinationTaskLauncher {
     private val log = KotlinLogging.logger {}
 
-    private val runTeardownOnce = AtomicBoolean(false)
     private val batchUpdateLock = Mutex()
 
-    private val streamLoaders:
-        ConcurrentHashMap<DestinationStream.Descriptor, CompletableDeferred<StreamLoader>> =
-        ConcurrentHashMap()
-
-    init {
-        catalog.streams.forEach { streamLoaders[it.descriptor] = CompletableDeferred() }
+    private suspend fun enqueue(task: DestinationWriteTask) {
+        taskRunner.enqueue(exceptionHandler.withExceptionHandling(task))
     }
 
     override suspend fun start() {
         log.info { "Starting startup task" }
         val setupTask = setupTaskFactory.make(this)
-        taskRunner.enqueue(setupTask)
+        enqueue(setupTask)
         catalog.streams.forEach { stream ->
             log.info { "Starting spill-to-disk task for $stream" }
-            val spillTask = spillToDiskTaskFactory.make(this, stream.descriptor)
-            taskRunner.enqueue(spillTask)
+            val spillTask = spillToDiskTaskFactory.make(this, stream)
+            enqueue(spillTask)
         }
+        val forceFlushTask = timedFlushTaskFactory.make(this)
+        enqueue(forceFlushTask)
     }
 
     /** Called when the initial destination setup completes. */
@@ -114,52 +125,59 @@ class DefaultDestinationTaskLauncher(
         catalog.streams.forEach {
             log.info { "Starting open stream task for $it" }
             val openStreamTask = openStreamTaskFactory.make(this, it)
-            taskRunner.enqueue(openStreamTask)
+            enqueue(openStreamTask)
         }
     }
 
     /** Called when a stream is ready for loading. */
-    override suspend fun handleStreamOpen(streamLoader: StreamLoader) {
-        log.info { "Registering stream open and loader available for ${streamLoader.stream}" }
-        streamLoaders[streamLoader.stream.descriptor]!!.complete(streamLoader)
+    override suspend fun handleStreamStarted(stream: DestinationStream) {
+        // Nothing to do because the SpillToDiskTask will trigger the next calls
+        log.info { "Stream ${stream.descriptor} successfully opened for writing." }
     }
 
     /** Called for each new spilled file. */
     override suspend fun handleNewSpilledFile(
-        stream: DestinationStream.Descriptor,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
+        stream: DestinationStream,
+        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
+        endOfStream: Boolean
     ) {
-        val streamLoader = streamLoaders[stream]!!.await()
-        log.info {
-            "Starting process records task for ${streamLoader.stream}, file ${wrapped.batch}"
+        log.info { "Starting process records task for ${stream.descriptor}, file ${wrapped.batch}" }
+        val task = processRecordsTaskFactory.make(this, stream, wrapped)
+        enqueue(task)
+        if (!endOfStream) {
+            log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
+            val spillTask = spillToDiskTaskFactory.make(this, stream)
+            enqueue(spillTask)
         }
-        val task = processRecordsTaskFactory.make(this, streamLoader, wrapped)
-        taskRunner.enqueue(task)
     }
 
     /**
      * Called for each new batch. Enqueues processing for any incomplete batch, and enqueues closing
      * the stream if all batches are complete.
      */
-    override suspend fun handleNewBatch(streamLoader: StreamLoader, wrapped: BatchEnvelope<*>) {
+    override suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>) {
         batchUpdateLock.withLock {
-            val streamManager = streamsManager.getManager(streamLoader.stream.descriptor)
+            val streamManager = syncManager.getStreamManager(stream.descriptor)
             streamManager.updateBatchState(wrapped)
+
+            if (wrapped.batch.isPersisted()) {
+                enqueue(flushCheckpointsTaskFactory.make())
+            }
 
             if (wrapped.batch.state != Batch.State.COMPLETE) {
                 log.info {
-                    "Batch not complete: Starting process batch task for ${streamLoader.stream}, batch $wrapped"
+                    "Batch not complete: Starting process batch task for ${stream.descriptor}, batch $wrapped"
                 }
 
-                val task = processBatchTaskFactory.make(this, streamLoader, wrapped)
-                taskRunner.enqueue(task)
+                val task = processBatchTaskFactory.make(this, stream, wrapped)
+                enqueue(task)
             } else if (streamManager.isBatchProcessingComplete()) {
                 log.info {
-                    "Batch $wrapped complete and batch processing complete: Starting close stream task for ${streamLoader.stream}"
+                    "Batch $wrapped complete and batch processing complete: Starting close stream task for ${stream.descriptor}"
                 }
 
-                val task = closeStreamTaskFactory.make(this, streamLoader)
-                taskRunner.enqueue(task)
+                val task = closeStreamTaskFactory.make(this, stream)
+                enqueue(task)
             } else {
                 log.info {
                     "Batch $wrapped complete, but batch processing not complete: nothing else to do."
@@ -170,13 +188,13 @@ class DefaultDestinationTaskLauncher(
 
     /** Called when a stream is closed. */
     override suspend fun handleStreamClosed(stream: DestinationStream) {
-        streamsManager.getManager(stream.descriptor).markClosed()
-        checkpointManager.flushReadyCheckpointMessages()
-        if (runTeardownOnce.compareAndSet(false, true)) {
-            streamsManager.awaitAllStreamsClosed()
-            log.info { "Starting teardown task" }
-            taskRunner.enqueue(teardownTaskFactory.make(this))
-        }
+        enqueue(teardownTaskFactory.make(this))
+    }
+
+    /** Called when a force flush is scheduled. */
+    override suspend fun scheduleNextForceFlushAttempt(msFromNow: Long) {
+        val task = timedFlushTaskFactory.make(this, msFromNow)
+        enqueue(task)
     }
 
     /** Called exactly once when all streams are closed. */
@@ -185,36 +203,112 @@ class DefaultDestinationTaskLauncher(
     }
 }
 
-@Factory
-@DefaultImplementation(DefaultDestinationTaskLauncher::class)
-class DestinationTaskLauncherFactory(
-    private val catalog: DestinationCatalog,
-    private val streamsManager: StreamsManager,
+/**
+ * The exception handler takes over the workflow in the event of an exception. Its contract is
+ * * provide a wrapper that directs exceptions to the correct handler (by task type)
+ * * close the task runner when the cleanup workflow is complete
+ *
+ * Handling works as follows:
+ * * a failure in a sync-level task (setup/teardown) triggers a fail sync task
+ * * a failure in a stream task triggers a fails stream task THEN a fail sync task
+ * * the wrappers will skip tasks if the sync/stream has already failed
+ */
+@Singleton
+@Secondary
+class DefaultDestinationTaskLauncherExceptionHandler(
     private val taskRunner: TaskRunner,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
-    private val setupTaskFactory: SetupTaskFactory,
-    private val openStreamTaskFactory: OpenStreamTaskFactory,
-    private val spillToDiskTaskFactory: SpillToDiskTaskFactory,
-    private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
-    private val processBatchTaskFactory: ProcessBatchTaskFactory,
-    private val closeStreamTaskFactory: CloseStreamTaskFactory,
-    private val teardownTaskFactory: TeardownTaskFactory
-) : Provider<DestinationTaskLauncher> {
-    @Singleton
-    override fun get(): DestinationTaskLauncher {
-        return DefaultDestinationTaskLauncher(
-            catalog,
-            streamsManager,
-            taskRunner,
-            checkpointManager,
-            setupTaskFactory,
-            openStreamTaskFactory,
-            spillToDiskTaskFactory,
-            processRecordsTaskFactory,
-            processBatchTaskFactory,
-            closeStreamTaskFactory,
-            teardownTaskFactory,
-        )
+    private val syncManager: SyncManager,
+    private val failStreamTaskFactory: FailStreamTaskFactory,
+    private val failSyncTaskFactory: FailSyncTaskFactory,
+) : DestinationTaskLauncherExceptionHandler {
+
+    class SyncTaskWrapper(
+        private val exceptionHandler: DestinationTaskLauncherExceptionHandler,
+        private val syncManager: SyncManager,
+        private val innerTask: SyncTask,
+    ) : Task {
+        val log = KotlinLogging.logger {}
+
+        override suspend fun execute() {
+            if (!syncManager.isActive()) {
+                val result = syncManager.awaitSyncResult()
+                if (result is SyncSuccess) {
+                    throw IllegalStateException(
+                        "Task $innerTask run after sync has succeeded. This should not happen."
+                    )
+                }
+                log.info { "Sync terminated, skipping task $innerTask." }
+
+                return
+            }
+
+            try {
+                innerTask.execute()
+            } catch (e: Exception) {
+                exceptionHandler.handleSyncFailure(e)
+            }
+        }
+
+        override fun toString(): String {
+            return "SyncTaskWrapper(innerTask=$innerTask)"
+        }
+    }
+
+    class StreamTaskWrapper(
+        private val exceptionHandler: DestinationTaskLauncherExceptionHandler,
+        private val syncManager: SyncManager,
+        private val innerTask: StreamTask,
+    ) : SyncTask {
+        val log = KotlinLogging.logger {}
+
+        override suspend fun execute() {
+            // Stop dispatching tasks if the stream has been killed by a failure elsewhere.
+            // Specifically fail if the stream was marked succeeded: we should not be in this state.
+            val streamManager = syncManager.getStreamManager(innerTask.stream.descriptor)
+            if (!streamManager.isActive()) {
+                val result = streamManager.awaitStreamResult()
+                if (result is StreamSucceeded) {
+                    throw IllegalStateException(
+                        "Task $innerTask run after its stream ${innerTask.stream.descriptor} has succeeded. This should not happen."
+                    )
+                }
+                log.info {
+                    "Stream ${innerTask.stream.descriptor} terminated with $result, skipping task $innerTask."
+                }
+                return
+            }
+
+            try {
+                innerTask.execute()
+            } catch (e: Exception) {
+                exceptionHandler.handleStreamFailure(innerTask.stream, e)
+            }
+        }
+
+        override fun toString(): String {
+            return "StreamTaskWrapper(innerTask=$innerTask)"
+        }
+    }
+
+    override fun withExceptionHandling(task: DestinationWriteTask): Task {
+        return when (task) {
+            is SyncTask -> SyncTaskWrapper(this, syncManager, task)
+            is StreamTask ->
+                SyncTaskWrapper(this, syncManager, StreamTaskWrapper(this, syncManager, task))
+        }
+    }
+
+    override suspend fun handleSyncFailure(e: Exception) {
+        val failSyncTask = failSyncTaskFactory.make(this, e)
+        taskRunner.enqueue(failSyncTask)
+    }
+
+    override suspend fun handleStreamFailure(stream: DestinationStream, e: Exception) {
+        val failStreamTask = failStreamTaskFactory.make(this, e, stream)
+        taskRunner.enqueue(failStreamTask)
+    }
+
+    override suspend fun stop() {
+        taskRunner.close()
     }
 }

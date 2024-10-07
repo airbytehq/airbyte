@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.dev_null
 
-import io.airbyte.cdk.test.spec.SpecTest
 import io.airbyte.cdk.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
 import io.airbyte.cdk.test.write.BasicFunctionalityIntegrationTest
@@ -29,5 +28,3 @@ class DevNullBasicFunctionalityIntegrationTest :
         super.testBasicWrite()
     }
 }
-
-class DevNullSpecTest : SpecTest()
