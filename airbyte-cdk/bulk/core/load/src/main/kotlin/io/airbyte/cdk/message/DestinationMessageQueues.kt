@@ -60,3 +60,26 @@ class DestinationRecordQueueSupplier(catalog: DestinationCatalog) :
             ?: throw IllegalArgumentException("Reading from non-existent record stream: $key")
     }
 }
+
+sealed interface CheckpointMessageWrapped : Sized
+
+data class StreamCheckpointWrapped(
+    override val sizeBytes: Long,
+    val stream: DestinationStream.Descriptor,
+    val index: Long,
+    val checkpoint: CheckpointMessage
+) : CheckpointMessageWrapped
+
+data class GlobalCheckpointWrapped(
+    override val sizeBytes: Long,
+    val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
+    val checkpoint: CheckpointMessage
+) : CheckpointMessageWrapped
+
+/**
+ * A single-channel queue for checkpoint messages. This is so updating the checkpoint manager never
+ * blocks reading from stdin.
+ */
+@Singleton
+@Secondary
+class CheckpointMessageQueue : ChannelMessageQueue<Reserved<CheckpointMessageWrapped>>()

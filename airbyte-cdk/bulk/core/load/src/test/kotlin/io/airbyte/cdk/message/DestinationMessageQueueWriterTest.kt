@@ -10,12 +10,12 @@ import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.data.NullValue
-import io.airbyte.cdk.state.MockCheckpointManager
 import io.airbyte.cdk.state.Reserved
 import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.util.takeUntilInclusive
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -28,16 +28,15 @@ import org.junit.jupiter.api.Test
             "DestinationMessageQueueWriterTest",
             "MockDestinationConfiguration",
             "MockDestinationCatalog",
-            "MockCheckpointManager",
         ]
 )
 class DestinationMessageQueueWriterTest {
     @Inject lateinit var config: DestinationConfiguration
-    @Inject lateinit var checkpointManager: MockCheckpointManager
     @Inject lateinit var writer: DestinationMessageQueueWriter
     @Inject
-    lateinit var queueSupplier:
+    lateinit var recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>
+    @Inject lateinit var checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>
     @Inject lateinit var syncManager: SyncManager
 
     private fun makeRecord(stream: DestinationStream, record: String): DestinationRecord {
@@ -80,8 +79,8 @@ class DestinationMessageQueueWriterTest {
 
     @Test
     fun testSendRecords() = runTest {
-        val queue1 = queueSupplier.get(stream1.descriptor)
-        val queue2 = queueSupplier.get(stream2.descriptor)
+        val queue1 = recordQueueSupplier.get(stream1.descriptor)
+        val queue2 = recordQueueSupplier.get(stream2.descriptor)
 
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
@@ -118,8 +117,8 @@ class DestinationMessageQueueWriterTest {
 
     @Test
     fun testSendEndOfStream() = runTest {
-        val queue1 = queueSupplier.get(stream1.descriptor)
-        val queue2 = queueSupplier.get(stream2.descriptor)
+        val queue1 = recordQueueSupplier.get(stream1.descriptor)
+        val queue2 = recordQueueSupplier.get(stream2.descriptor)
 
         val manager1 = syncManager.getStreamManager(stream1.descriptor)
         val manager2 = syncManager.getStreamManager(stream2.descriptor)
@@ -149,24 +148,24 @@ class DestinationMessageQueueWriterTest {
         data class TestEvent(
             val stream: DestinationStream,
             val count: Int,
-            val stateLookupIndex: Int,
             val expectedStateIndex: Long
         )
 
         val batches =
             listOf(
-                TestEvent(stream1, 10, 0, 10),
-                TestEvent(stream1, 5, 1, 15),
-                TestEvent(stream2, 4, 0, 4),
-                TestEvent(stream1, 3, 2, 18),
+                TestEvent(stream1, 10, 10),
+                TestEvent(stream1, 5, 15),
+                TestEvent(stream2, 4, 4),
+                TestEvent(stream1, 3, 18),
             )
 
-        batches.forEach { (stream, count, stateLookupIndex, expectedCount) ->
+        batches.forEach { (stream, count, expectedCount) ->
             repeat(count) { writer.publish(makeRecord(stream, "test"), 1L) }
             writer.publish(makeStreamState(stream, count.toLong()), 0L)
-            val state = checkpointManager.streamStates[stream.descriptor]!![stateLookupIndex]
-            Assertions.assertEquals(expectedCount, state.first)
-            Assertions.assertEquals(count.toLong(), state.second.destinationStats?.recordCount)
+            val state =
+                checkpointQueue.consume().take(1).toList().first().value as StreamCheckpointWrapped
+            Assertions.assertEquals(expectedCount, state.index)
+            Assertions.assertEquals(count.toLong(), state.checkpoint.destinationStats?.recordCount)
         }
     }
 
@@ -175,7 +174,6 @@ class DestinationMessageQueueWriterTest {
         open class TestEvent
         data class AddRecords(val stream: DestinationStream, val count: Int) : TestEvent()
         data class SendState(
-            val stateLookupIndex: Int,
             val expectedStream1Count: Long,
             val expectedStream2Count: Long,
             val expectedStats: Long = 0
@@ -184,13 +182,13 @@ class DestinationMessageQueueWriterTest {
         val batches =
             listOf(
                 AddRecords(stream1, 10),
-                SendState(0, 10, 0, 10),
+                SendState(10, 0, 10),
                 AddRecords(stream2, 5),
                 AddRecords(stream1, 4),
-                SendState(1, 14, 5, 9),
+                SendState(14, 5, 9),
                 AddRecords(stream2, 3),
-                SendState(2, 14, 8, 3),
-                SendState(3, 14, 8, 0),
+                SendState(14, 8, 3),
+                SendState(14, 8, 0),
             )
 
         batches.forEach { event ->
@@ -200,14 +198,16 @@ class DestinationMessageQueueWriterTest {
                 }
                 is SendState -> {
                     writer.publish(makeGlobalState(event.expectedStream1Count), 0L)
-                    val state = checkpointManager.globalStates[event.stateLookupIndex]
-                    val stream1State = state.first.find { it.first == stream1.descriptor }!!
-                    val stream2State = state.first.find { it.first == stream2.descriptor }!!
+                    val state =
+                        checkpointQueue.consume().take(1).toList().first().value
+                            as GlobalCheckpointWrapped
+                    val stream1State = state.streamIndexes.find { it.first == stream1.descriptor }!!
+                    val stream2State = state.streamIndexes.find { it.first == stream2.descriptor }!!
                     Assertions.assertEquals(event.expectedStream1Count, stream1State.second)
                     Assertions.assertEquals(event.expectedStream2Count, stream2State.second)
                     Assertions.assertEquals(
                         event.expectedStats,
-                        state.second.destinationStats?.recordCount
+                        state.checkpoint.destinationStats?.recordCount
                     )
                 }
             }

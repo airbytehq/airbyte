@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationStream
-import io.airbyte.cdk.state.CheckpointManager
 import io.airbyte.cdk.state.MemoryManager
 import io.airbyte.cdk.state.Reserved
 import io.airbyte.cdk.state.SyncManager
@@ -34,11 +33,10 @@ interface MessageQueueWriter<T : Any> {
 class DestinationMessageQueueWriter(
     private val config: DestinationConfiguration,
     private val catalog: DestinationCatalog,
-    private val queueSupplier:
+    private val recordQueueSupplier:
         MessageQueueSupplier<DestinationStream.Descriptor, Reserved<DestinationRecordWrapped>>,
+    private val checkpointQueue: MessageQueue<Reserved<CheckpointMessageWrapped>>,
     private val syncManager: SyncManager,
-    private val checkpointManager:
-        CheckpointManager<DestinationStream.Descriptor, CheckpointMessage>,
     systemMemoryManager: MemoryManager
 ) : MessageQueueWriter<DestinationMessage> {
     private val queueReservation = runBlocking {
@@ -46,7 +44,7 @@ class DestinationMessageQueueWriter(
     }
     private val memoryManager = queueReservation.getReservationManager()
 
-    private suspend fun reserve(sized: DestinationRecordWrapped) =
+    private suspend fun <T : Sized> reserve(sized: T) =
         memoryManager.reserveBlocking(
             (sized.sizeBytes * config.estimatedRecordMemoryOverheadRatio).toLong(),
             sized
@@ -71,16 +69,23 @@ class DestinationMessageQueueWriter(
                                 sizeBytes = sizeBytes,
                                 record = message
                             )
-                        queueSupplier.get(message.stream).publish(reserve(wrapped))
+                        recordQueueSupplier.get(message.stream).publish(reserve(wrapped))
                     }
 
                     /* If an end-of-stream marker. */
                     is DestinationStreamComplete,
                     is DestinationStreamIncomplete -> {
                         val wrapped = StreamCompleteWrapped(index = manager.markEndOfStream())
-                        val queue = queueSupplier.get(message.stream)
+                        val queue = recordQueueSupplier.get(message.stream)
                         queue.publish(memoryManager.reserveBlocking(0L, wrapped))
                         queue.close()
+                        if (
+                            catalog.streams.all {
+                                syncManager.getStreamManager(it.descriptor).endOfStreamRead()
+                            }
+                        ) {
+                            checkpointQueue.close()
+                        }
                     }
                 }
             }
@@ -97,10 +102,15 @@ class DestinationMessageQueueWriter(
                         val (currentIndex, countSinceLast) = manager.markCheckpoint()
                         val messageWithCount =
                             message.withDestinationStats(CheckpointMessage.Stats(countSinceLast))
-                        checkpointManager.addStreamCheckpoint(
-                            stream,
-                            currentIndex,
-                            messageWithCount
+                        checkpointQueue.publish(
+                            reserve(
+                                StreamCheckpointWrapped(
+                                    sizeBytes,
+                                    stream,
+                                    currentIndex,
+                                    messageWithCount
+                                )
+                            )
                         )
                     }
                     /**
@@ -119,7 +129,11 @@ class DestinationMessageQueueWriter(
                             message.withDestinationStats(CheckpointMessage.Stats(totalCount))
                         val streamIndexes =
                             streamWithIndexAndCount.map { it.first.descriptor to it.second }
-                        checkpointManager.addGlobalCheckpoint(streamIndexes, messageWithCount)
+                        checkpointQueue.publish(
+                            reserve(
+                                GlobalCheckpointWrapped(sizeBytes, streamIndexes, messageWithCount)
+                            )
+                        )
                     }
                 }
             }

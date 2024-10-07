@@ -55,6 +55,7 @@ class DestinationTaskLauncherTest {
     @Inject lateinit var teardownTaskFactory: MockTeardownTaskFactory
     @Inject lateinit var flushCheckpointsTaskFactory: MockFlushCheckpointsTaskFactory
     @Inject lateinit var forceFlushTaskFactory: MockForceFlushTaskFactory
+    @Inject lateinit var updateCheckpointsTask: MockUpdateCheckpointsTask
 
     @Singleton
     @Replaces(DefaultSetupTaskFactory::class)
@@ -226,6 +227,16 @@ class DestinationTaskLauncherTest {
         }
     }
 
+    @Singleton
+    @Primary
+    @Requires(env = ["DestinationTaskLauncherTest"])
+    class MockUpdateCheckpointsTask : UpdateCheckpointsTask {
+        val didRun = Channel<Boolean>(Channel.UNLIMITED)
+        override suspend fun execute() {
+            didRun.send(true)
+        }
+    }
+
     class MockBatch(override val state: Batch.State) : Batch
 
     @Singleton
@@ -254,6 +265,11 @@ class DestinationTaskLauncherTest {
 
         // Verify that we kicked off the timed force flush w/o a specific delay
         Assertions.assertNull(forceFlushTaskFactory.ranWithDelay.receive())
+
+        Assertions.assertTrue(
+            updateCheckpointsTask.didRun.receive(),
+            "update checkpoints task was started"
+        )
 
         // Collect the tasks wrapped by the exception handler: expect one Setup and [nStreams]
         // SpillToDisk
