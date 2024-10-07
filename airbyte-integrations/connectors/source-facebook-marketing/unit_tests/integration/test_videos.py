@@ -18,7 +18,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.models import AirbyteStateMessage, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, SyncMode, AirbyteStreamStateSerializer
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, NOW, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
@@ -244,7 +244,7 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id]))
-        cursor_value_from_state_message = output.most_recent_state.stream_state.dict().get(account_id, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_message = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id, {}).get(_CURSOR_FIELD)
         assert cursor_value_from_state_message == max_cursor_value
 
     @HttpMocker()
@@ -276,8 +276,8 @@ class TestIncremental(TestCase):
         )
 
         output = self._read(config().with_account_ids([account_id_1, account_id_2]))
-        cursor_value_from_state_account_1 = output.most_recent_state.stream_state.dict().get(account_id_1, {}).get(_CURSOR_FIELD)
-        cursor_value_from_state_account_2 = output.most_recent_state.stream_state.dict().get(account_id_2, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_1 = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id_1, {}).get(_CURSOR_FIELD)
+        cursor_value_from_state_account_2 = AirbyteStreamStateSerializer.dump(output.most_recent_state).get("stream_state").get(account_id_2, {}).get(_CURSOR_FIELD)
         assert cursor_value_from_state_account_1 == max_cursor_value_account_id_1
         assert cursor_value_from_state_account_2 == max_cursor_value_account_id_2
 
