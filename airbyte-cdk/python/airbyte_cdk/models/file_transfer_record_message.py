@@ -10,3 +10,4 @@ class AirbyteFileTransferRecordMessage:
     file: Dict[str, Any]
     emitted_at: int
     namespace: Optional[str] = None
+    data: Optional[Dict[str, Any]] = None

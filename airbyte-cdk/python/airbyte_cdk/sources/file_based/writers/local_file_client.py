@@ -52,4 +52,4 @@ class LocalFileTransferClient:
             f.write(fp.read())
         logger.info(f"File {file_uri} successfully written to {local_file_path}.")
 
-        return {"file_url": absolute_file_path, "size": file_size, "file_relative_path": relative_file_path}
+        return {"file_url": absolute_file_path, "bytes": file_size, "file_relative_path": relative_file_path}

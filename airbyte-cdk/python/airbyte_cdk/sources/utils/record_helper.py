@@ -32,7 +32,7 @@ def stream_data_to_airbyte_message(
             # docs/connector-development/cdk-python/schemas.md for details.
             transformer.transform(data, schema)  # type: ignore
             if is_file_transfer_message:
-                message = AirbyteFileTransferRecordMessage(stream=stream_name, file=data, emitted_at=now_millis)
+                message = AirbyteFileTransferRecordMessage(stream=stream_name, file=data, emitted_at=now_millis, data={})
             else:
                 message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
             return AirbyteMessage(type=MessageType.RECORD, record=message)

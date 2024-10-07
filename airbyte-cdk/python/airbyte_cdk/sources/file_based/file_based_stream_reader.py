@@ -95,6 +95,7 @@ class AbstractFileBasedStreamReader(ABC):
     def file_size(self, file: RemoteFile) -> int:
         """
         Utility method to get size of the read file, is required for stream writer implementation
+        return size in bytes unit
         """
         ...
 
