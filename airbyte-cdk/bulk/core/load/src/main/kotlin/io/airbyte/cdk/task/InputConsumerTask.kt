@@ -78,13 +78,14 @@ class DefaultInputConsumerTask(
                     )
                 queue.publish(reserved.replace(wrapped))
             }
-            is DestinationStreamComplete,
-            is DestinationStreamIncomplete -> {
+            is DestinationStreamComplete -> {
                 reserved.release() // safe because multiple calls conflate
                 val wrapped = StreamCompleteWrapped(index = manager.markEndOfStream())
                 queue.publish(reserved.replace(wrapped))
                 queue.close()
             }
+            is DestinationStreamIncomplete ->
+                throw IllegalStateException("Stream $stream failed upstream, cannot continue.")
         }
     }
 
