@@ -10,7 +10,7 @@ import io.airbyte.cdk.test.util.FakeDataDumper
 import io.airbyte.cdk.test.util.IntegrationTest
 import io.airbyte.cdk.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.test.util.TestDeploymentMode
+import io.airbyte.cdk.test.util.destination_process.TestDeploymentMode
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.charset.StandardCharsets
