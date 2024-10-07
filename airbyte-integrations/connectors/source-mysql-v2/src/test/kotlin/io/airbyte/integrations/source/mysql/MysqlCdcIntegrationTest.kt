@@ -54,7 +54,7 @@ class MysqlCdcIntegrationTest {
                 {
                     val invalidConfig: MysqlSourceConfigurationSpecification =
                         MysqlContainerFactory.config(nonCdcDbContainer).apply {
-                            setCursorMethodValue(CdcCursor())
+                            setMethodValue(CdcCursor())
                         }
 
                     val nonCdcConnectionFactory =

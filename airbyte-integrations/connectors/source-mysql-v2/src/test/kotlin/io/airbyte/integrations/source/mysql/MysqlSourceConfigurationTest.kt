@@ -48,7 +48,7 @@ class MysqlSourceConfigurationTest {
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG_V1)
     fun testParseConfigFromV1() {
-        val pojo: MysqlSourceConfigurationJsonObject = pojoSupplier.get()
+        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 

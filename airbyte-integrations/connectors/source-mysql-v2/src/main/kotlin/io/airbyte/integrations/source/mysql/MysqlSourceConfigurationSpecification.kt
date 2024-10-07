@@ -126,8 +126,8 @@ class MysqlSourceConfigurationSpecification : ConfigurationSpecification() {
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
     @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "cursor")
-    val cursor = MicronautPropertiesFriendlyCursorMethodConfiguration()
+    @ConfigurationBuilder(configurationPrefix = "replication_method")
+    val replicationMethod = MicronautPropertiesFriendlyCursorMethodConfiguration()
 
     @JsonIgnore var replicationMethodJson: CursorMethodConfiguration? = null
 
