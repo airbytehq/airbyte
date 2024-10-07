@@ -56,6 +56,8 @@ definitions:
     users:
       type: DeclarativeStream
       name: users
+      primary_key:
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -68,7 +70,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - items
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -201,8 +204,8 @@ definitions:
               parent_key: id
               request_option:
                 type: RequestOption
-                inject_into: request_parameter
                 field_name: course_id
+                inject_into: request_parameter
               partition_field: course_id
               stream:
                 $ref: "#/definitions/streams/courses"
@@ -481,13 +484,16 @@ spec:
     properties:
       api_key:
         type: string
+        description: Your Thinkific API key for authentication.
         name: api_key
         order: 0
         title: API Key
         airbyte_secret: true
       subdomain:
         type: string
-        description: superb
+        description: >-
+          The subdomain of your Thinkific URL (e.g., if your URL is
+          example.thinkific.com, your subdomain is "example".
         order: 1
         title: subdomain
     additionalProperties: true
@@ -514,26 +520,26 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     users:
-      streamHash: 8a0aad19c4f075bca5ccea202f8a096af628ff90
+      streamHash: a57762ca230a1c9bc2d1514d75cd346b2f2e5008
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     promotions:
+      hasRecords: true
       streamHash: 55b9778d3fb6c908d1ae826801f9843f478880e7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     categories:
+      hasRecords: true
       streamHash: 2182340ccbd8f366f34b277c38070908b966ad09
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     reviews:
       streamHash: db9558b386cf72af5f3cb7c2e4490635be63b651
       hasResponse: true
@@ -542,47 +548,47 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     enrollments:
+      hasRecords: true
       streamHash: 30782f4e5191bfd1947bf9e066d55991e4b2cc4a
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     groups:
+      hasRecords: true
       streamHash: 0c957da7bda39fc2848930da6ab8fcde0b8e001c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     instructors:
+      hasRecords: true
       streamHash: e024a55fda262d3d6b3b0f1134768cd8d56b3ac7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     orders:
+      hasRecords: true
       streamHash: 1fbeed3cd8bd39e83a6f69c14861dd28b2bf548c
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     products:
+      hasRecords: true
       streamHash: 4b1492c51c10da781f04e47635686c627400f480
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     coupons:
+      hasRecords: true
       streamHash: 3284853d55f1cc2850857163af5a462aabe2580e
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developers.thinkific.com/api/api-documentation
 
@@ -648,101 +654,67 @@ schemas:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
-      items:
+      affiliate_code:
+        type:
+          - string
+          - "null"
+      affiliate_commission:
+        type:
+          - string
+          - "null"
+      affiliate_commission_type:
+        type:
+          - string
+          - "null"
+      affiliate_payout_email:
+        type:
+          - string
+          - "null"
+      company:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      custom_profile_fields:
+        type:
+          - array
+          - "null"
+      email:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      last_name:
+        type:
+          - string
+          - "null"
+      roles:
         type:
           - array
           - "null"
         items:
           type:
-            - object
+            - string
             - "null"
-          properties:
-            affiliate_code:
-              type:
-                - string
-                - "null"
-            affiliate_commission:
-              type:
-                - string
-                - "null"
-            affiliate_commission_type:
-              type:
-                - string
-                - "null"
-            affiliate_payout_email:
-              type:
-                - string
-                - "null"
-            company:
-              type:
-                - string
-                - "null"
-            created_at:
-              type:
-                - string
-                - "null"
-            custom_profile_fields:
-              type:
-                - array
-                - "null"
-            email:
-              type:
-                - string
-                - "null"
-            first_name:
-              type:
-                - string
-                - "null"
-            full_name:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - number
-                - "null"
-            last_name:
-              type:
-                - string
-                - "null"
-            roles:
-              type:
-                - array
-                - "null"
-              items:
-                type:
-                  - string
-                  - "null"
-      meta:
-        type:
-          - object
-          - "null"
-        properties:
-          pagination:
-            type:
-              - object
-              - "null"
-            properties:
-              current_page:
-                type:
-                  - number
-                  - "null"
-              entries_info:
-                type:
-                  - string
-                  - "null"
-              total_items:
-                type:
-                  - number
-                  - "null"
-              total_pages:
-                type:
-                  - number
-                  - "null"
+    required:
+      - id
     additionalProperties: true
   promotions:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       amount:
         type:
@@ -772,10 +744,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   categories:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       created_at:
         type:
@@ -805,10 +777,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   reviews:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       approved:
         type:
@@ -842,10 +814,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   enrollments:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       activated_at:
         type:
@@ -907,7 +879,6 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   groups:
     type: object
     $schema: http://json-schema.org/schema#
@@ -932,6 +903,7 @@ schemas:
   instructors:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       avatar_url:
         type:
@@ -965,10 +937,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   orders:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       amount_cents:
         type:
@@ -1039,10 +1011,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   products:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       card_image_url:
         type:
@@ -1149,10 +1121,10 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   coupons:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       code:
         type:
@@ -1178,4 +1150,3 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
