@@ -4,7 +4,6 @@ With this connector, you can streamline the transfer of campaign-related data fo
 
 Referral Hero Source Connector is a designed to sync referral data between your Referral Hero campaigns and your destination airbyte connectors.
 
-This directory contains the manifest-only connector for `source-referralhero` airbyte connector developed using airbyte 1.0 UI Connector development
 
 ## Generate API Token
 Please follow the instructions in the following [referralhero](https://support.referralhero.com/integrate/rest-api) page to generate the api token
