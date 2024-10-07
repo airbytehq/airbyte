@@ -125,7 +125,6 @@ global:
 global:
   secretsManager:
     type: azureKeyVault
-    secretManagerSecretName: airbyte-config-secrets
     azureKeyVault:
       vaultUrl: ## https://my-vault.vault.azure.net/
       tenantId: ## 3fc863e9-4740-4871-bdd4-456903a04d4e

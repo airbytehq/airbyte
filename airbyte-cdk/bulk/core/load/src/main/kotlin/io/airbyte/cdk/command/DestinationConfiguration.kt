@@ -20,17 +20,21 @@ abstract class DestinationConfiguration : Configuration {
         0.1 // 0 => No overhead, 1.0 => 100% overhead
 
     /**
-     * Micronaut factory which glues [ConfigurationJsonObjectSupplier] and
+     * If we have not flushed state checkpoints in this amount of time, make a best-effort attempt
+     * to force a flush.
+     */
+    open val maxCheckpointFlushTimeMs: Long = 15 * 60 * 1000L // 15 minutes
+
+    /**
+     * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
      * [DestinationConfigurationFactory] together to produce a [DestinationConfiguration] singleton.
      */
     @Factory
     private class MicronautFactory {
         @Singleton
-        fun <I : ConfigurationJsonObjectBase> destinationConfig(
-            pojoSupplier: ConfigurationJsonObjectSupplier<I>,
+        fun <I : ConfigurationSpecification> destinationConfig(
+            specificationSupplier: ConfigurationSpecificationSupplier<I>,
             factory: DestinationConfigurationFactory<I, out DestinationConfiguration>,
-        ): DestinationConfiguration {
-            return factory.make(pojoSupplier.get())
-        }
+        ): DestinationConfiguration = factory.make(specificationSupplier.get())
     }
 }

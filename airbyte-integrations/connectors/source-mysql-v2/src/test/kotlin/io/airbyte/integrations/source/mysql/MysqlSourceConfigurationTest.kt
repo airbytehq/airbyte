@@ -1,7 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.mysql
 
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
@@ -15,16 +15,17 @@ import org.junit.jupiter.api.Test
 @MicronautTest(environments = [Environment.TEST], rebuildContext = true)
 class MysqlSourceConfigurationTest {
     @Inject
-    lateinit var pojoSupplier: ConfigurationJsonObjectSupplier<MysqlSourceConfigurationJsonObject>
+    lateinit var pojoSupplier:
+        ConfigurationSpecificationSupplier<MysqlSourceConfigurationSpecification>
 
     @Inject
     lateinit var factory:
-        SourceConfigurationFactory<MysqlSourceConfigurationJsonObject, MysqlSourceConfiguration>
+        SourceConfigurationFactory<MysqlSourceConfigurationSpecification, MysqlSourceConfiguration>
 
     @Test
     @Property(name = "airbyte.connector.config.json", value = CONFIG)
     fun testParseJdbcParameters() {
-        val pojo: MysqlSourceConfigurationJsonObject = pojoSupplier.get()
+        val pojo: MysqlSourceConfigurationSpecification = pojoSupplier.get()
 
         val config = factory.makeWithoutExceptionHandling(pojo)
 

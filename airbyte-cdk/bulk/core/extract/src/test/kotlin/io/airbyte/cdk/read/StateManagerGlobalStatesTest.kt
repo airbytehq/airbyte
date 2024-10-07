@@ -101,6 +101,67 @@ class StateManagerGlobalStatesTest {
     @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
     @Property(
         name = "airbyte.connector.state.json",
+        value = """{"type": "GLOBAL", "global": { "shared_state": { "cdc": "starting" } } }""",
+    )
+    fun testInitialSyncColdStart() {
+        val streams: Streams = prelude()
+        // test current state
+        Assertions.assertEquals(
+            Jsons.readTree("{ \"cdc\": \"starting\" }"),
+            stateManager.scoped(streams.global).current(),
+        )
+        Assertions.assertNull(stateManager.scoped(streams.kv).current())
+        Assertions.assertNull(stateManager.scoped(streams.events).current())
+        Assertions.assertEquals(listOf<CatalogValidationFailure>(), handler.get())
+        // update state manager with fake work results for the kv stream
+        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 123L)
+        // test checkpoint messages
+        val checkpointOngoing: List<AirbyteStateMessage> = stateManager.checkpoint()
+        Assertions.assertEquals(
+            listOf(
+                    """{
+                    |"type":"GLOBAL",
+                    |"global":{"shared_state":{"cdc":"starting"},
+                    |"stream_states":[
+                    |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
+                    |"stream_state":{"initial_sync":"ongoing"}}
+                    |]},"sourceStats":{"recordCount":123.0}
+                    |}
+                """.trimMargin(),
+                )
+                .map { Jsons.readTree(it) },
+            checkpointOngoing.map { Jsons.valueToTree<JsonNode>(it) },
+        )
+        Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
+        // update state manager with more fake work results for the kv stream
+        stateManager.scoped(streams.kv).set(Jsons.readTree("{\"initial_sync\":\"ongoing\"}"), 456L)
+        stateManager
+            .scoped(streams.kv)
+            .set(Jsons.readTree("{\"initial_sync\":\"completed\"}"), 789L)
+        // test checkpoint messages
+        val checkpointCompleted: List<AirbyteStateMessage> = stateManager.checkpoint()
+        Assertions.assertEquals(
+            listOf(
+                    """{
+                    |"type":"GLOBAL",
+                    |"global":{"shared_state":{"cdc":"starting"},
+                    |"stream_states":[
+                    |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
+                    |"stream_state":{"initial_sync":"completed"}}
+                    |]},"sourceStats":{"recordCount":1245.0}
+                    |}
+                """.trimMargin(),
+                )
+                .map { Jsons.readTree(it) },
+            checkpointCompleted.map { Jsons.valueToTree<JsonNode>(it) },
+        )
+        Assertions.assertEquals(emptyList<AirbyteStateMessage>(), stateManager.checkpoint())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.catalog.resource", value = "fakesource/cdc-catalog.json")
+    @Property(
+        name = "airbyte.connector.state.json",
         value =
             """
 {"type": "GLOBAL", "global": {
