@@ -41,7 +41,6 @@ class MysqlSourceConfigurationSpecificationTestTest {
         Assertions.assertEquals(60, pojo.checkpointTargetIntervalSeconds)
         Assertions.assertEquals(2, pojo.concurrency)
     }
-
 }
 
 const val CONFIG_JSON: String =
