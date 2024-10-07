@@ -8,9 +8,9 @@ data:
       packageName: airbyte-source-pagerduty
   registryOverrides:
     oss:
-      enabled: false
+      enabled: true
     cloud:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2544ac39-02be-4bf5-82ad-f52bbb833bf5
