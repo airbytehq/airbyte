@@ -8,7 +8,6 @@ Referral Hero Source Connector is a designed to sync referral data between your 
 ## Generate API Token
 Please follow the instructions in the following [referralhero](https://support.referralhero.com/integrate/rest-api) page to generate the api token
 
-airbyte connector developed using airbyte 1.0 UI Connector development
 
 ## Configuration
 
