@@ -1,4 +1,4 @@
-# Yahoo fnance price source connector
+# Yahoo-Finance-Price source connector
 
 This directory contains the manifest-only connector for `source-yahoo-finance-price`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside of the base `source-declarative-manifest` image.
