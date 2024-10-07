@@ -1,0 +1,938 @@
+version: 5.10.3
+
+type: DeclarativeSource
+
+description: >-
+  The Sage HR Airbyte Connector enables seamless data integration, allowing you
+  to extract employee and HR data from Sage HR into your preferred data
+  warehouse or analytics tool. Simplify data syncing for effortless employee
+  management and streamline HR workflows.
+
+check:
+  type: CheckStream
+  stream_names:
+    - employees
+
+definitions:
+  streams:
+    employees:
+      type: DeclarativeStream
+      name: employees
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /employees
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/employees"
+    leave-management-policies:
+      type: DeclarativeStream
+      name: leave-management-policies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave-management/policies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leave-management-policies"
+    documents-categories:
+      type: DeclarativeStream
+      name: documents-categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /documents/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/documents-categories"
+    documents:
+      type: DeclarativeStream
+      name: documents
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /documents
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/documents"
+    positions:
+      type: DeclarativeStream
+      name: positions
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /positions
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/positions"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    terminated-employees:
+      type: DeclarativeStream
+      name: terminated-employees
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /terminated-employees
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/terminated-employees"
+    termination-reasons:
+      type: DeclarativeStream
+      name: termination-reasons
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /termination-reasons
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/termination-reasons"
+    policies:
+      type: DeclarativeStream
+      name: policies
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave-management/policies
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/policies"
+    individual-allowances:
+      type: DeclarativeStream
+      name: individual-allowances
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave-management/reports/individual-allowances
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/individual-allowances"
+    document-categories:
+      type: DeclarativeStream
+      name: document-categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /documents/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/document-categories"
+    offboarding-categories:
+      type: DeclarativeStream
+      name: offboarding-categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /offboarding/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/offboarding-categories"
+    onboarding-categories:
+      type: DeclarativeStream
+      name: onboarding-categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: onboarding/categories
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/onboarding-categories"
+    requests:
+      type: DeclarativeStream
+      name: requests
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /leave-management/requests
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/requests"
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{ config['subdomain'] }}.sage.hr/api/
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Auth-Token
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/employees"
+  - $ref: "#/definitions/streams/leave-management-policies"
+  - $ref: "#/definitions/streams/documents-categories"
+  - $ref: "#/definitions/streams/documents"
+  - $ref: "#/definitions/streams/positions"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/terminated-employees"
+  - $ref: "#/definitions/streams/termination-reasons"
+  - $ref: "#/definitions/streams/policies"
+  - $ref: "#/definitions/streams/individual-allowances"
+  - $ref: "#/definitions/streams/document-categories"
+  - $ref: "#/definitions/streams/offboarding-categories"
+  - $ref: "#/definitions/streams/onboarding-categories"
+  - $ref: "#/definitions/streams/requests"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - subdomain
+    properties:
+      api_key:
+        type: string
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      subdomain:
+        type: string
+        order: 1
+        title: subdomain
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    employees: true
+    leave-management-policies: false
+    documents-categories: false
+    documents: false
+    positions: false
+    teams: false
+    terminated-employees: false
+    termination-reasons: true
+    policies: false
+    individual-allowances: false
+    document-categories: false
+    offboarding-categories: false
+    onboarding-categories: false
+    requests: false
+  testedStreams:
+    employees:
+      hasRecords: true
+      streamHash: 52b62be9da2d1cf9bc024a28606e745b3f26dc90
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    leave-management-policies:
+      hasRecords: true
+      streamHash: 75aee0808e8547e8dbd6727ef7dea5c2055f34a3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    documents-categories:
+      hasRecords: true
+      streamHash: b4d85980f2892bfa306c15e7b2fb386dcc974c17
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    documents:
+      hasRecords: true
+      streamHash: 2a97f0ec383f6994aa375fc8b82b55e8465e2314
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    positions:
+      hasRecords: true
+      streamHash: 20301fcef9f69cf40b4f2a57a8e0ee332c02a1c2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    teams:
+      hasRecords: true
+      streamHash: 0864a7bd55bf2ebd9f4ea1095fde3a105c725a70
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    terminated-employees:
+      hasRecords: true
+      streamHash: 435181bd1ad89e990e54c88575490a84958580a6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    termination-reasons:
+      hasRecords: true
+      streamHash: b92e333902d76614ef2d0fc6d876ca01dc366505
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    policies:
+      hasRecords: true
+      streamHash: 6f74ecbc3aeb371fa82f6e98df9359fda61748ed
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    individual-allowances:
+      hasRecords: true
+      streamHash: e90c7f944bfd5497af0539a5555e8830b1a33049
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    document-categories:
+      hasRecords: true
+      streamHash: b528b0a9da72113b40c5d394ce6f88017513b5e4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    offboarding-categories:
+      hasRecords: true
+      streamHash: 12d8df315132a1ea9e365c56d73c07d940a21231
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    onboarding-categories:
+      hasRecords: true
+      streamHash: 9a052cebab3bcea0d7ba998f5dd348f4406d4a2e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    requests:
+      hasRecords: true
+      streamHash: 54c59539134bdd21b5e82f9e3d6d2083a4669885
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://sagehr.docs.apiary.io/
+    openapiSpecUrl: https://developer.sage.com/hr/reference/sage-hr-v1.0.swagger.yml
+
+schemas:
+  employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      employment_start_date:
+        type:
+          - string
+          - "null"
+      employment_status:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      irregular_contract_worker:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      personal_identification_number:
+        type:
+          - string
+          - "null"
+      position_id:
+        type:
+          - number
+          - "null"
+      tax_number:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  leave-management-policies:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  documents-categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      documents_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  documents:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      acceptance_required:
+        type:
+          - boolean
+          - "null"
+      company_id:
+        type:
+          - number
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      created_by:
+        type:
+          - number
+          - "null"
+      document_category_id:
+        type:
+          - number
+          - "null"
+      document_expires:
+        type:
+          - boolean
+          - "null"
+      file_content_type:
+        type:
+          - string
+          - "null"
+      file_name:
+        type:
+          - string
+          - "null"
+      file_scan_result:
+        type:
+          - string
+          - "null"
+      file_scan_started_at:
+        type:
+          - string
+          - "null"
+      file_size:
+        type:
+          - number
+          - "null"
+      file_updated_at:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      last_edited_by:
+        type:
+          - number
+          - "null"
+      right_to_work_number:
+        type:
+          - string
+          - "null"
+      shared_with_direct_manager:
+        type:
+          - boolean
+          - "null"
+      shared_with_everyone:
+        type:
+          - boolean
+          - "null"
+      shared_with_team_manager:
+        type:
+          - boolean
+          - "null"
+      source:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  positions:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties: {}
+  terminated-employees:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - string
+          - "null"
+      employment_start_date:
+        type:
+          - string
+          - "null"
+      employment_status:
+        type:
+          - string
+          - "null"
+      first_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      irregular_contract_worker:
+        type:
+          - boolean
+          - "null"
+      last_name:
+        type:
+          - string
+          - "null"
+      personal_identification_number:
+        type:
+          - string
+          - "null"
+      position:
+        type:
+          - string
+          - "null"
+      tax_number:
+        type:
+          - string
+          - "null"
+      team:
+        type:
+          - string
+          - "null"
+      team_id:
+        type:
+          - number
+          - "null"
+      termination_date:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  termination-reasons:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  policies:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      accrue_type:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      default_allowance:
+        type:
+          - string
+          - "null"
+      do_not_accrue:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      max_carryover:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      unit:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  individual-allowances:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      eligibilities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            carryover:
+              type:
+                - string
+                - "null"
+            policy:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - number
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            quantity:
+              type:
+                - string
+                - "null"
+            unit:
+              type:
+                - string
+                - "null"
+      full_name:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+    required:
+      - id
+  document-categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      documents_count:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  offboarding-categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  onboarding-categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: number
+      title:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  requests:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      details:
+        type:
+          - string
+          - "null"
+      employee_id:
+        type:
+          - number
+          - "null"
+      end_date:
+        type:
+          - string
+          - "null"
+      fields:
+        type:
+          - array
+          - "null"
+      first_part_of_day:
+        type:
+          - boolean
+          - "null"
+      hours:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      is_multi_date:
+        type:
+          - boolean
+          - "null"
+      is_part_of_day:
+        type:
+          - boolean
+          - "null"
+      is_single_day:
+        type:
+          - boolean
+          - "null"
+      policy_id:
+        type:
+          - number
+          - "null"
+      request_date:
+        type:
+          - string
+          - "null"
+      second_part_of_day:
+        type:
+          - boolean
+          - "null"
+      shared_person_name:
+        type:
+          - string
+          - "null"
+      shared_person_nin:
+        type:
+          - string
+          - "null"
+      specific_time:
+        type:
+          - boolean
+          - "null"
+      start_date:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      status_code:
+        type:
+          - string
+          - "null"
+    required:
+      - id
