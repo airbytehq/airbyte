@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
 from datetime import date
 
 import pendulum
@@ -70,13 +71,11 @@ def test_send_request(mocker, customers):
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient.get_service", return_value=MockGoogleAdsService())
     google_ads_client = GoogleAds(**SAMPLE_CONFIG)
     query = "Query"
-    page_size = 1000
     customer_id = next(iter(customers)).id
     response = list(google_ads_client.send_request(query, customer_id=customer_id))
 
     assert response[0].customer_id == customer_id
     assert response[0].query == query
-    assert response[0].page_size == page_size
 
 
 def test_get_fields_from_schema():
@@ -168,7 +167,7 @@ def test_get_fields_metadata(mocker):
     response = google_ads_client.get_fields_metadata(fields)
 
     # Get the mock service to check the request query
-    mock_service = google_ads_client.client.get_service("GoogleAdsFieldService")
+    mock_service = google_ads_client.get_client().get_service("GoogleAdsFieldService")
 
     # Assert the constructed request query
     expected_query = """

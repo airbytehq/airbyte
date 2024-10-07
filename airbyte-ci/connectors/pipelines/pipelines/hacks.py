@@ -6,15 +6,20 @@
 
 from __future__ import annotations
 
+from logging import Logger
 from typing import TYPE_CHECKING, Callable, List
 
-import requests
+import asyncclick as click
+from connector_ops.utils import ConnectorLanguage  # type: ignore
+from pipelines import consts
+from pipelines.helpers.github import AIRBYTE_GITHUB_REPO_URL, is_automerge_pull_request, update_commit_status_check
 
 if TYPE_CHECKING:
-    from dagger import Client, Container
+    from dagger import Container
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
-async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "pip_cache") -> None:
+async def cache_latest_cdk(context: ConnectorContext) -> None:
     """
     Download the latest CDK version to update the pip cache.
 
@@ -32,28 +37,21 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
     Args:
         dagger_client (Client): Dagger client.
     """
-
-    # We get the latest version of the CDK from PyPI using their API.
-    # It allows us to explicitly install the latest version of the CDK in the container
-    # while keeping buildkit layer caching when the version value does not change.
-    # In other words: we only update the pip cache when the latest CDK version changes.
-    # When the CDK version does not change, the pip cache is not updated as the with_exec command remains the same.
-    cdk_pypi_url = "https://pypi.org/pypi/airbyte-cdk/json"
-    response = requests.get(cdk_pypi_url)
-    response.raise_for_status()
-    package_info = response.json()
-    cdk_latest_version = package_info["info"]["version"]
+    # We want the CDK to be re-downloaded on every run per connector to ensure we always get the latest version.
+    # But we don't want to invalidate the pip cache on every run because it could lead to a different CDK version installed on different architecture build.
+    cachebuster_value = f"{context.connector.technical_name}_{context.pipeline_start_timestamp}"
 
     await (
-        dagger_client.container()
+        context.dagger_client.container()
         .from_("python:3.9-slim")
-        .with_mounted_cache("/root/.cache/pip", dagger_client.cache_volume(pip_cache_volume_name))
-        .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}"])
+        .with_mounted_cache(consts.PIP_CACHE_PATH, context.dagger_client.cache_volume(consts.PIP_CACHE_VOLUME_NAME))
+        .with_env_variable("CACHEBUSTER", cachebuster_value)
+        .with_exec(["pip", "install", "--force-reinstall", "airbyte-cdk", "-vvv"])
         .sync()
     )
 
 
-def never_fail_exec(command: List[str]) -> Callable:
+def never_fail_exec(command: List[str]) -> Callable[[Container], Container]:
     """
     Wrap a command execution with some bash sugar to always exit with a 0 exit code but write the actual exit code to a file.
 
@@ -72,7 +70,56 @@ def never_fail_exec(command: List[str]) -> Callable:
         Callable: _description_
     """
 
-    def never_fail_exec_inner(container: Container):
+    def never_fail_exec_inner(container: Container) -> Container:
         return container.with_exec(["sh", "-c", f"{' '.join(command)}; echo $? > /exit_code"], skip_entrypoint=True)
 
     return never_fail_exec_inner
+
+
+def do_regression_test_status_check(ctx: click.Context, status_check_name: str, logger: Logger) -> None:
+    """
+    Emit a failing status check that requires a manual override, via a /-command.
+
+    Only required for certified connectors.
+    """
+    commit = ctx.obj["git_revision"]
+    run_url = ctx.obj["gha_workflow_run_url"]
+    should_send = ctx.obj.get("ci_context") == consts.CIContext.PULL_REQUEST
+
+    if (
+        (not is_automerge_pull_request(ctx.obj.get("pull_request")))
+        and (ctx.obj["git_repo_url"] == AIRBYTE_GITHUB_REPO_URL)
+        and any(
+            [
+                (connector.language == ConnectorLanguage.PYTHON and connector.support_level == "certified")
+                for connector in ctx.obj["selected_connectors_with_modified_files"]
+            ]
+        )
+    ):
+        logger.info(f'is_automerge_pull_request={is_automerge_pull_request(ctx.obj.get("pull_request"))}')
+        logger.info(f'git_repo_url={ctx.obj["git_repo_url"]}')
+        for connector in ctx.obj["selected_connectors_with_modified_files"]:
+            logger.info(f"connector = {connector.name}")
+            logger.info(f"connector.language={connector.language}")
+            logger.info(f"connector.support_level = {connector.support_level}")
+        update_commit_status_check(
+            commit,
+            "failure",
+            run_url,
+            description="Check if regression tests have been manually approved",
+            context=status_check_name,
+            is_optional=False,
+            should_send=should_send,
+            logger=logger,
+        )
+    else:
+        update_commit_status_check(
+            commit,
+            "success",
+            run_url,
+            description="[Skipped]",
+            context=status_check_name,
+            is_optional=True,
+            should_send=should_send,
+            logger=logger,
+        )

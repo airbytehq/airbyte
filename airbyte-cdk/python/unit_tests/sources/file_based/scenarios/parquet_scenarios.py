@@ -8,6 +8,7 @@ import decimal
 import pyarrow as pa
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryParquetFilesStreamReader
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _single_parquet_file = {
@@ -163,8 +164,11 @@ single_parquet_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records(
         [
             {
@@ -204,6 +208,7 @@ single_parquet_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -225,8 +230,11 @@ single_partitioned_parquet_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_partitioned_parquet_file, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_partitioned_parquet_file, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records(
         [
             {
@@ -272,6 +280,7 @@ single_partitioned_parquet_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -293,8 +302,11 @@ multi_parquet_scenario = (
             ]
         }
     )
-    .set_file_type("parquet")
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_file_type("parquet")
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_multiple_parquet_file, file_type="parquet"))
+    )
     .set_expected_catalog(
         {
             "streams": [
@@ -313,6 +325,7 @@ multi_parquet_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -376,8 +389,11 @@ parquet_various_types_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_various_types, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_catalog(
         {
             "streams": [
@@ -455,6 +471,7 @@ parquet_various_types_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -509,8 +526,11 @@ parquet_file_with_decimal_no_config_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records(
         [
             {
@@ -539,6 +559,7 @@ parquet_file_with_decimal_no_config_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -560,8 +581,11 @@ parquet_file_with_decimal_as_string_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records(
         [
             {
@@ -590,6 +614,7 @@ parquet_file_with_decimal_as_string_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -611,8 +636,11 @@ parquet_file_with_decimal_as_float_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records(
         [
             {
@@ -637,6 +665,7 @@ parquet_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -660,8 +689,11 @@ parquet_file_with_decimal_legacy_config_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_parquet_file_with_decimal, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records(
         [
             {
@@ -686,6 +718,7 @@ parquet_file_with_decimal_legacy_config_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }
@@ -696,11 +729,15 @@ parquet_with_invalid_config_scenario = (
     TestScenarioBuilder()
     .set_name("parquet_with_invalid_config")
     .set_config({"streams": [{"name": "stream1", "globs": ["*"], "validation_policy": "Emit Record", "format": {"filetype": "csv"}}]})
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records([])
     .set_expected_logs({"read": [{"level": "ERROR", "message": "Error parsing record"}]})
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
+    .set_expected_read_error(AirbyteTracedException, "Please check the logged errors for more information.")
     .set_expected_catalog(
         {
             "streams": [
@@ -718,6 +755,7 @@ parquet_with_invalid_config_scenario = (
                     "name": "stream1",
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
+                    "is_resumable": True,
                 }
             ]
         }

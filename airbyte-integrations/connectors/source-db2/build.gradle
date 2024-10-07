@@ -1,15 +1,12 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.20.4'
     features = ['db-sources']
     useLocalCdk = false
 }
-
-airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.db2.Db2Source'
@@ -17,13 +14,8 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation group: 'com.ibm.db2', name: 'jcc', version: '11.5.5.0'
 
-    testImplementation libs.testcontainers.db2
-    testImplementation project(":airbyte-json-validation")
-
-    integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation 'org.testcontainers:db2:1.19.4'
 }
-

@@ -1,0 +1,472 @@
+Table "ad_account" {
+    "account_id" string
+    "account_status" integer
+    "age" number
+    "amount_spent" string
+    "balance" string
+    "business" object
+    "business_city" string
+    "business_country_code" string
+    "business_name" string
+    "business_state" string
+    "business_street" string
+    "business_street2" string
+    "business_zip" string
+    "can_create_brand_lift_study" boolean
+    "capabilities" array
+    "created_time" string
+    "currency" string
+    "disable_reason" number
+    "end_advertiser" number
+    "end_advertiser_name" string
+    "extended_credit_invoice_group" object
+    "failed_delivery_checks" array
+    "fb_entity" number
+    "funding_source" number
+    "funding_source_details" object
+    "has_migrated_permissions" boolean
+    "id" string [pk]
+    "io_number" number
+    "is_attribution_spec_system_default" boolean
+    "is_direct_deals_enabled" boolean
+    "is_in_3ds_authorization_enabled_market" boolean
+    "is_notifications_enabled" boolean
+    "is_personal" number
+    "is_prepay_account" boolean
+    "is_tax_id_required" boolean
+    "line_numbers" number
+    "media_agency" number
+    "min_campaign_group_spend_cap" number
+    "min_daily_budget" number
+    "name" string
+    "offsite_pixels_tos_accepted" boolean
+    "owner" number
+    "partner" number
+    "rf_spec" object
+    "spend_cap" string
+    "tax_id" string
+    "tax_id_status" number
+    "tax_id_type" string
+    "timezone_id" number
+    "timezone_name" string
+    "timezone_offset_hours_utc" number
+    "tos_accepted" object
+    "user_tasks" array
+    "user_tos_accepted" object
+}
+
+Table "ad_sets" {
+    "name" string
+    "end_time" string
+    "promoted_object" object
+    "id" string [pk]
+    "account_id" string
+    "updated_time" string
+    "daily_budget" number
+    "budget_remaining" number
+    "effective_status" string
+    "campaign_id" string
+    "created_time" string
+    "start_time" string
+    "lifetime_budget" number
+    "targeting" object
+    "bid_info" object
+    "bid_strategy" string
+    "bid_amount" number
+    "bid_constraints" object
+    "adlabels" array
+}
+
+Table "ads" {
+    "bid_type" string
+    "account_id" string
+    "campaign_id" string
+    "adset_id" string
+    "adlabels" array
+    "bid_amount" integer
+    "bid_info" object
+    "status" string
+    "creative" object
+    "id" string [pk]
+    "updated_time" string
+    "created_time" string
+    "name" string
+    "targeting" object
+    "effective_status" string
+    "last_updated_by_app_id" string
+    "recommendations" array
+    "source_ad_id" string
+    "tracking_specs" array
+    "conversion_specs" array
+}
+
+Table "ad_creatives" {
+    "body" string
+    "object_story_id" string
+    "image_url" string
+    "id" string [pk]
+    "account_id" string
+    "actor_id" string
+    "adlabels" array
+    "applink_treatment" string
+    "asset_feed_spec" object
+    "call_to_action_type" string
+    "effective_instagram_story_id" string
+    "effective_object_story_id" string
+    "title" string
+    "name" string
+    "image_crops" object
+    "instagram_actor_id" string
+    "instagram_permalink_url" string
+    "instagram_story_id" string
+    "link_og_id" string
+    "object_id" string
+    "object_story_spec" object
+    "object_type" string
+    "object_url" string
+    "product_set_id" string
+    "source_instagram_media_id" string
+    "status" string
+    "template_url" string
+    "template_url_spec" object
+    "thumbnail_data_url" string
+    "thumbnail_url" string
+    "image_hash" string
+    "url_tags" string
+    "video_id" string
+    "link_url" string
+}
+
+Table "ads_insights" {
+    "account_currency" string
+    "account_id" string
+    "account_name" string
+    "action_values" array
+    "actions" array
+    "ad_click_actions" array
+    "ad_id" string
+    "ad_impression_actions" array
+    "ad_name" string
+    "adset_id" string
+    "adset_name" string
+    "attribution_setting" string
+    "auction_bid" number
+    "auction_competitiveness" number
+    "auction_max_competitor_bid" number
+    "buying_type" string
+    "campaign_id" string
+    "campaign_name" string
+    "canvas_avg_view_percent" number
+    "canvas_avg_view_time" number
+    "catalog_segment_actions" array
+    "catalog_segment_value" array
+    "catalog_segment_value_mobile_purchase_roas" array
+    "catalog_segment_value_omni_purchase_roas" array
+    "catalog_segment_value_website_purchase_roas" array
+    "clicks" integer
+    "conversion_rate_ranking" string
+    "conversion_values" array
+    "conversions" array
+    "converted_product_quantity" array
+    "converted_product_value" array
+    "cost_per_15_sec_video_view" array
+    "cost_per_2_sec_continuous_video_view" array
+    "cost_per_action_type" array
+    "cost_per_ad_click" array
+    "cost_per_conversion" array
+    "cost_per_estimated_ad_recallers" number
+    "cost_per_inline_link_click" number
+    "cost_per_inline_post_engagement" number
+    "cost_per_outbound_click" array
+    "cost_per_thruplay" array
+    "cost_per_unique_action_type" array
+    "cost_per_unique_click" number
+    "cost_per_unique_inline_link_click" number
+    "cost_per_unique_outbound_click" array
+    "cpc" number
+    "cpm" number
+    "cpp" number
+    "created_time" string
+    "ctr" number
+    "date_start" string
+    "date_stop" string
+    "engagement_rate_ranking" string
+    "estimated_ad_recallers" number
+    "frequency" number
+    "full_view_impressions" number
+    "full_view_reach" number
+    "impressions" integer
+    "inline_link_click_ctr" number
+    "inline_link_clicks" integer
+    "inline_post_engagement" integer
+    "instant_experience_clicks_to_open" number
+    "instant_experience_clicks_to_start" number
+    "instant_experience_outbound_clicks" array
+    "mobile_app_purchase_roas" array
+    "objective" string
+    "optimization_goal" string
+    "outbound_clicks" array
+    "outbound_clicks_ctr" array
+    "purchase_roas" array
+    "qualifying_question_qualify_answer_rate" number
+    "quality_ranking" string
+    "reach" integer
+    "social_spend" number
+    "spend" number
+    "unique_actions" array
+    "unique_clicks" integer
+    "unique_ctr" number
+    "unique_inline_link_click_ctr" number
+    "unique_inline_link_clicks" integer
+    "unique_link_clicks_ctr" number
+    "unique_outbound_clicks" array
+    "unique_outbound_clicks_ctr" array
+    "updated_time" string
+    "video_15_sec_watched_actions" array
+    "video_30_sec_watched_actions" array
+    "video_avg_time_watched_actions" array
+    "video_continuous_2_sec_watched_actions" array
+    "video_p100_watched_actions" array
+    "video_p25_watched_actions" array
+    "video_p50_watched_actions" array
+    "video_p75_watched_actions" array
+    "video_p95_watched_actions" array
+    "video_play_actions" array
+    "video_play_curve_actions" array
+    "video_play_retention_0_to_15s_actions" array
+    "video_play_retention_20_to_60s_actions" array
+    "video_play_retention_graph_actions" array
+    "video_time_watched_actions" array
+    "website_ctr" array
+    "website_purchase_roas" array
+    "wish_bid" number
+
+    indexes {
+        (date_start, account_id, ad_id) [pk]
+    }
+}
+
+Table "campaigns" {
+    "account_id" string
+    "adlabels" array
+    "bid_strategy" string
+    "boosted_object_id" string
+    "budget_rebalance_flag" boolean
+    "budget_remaining" number
+    "buying_type" string
+    "daily_budget" number
+    "created_time" string
+    "configured_status" string
+    "effective_status" string
+    "id" string [pk]
+    "issues_info" array
+    "lifetime_budget" number
+    "name" string
+    "objective" string
+    "smart_promotion_type" string
+    "source_campaign_id" number
+    "special_ad_category" string
+    "special_ad_category_country" array
+    "spend_cap" number
+    "start_time" string
+    "status" string
+    "stop_time" string
+    "updated_time" string
+}
+
+Table "custom_conversions" {
+    "id" string [pk]
+    "account_id" string
+    "business" string
+    "creation_time" string
+    "custom_event_type" string
+    "data_sources" array
+    "default_conversion_value" number
+    "description" string
+    "event_source_type" string
+    "first_fired_time" string
+    "is_archived" boolean
+    "is_unavailable" boolean
+    "last_fired_time" string
+    "name" string
+    "offline_conversion_data_set" string
+    "retention_days" number
+    "rule" string
+}
+
+Table "custom_audiences" {
+    "id" string [pk]
+    "account_id" string
+    "approximate_count_lower_bound" integer
+    "approximate_count_upper_bound" integer
+    "customer_file_source" string
+    "data_source" object
+    "delivery_status" object
+    "description" string
+    "is_value_based" boolean
+    "lookalike_audience_ids" array
+    "lookalike_spec" object
+    "name" string
+    "operation_status" object
+    "opt_out_link" string
+    "page_deletion_marked_delete_time" integer
+    "permission_for_actions" object
+    "pixel_id" string
+    "retention_days" integer
+    "rule" string
+    "rule_aggregation" string
+    "sharing_status" object
+    "subtype" string
+    "time_content_updated" integer
+    "time_created" integer
+    "time_updated" integer
+}
+
+Table "images" {
+    "account_id" string
+    "id" string [pk]
+    "name" string
+    "creatives" array
+    "original_height" integer
+    "original_width" integer
+    "permalink_url" string
+    "status" string
+    "url" string
+    "created_time" string
+    "hash" string
+    "url_128" string
+    "is_associated_creatives_in_adgroups" boolean
+    "filename" string
+    "updated_time" string
+    "height" integer
+    "width" integer
+}
+
+Table "videos" {
+    "account_id" string
+    "id" string [pk]
+    "ad_breaks" array
+    "backdated_time" string
+    "backdated_time_granularity" string
+    "content_category" string
+    "content_tags" array
+    "created_time" string
+    "custom_labels" array
+    "description" string
+    "embed_html" string
+    "embeddable" boolean
+    "format" array
+    "icon" string
+    "is_crosspost_video" boolean
+    "is_crossposting_eligible" boolean
+    "is_episode" boolean
+    "is_instagram_eligible" boolean
+    "length" number
+    "live_status" string
+    "permalink_url" string
+    "post_views" integer
+    "premiere_living_room_status" boolean
+    "published" boolean
+    "scheduled_publish_time" string
+    "source" string
+    "title" string
+    "universal_video_id" string
+    "updated_time" string
+    "views" integer
+}
+
+Table "activities" {
+    "account_id" string
+    "actor_id" string
+    "actor_name" string
+    "application_id" string
+    "application_name" string
+    "date_time_in_timezone" string
+    "event_time" string
+    "event_type" string
+    "extra_data" string
+    "object_id" string
+    "object_name" string
+    "object_type" string
+    "translated_event_type" string
+}
+
+Ref {
+    "ad_sets"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "ad_sets"."campaign_id" <> "campaigns"."id"
+}
+
+Ref {
+    "ads"."adset_id" <> "ad_sets"."id"
+}
+
+Ref {
+    "ads"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "ads"."campaign_id" <> "campaigns"."id"
+}
+
+Ref {
+    "ad_creatives"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "ads_insights"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "ads_insights"."ad_id" <> "ads"."id"
+}
+
+Ref {
+    "ads_insights"."adset_id" <> "ad_sets"."id"
+}
+
+Ref {
+    "ads_insights"."campaign_id" <> "campaigns"."id"
+}
+
+Ref {
+    "campaigns"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "custom_conversions"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "custom_audiences"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "custom_audiences"."pixel_id" <> "images"."id"
+}
+
+Ref {
+    "images"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "videos"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "activities"."account_id" <> "ad_account"."id"
+}
+
+Ref {
+    "activities"."actor_id" <> "ad_account"."id"
+}
+
+Ref {
+    "activities"."application_id" <> "ad_account"."id"
+}
+
+Ref {
+    "activities"."object_id" <> "ad_account"."id"
+}

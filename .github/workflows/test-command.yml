@@ -26,6 +26,11 @@ on:
       local_cdk:
         description: "Run Connector Acceptance Tests against the CDK version on the current branch."
         required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
+
 jobs:
   write-deprecation-message:
     runs-on: ubuntu-latest

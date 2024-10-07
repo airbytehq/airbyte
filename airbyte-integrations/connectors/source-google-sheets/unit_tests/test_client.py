@@ -24,8 +24,8 @@ def test_backoff_increase_row_batch_size():
     e = requests.HTTPError("error")
     e.status_code = 429
     client.Backoff.increase_row_batch_size({"exception": e})
-    assert client.Backoff.row_batch_size == 210
-    assert client._create_range("spreadsheet_id", 0) == "spreadsheet_id!0:210"
+    assert client.Backoff.row_batch_size == 300
+    assert client._create_range("spreadsheet_id", 0) == "spreadsheet_id!0:300"
     client.Backoff.row_batch_size = 1000
     client.Backoff.increase_row_batch_size({"exception": e})
     assert client.Backoff.row_batch_size == 1000
@@ -57,7 +57,7 @@ def test_client_get_values_on_backoff(caplog):
     e = requests.HTTPError("error")
     e.status_code = 429
     client_google_sheets.Backoff.increase_row_batch_size({"exception": e})
-    assert client_google_sheets.Backoff.row_batch_size == 220
+    assert client_google_sheets.Backoff.row_batch_size == 310
     client_google_sheets.get_values(
         sheet="sheet",
         row_cursor=0,
@@ -65,4 +65,4 @@ def test_client_get_values_on_backoff(caplog):
         majorDimension="ROWS",
     )
 
-    assert "Fetching range sheet!0:220" in caplog.text
+    assert "Fetching range sheet!0:310" in caplog.text

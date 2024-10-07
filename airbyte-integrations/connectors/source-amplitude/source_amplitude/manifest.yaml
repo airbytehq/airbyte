@@ -8,7 +8,9 @@ definitions:
       field_path: ["{{ parameters.get('data_field') }}"]
   requester:
     type: HttpRequester
-    url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency Server' else '' }}amplitude.com/api"
+    url_base:
+      "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency
+      Server' else '' }}amplitude.com/api"
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
@@ -19,16 +21,24 @@ definitions:
       response_filters:
         - http_codes: [400]
           action: FAIL
-          error_message: The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.
+          failure_type: config_error
+          error_message:
+            The file size of the exported data is too large. Shorten the
+            time ranges and try again. The limit size is 4GB. Provide
+            a shorter 'request_time_range' interval.
         - http_codes: [403]
           action: FAIL
-          error_message: Access denied due to lack of permission or invalid API/Secret key or wrong data region.
+          failure_type: config_error
+          error_message:
+            Access denied due to lack of permission or invalid API/Secret
+            key or wrong data region.
         - http_codes: [404]
           action: IGNORE
-          error_message: No data collected
+          error_message: No data available for the time range requested.
         - http_codes: [504]
           action: FAIL
-          error_message: The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.
+          failure_type: config_error
+          error_message: "The amount of data is large and may be causing a timeout. For large amounts of data, the Amazon S3 destination is recommended. Refer to Amplitude documentation for information on setting up the S3 destination: https://amplitude.com/docs/data/destination-catalog/amazon-s3#run-a-manual-export"
 
   retriever:
     type: SimpleRetriever
@@ -65,6 +75,33 @@ definitions:
       path: "/2/annotations"
       data_field: "data"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          date:
+            description: The date when the annotation was made
+            type:
+              - "null"
+              - string
+            format: date
+          details:
+            description: Additional details or information related to the annotation
+            type:
+              - "null"
+              - string
+          id:
+            description: The unique identifier for the annotation
+            type:
+              - "null"
+              - integer
+          label:
+            description: The label assigned to the annotation
+            type:
+              - "null"
+              - string
   cohorts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -73,6 +110,150 @@ definitions:
       path: "/3/cohorts"
       data_field: "cohorts"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          appId:
+            description: The unique identifier of the application.
+            type:
+              - "null"
+              - integer
+          archived:
+            description: Indicates if the cohort data is archived or not.
+            type:
+              - "null"
+              - boolean
+          definition:
+            description: The specific definition or criteria for the cohort.
+            type:
+              - "null"
+              - object
+          description:
+            description: A brief explanation or summary of the cohort data.
+            type:
+              - "null"
+              - string
+          finished:
+            description: Indicates if the cohort data has been finalized.
+            type:
+              - "null"
+              - boolean
+          id:
+            description: The unique identifier for the cohort.
+            type:
+              - "null"
+              - string
+          name:
+            description: The name or title of the cohort.
+            type:
+              - "null"
+              - string
+          owners:
+            description: The owners or administrators of the cohort.
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          published:
+            description: Status indicating if the cohort data is published or not.
+            type:
+              - "null"
+              - boolean
+          size:
+            description: Size or scale of the cohort data.
+            type:
+              - "null"
+              - integer
+          type:
+            description: The type or category of the cohort.
+            type:
+              - "null"
+              - string
+          lastMod:
+            description: Timestamp of the last modification made to the cohort.
+            type:
+              - "null"
+              - integer
+          lastComputed:
+            description: Timestamp of the last computation of cohort data.
+            type:
+              - "null"
+              - integer
+          hidden:
+            description: Flag to determine if the cohort is hidden from view.
+            type:
+              - "null"
+              - boolean
+          is_predictive:
+            description: Flag to indicate if the cohort is predictive in nature.
+            type:
+              - "null"
+              - boolean
+          is_official_content:
+            description: Indicates if the cohort data is official content.
+            type:
+              - "null"
+              - boolean
+          chart_id:
+            description: The identifier of the chart associated with the cohort.
+            type:
+              - "null"
+              - string
+          createdAt:
+            description: The timestamp when the cohort was created.
+            type:
+              - "null"
+              - integer
+          edit_id:
+            description: The ID for editing purposes or version control.
+            type:
+              - "null"
+              - string
+          last_viewed:
+            description: Timestamp when the cohort was last viewed.
+            type:
+              - "null"
+              - integer
+          location_id:
+            description: Identifier of the location associated with the cohort.
+            type:
+              - "null"
+              - string
+          metadata:
+            description: Additional information or data related to the cohort.
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          popularity:
+            description: Popularity rank or score of the cohort.
+            type:
+              - "null"
+              - integer
+          shortcut_ids:
+            description: Identifiers of any shortcuts associated with the cohort.
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          view_count:
+            description: The total count of views on the cohort data.
+            type:
+              - "null"
+              - integer
+          viewers:
+            description: Users or viewers who have access to the cohort data.
+            type:
+              - "null"
+              - array
+            items:
+              type: string
   base_incremental_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -99,6 +280,23 @@ definitions:
       path: "/2/sessions/average"
       stream_cursor_field: "date"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          date:
+            description: The date on which the session occurred
+            type:
+              - "null"
+              - string
+            format: date-time
+          length:
+            description: The duration of the session in seconds
+            type:
+              - "null"
+              - number
   active_users_stream:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
@@ -125,11 +323,111 @@ definitions:
       primary_key: "date"
       path: "/2/users"
 
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          date:
+            description: The date for which the active user data is reported
+            type:
+              - "null"
+              - string
+            format: date
+          statistics:
+            description:
+              The statistics related to the active users for the given
+              date
+            type:
+              - "null"
+              - object
+  events_list_stream:
+    type: DeclarativeStream
+    name: events_list
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: /2/events/list
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          autohidden:
+            type:
+              - boolean
+              - "null"
+          clusters_hidden:
+            type:
+              - boolean
+              - "null"
+          deleted:
+            type:
+              - boolean
+              - "null"
+          display:
+            type:
+              - string
+              - "null"
+          flow_hidden:
+            type:
+              - boolean
+              - "null"
+          hidden:
+            type:
+              - boolean
+              - "null"
+          id:
+            type: number
+          in_waitroom:
+            type:
+              - boolean
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          non_active:
+            type:
+              - boolean
+              - "null"
+          timeline_hidden:
+            type:
+              - boolean
+              - number
+              - "null"
+          totals:
+            type:
+              - number
+              - "null"
+          totals_delta:
+            type:
+              - number
+              - "null"
+          value:
+            type:
+              - string
+              - "null"
+        required:
+          - id
+        additionalProperties: true
 streams:
   - "#/definitions/annotations_stream"
   - "#/definitions/cohorts_stream"
   - "#/definitions/average_session_length_stream"
   - "#/definitions/active_users_stream"
+  - "#/definitions/events_list_stream"
 
 check:
   stream_names:

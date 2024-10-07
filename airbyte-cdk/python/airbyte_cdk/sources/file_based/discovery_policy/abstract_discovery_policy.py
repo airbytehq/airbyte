@@ -4,6 +4,8 @@
 
 from abc import ABC, abstractmethod
 
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+
 
 class AbstractDiscoveryPolicy(ABC):
     """
@@ -16,7 +18,6 @@ class AbstractDiscoveryPolicy(ABC):
     def n_concurrent_requests(self) -> int:
         ...
 
-    @property
     @abstractmethod
-    def max_n_files_for_schema_inference(self) -> int:
+    def get_max_n_files_for_schema_inference(self, parser: FileTypeParser) -> int:
         ...

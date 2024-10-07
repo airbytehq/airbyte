@@ -1,118 +1,158 @@
 {
-  "type": ["null", "object"],
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
   "properties": {
     "AccountId": {
+      "description": "Unique identifier for the Bing Ads account",
       "type": ["null", "integer"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "description": "Time period for the report",
+      "type": ["null", "string"],
+      "format": "date"
     },
     "CurrencyCode": {
+      "description": "Currency code used for reporting",
       "type": ["null", "string"]
     },
     "AdDistribution": {
+      "description": "Type of ad distribution (search, content, both)",
       "type": ["null", "string"]
     },
     "DeviceType": {
+      "description": "Type of device used",
       "type": ["null", "string"]
     },
     "Network": {
+      "description": "Type of network (search, audience)",
       "type": ["null", "string"]
     },
     "DeliveredMatchType": {
+      "description": "Type of match in ad delivery",
       "type": ["null", "string"]
     },
     "DeviceOS": {
+      "description": "Operating system of the device",
       "type": ["null", "string"]
     },
     "TopVsOther": {
+      "description": "Performance comparison between top and other ad positions",
       "type": ["null", "string"]
     },
     "BidMatchType": {
+      "description": "Type of bidding match (exact, phrase, broad)",
       "type": ["null", "string"]
     },
     "AccountName": {
+      "description": "Name of the Bing Ads account",
       "type": ["null", "string"]
     },
     "AccountNumber": {
+      "description": "Numeric account number",
       "type": ["null", "string"]
     },
     "PhoneImpressions": {
+      "description": "Number of ad impressions on phone devices",
       "type": ["null", "integer"]
     },
     "PhoneCalls": {
+      "description": "Number of phone calls generated",
       "type": ["null", "integer"]
     },
     "Clicks": {
+      "description": "Total number of clicks",
       "type": ["null", "integer"]
     },
     "Ctr": {
+      "description": "Click-through rate",
       "type": ["null", "number"]
     },
     "Spend": {
+      "description": "Total spend on ad campaigns",
       "type": ["null", "number"]
     },
     "Impressions": {
+      "description": "Total number of ad impressions",
       "type": ["null", "integer"]
     },
     "CostPerConversion": {
+      "description": "Cost per conversion",
       "type": ["null", "number"]
     },
     "Ptr": {
+      "description": "Phone-through rate",
       "type": ["null", "number"]
     },
     "Assists": {
+      "description": "Number of assist conversions",
       "type": ["null", "integer"]
     },
     "ReturnOnAdSpend": {
+      "description": "Return on ad spend",
       "type": ["null", "number"]
     },
     "CostPerAssist": {
+      "description": "Cost per assist conversion",
       "type": ["null", "number"]
     },
     "AverageCpc": {
+      "description": "Average cost per click",
       "type": ["null", "number"]
     },
     "AveragePosition": {
+      "description": "Average ad position",
       "type": ["null", "number"]
     },
     "AverageCpm": {
+      "description": "Average cost per thousand impressions",
       "type": ["null", "number"]
     },
     "Conversions": {
+      "description": "Total number of conversions",
       "type": ["null", "number"]
     },
     "ConversionsQualified": {
+      "description": "Number of qualified conversions",
       "type": ["null", "number"]
     },
     "ConversionRate": {
+      "description": "Percentage of conversions from clicks",
       "type": ["null", "number"]
     },
     "LowQualityClicks": {
+      "description": "Number of low-quality clicks",
       "type": ["null", "integer"]
     },
     "LowQualityClicksPercent": {
+      "description": "Percentage of low-quality clicks",
       "type": ["null", "number"]
     },
     "LowQualityImpressions": {
+      "description": "Number of low-quality impressions",
       "type": ["null", "integer"]
     },
     "LowQualitySophisticatedClicks": {
+      "description": "Number of sophisticated low-quality clicks",
       "type": ["null", "integer"]
     },
     "LowQualityConversions": {
+      "description": "Total number of low-quality conversions",
       "type": ["null", "integer"]
     },
     "LowQualityConversionRate": {
+      "description": "Conversion rate for low-quality clicks",
       "type": ["null", "number"]
     },
     "Revenue": {
+      "description": "Total revenue generated",
       "type": ["null", "number"]
     },
     "RevenuePerConversion": {
+      "description": "Revenue per conversion",
       "type": ["null", "number"]
     },
     "RevenuePerAssist": {
+      "description": "Revenue per assist conversion",
       "type": ["null", "number"]
     }
   }

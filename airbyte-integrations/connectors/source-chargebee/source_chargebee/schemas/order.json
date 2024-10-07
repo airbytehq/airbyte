@@ -2,524 +2,597 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "name": "Order",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": ["string", "null"],
-      "maxLength": 40
+      "description": "Unique identifier for the order.",
+      "type": ["string", "null"]
     },
     "document_number": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Unique document number associated with the order.",
+      "type": ["string", "null"]
     },
     "invoice_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Identifier for the invoice associated with the order.",
+      "type": ["string", "null"]
     },
     "subscription_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Identifier for the subscription associated with the order.",
+      "type": ["string", "null"]
     },
     "customer_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Identifier for the customer placing the order.",
+      "type": ["string", "null"]
     },
     "status": {
+      "description": "Current status of the order.",
       "type": ["string", "null"]
     },
     "cancellation_reason": {
+      "description": "Reason for order cancellation.",
       "type": ["string", "null"]
     },
     "payment_status": {
+      "description": "Status of payment for the order.",
       "type": ["string", "null"]
     },
     "order_type": {
+      "description": "Type of order such as purchase order or sales order.",
       "type": ["string", "null"]
     },
     "price_type": {
+      "description": "Type of pricing used for the order.",
       "type": ["string", "null"]
     },
     "reference_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Reference identifier for the order.",
+      "type": ["string", "null"]
     },
     "fulfillment_status": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Status of fulfillment for the order.",
+      "type": ["string", "null"]
     },
     "order_date": {
+      "description": "Date when the order was created.",
       "type": ["integer", "null"]
     },
     "shipping_date": {
+      "description": "Date when the order is scheduled for shipping.",
       "type": ["integer", "null"]
     },
     "note": {
-      "type": ["string", "null"],
-      "maxLength": 600
+      "description": "Additional notes or comments for the order.",
+      "type": ["string", "null"]
     },
     "tracking_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Tracking identifier for the order shipment.",
+      "type": ["string", "null"]
     },
     "tracking_url": {
-      "type": ["string", "null"],
-      "maxLength": 255
+      "description": "URL for tracking the order shipment.",
+      "type": ["string", "null"]
     },
     "batch_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Unique identifier for the batch the order belongs to.",
+      "type": ["string", "null"]
     },
     "created_by": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "User or system that created the order.",
+      "type": ["string", "null"]
     },
     "shipment_carrier": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Carrier for shipping the order.",
+      "type": ["string", "null"]
     },
-
     "invoice_round_off_amount": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Round-off amount applied to the invoice.",
+      "type": ["integer", "null"]
     },
     "tax": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Total tax amount for the order.",
+      "type": ["integer", "null"]
     },
     "amount_paid": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Amount paid for the order.",
+      "type": ["integer", "null"]
     },
     "amount_adjusted": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Adjusted amount for the order.",
+      "type": ["integer", "null"]
     },
     "refundable_credits_issued": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Credits already issued for refund for the whole order.",
+      "type": ["integer", "null"]
     },
     "refundable_credits": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Credits that can be refunded for the whole order.",
+      "type": ["integer", "null"]
     },
     "rounding_adjustement": {
+      "description": "Adjustment made for rounding off the order amount.",
       "type": ["integer", "null"]
     },
     "paid_on": {
+      "description": "Timestamp when the order was paid for.",
       "type": ["integer", "null"]
     },
     "shipping_cut_off_date": {
+      "description": "Date indicating the shipping cut-off for the order.",
       "type": ["integer", "null"]
     },
     "created_at": {
+      "description": "Timestamp when the order was created.",
       "type": ["integer", "null"]
     },
     "status_update_at": {
+      "description": "Timestamp when the status of the order was last updated.",
       "type": ["integer", "null"]
     },
     "delivered_at": {
+      "description": "Timestamp when the order was delivered.",
       "type": ["integer", "null"]
     },
     "shipped_at": {
+      "description": "Timestamp when the order was shipped.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "Version of the resource or order data.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "Timestamp when the order data was last updated.",
       "type": ["integer", "null"]
     },
     "cancelled_at": {
+      "description": "Timestamp when the order was cancelled.",
       "type": ["integer", "null"]
     },
     "resent_status": {
+      "description": "Status of the resent order.",
       "type": ["string", "null"]
     },
     "is_resent": {
+      "description": "Flag indicating if the order has been resent.",
       "type": ["boolean", "null"]
     },
     "original_order_id": {
-      "type": ["string", "null"],
-      "maxLength": 40
+      "description": "Identifier for the original order if this is a modified order.",
+      "type": ["string", "null"]
     },
     "discount": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Discount amount applied to the order.",
+      "type": ["integer", "null"]
     },
     "sub_total": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Sub-total amount for the order before applying taxes or discounts.",
+      "type": ["integer", "null"]
     },
     "total": {
-      "type": ["integer", "null"],
-      "minimum": 0
+      "description": "Total amount including taxes and discounts for the order.",
+      "type": ["integer", "null"]
     },
     "deleted": {
+      "description": "Flag indicating if the order has been deleted.",
       "type": ["boolean", "null"]
     },
     "currency_code": {
-      "type": ["string", "null"],
-      "maxLength": 3
+      "description": "Currency code used for the order.",
+      "type": ["string", "null"]
     },
     "is_gifted": {
+      "description": "Flag indicating if the order is a gift.",
       "type": ["boolean", "null"]
     },
     "gift_note": {
-      "type": ["string", "null"],
-      "maxLength": 500
+      "description": "Note attached to any gift in the order.",
+      "type": ["string", "null"]
     },
     "gift_id": {
-      "type": ["string", "null"],
-      "maxLength": 50
+      "description": "Identifier for any gift associated with the order.",
+      "type": ["string", "null"]
     },
     "resend_reason": {
-      "type": ["string", "null"],
-      "maxLength": 100
+      "description": "Reason for resending the order.",
+      "type": ["string", "null"]
+    },
+    "business_entity_id": {
+      "description": "Identifier for the business entity associated with the order.",
+      "type": ["string", "null"]
+    },
+    "base_currency_code": {
+      "description": "The base currency code used for the order.",
+      "type": ["string", "null"]
+    },
+    "exchange_rate": {
+      "description": "Rate used for currency exchange in the order.",
+      "type": ["number", "null"]
+    },
+    "object": {
+      "description": "Type of object representing an order in the system.",
+      "type": ["string", "null"]
     },
     "order_line_items": {
+      "description": "List of line items in the order",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a particular line item",
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "description": "Unique identifier for the line item.",
+            "type": ["string", "null"]
           },
           "invoice_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "description": "Identifier for the invoice associated with the line item.",
+            "type": ["string", "null"]
           },
           "invoice_line_item_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "description": "Identifier for the invoice line item associated with the line item.",
+            "type": ["string", "null"]
           },
           "unit_price": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Unit price of the line item.",
+            "type": ["integer", "null"]
           },
           "description": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "description": "Description of the line item.",
+            "type": ["string", "null"]
           },
           "amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Total amount for the line item.",
+            "type": ["integer", "null"]
           },
           "fulfillment_quantity": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Quantity fulfilled for the line item.",
+            "type": ["integer", "null"]
           },
           "fulfillment_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount fulfilled for the line item.",
+            "type": ["integer", "null"]
           },
           "tax_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Tax amount applied to the line item.",
+            "type": ["integer", "null"]
           },
           "amount_paid": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount paid for the line item.",
+            "type": ["integer", "null"]
           },
           "amount_adjusted": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Adjusted amount for the line item.",
+            "type": ["integer", "null"]
           },
           "refundable_credits_issued": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Credits already issued for refund for the line item.",
+            "type": ["integer", "null"]
           },
           "refundable_credits": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Credits that can be refunded for the line item.",
+            "type": ["integer", "null"]
           },
           "is_shippable": {
+            "description": "Flag indicating if the line item is shippable.",
             "type": ["boolean", "null"]
           },
           "sku": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "description": "Stock Keeping Unit (SKU) associated with the line item.",
+            "type": ["string", "null"]
           },
-
           "status": {
+            "description": "Status of the line item.",
             "type": ["string", "null"]
           },
           "entity_type": {
+            "description": "Type of entity associated with the line item.",
             "type": ["string", "null"]
           },
           "item_level_discount_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Discount amount applied at the item level.",
+            "type": ["integer", "null"]
           },
           "discount_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Discount amount applied to the line item.",
+            "type": ["integer", "null"]
           },
           "entity_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "description": "Identifier for the entity associated with the line item.",
+            "type": ["string", "null"]
+          },
+          "object": {
+            "description": "Type of object representing the line item.",
+            "type": ["string", "null"]
           }
         }
       }
     },
     "shipping_address": {
+      "description": "The shipping address for the order",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "First name in the shipping address.",
+          "type": ["string", "null"]
         },
         "last_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "Last name in the shipping address.",
+          "type": ["string", "null"]
         },
         "email": {
-          "type": ["string", "null"],
-          "maxLength": 70
+          "description": "Email associated with the shipping address.",
+          "type": ["string", "null"]
         },
         "company": {
-          "type": ["string", "null"],
-          "maxLength": 250
+          "description": "Company name in the shipping address.",
+          "type": ["string", "null"]
         },
         "phone": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "Phone number associated with the shipping address.",
+          "type": ["string", "null"]
         },
         "line1": {
-          "type": ["string", "null"],
-          "maxLength": 180
+          "description": "First address line in the shipping address.",
+          "type": ["string", "null"]
         },
         "line2": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "Second address line in the shipping address.",
+          "type": ["string", "null"]
         },
         "line3": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "Third address line in the shipping address.",
+          "type": ["string", "null"]
         },
         "city": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "City in the shipping address.",
+          "type": ["string", "null"]
         },
         "state_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "State code of the shipping address.",
+          "type": ["string", "null"]
         },
         "state": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "State in the shipping address.",
+          "type": ["string", "null"]
         },
         "country": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "Country in the shipping address.",
+          "type": ["string", "null"]
         },
         "zip": {
-          "type": ["string", "null"],
-          "maxLength": 20
+          "description": "Zip or postal code in the shipping address.",
+          "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "Validation status of the shipping address.",
+          "type": ["string", "null"]
+        },
+        "object": {
+          "description": "Type of object representing the shipping address.",
           "type": ["string", "null"]
         }
       }
     },
     "billing_address": {
+      "description": "The billing address associated with the order",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "First name in the billing address.",
+          "type": ["string", "null"]
         },
         "last_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "Last name in the billing address.",
+          "type": ["string", "null"]
         },
         "email": {
-          "type": ["string", "null"],
-          "maxLength": 70
+          "description": "Email associated with the billing address.",
+          "type": ["string", "null"]
         },
         "company": {
-          "type": ["string", "null"],
-          "maxLength": 250
+          "description": "Company name in the billing address.",
+          "type": ["string", "null"]
         },
         "phone": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "Phone number associated with the billing address.",
+          "type": ["string", "null"]
         },
         "line1": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "First address line in the billing address.",
+          "type": ["string", "null"]
         },
         "line2": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "Second address line in the billing address.",
+          "type": ["string", "null"]
         },
         "line3": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "description": "Third address line in the billing address.",
+          "type": ["string", "null"]
         },
         "city": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "City in the billing address.",
+          "type": ["string", "null"]
         },
         "state_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "State code of the billing address.",
+          "type": ["string", "null"]
         },
         "state": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "State in the billing address.",
+          "type": ["string", "null"]
         },
         "country": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "description": "Country in the billing address.",
+          "type": ["string", "null"]
         },
         "zip": {
-          "type": ["string", "null"],
-          "maxLength": 20
+          "description": "Zip or postal code in the billing address.",
+          "type": ["string", "null"]
         },
         "validation_status": {
+          "description": "Validation status of the billing address.",
+          "type": ["string", "null"]
+        },
+        "object": {
+          "description": "Type of object representing the billing address.",
           "type": ["string", "null"]
         }
       }
     },
     "line_item_taxes": {
+      "description": "Taxes applied to individual line items",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a particular line item tax",
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "description": "Identifier for the line item the tax is applied to.",
+            "type": ["string", "null"]
           },
           "tax_name": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "description": "Name of the tax applied.",
+            "type": ["string", "null"]
           },
           "tax_rate": {
-            "type": ["number", "null"],
-            "minimum": 0.0,
-            "maximum": 100.0
+            "description": "Rate of tax applied.",
+            "type": ["number", "null"]
           },
           "is_partial_tax_applied": {
+            "description": "Flag indicating if partial tax has been applied.",
             "type": ["boolean", "null"]
           },
           "is_non_compliance_tax": {
+            "description": "Flag indicating if the tax is non-compliant.",
             "type": ["boolean", "null"]
           },
           "taxable_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount on which tax is calculated.",
+            "type": ["integer", "null"]
           },
           "tax_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Total tax amount applied.",
+            "type": ["integer", "null"]
           },
           "tax_juris_type": {
+            "description": "Type of tax jurisdiction.",
             "type": ["string", "null"]
           },
           "tax_juris_name": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "description": "Name of the tax jurisdiction.",
+            "type": ["string", "null"]
           },
           "tax_juris_code": {
-            "type": ["string", "null"],
-            "maxLength": 250
+            "description": "Code for the tax jurisdiction.",
+            "type": ["string", "null"]
           },
           "tax_amount_in_local_currency": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Tax amount converted to the local currency.",
+            "type": ["integer", "null"]
           },
           "local_currency-code": {
+            "description": "Currency code used for the local tax amount.",
             "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_discounts": {
+      "description": "Discounts applied to individual line items",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a particular line item discount",
         "type": ["object", "null"],
         "properties": {
           "line_item_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "description": "Identifier for the line item the discount is applied to.",
+            "type": ["string", "null"]
           },
           "discount_type": {
+            "description": "Type of discount applied.",
             "type": ["string", "null"]
           },
           "coupon_id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "description": "Identifier for the coupon applied for the discount.",
+            "type": ["string", "null"]
           },
           "discount_amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount of the discount applied.",
+            "type": ["integer", "null"]
+          },
+          "entity_id": {
+            "description": "Identifier for the entity the discount is associated with.",
+            "type": ["string", "null"]
+          },
+          "object": {
+            "description": "Type of object representing the line item discount.",
+            "type": ["string", "null"]
           }
         }
       }
     },
     "linked_credit_notes": {
+      "description": "Credit notes linked to the order",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a linked credit note",
         "type": ["object", "null"],
         "properties": {
           "amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount associated with the credit note.",
+            "type": ["integer", "null"]
           },
           "type": {
+            "description": "Type of credit note.",
             "type": ["string", "null"]
           },
           "id": {
-            "type": ["string", "null"],
-            "maxLength": 50
+            "description": "Unique identifier for the credit note.",
+            "type": ["string", "null"]
           },
           "status": {
+            "description": "Status of the credit note.",
             "type": ["string", "null"]
           },
           "amount_adjusted": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Adjusted amount in the credit note.",
+            "type": ["integer", "null"]
           },
           "amount_refunded": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount refunded for the credit note.",
+            "type": ["integer", "null"]
+          },
+          "object": {
+            "description": "Type of object representing the credit note.",
+            "type": ["string", "null"]
           }
         }
       }
     },
     "resent_orders": {
+      "description": "Orders that were resent to the customer",
       "type": ["array", "null"],
       "items": {
+        "description": "Details of a resent order",
         "type": ["object", "null"],
         "properties": {
           "order_id": {
-            "type": ["string", "null"],
-            "maxLength": 40
+            "description": "Identifier for the resent order.",
+            "type": ["string", "null"]
           },
           "reason": {
-            "type": ["string", "null"],
-            "maxLength": 100
+            "description": "Reason for resenting the order.",
+            "type": ["string", "null"]
           },
           "amount": {
-            "type": ["integer", "null"],
-            "minimum": 0
+            "description": "Amount for the resent order.",
+            "type": ["integer", "null"]
           }
         }
       }
     },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Custom fields or additional information associated with the order.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

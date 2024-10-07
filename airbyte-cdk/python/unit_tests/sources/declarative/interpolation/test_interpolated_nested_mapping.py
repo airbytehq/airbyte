@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import dpath.util
+import dpath
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import InterpolatedNestedMapping
 
@@ -42,4 +42,4 @@ def test(test_name, path, expected_value):
 
     interpolated = mapping.eval(config, **{"kwargs": kwargs})
 
-    assert dpath.util.get(interpolated, path) == expected_value
+    assert dpath.get(interpolated, path) == expected_value

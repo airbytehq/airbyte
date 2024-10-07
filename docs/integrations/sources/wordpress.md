@@ -15,4 +15,3 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 The output schema is the same as that of the [Wordpress Database](https://codex.wordpress.org/Database_Description) described here.
-

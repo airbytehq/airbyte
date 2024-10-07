@@ -1,29 +1,59 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 200
   allowedHosts:
     hosts:
       - "*"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.2.2@sha256:57703de3b4c4204bd68a7b13c9300f8e03c0189bffddaffc796f1da25d2dbea0
   connectorSubtype: api
   connectorType: source
   definitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  dockerImageTag: 0.3.0
-  maxSecondsBetweenMessages: 64800
+  dockerImageTag: 0.5.3
   dockerRepository: airbyte/source-sentry
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: MIT
+  # Rate limit windows are returned in the response headers of the API requests.
+  # Senty docs (https://docs.sentry.io/api/ratelimits/) state a per-second rate limit,
+  # but the `x-rate-limit-reset` header has been observed to return a value of up to the next full minute from a request
+  # (e.g. request sent: 12:00:15, `x-rate-limit-reset` header value: 12:01:00).
+  maxSecondsBetweenMessages: 60
   name: Sentry
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-sentry
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
-  tags:
-    - language:low-code
-    - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
   supportLevel: certified
+  tags:
+    - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: sentry_config_dev_null
+          id: 54bf1bc8-404c-4e4c-b253-7d8b4c4ffacb
+        - name: sentry_config_limited_scopes_dev_null
+          id: aa4573bd-4681-4906-9877-d6afe4060a28
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-SENTRY_LIMITED_SCOPE__CREDS
+          fileName: config_limited_scopes.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-SENTRY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

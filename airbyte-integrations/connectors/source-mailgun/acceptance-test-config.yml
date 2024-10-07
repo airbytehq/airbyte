@@ -2,7 +2,7 @@ connector_image: airbyte/source-mailgun:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_mailgun/spec.yaml"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           disable_for_version: 0.1.1
   connection:
@@ -25,9 +25,7 @@ acceptance_tests:
             bypass_reason: "Sandbox account can't seed this stream"
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"
-  #          extra_fields: no
   #          exact_order: no
-  #          extra_records: yes
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   #    tests:

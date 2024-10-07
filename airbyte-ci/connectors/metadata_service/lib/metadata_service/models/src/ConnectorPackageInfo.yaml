@@ -1,0 +1,9 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors_ci/metadata_service/lib/models/src/ConnectorPackageInfo.yaml
+title: ConnectorPackageInfo
+description: Information about the contents of the connector image
+type: object
+properties:
+  cdk_version:
+    type: string

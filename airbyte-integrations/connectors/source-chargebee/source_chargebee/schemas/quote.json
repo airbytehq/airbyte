@@ -4,100 +4,123 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier of the quote.",
       "type": ["string", "null"]
     },
     "name": {
+      "description": "The name or title of the quote.",
       "type": ["string", "null"]
     },
     "po_number": {
+      "description": "The purchase order number associated with the quote.",
       "type": ["string", "null"]
     },
     "customer_id": {
+      "description": "The ID of the customer associated with the quote.",
       "type": ["string", "null"]
     },
     "subscription_id": {
+      "description": "The ID of the subscription associated with the quote.",
       "type": ["string", "null"]
     },
     "invoice_id": {
+      "description": "The ID of the invoice associated with the quote.",
       "type": ["string", "null"]
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["open", "accepted", "declined", "invoiced", "closed"]
+      "description": "The status of the quote (e.g., draft, sent, accepted).",
+      "type": ["string", "null"]
     },
     "operation_type": {
-      "type": ["string", "null"],
-      "enum": [
-        "create_subscription_for_customer",
-        "change_subscription",
-        "onetime_invoice"
-      ]
+      "description": "The type of operation (e.g., new, modification) performed on the quote.",
+      "type": ["string", "null"]
     },
     "vat_number": {
+      "description": "The VAT number associated with the quote.",
       "type": ["string", "null"]
     },
     "price_type": {
-      "type": ["string", "null"],
-      "enum": ["tax_exclusive", "tax_inclusive"]
+      "description": "The type of pricing used for the quote (e.g., fixed, variable).",
+      "type": ["string", "null"]
     },
     "valid_till": {
+      "description": "The date until which the quote remains valid.",
       "type": ["integer", "null"]
     },
     "date": {
+      "description": "The date when the quote was generated.",
       "type": ["integer", "null"]
     },
     "total_payable": {
+      "description": "The total amount payable for the quote after all adjustments.",
       "type": ["integer", "null"]
     },
     "charge_on_acceptance": {
+      "description": "Whether the charge is applicable on acceptance of the quote.",
       "type": ["integer", "null"]
     },
     "sub_total": {
+      "description": "The subtotal amount before applying discounts or taxes.",
       "type": ["integer", "null"]
     },
     "total": {
+      "description": "The total amount of the quote including all charges.",
       "type": ["integer", "null"]
     },
     "credits_applied": {
+      "description": "The credits applied to the quote amount.",
       "type": ["integer", "null"]
     },
     "amount_paid": {
+      "description": "The total amount that has been paid towards the quote.",
       "type": ["integer", "null"]
     },
     "amount_due": {
+      "description": "The total amount that is due for payment in the quote.",
       "type": ["integer", "null"]
     },
     "version": {
+      "description": "The version of the quote data.",
       "type": ["integer", "null"]
     },
     "resource_version": {
+      "description": "The version of the resource related to the quote.",
       "type": ["integer", "null"]
     },
     "updated_at": {
+      "description": "The last updated timestamp for the quote data.",
       "type": ["integer", "null"]
     },
     "vat_number_prefix": {
+      "description": "The prefix used for the VAT number in the quote.",
       "type": ["string", "null"]
     },
     "currency_code": {
+      "description": "The currency code used for all monetary values in the quote.",
       "type": ["string", "null"]
     },
     "notes": {
+      "description": "Any additional notes or comments related to the quote.",
       "type": ["array", "null"]
     },
     "contract_term_start": {
+      "description": "The start date of the contract terms for the quote.",
       "type": ["integer", "null"]
     },
     "contract_term_end": {
+      "description": "The end date of the contract terms for the quote.",
       "type": ["integer", "null"]
     },
     "contract_term_termination_fee": {
+      "description": "The fee applicable for terminating the contract terms.",
       "type": ["integer", "null"]
     },
     "business_entity_id": {
+      "description": "The ID of the business entity related to the quote.",
       "type": ["string", "null"]
     },
     "line_items": {
+      "description": "Individual line items included in the quote.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -124,8 +147,7 @@
             "type": ["integer", "null"]
           },
           "pricing_model": {
-            "type": ["string", "null"],
-            "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+            "type": ["string", "null"]
           },
           "is_taxed": {
             "type": ["boolean", "null"]
@@ -161,38 +183,28 @@
             "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "adhoc",
-              "plan_item_price",
-              "addon_item_price",
-              "charge_item_price"
-            ]
+            "type": ["string", "null"]
           },
           "tax_exempt_reason": {
-            "type": ["string", "null"],
-            "enum": [
-              "tax_not_configured",
-              "region_non_taxable",
-              "export",
-              "customer_exempt",
-              "product_exempt",
-              "zero_rated",
-              "reverse_charge",
-              "high_value_physical_goods",
-              "zero_value_item"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "customer_id": {
             "type": ["string", "null"]
+          },
+          "metered": {
+            "type": ["boolean", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
     },
     "discounts": {
+      "description": "Discounts applied to the quote.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -207,30 +219,25 @@
             "type": ["string", "null"]
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "item_level_discount",
-              "document_level_discount"
-            ]
+            "type": ["string", "null"]
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": ["fixed_amount", "percentage"]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "coupon_set_code": {
             "type": ["string", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
     },
     "line_item_discounts": {
+      "description": "Discounts applied at the line item level.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -239,26 +246,22 @@
             "type": ["string", "null"]
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits",
-              "item_level_discount",
-              "document_level_discount"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"]
           },
           "discount_amount": {
             "type": ["integer", "null"]
+          },
+          "object": {
+            "type": ["string", "null"]
           }
         }
       }
     },
     "taxes": {
+      "description": "Taxes applied to the overall quote amount.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -276,6 +279,7 @@
       }
     },
     "line_item_taxes": {
+      "description": "Taxes applied at the line item level.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -302,17 +306,7 @@
             "type": ["integer", "null"]
           },
           "tax_juris_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "country",
-              "federal",
-              "state",
-              "county",
-              "city",
-              "special",
-              "unincorporated",
-              "other"
-            ]
+            "type": ["string", "null"]
           },
           "tax_juris_name": {
             "type": ["string", "null"]
@@ -330,6 +324,7 @@
       }
     },
     "line_item_tiers": {
+      "description": "Tiers related to line items in the quote.",
       "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
@@ -365,143 +360,117 @@
       }
     },
     "shipping_address": {
+      "description": "The shipping address associated with the quote.",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "last_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "email": {
-          "type": ["string", "null"],
-          "maxLength": 70
+          "type": ["string", "null"]
         },
         "company": {
-          "type": ["string", "null"],
-          "maxLength": 250
+          "type": ["string", "null"]
         },
         "phone": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "line1": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "line2": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "line3": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "city": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "state_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "state": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "country": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "zip": {
-          "type": ["string", "null"],
-          "maxLength": 20
+          "type": ["string", "null"]
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         },
         "index": {
           "type": ["integer", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
     "billing_address": {
+      "description": "The billing address associated with the quote.",
       "type": ["object", "null"],
       "properties": {
         "first_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "last_name": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "email": {
-          "type": ["string", "null"],
-          "maxLength": 70
+          "type": ["string", "null"]
         },
         "company": {
-          "type": ["string", "null"],
-          "maxLength": 250
+          "type": ["string", "null"]
         },
         "phone": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "line1": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "line2": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "line3": {
-          "type": ["string", "null"],
-          "maxLength": 150
+          "type": ["string", "null"]
         },
         "city": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "state_code": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "state": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "country": {
-          "type": ["string", "null"],
-          "maxLength": 50
+          "type": ["string", "null"]
         },
         "zip": {
-          "type": ["string", "null"],
-          "maxLength": 20
+          "type": ["string", "null"]
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
         }
       }
     },
+    "object": {
+      "description": "The object type representing the quote.",
+      "type": ["string", "null"]
+    },
     "custom_fields": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "name": {
-            "type": ["null", "string"]
-          },
-          "value": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+      "description": "Custom fields associated with the quote.",
+      "$ref": "_definitions.json#/definitions/custom_fields"
     }
   }
 }

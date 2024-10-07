@@ -5,11 +5,13 @@
 from typing import Any, Mapping, Union
 
 import requests
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     SingleUseRefreshTokenOauth2Authenticator,
     TokenAuthenticator,
 )
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
@@ -42,8 +44,15 @@ class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
             data=self.build_refresh_request_body(),
             headers=self.build_refresh_request_headers(),
         )
+        content = response.json()
+        if response.status_code == 400 and content.get("error") == "invalid_grant":
+            raise AirbyteTracedException(
+                internal_message=content.get("error_description"),
+                message="Refresh token is invalid or expired. Please re-authenticate to restore access to Airtable.",
+                failure_type=FailureType.config_error,
+            )
         response.raise_for_status()
-        return response.json()
+        return content
 
 
 class AirtableAuth:

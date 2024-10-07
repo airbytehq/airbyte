@@ -2,430 +2,563 @@
   "type": ["null", "object"],
   "properties": {
     "metadata": {
+      "description": "Additional metadata associated with the subscription.",
       "type": ["null", "object"],
       "properties": {}
     },
     "canceled_at": {
+      "description": "The timestamp at which the subscription was canceled.",
       "type": ["null", "number"]
     },
     "cancel_at": {
+      "description": "The timestamp at which the subscription will be canceled.",
       "type": ["null", "number"]
     },
     "livemode": {
+      "description": "Indicates if the subscription is in live mode.",
       "type": ["null", "boolean"]
     },
     "start_date": {
+      "description": "The start date of the subscription.",
       "type": ["null", "integer"]
     },
     "items": {
+      "description": "Items included in the subscription.",
       "type": ["null", "object"],
       "properties": {
         "object": {
+          "description": "Type of object, in this case, 'items'.",
           "type": ["null", "string"]
         },
         "data": {
+          "description": "Data related to the subscription items.",
           "type": ["null", "array"]
         },
         "has_more": {
+          "description": "Indicates if there are more items in the subscription.",
           "type": ["null", "boolean"]
         },
         "total_count": {
+          "description": "The total count of items in the subscription.",
           "type": ["null", "number"]
         },
         "url": {
+          "description": "The URL to access the subscription items.",
           "type": ["null", "string"]
         }
       }
     },
     "id": {
+      "description": "The unique identifier of the subscription.",
       "type": ["null", "string"]
     },
     "trial_start": {
+      "description": "The start date of the trial period for the subscription.",
       "type": ["null", "integer"]
     },
     "application_fee_percent": {
+      "description": "The percentage of the subscription fee that goes to the application.",
       "type": ["null", "number"]
     },
     "billing_cycle_anchor": {
+      "description": "The anchor point for determining the billing cycle.",
       "type": ["null", "number"]
     },
+    "billing_cycle_anchor_config": {
+      "description": "Configuration for the billing cycle anchor.",
+      "type": ["null", "object"]
+    },
+    "invoice_settings": {
+      "description": "Settings related to invoicing for the subscription.",
+      "type": ["null", "object"]
+    },
     "cancel_at_period_end": {
+      "description": "Indicates if the subscription should be canceled at the end of the current period.",
       "type": ["null", "boolean"]
     },
     "tax_percent": {
+      "description": "The percentage of tax applied to the subscription.",
       "type": ["null", "number"]
     },
     "discount": {
+      "description": "Information about any discounts applied to the subscription.",
       "type": ["null", "object"],
       "properties": {
         "end": {
+          "description": "The end date of the discount.",
           "type": ["null", "integer"]
         },
         "coupon": {
+          "description": "Details of the coupon discount applied to the subscription.",
           "type": ["null", "object"],
           "properties": {
             "metadata": {
+              "description": "Additional metadata associated with the coupon.",
               "type": ["null", "object"],
               "properties": {}
             },
             "valid": {
+              "description": "Indicates if the coupon is valid.",
               "type": ["null", "boolean"]
             },
             "livemode": {
+              "description": "Indicates if the coupon is in live mode.",
               "type": ["null", "boolean"]
             },
             "amount_off": {
+              "description": "The amount discounted by the coupon.",
               "type": ["null", "number"]
             },
             "redeem_by": {
+              "description": "The date by which the coupon must be redeemed.",
               "type": ["null", "string"]
             },
             "duration_in_months": {
+              "description": "The duration in months for which the coupon is valid.",
               "type": ["null", "number"]
             },
             "percent_off_precise": {
+              "description": "Precise percentage off applied by the coupon.",
               "type": ["null", "number"]
             },
             "max_redemptions": {
+              "description": "The maximum number of times the coupon can be redeemed.",
               "type": ["null", "number"]
             },
             "currency": {
+              "description": "The currency of the coupon.",
               "type": ["null", "string"]
             },
             "name": {
+              "description": "The name of the coupon.",
               "type": ["null", "string"]
             },
             "times_redeemed": {
+              "description": "The number of times the coupon has been redeemed.",
               "type": ["null", "number"]
             },
             "id": {
+              "description": "The ID of the coupon.",
               "type": ["null", "string"]
             },
             "duration": {
+              "description": "The duration of the coupon redemption.",
               "type": ["null", "string"]
             },
             "object": {
+              "description": "Type of object, in this case, 'coupon'.",
               "type": ["null", "string"]
             },
             "percent_off": {
+              "description": "The percentage off applied by the coupon.",
               "type": ["null", "number"]
             },
             "created": {
+              "description": "The timestamp when the coupon was created.",
               "type": ["null", "integer"]
             }
           }
         },
         "customer": {
+          "description": "The customer associated with the discount.",
           "type": ["null", "string"]
         },
         "start": {
+          "description": "The start date of the discount.",
           "type": ["null", "integer"]
         },
         "object": {
+          "description": "Type of object, in this case, 'discount'.",
           "type": ["null", "string"]
         },
         "subscription": {
+          "description": "The subscription to which the discount is applied.",
           "type": ["null", "string"]
         }
       }
     },
     "current_period_end": {
+      "description": "The timestamp at which the current period ends.",
       "type": ["null", "number"]
     },
     "plan": {
+      "description": "Details of the plan associated with the subscription.",
       "type": ["null", "object"],
       "properties": {
         "metadata": {
+          "description": "Additional metadata associated with the plan.",
           "type": ["null", "object"],
           "properties": {}
         },
         "product": {
+          "description": "The product associated with the plan.",
           "type": ["null", "string"]
         },
         "statement_description": {
+          "description": "The statement description of the plan.",
           "type": ["null", "string"]
         },
         "currency": {
+          "description": "The currency of the plan.",
           "type": ["null", "string"]
         },
         "livemode": {
+          "description": "Indicates if the plan is in live mode.",
           "type": ["null", "boolean"]
         },
         "tiers_mode": {
+          "description": "The mode of tiers for the plan.",
           "type": ["null", "string"]
         },
         "active": {
+          "description": "Indicates if the plan is active.",
           "type": ["null", "boolean"]
         },
         "id": {
+          "description": "The unique identifier of the plan.",
           "type": ["null", "string"]
         },
         "tiers": {
+          "description": "Tiers associated with the plan.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "integer", "object"],
             "properties": {
               "flat_amount": {
+                "description": "The flat amount applied in the tier.",
                 "type": ["null", "integer"]
               },
               "unit_amount": {
+                "description": "The unit amount applied in the tier.",
                 "type": ["null", "integer"]
               },
               "up_to": {
+                "description": "The upper limit for the tier.",
                 "type": ["null", "integer"]
               }
             }
           }
         },
         "created": {
+          "description": "The timestamp at which the plan was created.",
           "type": ["null", "integer"]
         },
         "nickname": {
+          "description": "The nickname of the plan.",
           "type": ["null", "string"]
         },
         "transform_usage": {
+          "description": "Transformation applied to usage for the plan.",
           "type": ["null", "string"]
         },
         "interval_count": {
+          "description": "The count of intervals for the plan.",
           "type": ["null", "integer"]
         },
         "name": {
+          "description": "The name of the plan.",
           "type": ["null", "string"]
         },
         "amount": {
+          "description": "The amount of the plan.",
           "type": ["null", "integer"]
         },
         "interval": {
+          "description": "The interval of the plan.",
           "type": ["null", "string"]
         },
         "aggregate_usage": {
+          "description": "The type of usage aggregation for the plan.",
           "type": ["null", "string"]
         },
         "trial_period_days": {
+          "description": "The number of trial period days for the plan.",
           "type": ["null", "integer"]
         },
         "billing_scheme": {
+          "description": "The billing scheme of the plan.",
           "type": ["null", "string"]
         },
         "statement_descriptor": {
+          "description": "The statement descriptor of the plan.",
           "type": ["null", "string"]
         },
         "usage_type": {
+          "description": "The type of usage for the plan.",
           "type": ["null", "string"]
         },
         "object": {
+          "description": "Type of object, in this case, 'plan'.",
           "type": ["null", "string"]
         }
       }
     },
     "billing": {
+      "description": "The billing method for the subscription.",
       "type": ["null", "string"]
     },
     "quantity": {
+      "description": "The quantity of the subscription.",
       "type": ["null", "integer"]
     },
     "days_until_due": {
+      "description": "The number of days until payment is due for the subscription.",
       "type": ["null", "integer"]
     },
     "status": {
+      "description": "The status of the subscription.",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "The timestamp at which the subscription was created.",
       "type": ["null", "integer"]
     },
     "updated": {
+      "description": "The timestamp at which the subscription was last updated.",
       "type": ["null", "integer"]
     },
     "ended_at": {
+      "description": "The timestamp at which the subscription ended.",
       "type": ["null", "number"]
     },
     "customer": {
+      "description": "The customer associated with the subscription.",
       "type": ["null", "string"]
     },
     "current_period_start": {
+      "description": "The timestamp at which the current period started.",
       "type": ["null", "integer"]
     },
     "trial_end": {
+      "description": "The end date of the trial period for the subscription.",
       "type": ["null", "number"]
     },
     "object": {
+      "description": "Type of object, in this case, 'subscription'.",
       "type": ["null", "string"]
     },
     "pending_setup_intent": {
+      "description": "The pending setup intent for the subscription.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency used for the subscription.",
       "type": ["null", "string"]
     },
     "transfer_data": {
+      "description": "Data related to transfers for the subscription.",
       "type": ["null", "object"],
       "properties": {
         "amount_percent": {
+          "description": "The percentage amount for transfers.",
           "type": ["null", "number"]
         },
         "destination": {
+          "description": "The destination for transfers.",
           "type": ["null", "string"]
         }
       }
     },
     "application": {
+      "description": "The application linked to the subscription.",
       "type": ["null", "string"]
     },
     "test_clock": {
+      "description": "The test clock for subscription testing purposes.",
       "type": ["null", "string"]
     },
     "automatic_tax": {
+      "description": "Data related to automatic tax calculations for the subscription.",
       "type": ["null", "object"],
       "properties": {
         "enabled": {
+          "description": "Indicates if automatic tax calculation is enabled for the subscription.",
           "type": ["null", "boolean"]
         }
       }
     },
     "payment_settings": {
+      "description": "Settings related to payment for the subscription.",
       "type": ["null", "object"],
       "properties": {
         "payment_method_options": {
+          "description": "Options for the payment method.",
           "type": ["null", "object"]
         },
         "payment_method_types": {
+          "description": "Supported payment method types.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "string"]
           }
         },
         "save_default_payment_method": {
+          "description": "Indicates if the default payment method should be saved.",
           "type": ["null", "string"]
         }
       }
     },
     "next_pending_invoice_item_invoice": {
+      "description": "The next pending invoice item invoice.",
       "type": ["null", "integer"]
     },
     "default_source": {
+      "description": "The default payment source for the subscription.",
       "type": ["null", "string"]
     },
     "default_payment_method": {
+      "description": "The default payment method for the subscription.",
       "type": ["null", "string"]
     },
     "collection_method": {
+      "description": "The method of collection for the subscription.",
       "type": ["null", "string"]
     },
     "pending_invoice_item_interval": {
+      "description": "Interval settings for pending invoice items.",
       "type": ["null", "object"],
       "properties": {
         "interval": {
+          "description": "The interval for pending invoice items.",
           "type": ["null", "string"]
         },
         "interval_count": {
+          "description": "The count of intervals for pending invoice items.",
           "type": ["null", "integer"]
         }
       }
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "description": "The default tax rates applied to the subscription.",
+      "$ref": "tax_rates.json"
     },
     "pause_collection": {
+      "description": "Details related to pausing the collection for the subscription.",
       "type": ["null", "object"],
       "properties": {
         "behavior": {
+          "description": "The behavior when pausing collection.",
           "type": ["null", "string"]
         },
         "resumes_at": {
+          "description": "The timestamp at which collection resumes.",
           "type": ["null", "integer"]
         }
       }
     },
     "cancellation_details": {
+      "description": "Details related to the cancellation of the subscription.",
       "type": ["null", "object"],
       "properties": {
         "comment": {
+          "description": "Any comments provided during the cancellation.",
           "type": ["null", "string"]
         },
         "feedback": {
+          "description": "Feedback related to the cancellation.",
           "type": ["null", "string"]
         },
         "reason": {
+          "description": "The reason for canceling the subscription.",
           "type": ["null", "string"]
         }
       }
     },
     "latest_invoice": {
+      "description": "Details of the latest invoice generated for the subscription.",
       "type": ["null", "string"]
     },
     "pending_update": {
+      "description": "Details of any pending updates for the subscription.",
       "type": ["null", "object"],
       "properties": {
         "billing_cycle_anchor": {
+          "description": "The anchor point for any pending billing cycle update.",
           "type": ["null", "integer"]
         },
         "expires_at": {
+          "description": "The timestamp at which the pending update expires.",
           "type": ["null", "integer"]
         },
         "subscription_items": {
+          "description": "Items included in the subscription update.",
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
             "properties": {
               "id": {
+                "description": "The unique identifier of the updated subscription item.",
                 "type": ["null", "string"]
               },
               "object": {
+                "description": "Type of object, in this case, 'subscription item'.",
                 "type": ["null", "string"]
               },
               "billing_thresholds": {
+                "description": "Thresholds for billing in the updated subscription item.",
                 "type": ["null", "object"],
                 "properties": {
                   "usage_gte": {
+                    "description": "The usage threshold for billing.",
                     "type": ["null", "integer"]
                   }
                 }
               },
               "created": {
+                "description": "The timestamp at which the updated subscription item was created.",
                 "type": ["null", "integer"]
               },
               "metadata": {
+                "description": "Additional metadata associated with the updated subscription item.",
                 "type": ["null", "object"]
               },
               "price": {
+                "description": "The price of the updated subscription item.",
                 "$ref": "price.json"
               },
               "quantity": {
+                "description": "The quantity of the updated subscription item.",
                 "type": ["null", "integer"]
               },
               "subscription": {
+                "description": "The subscription to which the item is updated.",
                 "type": ["null", "string"]
               },
               "tax_rates": {
+                "description": "Tax rates applied to the updated subscription item.",
                 "$ref": "tax_rates.json"
               }
             }
           }
         },
         "trial_end": {
+          "description": "The end date of the trial period for the pending update.",
           "type": ["null", "integer"]
         },
         "trial_from_plan": {
+          "description": "Indicates if the trial period is based on the plan for the pending update.",
           "type": ["null", "boolean"]
         }
       }
     },
     "description": {
+      "description": "A brief description of the subscription.",
       "type": ["null", "string"]
     },
     "schedule": {
+      "description": "The schedule associated with the subscription.",
       "type": ["null", "string"]
     },
     "trial_settings": {
+      "description": "Settings related to the trial period of the subscription.",
       "type": ["null", "object"],
       "properties": {
         "end_behavior": {
+          "description": "Behavior at the end of the trial period.",
           "type": ["null", "object"],
           "properties": {
             "missing_payment_method": {
+              "description": "Handling of missing payment method at the end of the trial.",
               "type": ["null", "string"]
             }
           }
@@ -433,20 +566,25 @@
       }
     },
     "on_behalf_of": {
+      "description": "The entity on whose behalf the subscription is made.",
       "type": ["null", "string"]
     },
     "billing_thresholds": {
+      "description": "Settings for billing thresholds such as usage-based pricing or limit enforcement.",
       "type": ["null", "object"],
       "properties": {
         "amount_gte": {
+          "description": "The threshold amount for triggering a billing cycle anchor reset.",
           "type": ["null", "integer"]
         },
         "reset_billing_cycle_anchor": {
+          "description": "Indicates if the billing cycle anchor should be reset based on the threshold.",
           "type": ["null", "boolean"]
         }
       }
     },
     "is_deleted": {
+      "description": "Indicates if the subscription has been deleted.",
       "type": ["null", "boolean"]
     }
   }

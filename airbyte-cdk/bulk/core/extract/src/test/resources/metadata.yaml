@@ -1,0 +1,4 @@
+---
+data:
+  dockerRepository: "airbyte/fake-source"
+  documentationUrl: "https://docs.airbyte.com"

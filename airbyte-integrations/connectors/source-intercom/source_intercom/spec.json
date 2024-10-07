@@ -19,19 +19,32 @@
         "title": "Access token",
         "type": "string",
         "description": "Access token for making authenticated requests. See the <a href=\"https://developers.intercom.com/building-apps/docs/authentication-types#how-to-get-your-access-token\">Intercom docs</a> for more information.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 0
       },
       "client_id": {
         "title": "Client Id",
         "type": "string",
         "description": "Client Id for your Intercom application.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 1
       },
       "client_secret": {
         "title": "Client Secret",
         "type": "string",
         "description": "Client Secret for your Intercom application.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "activity_logs_time_step": {
+        "type": "integer",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 91,
+        "title": "Activity logs stream slice step size (in days)",
+        "description": "Set lower value in case of failing long running sync of Activity Logs stream.",
+        "examples": [30, 10, 5],
+        "order": 3
       }
     }
   },

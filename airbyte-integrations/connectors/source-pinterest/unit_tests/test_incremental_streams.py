@@ -8,8 +8,12 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from pytest import fixture
-from source_pinterest.streams import AdAccountAnalytics, Campaigns, IncrementalPinterestSubStream
+from source_pinterest.streams import IncrementalPinterestSubStream
+
+from .conftest import get_stream_by_name
+from .utils import create_requests_response
 
 
 @fixture
@@ -57,32 +61,81 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
 
 
-def test_request_params(patch_incremental_base_class):
-    stream = AdAccountAnalytics(None, config=MagicMock())
-    test_slice = {"start_date": "2022-01-01", "end_date": "2022-01-02"}
-    expected_property = "columns"
-    res = stream.request_params({}, test_slice)
-    assert expected_property in res
+@pytest.mark.parametrize(
+    ("http_status", "expected_response_action"),
+    (
+        (HTTPStatus.OK, ResponseAction.SUCCESS),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.RETRY),
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
+    ),
+)
+def test_should_retry(requests_mock, test_config, http_status, expected_response_action):
+    response_mock = create_requests_response(requests_mock, http_status, {"code": 1} if HTTPStatus.BAD_REQUEST else {})
+    stream = get_stream_by_name("campaign_analytics_report", test_config)
+    assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
 @pytest.mark.parametrize(
-    ("http_status", "should_retry"),
-    [
-        (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, False),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-    ],
+    ("start_date", "stream_state", "expected_records"),
+    (
+        (
+            None,
+            {},
+            [
+                {"id": "campaign_id_1", "ad_account_id": "ad_account_id", "updated_time": 1711929600},
+                {"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400},
+            ],
+        ),
+        ("2024-04-02", {}, [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}]),
+        (
+            "2024-03-30",
+            {
+                "states": [
+                    {"partition": {"id": "ad_account_id", "parent_slice": {}}, "cursor": {"updated_time": 1712016000}},
+                ],
+            },
+            [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}],
+        ),
+        (
+            "2024-04-02",
+            {
+                "states": [
+                    {"partition": {"id": "ad_account_id", "parent_slice": {}}, "cursor": {"updated_time": 1711929599}},
+                ],
+            },
+            [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}],
+        ),
+        (
+            None,
+            {
+                "states": [
+                    {"partition": {"id": "ad_account_id", "parent_slice": {}}, "cursor": {"updated_time": 1712016000}},
+                ],
+            },
+            [{"id": "campaign_id_2", "ad_account_id": "ad_account_id", "updated_time": 1712102400}],
+        ),
+    ),
 )
-def test_should_retry(patch_incremental_base_class, http_status, should_retry):
-    response_mock = MagicMock()
-    response_mock.status_code = http_status
-    stream = AdAccountAnalytics(None, config=MagicMock())
-    assert stream.should_retry(response_mock) == should_retry
+def test_semi_incremental_read(requests_mock, test_config, start_date, stream_state, expected_records):
+    stream = get_stream_by_name("campaigns", test_config)
+    stream.config["start_date"] = start_date
 
+    ad_account_id = "ad_account_id"
+    requests_mock.get(url="https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": ad_account_id}]})
+    requests_mock.get(
+        url=f"https://api.pinterest.com/v5/ad_accounts/{ad_account_id}/campaigns",
+        json={
+            "items": [
+                {"id": "campaign_id_1", "ad_account_id": ad_account_id, "updated_time": 1711929600},  # 2024-04-01
+                {"id": "campaign_id_2", "ad_account_id": ad_account_id, "updated_time": 1712102400},  # 2024-04-03
+            ],
+        },
+    )
 
-def test_parse_response(patch_incremental_base_class, test_response_filter, test_current_stream_state):
-    stream = Campaigns(None, config=MagicMock())
-    expected_parsed_object = [{"updated_time": "2021-11-01"}]
-    result = list(stream.parse_response(test_response_filter, test_current_stream_state))
-    assert result == expected_parsed_object
+    stream.state = stream_state
+    actual_records = [
+        dict(record) for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
+        for record in stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
+    ]
+    assert actual_records == expected_records

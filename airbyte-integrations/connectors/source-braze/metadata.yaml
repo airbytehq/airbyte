@@ -5,14 +5,18 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-braze
   documentationUrl: https://docs.airbyte.com/integrations/sources/braze
   githubIssueLabel: source-braze
   icon: braze.svg
   license: MIT
   name: Braze
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-braze
+  registryOverrides:
     cloud:
       enabled: true
     oss:
@@ -20,6 +24,19 @@ data:
   releaseStage: alpha
   supportLevel: community
   tags:
-    - language:low-code
     - language:python
+    - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: braze_config_dev_null
+          id: 5df06901-b346-4401-81af-62b20deda255
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_BRAZE_INTEGRATION_TESTS_CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

@@ -101,7 +101,7 @@ def test_slice(site_urls, sync_mode, data_state):
 def test_state(current_stream_state, latest_record, expected):
     stream = SearchAnalyticsByDate(None, ["https://example.com"], "start_date", "end_date")
 
-    value = stream.get_updated_state(current_stream_state, latest_record)
+    value = stream._get_updated_state(current_stream_state, latest_record)
     assert value == expected
 
 
@@ -110,9 +110,9 @@ def test_updated_state():
 
     state = {}
     record = {"site_url": "https://domain1.com", "search_type": "web", "date": "2022-01-01"}
-    state = stream.get_updated_state(state, record)
+    state = stream._get_updated_state(state, record)
     record = {"site_url": "https://domain2.com", "search_type": "web", "date": "2022-01-01"}
-    state = stream.get_updated_state(state, record)
+    state = stream._get_updated_state(state, record)
 
     assert state == {
         "https://domain1.com": {"web": {"date": "2022-01-01"}},
@@ -133,6 +133,7 @@ def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
 
 def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
     stream = SearchAnalyticsKeywordSiteReportBySite(None, ["https://example.com"], "2021-01-01", "2021-01-02")
+    requests_mock.post(f"{stream.url_base}sites/{stream._site_urls[0]}/searchAnalytics/query", status_code=200, json={"rows": [{"keys": ["TPF_QA"]}]})
     slice = list(stream.stream_slices(None))[0]
     url = stream.url_base + stream.path(None, slice)
     requests_mock.get(url, status_code=400, json=bad_aggregation_type)
@@ -231,14 +232,14 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
             lazy_fixture("config"),
             (
                 False,
-                "UnauthorizedOauthError('Unable to connect with privided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
+                "UnauthorizedOauthError('Unable to connect with provided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
             ),
         ),
         (
             lazy_fixture("service_account_config"),
             (
                 False,
-                "UnauthorizedServiceAccountError('Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid.')",
+                "UnauthorizedServiceAccountError('Unable to connect with provided Service Account credentials. Make sure the `sevice account credentials` provided are valid.')",
             ),
         ),
     ],

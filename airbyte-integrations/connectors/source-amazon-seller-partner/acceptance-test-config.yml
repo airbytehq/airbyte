@@ -1,11 +1,11 @@
 connector_image: airbyte/source-amazon-seller-partner:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "integration_tests/spec.json"
-        # massively refactored `spec`
-        backward_compatibility_tests_config:
-          disable_for_version: "1.2.0"
+      - spec_path: "source_amazon_seller_partner/spec.json"
+        deployment_mode: "cloud"
+      - spec_path: "integration_tests/spec_oss.json"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,116 +16,93 @@ acceptance_tests:
         timeout_seconds: 60
   discovery:
     tests:
-      - config_path:
-          "secrets/config.json"
-          # refactored `spec`, but `app_id` is required for `1.2.0`
-        backward_compatibility_tests_config:
-          disable_for_version: "1.2.0"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        timeout_seconds: 2400
+        timeout_seconds: 3600
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
-        # TODO: Add records for empty streams - https://github.com/airbytehq/airbyte/issues/21555
         empty_streams:
           - name: GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING
-            bypass_reason: "no access and no data"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_ORDER_REPORT_DATA_SHIPPING
-            bypass_reason: "no access and no data"
-          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_FULFILLMENT_REMOVAL_ORDER_DETAIL_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_FULFILLMENT_REMOVAL_SHIPMENT_DETAIL_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_SELLER_FEEDBACK_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA
-            bypass_reason: "no records"
-          - name: GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_LEDGER_DETAIL_VIEW_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_AFN_INVENTORY_DATA_BY_COUNTRY
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_MONTHLY_INVENTORY_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_VENDOR_SALES_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_SNS_FORECAST_DATA
-            bypass_reason: "no records"
-          - name: GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_SUMMARY_DATA
-            bypass_reason: "no records"
-          - name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_AFN_INVENTORY_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_MERCHANT_CANCELLED_LISTINGS_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_PROMOTION_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_LEDGER_SUMMARY_VIEW_DATA
-            bypass_reason: "no records"
-          - name: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_ADJUSTMENTS_DATA
-            bypass_reason: "no records"
-          - name: GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: VendorDirectFulfillmentShipping
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FLAT_FILE_ARCHIVED_ORDERS_DATA_BY_ORDER_DATE
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_VENDOR_INVENTORY_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_SNS_PERFORMANCE_DATA
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_CURRENT_INVENTORY_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_INVENTORY_PLANNING_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_STORAGE_FEE_CHARGES_DATA
-            bypass_reason: "no records"
-          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_SALES_AND_TRAFFIC_REPORT
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_STRANDED_INVENTORY_UI_DATA
-            bypass_reason: "no records"
-          - name: GET_FBA_FULFILLMENT_INVENTORY_RECEIPTS_DATA
-            bypass_reason: "no records"
-          - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
-            bypass_reason: "no records"
-          - name: ListFinancialEvents
-            bypass_reason: "no records"
-          - name: ListFinancialEventGroups
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
           - name: GET_FBA_REIMBURSEMENTS_DATA
-            bypass_reason: "no records"
-          - name: GET_XML_BROWSE_TREE_DATA
-            bypass_reason: "no records"
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_VENDOR_TRAFFIC_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: VendorOrders
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_VENDOR_FORECASTING_FRESH_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_VENDOR_FORECASTING_RETAIL_REPORT
+            bypass_reason: "Data cannot be seeded in the test account, integration tests added for the stream instead"
+          - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
+          - name: GET_XML_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
+            bypass_reason: "Data for the stream only available for 2 years. Expired for now. Seeding in progress."
   incremental:
     tests:
       - config_path: "secrets/config.json"

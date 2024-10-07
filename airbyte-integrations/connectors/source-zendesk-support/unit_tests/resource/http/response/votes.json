@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "has_more": false
+  },
+  "links": {
+    "first": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts/7253351904271/comments?page%5Bsize%5D=100",
+    "last": "https://d3v-airbyte.zendesk.com/api/v2/help_center/community/posts/7253351904271/comments?page%5Bbefore%5D=bGFzdF9wYWdl&page%5Bsize%5D=100"
+  },
+  "votes": [
+    {
+      "id": 35467,
+      "user_id": 888887,
+      "value": -1,
+      "created_at": "2023-06-22T00:32:22Z",
+      "updated_at": "2023-06-22T00:32:22Z"
+    }
+  ]
+}

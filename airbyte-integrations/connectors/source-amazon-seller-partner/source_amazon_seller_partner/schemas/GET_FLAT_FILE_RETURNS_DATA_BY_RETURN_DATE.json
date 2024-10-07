@@ -4,37 +4,142 @@
   "type": "object",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Order ID": { "type": ["null", "string"] },
-    "Order date": { "type": ["null", "string"] },
-    "Return request date": { "type": ["null", "string"] },
-    "Return request status": { "type": ["null", "string"] },
-    "Amazon RMA ID": { "type": ["null", "string"] },
-    "Merchant RMA ID": { "type": ["null", "string"] },
-    "Label type": { "type": ["null", "string"] },
-    "Label cost": { "type": ["null", "string"] },
-    "Currency code": { "type": ["null", "string"] },
-    "Return carrier": { "type": ["null", "string"] },
-    "Tracking ID": { "type": ["null", "string"] },
-    "Label to be paid by": { "type": ["null", "string"] },
-    "A-to-Z Claim": { "type": ["null", "string"] },
-    "Is prime": { "type": ["null", "string"] },
-    "ASIN": { "type": ["null", "string"] },
-    "Merchant SKU": { "type": ["null", "string"] },
-    "Item Name": { "type": ["null", "string"] },
-    "Return quantity": { "type": ["null", "string"] },
-    "Return Reason": { "type": ["null", "string"] },
-    "In policy": { "type": ["null", "string"] },
-    "Return type": { "type": ["null", "string"] },
-    "Resolution": { "type": ["null", "string"] },
-    "Invoice number": { "type": ["null", "string"] },
-    "Return delivery date": { "type": ["null", "string"] },
-    "Order Amount": { "type": ["null", "string"] },
-    "Order quantity": { "type": ["null", "string"] },
-    "SafeT Action reason": { "type": ["null", "string"] },
-    "SafeT claim id": { "type": ["null", "string"] },
-    "SafeT claim state": { "type": ["null", "string"] },
-    "SafeT claim creation time": { "type": ["null", "string"] },
-    "SafeT claim reimbursement amount": { "type": ["null", "string"] },
-    "Refunded Amount": { "type": ["null", "string"] }
+    "Order ID": {
+      "description": "Unique identifier of the order.",
+      "type": ["null", "string"]
+    },
+    "Order date": {
+      "description": "Date and time when the order was placed.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Return request date": {
+      "description": "Date and time when the return request was initiated.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Return request status": {
+      "description": "Status of the return request.",
+      "type": ["null", "string"]
+    },
+    "Amazon RMA ID": {
+      "description": "Amazon's Return Merchandise Authorization ID.",
+      "type": ["null", "string"]
+    },
+    "Merchant RMA ID": {
+      "description": "Merchant's Return Merchandise Authorization ID.",
+      "type": ["null", "string"]
+    },
+    "Label type": {
+      "description": "Type of return shipping label.",
+      "type": ["null", "string"]
+    },
+    "Label cost": {
+      "description": "Cost associated with the return shipping label.",
+      "type": ["null", "string"]
+    },
+    "Currency code": {
+      "description": "The currency code used for monetary values.",
+      "type": ["null", "string"]
+    },
+    "Return carrier": {
+      "description": "Carrier used for returning the item.",
+      "type": ["null", "string"]
+    },
+    "Tracking ID": {
+      "description": "Tracking ID for the return shipment.",
+      "type": ["null", "string"]
+    },
+    "Label to be paid by": {
+      "description": "Party responsible for paying the return label costs.",
+      "type": ["null", "string"]
+    },
+    "A-to-Z Claim": {
+      "description": "Indicates if a claim has been made through Amazon A-to-Z Guarantee.",
+      "type": ["null", "string"]
+    },
+    "Is prime": {
+      "description": "Indicates if the order was fulfilled through Amazon Prime.",
+      "type": ["null", "string"]
+    },
+    "ASIN": {
+      "description": "Amazon Standard Identification Number of the product.",
+      "type": ["null", "string"]
+    },
+    "Merchant SKU": {
+      "description": "Merchant Stock Keeping Unit of the product.",
+      "type": ["null", "string"]
+    },
+    "Item Name": {
+      "description": "Name or description of the returned item.",
+      "type": ["null", "string"]
+    },
+    "Return quantity": {
+      "description": "Number of items being returned.",
+      "type": ["null", "string"]
+    },
+    "Return Reason": {
+      "description": "Reason provided for returning the item.",
+      "type": ["null", "string"]
+    },
+    "In policy": {
+      "description": "Flag indicating if the return is within the return policy.",
+      "type": ["null", "string"]
+    },
+    "Return type": {
+      "description": "Type of return (e.g., refund, replacement).",
+      "type": ["null", "string"]
+    },
+    "Resolution": {
+      "description": "Resolution status of the return request.",
+      "type": ["null", "string"]
+    },
+    "Invoice number": {
+      "description": "Unique identifier of the invoice related to the return.",
+      "type": ["null", "string"]
+    },
+    "Return delivery date": {
+      "description": "Date and time when the return was delivered.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Order Amount": {
+      "description": "Total amount of the order.",
+      "type": ["null", "string"]
+    },
+    "Order quantity": {
+      "description": "Number of items ordered.",
+      "type": ["null", "string"]
+    },
+    "SafeT Action reason": {
+      "description": "Reason for the action taken by Amazon SafeT.",
+      "type": ["null", "string"]
+    },
+    "SafeT claim id": {
+      "description": "Unique identifier of the SafeT claim.",
+      "type": ["null", "string"]
+    },
+    "SafeT claim state": {
+      "description": "State of the SafeT claim.",
+      "type": ["null", "string"]
+    },
+    "SafeT claim creation time": {
+      "description": "Date and time when the SafeT claim was created.",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "SafeT claim reimbursement amount": {
+      "description": "Amount reimbursed by SafeT for the claim.",
+      "type": ["null", "string"]
+    },
+    "Refunded Amount": {
+      "description": "Total amount refunded for the return.",
+      "type": ["null", "string"]
+    },
+    "dataEndTime": {
+      "description": "End time of the data retrieval period.",
+      "type": ["null", "string"],
+      "format": "date"
+    }
   }
 }

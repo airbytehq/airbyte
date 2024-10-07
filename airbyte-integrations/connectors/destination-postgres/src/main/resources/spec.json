@@ -215,6 +215,26 @@
         "title": "JDBC URL Params",
         "type": "string",
         "order": 8
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into",
+        "title": "Raw table schema (defaults to airbyte_internal)",
+        "order": 9
+      },
+      "disable_type_dedupe": {
+        "type": "boolean",
+        "default": false,
+        "description": "Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title": "Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)",
+        "order": 10
+      },
+      "drop_cascade": {
+        "type": "boolean",
+        "default": false,
+        "description": "Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects.",
+        "title": "Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)",
+        "order": 11
       }
     }
   }

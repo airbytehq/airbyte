@@ -2,43 +2,21 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorReleases.yaml
 title: ConnectorReleases
-description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
+description: Contains information about different types of releases for a connector.
 type: object
 additionalProperties: false
 required:
   - breakingChanges
 properties:
+  isReleaseCandidate:
+    description: Whether the release is eligible to be a release candidate.
+    type: boolean
+    default: false
+  rolloutConfiguration:
+    $ref: RolloutConfiguration.yaml
   breakingChanges:
-    $ref: "#/definitions/ConnectorBreakingChanges"
+    $ref: ConnectorBreakingChanges.yaml
   migrationDocumentationUrl:
     description: URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}-migrations
     type: string
     format: uri
-definitions:
-  ConnectorBreakingChanges:
-    description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
-    type: object
-    additionalProperties: false
-    minProperties: 1
-    patternProperties:
-      "^\\d+\\.\\d+\\.\\d+$":
-        $ref: "#/definitions/VersionBreakingChange"
-  VersionBreakingChange:
-    description: Contains information about a breaking change, including the deadline to upgrade and a message detailing the change.
-    type: object
-    additionalProperties: false
-    required:
-      - upgradeDeadline
-      - message
-    properties:
-      upgradeDeadline:
-        description: The deadline by which to upgrade before the breaking change takes effect.
-        type: string
-        format: date
-      message:
-        description: Descriptive message detailing the breaking change.
-        type: string
-      migrationDocumentationUrl:
-        description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}
-        type: string
-        format: uri

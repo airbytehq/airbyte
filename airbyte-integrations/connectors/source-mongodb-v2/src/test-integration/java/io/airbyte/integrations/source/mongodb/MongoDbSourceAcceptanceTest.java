@@ -22,25 +22,27 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Updates;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcTargetPosition;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumStateUtil;
+import io.airbyte.integrations.source.mongodb.cdc.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -238,7 +240,8 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
 
     assertEquals(0, recordMessages.size());
-    assertEquals(1, stateMessages.size());
+    // Expect 1 state message from initial load and 1 from incremental load.
+    assertEquals(2, stateMessages.size());
 
     final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
     assertNotNull(lastStateMessage.getGlobal().getSharedState());
@@ -502,27 +505,27 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // Modify the state to point to a non-existing resume token value
     final AirbyteStateMessage stateMessage = Iterables.getLast(stateMessages);
-    final String replicaSetName = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final MongoDbCdcState cdcState = new MongoDbCdcState(
-        MongoDbDebeziumStateUtil.formatState(databaseName, replicaSetName, INVALID_RESUME_TOKEN));
+        MongoDbDebeziumStateUtil.formatState(databaseName, INVALID_RESUME_TOKEN));
     stateMessage.getGlobal().setSharedState(Jsons.jsonNode(cdcState));
     final JsonNode state = Jsons.jsonNode(List.of(stateMessage));
 
-    // Re-run the sync to prove that an initial snapshot is initiated due to invalid resume token
-    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, state);
-
-    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
-    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
-
-    assertEquals(recordCount, recordMessages2.size());
-    assertEquals(recordCount + 1, stateMessages2.size());
+    // Re-run the sync to prove that a config error is thrown due to invalid resume token
+    List<AirbyteMessage> messages1 = runRead(configuredCatalog, state);
+    List<AirbyteMessage> records = messages1.stream().filter(r -> r.getType() == Type.RECORD).toList();
+    // In this sync, there should be no records expected - only error trace messages indicating that the
+    // offset is not valid.
+    assertEquals(0, records.size());
+    List<AirbyteMessage> traceMessages = messages1.stream().filter(r -> r.getType() == Type.TRACE).toList();
+    assertOplogErrorTracePresent(traceMessages);
   }
 
   @Test
   void testReachedTargetPosition() {
     final long eventTimestamp = Long.MAX_VALUE;
     final Integer order = 0;
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
     final ChangeEventWithMetadata changeEventWithMetadata = mock(ChangeEventWithMetadata.class);
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(true);
@@ -530,12 +533,12 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
     when(changeEventWithMetadata.isSnapshotEvent()).thenReturn(false);
-    when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.LAST);
+    when(changeEventWithMetadata.getSnapshotMetadata()).thenReturn(SnapshotMetadata.LAST);
 
     assertTrue(targetPosition.reachedTargetPosition(changeEventWithMetadata));
 
-    when(changeEventWithMetadata.snapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
-    when(changeEventWithMetadata.eventValueAsJson()).thenReturn(Jsons.jsonNode(
+    when(changeEventWithMetadata.getSnapshotMetadata()).thenReturn(SnapshotMetadata.FIRST);
+    when(changeEventWithMetadata.getEventValueAsJson()).thenReturn(Jsons.jsonNode(
         Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE,
             Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_TIMESTAMP_MS, eventTimestamp,
                 MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER, order))));
@@ -549,18 +552,18 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Test
   void testIsSameOffset() {
-    final MongoDbCdcTargetPosition targetPosition = new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient));
-    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
+    final MongoDbCdcTargetPosition targetPosition =
+        new MongoDbCdcTargetPosition(MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog()));
+    final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, getConfiguredCatalog());
     final String resumeTokenString = resumeToken.get("_data").asString().getValue();
-    final String replicaSet = MongoDbDebeziumStateUtil.getReplicaSetName(mongoClient);
     final Map<String, String> emptyOffsetA = Map.of();
     final Map<String, String> emptyOffsetB = Map.of();
     final Map<String, String> offsetA = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, resumeTokenString), new TypeReference<>() {});
+        resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetB = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, resumeTokenString), new TypeReference<>() {});
+        resumeTokenString), new TypeReference<>() {});
     final Map<String, String> offsetBDifferent = Jsons.object(MongoDbDebeziumStateUtil.formatState(databaseName,
-        replicaSet, INVALID_RESUME_TOKEN), new TypeReference<>() {});
+        INVALID_RESUME_TOKEN), new TypeReference<>() {});
 
     assertFalse(targetPosition.isSameOffset(null, offsetB));
     assertFalse(targetPosition.isSameOffset(emptyOffsetA, offsetB));
@@ -568,6 +571,36 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     assertFalse(targetPosition.isSameOffset(offsetA, emptyOffsetB));
     assertFalse(targetPosition.isSameOffset(offsetA, offsetBDifferent));
     assertTrue(targetPosition.isSameOffset(offsetA, offsetB));
+  }
+
+  @Test
+  void testStreamStatusTraces() throws Exception {
+    final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalog();
+
+    // Start a sync with one stream
+    final List<AirbyteMessage> messages = runRead(configuredCatalog);
+    final List<AirbyteRecordMessage> recordMessages = filterRecords(messages);
+    final List<AirbyteStateMessage> stateMessages = filterStateMessages(messages);
+    final List<AirbyteTraceMessage> statusTraceMessages = filterStatusTraceMessages(messages);
+
+    assertEquals(recordCount, recordMessages.size());
+    assertEquals(recordCount + 1, stateMessages.size());
+    assertEquals(2, statusTraceMessages.size());
+
+    final AirbyteStateMessage lastStateMessage = Iterables.getLast(stateMessages);
+
+    final var result = mongoClient.getDatabase(databaseName).getCollection(collectionName).insertOne(createDocument(1));
+    final var insertedId = result.getInsertedId();
+
+    // Start another sync that finds the insert change
+    final List<AirbyteMessage> messages2 = runRead(configuredCatalog, Jsons.jsonNode(List.of(lastStateMessage)));
+    final List<AirbyteRecordMessage> recordMessages2 = filterRecords(messages2);
+    final List<AirbyteStateMessage> stateMessages2 = filterStateMessages(messages2);
+    final List<AirbyteTraceMessage> statusTraceMessages2 = filterStatusTraceMessages(messages2);
+
+    assertEquals(1, recordMessages2.size());
+    assertEquals(1, stateMessages2.size());
+    assertEquals(2, statusTraceMessages2.size());
   }
 
   private ConfiguredAirbyteStream convertToConfiguredAirbyteStream(final AirbyteStream airbyteStream, final SyncMode syncMode) {
@@ -587,6 +620,12 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private List<AirbyteStateMessage> filterStateMessages(final List<AirbyteMessage> messages) {
     return messages.stream().filter(r -> r.getType() == AirbyteMessage.Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  private List<AirbyteTraceMessage> filterStatusTraceMessages(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(m -> m.getType() == Type.TRACE &&
+        m.getTrace().getType() == AirbyteTraceMessage.Type.STREAM_STATUS).map(AirbyteMessage::getTrace)
         .collect(Collectors.toList());
   }
 
@@ -654,6 +693,14 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     } else {
       assertNull(data.get(CDC_DELETED_AT));
     }
+  }
+
+  private void assertOplogErrorTracePresent(List<AirbyteMessage> traceMessages) {
+    final boolean oplogTracePresent = traceMessages
+        .stream()
+        .anyMatch(trace -> trace.getTrace().getType().equals(AirbyteTraceMessage.Type.ERROR)
+            && trace.getTrace().getError().getMessage().contains("Saved offset is not valid"));
+    assertTrue(oplogTracePresent);
   }
 
 }

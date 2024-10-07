@@ -1,30 +1,58 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 200
   allowedHosts:
     hosts:
       - api.twilio.com
       - monitor.twilio.com
       - chat.twilio.com
       - trunking.twilio.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:2.0.0@sha256:c44839ba84406116e8ba68722a0f30e8f6e7056c726f447681bb9e9ece8bd916
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.10.0
+  dockerImageTag: 0.11.12
   dockerRepository: airbyte/source-twilio
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   githubIssueLabel: source-twilio
   icon: twilio.svg
   license: MIT
+  maxSecondsBetweenMessages: 5400
   name: Twilio
-  registries:
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-twilio
+  registryOverrides:
     cloud:
       enabled: true
     oss:
       enabled: true
   releaseStage: generally_available
-  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: twilio_config_with_lookback_dev_null
+          id: 57c28219-3a06-48db-9aec-df3cd20be9f6
+        - name: twilio_config_dev_null
+          id: 91aac9a6-6ece-42e2-9ed5-c6f6a226cc3e
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-TWILIO_LOOKBACK_WINDOW__CREDS
+          fileName: config_with_lookback.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_SOURCE-TWILIO__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
 metadataSpecVersion: "1.0"

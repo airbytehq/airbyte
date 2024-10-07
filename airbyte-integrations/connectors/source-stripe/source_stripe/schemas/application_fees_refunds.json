@@ -5,33 +5,43 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the application fee refund",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "The object type, which will be 'fee_refund'",
       "type": ["null", "string"]
     },
     "amount": {
+      "description": "The amount refunded in the application fee",
       "type": ["null", "number"]
     },
     "balance_transaction": {
+      "description": "The balance transaction ID associated with the refund",
       "type": ["null", "string"]
     },
     "created": {
+      "description": "Timestamp for when the refund was created",
       "type": ["null", "number"]
     },
     "updated": {
+      "description": "Timestamp for when the refund was last updated",
       "type": ["null", "integer"]
     },
     "currency": {
+      "description": "The currency of the refunded amount",
       "type": ["null", "string"]
     },
     "fee": {
+      "description": "The application fee ID associated with the refund",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional information or custom data associated with the application fee refunds.",
       "type": ["null", "object"],
       "properties": {
         "fee": {
+          "description": "Metadata related to the refunded fee",
           "type": ["null", "string"]
         }
       }

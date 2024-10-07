@@ -1,0 +1,164 @@
+[
+  {
+    "id": "clear_transients",
+    "name": "WC transients",
+    "action": "Clear transients",
+    "description": "This tool will clear the product/shop transients cache.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/clear_transients"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "clear_expired_transients",
+    "name": "Expired transients",
+    "action": "Clear expired transients",
+    "description": "This tool will clear ALL expired transients from WordPress.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/clear_expired_transients"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "delete_orphaned_variations",
+    "name": "Orphaned variations",
+    "action": "Delete orphaned variations",
+    "description": "This tool will delete all variations which have no parent.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/delete_orphaned_variations"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "recount_terms",
+    "name": "Term counts",
+    "action": "Recount terms",
+    "description": "This tool will recount product terms - useful when changing your settings in a way which hides products from the catalog.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/recount_terms"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "reset_roles",
+    "name": "Capabilities",
+    "action": "Reset capabilities",
+    "description": "This tool will reset the admin, customer and shop_manager roles to default. Use this if your users cannot access all of the WooCommerce admin pages.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/reset_roles"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "clear_sessions",
+    "name": "Customer sessions",
+    "action": "Clear all sessions",
+    "description": "<strong class=\"red\">Note:</strong> This tool will delete all customer session data from the database, including any current live carts.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/clear_sessions"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "install_pages",
+    "name": "Install WooCommerce pages",
+    "action": "Install pages",
+    "description": "<strong class=\"red\">Note:</strong> This tool will install all the missing WooCommerce pages. Pages already defined and set up will not be replaced.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/install_pages"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "delete_taxes",
+    "name": "Delete all WooCommerce tax rates",
+    "action": "Delete ALL tax rates",
+    "description": "<strong class=\"red\">Note:</strong> This option will delete ALL of your tax rates, use with caution.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/delete_taxes"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  },
+  {
+    "id": "reset_tracking",
+    "name": "Reset usage tracking settings",
+    "action": "Reset usage tracking settings",
+    "description": "This will reset your usage tracking settings, causing it to show the opt-in banner again and not sending any data.",
+    "_links": {
+      "self": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools/reset_tracking"
+        }
+      ],
+      "collection": [
+        {
+          "href": "https://example.com/wp-json/wc/v3/system_status/tools"
+        }
+      ]
+    }
+  }
+]

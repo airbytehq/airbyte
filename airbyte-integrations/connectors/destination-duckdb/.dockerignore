@@ -1,8 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_duckdb
-!setup.py
-!pyproject.toml
-!poetry.lock
-!README.md

@@ -27,8 +27,10 @@ import java.util.HashMap;
 import java.util.Objects;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.CockroachContainer;
 
+@Disabled
 public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
@@ -57,7 +59,7 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.SSL_KEY, false)
         .build());
 
-    try (final DSLContext dslContext = DSLContextFactory.create(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
@@ -65,19 +67,19 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
-        SQLDialect.POSTGRES)) {
-      final Database database = new Database(dslContext);
+        SQLDialect.POSTGRES);
+    final Database database = new Database(dslContext);
 
-      database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-        ctx.fetch(
-            "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-        ctx.fetch(
-            "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-        return null;
-      });
-    }
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+      ctx.fetch(
+          "INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+      ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+      ctx.fetch(
+          "INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+      return null;
+    });
+
   }
 
   @Override

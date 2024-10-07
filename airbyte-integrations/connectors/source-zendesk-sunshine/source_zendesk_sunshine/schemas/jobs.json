@@ -4,18 +4,23 @@
   "additionalProperties": true,
   "properties": {
     "id": {
+      "description": "The unique identifier for the job",
       "type": ["null", "string"]
     },
     "job_status": {
+      "description": "The status of the job (e.g., pending, processing, completed)",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "The timestamp when the job was created",
       "type": ["null", "string"]
     },
     "updated_at": {
+      "description": "The timestamp when the job was last updated",
       "type": ["null", "string"]
     },
     "completed_at": {
+      "description": "The timestamp when the job was completed",
       "type": ["null", "string"]
     }
   }

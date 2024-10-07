@@ -31,15 +31,11 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: true
           exact_order: true
-          extra_records: false
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: true
           exact_order: true
-          extra_records: false
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

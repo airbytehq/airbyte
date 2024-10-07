@@ -1,28 +1,37 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import gzip
+import hashlib
 import json
 import logging
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_kyve.util import CustomResourceSchemaLoader
+from source_kyve.utils import query_endpoint
 
 logger = logging.getLogger("airbyte")
 
-# this mapping handles the schema to runtime relation
-# this needs to be updated whenever a new schema is integrated
-runtime_to_root_file_mapping = {
-    "@kyvejs/bitcoin": "bitcoin/block",
-    "@kyvejs/celo": "celo/block",
-    "@kyvejs/cosmos": "cosmos/block",
-    "@kyvejs/evm": "evm/block",
-    "@kyvejs/uniswap": "uniswap/event",
+# 1: Arweave
+# 2: Irys
+# 3: KYVE Storage-Provider
+storage_provider_gateways = {
+    "1": [
+        "arweave.net/",
+        "arweave.dev/",
+        "c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
+        "hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
+    ],
+    "2": [
+        "arweave.net/",
+        "https://gateway.irys.xyz/",
+        "arweave.dev/",
+        "c7fqu7cwmsb7dsibz2pqicn2gjwn35amtazqg642ettzftl3dk2a.arweave.net/",
+        "hkz3zh4oo432n4pxnvylnqjm7nbyeitajmeiwtkttijgyuvfc3sq.arweave.net/",
+    ],
+    "3": ["https://storage.kyve.network/"],
 }
 
 
@@ -55,27 +64,20 @@ class KYVEStream(HttpStream, IncrementalMixin):
         self._cursor_value = None
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        # this is KYVE's default schema, if a root_schema is defined
-        # the ResourceSchemaLoader automatically resolves the dependency
+        # This is KYVE's default schema and won't be changed.
         schema = {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
-            "properties": {"key": {"type": "integer"}, "value": {"type": "object"}},
+            "properties": {"key": {"type": "string"}, "value": {"type": "object"}},
             "required": ["key", "value"],
         }
-        # in case we have defined a schema file, we can get it from the mapping
-        schema_root_file = runtime_to_root_file_mapping.get(self.runtime, None)
 
-        # we update the default schema in case there is a root_file
-        if schema_root_file:
-            inlay_schema = CustomResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(schema_root_file)
-            schema["properties"]["value"] = inlay_schema
         return schema
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"/kyve/query/v1beta1/finalized_bundles/{self.pool_id}"
+        return f"/kyve/v1/bundles/{self.pool_id}"
 
     def request_params(
         self,
@@ -115,25 +117,41 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
         for bundle in bundles:
             storage_id = bundle.get("storage_id")
-            # retrieve file from Arweave
-            response_from_arweave = requests.get(f"https://arweave.net/{storage_id}")
+            storage_provider_id = bundle.get("storage_provider_id")
 
-            if not response.ok:
+            # Load endpoints for each storage_provider
+            gateway_endpoints = storage_provider_gateways.get(storage_provider_id)
+
+            # If storage_provider provides gateway_endpoints, query endpoint - otherwise stop syncing.
+            if gateway_endpoints is not None:
+                # Try to query each endpoint in the given order and break loop if query was successful
+                # If no endpoint is successful, skip the bundle
+                for endpoint in gateway_endpoints:
+                    response_from_storage_provider = query_endpoint(f"{endpoint}{storage_id}")
+                    if response_from_storage_provider is not None:
+                        break
+                else:
+                    logger.error(f"couldn't query any endpoint successfully with storage_id {storage_id}; skipping bundle...")
+                    continue
+            else:
+                logger.error(f"storage provider with id {storage_provider_id} is not supported ")
+                raise Exception("unsupported storage provider")
+
+            if not response_from_storage_provider.ok:
+                # TODO: add fallback to different storage provider in case resource is unavailable
                 logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
-                # todo future: this is a temporary fix until the bugs with Arweave are solved
-                continue
+
             try:
-                decompressed = gzip.decompress(response_from_arweave.content)
+                decompressed = gzip.decompress(response_from_storage_provider.content)
             except gzip.BadGzipFile as e:
                 logger.error(f"Decompressing bundle {storage_id} failed with '{e}'")
-                # todo future: this is a temporary fix until the bugs with Arweave are solved
-                # todo future: usually this exception should fail
                 continue
 
-            # todo future: fail on incorrect hash, enabled after regenesis
-            # bundle_hash = bundle.get("bundle_hash")
-            # local_hash = hmac.new(b"", msg=decompressed, digestmod=hashlib.sha256).digest().hex()
-            # assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
+            # Compare hash of the downloaded data from Arweave with the hash from KYVE.
+            # This is required to make sure, that the Arweave Gateway provided the correct data.
+            bundle_hash = bundle.get("data_hash")
+            local_hash = hashlib.sha256(response_from_storage_provider.content).hexdigest()
+            assert local_hash == bundle_hash, print("HASHES DO NOT MATCH")
             decompressed_as_json = json.loads(decompressed)
 
             # extract the value from the key -> value mapping
