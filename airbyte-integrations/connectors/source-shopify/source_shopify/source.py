@@ -133,7 +133,7 @@ class SourceShopify(AbstractSource):
 
     @property
     def raise_exception_on_missing_stream(self) -> bool:
-        return False
+        return True
 
     @staticmethod
     def get_shop_name(config) -> str:
