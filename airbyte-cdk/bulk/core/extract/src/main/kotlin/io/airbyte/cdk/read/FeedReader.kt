@@ -2,11 +2,9 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.SystemErrorException
-import io.airbyte.cdk.asProtocolStreamDescriptor
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.util.ThreadRenamingCoroutineName
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -46,7 +44,7 @@ class FeedReader(
                 // Publish a checkpoint if applicable.
                 maybeCheckpoint()
                 // Publish stream completion.
-                emitStreamStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE)
+                root.streamStatusManager.notifyComplete(feed)
                 break
             }
             // Launch coroutines which read from each partition.
@@ -85,7 +83,7 @@ class FeedReader(
             acquirePartitionsCreatorResources(partitionsCreatorID, partitionsCreator)
         }
         if (1L == partitionsCreatorID) {
-            emitStreamStatus(AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.STARTED)
+            root.streamStatusManager.notifyStarting(feed)
         }
         return withContext(ctx("round-$partitionsCreatorID-create-partitions")) {
             createPartitionsWithResources(partitionsCreatorID, partitionsCreator)
@@ -307,16 +305,6 @@ class FeedReader(
         log.info { "checkpoint of ${stateMessages.size} state message(s)" }
         for (stateMessage in stateMessages) {
             root.outputConsumer.accept(stateMessage)
-        }
-    }
-
-    private fun emitStreamStatus(status: AirbyteStreamStatusTraceMessage.AirbyteStreamStatus) {
-        if (feed is Stream) {
-            root.outputConsumer.accept(
-                AirbyteStreamStatusTraceMessage()
-                    .withStreamDescriptor(feed.id.asProtocolStreamDescriptor())
-                    .withStatus(status),
-            )
         }
     }
 }

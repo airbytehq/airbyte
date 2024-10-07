@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.10.2
+Remove PrintBuffer optimization due to dropped records
+
 ## 5.10.1
 Async job component: improve memory usage
 

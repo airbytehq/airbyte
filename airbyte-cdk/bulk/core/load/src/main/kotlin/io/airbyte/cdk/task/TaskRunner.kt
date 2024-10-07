@@ -35,6 +35,7 @@ class TaskRunner {
             launch {
                 log.info { "Executing task: $task" }
                 task.execute()
+                log.info { "Task completed: $task" }
             }
         }
     }

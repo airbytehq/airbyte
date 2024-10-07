@@ -20,6 +20,8 @@ import io.airbyte.cdk.test.util.NoopNameMapper
 import io.airbyte.cdk.test.util.OutputRecord
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -73,6 +75,14 @@ abstract class BasicFunctionalityIntegrationTest(
                         name = "test_stream",
                         data = """{"id": 5678}""",
                         emittedAtMs = 1234,
+                        changes =
+                            listOf(
+                                DestinationRecord.Change(
+                                    field = "foo",
+                                    change = Change.NULLED,
+                                    reason = Reason.SOURCE_FIELD_SIZE_LIMITATION
+                                )
+                            )
                     ),
                     StreamCheckpoint(
                         streamName = "test_stream",
@@ -111,7 +121,18 @@ abstract class BasicFunctionalityIntegrationTest(
                                 extractedAt = 1234,
                                 generationId = 0,
                                 data = mapOf("id" to 5678),
-                                airbyteMeta = """{"changes": [], "sync_id": 42}"""
+                                airbyteMeta =
+                                    OutputRecord.Meta(
+                                        changes =
+                                            listOf(
+                                                DestinationRecord.Change(
+                                                    field = "foo",
+                                                    change = Change.NULLED,
+                                                    reason = Reason.SOURCE_FIELD_SIZE_LIMITATION
+                                                )
+                                            ),
+                                        syncId = 42
+                                    )
                             )
                         ),
                         "test_stream",
