@@ -350,9 +350,11 @@ class ModelToComponentFactory:
             )
         )
         return ApiKeyAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             request_option=request_option,
             config=config,
             parameters=model.parameters or {},
@@ -418,9 +420,11 @@ class ModelToComponentFactory:
         if token_provider is not None and model.api_token != "":
             raise ValueError("If token_provider is set, api_token is ignored and has to be set to empty string.")
         return BearerAuthenticator(
-            token_provider=token_provider
-            if token_provider is not None
-            else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {}),
+            token_provider=(
+                token_provider
+                if token_provider is not None
+                else InterpolatedStringTokenProvider(api_token=model.api_token or "", config=config, parameters=model.parameters or {})
+            ),
             config=config,
             parameters=model.parameters or {},
         )
@@ -659,7 +663,7 @@ class ModelToComponentFactory:
                 "date_time_based_cursor": self._create_component_from_model(model=model.incremental_sync, config=config),
                 "substream_cursor": (
                     combined_slicers if isinstance(combined_slicers, (PerPartitionWithGlobalCursor, GlobalSubstreamCursor)) else None
-                )
+                ),
             }
 
         if model.incremental_sync and isinstance(model.incremental_sync, DatetimeBasedCursorModel):
@@ -1319,9 +1323,11 @@ class ModelToComponentFactory:
             ),
             primary_key=None,
             name=job_download_components_name,
-            paginator=self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
-            if model.download_paginator
-            else NoPagination(parameters={}),
+            paginator=(
+                self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
+                if model.download_paginator
+                else NoPagination(parameters={})
+            ),
             config=config,
             parameters={},
         )
