@@ -1,0 +1,1739 @@
+version: 5.10.2
+
+type: DeclarativeSource
+
+description: >-
+  This connector integrates Rarible's API with Airbyte, enabling seamless data
+  synchronization of NFT activities, collections, and ownership across multiple
+  blockchains. It supports fetching  ownership, orders and other essential
+  details to facilitate real-time updates and analytics for NFT marketplaces.
+
+check:
+  type: CheckStream
+  stream_names:
+    - nfts
+
+definitions:
+  streams:
+    nfts:
+      type: DeclarativeStream
+      name: nfts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v0.1/items/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - items
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/nfts"
+    collections:
+      type: DeclarativeStream
+      name: collections
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v0.1/collections/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - collections
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/collections"
+    statistics:
+      type: DeclarativeStream
+      name: statistics
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v0.1/data/collections/{{ config['collection_id'] }}/stats
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/statistics"
+    orders:
+      type: DeclarativeStream
+      name: orders
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v0.1/orders/all
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/orders"
+    activities:
+      type: DeclarativeStream
+      name: activities
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v0.1/activities/sync
+          http_method: GET
+          request_parameters:
+            blockchain: "{{ config['blockchain'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/activities"
+    user_owned_nfts:
+      type: DeclarativeStream
+      name: user_owned_nfts
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v0.1/items/byOwnerWithOwnership
+          http_method: GET
+          request_parameters:
+            owner: "{{ config['owner'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/user_owned_nfts"
+    users_bid_orders:
+      type: DeclarativeStream
+      name: users_bid_orders
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v0.1/orders/bids/byMaker
+          http_method: GET
+          request_parameters:
+            maker: "{{ config['maker'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - orders
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users_bid_orders"
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.rarible.org
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-API-KEY
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/nfts"
+  - $ref: "#/definitions/streams/collections"
+  - $ref: "#/definitions/streams/statistics"
+  - $ref: "#/definitions/streams/orders"
+  - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/user_owned_nfts"
+  - $ref: "#/definitions/streams/users_bid_orders"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - collection_id
+      - blockchain
+      - owner
+      - maker
+    properties:
+      api_key:
+        type: string
+        name: api_key
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      collection_id:
+        type: string
+        order: 1
+        title: Collection Id
+        airbyte_secret: true
+      blockchain:
+        type: string
+        title: Blockchain
+        order: 2
+      owner:
+        type: string
+        title: Owner
+        airbyte_secret: true
+        order: 3
+      maker:
+        type: string
+        description: ETHEREUM OR POLYGON or leave empty to get orders from all blockchains
+        title: Maker
+        order: 4
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    nfts: true
+    collections: true
+    statistics: true
+    orders: true
+    activities: true
+    user_owned_nfts: true
+    users_bid_orders: true
+  testedStreams:
+    nfts:
+      hasRecords: true
+      streamHash: c7ac3c8dc07d136ee3bf7fb5cfa4843e76fe1354
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    collections:
+      hasRecords: true
+      streamHash: 99e36390c94c0cd173462373fbb8ee3a0aa57fa2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    statistics:
+      hasRecords: true
+      streamHash: 3301b96ca68abb452fcf91e0b62484129284b2e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    orders:
+      hasRecords: true
+      streamHash: 98f7f4b699ad64b1f473b59520cc52f4d6e77bd3
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    activities:
+      streamHash: 79d2615760a3a987a46cbb5522fe74c491325552
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    user_owned_nfts:
+      streamHash: beecb551731f064dc5227482b835b2d73a2a606e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    users_bid_orders:
+      streamHash: d11eaf99120c9e5f8923830e1ec532f97cdae745
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist:
+    docsUrl: https://docs.rarible.org/reference/getting-started
+
+schemas:
+  nfts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      ammOrders:
+        type:
+          - object
+          - "null"
+        properties:
+          ids:
+            type:
+              - array
+              - "null"
+      auctions:
+        type:
+          - array
+          - "null"
+      blockchain:
+        type:
+          - string
+          - "null"
+      collection:
+        type:
+          - string
+          - "null"
+      contract:
+        type:
+          - string
+          - "null"
+      creators:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            account:
+              type:
+                - string
+                - "null"
+            value:
+              type:
+                - number
+                - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      extra:
+        type:
+          - object
+          - "null"
+        properties:
+          onChainCollectionName:
+            type:
+              - string
+              - "null"
+          onChainTokenName:
+            type:
+              - string
+              - "null"
+          propertyVersionV1:
+            type:
+              - string
+              - "null"
+      features:
+        type:
+          - array
+          - "null"
+      id:
+        type: string
+      itemCollection:
+        type:
+          - object
+          - "null"
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+      lastUpdatedAt:
+        type:
+          - string
+          - "null"
+      lazySupply:
+        type:
+          - string
+          - "null"
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                key:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+          content:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                "@type":
+                  type:
+                    - string
+                    - "null"
+                available:
+                  type:
+                    - boolean
+                    - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                mimeType:
+                  type:
+                    - string
+                    - "null"
+                representation:
+                  type:
+                    - string
+                    - "null"
+                size:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+          externalUri:
+            type:
+              - string
+              - "null"
+          extraContent:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                "@type":
+                  type:
+                    - string
+                    - "null"
+                representation:
+                  type:
+                    - string
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+          genres:
+            type:
+              - array
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          originalMetaUri:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+      mintedAt:
+        type:
+          - string
+          - "null"
+      originOrders:
+        type:
+          - array
+          - "null"
+      pending:
+        type:
+          - array
+          - "null"
+      sellers:
+        type:
+          - number
+          - "null"
+      supply:
+        type:
+          - string
+          - "null"
+      suspicious:
+        type:
+          - boolean
+          - "null"
+      tokenId:
+        type:
+          - string
+          - "null"
+      totalStock:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  collections:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      blockchain:
+        type:
+          - string
+          - "null"
+      extra:
+        type:
+          - object
+          - "null"
+      features:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      hasTraits:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: string
+      meta:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          content:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                "@type":
+                  type:
+                    - string
+                    - "null"
+                available:
+                  type:
+                    - boolean
+                    - "null"
+                height:
+                  type:
+                    - number
+                    - "null"
+                mimeType:
+                  type:
+                    - string
+                    - "null"
+                representation:
+                  type:
+                    - string
+                    - "null"
+                size:
+                  type:
+                    - number
+                    - "null"
+                url:
+                  type:
+                    - string
+                    - "null"
+                width:
+                  type:
+                    - number
+                    - "null"
+          externalLink:
+            type:
+              - string
+              - "null"
+          externalUri:
+            type:
+              - string
+              - "null"
+          feeRecipient:
+            type:
+              - string
+              - "null"
+          genres:
+            type:
+              - array
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          originalMetaUri:
+            type:
+              - string
+              - "null"
+          sellerFeeBasisPoints:
+            type:
+              - number
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+      minters:
+        type:
+          - array
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      originOrders:
+        type:
+          - array
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      scam:
+        type:
+          - boolean
+          - "null"
+      self:
+        type:
+          - boolean
+          - "null"
+      shared:
+        type:
+          - boolean
+          - "null"
+      spamScore:
+        type:
+          - number
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      structure:
+        type:
+          - string
+          - "null"
+      symbol:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  statistics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      floorPrice:
+        type:
+          - number
+          - "null"
+      highestSale:
+        type:
+          - number
+          - "null"
+      items:
+        type:
+          - number
+          - "null"
+      listed:
+        type:
+          - number
+          - "null"
+      marketCap:
+        type:
+          - number
+          - "null"
+      owners:
+        type:
+          - number
+          - "null"
+      volume:
+        type:
+          - number
+          - "null"
+  orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      continuation:
+        type:
+          - string
+          - "null"
+      orders:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            cancelled:
+              type:
+                - boolean
+                - "null"
+            createdAt:
+              type:
+                - string
+                - "null"
+            data:
+              type:
+                - object
+                - "null"
+              properties:
+                "@type":
+                  type:
+                    - string
+                    - "null"
+                conduitKey:
+                  type:
+                    - string
+                    - "null"
+                consideration:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      endAmount:
+                        type:
+                          - string
+                          - "null"
+                      identifierOrCriteria:
+                        type:
+                          - string
+                          - "null"
+                      itemType:
+                        type:
+                          - string
+                          - "null"
+                      recipient:
+                        type:
+                          - string
+                          - "null"
+                      startAmount:
+                        type:
+                          - string
+                          - "null"
+                      token:
+                        type:
+                          - string
+                          - "null"
+                counter:
+                  type:
+                    - number
+                    - "null"
+                isBundle:
+                  type:
+                    - boolean
+                    - "null"
+                isCollectionOffer:
+                  type:
+                    - boolean
+                    - "null"
+                isMakeFill:
+                  type:
+                    - boolean
+                    - "null"
+                itemHash:
+                  type:
+                    - string
+                    - "null"
+                nonce:
+                  type:
+                    - string
+                    - "null"
+                offer:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      endAmount:
+                        type:
+                          - string
+                          - "null"
+                      identifierOrCriteria:
+                        type:
+                          - string
+                          - "null"
+                      itemType:
+                        type:
+                          - string
+                          - "null"
+                      startAmount:
+                        type:
+                          - string
+                          - "null"
+                      token:
+                        type:
+                          - string
+                          - "null"
+                orderId:
+                  type:
+                    - string
+                    - "null"
+                orderType:
+                  type:
+                    - string
+                    - "null"
+                originFees:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      account:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - number
+                          - "null"
+                payouts:
+                  type:
+                    - array
+                    - "null"
+                protocol:
+                  type:
+                    - string
+                    - "null"
+                side:
+                  type:
+                    - number
+                    - "null"
+                zone:
+                  type:
+                    - string
+                    - "null"
+                zoneHash:
+                  type:
+                    - string
+                    - "null"
+            endedAt:
+              type:
+                - string
+                - "null"
+            feeTakers:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            fill:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            lastUpdatedAt:
+              type:
+                - string
+                - "null"
+            make:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "@type":
+                      type:
+                        - string
+                        - "null"
+                    collection:
+                      type:
+                        - string
+                        - "null"
+                    contract:
+                      type:
+                        - string
+                        - "null"
+                    tokenId:
+                      type:
+                        - string
+                        - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            makePrice:
+              type:
+                - string
+                - "null"
+            makePriceUsd:
+              type:
+                - string
+                - "null"
+            makeStock:
+              type:
+                - string
+                - "null"
+            maker:
+              type:
+                - string
+                - "null"
+            optionalRoyalties:
+              type:
+                - boolean
+                - "null"
+            platform:
+              type:
+                - string
+                - "null"
+            salt:
+              type:
+                - string
+                - "null"
+            signature:
+              type:
+                - string
+                - "null"
+            startedAt:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - string
+                - "null"
+            take:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "@type":
+                      type:
+                        - string
+                        - "null"
+                    blockchain:
+                      type:
+                        - string
+                        - "null"
+                    contract:
+                      type:
+                        - string
+                        - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+  activities:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activities:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            "@type":
+              type:
+                - string
+                - "null"
+            date:
+              type:
+                - string
+                - "null"
+            hash:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            lastUpdatedAt:
+              type:
+                - string
+                - "null"
+            make:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "@type":
+                      type:
+                        - string
+                        - "null"
+                    collection:
+                      type:
+                        - string
+                        - "null"
+                    contract:
+                      type:
+                        - string
+                        - "null"
+                    tokenId:
+                      type:
+                        - string
+                        - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+            maker:
+              type:
+                - string
+                - "null"
+            orderId:
+              type:
+                - string
+                - "null"
+            price:
+              type:
+                - string
+                - "null"
+            priceUsd:
+              type:
+                - string
+                - "null"
+            reverted:
+              type:
+                - boolean
+                - "null"
+            source:
+              type:
+                - string
+                - "null"
+            take:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    "@type":
+                      type:
+                        - string
+                        - "null"
+                    blockchain:
+                      type:
+                        - string
+                        - "null"
+                    contract:
+                      type:
+                        - string
+                        - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+      continuation:
+        type:
+          - string
+          - "null"
+      cursor:
+        type:
+          - string
+          - "null"
+  user_owned_nfts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      continuation:
+        type:
+          - string
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            item:
+              type:
+                - object
+                - "null"
+              properties:
+                version:
+                  type:
+                    - number
+                    - "null"
+                ammOrders:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    ids:
+                      type:
+                        - array
+                        - "null"
+                auctions:
+                  type:
+                    - array
+                    - "null"
+                bestSellOrder:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    cancelled:
+                      type:
+                        - boolean
+                        - "null"
+                    createdAt:
+                      type:
+                        - string
+                        - "null"
+                    data:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        "@type":
+                          type:
+                            - string
+                            - "null"
+                        isMakeFill:
+                          type:
+                            - boolean
+                            - "null"
+                        originFees:
+                          type:
+                            - array
+                            - "null"
+                          items:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              account:
+                                type:
+                                  - string
+                                  - "null"
+                              value:
+                                type:
+                                  - number
+                                  - "null"
+                        payouts:
+                          type:
+                            - array
+                            - "null"
+                    feeTakers:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - string
+                          - "null"
+                    fill:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    lastUpdatedAt:
+                      type:
+                        - string
+                        - "null"
+                    make:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            "@type":
+                              type:
+                                - string
+                                - "null"
+                            collection:
+                              type:
+                                - string
+                                - "null"
+                            contract:
+                              type:
+                                - string
+                                - "null"
+                            tokenId:
+                              type:
+                                - string
+                                - "null"
+                        value:
+                          type:
+                            - string
+                            - "null"
+                    makePrice:
+                      type:
+                        - string
+                        - "null"
+                    makePriceUsd:
+                      type:
+                        - string
+                        - "null"
+                    makeStock:
+                      type:
+                        - string
+                        - "null"
+                    maker:
+                      type:
+                        - string
+                        - "null"
+                    optionalRoyalties:
+                      type:
+                        - boolean
+                        - "null"
+                    platform:
+                      type:
+                        - string
+                        - "null"
+                    salt:
+                      type:
+                        - string
+                        - "null"
+                    signature:
+                      type:
+                        - string
+                        - "null"
+                    status:
+                      type:
+                        - string
+                        - "null"
+                    take:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        type:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            "@type":
+                              type:
+                                - string
+                                - "null"
+                            blockchain:
+                              type:
+                                - string
+                                - "null"
+                        value:
+                          type:
+                            - string
+                            - "null"
+                blockchain:
+                  type:
+                    - string
+                    - "null"
+                collection:
+                  type:
+                    - string
+                    - "null"
+                contract:
+                  type:
+                    - string
+                    - "null"
+                creators:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      account:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - number
+                          - "null"
+                deleted:
+                  type:
+                    - boolean
+                    - "null"
+                features:
+                  type:
+                    - array
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                itemCollection:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                lastSale:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    buyer:
+                      type:
+                        - string
+                        - "null"
+                    currency:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        "@type":
+                          type:
+                            - string
+                            - "null"
+                        blockchain:
+                          type:
+                            - string
+                            - "null"
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    price:
+                      type:
+                        - string
+                        - "null"
+                    seller:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                lastUpdatedAt:
+                  type:
+                    - string
+                    - "null"
+                lazySupply:
+                  type:
+                    - string
+                    - "null"
+                meta:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    description:
+                      type:
+                        - string
+                        - "null"
+                    attributes:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          key:
+                            type:
+                              - string
+                              - "null"
+                          value:
+                            type:
+                              - string
+                              - "null"
+                    content:
+                      type:
+                        - array
+                        - "null"
+                      items:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          "@type":
+                            type:
+                              - string
+                              - "null"
+                          available:
+                            type:
+                              - boolean
+                              - "null"
+                          height:
+                            type:
+                              - number
+                              - "null"
+                          mimeType:
+                            type:
+                              - string
+                              - "null"
+                          representation:
+                            type:
+                              - string
+                              - "null"
+                          size:
+                            type:
+                              - number
+                              - "null"
+                          url:
+                            type:
+                              - string
+                              - "null"
+                          width:
+                            type:
+                              - number
+                              - "null"
+                    externalUri:
+                      type:
+                        - string
+                        - "null"
+                    extraContent:
+                      type:
+                        - array
+                        - "null"
+                    genres:
+                      type:
+                        - array
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    originalMetaUri:
+                      type:
+                        - string
+                        - "null"
+                    tags:
+                      type:
+                        - array
+                        - "null"
+                mintedAt:
+                  type:
+                    - string
+                    - "null"
+                originOrders:
+                  type:
+                    - array
+                    - "null"
+                pending:
+                  type:
+                    - array
+                    - "null"
+                sellers:
+                  type:
+                    - number
+                    - "null"
+                supply:
+                  type:
+                    - string
+                    - "null"
+                suspicious:
+                  type:
+                    - boolean
+                    - "null"
+                tokenId:
+                  type:
+                    - string
+                    - "null"
+                totalStock:
+                  type:
+                    - string
+                    - "null"
+            ownership:
+              type:
+                - object
+                - "null"
+              properties:
+                blockchain:
+                  type:
+                    - string
+                    - "null"
+                collection:
+                  type:
+                    - string
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                creators:
+                  type:
+                    - array
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                lazyValue:
+                  type:
+                    - string
+                    - "null"
+                owner:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - string
+                    - "null"
+  users_bid_orders:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      cancelled:
+        type:
+          - boolean
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      data:
+        type:
+          - object
+          - "null"
+        properties:
+          "@type":
+            type:
+              - string
+              - "null"
+          isMakeFill:
+            type:
+              - boolean
+              - "null"
+          originFees:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                account:
+                  type:
+                    - string
+                    - "null"
+                value:
+                  type:
+                    - number
+                    - "null"
+          payouts:
+            type:
+              - array
+              - "null"
+      endedAt:
+        type:
+          - string
+          - "null"
+      feeTakers:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      fill:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      lastUpdatedAt:
+        type:
+          - string
+          - "null"
+      make:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - object
+              - "null"
+            properties:
+              "@type":
+                type:
+                  - string
+                  - "null"
+              contract:
+                type:
+                  - string
+                  - "null"
+          value:
+            type:
+              - string
+              - "null"
+      makeStock:
+        type:
+          - string
+          - "null"
+      maker:
+        type:
+          - string
+          - "null"
+      optionalRoyalties:
+        type:
+          - boolean
+          - "null"
+      platform:
+        type:
+          - string
+          - "null"
+      salt:
+        type:
+          - string
+          - "null"
+      signature:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      take:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - object
+              - "null"
+            properties:
+              "@type":
+                type:
+                  - string
+                  - "null"
+              collection:
+                type:
+                  - string
+                  - "null"
+              contract:
+                type:
+                  - string
+                  - "null"
+              tokenId:
+                type:
+                  - string
+                  - "null"
+          value:
+            type:
+              - string
+              - "null"
+      takePrice:
+        type:
+          - string
+          - "null"
+      takePriceUsd:
+        type:
+          - string
+          - "null"
+    required:
+      - id
