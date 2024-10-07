@@ -1,7 +1,7 @@
 # Thinkific
 This directory contains the manifest-only connector for `source-thinkific`.
 
-Airbyte connector for Thinkific, allowing you to seamlessly sync data like users, course participants, and instructors from Thinkific to other platforms. It&#39;s designed to make managing and analyzing your online courses and communities even easier!
+Airbyte connector for [Thinkific](https://thinkific.com/), allowing you to seamlessly sync data like users, course participants, and instructors from Thinkific to other platforms. It's designed to make managing and analyzing your online courses and communities even easier!
 
 ## Usage
 There are multiple ways to use this connector:
