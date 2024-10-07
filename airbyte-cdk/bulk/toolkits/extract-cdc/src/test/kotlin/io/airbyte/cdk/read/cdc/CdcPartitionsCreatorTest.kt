@@ -113,7 +113,6 @@ class CdcPartitionsCreatorTest {
             )
         every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
             deserializedInput
-        every { creatorOps.validate(deserializedInput) } returns CdcStateValidateResult.VALID
         upperBoundReference.set(1_000_000L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(1, readers.size)
@@ -139,7 +138,6 @@ class CdcPartitionsCreatorTest {
             )
         every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
             deserializedInput
-        every { creatorOps.validate(deserializedInput) } returns CdcStateValidateResult.VALID
         upperBoundReference.set(1L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(emptyList<PartitionReader>(), readers)
@@ -162,17 +160,8 @@ class CdcPartitionsCreatorTest {
                 isSynthetic = true,
             )
         every { creatorOps.synthesize() } returns syntheticInput
-
-        val deserializedInput =
-            DebeziumInput(
-                properties = emptyMap(),
-                state = DebeziumState(offset = incumbentOffset, schemaHistory = null),
-                isSynthetic = false,
-            )
-        every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
-            deserializedInput
-        every { creatorOps.validate(deserializedInput) } returns
-            CdcStateValidateResult.INVALID_ABORT
+        every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } throws
+            ConfigErrorException("invalid state value")
 
         assertThrows(ConfigErrorException::class.java) { runBlocking { creator.run() } }
     }

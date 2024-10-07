@@ -101,12 +101,12 @@ class MySqlDebeziumOperations(
      *
      * Validate is not supposed to perform on synthetic state.
      */
-    override fun validate(debeziumInput: DebeziumInput): CdcStateValidateResult {
+    private fun validate(debeziumState: DebeziumState): CdcStateValidateResult {
         val (_: MySqlPosition, gtidSet: String?) = queryPositionAndGtids()
         if (gtidSet.isNullOrEmpty()) {
             return abortCdcSync()
         }
-        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumInput)
+        val savedStateOffset: SavedOffset = parseSavedOffset(debeziumState)
 
         val savedGtidSet = MySqlGtidSet(savedStateOffset.gtidSet)
         val availableGtidSet = MySqlGtidSet(gtidSet)
@@ -139,6 +139,7 @@ class MySqlDebeziumOperations(
         }
         return CdcStateValidateResult.VALID
     }
+    
     private fun abortCdcSync(): CdcStateValidateResult {
         if (
             (configuration.cursorConfiguration as CdcCursor)
@@ -152,63 +153,13 @@ class MySqlDebeziumOperations(
         }
     }
 
-    private fun parseSavedOffset(debeziumInput: DebeziumInput): SavedOffset {
-        val position: MySqlPosition = position(debeziumInput.state.offset)
-        val gtidSet: String? = debeziumInput.state.offset.wrapped.values.first()["gtids"]?.asText()
+    private fun parseSavedOffset(debeziumState: DebeziumState): SavedOffset {
+        val position: MySqlPosition = position(debeziumState.offset)
+        val gtidSet: String? = debeziumState.offset.wrapped.values.first()["gtids"]?.asText()
         return SavedOffset(position, gtidSet)
     }
 
-    private fun getFileOffsetBackingStore(
-        properties: Map<String, String>
-    ): FileOffsetBackingStore? {
-        val fileOffsetBackingStore = KafkaConnectUtil.fileOffsetBackingStore()
-        val propertiesMap = properties.toMutableMap()
-        propertiesMap[WorkerConfig.KEY_CONVERTER_CLASS_CONFIG] = JsonConverter::class.java.name
-        propertiesMap[WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG] = JsonConverter::class.java.name
-        fileOffsetBackingStore.configure(StandaloneConfig(propertiesMap))
-        fileOffsetBackingStore.start()
-        return fileOffsetBackingStore
-    }
-
-    private fun getOffsetStorageReader(
-        fileOffsetBackingStore: FileOffsetBackingStore?,
-        properties: Map<String, String>
-    ): OffsetStorageReaderImpl {
-        return OffsetStorageReaderImpl(
-            fileOffsetBackingStore,
-            properties[CONNECTOR_NAME_PROPERTY],
-            keyConverter,
-            valueConverter,
-        )
-    }
-
     data class SavedOffset(val position: MySqlPosition, val gtidSet: String?)
-
-    val keyConverter: JsonConverter
-        /**
-         * Creates and returns a [JsonConverter] that can be used to parse keys in the Debezium
-         * offset state storage.
-         *
-         * @return A [JsonConverter] for key conversion.
-         */
-        get() {
-            val keyConverter = JsonConverter()
-            keyConverter.configure(INTERNAL_CONVERTER_CONFIG, true)
-            return keyConverter
-        }
-
-    val valueConverter: JsonConverter
-        /**
-         * Creates and returns a [JsonConverter] that can be used to parse values in the Debezium
-         * offset state storage.
-         *
-         * @return A [JsonConverter] for value conversion.
-         */
-        get() {
-            val valueConverter = JsonConverter()
-            valueConverter.configure(INTERNAL_CONVERTER_CONFIG, false)
-            return valueConverter
-        }
 
     private val airbyteRecord = AirbyteRecordMessage().withMeta(AirbyteRecordMessageMeta())
 
@@ -266,14 +217,6 @@ class MySqlDebeziumOperations(
                 val sql = "SHOW MASTER STATUS"
                 stmt.executeQuery(sql).use { rs: ResultSet ->
                     if (!rs.next()) throw ConfigErrorException("No results for query: $sql")
-                    val columnCount: Int = rs.getMetaData().getColumnCount()
-                    println("columnCount: $columnCount")
-
-                    for (i in 1..columnCount) {
-                        val columnName: String = rs.getMetaData().getColumnName(i)
-                        val value: String = rs.getString(i)
-                        print("$columnName: $value | ")
-                    }
                     val mySqlPosition =
                         MySqlPosition(
                             fileName = rs.getString(file.id)?.takeUnless { rs.wasNull() }
@@ -337,6 +280,14 @@ class MySqlDebeziumOperations(
             } catch (e: Exception) {
                 throw ConfigErrorException("Error deserializing $opaqueStateValue", e)
             }
+        val cdcValidationResult = validate(debeziumState)
+        if (cdcValidationResult != CdcStateValidateResult.VALID) {
+            if (cdcValidationResult == CdcStateValidateResult.INVALID_ABORT) {
+                throw ConfigErrorException("Current position is invalid.")
+            }
+            return synthesize()
+        }
+
         val properties: Map<String, String> =
             DebeziumPropertiesBuilder().with(commonProperties).withStreams(streams).buildMap()
         return DebeziumInput(properties, debeziumState, isSynthetic = false)
