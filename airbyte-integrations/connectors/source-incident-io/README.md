@@ -1,8 +1,8 @@
-# Incident
+# Incident.io
 This directory contains the manifest-only connector for `source-incident`.
 
-Source connector for Incident which is an on call, incident response and status pages tool. 
-The Incident source connector which ingests data from the incident API.
+Source connector for Incident.io which is an on call, incident response and status pages tool. 
+The Incident.io source connector which ingests data from the incident API.
 Incident is an on call, status pages and incident response tool.
 The source supports a number of API changes. For more information, checkout the website https://incident.io/
   

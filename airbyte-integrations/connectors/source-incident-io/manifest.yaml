@@ -3,8 +3,8 @@ version: 5.8.1
 type: DeclarativeSource
 
 description: >-
-  The Incident source connector which ingests data from the incident API.
-  Incident is an on call, status pages and incident response tool.
+  The Incident.io source connector which ingests data from the incident API.
+  Incident.io is an on call, status pages and incident response tool.
   The source supports a number of API changes.
   For more information, checkout the website https://incident.io/
   
