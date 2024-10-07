@@ -1371,7 +1371,7 @@ definitions:
           - "$ref": "#/definitions/SessionTokenRequestBearerAuthenticator"
       decoder:
         title: Decoder
-        description: Component decoding the response
+        description: Component used to decode the response.
         anyOf:
           - "$ref": "#/definitions/JsonDecoder"
       $parameters:

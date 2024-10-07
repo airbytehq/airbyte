@@ -393,6 +393,7 @@ class ModelToComponentFactory:
             expiration_duration=parse_duration(model.expiration_duration) if model.expiration_duration else None,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
+            decoder=decoder
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
