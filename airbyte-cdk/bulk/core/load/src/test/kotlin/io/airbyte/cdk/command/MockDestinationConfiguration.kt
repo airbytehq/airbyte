@@ -19,4 +19,6 @@ class MockDestinationConfiguration : DestinationConfiguration() {
     override val firstStageTmpFileSuffix: String = ".jsonl"
 
     override val maxCheckpointFlushTimeMs: Long = 1000L
+    override val maxMessageQueueMemoryUsageRatio: Double = 0.1
+    override val estimatedRecordMemoryOverheadRatio: Double = 1.1
 }
