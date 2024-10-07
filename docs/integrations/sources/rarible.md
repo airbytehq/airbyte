@@ -1,6 +1,9 @@
 # Rarible
 This connector integrates Rarible&#39;s API with Airbyte, enabling seamless data synchronization of NFT activities, collections, and ownership across multiple blockchains. It supports fetching  ownership, orders and other essential details to facilitate real-time updates and analytics for NFT marketplaces.
 
+## Authentication
+Follow [these](https://docs.rarible.org/docs/rarible-protocol#step-1-get-started) steps mentioned here to get your API key.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
