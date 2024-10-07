@@ -2,15 +2,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import time
-from http import HTTPStatus
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
-import pytest
 import requests
 from airbyte_cdk.sources.streams import Stream
-from source_okta.components import CustomBearerAuthenticator, CustomOauth2Authenticator
 from source_okta.source import SourceOkta
 
 
@@ -33,16 +29,6 @@ class TestOktaStream:
         stream = get_stream_by_name("logs", config=oauth_config)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
         assert list(stream.retriever.requester.get_request_params(**inputs).keys())[0] == "since"
-
-    # def test_okta_stream_incremental_back_off_now(self, oauth_config, url_base, start_date):
-    #     stream = get_stream_by_name("users", config=oauth_config)
-    #     response = requests.Response()
-    #     response.status_code = requests.codes.TOO_MANY_REQUESTS
-    #     response.headers = {"x-rate-limit-reset": int(time.time()) + 130}
-    #     expected_params = (60, 120)
-    #     inputs = {"response": response}
-    #     get_backoff_time = stream.retriever.requester.error_handler.interpret_response(**inputs)
-    #     assert expected_params[0] <= get_backoff_time <= expected_params[1]
 
     def test_okta_stream_http_method(self, oauth_config, url_base, start_date):
         stream = get_stream_by_name("users", config=oauth_config)
