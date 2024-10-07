@@ -7,9 +7,7 @@ import logging
 from typing import Any, List, Mapping
 
 import dpath.util
-from airbyte_cdk import emit_configuration_as_airbyte_control_message
-
-from airbyte_cdk.config_observation import create_connector_config_control_message
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
