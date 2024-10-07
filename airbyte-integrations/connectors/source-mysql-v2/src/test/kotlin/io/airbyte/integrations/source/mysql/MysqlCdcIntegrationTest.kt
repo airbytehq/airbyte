@@ -135,15 +135,15 @@ class MysqlCdcIntegrationTest {
             targetContainer: MySQLContainer<*>,
             targetConnectionFactory: JdbcConnectionFactory
         ) {
-            val gtidOn =
-                "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
-                    "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
-                    "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
-                    "SET @@GLOBAL.GTID_MODE = 'ON';"
+//            val gtidOn =
+//                "SET @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 'ON';" +
+//                    "SET @@GLOBAL.GTID_MODE = 'OFF_PERMISSIVE';" +
+//                    "SET @@GLOBAL.GTID_MODE = 'ON_PERMISSIVE';" +
+//                    "SET @@GLOBAL.GTID_MODE = 'ON';"
             val grant =
                 "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT " +
                     "ON *.* TO '${targetContainer.username}'@'%';"
-            targetContainer.execAsRoot(gtidOn)
+           // targetContainer.execAsRoot(gtidOn)
             targetContainer.execAsRoot(grant)
             targetContainer.execAsRoot("FLUSH PRIVILEGES;")
 

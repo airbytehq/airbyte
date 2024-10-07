@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.read.cdc
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
@@ -22,6 +23,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertThrows
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -139,5 +141,30 @@ class CdcPartitionsCreatorTest {
         upperBoundReference.set(1L)
         val readers: List<PartitionReader> = runBlocking { creator.run() }
         Assertions.assertEquals(emptyList<PartitionReader>(), readers)
+    }
+
+    @Test
+    fun testCreateWithConfigError() {
+        every { stateQuerier.feeds } returns listOf(global, stream)
+        val incumbentGlobalStateValue: OpaqueStateValue = Jsons.nullNode()
+        every { stateQuerier.current(global) } returns incumbentGlobalStateValue
+        val incumbentStreamStateValue: OpaqueStateValue = Jsons.nullNode()
+        every { stateQuerier.current(stream) } returns incumbentStreamStateValue
+        val incumbentOffset = DebeziumOffset(mapOf(Jsons.nullNode() to Jsons.nullNode()))
+        every { creatorOps.position(incumbentOffset) } returns 123L
+        val deserializedInput =
+            DebeziumInput(
+                properties = emptyMap(),
+                state = DebeziumState(offset = incumbentOffset, schemaHistory = null),
+                isSynthetic = false,
+            )
+        every { creatorOps.deserialize(incumbentGlobalStateValue, listOf(stream)) } returns
+            deserializedInput
+        every {creatorOps.validate(deserializedInput) } returns CdcStateValidateResult.INVALID_ABORT
+
+        assertThrows(ConfigErrorException::class.java) {
+            runBlocking { creator.run() }
+        }
+
     }
 }
