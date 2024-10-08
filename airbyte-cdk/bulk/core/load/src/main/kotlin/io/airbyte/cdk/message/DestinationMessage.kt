@@ -193,6 +193,9 @@ data class StreamCheckpoint(
                             AirbyteStateStats()
                                 .withRecordCount(destinationStats.recordCount.toDouble())
                     }
+                    it.additionalProperties.forEach { (key, value) ->
+                        it.withAdditionalProperty(key, value)
+                    }
                 }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)
     }
@@ -231,6 +234,9 @@ data class GlobalCheckpoint(
                         it.destinationStats =
                             AirbyteStateStats()
                                 .withRecordCount(destinationStats.recordCount.toDouble())
+                    }
+                    it.additionalProperties.forEach { (key, value) ->
+                        it.withAdditionalProperty(key, value)
                     }
                 }
         return AirbyteMessage().withType(AirbyteMessage.Type.STATE).withState(stateMessage)

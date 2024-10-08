@@ -80,12 +80,12 @@ def test_stream_partition_generator(sync_mode):
     [
         pytest.param(
             TypeTransformer(TransformConfig.NoTransform),
-            [Record({"data": "1"}, _STREAM_NAME), Record({"data": "2"}, _STREAM_NAME)],
+            [Record({"data": "1"}, None), Record({"data": "2"}, None)],
             id="test_no_transform",
         ),
         pytest.param(
             TypeTransformer(TransformConfig.DefaultSchemaNormalization),
-            [Record({"data": 1}, _STREAM_NAME), Record({"data": 2}, _STREAM_NAME)],
+            [Record({"data": 1}, None), Record({"data": 2}, None)],
             id="test_default_transform",
         ),
     ],
@@ -109,6 +109,8 @@ def test_stream_partition(transformer, expected_records):
             message='slice:{"partition": 1}',
         ),
     )
+    for record in expected_records:
+        record.partition = partition
 
     stream_data = [a_log_message, {"data": "1"}, {"data": "2"}]
     stream.read_records.return_value = stream_data
