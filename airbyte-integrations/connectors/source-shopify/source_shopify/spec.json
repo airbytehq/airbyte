@@ -92,6 +92,11 @@
         "description": "DB Details of Milk and Honey Database to pull Shopify Stores info from.",
         "airbyte_secret": true
       },
+      "env": {
+        "type": "string",
+        "title": "Environment",
+        "description": "Set to local if running on local. Else no need to set."
+      },
       "aws_access_key_id": {
                       "type": "string",
                       "title": "AWS Access Key ID",

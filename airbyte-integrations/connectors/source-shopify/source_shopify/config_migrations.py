@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-'''
 
 from typing import Any, List, Mapping
 
@@ -92,5 +91,4 @@ class MigrateConfig:
             if cls.should_migrate(config):
                 cls.emit_control_message(
                     cls.modify_and_save(config_path, source, config),
-                )      
-                '''
+                )

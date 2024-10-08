@@ -33,12 +33,13 @@ class ConfigCreator:
 
     def _get_shopify_token(self, shopify_id: str, aws_credentials: dict) -> str:
         try:
-            '''session = boto3.Session(aws_access_key_id=aws_credentials['aws_access_key_id'], 
-                                    aws_secret_access_key=aws_credentials['aws_secret_access_key'], 
-                                    aws_session_token=aws_credentials['aws_session_token'], 
-                                    region_name="us-east-1")
-            '''
-            session = boto3.session.Session()
+            if self.env == "local":
+                session = boto3.Session(aws_access_key_id=aws_credentials['aws_access_key_id'], 
+                                        aws_secret_access_key=aws_credentials['aws_secret_access_key'], 
+                                        aws_session_token=aws_credentials['aws_session_token'], 
+                                        region_name="us-east-1")
+            else:
+                session = boto3.session.Session()
             client = session.client("secretsmanager")
             sid = SHOPIFY_ACCESS_TOKEN_PATH.format(shopify_id)
             resp = client.get_secret_value(SecretId=sid)
@@ -50,10 +51,10 @@ class ConfigCreator:
             )
             return None
 
-    def _get_shopy_store_info(self):
+    def _get_shopify_store_info(self):
         connection = None
         try:
-            connection = mysql.connector.connect(
+            connection =mysql.connector.connect(
                 host = self.db_info['host'],     
                 user = self.db_info['username'], 
                 password = self.db_info['password'], 
@@ -79,7 +80,10 @@ class ConfigCreator:
         self.db_info = self.extract_db_info(db_uri)
         self.env = env
         shops = []
-        shopify_stores = self._get_shopy_store_info()
+        shopify_stores = self._get_shopify_store_info()
+        if not shopify_stores:
+            raise Exception("No Shopify Store data available in Milk And Honey.")
+
         for row in shopify_stores:
             shop_config = {}
             shop_name = row['advertiser_homepage'].replace("https://", "")

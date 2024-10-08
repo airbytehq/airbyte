@@ -1,6 +1,11 @@
 {
   "start_date": "2020-01-01",
-  "shop": "airbyte-integration-test",
+  "shops": [
+    {
+      "shop": "airbyte-integration-test"
+    }
+  ],
+  "db_uri": "",
   "credentials": {
     "auth_method": "api_password",
     "api_password": "__api_password__"
