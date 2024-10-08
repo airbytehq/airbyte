@@ -13,13 +13,11 @@ import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream2
 import io.airbyte.cdk.file.TimeProvider
 import io.airbyte.cdk.message.Batch
 import io.airbyte.cdk.message.BatchEnvelope
-import io.airbyte.cdk.message.MessageConverter
 import io.airbyte.cdk.message.SimpleBatch
 import io.micronaut.context.annotation.Requires
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import java.util.function.Consumer
 import java.util.stream.Stream
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -47,41 +45,24 @@ class CheckpointManagerTest {
      * StateIn: What is passed to the manager. StateOut: What is sent from the manager to the output
      * consumer.
      */
-    sealed class MockCheckpointIn
-    data class MockStreamCheckpointIn(val stream: DestinationStream, val payload: Int) :
-        MockCheckpointIn()
-    data class MockGlobalCheckpointIn(val payload: Int) : MockCheckpointIn()
-
-    sealed class MockCheckpointOut
-    data class MockStreamCheckpointOut(val stream: DestinationStream, val payload: String) :
-        MockCheckpointOut()
-    data class MockGlobalCheckpointOut(val payload: String) : MockCheckpointOut()
+    sealed class MockCheckpoint
+    data class MockStreamCheckpoint(val stream: DestinationStream, val payload: Int) :
+        MockCheckpoint()
+    data class MockGlobalCheckpoint(val payload: Int) : MockCheckpoint()
 
     @Singleton
     @Requires(env = ["CheckpointManagerTest"])
-    class MockStateMessageFactory : MessageConverter<MockCheckpointIn, MockCheckpointOut> {
-        override fun from(message: MockCheckpointIn): MockCheckpointOut {
-            return when (message) {
-                is MockStreamCheckpointIn ->
-                    MockStreamCheckpointOut(message.stream, message.payload.toString())
-                is MockGlobalCheckpointIn -> MockGlobalCheckpointOut(message.payload.toString())
-            }
-        }
-    }
-
-    @Singleton
-    @Requires(env = ["CheckpointManagerTest"])
-    class MockOutputConsumer : Consumer<MockCheckpointOut> {
+    class MockOutputConsumer : suspend (MockCheckpoint) -> Unit {
         val collectedStreamOutput =
             mutableMapOf<DestinationStream.Descriptor, MutableList<String>>()
         val collectedGlobalOutput = mutableListOf<String>()
-        override fun accept(t: MockCheckpointOut) {
+        override suspend fun invoke(t: MockCheckpoint) {
             when (t) {
-                is MockStreamCheckpointOut ->
+                is MockStreamCheckpoint ->
                     collectedStreamOutput
                         .getOrPut(t.stream.descriptor) { mutableListOf() }
-                        .add(t.payload)
-                is MockGlobalCheckpointOut -> collectedGlobalOutput.add(t.payload)
+                        .add(t.payload.toString())
+                is MockGlobalCheckpoint -> collectedGlobalOutput.add(t.payload.toString())
             }
         }
     }
@@ -91,21 +72,20 @@ class CheckpointManagerTest {
     class TestCheckpointManager(
         override val catalog: DestinationCatalog,
         override val syncManager: SyncManager,
-        override val outputFactory: MessageConverter<MockCheckpointIn, MockCheckpointOut>,
         override val outputConsumer: MockOutputConsumer,
         override val timeProvider: TimeProvider
-    ) : StreamsCheckpointManager<MockCheckpointIn, MockCheckpointOut>()
+    ) : StreamsCheckpointManager<MockCheckpoint>()
 
     sealed class TestEvent
     data class TestStreamMessage(val stream: DestinationStream, val index: Long, val message: Int) :
         TestEvent() {
-        fun toMockCheckpointIn() = MockStreamCheckpointIn(stream, message)
+        fun toMockCheckpointIn() = MockStreamCheckpoint(stream, message)
     }
     data class TestGlobalMessage(
         val streamIndexes: List<Pair<DestinationStream.Descriptor, Long>>,
         val message: Int
     ) : TestEvent() {
-        fun toMockCheckpointIn() = MockGlobalCheckpointIn(message)
+        fun toMockCheckpointIn() = MockGlobalCheckpoint(message)
     }
     data class FlushPoint(
         val persistedRanges: Map<DestinationStream, List<Range<Long>>> = mapOf()
@@ -483,7 +463,7 @@ class CheckpointManagerTest {
         checkpointManager.addStreamCheckpoint(
             stream1.descriptor,
             1L,
-            MockStreamCheckpointIn(stream1, 1)
+            MockStreamCheckpoint(stream1, 1)
         )
         syncManager.markPersisted(stream1, Range.closed(0L, 1L))
         Assertions.assertTrue(startTime >= checkpointManager.getLastSuccessfulFlushTimeMs())
@@ -501,7 +481,7 @@ class CheckpointManagerTest {
         checkpointManager.addStreamCheckpoint(
             stream1.descriptor,
             1L,
-            MockStreamCheckpointIn(stream1, 1)
+            MockStreamCheckpoint(stream1, 1)
         )
         Assertions.assertEquals(
             mapOf(stream1.descriptor to 1L),
@@ -511,7 +491,7 @@ class CheckpointManagerTest {
         checkpointManager.addStreamCheckpoint(
             stream2.descriptor,
             10L,
-            MockStreamCheckpointIn(stream2, 10)
+            MockStreamCheckpoint(stream2, 10)
         )
         Assertions.assertEquals(
             mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
@@ -521,7 +501,7 @@ class CheckpointManagerTest {
         checkpointManager.addStreamCheckpoint(
             stream1.descriptor,
             2L,
-            MockStreamCheckpointIn(stream1, 2)
+            MockStreamCheckpoint(stream1, 2)
         )
         Assertions.assertEquals(
             mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
@@ -546,7 +526,7 @@ class CheckpointManagerTest {
         checkpointManager.addStreamCheckpoint(
             stream2.descriptor,
             20L,
-            MockStreamCheckpointIn(stream2, 20)
+            MockStreamCheckpoint(stream2, 20)
         )
         checkpointManager.flushReadyCheckpointMessages()
         Assertions.assertEquals(
@@ -581,7 +561,7 @@ class CheckpointManagerTest {
 
         checkpointManager.addGlobalCheckpoint(
             listOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
-            MockGlobalCheckpointIn(1)
+            MockGlobalCheckpoint(1)
         )
         Assertions.assertEquals(
             mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),
@@ -590,7 +570,7 @@ class CheckpointManagerTest {
 
         checkpointManager.addGlobalCheckpoint(
             listOf(stream1.descriptor to 2L, stream2.descriptor to 20L),
-            MockGlobalCheckpointIn(2)
+            MockGlobalCheckpoint(2)
         )
         Assertions.assertEquals(
             mapOf(stream1.descriptor to 1L, stream2.descriptor to 10L),

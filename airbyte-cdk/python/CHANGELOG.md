@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.11.1
+Low Code: Consolidate manifest decoder selection under , , and 
+
+## 5.11.0
+concurrent-cdk: add per slice tracking of the most recent cursor
+
+## 5.10.3
+do not raise exception on missing stream by default
+
 ## 5.10.2
 Remove PrintBuffer optimization due to dropped records
 

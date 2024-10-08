@@ -30,7 +30,6 @@ task integrationTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     useJUnitPlatform()
-    mustRunAfter tasks.check
 }
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
