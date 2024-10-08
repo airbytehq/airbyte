@@ -3,7 +3,7 @@
 #
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.decoders import PaginationDecoderDecorator, JsonDecoder
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder, PaginationDecoderDecorator
 
 
 class StreamingJsonDecoder(JsonDecoder):
