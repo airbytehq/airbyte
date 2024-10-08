@@ -13,8 +13,7 @@ data:
       enabled: false
       packageName: airbyte-source-xsolla
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.9.0@sha256:c56a14384e2b0096fabbfe6b054657d564e2453b956912cbd293a1fe4e79cef0
-  connectorSubtype: api
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.11.1@sha256:f48a7ddc1f3acecbd8eb6a10a3146e8d0396e9a4dede77beafb76924f416df65
   connectorType: source
   definitionId: 6ff73a16-05a8-4f7e-8771-5433764678f1
   dockerImageTag: 0.0.1
