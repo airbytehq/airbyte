@@ -1,4 +1,4 @@
-version: 5.10.2
+version: 5.10.3
 
 type: DeclarativeSource
 
@@ -431,13 +431,21 @@ definitions:
             inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
-          path: wp/v2/pages/{{ config['parent_id'] }}/revisions
+          path: wp/v2/pages/{{ stream_partition.page}}/revisions
           http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/pages"
+              parent_key: id
+              partition_field: page
       primary_key:
         - id
       schema_loader:
@@ -673,7 +681,7 @@ metadata:
       responsesAreSuccessful: true
     revisions:
       hasRecords: true
-      streamHash: ee8698066a0a54955e42d85bd0a3dd16aea48162
+      streamHash: f4056e551299a879260b541f8e8be1eaca42dd3a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
