@@ -3,11 +3,12 @@
 #
 
 import logging
-import xmltodict
-import requests
-from xml.parsers.expat import ExpatError
 from dataclasses import InitVar, dataclass
-from typing import Any, Generator, MutableMapping, Mapping
+from typing import Any, Generator, Mapping, MutableMapping
+from xml.parsers.expat import ExpatError
+
+import requests
+import xmltodict
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 logger = logging.getLogger("airbyte")

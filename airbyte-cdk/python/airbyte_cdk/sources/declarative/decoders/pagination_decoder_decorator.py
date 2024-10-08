@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Generator, MutableMapping
-import requests
 import logging
+from typing import Any, Generator, MutableMapping
 
+import requests
 from airbyte_cdk.sources.declarative.decoders import Decoder
 
 logger = logging.getLogger("airbyte")
@@ -15,6 +15,7 @@ class PaginationDecoderDecorator(Decoder):
     """
     Decoder to wrap other decoders when instantiating a DefaultPaginator in order to bypass decoding if the response is streamed.
     """
+
     def __init__(self, decoder: Decoder):
         self._decoder = decoder
 
