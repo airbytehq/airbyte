@@ -2,7 +2,8 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "https:"
+      - https://api.segmentapis.com
+      - https://eu1.segmentapis.com
   registryOverrides:
     oss:
       enabled: true
