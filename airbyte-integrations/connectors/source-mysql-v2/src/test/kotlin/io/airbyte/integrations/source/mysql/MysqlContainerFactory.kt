@@ -25,6 +25,12 @@ object MysqlContainerFactory {
         }
     }
 
+    data object WithCdcOff : MysqlContainerModifier {
+        override fun modify(container: MySQLContainer<*>) {
+            container.withCommand("--skip-log-bin")
+        }
+    }
+
     fun exclusive(
         imageName: String,
         vararg modifiers: MysqlContainerModifier,
@@ -44,8 +50,8 @@ object MysqlContainerFactory {
     }
 
     @JvmStatic
-    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationJsonObject =
-        MysqlSourceConfigurationJsonObject().apply {
+    fun config(mySQLContainer: MySQLContainer<*>): MysqlSourceConfigurationSpecification =
+        MysqlSourceConfigurationSpecification().apply {
             host = mySQLContainer.host
             port = mySQLContainer.getMappedPort(MySQLContainer.MYSQL_PORT)
             username = mySQLContainer.username

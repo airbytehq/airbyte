@@ -600,7 +600,6 @@ decoder:
   type: JsonDecoder
 extractor:
   type: DpathExtractor
-  decoder: "#/decoder"
 selector:
   type: RecordSelector
   record_filter:
@@ -612,8 +611,26 @@ requester:
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
-    type: BearerAuthenticator
-    api_token: "{{ config['apikey'] }}"
+    type: SessionTokenAuthenticator
+    decoder:
+      type: JsonDecoder
+    expiration_duration: P10D
+    login_requester:
+      path: /session
+      type: HttpRequester
+      url_base: 'https://api.sendgrid.com'
+      http_method: POST
+      request_body_json:
+        password: '{{ config.apikey }}'
+        username: '{{ parameters.name }}'
+    session_token_path:
+      - id
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        field_name: X-Metabase-Session
+        inject_into: header
   request_parameters:
     unit: "day"
 list_stream:
@@ -642,6 +659,8 @@ list_stream:
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
+    decoder:
+      $ref: "#/decoder"
     partition_router:
       type: ListPartitionRouter
       values: "{{config['repos']}}"
@@ -1230,6 +1249,8 @@ requester:
   url_base: "https://api.sendgrid.com"
   authenticator:
     type: SessionTokenAuthenticator
+    decoder:
+      type: JsonDecoder
     expiration_duration: P10D
     login_requester:
       path: /session

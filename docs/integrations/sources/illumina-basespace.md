@@ -26,8 +26,8 @@ Connector for the Basespace v1 API. This can be used to extract data on projects
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-23 | Initial release by [@FilipeJesus](https://github.com/FilipeJesus) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-23 | | Initial release by [@FilipeJesus](https://github.com/FilipeJesus) via Connector Builder |
 
 </details>

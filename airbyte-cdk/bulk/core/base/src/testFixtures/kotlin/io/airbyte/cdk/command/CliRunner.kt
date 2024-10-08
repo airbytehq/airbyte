@@ -33,7 +33,7 @@ data object CliRunner {
      */
     fun source(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
     ): CliRunnable {
@@ -48,10 +48,11 @@ data object CliRunner {
     /** Same as [source] but for destinations. */
     fun destination(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         inputStream: InputStream,
+        testProperties: Map<String, String> = emptyMap(),
     ): CliRunnable {
         val inputBeanDefinition: RuntimeBeanDefinition<InputStream> =
             RuntimeBeanDefinition.builder(InputStream::class.java) { inputStream }
@@ -60,7 +61,12 @@ data object CliRunner {
         val out = CliRunnerOutputStream()
         val runnable: Runnable =
             makeRunnable(op, config, catalog, state) { args: Array<String> ->
-                AirbyteDestinationRunner(args, inputBeanDefinition, out.beanDefinition)
+                AirbyteDestinationRunner(
+                    args,
+                    testProperties,
+                    inputBeanDefinition,
+                    out.beanDefinition
+                )
             }
         return CliRunnable(runnable, out.results)
     }
@@ -68,7 +74,7 @@ data object CliRunner {
     /** Same as the other [destination] but with [AirbyteMessage] input. */
     fun destination(
         op: String,
-        config: ConfigurationJsonObjectBase? = null,
+        config: ConfigurationSpecification? = null,
         catalog: ConfiguredAirbyteCatalog? = null,
         state: List<AirbyteStateMessage>? = null,
         vararg input: AirbyteMessage,
@@ -87,7 +93,7 @@ data object CliRunner {
 
     private fun makeRunnable(
         op: String,
-        config: ConfigurationJsonObjectBase?,
+        config: ConfigurationSpecification?,
         catalog: ConfiguredAirbyteCatalog?,
         state: List<AirbyteStateMessage>?,
         connectorRunnerConstructor: (Array<String>) -> AirbyteConnectorRunner,

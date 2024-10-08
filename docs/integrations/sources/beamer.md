@@ -18,8 +18,8 @@ Beamer NPS source
 <details>
   <summary>Expand to review</summary>
 
-| Version          | Date       | Subject        |
-|------------------|------------|----------------|
-| 0.0.1 | 2024-09-17 | Initial release by [@caydenm](https://github.com/caydenm) via Connector Builder|
+| Version | Date | Pull Request | Subject |
+|---------|------|--------------|---------|
+| 0.0.1 | 2024-09-17 | | Initial release by [@caydenm](https://github.com/caydenm) via Connector Builder |
 
 </details>

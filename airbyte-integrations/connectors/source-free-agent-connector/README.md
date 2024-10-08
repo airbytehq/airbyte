@@ -1,4 +1,4 @@
-# FreeAgent Connector
+# FreeAgent
 This directory contains the manifest-only connector for `source-free-agent-connector`.
 
 Download all your data from FreeAgent, a friendly and easy to use cloud based accounting service

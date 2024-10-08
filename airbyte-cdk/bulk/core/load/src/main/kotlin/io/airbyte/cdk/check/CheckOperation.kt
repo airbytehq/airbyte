@@ -5,8 +5,8 @@
 package io.airbyte.cdk.check
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationJsonObjectBase
-import io.airbyte.cdk.command.ConfigurationJsonObjectSupplier
+import io.airbyte.cdk.command.ConfigurationSpecification
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.DestinationConfiguration
 import io.airbyte.cdk.command.DestinationConfigurationFactory
 import io.airbyte.cdk.output.ExceptionHandler
@@ -19,8 +19,8 @@ import jakarta.inject.Singleton
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
 @Requires(env = ["destination"])
-class CheckOperation<T : ConfigurationJsonObjectBase, C : DestinationConfiguration>(
-    val configJsonObjectSupplier: ConfigurationJsonObjectSupplier<T>,
+class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
+    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: DestinationConfigurationFactory<T, C>,
     private val destinationChecker: DestinationChecker<C>,
     private val exceptionHandler: ExceptionHandler,
