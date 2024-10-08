@@ -13,18 +13,17 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 |-------------|-------------|------------|---------------------|----------------------|
 | employees | id | DefaultPaginator | ✅ |  ❌  |
 | leave-management-policies | id | No pagination | ✅ |  ❌  |
-| documents-categories | id | No pagination | ✅ |  ❌  |
-| documents | id | No pagination | ✅ |  ❌  |
-| positions | id | No pagination | ✅ |  ❌  |
-| teams | id | No pagination | ✅ |  ❌  |
-| terminated-employees | id | No pagination | ✅ |  ❌  |
-| termination-reasons | id | No pagination | ✅ |  ❌  |
+| documents | id | DefaultPaginator | ✅ |  ❌  |
+| positions | id | DefaultPaginator | ✅ |  ❌  |
+| teams | id | DefaultPaginator | ✅ |  ❌  |
+| terminated-employees | id | DefaultPaginator | ✅ |  ❌  |
+| termination-reasons | id | DefaultPaginator | ✅ |  ❌  |
 | policies | id | No pagination | ✅ |  ❌  |
-| individual-allowances | id | No pagination | ✅ |  ❌  |
+| individual-allowances | id | DefaultPaginator | ✅ |  ❌  |
 | document-categories | id | No pagination | ✅ |  ❌  |
-| offboarding-categories | id | No pagination | ✅ |  ❌  |
-| onboarding-categories | id | No pagination | ✅ |  ❌  |
-| requests | id | No pagination | ✅ |  ❌  |
+| offboarding-categories | id | DefaultPaginator | ✅ |  ❌  |
+| onboarding-categories | id | DefaultPaginator | ✅ |  ❌  |
+| leave-requests | id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -33,6 +32,6 @@ The Sage HR Airbyte Connector enables seamless data integration, allowing you to
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.0.1 | 2024-10-07 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
+| 0.0.1 | 2024-10-08 | | Initial release by [@parthiv11](https://github.com/parthiv11) via Connector Builder |
 
 </details>

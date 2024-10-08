@@ -1,4 +1,4 @@
-version: 5.10.3
+version: 5.11.1
 
 type: DeclarativeSource
 
@@ -68,27 +68,6 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/leave-management-policies"
-    documents-categories:
-      type: DeclarativeStream
-      name: documents-categories
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /documents/categories
-          http_method: GET
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/documents-categories"
     documents:
       type: DeclarativeStream
       name: documents
@@ -106,6 +85,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            start_from_page: 1
+            page_size: 30
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -127,6 +117,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -148,6 +149,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -169,6 +181,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -190,6 +213,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -232,6 +266,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -274,6 +319,17 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -295,13 +351,24 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/onboarding-categories"
-    requests:
+    leave-requests:
       type: DeclarativeStream
-      name: requests
+      name: leave-requests
       primary_key:
         - id
       retriever:
@@ -316,10 +383,21 @@ definitions:
             type: DpathExtractor
             field_path:
               - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: page
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+            inject_on_first_request: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/requests"
+          $ref: "#/schemas/leave-requests"
   base_requester:
     type: HttpRequester
     url_base: https://{{ config['subdomain'] }}.sage.hr/api/
@@ -334,7 +412,6 @@ definitions:
 streams:
   - $ref: "#/definitions/streams/employees"
   - $ref: "#/definitions/streams/leave-management-policies"
-  - $ref: "#/definitions/streams/documents-categories"
   - $ref: "#/definitions/streams/documents"
   - $ref: "#/definitions/streams/positions"
   - $ref: "#/definitions/streams/teams"
@@ -345,7 +422,7 @@ streams:
   - $ref: "#/definitions/streams/document-categories"
   - $ref: "#/definitions/streams/offboarding-categories"
   - $ref: "#/definitions/streams/onboarding-categories"
-  - $ref: "#/definitions/streams/requests"
+  - $ref: "#/definitions/streams/leave-requests"
 
 spec:
   type: Spec
@@ -372,7 +449,6 @@ metadata:
   autoImportSchema:
     employees: true
     leave-management-policies: false
-    documents-categories: false
     documents: false
     positions: false
     teams: false
@@ -383,106 +459,99 @@ metadata:
     document-categories: false
     offboarding-categories: false
     onboarding-categories: false
-    requests: false
+    leave-requests: false
   testedStreams:
     employees:
-      hasRecords: true
-      streamHash: 52b62be9da2d1cf9bc024a28606e745b3f26dc90
+      streamHash: c1c52bac2f855a5a9ddc6d85c739f8b5c7d7f1c8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    leave-management-policies:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leave-management-policies:
       streamHash: 75aee0808e8547e8dbd6727ef7dea5c2055f34a3
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    documents-categories:
       hasRecords: true
-      streamHash: b4d85980f2892bfa306c15e7b2fb386dcc974c17
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: true
+      primaryKeysAreUnique: true
     documents:
-      hasRecords: true
-      streamHash: 2a97f0ec383f6994aa375fc8b82b55e8465e2314
+      streamHash: c34a9651675ae4c0e1da808835aa277d5994036d
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     positions:
-      hasRecords: true
-      streamHash: 20301fcef9f69cf40b4f2a57a8e0ee332c02a1c2
+      streamHash: bc6a2889d3472d2852e3180736c2f9ec238b1a9c
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     teams:
-      hasRecords: true
-      streamHash: 0864a7bd55bf2ebd9f4ea1095fde3a105c725a70
+      streamHash: aa0f7219f8b8cbc6c76718d54fc461b0c1df5fff
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     terminated-employees:
-      hasRecords: true
-      streamHash: 435181bd1ad89e990e54c88575490a84958580a6
+      streamHash: d1083bface3557a2e078c2206e3e35bdfb291d63
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     termination-reasons:
-      hasRecords: true
-      streamHash: b92e333902d76614ef2d0fc6d876ca01dc366505
+      streamHash: 7cc49c6aab5d11d0b76be2f0aaadccc662a2aa8f
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    policies:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    policies:
       streamHash: 6f74ecbc3aeb371fa82f6e98df9359fda61748ed
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     individual-allowances:
-      hasRecords: true
-      streamHash: e90c7f944bfd5497af0539a5555e8830b1a33049
+      streamHash: 042acbef3a7a20f47c3ac28281b713af5d8330d6
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    document-categories:
       hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    document-categories:
       streamHash: b528b0a9da72113b40c5d394ce6f88017513b5e4
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     offboarding-categories:
-      hasRecords: true
-      streamHash: 12d8df315132a1ea9e365c56d73c07d940a21231
+      streamHash: 03f27f7fdcf924dbfb1473fbdcc489725587125a
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     onboarding-categories:
-      hasRecords: true
-      streamHash: 9a052cebab3bcea0d7ba998f5dd348f4406d4a2e
+      streamHash: a916e054b284a2228353ec583ce4b35605851d4e
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
-    requests:
       hasRecords: true
-      streamHash: 54c59539134bdd21b5e82f9e3d6d2083a4669885
-      hasResponse: true
-      primaryKeysAreUnique: true
       primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    leave-requests:
+      streamHash: b2a18c9b8b92858b7399a11252dbcbc6cc336203
+      hasResponse: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist:
     docsUrl: https://sagehr.docs.apiary.io/
     openapiSpecUrl: https://developer.sage.com/hr/reference/sage-hr-v1.0.swagger.yml
@@ -523,7 +592,15 @@ schemas:
         type:
           - string
           - "null"
+      position:
+        type:
+          - string
+          - "null"
       position_id:
+        type:
+          - number
+          - "null"
+      reports_to_employee_id:
         type:
           - number
           - "null"
@@ -538,23 +615,6 @@ schemas:
     $schema: http://json-schema.org/draft-07/schema#
     additionalProperties: true
     properties: {}
-  documents-categories:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      documents_count:
-        type:
-          - number
-          - "null"
-      id:
-        type: number
-      name:
-        type:
-          - string
-          - "null"
-    required:
-      - id
   documents:
     type: object
     $schema: http://json-schema.org/schema#
@@ -855,7 +915,7 @@ schemas:
           - "null"
     required:
       - id
-  requests:
+  leave-requests:
     type: object
     $schema: http://json-schema.org/schema#
     additionalProperties: true
