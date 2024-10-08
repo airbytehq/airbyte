@@ -1,4 +1,4 @@
-version: 5.10.2
+version: 5.10.3
 
 type: DeclarativeSource
 
@@ -10,7 +10,6 @@ description: >-
   This source uses the Authorization Bearer Token for handling requests.
   An API Token is required for using this connector.
   For more details about the API, check out https://developer.safetyculture.com/reference/introduction
-
 
 check:
   type: CheckStream
@@ -115,8 +114,8 @@ definitions:
             field_name: page_token
           page_size_option:
             type: RequestOption
-            inject_into: body_json
             field_name: page_size
+            inject_into: body_json
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -151,8 +150,8 @@ definitions:
             field_name: page_token
           page_size_option:
             type: RequestOption
-            inject_into: body_json
             field_name: page_size
+            inject_into: body_json
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -187,8 +186,8 @@ definitions:
             field_name: page_token
           page_size_option:
             type: RequestOption
-            inject_into: body_json
             field_name: page_size
+            inject_into: body_json
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -244,8 +243,8 @@ definitions:
             field_name: page_token
           page_size_option:
             type: RequestOption
-            inject_into: body_json
             field_name: page_size
+            inject_into: body_json
           pagination_strategy:
             type: CursorPagination
             page_size: 100
@@ -258,6 +257,8 @@ definitions:
     actions:
       type: DeclarativeStream
       name: actions
+      primary_key:
+        - unique_id
       retriever:
         type: SimpleRetriever
         requester:
@@ -278,13 +279,19 @@ definitions:
             field_name: page_token
           page_size_option:
             type: RequestOption
-            inject_into: body_json
             field_name: page_size
+            inject_into: body_json
           pagination_strategy:
             type: CursorPagination
             page_size: 100
             cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
             stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - unique_id
+              value: "{{record['task']['unique_id']}}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -339,6 +346,48 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/feed_templates"
+    issues:
+      type: DeclarativeStream
+      name: issues
+      primary_key:
+        - unique_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tasks/v1/incidents/list
+          http_method: POST
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - incidents
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_name: page_token
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: body_json
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page_token\", {}) }}"
+            stop_condition: "{{ not response.get(\"next_page_token\", {}) }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - unique_id
+              value: "{{record['task']['unique_id']}}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issues"
   base_requester:
     type: HttpRequester
     url_base: https://api.safetyculture.io
@@ -358,6 +407,7 @@ streams:
   - $ref: "#/definitions/streams/actions"
   - $ref: "#/definitions/streams/templates"
   - $ref: "#/definitions/streams/feed_templates"
+  - $ref: "#/definitions/streams/issues"
 
 spec:
   type: Spec
@@ -369,9 +419,9 @@ spec:
     properties:
       api_key:
         type: string
+        order: 0
         title: API Key
         airbyte_secret: true
-        order: 0
     additionalProperties: true
 
 metadata:
@@ -387,79 +437,87 @@ metadata:
     actions: true
     templates: true
     feed_templates: true
+    issues: true
   testedStreams:
     feed_users:
+      hasRecords: true
       streamHash: fbf4f16be8839503c772a3be1f754cdddbb579ac
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     groups:
+      hasRecords: true
       streamHash: 92444425dcc802dee1570910bfed220729ccf7ee
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     connections:
+      hasRecords: true
       streamHash: 2265722254844ad82a2bac059b555b2fb2e8e826
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     heads_up:
+      hasRecords: true
       streamHash: 0197f79c3c35855b4a5382395f34f0edea17bbbe
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     assets:
+      hasRecords: true
       streamHash: 4db37744c0daa27b220727480162c4ba9f792611
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     folders:
+      hasRecords: true
       streamHash: f9821a74f96239ba7b518060251e70a86845b2af
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     global_response_sets:
+      hasRecords: true
       streamHash: 6f4cd77f8a14478987c2aab4f739f1ea52c990f7
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     schedule_items:
+      hasRecords: true
       streamHash: 3d80019d9b20550e393e332a5a3bfbed21ebce62
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     actions:
-      streamHash: 1e1833f34e735bed2f5e6116b291f390f0ec549d
+      streamHash: c1463b5f5464290ed35d498dde7dbfe3d1d2c8e9
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     templates:
+      hasRecords: true
       streamHash: 2a884117adc409a6b0d83242e0227f40bf49fa8f
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     feed_templates:
+      hasRecords: true
       streamHash: a2736e1dc94a3307f61c8341b025a1972d016b3a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    issues:
+      streamHash: 33815d3c0af8075389ddf6944e4b4fd0677928de
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -509,6 +567,7 @@ schemas:
   groups:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       id:
         type: string
@@ -518,7 +577,6 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
   connections:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1115,6 +1173,10 @@ schemas:
             type:
               - string
               - "null"
+      unique_id:
+        type: string
+    required:
+      - unique_id
   templates:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1185,3 +1247,338 @@ schemas:
           - "null"
     required:
       - id
+  issues:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      category:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - string
+              - "null"
+          display_order:
+            type:
+              - number
+              - "null"
+          id:
+            type:
+              - string
+              - "null"
+          is_visible:
+            type:
+              - boolean
+              - "null"
+          items:
+            type:
+              - array
+              - "null"
+          key:
+            type:
+              - string
+              - "null"
+          label:
+            type:
+              - string
+              - "null"
+          linked_template_ids:
+            type:
+              - array
+              - "null"
+          notification_detail:
+            type:
+              - string
+              - "null"
+          use_category_access_whitelist:
+            type:
+              - boolean
+              - "null"
+          user_access_as_reporter:
+            type:
+              - string
+              - "null"
+      category_id:
+        type:
+          - string
+          - "null"
+      inspections:
+        type:
+          - array
+          - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - string
+                - "null"
+            is_disabled:
+              type:
+                - boolean
+                - "null"
+            is_mandatory:
+              type:
+                - boolean
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            question_data:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                is_mandatory:
+                  type:
+                    - boolean
+                    - "null"
+                text:
+                  type:
+                    - string
+                    - "null"
+      location:
+        type:
+          - object
+          - "null"
+        properties:
+          administrative_area:
+            type:
+              - string
+              - "null"
+          country:
+            type:
+              - string
+              - "null"
+          geo_position:
+            type:
+              - object
+              - "null"
+            properties:
+              accuracy:
+                type:
+                  - number
+                  - "null"
+              latitude:
+                type:
+                  - number
+                  - "null"
+              longitude:
+                type:
+                  - number
+                  - "null"
+          iso_country_code:
+            type:
+              - string
+              - "null"
+          locality:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          postal_code:
+            type:
+              - string
+              - "null"
+          sub_administrative_area:
+            type:
+              - string
+              - "null"
+          sub_locality:
+            type:
+              - string
+              - "null"
+          sub_thoroughfare:
+            type:
+              - string
+              - "null"
+          thoroughfare:
+            type:
+              - string
+              - "null"
+      media:
+        type:
+          - array
+          - "null"
+      question_answers:
+        type:
+          - array
+          - "null"
+      task:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          description:
+            type:
+              - string
+              - "null"
+          action_label:
+            type:
+              - array
+              - "null"
+          asset_id:
+            type:
+              - string
+              - "null"
+          collaborators:
+            type:
+              - array
+              - "null"
+          created_at:
+            type:
+              - string
+              - "null"
+          creator:
+            type:
+              - object
+              - "null"
+            properties:
+              firstname:
+                type:
+                  - string
+                  - "null"
+              lastname:
+                type:
+                  - string
+                  - "null"
+              user_id:
+                type:
+                  - string
+                  - "null"
+          inspection:
+            type:
+              - object
+              - "null"
+            properties:
+              inspection_id:
+                type:
+                  - string
+                  - "null"
+              inspection_name:
+                type:
+                  - string
+                  - "null"
+          inspection_item:
+            type:
+              - object
+              - "null"
+            properties:
+              inspection_item_id:
+                type:
+                  - string
+                  - "null"
+              inspection_item_name:
+                type:
+                  - string
+                  - "null"
+              inspection_item_response_values:
+                type:
+                  - array
+                  - "null"
+              inspection_item_type:
+                type:
+                  - string
+                  - "null"
+          modified_at:
+            type:
+              - string
+              - "null"
+          occurred_at:
+            type:
+              - string
+              - "null"
+          priority_id:
+            type:
+              - string
+              - "null"
+          references:
+            type:
+              - array
+              - "null"
+          site:
+            type:
+              - object
+              - "null"
+            properties:
+              area:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              region:
+                type:
+                  - string
+                  - "null"
+          status_id:
+            type:
+              - string
+              - "null"
+          task_id:
+            type:
+              - string
+              - "null"
+          task_templates:
+            type:
+              - array
+              - "null"
+          template_id:
+            type:
+              - string
+              - "null"
+          template_name:
+            type:
+              - string
+              - "null"
+          templates:
+            type:
+              - array
+              - "null"
+          title:
+            type:
+              - string
+              - "null"
+          unique_id:
+            type:
+              - string
+              - "null"
+      unique_id:
+        type: string
+    required:
+      - unique_id

@@ -1,14 +1,15 @@
 # SafetyCulture
 
-This is the setup guide for the Safetyculture source connector which ingests data from the Safetyculture API.
+This is the guide for the Safetyculture source connector which ingests data from the Safetyculture API.
 
 ## Prerequisites
 
 This source uses the Authorization Bearer Token for handling requests. In order to obtain the credientials, you must first create a Safetyculture account.
-The API usage is only availabe for paid plans https://www.Safetyculture.com/
+The API usage is only availabe for paid plans https://www.safetyculture.com/
 
-You can create an API token under Account Settings -> Integrations -> API Tokens
-You can find more about their API here https://www.Safetyculture.com/api-reference/
+Once you have created your account, you can log in to your account.
+You can create an API token under Account Settings -> Integrations -> Manage MY API Tokens
+You can find more about their API here https://developer.safetyculture.com/reference/introduction
 
 ## Set up the Adjust source connector
 
@@ -41,9 +42,10 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 | folders | id | DefaultPaginator | ✅ |  ❌  |
 | global_response_sets | responseset_id | No pagination | ✅ |  ❌  |
 | schedule_items | id | DefaultPaginator | ✅ |  ❌  |
-| actions |  | DefaultPaginator | ✅ |  ❌  |
+| actions | unique_id | DefaultPaginator | ✅ |  ❌  |
 | templates | template_id | No pagination | ✅ |  ❌  |
 | feed_templates | id | DefaultPaginator | ✅ |  ❌  |
+| issues | unique_id | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
