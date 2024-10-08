@@ -1,7 +1,7 @@
 # Codefresh
 This directory contains the manifest-only connector for `source-codefresh`.
 
-This connector integrates Codefresh with Airbyte, enabling seamless data synchronization for CI/CD analytics and pipeline monitoring. It provides streams like agents, builds, audit, analytics etc.
+This connector integrates Codefresh with Airbyte, enabling seamless data synchronization for analytics and pipeline monitoring. It provides streams like agents, builds, audit, analytics etc.
 
 ## Usage
 There are multiple ways to use this connector:

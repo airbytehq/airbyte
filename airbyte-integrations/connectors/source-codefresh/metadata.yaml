@@ -13,17 +13,17 @@ data:
       enabled: false
       packageName: airbyte-source-codefresh
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:5.10.2@sha256:81db4f78a92d199f33c38c17f5b63fc87c56739f14dc10276ddec86c7b707b7a
+    baseImage: docker.io/airbyte/source-declarative-manifest:5.11.1@sha256:f48a7ddc1f3acecbd8eb6a10a3146e8d0396e9a4dede77beafb76924f416df65
   connectorSubtype: api
   connectorType: source
-  definitionId: a1b70608-1bae-47e0-bd69-855d95da7038
+  definitionId: 98aa1742-6d7e-4d95-87ef-a621620aa9b9
   dockerImageTag: 0.0.1
   dockerRepository: airbyte/source-codefresh
   githubIssueLabel: source-codefresh
   icon: icon.svg
   license: MIT
   name: Codefresh
-  releaseDate: 2024-10-06
+  releaseDate: 2024-10-08
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/codefresh
