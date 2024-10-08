@@ -40,7 +40,7 @@ class AbstractFileBasedSpec(BaseModel):
         title="Sync Configuration", description="Sync configuration"
     )
 
-    is_file_transfer_sync: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
+    use_file_transfer: bool = Field(title="File Sync (Experimental)", description="Enable file-based bulk load", default=False)
 
     @classmethod
     @abstractmethod

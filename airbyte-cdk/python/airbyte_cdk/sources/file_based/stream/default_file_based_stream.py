@@ -43,12 +43,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
-    file_transfer_flag = "is_file_transfer_sync"
-    is_file_transfer_sync = False
+    file_transfer_flag = "use_file_transfer"
+    use_file_transfer = False
 
     def __init__(self, **kwargs: Any):
         if self.file_transfer_flag in kwargs:
-            self.is_file_transfer_sync  = kwargs.pop(self.file_transfer_flag, False)
+            self.use_file_transfer  = kwargs.pop(self.file_transfer_flag, False)
         super().__init__(**kwargs)
 
     @property
@@ -75,7 +75,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return self.config.primary_key or self.get_parser().get_parser_defined_primary_key(self.config)
 
     def _filter_schema_invalid_properties(self, configured_catalog_json_schema: Dict[str, Any]) -> Dict[str, Any]:
-        if self.is_file_transfer_sync:
+        if self.use_file_transfer:
             return {
                 "type": "object",
                 "properties": {"file_path": {"type": "string"}, "file_size": {"type": "string"}, self.ab_file_name_col: {"type": "string"}},
@@ -121,7 +121,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             n_skipped = line_no = 0
 
             try:
-                if self.is_file_transfer_sync:
+                if self.use_file_transfer:
                     self.logger.info(f"{self.name}: {file} file-based syncing")
                     # todo: complete here the code to not rely on local parser
                     writer = FileTransferStreamWriter()

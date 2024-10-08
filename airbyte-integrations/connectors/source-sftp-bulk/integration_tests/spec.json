@@ -370,8 +370,8 @@
           "required": ["name", "format"]
         }
       },
-      "is_file_transfer_sync": {
-        "title": "File Sync (Experimental)",
+      "use_file_transfer": {
+        "title": "Use File Transfer (Experimental)",
         "description": "Enable file-based bulk load",
         "default": false,
         "type": "boolean"
