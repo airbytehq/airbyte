@@ -88,9 +88,9 @@ class MysqlJdbcPartitionFactory(
      * ```
      * 2. If the input state is not null -
      * ```
-     *    a. If it's not cursor based, JdbcPartitionFactory will not handle this. (TODO)
+     *    a. If it's in global mode, JdbcPartitionFactory will not handle this. (TODO)
      *    b. If it's cursor based, it could be either in PK read phase (initial read) or
-     *       cursor read phase (incremental read).
+     *       cursor read phase (incremental read). This is differentiated by the stateType.
      *      i. In PK read phase, use snapshot with cursor. If no PKs were found,
      *         use non-resumable snapshot with cursor.
      *      ii. In cursor read phase, use cursor incremental.
