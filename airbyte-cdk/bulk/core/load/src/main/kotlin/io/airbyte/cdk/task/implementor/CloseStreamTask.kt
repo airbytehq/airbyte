@@ -2,15 +2,18 @@
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.task
+package io.airbyte.cdk.task.implementor
 
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.task.DestinationTaskLauncher
+import io.airbyte.cdk.task.ImplementorTask
+import io.airbyte.cdk.task.StreamTask
 import io.airbyte.cdk.write.StreamLoader
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 
-interface CloseStreamTask : StreamTask
+interface CloseStreamTask : StreamTask, ImplementorTask
 
 /**
  * Wraps @[StreamLoader.close] and marks the stream as closed in the stream manager. Also starts the

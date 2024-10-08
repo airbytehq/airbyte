@@ -33,6 +33,8 @@ class Reserved<T>(
 
     fun getReservationManager(): MemoryManager = MemoryManager(bytesReserved)
 
+    fun <U> replace(value: U): Reserved<U> = Reserved(memoryManager, bytesReserved, value)
+
     override suspend fun close() {
         release()
     }

@@ -8,6 +8,10 @@ import io.airbyte.cdk.command.DestinationCatalog
 import io.airbyte.cdk.command.DestinationStream
 import io.airbyte.cdk.command.MockDestinationCatalogFactory.Companion.stream1
 import io.airbyte.cdk.state.SyncManager
+import io.airbyte.cdk.task.implementor.FailStreamTask
+import io.airbyte.cdk.task.implementor.FailStreamTaskFactory
+import io.airbyte.cdk.task.implementor.FailSyncTask
+import io.airbyte.cdk.task.implementor.FailSyncTaskFactory
 import io.airbyte.cdk.test.util.CoroutineTestUtils
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -16,6 +20,8 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
@@ -27,26 +33,27 @@ import org.junit.jupiter.api.Test
         [
             "DestinationTaskLauncherExceptionHandlerTest",
             "MockDestinationCatalog",
+            "MockScopeProvider"
         ]
 )
-class DestinationTaskLauncherExceptionHandlerTest {
-    @Inject lateinit var taskRunner: TaskRunner
-    @Inject lateinit var exceptionHandler: DestinationTaskLauncherExceptionHandler
+class DestinationTaskExceptionHandlerTest {
+    @Inject lateinit var exceptionHandler: DestinationTaskExceptionHandler<*>
 
     @Singleton
     @Primary
     @Requires(env = ["DestinationTaskLauncherExceptionHandlerTest"])
     class MockFailStreamTaskFactory : FailStreamTaskFactory {
-        val didRunFor = Channel<Pair<DestinationStream, Exception>>()
+        val didRunFor = Channel<Triple<DestinationStream, Exception, Boolean>>(Channel.UNLIMITED)
 
         override fun make(
-            exceptionHandler: DestinationTaskLauncherExceptionHandler,
+            exceptionHandler: DestinationTaskExceptionHandler<*>,
             exception: Exception,
-            stream: DestinationStream
+            stream: DestinationStream,
+            kill: Boolean
         ): FailStreamTask {
             return object : FailStreamTask {
                 override suspend fun execute() {
-                    didRunFor.send(Pair(stream, exception))
+                    didRunFor.send(Triple(stream, exception, kill))
                 }
             }
         }
@@ -56,10 +63,10 @@ class DestinationTaskLauncherExceptionHandlerTest {
     @Primary
     @Requires(env = ["DestinationTaskLauncherExceptionHandlerTest"])
     class MockFailSyncTaskFactory : FailSyncTaskFactory {
-        val didRunWith = Channel<Exception>()
+        val didRunWith = Channel<Exception>(Channel.UNLIMITED)
 
         override fun make(
-            exceptionHandler: DestinationTaskLauncherExceptionHandler,
+            exceptionHandler: DestinationTaskExceptionHandler<*>,
             exception: Exception
         ): FailSyncTask {
             return object : FailSyncTask {
@@ -71,36 +78,34 @@ class DestinationTaskLauncherExceptionHandlerTest {
     }
 
     /**
-     * test surface: validate that the wrapper directs failures in
+     * Validate that the wrapper directs failures in
      * - StreamTask(s) to handleStreamFailure (and to an injected Mock FailStreamTask)
      * - SyncTask(s) to handleSyncFailure (and to an injected Mock FailSyncTask)
      */
     @Test
-    fun testHandleStreamFailure(mockFailStreamTaskFactory: MockFailStreamTaskFactory) = runTest {
-        launch { taskRunner.run() }
+    fun testHandleStreamTaskException(mockFailStreamTaskFactory: MockFailStreamTaskFactory) =
+        runTest {
+            val mockTask =
+                object : StreamTask {
+                    override val stream: DestinationStream = stream1
 
-        val mockTask =
-            object : StreamTask {
-                override val stream: DestinationStream = stream1
-
-                override suspend fun execute() {
-                    throw RuntimeException("StreamTask failure")
+                    override suspend fun execute() {
+                        throw RuntimeException("StreamTask failure")
+                    }
                 }
-            }
 
-        val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
-        launch { wrappedTask.execute() }
-        val (stream, exception) = mockFailStreamTaskFactory.didRunFor.receive()
-        Assertions.assertEquals(stream1, stream)
-        Assertions.assertTrue(exception is RuntimeException)
-
-        taskRunner.close()
-    }
+            val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
+            wrappedTask.execute()
+            val (stream, exception) = mockFailStreamTaskFactory.didRunFor.receive()
+            Assertions.assertEquals(stream1, stream)
+            Assertions.assertTrue(exception is RuntimeException)
+        }
 
     @Test
-    fun testHandleSyncFailure(mockFailSyncTaskFactory: MockFailSyncTaskFactory) = runTest {
-        launch { taskRunner.run() }
-
+    fun testHandleSyncTaskException(
+        mockFailStreamTaskFactory: MockFailStreamTaskFactory,
+        catalog: DestinationCatalog
+    ) = runTest {
         val mockTask =
             object : SyncTask {
                 override suspend fun execute() {
@@ -109,20 +114,26 @@ class DestinationTaskLauncherExceptionHandlerTest {
             }
 
         val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
-        launch { wrappedTask.execute() }
-        val exception = mockFailSyncTaskFactory.didRunWith.receive()
-        Assertions.assertTrue(exception is RuntimeException)
-
-        taskRunner.close()
+        wrappedTask.execute()
+        mockFailStreamTaskFactory.didRunFor.close()
+        val streamResults =
+            mockFailStreamTaskFactory.didRunFor.consumeAsFlow().toList().associate {
+                (stream, exception, kill) ->
+                stream to Pair(exception, kill)
+            }
+        println(streamResults)
+        catalog.streams.forEach { stream ->
+            Assertions.assertTrue(streamResults[stream]!!.first is RuntimeException)
+            Assertions.assertTrue(streamResults[stream]!!.second)
+        }
     }
 
     @Test
     fun testSyncFailureBlocksSyncTasks(
         mockFailSyncTaskFactory: MockFailSyncTaskFactory,
-        syncManager: SyncManager
+        syncManager: SyncManager,
+        catalog: DestinationCatalog
     ) = runTest {
-        launch { taskRunner.run() }
-
         val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
         val mockTask =
             object : SyncTask {
@@ -132,20 +143,19 @@ class DestinationTaskLauncherExceptionHandlerTest {
             }
 
         val wrappedTask = exceptionHandler.withExceptionHandling(mockTask)
+        catalog.streams.forEach {
+            syncManager.getStreamManager(it.descriptor).markFailed(RuntimeException("dummy"))
+        }
         syncManager.markFailed(RuntimeException("dummy failure"))
-        launch { wrappedTask.execute() }
+        wrappedTask.execute()
         delay(1000)
         Assertions.assertTrue(mockFailSyncTaskFactory.didRunWith.tryReceive().isFailure)
         Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
-
-        taskRunner.close()
     }
 
     @Test
     fun testSyncFailureAfterSuccessThrows(syncManager: SyncManager, catalog: DestinationCatalog) =
         runTest {
-            launch { taskRunner.run() }
-
             val mockTask =
                 object : SyncTask {
                     override suspend fun execute() {
@@ -162,8 +172,6 @@ class DestinationTaskLauncherExceptionHandlerTest {
             }
             syncManager.markSucceeded()
             CoroutineTestUtils.assertThrows(IllegalStateException::class) { wrappedTask.execute() }
-
-            taskRunner.close()
         }
 
     @Test
@@ -171,8 +179,6 @@ class DestinationTaskLauncherExceptionHandlerTest {
         mockFailStreamTaskFactory: MockFailStreamTaskFactory,
         syncManager: SyncManager
     ) = runTest {
-        launch { taskRunner.run() }
-
         val innerTaskRan = Channel<Boolean>(Channel.UNLIMITED)
         val mockTask =
             object : StreamTask {
@@ -191,17 +197,14 @@ class DestinationTaskLauncherExceptionHandlerTest {
         delay(1000)
         Assertions.assertTrue(mockFailStreamTaskFactory.didRunFor.tryReceive().isFailure)
         Assertions.assertTrue(innerTaskRan.tryReceive().isFailure)
-
-        taskRunner.close()
     }
 
     @Test
     fun testStreamFailureAfterSuccessThrows(
-        mockFailSyncTaskFactory: MockFailSyncTaskFactory,
-        syncManager: SyncManager
+        mockFailStreamTaskFactory: MockFailStreamTaskFactory,
+        syncManager: SyncManager,
+        catalog: DestinationCatalog
     ) = runTest {
-        launch { taskRunner.run() }
-
         val mockTask =
             object : StreamTask {
                 override val stream: DestinationStream = stream1
@@ -219,8 +222,14 @@ class DestinationTaskLauncherExceptionHandlerTest {
 
         // This won't throw, because the sync wrapper will catch it and call it a sync error
         CoroutineTestUtils.assertDoesNotThrow { wrappedTask.execute() }
-        Assertions.assertTrue(mockFailSyncTaskFactory.didRunWith.receive() is IllegalStateException)
+        mockFailStreamTaskFactory.didRunFor.close()
+        val results = mockFailStreamTaskFactory.didRunFor.consumeAsFlow().toList()
+        Assertions.assertEquals(catalog.streams.size, results.size)
+    }
 
-        taskRunner.close()
+    @Test
+    fun testHandleTeardownComplete(scopeProvider: MockScopeProvider) = runTest {
+        exceptionHandler.handleTeardownComplete()
+        Assertions.assertTrue(scopeProvider.didClose)
     }
 }
