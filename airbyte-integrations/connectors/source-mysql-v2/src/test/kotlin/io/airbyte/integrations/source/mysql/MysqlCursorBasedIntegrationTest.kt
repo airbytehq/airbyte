@@ -58,8 +58,6 @@ class MysqlCursorBasedIntegrationTest {
             }
         }
 
-        println("state: $lastStateMessageFromRun1")
-
         val run2InputState: List<AirbyteStateMessage> = listOf(lastStateMessageFromRun1)
         val run2: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), run2InputState).run()
@@ -73,8 +71,6 @@ class MysqlCursorBasedIntegrationTest {
         val run1: BufferingOutputConsumer =
             CliRunner.source("read", config, getConfiguredCatalog(), listOf(state)).run()
         val recordMessageFromRun1: List<AirbyteRecordMessage> = run1.records()
-        println("state: $state")
-        println("recordmessage: $recordMessageFromRun1")
         assertEquals(recordMessageFromRun1.size, 1)
     }
 
