@@ -12,7 +12,6 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Type, Union, ge
 
 from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.declarative.async_job.job_orchestrator import AsyncJobOrchestrator
-from airbyte_cdk.sources.declarative.async_job.job_tracker import JobTracker
 from airbyte_cdk.sources.declarative.async_job.repository import AsyncJobRepository
 from airbyte_cdk.sources.declarative.async_job.status import AsyncJobStatus
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator, JwtAuthenticator
@@ -30,17 +29,8 @@ from airbyte_cdk.sources.declarative.auth.token_provider import InterpolatedStri
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-<<<<<<< HEAD
-<<<<<<< HEAD
 from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
-from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
-=======
-from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder, PaginationDecoderDecorator
-=======
-from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
->>>>>>> 2531640ecd (remove pagination decoder decorator from scope of this issue)
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
->>>>>>> aa0ed78f46 (update logger, update name to decorator)
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
 from airbyte_cdk.sources.declarative.extractors.record_selector import SCHEMA_TRANSFORMER_TYPE_MAPPING
 from airbyte_cdk.sources.declarative.incremental import (
@@ -168,7 +158,7 @@ from airbyte_cdk.sources.declarative.transformations.keys_to_lower_transformatio
 from airbyte_cdk.sources.message import InMemoryMessageRepository, LogAppenderMessageRepositoryDecorator, MessageRepository
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
 from airbyte_cdk.sources.types import Config
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 from isodate import parse_duration
 from pydantic.v1 import BaseModel
 
@@ -391,11 +381,6 @@ class ModelToComponentFactory:
         self, model: SessionTokenAuthenticatorModel, config: Config, name: str, **kwargs: Any
     ) -> Union[ApiKeyAuthenticator, BearerAuthenticator]:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-<<<<<<< HEAD
-        if not isinstance(decoder, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(model.decoder)=} is not supported. Please set JsonDecoder instead.")
-=======
->>>>>>> 401126463f (update `create_session_token_authenticator` to instantiate user-defined decoder)
         login_requester = self._create_component_from_model(
             model=model.login_requester, config=config, name=f"{name}_login_requester", decoder=decoder
         )
@@ -405,7 +390,6 @@ class ModelToComponentFactory:
             expiration_duration=parse_duration(model.expiration_duration) if model.expiration_duration else None,
             parameters=model.parameters or {},
             message_repository=self._message_repository,
-            decoder=decoder,
         )
         if model.request_authentication.type == "Bearer":
             return ModelToComponentFactory.create_bearer_authenticator(
@@ -824,22 +808,8 @@ class ModelToComponentFactory:
         decoder: Decoder,
         cursor_used_for_stop_condition: Optional[DeclarativeCursor] = None,
     ) -> Union[DefaultPaginator, PaginatorTestReadDecorator]:
-<<<<<<< HEAD
-        decoder_to_use = decoder if decoder else JsonDecoder(parameters={})
-        if not isinstance(decoder_to_use, JsonDecoder):
-            raise ValueError(f"Provided decoder of {type(decoder_to_use)=} is not supported. Please set JsonDecoder instead.")
-=======
         if not isinstance(decoder, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
-<<<<<<< HEAD
-<<<<<<< HEAD
-
->>>>>>> da3dfb363b (consolidates decoders under `SimpleRetriever`)
-=======
-        decoder = PaginationDecoderDecorator(decoder=decoder)
->>>>>>> aa0ed78f46 (update logger, update name to decorator)
-=======
->>>>>>> 2531640ecd (remove pagination decoder decorator from scope of this issue)
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
@@ -867,10 +837,6 @@ class ModelToComponentFactory:
     def create_dpath_extractor(
         self, model: DpathExtractorModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> DpathExtractor:
-<<<<<<< HEAD
-        decoder_to_use = decoder if decoder else JsonDecoder(parameters={})
-=======
->>>>>>> da3dfb363b (consolidates decoders under `SimpleRetriever`)
         model_field_path: List[Union[InterpolatedString, str]] = [x for x in model.field_path]
         return DpathExtractor(decoder=decoder, field_path=model_field_path, config=config, parameters=model.parameters or {})
 
@@ -1320,59 +1286,22 @@ class ModelToComponentFactory:
         polling_requester = self._create_component_from_model(
             model=model.polling_requester, decoder=decoder, config=config, name=f"job polling - {name}"
         )
-        job_download_components_name = f"job download - {name}"
         download_requester = self._create_component_from_model(
-            model=model.download_requester, decoder=decoder, config=config, name=job_download_components_name
-        )
-        download_retriever = SimpleRetriever(
-            requester=download_requester,
-            record_selector=RecordSelector(
-                extractor=ResponseToFileExtractor(),
-                record_filter=None,
-                transformations=[],
-                schema_normalization=TypeTransformer(TransformConfig.NoTransform),
-                config=config,
-                parameters={},
-            ),
-            primary_key=None,
-            name=job_download_components_name,
-            paginator=self._create_component_from_model(model=model.download_paginator, decoder=decoder, config=config, url_base="")
-            if model.download_paginator
-            else NoPagination(parameters={}),
-            config=config,
-            parameters={},
-        )
-        abort_requester = (
-            self._create_component_from_model(model=model.abort_requester, decoder=decoder, config=config, name=f"job abort - {name}")
-            if model.abort_requester
-            else None
-        )
-        delete_requester = (
-            self._create_component_from_model(model=model.delete_requester, decoder=decoder, config=config, name=f"job delete - {name}")
-            if model.delete_requester
-            else None
+            model=model.download_requester, decoder=decoder, config=config, name=f"job download - {name}"
         )
         status_extractor = self._create_component_from_model(model=model.status_extractor, decoder=decoder, config=config, name=name)
         urls_extractor = self._create_component_from_model(model=model.urls_extractor, decoder=decoder, config=config, name=name)
         job_repository: AsyncJobRepository = AsyncHttpJobRepository(
             creation_requester=creation_requester,
             polling_requester=polling_requester,
-            download_retriever=download_retriever,
-            abort_requester=abort_requester,
-            delete_requester=delete_requester,
+            download_requester=download_requester,
             status_extractor=status_extractor,
             status_mapping=self._create_async_job_status_mapping(model.status_mapping, config),
             urls_extractor=urls_extractor,
         )
 
         return AsyncRetriever(
-            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(
-                job_repository,
-                stream_slices,
-                JobTracker(1),  # FIXME eventually make the number of concurrent jobs in the API configurable. Until then, we limit to 1
-                self._message_repository,
-                has_bulk_parent=False,  # FIXME work would need to be done here in order to detect if a stream as a parent stream that is bulk
-            ),
+            job_orchestrator_factory=lambda stream_slices: AsyncJobOrchestrator(job_repository, stream_slices),
             record_selector=record_selector,
             stream_slicer=stream_slicer,
             config=config,

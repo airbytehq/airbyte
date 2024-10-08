@@ -3,10 +3,11 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Union
+from typing import Any, Iterable, List, Mapping, Union, MutableMapping
 
 import dpath
 import requests
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -55,7 +56,7 @@ class DpathExtractor(RecordExtractor):
     field_path: List[Union[InterpolatedString, str]]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._field_path = [InterpolatedString.create(path, parameters=parameters) for path in self.field_path]
