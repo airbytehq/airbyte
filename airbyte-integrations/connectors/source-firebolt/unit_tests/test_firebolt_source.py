@@ -27,19 +27,29 @@ from source_firebolt.utils import airbyte_message_from_data, format_fetch_result
 def config(request):
     args = {
         "database": "my_database",
-        "username": "my_username",
-        "password": "my_password",
+        "client_id": "my_id",
+        "client_secret": "my_secret",
         "engine": request.param,
     }
     return args
 
+@fixture()
+def legacy_config(request):
+    args = {
+        "database": "my_database",
+        # @ is important here to determine the auth type
+        "username": "my@username",
+        "password": "my_password",
+        "engine": "my_engine",
+    }
+    return args
 
 @fixture()
 def config_no_engine():
     args = {
         "database": "my_database",
-        "username": "my_username",
-        "password": "my_password",
+        "client_id": "my_id",
+        "client_secret": "my_secret",
     }
     return args
 
@@ -93,12 +103,17 @@ def test_parse_config(config, logger):
     result = parse_config(config, logger)
     assert result["database"] == "my_database"
     assert result["engine_name"] == "override_engine"
-    assert result["auth"].username == "my_username"
-    assert result["auth"].password == "my_password"
+    assert result["auth"].client_id == "my_id"
+    assert result["auth"].client_secret == "my_secret"
     config["engine"] = "override_engine.api.firebolt.io"
     result = parse_config(config, logger)
     assert result["engine_url"] == "override_engine.api.firebolt.io"
 
+def test_parse_legacy_config(legacy_config, logger):
+    result = parse_config(legacy_config, logger)
+    assert result["database"] == "my_database"
+    assert result["auth"].username == "my@username"
+    assert result["auth"].password == "my_password"
 
 @patch("source_firebolt.database.connect")
 def test_connection(mock_connection, config, config_no_engine, logger):
@@ -128,7 +143,26 @@ def test_connection(mock_connection, config, config_no_engine, logger):
         ("ARRAY(ARRAY(INT NOT NULL))", False, {"type": "array", "items": {"type": "array", "items": {"type": ["null", "integer"]}}}),
         ("int", True, {"type": ["null", "integer"]}),
         ("DUMMY", False, {"type": "string"}),
-        ("boolean", False, {"type": "integer"}),
+        ("boolean", False, {"type": "boolean"}),
+        ("pgdate", False, {"type": "string", "format": "date"}),
+        (
+            "TIMESTAMPNTZ",
+            False,
+            {
+                "type": "string",
+                "format": "datetime",
+                "airbyte_type": "timestamp_without_timezone",
+            },
+        ),
+        (
+            "TIMESTAMPTZ",
+            False,
+            {
+                "type": "string",
+                "format": "datetime",
+                "airbyte_type": "timestamp_with_timezone",
+            },
+        ),
     ],
 )
 def test_convert_type(type, nullable, result):
@@ -143,9 +177,12 @@ def test_convert_type(type, nullable, result):
             ["a", 1],
         ),
         ([datetime.fromisoformat("2019-01-01 20:12:02"), 2], ["2019-01-01T20:12:02", 2]),
+        ([[date.fromisoformat("0019-01-01"), 2], 0.2214], [["0019-01-01", 2], 0.2214]),
         ([[date.fromisoformat("2019-01-01"), 2], 0.2214], [["2019-01-01", 2], 0.2214]),
         ([[None, 2], None], [[None, 2], None]),
         ([Decimal("1231232.123459999990457054844258706536")], ["1231232.123459999990457054844258706536"]),
+        ([datetime.fromisoformat("2019-01-01 20:12:02+01:30"), 2], ["2019-01-01T20:12:02+01:30", 2]),
+        ([True, 2], [True, 2]),
     ],
 )
 def test_format_fetch_result(data, expected):

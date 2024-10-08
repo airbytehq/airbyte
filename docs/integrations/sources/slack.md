@@ -1,8 +1,14 @@
 # Slack
 
-This page contains the setup guide and reference information for the Slack source connector.
+<HideInUI>
+
+This page contains the setup guide and reference information for the [Slack](https://www.slack.com) source connector.
+
+</HideInUI>
 
 ## Prerequisites
+
+OAuth or API Token (via Slack App or Legacy API Key) is required for access to Slack.
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
@@ -11,6 +17,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 Note that refresh token are entirely optional for Slack and are not required to use Airbyte. You can learn more about refresh tokens [here](https://api.slack.com/authentication/rotation).
 
 ## Setup guide
+
 ### Step 1: Set up Slack
 
 :::info
@@ -59,42 +66,49 @@ This tutorial assumes that you are an administrator on your slack instance. If y
 9. You can now pull data from your slack instance!
 
 <!-- env:oss -->
+
 **Airbyte Open Source additional setup steps**
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
-<!-- /env:oss -->
 
+<!-- /env:oss -->
 
 ### Step 2: Set up the Slack connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown.
 4. Select `Authenticate your account` and log in and Authorize to the Slack account.
-5. Enter your `start_date`.
-6. Enter your `lookback_window`.
-7. Enter your `join_channels`.
-8. Enter your `channel_filter`.
-9. Click **Set up source**.
+5. **Required** Enter your `start_date`.
+6. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
+7. Toggle `join_channels`, if you want to join all public channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+8. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
+9. Toggle `include_private_channels` if you want to sync data from private channels. You will need to manually add the bot to private channels, `join_channel` does not work with private channels.
+10. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `start_date`.
-4. Enter your `lookback_window`.
-5. Enter your `join_channels`.
-6. Enter your `channel_filter`.
-7. Enter your `api_token`.
-8. Click **Set up source**.
+3. **Required** Enter your `start_date`.
+4. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
+5. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
+6. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
+7. Toggle `include_private_channels` if you want to sync data from private channels. You will need to manually add the bot to private channels, `join_channel` does not work with private channels.
+8. Enter your `api_token`.
+9. Click **Set up source**.
 <!-- /env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -108,14 +122,13 @@ The Slack source connector supports the following [sync modes](https://docs.airb
 
 ## Supported Streams
 
-* [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
-* [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
-* [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public channels that the Slack App is a member of.
-* [Users](https://api.slack.com/methods/users.list)
-* [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
-* [User Groups](https://api.slack.com/methods/usergroups.list)
-* [Files](https://api.slack.com/methods/files.list)
-* [Remote Files](https://api.slack.com/methods/files.remote.list)
+For most of the streams, the Slack source connector uses the [Conversations API](https://api.slack.com/docs/conversations-api) under the hood.
+
+- [Channels \(Conversations\)](https://api.slack.com/methods/conversations.list)
+- [Channel Members \(Conversation Members\)](https://api.slack.com/methods/conversations.members)
+- [Messages \(Conversation History\)](https://api.slack.com/methods/conversations.history) It will only replicate messages from non-archive, public and private channels that the Slack App is a member of.
+- [Users](https://api.slack.com/methods/users.list)
+- [Threads \(Conversation Replies\)](https://api.slack.com/methods/conversations.replies)
 
 ## Performance considerations
 
@@ -132,28 +145,84 @@ It is recommended to sync required channels only, this can be done by specifying
 | `array`          | `array`      |
 | `object`         | `object`     |
 
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Slack connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
+
+Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
+
+### Troubleshooting
+
+- Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
+
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
-| 0.2.0  | 2023-05-24 | [26497](https://github.com/airbytehq/airbyte/pull/26497) | Fixed `lookback window` value limitations               |
-| 0.1.26  | 2023-05-17 | [26186](https://github.com/airbytehq/airbyte/pull/26186) | Limited the `lookback window` range for input configuration               |
-| 0.1.25  | 2023-03-20 | [22889](https://github.com/airbytehq/airbyte/pull/22889) | Specified date formatting in specification                  |
-| 0.1.24  | 2023-03-20 | [24126](https://github.com/airbytehq/airbyte/pull/24126) | Increase page size to 1000                                  |
-| 0.1.23  | 2023-02-21 | [21907](https://github.com/airbytehq/airbyte/pull/21907) | Do not join channels that not gonna be synced               |
-| 0.1.22  | 2023-01-27 | [22022](https://github.com/airbytehq/airbyte/pull/22022) | Set `AvailabilityStrategy` for streams explicitly to `None` |
-| 0.1.21  | 2023-01-12 | [21321](https://github.com/airbytehq/airbyte/pull/21321) | Retry Timeout error                                         |
-| 0.1.20  | 2022-12-21 | [20767](https://github.com/airbytehq/airbyte/pull/20767) | Update schema                                               |
-| 0.1.19  | 2022-12-01 | [19970](https://github.com/airbytehq/airbyte/pull/19970) | Remove OAuth2.0 broken `refresh_token` support              |
-| 0.1.18  | 2022-09-28 | [17315](https://github.com/airbytehq/airbyte/pull/17315) | Always install latest version of Airbyte CDK                |
-| 0.1.17  | 2022-08-28 | [16085](https://github.com/airbytehq/airbyte/pull/16085) | Increase unit test coverage                                 |
-| 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                                    |
-| 0.1.15  | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance         |
-| 0.1.14  | 2022-01-26 | [9575](https://github.com/airbytehq/airbyte/pull/9575)   | Correct schema                                              |
-| 0.1.13  | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                             |
-| 0.1.12  | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570)   | Implement OAuth support with OAuth authenticator            |
-| 0.1.11  | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830)   | Fix sync operations hang forever issue                      |
-| 0.1.10  | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697)   | Fix max retries issue                                       |
-| 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860)   | Fix reading threads issue                                   |
-| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683)   | Add float\_ts primary key                                   |
-| 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978)   | Release Slack CDK Connector                                 |
+<details>
+  <summary>Expand to review</summary>
+
+| Version | Date       | Pull Request                                             | Subject                                                                              |
+|:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------|
+| 1.3.1   | 2024-07-24 | [42485](https://github.com/airbytehq/airbyte/pull/42485) | Fix MRO error for `IncrementalMessageStream`                                                                                     |
+| 1.3.0   | 2024-07-17 | [41994](https://github.com/airbytehq/airbyte/pull/41994) | Migrate to CDK v3.5.1                                                                |
+| 1.2.0   | 2024-07-16 | [41970](https://github.com/airbytehq/airbyte/pull/41970) | Migrate to CDK v2.4.0                                                                |
+| 1.1.13  | 2024-07-13 | [41863](https://github.com/airbytehq/airbyte/pull/41863) | Update dependencies                                                                  |
+| 1.1.12  | 2024-07-10 | [41485](https://github.com/airbytehq/airbyte/pull/41485) | Update dependencies                                                                  |
+| 1.1.11  | 2024-07-09 | [41231](https://github.com/airbytehq/airbyte/pull/41231) | Update dependencies                                                                  |
+| 1.1.10  | 2024-07-06 | [40839](https://github.com/airbytehq/airbyte/pull/40839) | Update dependencies                                                                  |
+| 1.1.9   | 2024-06-25 | [40347](https://github.com/airbytehq/airbyte/pull/40347) | Update dependencies                                                                  |
+| 1.1.8   | 2024-06-22 | [40166](https://github.com/airbytehq/airbyte/pull/40166) | Update dependencies                                                                  |
+| 1.1.7   | 2025-06-14 | [39343](https://github.com/airbytehq/airbyte/pull/39343) | Update state handling for `threads` Python stream                                    |
+| 1.1.6   | 2024-06-12 | [39132](https://github.com/airbytehq/airbyte/pull/39416) | Respect `include_private_channels` option in `threads` stream                        |
+| 1.1.5   | 2024-06-10 | [39132](https://github.com/airbytehq/airbyte/pull/39132) | Convert string state to float for `threads` stream                                   |
+| 1.1.4   | 2024-06-06 | [39271](https://github.com/airbytehq/airbyte/pull/39271) | [autopull] Upgrade base image to v1.2.2                                              |
+| 1.1.3   | 2024-06-05 | [39121](https://github.com/airbytehq/airbyte/pull/39121) | Change cursor format for `channel_messages` stream to `%s_as_float`                  |
+| 1.1.2   | 2024-05-23 | [38619](https://github.com/airbytehq/airbyte/pull/38619) | Fix cursor granularity for the `channel_messages` stream                             |
+| 1.1.1   | 2024-05-02 | [36661](https://github.com/airbytehq/airbyte/pull/36661) | Schema descriptions                                                                  |
+| 1.1.0   | 2024-04-18 | [37332](https://github.com/airbytehq/airbyte/pull/37332) | Add the capability to sync from private channels                                     |
+| 1.0.0   | 2024-04-02 | [35477](https://github.com/airbytehq/airbyte/pull/35477) | Migration to low-code CDK                                                            |
+| 0.4.1   | 2024-03-27 | [36579](https://github.com/airbytehq/airbyte/pull/36579) | Upgrade airbyte-cdk version to emit record counts as floats                          |
+| 0.4.0   | 2024-03-19 | [36267](https://github.com/airbytehq/airbyte/pull/36267) | Pin airbyte-cdk version to `^0`                                                      |
+| 0.3.9   | 2024-02-12 | [35157](https://github.com/airbytehq/airbyte/pull/35157) | Manage dependencies with Poetry                                                      |
+| 0.3.8   | 2024-02-09 | [35131](https://github.com/airbytehq/airbyte/pull/35131) | Fixed the issue when `schema discovery` fails with `502` due to the platform timeout |
+| 0.3.7   | 2024-01-10 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | Prepare for airbyte-lib                                                              |
+| 0.3.6   | 2023-11-21 | [32707](https://github.com/airbytehq/airbyte/pull/32707) | Threads: do not use client-side record filtering                                     |
+| 0.3.5   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image      |
+| 0.3.4   | 2023-10-06 | [31134](https://github.com/airbytehq/airbyte/pull/31134) | Update CDK and remove non iterable return from records                               |
+| 0.3.3   | 2023-09-28 | [30580](https://github.com/airbytehq/airbyte/pull/30580) | Add `bot_id` field to threads schema                                                 |
+| 0.3.2   | 2023-09-20 | [30613](https://github.com/airbytehq/airbyte/pull/30613) | Set default value for channel_filters during discover                                |
+| 0.3.1   | 2023-09-19 | [30570](https://github.com/airbytehq/airbyte/pull/30570) | Use default availability strategy                                                    |
+| 0.3.0   | 2023-09-18 | [30521](https://github.com/airbytehq/airbyte/pull/30521) | Add unexpected fields to streams `channel_messages`, `channels`, `threads`, `users`  |
+| 0.2.0   | 2023-05-24 | [26497](https://github.com/airbytehq/airbyte/pull/26497) | Fixed `lookback window` value limitations                                            |
+| 0.1.26  | 2023-05-17 | [26186](https://github.com/airbytehq/airbyte/pull/26186) | Limited the `lookback window` range for input configuration                          |
+| 0.1.25  | 2023-03-20 | [22889](https://github.com/airbytehq/airbyte/pull/22889) | Specified date formatting in specification                                           |
+| 0.1.24  | 2023-03-20 | [24126](https://github.com/airbytehq/airbyte/pull/24126) | Increase page size to 1000                                                           |
+| 0.1.23  | 2023-02-21 | [21907](https://github.com/airbytehq/airbyte/pull/21907) | Do not join channels that not gonna be synced                                        |
+| 0.1.22  | 2023-01-27 | [22022](https://github.com/airbytehq/airbyte/pull/22022) | Set `AvailabilityStrategy` for streams explicitly to `None`                          |
+| 0.1.21  | 2023-01-12 | [21321](https://github.com/airbytehq/airbyte/pull/21321) | Retry Timeout error                                                                  |
+| 0.1.20  | 2022-12-21 | [20767](https://github.com/airbytehq/airbyte/pull/20767) | Update schema                                                                        |
+| 0.1.19  | 2022-12-01 | [19970](https://github.com/airbytehq/airbyte/pull/19970) | Remove OAuth2.0 broken `refresh_token` support                                       |
+| 0.1.18  | 2022-09-28 | [17315](https://github.com/airbytehq/airbyte/pull/17315) | Always install latest version of Airbyte CDK                                         |
+| 0.1.17  | 2022-08-28 | [16085](https://github.com/airbytehq/airbyte/pull/16085) | Increase unit test coverage                                                          |
+| 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                                                             |
+| 0.1.15  | 2022-03-31 | [11613](https://github.com/airbytehq/airbyte/pull/11613) | Add 'channel_filter' config and improve performance                                  |
+| 0.1.14  | 2022-01-26 | [9575](https://github.com/airbytehq/airbyte/pull/9575) | Correct schema                                                                       |
+| 0.1.13  | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies                                                      |
+| 0.1.12  | 2021-10-07 | [6570](https://github.com/airbytehq/airbyte/pull/6570) | Implement OAuth support with OAuth authenticator                                     |
+| 0.1.11  | 2021-08-27 | [5830](https://github.com/airbytehq/airbyte/pull/5830) | Fix sync operations hang forever issue                                               |
+| 0.1.10  | 2021-08-27 | [5697](https://github.com/airbytehq/airbyte/pull/5697) | Fix max retries issue                                                                |
+| 0.1.9   | 2021-07-20 | [4860](https://github.com/airbytehq/airbyte/pull/4860) | Fix reading threads issue                                                            |
+| 0.1.8   | 2021-07-14 | [4683](https://github.com/airbytehq/airbyte/pull/4683) | Add float_ts primary key                                                             |
+| 0.1.7   | 2021-06-25 | [3978](https://github.com/airbytehq/airbyte/pull/3978) | Release Slack CDK Connector                                                          |
+
+</details>
+
+</HideInUI>

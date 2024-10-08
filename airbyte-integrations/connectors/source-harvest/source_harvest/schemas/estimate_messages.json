@@ -3,42 +3,54 @@
   "type": "object",
   "properties": {
     "id": {
+      "description": "The unique identifier for the message.",
       "type": ["null", "integer"]
     },
     "parent_id": {
+      "description": "The identifier of the parent message, if this is a reply.",
       "type": "integer"
     },
     "sent_by": {
+      "description": "The name of the user who sent the message.",
       "type": ["null", "string"]
     },
     "sent_by_email": {
+      "description": "The email address of the user who sent the message.",
       "type": ["null", "string"]
     },
     "sent_from": {
+      "description": "The name displayed as the sender.",
       "type": ["null", "string"]
     },
     "sent_from_email": {
+      "description": "The email address displayed as the sender.",
       "type": ["null", "string"]
     },
     "send_me_a_copy": {
+      "description": "Indicates if the sender requested a copy of the message.",
       "type": ["null", "boolean"]
     },
     "created_at": {
+      "description": "The date and time when the message was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updated_at": {
+      "description": "The date and time when the message was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "recipients": {
+      "description": "Details of the recipients of the message.",
       "type": ["null", "array"],
       "items": {
         "properties": {
           "email": {
+            "description": "The email address of a recipient.",
             "type": ["string", "null"]
           },
           "name": {
+            "description": "The name of a recipient.",
             "type": ["string", "null"]
           }
         },
@@ -46,12 +58,15 @@
       }
     },
     "event_type": {
+      "description": "The type of event associated with the message.",
       "type": ["null", "string"]
     },
     "subject": {
+      "description": "The subject or title of the message.",
       "type": ["null", "string"]
     },
     "body": {
+      "description": "The main content of the message.",
       "type": ["null", "string"]
     }
   }

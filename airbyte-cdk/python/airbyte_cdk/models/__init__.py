@@ -5,5 +5,66 @@
 # are just wrappers on top of that stand-alone package which do some namespacing magic
 # to make the airbyte_protocol python classes available to the airbyte-cdk consumer as part
 # of airbyte-cdk rather than a standalone package.
-from .airbyte_protocol import *
-from .well_known_types import *
+from .airbyte_protocol import (
+    AdvancedAuth,
+    AirbyteStateStats,
+    AirbyteAnalyticsTraceMessage,
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteControlConnectorConfigMessage,
+    AirbyteControlMessage,
+    AirbyteErrorTraceMessage,
+    AirbyteEstimateTraceMessage,
+    AirbyteGlobalState,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteProtocol,
+    AirbyteRecordMessage,
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    AirbyteStreamStatus,
+    AirbyteStreamStatusTraceMessage,
+    AirbyteStreamStatusReason,
+    AirbyteStreamStatusReasonType,
+    AirbyteTraceMessage,
+    AuthFlowType,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    EstimateType,
+    FailureType,
+    Level,
+    OAuthConfigSpecification,
+    OrchestratorType,
+    Status,
+    StreamDescriptor,
+    SyncMode,
+    TraceType,
+    Type,
+)
+from .well_known_types import (
+    BinaryData,
+    Boolean,
+    Date,
+    Integer,
+    Model,
+    Number,
+    String,
+    TimestampWithoutTimezone,
+    TimestampWithTimezone,
+    TimeWithoutTimezone,
+    TimeWithTimezone,
+)
+
+from .airbyte_protocol_serializers import (
+AirbyteStreamStateSerializer,
+AirbyteStateMessageSerializer,
+AirbyteMessageSerializer,
+ConfiguredAirbyteCatalogSerializer,
+ConfiguredAirbyteStreamSerializer,
+ConnectorSpecificationSerializer,
+)

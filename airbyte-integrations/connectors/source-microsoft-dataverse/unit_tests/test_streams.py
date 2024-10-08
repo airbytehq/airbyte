@@ -17,11 +17,9 @@ def incremental_config():
         "stream_name": "test_stream",
         "stream_path": "test_path",
         "primary_key": [["test_primary_key"]],
-        "schema": {
-
-        },
+        "schema": {},
         "odata_maxpagesize": 100,
-        "authenticator": MagicMock()
+        "authenticator": MagicMock(),
     }
 
 
@@ -30,7 +28,7 @@ def incremental_config():
     [
         ({"stream_slice": None, "stream_state": {}, "next_page_token": None}, {}),
         ({"stream_slice": None, "stream_state": {}, "next_page_token": {"$skiptoken": "skiptoken"}}, {"$skiptoken": "skiptoken"}),
-        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {"$deltatoken": "delta"})
+        ({"stream_slice": None, "stream_state": {"$deltatoken": "delta"}, "next_page_token": None}, {"$deltatoken": "delta"}),
     ],
 )
 def test_request_params(inputs, expected_params, incremental_config):
@@ -41,8 +39,12 @@ def test_request_params(inputs, expected_params, incremental_config):
 @pytest.mark.parametrize(
     ("response_json", "next_page_token"),
     [
-        ({"@odata.nextLink": "https://url?$skiptoken=oEBwdSP6uehIAxQOWq_3Ksh_TLol6KIm3stvdc6hGhZRi1hQ7Spe__dpvm3U4zReE4CYXC2zOtaKdi7KHlUtC2CbRiBIUwOxPKLa"},
-         {"$skiptoken": "oEBwdSP6uehIAxQOWq_3Ksh_TLol6KIm3stvdc6hGhZRi1hQ7Spe__dpvm3U4zReE4CYXC2zOtaKdi7KHlUtC2CbRiBIUwOxPKLa"}),
+        (
+            {
+                "@odata.nextLink": "https://url?$skiptoken=oEBwdSP6uehIAxQOWq_3Ksh_TLol6KIm3stvdc6hGhZRi1hQ7Spe__dpvm3U4zReE4CYXC2zOtaKdi7KHlUtC2CbRiBIUwOxPKLa"
+            },
+            {"$skiptoken": "oEBwdSP6uehIAxQOWq_3Ksh_TLol6KIm3stvdc6hGhZRi1hQ7Spe__dpvm3U4zReE4CYXC2zOtaKdi7KHlUtC2CbRiBIUwOxPKLa"},
+        ),
         ({"value": []}, None),
     ],
 )
@@ -58,17 +60,9 @@ def test_next_page_token(response_json, next_page_token, incremental_config):
 def test_parse_response(incremental_config):
     stream = MicrosoftDataverseStream(**incremental_config)
     response = MagicMock()
-    response.json.return_value = {
-        "value": [
-            {
-                "test-key": "test-value"
-            }
-        ]
-    }
+    response.json.return_value = {"value": [{"test-key": "test-value"}]}
     inputs = {"response": response}
-    expected_parsed_object = {
-        "test-key": "test-value"
-    }
+    expected_parsed_object = {"test-key": "test-value"}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
@@ -79,7 +73,7 @@ def test_request_headers(incremental_config):
         "Cache-Control": "no-cache",
         "OData-Version": "4.0",
         "Content-Type": "application/json",
-        "Prefer": "odata.maxpagesize=100"
+        "Prefer": "odata.maxpagesize=100",
     }
     assert stream.request_headers(**inputs) == expected_headers
 

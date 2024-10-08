@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "date_modified": "2080-07-30T22:16:46"
+        "date_modified": "2080-07-30T22:16:46+00:00"
       },
       "stream_descriptor": {
         "name": "customers"

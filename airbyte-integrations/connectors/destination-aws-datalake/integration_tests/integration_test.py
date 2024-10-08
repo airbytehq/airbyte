@@ -13,11 +13,14 @@ from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStateMessage,
+    AirbyteStateType,
     AirbyteStream,
+    AirbyteStreamState,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
     Status,
+    StreamDescriptor,
     SyncMode,
     Type,
 )
@@ -91,8 +94,14 @@ def test_check_invalid_aws_account_config(invalid_account_config: Mapping):
     assert outcome.status == Status.FAILED
 
 
-def _state(data: Dict[str, Any]) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
+def _state(stream: str, data: Dict[str, Any]) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_state=data,
+            stream_descriptor=StreamDescriptor(name=stream, namespace=None)
+        )
+    ))
 
 
 def _record(stream: str, str_value: str, int_value: int, date_value: datetime) -> AirbyteMessage:
@@ -122,13 +131,13 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     for tbl in [append_stream, overwrite_stream]:
         aws_handler.reset_table(database, tbl)
 
-    first_state_message = _state({"state": "1"})
+    first_state_message = _state(append_stream, {"state": "1"})
 
     first_record_chunk = [_record(append_stream, str(i), i, datetime.now()) for i in range(5)] + [
         _record(overwrite_stream, str(i), i, datetime.now()) for i in range(5)
     ]
 
-    second_state_message = _state({"state": "2"})
+    second_state_message = _state(append_stream, {"state": "2"})
     second_record_chunk = [_record(append_stream, str(i), i, datetime.now()) for i in range(5, 10)] + [
         _record(overwrite_stream, str(i), i, datetime.now()) for i in range(5, 10)
     ]

@@ -20,7 +20,7 @@ This section should contain a table with the following format:
 | :------------------------------------- | :----------------- | :----------------------- |
 | Full Refresh Sync                      | Yes                |                          |
 | Incremental - Append Sync              | Yes                |                          |
-| Incremental - Deduped History          | No                 | it will soon be realized |
+| Incremental - Append + Deduped         | No                 | it will soon be realized |
 | For databases, WAL/Logical replication | Yes                |                          |
 
 ### Performance considerations
@@ -55,6 +55,11 @@ You need to prepare tables that will be used to store synced data from Airbyte, 
 
 ## Changelog
 
+<details>
+  <summary>Expand to review</summary>
+
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-11-14 | [17884](https://github.com/airbytehq/airbyte/pull/17884) | Initial Commit |
+
+</details>

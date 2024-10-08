@@ -1,0 +1,1082 @@
+version: 4.3.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - candidates
+definitions:
+  streams:
+    candidates:
+      type: DeclarativeStream
+      name: candidates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.recruitee.com/c/{{ config.company_id }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /candidates
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - candidates
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            admin_id:
+              type:
+                - "null"
+                - integer
+            adminapp_url:
+              type:
+                - "null"
+                - string
+            created_at:
+              type: string
+            emails:
+              type: array
+              items:
+                type: string
+            example:
+              type: boolean
+            followed:
+              type: boolean
+            has_avatar:
+              type: boolean
+            id:
+              type: integer
+            initials:
+              type:
+                - "null"
+                - string
+            last_message_at:
+              type:
+                - "null"
+                - string
+            my_last_rating:
+              type:
+                - "null"
+                - string
+            my_pending_result_request:
+              type: boolean
+            my_upcoming_event:
+              type: boolean
+            name:
+              type: string
+            notes_count:
+              type: integer
+            pending_result_request:
+              type: boolean
+            phones:
+              type: array
+              items:
+                type: string
+            photo_thumb_url:
+              type:
+                - "null"
+                - string
+            placements:
+              type: array
+              items:
+                type: object
+                properties:
+                  candidate_id:
+                    type:
+                      - "null"
+                      - integer
+                  created_at:
+                    type: string
+                  hired_at:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type: integer
+                  job_starts_at:
+                    type:
+                      - "null"
+                      - string
+                  language:
+                    type:
+                      - "null"
+                      - string
+                  offer_id:
+                    type: integer
+                  overdue_at:
+                    type:
+                      - "null"
+                      - string
+                  overdue_diff:
+                    type:
+                      - "null"
+                      - string
+                  position:
+                    type:
+                      - "null"
+                      - integer
+                  positive_ratings:
+                    type:
+                      - "null"
+                      - integer
+                  ratings:
+                    type: object
+                  stage_id:
+                    type:
+                      - "null"
+                      - integer
+                  updated_at:
+                    type: string
+            positive_ratings:
+              type:
+                - "null"
+                - integer
+            rating:
+              type: integer
+            ratings:
+              type: object
+              properties:
+                "yes":
+                  type: integer
+            ratings_count:
+              type: integer
+            referrer:
+              type:
+                - "null"
+                - string
+            source:
+              type:
+                - "null"
+                - string
+            tasks_count:
+              type: integer
+            unread_notifications:
+              type: boolean
+            upcoming_event:
+              type: boolean
+            updated_at:
+              type: string
+            viewed:
+              type: boolean
+    offers:
+      type: DeclarativeStream
+      name: offers
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.recruitee.com/c/{{ config.company_id }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /offers
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - offers
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            adminapp_url:
+              type:
+                - "null"
+                - string
+            candidates_count:
+              type: integer
+            careers_url:
+              type: string
+            city:
+              type:
+                - "null"
+                - string
+            closed_at:
+              type:
+                - "null"
+                - string
+            country_code:
+              type:
+                - "null"
+                - string
+            created_at:
+              type: string
+            department:
+              type:
+                - "null"
+                - string
+            department_id:
+              type: integer
+            disqualified_candidates_count:
+              type: integer
+            eeo_settings:
+              type:
+                - "null"
+                - string
+            employment_type:
+              type:
+                - "null"
+                - string
+            enabled_for_referrals:
+              type: boolean
+            enabled_languages:
+              type: array
+              items:
+                type: object
+                properties:
+                  code:
+                    type: string
+                  name:
+                    type: string
+                  native_name:
+                    type: string
+            example:
+              type: boolean
+            followed:
+              type: boolean
+            followers:
+              type: array
+            guid:
+              type: string
+            has_active_campaign:
+              type: boolean
+            hired_candidates_count:
+              type: integer
+            hiring_manager_id:
+              type:
+                - "null"
+                - integer
+            id:
+              type: integer
+            job_scheduler:
+              type:
+                - "null"
+                - string
+            kind:
+              type: string
+            location:
+              type: string
+            mailbox_email:
+              type:
+                - "null"
+                - string
+            number_of_openings:
+              type:
+                - "null"
+                - integer
+            offer_tags:
+              type: array
+            pipeline:
+              type: boolean
+            pipeline_template:
+              type:
+                - "null"
+                - object
+            position:
+              type:
+                - "null"
+                - integer
+            postal_code:
+              type:
+                - "null"
+                - string
+            published_at:
+              type:
+                - "null"
+                - string
+            qualified_candidates_count:
+              type: integer
+            recruiter_id:
+              type:
+                - "null"
+                - integer
+            slug:
+              type: string
+            state_code:
+              type:
+                - "null"
+                - string
+            state_name:
+              type:
+                - "null"
+                - string
+            status:
+              type: string
+            street:
+              type:
+                - "null"
+                - string
+            title:
+              type: string
+            updated_at:
+              type: string
+            url:
+              type: string
+    departments:
+      type: DeclarativeStream
+      name: departments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url_base: https://api.recruitee.com/c/{{ config.company_id }}
+          authenticator:
+            type: BearerAuthenticator
+            api_token: "{{ config['api_key'] }}"
+          path: /departments
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - departments
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/draft-07/schema#
+          additionalProperties: true
+          properties:
+            grouped_translations:
+              type: object
+              properties:
+                en:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+            id:
+              type: integer
+            name:
+              type: string
+            offers_count:
+              type: integer
+            status:
+              type:
+                - "null"
+                - string
+  base_requester:
+    type: HttpRequester
+    url_base: https://api.recruitee.com/c/{{ config.company_id }}
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+streams:
+  - type: DeclarativeStream
+    name: candidates
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.recruitee.com/c/{{ config.company_id }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /candidates
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - candidates
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          admin_id:
+            type:
+              - "null"
+              - integer
+          adminapp_url:
+            type:
+              - "null"
+              - string
+          created_at:
+            type: string
+          emails:
+            type: array
+            items:
+              type: string
+          example:
+            type: boolean
+          followed:
+            type: boolean
+          has_avatar:
+            type: boolean
+          id:
+            type: integer
+          initials:
+            type:
+              - "null"
+              - string
+          last_message_at:
+            type:
+              - "null"
+              - string
+          my_last_rating:
+            type:
+              - "null"
+              - string
+          my_pending_result_request:
+            type: boolean
+          my_upcoming_event:
+            type: boolean
+          name:
+            type: string
+          notes_count:
+            type: integer
+          pending_result_request:
+            type: boolean
+          phones:
+            type: array
+            items:
+              type: string
+          photo_thumb_url:
+            type:
+              - "null"
+              - string
+          placements:
+            type: array
+            items:
+              type: object
+              properties:
+                candidate_id:
+                  type:
+                    - "null"
+                    - integer
+                created_at:
+                  type: string
+                hired_at:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type: integer
+                job_starts_at:
+                  type:
+                    - "null"
+                    - string
+                language:
+                  type:
+                    - "null"
+                    - string
+                offer_id:
+                  type: integer
+                overdue_at:
+                  type:
+                    - "null"
+                    - string
+                overdue_diff:
+                  type:
+                    - "null"
+                    - string
+                position:
+                  type:
+                    - "null"
+                    - integer
+                positive_ratings:
+                  type:
+                    - "null"
+                    - integer
+                ratings:
+                  type: object
+                stage_id:
+                  type:
+                    - "null"
+                    - integer
+                updated_at:
+                  type: string
+          positive_ratings:
+            type:
+              - "null"
+              - integer
+          rating:
+            type: integer
+          ratings:
+            type: object
+            properties:
+              "yes":
+                type: integer
+          ratings_count:
+            type: integer
+          referrer:
+            type:
+              - "null"
+              - string
+          source:
+            type:
+              - "null"
+              - string
+          tasks_count:
+            type: integer
+          unread_notifications:
+            type: boolean
+          upcoming_event:
+            type: boolean
+          updated_at:
+            type: string
+          viewed:
+            type: boolean
+  - type: DeclarativeStream
+    name: offers
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.recruitee.com/c/{{ config.company_id }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /offers
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - offers
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          adminapp_url:
+            type:
+              - "null"
+              - string
+          candidates_count:
+            type: integer
+          careers_url:
+            type: string
+          city:
+            type:
+              - "null"
+              - string
+          closed_at:
+            type:
+              - "null"
+              - string
+          country_code:
+            type:
+              - "null"
+              - string
+          created_at:
+            type: string
+          department:
+            type:
+              - "null"
+              - string
+          department_id:
+            type: integer
+          disqualified_candidates_count:
+            type: integer
+          eeo_settings:
+            type:
+              - "null"
+              - string
+          employment_type:
+            type:
+              - "null"
+              - string
+          enabled_for_referrals:
+            type: boolean
+          enabled_languages:
+            type: array
+            items:
+              type: object
+              properties:
+                code:
+                  type: string
+                name:
+                  type: string
+                native_name:
+                  type: string
+          example:
+            type: boolean
+          followed:
+            type: boolean
+          followers:
+            type: array
+          guid:
+            type: string
+          has_active_campaign:
+            type: boolean
+          hired_candidates_count:
+            type: integer
+          hiring_manager_id:
+            type:
+              - "null"
+              - integer
+          id:
+            type: integer
+          job_scheduler:
+            type:
+              - "null"
+              - string
+          kind:
+            type: string
+          location:
+            type: string
+          mailbox_email:
+            type:
+              - "null"
+              - string
+          number_of_openings:
+            type:
+              - "null"
+              - integer
+          offer_tags:
+            type: array
+          pipeline:
+            type: boolean
+          pipeline_template:
+            type:
+              - "null"
+              - object
+          position:
+            type:
+              - "null"
+              - integer
+          postal_code:
+            type:
+              - "null"
+              - string
+          published_at:
+            type:
+              - "null"
+              - string
+          qualified_candidates_count:
+            type: integer
+          recruiter_id:
+            type:
+              - "null"
+              - integer
+          slug:
+            type: string
+          state_code:
+            type:
+              - "null"
+              - string
+          state_name:
+            type:
+              - "null"
+              - string
+          status:
+            type: string
+          street:
+            type:
+              - "null"
+              - string
+          title:
+            type: string
+          updated_at:
+            type: string
+          url:
+            type: string
+  - type: DeclarativeStream
+    name: departments
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.recruitee.com/c/{{ config.company_id }}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: "{{ config['api_key'] }}"
+        path: /departments
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - departments
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          grouped_translations:
+            type: object
+            properties:
+              en:
+                type: object
+                properties:
+                  name:
+                    type: string
+          id:
+            type: integer
+          name:
+            type: string
+          offers_count:
+            type: integer
+          status:
+            type:
+              - "null"
+              - string
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - company_id
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        description: >-
+          Recruitee API Key. See <a
+          href="https://docs.recruitee.com/reference/getting-started#generate-api-token">here</a>.
+        order: 0
+      company_id:
+        type: integer
+        title: Company ID
+        description: >-
+          Recruitee Company ID. You can also find this ID on the <a
+          href="https://app.recruitee.com/#/settings/api_tokens">Recruitee API
+          tokens page</a>.
+        order: 1
+    additionalProperties: true
+metadata:
+  autoImportSchema:
+    candidates: false
+    offers: false
+    departments: false
+schemas:
+  candidates:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      admin_id:
+        type:
+          - "null"
+          - integer
+      adminapp_url:
+        type:
+          - "null"
+          - string
+      created_at:
+        type: string
+      emails:
+        type: array
+        items:
+          type: string
+      example:
+        type: boolean
+      followed:
+        type: boolean
+      has_avatar:
+        type: boolean
+      id:
+        type: integer
+      initials:
+        type:
+          - "null"
+          - string
+      last_message_at:
+        type:
+          - "null"
+          - string
+      my_last_rating:
+        type:
+          - "null"
+          - string
+      my_pending_result_request:
+        type: boolean
+      my_upcoming_event:
+        type: boolean
+      name:
+        type: string
+      notes_count:
+        type: integer
+      pending_result_request:
+        type: boolean
+      phones:
+        type: array
+        items:
+          type: string
+      photo_thumb_url:
+        type:
+          - "null"
+          - string
+      placements:
+        type: array
+        items:
+          type: object
+          properties:
+            candidate_id:
+              type:
+                - "null"
+                - integer
+            created_at:
+              type: string
+            hired_at:
+              type:
+                - "null"
+                - string
+            id:
+              type: integer
+            job_starts_at:
+              type:
+                - "null"
+                - string
+            language:
+              type:
+                - "null"
+                - string
+            offer_id:
+              type: integer
+            overdue_at:
+              type:
+                - "null"
+                - string
+            overdue_diff:
+              type:
+                - "null"
+                - string
+            position:
+              type:
+                - "null"
+                - integer
+            positive_ratings:
+              type:
+                - "null"
+                - integer
+            ratings:
+              type: object
+            stage_id:
+              type:
+                - "null"
+                - integer
+            updated_at:
+              type: string
+      positive_ratings:
+        type:
+          - "null"
+          - integer
+      rating:
+        type: integer
+      ratings:
+        type: object
+        properties:
+          "yes":
+            type: integer
+      ratings_count:
+        type: integer
+      referrer:
+        type:
+          - "null"
+          - string
+      source:
+        type:
+          - "null"
+          - string
+      tasks_count:
+        type: integer
+      unread_notifications:
+        type: boolean
+      upcoming_event:
+        type: boolean
+      updated_at:
+        type: string
+      viewed:
+        type: boolean
+  offers:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      adminapp_url:
+        type:
+          - "null"
+          - string
+      candidates_count:
+        type: integer
+      careers_url:
+        type: string
+      city:
+        type:
+          - "null"
+          - string
+      closed_at:
+        type:
+          - "null"
+          - string
+      country_code:
+        type:
+          - "null"
+          - string
+      created_at:
+        type: string
+      department:
+        type:
+          - "null"
+          - string
+      department_id:
+        type: integer
+      disqualified_candidates_count:
+        type: integer
+      eeo_settings:
+        type:
+          - "null"
+          - string
+      employment_type:
+        type:
+          - "null"
+          - string
+      enabled_for_referrals:
+        type: boolean
+      enabled_languages:
+        type: array
+        items:
+          type: object
+          properties:
+            code:
+              type: string
+            name:
+              type: string
+            native_name:
+              type: string
+      example:
+        type: boolean
+      followed:
+        type: boolean
+      followers:
+        type: array
+      guid:
+        type: string
+      has_active_campaign:
+        type: boolean
+      hired_candidates_count:
+        type: integer
+      hiring_manager_id:
+        type:
+          - "null"
+          - integer
+      id:
+        type: integer
+      job_scheduler:
+        type:
+          - "null"
+          - string
+      kind:
+        type: string
+      location:
+        type: string
+      mailbox_email:
+        type:
+          - "null"
+          - string
+      number_of_openings:
+        type:
+          - "null"
+          - integer
+      offer_tags:
+        type: array
+      pipeline:
+        type: boolean
+      pipeline_template:
+        type:
+          - "null"
+          - object
+      position:
+        type:
+          - "null"
+          - integer
+      postal_code:
+        type:
+          - "null"
+          - string
+      published_at:
+        type:
+          - "null"
+          - string
+      qualified_candidates_count:
+        type: integer
+      recruiter_id:
+        type:
+          - "null"
+          - integer
+      slug:
+        type: string
+      state_code:
+        type:
+          - "null"
+          - string
+      state_name:
+        type:
+          - "null"
+          - string
+      status:
+        type: string
+      street:
+        type:
+          - "null"
+          - string
+      title:
+        type: string
+      updated_at:
+        type: string
+      url:
+        type: string
+  departments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      grouped_translations:
+        type: object
+        properties:
+          en:
+            type: object
+            properties:
+              name:
+                type: string
+      id:
+        type: integer
+      name:
+        type: string
+      offers_count:
+        type: integer
+      status:
+        type:
+          - "null"
+          - string

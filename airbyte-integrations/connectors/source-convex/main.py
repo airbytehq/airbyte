@@ -2,12 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_convex import SourceConvex
+from source_convex.run import run
 
 if __name__ == "__main__":
-    source = SourceConvex()
-    launch(source, sys.argv[1:])
+    run()

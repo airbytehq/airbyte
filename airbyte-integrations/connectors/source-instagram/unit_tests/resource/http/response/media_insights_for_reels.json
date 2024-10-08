@@ -1,0 +1,124 @@
+{
+  "data": [
+    {
+      "name": "comments",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 7
+        }
+      ],
+      "title": "Comments",
+      "description": "The number of comments on your reel.",
+      "id": "84386203808767123/insights/comments/lifetime"
+    },
+    {
+      "name": "ig_reels_avg_watch_time",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 12549
+        }
+      ],
+      "title": "Average Watch Time",
+      "description": "The average watch time of your reel in milliseconds.",
+      "id": "84386203808767123/insights/ig_reels_avg_watch_time/lifetime"
+    },
+    {
+      "name": "ig_reels_video_view_total_time",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 30017581
+        }
+      ],
+      "title": "Total View Time",
+      "description": "The total view time of your reel in milliseconds.",
+      "id": "84386203808767123/insights/ig_reels_video_view_total_time/lifetime"
+    },
+    {
+      "name": "likes",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 108
+        }
+      ],
+      "title": "Likes",
+      "description": "The number of likes on your reel.",
+      "id": "84386203808767123/insights/likes/lifetime"
+    },
+    {
+      "name": "plays",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 2385
+        }
+      ],
+      "title": "Plays",
+      "description": "The number of plays of your reel.",
+      "id": "84386203808767123/insights/plays/lifetime"
+    },
+    {
+      "name": "reach",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 2006
+        }
+      ],
+      "title": "Reach",
+      "description": "The number of unique accounts that viewed your reel.",
+      "id": "84386203808767123/insights/reach/lifetime"
+    },
+    {
+      "name": "saved",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 7
+        }
+      ],
+      "title": "Saves",
+      "description": "The number of saves of your reel.",
+      "id": "84386203808767123/insights/saved/lifetime"
+    },
+    {
+      "name": "shares",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 1
+        }
+      ],
+      "title": "Shares",
+      "description": "The number of shares of your reel.",
+      "id": "84386203808767123/insights/shares/lifetime"
+    },
+    {
+      "name": "ig_reels_aggregated_all_plays_count",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 383
+        }
+      ],
+      "title": "IG reels aggregated all plays count title",
+      "description": "IG reels aggregated all plays count description.",
+      "id": "84386203808767123/insights/ig_reels_aggregated_all_plays_count/lifetime"
+    },
+    {
+      "name": "clips_replays_count",
+      "period": "lifetime",
+      "values": [
+        {
+          "value": 102
+        }
+      ],
+      "title": "Clip Replays Count title",
+      "description": "Clip Replays Count description.",
+      "id": "84386203808767123/insights/clips_replays_count/lifetime"
+    }
+  ]
+}

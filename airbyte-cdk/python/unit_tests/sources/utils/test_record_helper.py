@@ -45,7 +45,7 @@ def test_data_or_record_to_airbyte_record(test_name, data, expected_message):
         transformer.transform.assert_called_with(data, schema)
     else:
         assert not transformer.transform.called
-    assert expected_message == message
+    assert message == expected_message
 
 
 @pytest.mark.parametrize(
@@ -69,7 +69,7 @@ def test_log_or_trace_to_message(test_name, data, expected_message):
     message = stream_data_to_airbyte_message(STREAM_NAME, data, transformer, schema)
 
     assert not transformer.transform.called
-    assert expected_message == message
+    assert message == expected_message
 
 
 @pytest.mark.parametrize(

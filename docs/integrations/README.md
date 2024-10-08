@@ -2,17 +2,19 @@ import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
 
 # Connector Catalog
 
-## Connector Release Stages
+## Introduction to Connectors
 
-Airbyte uses a grading system for connectors to help you understand what to expect from a connector:
+Each source or destination is a connector. A source is an API, file, database, or data warehouse that you want to ingest data from. A destination is a data warehouse, data lake, database, or an analytics tool where you want to load your ingested data. Connectors, therefore, can either pull data from a source, or push data to a destination. 
 
-**Generally Available**: A generally available connector has been deemed ready for use in a production environment and is officially supported by Airbyte. Its documentation is considered sufficient to support widespread adoption.
+By browsing the catalog, you can see useful links to documentation, source code, and issues related to each connector. You'll also be able to see whether a connector is supported on our Open Source Software (OSS), our Cloud platform, or both. 
 
-**Beta**: A beta connector is considered stable with no backwards incompatible changes but has not been validated by a broader group of users. We expect to find and fix a few issues and bugs in the release before it’s ready for GA.
+As an open source project, Airbyte's catalog of connectors is continually growing thanks to community contributions as well as development by the Airbyte team. Airbyte enables you to [build new connectors](/connector-development/). We encourage you to consider contributing  enhancements, bug fixes, or features to existing connectors or to submit entirely new connectors you've built for inclusion in the connector catalog. That said, you always have the option to publish connectors privately, to your own workspaces. 
 
-**Alpha**: An alpha connector signifies a connector under development and helps Airbyte gather early feedback and issues reported by early adopters. We strongly discourage using alpha releases for production use cases and do not offer Cloud Support SLAs around these products, features, or connectors.
+Learn more about contributing to Airbyte [here](/contributing-to-airbyte/).
 
-For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
+## Connector Support Levels
+
+Airbyte uses a tiered system for connectors to help you understand what to expect from a connector. In short, there are three tiers: Airbyte Connectors, Marketplace Connectors, and Custom Connectors. Review the documentation on [connector support levels](./connector-support-levels.md) for details on each tier.
 
 _[View the connector registries in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
 

@@ -25,6 +25,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
         ("ssh", "files/test.csv", "csv"),
         ("scp", "files/test.csv", "csv"),
         ("sftp", "files/test.csv", "csv"),
+        ("ssh", "files/test.csv.zip", "csv"),
         ("ssh", "files/test.csv.gz", "csv"),  # text in binary
         ("ssh", "files/test.pkl", "pickle"),  # binary
         ("sftp", "files/test.pkl.gz", "pickle"),  # binary in binary

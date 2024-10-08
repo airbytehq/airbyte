@@ -15,12 +15,10 @@ def incremental_config():
         "stream_name": "test_stream",
         "stream_path": "test_path",
         "primary_key": [["test_primary_key"]],
-        "schema": {
-
-        },
+        "schema": {},
         "odata_maxpagesize": 100,
         "config_cursor_field": ["test_cursor_field"],
-        "authenticator": MagicMock()
+        "authenticator": MagicMock(),
     }
 
 
@@ -29,16 +27,9 @@ def incremental_response(incremental_config):
     return {
         "@odata.deltaLink": f"{incremental_config['url']}?$deltatoken=12644418993%2110%2F06%2F2022%2020%3A06%3A12",
         "value": [
-            {
-                "test_primary_key": "pk",
-                "test_cursor_field": "test-date"
-            },
-            {
-                "id": "pk2",
-                "@odata.context": "context",
-                "reason": "deleted"
-            }
-        ]
+            {"test_primary_key": "pk", "test_cursor_field": "test-date"},
+            {"id": "pk2", "@odata.context": "context", "reason": "deleted"},
+        ],
     }
 
 

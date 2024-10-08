@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
+from pytest import fixture
 
 
-@pytest.fixture
+@fixture
 def config():
     return {
         "credentials": {
@@ -14,7 +14,7 @@ def config():
             "client_secret": "client_secret",
             "refresh_token": "refresh_token",
             "access_token": "access_token",
-            "token_expiry_date": "2222-02-02T00:00:00Z"
+            "token_expiry_date": "2222-02-02T00:00:00Z",
         },
-        "start_date": "2020-01-01T00:00:00.000Z"
+        "start_date": "2020-01-01T00:00:00.000Z",
     }
