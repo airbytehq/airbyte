@@ -99,8 +99,8 @@ class DefaultSpillToDiskTask(
         }
 
         val batch = SpilledRawMessagesLocalFile(tmpFile, sizeBytes)
-        val wrapped = BatchEnvelope(batch, range)
-        launcher.handleNewSpilledFile(stream, wrapped, endOfStream)
+        val wrapped = BatchEnvelope(batch, range, endOfStream)
+        launcher.handleNewSpilledFile(stream, wrapped)
     }
 }
 

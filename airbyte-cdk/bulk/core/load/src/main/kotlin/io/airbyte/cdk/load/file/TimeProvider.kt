@@ -6,10 +6,12 @@ package io.airbyte.cdk.load.file
 
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import org.joda.time.DateTime
 
 interface TimeProvider {
     fun currentTimeMillis(): Long
     suspend fun delay(ms: Long)
+    fun now(): DateTime = DateTime(currentTimeMillis())
 }
 
 @Singleton

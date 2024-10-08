@@ -4,19 +4,21 @@
 
 package io.airbyte.cdk.load.data
 
-sealed interface AirbyteType
+import java.io.Serializable
 
-data object NullType : AirbyteType
+sealed interface AirbyteType : Serializable
 
-data object StringType : AirbyteType
+class NullType : AirbyteType
 
-data object BooleanType : AirbyteType
+class StringType : AirbyteType
 
-data object IntegerType : AirbyteType
+class BooleanType : AirbyteType
 
-data object NumberType : AirbyteType
+class IntegerType : AirbyteType
 
-data object DateType : AirbyteType
+class NumberType : AirbyteType
+
+class DateType : AirbyteType
 
 data class TimestampType(val hasTimezone: Boolean) : AirbyteType
 
@@ -24,16 +26,16 @@ data class TimeType(val hasTimezone: Boolean) : AirbyteType
 
 data class ArrayType(val items: FieldType) : AirbyteType
 
-data object ArrayTypeWithoutSchema : AirbyteType
+class ArrayTypeWithoutSchema : AirbyteType
 
 data class ObjectType(val properties: LinkedHashMap<String, FieldType>) : AirbyteType
 
-data object ObjectTypeWithEmptySchema : AirbyteType
+class ObjectTypeWithEmptySchema : AirbyteType
 
-data object ObjectTypeWithoutSchema : AirbyteType
+class ObjectTypeWithoutSchema : AirbyteType
 
 data class UnionType(val options: List<AirbyteType>) : AirbyteType
 
 data class UnknownType(val what: String) : AirbyteType
 
-data class FieldType(val type: AirbyteType, val nullable: Boolean)
+data class FieldType(val type: AirbyteType, val nullable: Boolean) : Serializable

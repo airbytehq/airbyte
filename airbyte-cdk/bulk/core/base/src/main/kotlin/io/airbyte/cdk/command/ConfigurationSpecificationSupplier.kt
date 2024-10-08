@@ -42,6 +42,7 @@ class ConfigurationSpecificationSupplier<T : ConfigurationSpecification>(
                 throw ConfigErrorException("failed to serialize fallback instance for $javaClass")
             }
         }
+        println("jsonPropertyValue: $jsonPropertyValue")
         val json: String = jsonPropertyValue ?: jsonMicronautFallback
         return ValidatedJsonUtils.parseOne(javaClass, json)
     }

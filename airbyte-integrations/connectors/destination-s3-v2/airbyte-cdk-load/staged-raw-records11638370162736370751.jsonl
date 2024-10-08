@@ -1,0 +1,3 @@
+{ "type": "RECORD", "record": { "emitted_at": 0, "stream": "users", "data": { "id": 1, "name": "Alice" } } }
+{ "type": "RECORD", "record": { "emitted_at": 1, "stream": "users", "data": { "id": 2, "name": "Bob" } } }
+{ "type": "RECORD", "record": { "emitted_at": 2, "stream": "users", "data": { "id": 3, "name": "Some Other Guy" } } }

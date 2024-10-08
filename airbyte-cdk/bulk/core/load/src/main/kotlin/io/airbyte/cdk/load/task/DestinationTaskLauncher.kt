@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.state.SyncManager
 import io.airbyte.cdk.load.task.implementor.CloseStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.OpenStreamTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessBatchTaskFactory
+import io.airbyte.cdk.load.task.implementor.ProcessLocalFileTaskFactory
 import io.airbyte.cdk.load.task.implementor.ProcessRecordsTaskFactory
 import io.airbyte.cdk.load.task.implementor.SetupTaskFactory
 import io.airbyte.cdk.load.task.implementor.TeardownTaskFactory
@@ -33,8 +34,11 @@ interface DestinationTaskLauncher : TaskLauncher {
     suspend fun handleStreamStarted(stream: DestinationStream)
     suspend fun handleNewSpilledFile(
         stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
+        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
+    )
+    suspend fun handleUnhandledLocalFile(
+        stream: DestinationStream,
+        localFileWrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
     )
     suspend fun handleNewBatch(stream: DestinationStream, wrapped: BatchEnvelope<*>)
     suspend fun handleStreamClosed(stream: DestinationStream)
@@ -89,6 +93,7 @@ class DefaultDestinationTaskLauncher(
     // Implementor Tasks
     private val setupTaskFactory: SetupTaskFactory,
     private val openStreamTaskFactory: OpenStreamTaskFactory,
+    private val processLocalFileTaskFactory: ProcessLocalFileTaskFactory,
     private val processRecordsTaskFactory: ProcessRecordsTaskFactory,
     private val processBatchTaskFactory: ProcessBatchTaskFactory,
     private val closeStreamTaskFactory: CloseStreamTaskFactory,
@@ -152,17 +157,29 @@ class DefaultDestinationTaskLauncher(
     /** Called for each new spilled file. */
     override suspend fun handleNewSpilledFile(
         stream: DestinationStream,
-        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>,
-        endOfStream: Boolean
+        wrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
     ) {
-        log.info { "Starting process records task for ${stream.descriptor}, file ${wrapped.batch}" }
-        val task = processRecordsTaskFactory.make(this, stream, wrapped)
+        log.info {
+            "Starting process local file task for ${stream.descriptor}, file ${wrapped.batch}"
+        }
+        val task = processLocalFileTaskFactory.make(this, stream, wrapped)
         enqueue(task)
-        if (!endOfStream) {
+        if (!wrapped.endOfStream) {
             log.info { "End-of-stream not reached, restarting spill-to-disk task for $stream" }
             val spillTask = spillToDiskTaskFactory.make(this, stream)
             enqueue(spillTask)
         }
+    }
+
+    override suspend fun handleUnhandledLocalFile(
+        stream: DestinationStream,
+        localFileWrapped: BatchEnvelope<SpilledRawMessagesLocalFile>
+    ) {
+        log.info {
+            "Starting process records task for ${stream.descriptor}, file ${localFileWrapped.batch}"
+        }
+        val task = processRecordsTaskFactory.make(this, stream, localFileWrapped)
+        enqueue(task)
     }
 
     /**

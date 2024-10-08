@@ -26,15 +26,16 @@ interface FileReader : Closeable {
 
 @DefaultImplementation(DefaultLocalFile::class)
 interface LocalFile {
+    val path: Path
     fun toFileWriter(): FileWriter
     fun toFileReader(): FileReader
     fun delete()
 }
 
-class DefaultLocalFile(val localFile: Path) : LocalFile {
+class DefaultLocalFile(override val path: Path) : LocalFile {
     override fun toFileWriter(): FileWriter {
         return object : FileWriter {
-            private val writer = Files.newBufferedWriter(localFile)
+            private val writer = Files.newBufferedWriter(path)
             override fun write(str: String) {
                 writer.write(str)
             }
@@ -47,7 +48,7 @@ class DefaultLocalFile(val localFile: Path) : LocalFile {
 
     override fun toFileReader(): FileReader {
         return object : FileReader {
-            private val reader = Files.newBufferedReader(localFile)
+            private val reader = Files.newBufferedReader(path)
             override fun lines(): Sequence<String> {
                 return reader.lines().asSequence()
             }
@@ -59,6 +60,6 @@ class DefaultLocalFile(val localFile: Path) : LocalFile {
     }
 
     override fun delete() {
-        Files.delete(localFile)
+        Files.delete(path)
     }
 }

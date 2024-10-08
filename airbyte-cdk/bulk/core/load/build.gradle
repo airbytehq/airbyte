@@ -23,6 +23,18 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     implementation "org.jetbrains.kotlin:kotlin-reflect:2.0.20"
     testFixturesImplementation "uk.org.webcompere:system-stubs-jupiter:2.1.7"
+
+    /*
+    airbyte-cdk/java/airbyte-cdk/s3-destinations/build.gradle:    api 'com.amazonaws:aws-java-sdk-s3:1.12.772'
+    airbyte-cdk/java/airbyte-cdk/s3-destinations/build.gradle:    api 'com.amazonaws:aws-java-sdk-sts:1.12.772'
+     */
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
+
+    def sparkVersion = "3.5.1"
+    implementation("org.apache.spark:spark-core_2.13:${sparkVersion}")
+    implementation("org.apache.spark:spark-sql_2.13:${sparkVersion}")
+    implementation("org.apache.spark:spark-avro_2.13:${sparkVersion}") // Spark Avro module
+    //implementation("org.scala-lang:scala-library:2.12.17")
 }
 
 task integrationTest(type: Test) {

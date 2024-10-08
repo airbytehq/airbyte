@@ -74,9 +74,8 @@ abstract class StagedLocalFile() : Batch {
 }
 
 /** Represents a remote object containing persisted records. */
-abstract class RemoteObject() : Batch {
-    override val state: Batch.State = Batch.State.PERSISTED
-    abstract val key: String
+interface RemoteObject : Batch {
+    val key: String
 }
 
 /**
@@ -95,12 +94,14 @@ data class SpilledRawMessagesLocalFile(
  */
 data class BatchEnvelope<B : Batch>(
     val batch: B,
-    val ranges: RangeSet<Long> = TreeRangeSet.create()
+    val ranges: RangeSet<Long> = TreeRangeSet.create(),
+    val endOfStream: Boolean = false
 ) {
     constructor(
         batch: B,
-        range: Range<Long>
-    ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)))
+        range: Range<Long>,
+        endOfStream: Boolean = false
+    ) : this(batch = batch, ranges = TreeRangeSet.create(listOf(range)), endOfStream = endOfStream)
 
     fun <C : Batch> withBatch(newBatch: C): BatchEnvelope<C> {
         return BatchEnvelope(newBatch, ranges)

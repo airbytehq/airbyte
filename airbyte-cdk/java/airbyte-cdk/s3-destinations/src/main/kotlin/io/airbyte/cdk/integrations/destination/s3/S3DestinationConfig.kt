@@ -133,6 +133,7 @@ open class S3DestinationConfig {
                 if (null == endpoint || endpoint.isEmpty()) {
                     clientBuilder.withRegion(bucketRegion)
                 } else {
+                    x
                     val clientConfiguration = ClientConfiguration().withProtocol(Protocol.HTTPS)
                     clientConfiguration.signerOverride = "AWSS3V4SignerType"
 

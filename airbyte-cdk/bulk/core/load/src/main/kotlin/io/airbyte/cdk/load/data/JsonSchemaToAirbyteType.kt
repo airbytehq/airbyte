@@ -18,12 +18,12 @@ class JsonSchemaToAirbyteType {
                 // {"type": <string>, ...}
                 when (schema.get("type").asText()) {
                     "string" -> fromString(schema)
-                    "boolean" -> BooleanType
-                    "integer" -> IntegerType
+                    "boolean" -> BooleanType()
+                    "integer" -> IntegerType()
                     "number" -> fromNumber(schema)
                     "array" -> fromArray(schema)
                     "object" -> fromObject(schema)
-                    "null" -> NullType
+                    "null" -> NullType()
                     else ->
                         throw IllegalArgumentException(
                             "Unknown type: ${
@@ -60,7 +60,7 @@ class JsonSchemaToAirbyteType {
 
     private fun fromString(schema: ObjectNode): AirbyteType =
         when (schema.get("format")?.asText()) {
-            "date" -> DateType
+            "date" -> DateType()
             "time" ->
                 TimeType(
                     hasTimezone = schema.get("airbyte_type")?.asText() != "time_without_timezone"
@@ -70,7 +70,7 @@ class JsonSchemaToAirbyteType {
                     hasTimezone =
                         schema.get("airbyte_type")?.asText() != "timestamp_without_timezone"
                 )
-            null -> StringType
+            null -> StringType()
             else ->
                 throw IllegalArgumentException(
                     "Unknown string format: ${
@@ -81,16 +81,16 @@ class JsonSchemaToAirbyteType {
 
     private fun fromNumber(schema: ObjectNode): AirbyteType =
         if (schema.get("airbyte_type")?.asText() == "integer") {
-            IntegerType
+            IntegerType()
         } else {
-            NumberType
+            NumberType()
         }
 
     private fun fromArray(schema: ObjectNode): AirbyteType {
-        val items = schema.get("items") ?: return ArrayTypeWithoutSchema
+        val items = schema.get("items") ?: return ArrayTypeWithoutSchema()
         if (items.isArray) {
             if (items.isEmpty) {
-                return ArrayTypeWithoutSchema
+                return ArrayTypeWithoutSchema()
             }
             val itemOptions = UnionType(items.map { convert(it) })
             return ArrayType(fieldFromUnion(itemOptions))
@@ -99,9 +99,9 @@ class JsonSchemaToAirbyteType {
     }
 
     private fun fromObject(schema: ObjectNode): AirbyteType {
-        val properties = schema.get("properties") ?: return ObjectTypeWithoutSchema
+        val properties = schema.get("properties") ?: return ObjectTypeWithoutSchema()
         if (properties.isEmpty) {
-            return ObjectTypeWithEmptySchema
+            return ObjectTypeWithEmptySchema()
         }
         val requiredFields = schema.get("required")?.map { it.asText() } ?: emptyList()
         return objectFromProperties(properties as ObjectNode, requiredFields)
@@ -122,8 +122,8 @@ class JsonSchemaToAirbyteType {
     }
 
     private fun fieldFromUnion(unionType: UnionType, nullable: Boolean = false): FieldType {
-        if (unionType.options.contains(NullType)) {
-            val filtered = unionType.options.filter { it != NullType }
+        if (unionType.options.contains(NullType())) {
+            val filtered = unionType.options.filter { it != NullType() }
             return FieldType(UnionType(filtered), nullable = true)
         }
         return FieldType(unionType, nullable = nullable)

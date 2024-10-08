@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Batch
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
+import io.airbyte.cdk.load.message.SpilledRawMessagesLocalFile
 import io.airbyte.cdk.load.state.StreamIncompleteResult
 
 /**
@@ -18,8 +19,12 @@ import io.airbyte.cdk.load.state.StreamIncompleteResult
  *
  * [start] is called once before any records are processed.
  *
- * [processRecords] is called whenever a batch of records is available for processing, and only
- * after [start] has returned successfully. The return value is a client-defined implementation of @
+ * [processStagedLocalFile] is called once per staged local file before any records are processed,
+ * and only after [start] has returned successfully. The default implementation is to return the
+ * input unchanged. Implementors may override this if they want to process the file directly.
+ * Otherwise, process records will be called with an iterator over the records in the file.
+ *
+ * [processRecords] is called whenever [processStagedLocalFile] returns the local file unchanged.
  * [Batch] that the framework may pass to [processBatch] and/or [finalize]. (See @[Batch] for more
  * details.)
  *
@@ -35,7 +40,11 @@ interface StreamLoader {
     val stream: DestinationStream
 
     suspend fun start() {}
-    suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch
+    suspend fun processStagedLocalFile(localFile: SpilledRawMessagesLocalFile): Batch = localFile
+    suspend fun processRecords(records: Iterator<DestinationRecord>, totalSizeBytes: Long): Batch =
+        throw NotImplementedError(
+            "processRecords must be implemented if processStagedLocalFile is not overridden"
+        )
     suspend fun processBatch(batch: Batch): Batch = SimpleBatch(Batch.State.COMPLETE)
     suspend fun close(streamFailure: StreamIncompleteResult? = null) {}
 }

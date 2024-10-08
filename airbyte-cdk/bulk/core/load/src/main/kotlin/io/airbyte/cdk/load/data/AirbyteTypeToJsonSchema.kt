@@ -70,9 +70,9 @@ class AirbyteTypeToJsonSchema {
     private fun fromFieldType(field: FieldType): JsonNode {
         if (field.nullable) {
             if (field.type is UnionType) {
-                return convert(UnionType(options = field.type.options + NullType))
+                return convert(UnionType(options = field.type.options + NullType()))
             }
-            return convert(UnionType(options = listOf(field.type, NullType)))
+            return convert(UnionType(options = listOf(field.type, NullType())))
         }
         return convert(field.type)
     }

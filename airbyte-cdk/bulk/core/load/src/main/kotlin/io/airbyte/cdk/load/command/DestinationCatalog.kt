@@ -8,12 +8,13 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
+import java.io.Serializable
 
 /**
  * Internal representation of destination streams. This is intended to be a case class specialized
  * for usability.
  */
-data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()) {
+data class DestinationCatalog(val streams: List<DestinationStream> = emptyList()) : Serializable {
     private val byDescriptor: Map<DestinationStream.Descriptor, DestinationStream> =
         streams.associateBy { it.descriptor }
 

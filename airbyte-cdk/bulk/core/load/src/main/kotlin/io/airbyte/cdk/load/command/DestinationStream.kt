@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import jakarta.inject.Singleton
+import java.io.Serializable
 
 /**
  * Internal representation of destination streams. This is intended to be a case class specialized
@@ -28,8 +29,8 @@ data class DestinationStream(
     val generationId: Long,
     val minimumGenerationId: Long,
     val syncId: Long,
-) {
-    data class Descriptor(val namespace: String?, val name: String) {
+) : Serializable {
+    data class Descriptor(val namespace: String?, val name: String) : Serializable {
         fun asProtocolObject(): StreamDescriptor =
             StreamDescriptor().withName(name).also {
                 if (namespace != null) {
@@ -97,7 +98,7 @@ class DestinationStreamFactory {
     }
 }
 
-sealed interface ImportType
+sealed interface ImportType : Serializable
 
 data object Append : ImportType
 

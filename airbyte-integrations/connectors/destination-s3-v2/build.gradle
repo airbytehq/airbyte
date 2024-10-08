@@ -1,0 +1,40 @@
+plugins {
+    id 'application'
+    id 'airbyte-bulk-connector'
+}
+
+airbyteBulkConnector {
+    core = 'load'
+    toolkits = []
+    cdk = 'local'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.s3_v2.S3V2Destination'
+    //applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED']
+
+    // Uncomment and replace to run locally
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0', '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens', 'java.base/sun.security.action=ALL-UNNAMED', '--add-opens', 'java.base/java.lang=ALL-UNNAMED']
+}
+
+dependencies {
+    // temporary dependency so that we can continue running the legacy test suite.
+    // eventually we should remove this + rely solely on the bulk CDK tests.
+    integrationTestJavaImplementation testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    // integrationTestJavaImplementation testFixtures("io.airbyte.cdk:airbyte-cdk-db-destinations:0.47.0")
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.772")
+    def sparkVersion = "3.5.1"
+    implementation("org.apache.spark:spark-core_2.13:${sparkVersion}")
+    implementation("org.apache.spark:spark-sql_2.13:${sparkVersion}")
+    implementation("org.apache.hadoop:hadoop-aws:3.3.4") // Adjust based on your Hadoop version
+    implementation("com.amazonaws:aws-java-sdk-bundle:1.11.901") // Compatible AWS SDK version
+}
+
+// Uncomment to run locally
+run {
+    standardInput = System.in
+}
+
+integrationTestJava {
+    dependsOn assemble
+}

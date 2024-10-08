@@ -44,7 +44,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 DestinationStream(
                     DestinationStream.Descriptor(randomizedNamespace, "test_stream"),
                     Append,
-                    ObjectTypeWithoutSchema,
+                    ObjectTypeWithoutSchema(),
                     generationId = 0,
                     minimumGenerationId = 0,
                     syncId = 42,

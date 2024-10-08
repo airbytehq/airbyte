@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
 import io.airbyte.protocol.models.v0.AirbyteTraceMessage
 import jakarta.inject.Singleton
+import java.io.Serializable
 
 /**
  * Internal representation of destination messages. These are intended to be specialized for
@@ -56,7 +57,7 @@ data class DestinationRecord(
         changes: List<Change>? = null,
     ) : this(
         stream = DestinationStream.Descriptor(namespace, name),
-        data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema),
+        data = JsonToAirbyteValue().convert(Jsons.deserialize(data), ObjectTypeWithoutSchema()),
         emittedAtMs = emittedAtMs,
         meta = Meta(changes),
         serialized = "",
@@ -255,7 +256,7 @@ data object Undefined : DestinationMessage {
 }
 
 @Singleton
-class DestinationMessageFactory(private val catalog: DestinationCatalog) {
+class DestinationMessageFactory(private val catalog: DestinationCatalog) : Serializable {
     fun fromAirbyteMessage(message: AirbyteMessage, serialized: String): DestinationMessage {
         return when (message.type) {
             AirbyteMessage.Type.RECORD -> {

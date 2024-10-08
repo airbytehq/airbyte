@@ -7,8 +7,9 @@ package io.airbyte.cdk.load.message
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import jakarta.inject.Singleton
+import java.io.Serializable
 
-interface Deserializer<T : Any> {
+interface Deserializer<T : Any> : Serializable {
     fun deserialize(serialized: String): T
 }
 
