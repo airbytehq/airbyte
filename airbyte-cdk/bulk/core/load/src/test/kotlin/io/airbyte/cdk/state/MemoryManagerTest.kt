@@ -32,7 +32,7 @@ class MemoryManagerTest {
         val reserved = AtomicBoolean(false)
 
         try {
-            withTimeout(5000) { memoryManager.reserveBlocking(900) }
+            withTimeout(5000) { memoryManager.reserveBlocking(900, this) }
         } catch (e: Exception) {
             Assertions.fail<Unit>("Failed to reserve memory")
         }
@@ -40,20 +40,20 @@ class MemoryManagerTest {
         Assertions.assertEquals(100, memoryManager.remainingMemoryBytes)
 
         val job = launch {
-            memoryManager.reserveBlocking(200)
+            memoryManager.reserveBlocking(200, this)
             reserved.set(true)
         }
 
-        memoryManager.reserveBlocking(0)
+        memoryManager.reserveBlocking(0, this)
         Assertions.assertFalse(reserved.get())
 
         memoryManager.release(50)
-        memoryManager.reserveBlocking(0)
+        memoryManager.reserveBlocking(0, this)
         Assertions.assertEquals(150, memoryManager.remainingMemoryBytes)
         Assertions.assertFalse(reserved.get())
 
         memoryManager.release(25)
-        memoryManager.reserveBlocking(0)
+        memoryManager.reserveBlocking(0, this)
         Assertions.assertEquals(175, memoryManager.remainingMemoryBytes)
         Assertions.assertFalse(reserved.get())
 
@@ -71,11 +71,12 @@ class MemoryManagerTest {
     fun testReserveBlockingMultithreaded() = runTest {
         val memoryManager = MemoryManager(MockAvailableMemoryProvider())
         withContext(Dispatchers.IO) {
-            memoryManager.reserveBlocking(1000)
+            memoryManager.reserveBlocking(1000, this)
             Assertions.assertEquals(0, memoryManager.remainingMemoryBytes)
             val nIterations = 100000
 
-            val jobs = (0 until nIterations).map { launch { memoryManager.reserveBlocking(10) } }
+            val jobs =
+                (0 until nIterations).map { launch { memoryManager.reserveBlocking(10, this) } }
 
             repeat(nIterations) {
                 memoryManager.release(10)
@@ -93,10 +94,19 @@ class MemoryManagerTest {
     fun testRequestingMoreThanAvailableThrows() = runTest {
         val memoryManager = MemoryManager(MockAvailableMemoryProvider())
         try {
-            memoryManager.reserveBlocking(1001)
+            memoryManager.reserveBlocking(1001, this)
         } catch (e: IllegalArgumentException) {
             return@runTest
         }
         Assertions.fail<Unit>("Requesting more memory than available should throw an exception")
+    }
+
+    @Test
+    fun testReservations() = runTest {
+        val memoryManager = MemoryManager(MockAvailableMemoryProvider())
+        val reservation = memoryManager.reserveBlocking(100, this)
+        Assertions.assertEquals(900, memoryManager.remainingMemoryBytes)
+        reservation.release()
+        Assertions.assertEquals(1000, memoryManager.remainingMemoryBytes)
     }
 }

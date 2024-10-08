@@ -24,6 +24,7 @@ class MockCheckpointManager : CheckpointManager<DestinationStream.Descriptor, Ch
     val flushedAtMs = mutableListOf<Long>()
     var mockCheckpointIndexes = mutableMapOf<DestinationStream.Descriptor, Long>()
     var mockLastFlushTimeMs = 0L
+    var maxNumFlushAttempts = 0
 
     override suspend fun addStreamCheckpoint(
         key: DestinationStream.Descriptor,
@@ -41,6 +42,9 @@ class MockCheckpointManager : CheckpointManager<DestinationStream.Descriptor, Ch
     }
 
     override suspend fun flushReadyCheckpointMessages() {
+        if (maxNumFlushAttempts >= 0 && flushedAtMs.size >= maxNumFlushAttempts) {
+            throw IllegalStateException("Max number of flushes reached")
+        }
         flushedAtMs.add(timeProvider.currentTimeMillis())
     }
 
