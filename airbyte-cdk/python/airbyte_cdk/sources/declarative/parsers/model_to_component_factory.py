@@ -31,10 +31,14 @@ from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 <<<<<<< HEAD
+<<<<<<< HEAD
 from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector, ResponseToFileExtractor
 =======
 from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder, PaginationDecoderDecorator
+=======
+from airbyte_cdk.sources.declarative.decoders import Decoder, IterableDecoder, JsonDecoder, JsonlDecoder
+>>>>>>> 2531640ecd (remove pagination decoder decorator from scope of this issue)
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 >>>>>>> aa0ed78f46 (update logger, update name to decorator)
 from airbyte_cdk.sources.declarative.extractors.record_filter import ClientSideIncrementalRecordFilterDecorator
@@ -457,7 +461,7 @@ class ModelToComponentFactory:
     def create_cursor_pagination(
         self, model: CursorPaginationModel, config: Config, decoder: Decoder, **kwargs: Any
     ) -> CursorPaginationStrategy:
-        if not isinstance(decoder, JsonDecoder) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, JsonDecoder)):
+        if not isinstance(decoder, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return CursorPaginationStrategy(
             cursor_value=model.cursor_value,
@@ -828,11 +832,14 @@ class ModelToComponentFactory:
         if not isinstance(decoder, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 >>>>>>> da3dfb363b (consolidates decoders under `SimpleRetriever`)
 =======
         decoder = PaginationDecoderDecorator(decoder=decoder)
 >>>>>>> aa0ed78f46 (update logger, update name to decorator)
+=======
+>>>>>>> 2531640ecd (remove pagination decoder decorator from scope of this issue)
         page_size_option = (
             self._create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
         )
@@ -1065,7 +1072,7 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_offset_increment(model: OffsetIncrementModel, config: Config, decoder: Decoder, **kwargs: Any) -> OffsetIncrement:
-        if not isinstance(decoder, JsonDecoder) or not (isinstance(decoder, PaginationDecoderDecorator) and isinstance(decoder.decoder, JsonDecoder)):
+        if not isinstance(decoder, JsonDecoder):
             raise ValueError(f"Provided decoder of {type(decoder)=} is not supported. Please set JsonDecoder instead.")
         return OffsetIncrement(
             page_size=model.page_size,
