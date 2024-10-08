@@ -189,13 +189,13 @@ class AdsInsights(FBMarketingIncrementalStream):
                 if account_id in self._cursor_values and self._cursor_values[account_id]:
                     new_state[account_id] = {self.cursor_field: self._cursor_values[account_id].isoformat()}
 
-                new_state[account_id]["slices"] = {d.isoformat() for d in self._completed_slices[account_id]}
+                new_state[account_id]["slices"] = list({d.isoformat() for d in self._completed_slices[account_id]})
             new_state["time_increment"] = self.time_increment
             return new_state
 
         if self._completed_slices:
             for account_id in self._account_ids:
-                new_state[account_id]["slices"] = {d.isoformat() for d in self._completed_slices[account_id]}
+                new_state[account_id]["slices"] = list({d.isoformat() for d in self._completed_slices[account_id]})
 
             new_state["time_increment"] = self.time_increment
             return new_state
