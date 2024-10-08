@@ -35,7 +35,6 @@ import io.debezium.connector.mysql.MySqlConnector
 import io.debezium.connector.mysql.gtid.MySqlGtidSet
 import io.debezium.document.DocumentReader
 import io.debezium.document.DocumentWriter
-import io.debezium.embedded.KafkaConnectUtil
 import io.debezium.relational.history.HistoryRecord
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -51,13 +50,8 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.random.Random
 import kotlin.random.nextInt
-import org.apache.kafka.connect.json.JsonConverter
 import org.apache.kafka.connect.json.JsonConverterConfig
-import org.apache.kafka.connect.runtime.WorkerConfig
-import org.apache.kafka.connect.runtime.standalone.StandaloneConfig
 import org.apache.kafka.connect.source.SourceRecord
-import org.apache.kafka.connect.storage.FileOffsetBackingStore
-import org.apache.kafka.connect.storage.OffsetStorageReaderImpl
 
 @Singleton
 class MySqlDebeziumOperations(
@@ -138,7 +132,7 @@ class MySqlDebeziumOperations(
         }
         return CdcStateValidateResult.VALID
     }
-    
+
     private fun abortCdcSync(): CdcStateValidateResult {
         if (
             (configuration.cursorConfiguration as CdcCursor)
