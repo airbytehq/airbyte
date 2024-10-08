@@ -9,7 +9,7 @@ description: |-
 check:
   type: CheckStream
   stream_names:
-    - employees
+    - check_stream
 
 definitions:
   streams:
