@@ -1440,11 +1440,7 @@ class SessionTokenAuthenticator(BaseModel):
         description='Authentication method to use for requests sent to the API, specifying how to inject the session token.',
         title='Data Request Authentication',
     )
-<<<<<<< HEAD
     decoder: Optional[JsonDecoder] = Field(
-=======
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
->>>>>>> 401126463f (update `create_session_token_authenticator` to instantiate user-defined decoder)
         None, description='Component decoding the response', title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
