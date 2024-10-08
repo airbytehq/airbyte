@@ -744,12 +744,13 @@ definitions:
   conversation_parts:
     $ref: "#/definitions/substream_semi_incremental"
     incremental_sync:
-      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
-      parent_stream_configs:
-        - type: ParentStreamConfig
-          stream: "#/definitions/conversations"
-          parent_key: "id"
-          partition_field: "id"
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      is_client_side_incremental: true
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config['start_date'], '%s') }}"
     $parameters:
       name: "conversation_parts"
       primary_key: "id"
@@ -765,6 +766,14 @@ definitions:
         $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
         extractor:
           field_path: ["conversation_parts", "conversation_parts"]
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: id
+            stream:
+              $ref: "#/definitions/conversations"
       requester:
         $ref: "#/definitions/requester"
         error_handler:
