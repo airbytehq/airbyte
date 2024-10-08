@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.mock_integration_test
 
-import io.airbyte.cdk.test.util.DestinationDataDumper
-import io.airbyte.cdk.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.OutputRecord
 import java.util.concurrent.ConcurrentHashMap
 
 object MockDestinationBackend {

@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.SimpleBatch
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
-import io.airbyte.cdk.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.OutputRecord
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Singleton

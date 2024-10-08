@@ -14,9 +14,9 @@ import com.deblock.jsondiff.matcher.StrictPrimitivePartialMatcher
 import com.deblock.jsondiff.viewer.OnlyErrorDiffViewer
 import io.airbyte.cdk.load.test.util.FakeDataDumper
 import io.airbyte.cdk.load.test.util.IntegrationTest
-import io.airbyte.cdk.test.util.NoopDestinationCleaner
-import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.test.util.destination_process.TestDeploymentMode
+import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
+import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.destination_process.TestDeploymentMode
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import java.nio.file.Files

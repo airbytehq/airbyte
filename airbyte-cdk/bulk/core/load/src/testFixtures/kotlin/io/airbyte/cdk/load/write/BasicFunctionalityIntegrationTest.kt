@@ -14,10 +14,10 @@ import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.IntegrationTest
 import io.airbyte.cdk.load.test.util.NameMapper
-import io.airbyte.cdk.test.util.DestinationDataDumper
-import io.airbyte.cdk.test.util.NoopExpectedRecordMapper
-import io.airbyte.cdk.test.util.NoopNameMapper
-import io.airbyte.cdk.test.util.OutputRecord
+import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.NoopNameMapper
+import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
