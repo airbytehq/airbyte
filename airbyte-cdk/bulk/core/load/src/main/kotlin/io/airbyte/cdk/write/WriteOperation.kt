@@ -5,8 +5,6 @@
 package io.airbyte.cdk.write
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.output.ExceptionHandler
-import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.state.SyncFailure
 import io.airbyte.cdk.state.SyncManager
 import io.airbyte.cdk.state.SyncSuccess
@@ -17,7 +15,6 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Secondary
 import java.io.InputStream
 import javax.inject.Singleton
-import kotlin.system.exitProcess
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -29,36 +26,21 @@ import kotlinx.coroutines.runBlocking
 class WriteOperation(
     private val taskLauncher: TaskLauncher,
     private val syncManager: SyncManager,
-    private val exceptionHandler: ExceptionHandler,
-    private val outputConsumer: OutputConsumer
 ) : Operation {
     val log = KotlinLogging.logger {}
 
-    override fun execute() {
-        runCatching {
-                runBlocking {
-                    taskLauncher.start()
+    override fun execute() = runBlocking {
+        taskLauncher.start()
 
-                    when (val result = syncManager.awaitSyncResult()) {
-                        is SyncSuccess -> {
-                            log.info { "Sync completed successfully" }
-                            exitProcess(0)
-                        }
-                        is SyncFailure -> {
-                            log.error { "Caught exception during sync: ${result.syncFailure}" }
-                            val errorMessage = exceptionHandler.handle(result.syncFailure)
-                            outputConsumer.accept(errorMessage)
-                            exitProcess(1)
-                        }
-                    }
-                }
+        when (val result = syncManager.awaitSyncResult()) {
+            is SyncSuccess -> {
+                log.info { "Sync completed successfully" }
             }
-            .onFailure {
-                log.error { "Uncaught exception during sync: $it" }
-                val errorMessage = exceptionHandler.handle(it)
-                outputConsumer.accept(errorMessage)
-                exitProcess(1)
+            is SyncFailure -> {
+                log.info { "Sync failed with stream results ${result.streamResults}" }
+                throw result.syncFailure
             }
+        }
     }
 }
 
