@@ -25,12 +25,6 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
     fun deserialize(opaqueStateValue: OpaqueStateValue, streams: List<Stream>): DebeziumInput
 }
 
-enum class CdcStateValidateResult {
-    VALID,
-    INVALID_ABORT,
-    INVALID_RESET
-}
-
 interface CdcPartitionReaderDebeziumOperations<T : Comparable<T>> {
 
     /** Transforms a [DebeziumRecordValue] into an [AirbyteRecordMessage]. */

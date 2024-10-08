@@ -16,7 +16,6 @@ import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.cdc.CdcStateValidateResult
 import io.airbyte.cdk.read.cdc.DebeziumInput
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumOperations
@@ -160,6 +159,12 @@ class MySqlDebeziumOperations(
     }
 
     data class SavedOffset(val position: MySqlPosition, val gtidSet: String?)
+
+    enum class CdcStateValidateResult {
+        VALID,
+        INVALID_ABORT,
+        INVALID_RESET
+    }
 
     private val airbyteRecord = AirbyteRecordMessage().withMeta(AirbyteRecordMessageMeta())
 
