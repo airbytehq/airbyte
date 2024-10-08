@@ -82,9 +82,6 @@ class DefaultSyncManager(
     }
 
     override suspend fun markFailed(causedBy: Exception): SyncFailure {
-        streamManagers.values.forEach {
-            it.markKilled(causedBy)
-        } // will do nothing if the stream's already been marked failed
         val result =
             SyncFailure(causedBy, streamManagers.mapValues { it.value.awaitStreamResult() })
         syncResult.complete(result)
