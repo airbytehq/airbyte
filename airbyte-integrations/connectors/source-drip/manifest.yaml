@@ -1,4 +1,4 @@
-version: 5.10.3
+version: 5.11.1
 
 type: DeclarativeSource
 
@@ -350,6 +350,12 @@ definitions:
               partition_field: account_id
               stream:
                 $ref: "#/definitions/streams/accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account_id
+              value: "{{ stream_slice.account_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -389,6 +395,12 @@ definitions:
               partition_field: account_id
               stream:
                 $ref: "#/definitions/streams/accounts"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - account_id
+              value: "{{ stream_slice.account_id }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -545,26 +557,26 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     events:
-      hasRecords: true
-      streamHash: a2de7d5a7ff17e8cf9ee379f7c4c60b124320b4e
+      streamHash: 049a819d615c2db64d7b84beb801fd2d97f3e1fb
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     tags:
-      streamHash: 3f7f9740d766c66a99a114e3d18881d881199b36
+      streamHash: 9718bc8ca4cd905bbb039d96bb61a51dc6201cd0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     webhooks:
+      hasRecords: true
       streamHash: 1e105f32d6df6e01820f26d33ca696fea02a2ce8
       hasResponse: true
-      responsesAreSuccessful: true
-      hasRecords: true
-      primaryKeysArePresent: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://developer.drip.com/
 
@@ -843,8 +855,11 @@ schemas:
   events:
     type: object
     $schema: http://json-schema.org/schema#
-    additionalProperties: true
     properties:
+      account_id:
+        type:
+          - number
+          - "null"
       event_actions:
         type:
           - array
@@ -853,10 +868,15 @@ schemas:
           type:
             - string
             - "null"
+    additionalProperties: true
   tags:
     type: object
     $schema: http://json-schema.org/schema#
     properties:
+      account_id:
+        type:
+          - number
+          - "null"
       tags:
         type: array
         items:
@@ -869,6 +889,7 @@ schemas:
   webhooks:
     type: object
     $schema: http://json-schema.org/schema#
+    additionalProperties: true
     properties:
       version:
         type:
@@ -907,4 +928,3 @@ schemas:
           - "null"
     required:
       - id
-    additionalProperties: true
