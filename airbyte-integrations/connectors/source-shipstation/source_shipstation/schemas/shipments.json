@@ -1,0 +1,223 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "shipmentId": {
+      "type": ["null", "number"]
+    },
+    "orderId": {
+      "type": ["null", "number"]
+    },
+    "orderKey": {
+      "type": ["null", "string"]
+    },
+    "userId": {
+      "type": ["null", "string"]
+    },
+    "orderNumber": {
+      "type": ["null", "string"]
+    },
+    "createDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shipDate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "shipmentCost": {
+      "type": ["null", "number"]
+    },
+    "insuranceCost": {
+      "type": ["null", "number"]
+    },
+    "trackingNumber": {
+      "type": ["null", "string"]
+    },
+    "isReturnLabel": {
+      "type": ["null", "boolean"]
+    },
+    "batchNumber": {
+      "type": ["null", "string"]
+    },
+    "carrierCode": {
+      "type": ["null", "string"]
+    },
+    "serviceCode": {
+      "type": ["null", "string"]
+    },
+    "packageCode": {
+      "type": ["null", "string"]
+    },
+    "confirmation": {
+      "type": ["null", "string"]
+    },
+    "warehouseId": {
+      "type": ["null", "number"]
+    },
+    "voided": {
+      "type": ["null", "boolean"]
+    },
+    "voidDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "marketplaceNotified": {
+      "type": ["null", "boolean"]
+    },
+    "notifyErrorMessage": {
+      "type": ["null", "string"]
+    },
+    "shipTo": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "street1": {
+          "type": ["null", "string"]
+        },
+        "street2": {
+          "type": ["null", "string"]
+        },
+        "street3": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "postalCode": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        },
+        "residential": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "weight": {
+      "type": ["null", "object"],
+      "properties": {
+        "value": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "dimensions": {
+      "type": ["null", "object"],
+      "properties": {
+        "length": {
+          "type": ["null", "number"]
+        },
+        "width": {
+          "type": ["null", "number"]
+        },
+        "height": {
+          "type": ["null", "number"]
+        },
+        "units": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "insuranceOptions": {
+      "type": ["null", "object"],
+      "properties": {
+        "provider": {
+          "type": ["null", "string"]
+        },
+        "insureShipment": {
+          "type": ["null", "boolean"]
+        },
+        "insuredValue": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "advancedOptions": {
+      "type": ["null", "object"],
+      "properties": {
+        "customField1": {
+          "type": ["null", "string"]
+        },
+        "customField2": {
+          "type": ["null", "string"]
+        },
+        "customField3": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "shipmentItems": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "orderItemId": {
+            "type": ["null", "number"]
+          },
+          "lineItemKey": {
+            "type": ["null", "string"]
+          },
+          "sku": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "imageUrl": {
+            "type": ["null", "string"]
+          },
+          "weight": {
+            "type": ["null", "object"],
+            "properties": {
+              "value": {
+                "type": ["null", "number"]
+              },
+              "units": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "quantity": {
+            "type": ["null", "number"]
+          },
+          "unitPrice": {
+            "type": ["null", "number"]
+          },
+          "warehouseLocation": {
+            "type": ["null", "string"]
+          },
+          "options": {
+            "type": ["null", "object"]
+          },
+          "productId": {
+            "type": ["null", "number"]
+          },
+          "fulfillmentSku": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "labelData": {
+      "type": ["null", "string"]
+    },
+    "formData": {
+      "type": ["null", "string"]
+    }
+  }
+}

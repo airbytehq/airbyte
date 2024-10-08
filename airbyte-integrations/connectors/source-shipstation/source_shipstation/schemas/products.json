@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "aliases": {
+      "type": ["null", "string"]
+    },
+    "productId": {
+      "type": ["null", "number"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "price": {
+      "type": ["null", "number"]
+    },
+    "defaultCost": {
+      "type": ["null", "number"]
+    },
+    "length": {
+      "type": ["null", "number"]
+    },
+    "width": {
+      "type": ["null", "number"]
+    },
+    "height": {
+      "type": ["null", "number"]
+    },
+    "weightOz": {
+      "type": ["null", "number"]
+    },
+    "internalNotes": {
+      "type": ["null", "string"]
+    },
+    "fulfillmentSku": {
+      "type": ["null", "string"]
+    },
+    "createDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "modifyDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "productCategory": {
+      "type": ["null", "object"],
+      "properties": {
+        "categoryId": {
+          "type": ["null", "number"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "productType": {
+      "type": ["null", "string"]
+    },
+    "warehouseLocation": {
+      "type": ["null", "string"]
+    },
+    "defaultCarrierCode": {
+      "type": ["null", "string"]
+    },
+    "defaultServiceCode": {
+      "type": ["null", "string"]
+    },
+    "defaultPackageCode": {
+      "type": ["null", "string"]
+    },
+    "defaultIntlCarrierCode": {
+      "type": ["null", "string"]
+    },
+    "defaultIntlServiceCode": {
+      "type": ["null", "string"]
+    },
+    "defaultIntlPackageCode": {
+      "type": ["null", "string"]
+    },
+    "defaultConfirmation": {
+      "type": ["null", "string"]
+    },
+    "defaultIntlConfirmation": {
+      "type": ["null", "string"]
+    },
+    "customsDescription": {
+      "type": ["null", "string"]
+    },
+    "customsValue": {
+      "type": ["null", "number"]
+    },
+    "customsTariffNo": {
+      "type": ["null", "string"]
+    },
+    "customsCountryCode": {
+      "type": ["null", "string"]
+    },
+    "noCustoms": {
+      "type": ["null", "boolean"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "tagId": {
+            "type": ["null", "number"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

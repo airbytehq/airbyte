@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "IsLabelAPIHook": {
+      "type": ["null", "boolean"]
+    },
+    "WebHookID": {
+      "type": ["null", "number"]
+    },
+    "SellerID": {
+      "type": ["null", "number"]
+    },
+    "StoreID": {
+      "type": ["null", "number"]
+    },
+    "HookType": {
+      "type": ["null", "string"]
+    },
+    "MessageFormat": {
+      "type": ["null", "string"]
+    },
+    "Url": {
+      "type": ["null", "string"]
+    },
+    "Name": {
+      "type": ["null", "string"]
+    },
+    "BulkCopyBatchID": {
+      "type": ["null", "string"]
+    },
+    "BulkCopyRecordID": {
+      "type": ["null", "string"]
+    },
+    "Active": {
+      "type": ["null", "boolean"]
+    },
+    "WebhookLogs": {
+      "type": ["null", "array"],
+      "items": {}
+    },
+    "Seller": {
+      "type": ["null", "object"]
+    },
+    "Store": {
+      "type": ["null", "object"]
+    }
+  }
+}
