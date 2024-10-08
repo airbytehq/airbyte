@@ -410,20 +410,16 @@
       "type": ["null", "string"],
       "format": "date"
     },
-    "segments.hour": {
-      "description": "Hour segment used for campaign data.",
-      "type": ["null", "integer"]
-    },
-    "segments.ad_network_type": {
-      "description": "The type of ad network used for segmentation.",
-      "type": ["null", "string"]
-    },
     "metrics.average_cpv": {
       "description": "Average CPV metric for the campaign.",
       "type": ["null", "number"]
     },
     "metrics.phone_calls": {
       "description": "Total number of phone calls in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.phone_impressions": {
+      "description": "Total number of phone impressions in the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.conversions_by_conversion_date": {
@@ -441,6 +437,14 @@
     "metrics.search_absolute_top_impression_share": {
       "description": "Search absolute top impression share metric for the campaign.",
       "type": ["null", "number"]
+    },
+    "metrics.invalid_click_rate": {
+      "description": "Invalid click rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.invalid_clicks":{
+      "description": "Invalid clicks metric for the campaign.",
+      "type": ["null", "integer"]
     },
     "metrics.value_per_conversions_by_conversion_date": {
       "description": "Conversion date metric for value per conversion in the campaign.",
@@ -462,6 +466,22 @@
       "description": "Search budget lost top impression share metric for the campaign.",
       "type": ["null", "number"]
     },
+    "metrics.search_click_share": {
+      "description": "Search click share metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.unique_users": {
+      "description": "Unique users metric for the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.average_impression_frequency_per_user": {
+      "description": "Average impression frequency per user metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.revenue_micros": {
+      "description": "Total revenue in micros for the campaign.",
+      "type": ["null", "integer"]
+    },
     "metrics.all_conversions": {
       "description": "Total number of conversions for all campaigns.",
       "type": ["null", "number"]
@@ -480,6 +500,14 @@
     },
     "metrics.engagements": {
       "description": "Total number of engagements in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_forwards": {
+      "description": "Total number of Gmail forwards in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_saves": {
+      "description": "Total number of Gmail saves in the campaign.",
       "type": ["null", "integer"]
     },
     "metrics.interaction_rate": {
@@ -516,6 +544,10 @@
     },
     "metrics.search_budget_lost_impression_share": {
       "description": "Search budget lost impression share metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.search_exact_match_impression_share": {
+      "description": "Search exact match impression share metric for the campaign.",
       "type": ["null", "number"]
     }
   }

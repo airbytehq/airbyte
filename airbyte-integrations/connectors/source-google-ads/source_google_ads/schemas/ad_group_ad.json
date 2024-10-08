@@ -663,6 +663,150 @@
       "description": "The date segment for the ad group ad data.",
       "type": ["null", "string"],
       "format": "date"
+    },
+    "metrics.average_cpm": {
+      "description": "The average cost per thousand impressions for the ad group ad.",
+      "type": ["null", "number"]
+    },
+    "metrics.average_cpv": {
+      "description": "Average CPV metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_by_conversion_date": {
+      "description": "Conversion date metric for the campaign.",
+      "type": ["null","number"]
+    },
+    "metrics.all_conversions_by_conversion_date": {
+      "description": "Conversion date metric for all conversions in the campaign.",
+      "type": ["null","number"]
+    },
+    "metrics.all_conversions_value_by_conversion_date": {
+      "description": "Conversion date metric for all conversions in the campaign.",
+      "type": ["null","number"]
+    },
+    "metrics.value_per_conversions_by_conversion_date": {
+      "description": "Conversion date metric for conversions in the campaign.",
+      "type": ["null","number"]
+    },
+    "metrics.revenue_micros": {
+      "description": "Total revenue in micros in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurable_impressions": {
+      "description": "Total active view measurable impressions in the campaign.",
+      "type": ["null", "integer"]
+    },
+     "metrics.all_conversions": {
+      "description": "Total number of conversions for all campaigns.",
+      "type": ["null", "number"]
+    },
+    "metrics.all_conversions_value": {
+      "description": "Total value of conversions for all campaigns.",
+      "type": ["null", "number"]
+    },
+    "metrics.clicks": {
+      "description": "Total number of clicks in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.conversions": {
+      "description": "Total number of conversions in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.conversions_value": {
+      "description": "Total value of conversions in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.cost_micros": {
+      "description": "Total cost in micros in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_all_conversions": {
+      "description": "Cost per all conversions in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.cost_per_conversion": {
+      "description": "Cost per conversion in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.ctr": {
+      "description": "Total click-through rate in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.engagement_rate": {
+      "description": "Engagement rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.engagements": {
+      "description": "Total number of engagements in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_forwards": {
+      "description": "Total number of Gmail forwards in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.gmail_saves": {
+      "description": "Total number of Gmail saves in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.impressions": {
+      "description": "Total number of impressions in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.interaction_rate": {
+      "description": "Interaction rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.interactions": {
+      "description": "Total number of interactions in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.video_quartile_p100_rate":{
+      "description": "Video quartile 100 rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p25_rate": {
+      "description": "Video quartile 25 rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p50_rate": {
+      "description": "Video quartile 50 rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.video_quartile_p75_rate": {
+      "description": "Video quartile 75 rate metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_viewability": {
+      "description": "Active view viewability metric for the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.video_views": {
+      "description": "Total number of video views in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_impressions": {
+      "description": "Total active view impressions in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.view_through_conversions": {
+      "description": "Total number of view-through conversions in the campaign.",
+      "type": ["null", "integer"]
+    },
+    "metrics.average_cpc": {
+      "description": "Average cost per click in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value_by_conversion_date": {
+      "description": "Conversion date metric for conversions in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.average_cost": {
+      "description": "Average cost in the campaign.",
+      "type": ["null", "number"]
+    },
+    "metrics.value_per_conversion": {
+      "description": "Average value per conversion in the campaign.",
+      "type": ["null", "number"]
     }
   }
 }

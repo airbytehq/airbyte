@@ -865,3 +865,57 @@ class CampaignCriterion(IncrementalEventsStream):
     id_field = "campaign_criterion.resource_name"
     resource_type = "CAMPAIGN_CRITERION"
     cursor_field = "change_status.last_change_date_time"
+
+class CampaignByDate(Campaign):
+    """
+    Daily Campaign stream: https://developers.google.com/google-ads/api/fields/v17/campaign
+    """
+    primary_key = ["campaign.id", "segments.date"]
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        table_name = 'campaign'
+
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
+        query = GoogleAds.convert_schema_into_query(
+            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
+        )
+        return query
+
+class CampaignByDateHour(Campaign):
+    """
+    Daily Campaign stream: https://developers.google.com/google-ads/api/fields/v17/campaign
+    """
+    primary_key = ["campaign.id", "segments.date"]
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        table_name = 'campaign'
+
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
+        query = GoogleAds.convert_schema_into_query(
+            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
+        )
+        return query
+class AdGroupByDateHour(AdGroup):
+    """
+    Hourly Ad Group stream: https://developers.google.com/google-ads/api/fields/v17/ad_group
+    """
+    primary_key = ["ad_group.id", "segments.date", "segments.hour"]
+
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
+        # validation that the customer is not a manager
+        # due to unsupported metrics.cost_micros field and removing it in case custom is a manager
+        if [customer for customer in self.customers if customer.id == stream_slice["customer_id"]][0].is_manager_account:
+            fields = [field for field in fields if field != "metrics.cost_micros"]
+        table_name = 'ad_group'
+        start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
+        cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
+
+        query = GoogleAds.convert_schema_into_query(
+            fields=fields, table_name=table_name, conditions=cursor_condition, order_field=self.cursor_field
+        )
+        return query

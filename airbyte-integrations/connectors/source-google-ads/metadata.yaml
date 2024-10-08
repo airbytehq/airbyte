@@ -58,6 +58,9 @@ data:
       - display_keyword_performance_report
       - shopping_performance_report
       - display_topics_performance_report
+      - campaign_by_date
+      - campaign_by_date_hour
+      - ad_group_by_date_hour
   supportLevel: certified
   tags:
     - language:python

@@ -43,7 +43,7 @@ from .streams import (
     ShoppingPerformanceView,
     TopicView,
     UserInterest,
-    UserLocationView,
+    UserLocationView, CampaignByDate, AdGroupByDateHour, CampaignByDateHour
 )
 from .utils import GAQL, logger, traced_exception
 
@@ -264,6 +264,7 @@ class SourceGoogleAds(AbstractSource):
             CustomerLabel(**default_config),
             Label(**default_config),
             UserInterest(**default_config),
+            AdGroupByDateHour(**incremental_config),
         ]
         # Metrics streams cannot be requested for a manager account.
         if non_manager_accounts:
@@ -279,6 +280,8 @@ class SourceGoogleAds(AbstractSource):
                     AdGroupAdLegacy(**non_manager_incremental_config),
                     GeographicView(**non_manager_incremental_config),
                     KeywordView(**non_manager_incremental_config),
+                    CampaignByDate(**non_manager_incremental_config),
+                    CampaignByDateHour(**non_manager_incremental_config),
                 ]
             )
 

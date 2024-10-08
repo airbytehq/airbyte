@@ -414,10 +414,6 @@
       "description": "Hour segment used for campaign data.",
       "type": ["null", "integer"]
     },
-    "segments.ad_network_type": {
-      "description": "The type of ad network used for segmentation.",
-      "type": ["null", "string"]
-    },
     "metrics.average_cpv": {
       "description": "Average CPV metric for the campaign.",
       "type": ["null", "number"]
