@@ -14,7 +14,7 @@ import jakarta.inject.Singleton
 @Singleton
 @Primary
 @Requires(env = ["MockTaskLauncher"])
-class MockTaskLauncher(override val taskRunner: TaskRunner) : DestinationTaskLauncher {
+class MockTaskLauncher : DestinationTaskLauncher {
     val spilledFiles = mutableListOf<BatchEnvelope<SpilledRawMessagesLocalFile>>()
     val batchEnvelopes = mutableListOf<BatchEnvelope<*>>()
 

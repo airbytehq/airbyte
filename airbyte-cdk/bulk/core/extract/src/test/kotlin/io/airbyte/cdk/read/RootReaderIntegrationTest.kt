@@ -273,6 +273,7 @@ data class TestCase(
     fun verifyTraces(traceMessages: List<AirbyteTraceMessage>) {
         var hasStarted = false
         var hasCompleted = false
+        var hasIncompleted = false
         for (trace in traceMessages) {
             when (trace.type) {
                 AirbyteTraceMessage.Type.STREAM_STATUS -> {
@@ -282,14 +283,29 @@ data class TestCase(
                             hasStarted = true
                             Assertions.assertFalse(
                                 hasCompleted,
-                                "Case $name cannot emit a STARTED trace message because it already emitted a COMPLETE."
+                                "Case $name cannot emit a STARTED trace " +
+                                    "message because it already emitted a COMPLETE."
+                            )
+                            Assertions.assertFalse(
+                                hasIncompleted,
+                                "Case $name cannot emit a STARTED trace " +
+                                    "message because it already emitted an INCOMPLETE."
                             )
                         }
                         AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.COMPLETE -> {
                             hasCompleted = true
                             Assertions.assertTrue(
                                 hasStarted,
-                                "Case $name cannot emit a COMPLETE trace message because it hasn't emitted a STARTED yet."
+                                "Case $name cannot emit a COMPLETE trace " +
+                                    "message because it hasn't emitted a STARTED yet."
+                            )
+                        }
+                        AirbyteStreamStatusTraceMessage.AirbyteStreamStatus.INCOMPLETE -> {
+                            hasIncompleted = true
+                            Assertions.assertTrue(
+                                hasStarted,
+                                "Case $name cannot emit an INCOMPLETE trace " +
+                                    "message because it hasn't emitted a STARTED yet."
                             )
                         }
                         else ->
@@ -310,14 +326,24 @@ data class TestCase(
             "Case $name should have emitted a STARTED trace message, but hasn't."
         )
         if (isSuccessful) {
-            Assertions.assertTrue(
-                hasCompleted,
-                "Case $name should have emitted a COMPLETE trace message, but hasn't."
+            if (!hasCompleted) {
+                Assertions.assertTrue(
+                    hasCompleted,
+                    "Case $name should have emitted a COMPLETE trace message, but hasn't."
+                )
+            }
+            Assertions.assertFalse(
+                hasIncompleted,
+                "Case $name should not have emitted an INCOMPLETE trace message, but did anyway."
             )
         } else {
             Assertions.assertFalse(
                 hasCompleted,
                 "Case $name should not have emitted a COMPLETE trace message, but did anyway."
+            )
+            Assertions.assertTrue(
+                hasIncompleted,
+                "Case $name should have emitted an INCOMPLETE trace message, but hasn't."
             )
         }
     }
@@ -556,21 +582,17 @@ class TestPartitionsCreatorFactory(
         feed: Feed,
     ): PartitionsCreator {
         if (feed is Global) {
-            // For a global feed, return a bogus PartitionsCreator which backs off forever.
-            // This tests that the corresponding coroutine gets canceled properly.
             return object : PartitionsCreator {
                 override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
-                    log.info { "failed to acquire resources for global feed, as always" }
-                    return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
+                    return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
                 }
 
                 override suspend fun run(): List<PartitionReader> {
-                    TODO("unreachable code")
+                    // Do nothing.
+                    return emptyList()
                 }
 
-                override fun releaseResources() {
-                    TODO("unreachable code")
-                }
+                override fun releaseResources() {}
             }
         }
         // For a stream feed, pick the CreatorCase in the corresponding TestCase
