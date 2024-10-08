@@ -14,7 +14,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk import BackoffStrategy
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
@@ -22,7 +22,6 @@ from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping impor
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models import FailureType
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -432,6 +431,10 @@ class AuditLogs(CursorPaginationZendeskSupportStream):
     cursor_field = "created_at"
 
 
+class Automations(FullRefreshZendeskSupportStream):
+    """Automations stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations"""
+
+
 class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 
@@ -778,6 +781,10 @@ class Topics(CursorPaginationZendeskSupportStream):
 
     def path(self, **kwargs):
         return "community/topics"
+
+
+class Triggers(CursorPaginationZendeskSupportStream):
+    """Triggers stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers"""
 
 
 class SlaPolicies(IncrementalZendeskSupportStream):

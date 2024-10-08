@@ -29,4 +29,8 @@ class JsonRecordAvroPreprocessor : JsonRecordIdentityMapper() {
     override fun mapArrayWithoutItems(record: JsonNode?, schema: ObjectNode): JsonNode? {
         return serializeToJsonNode(record)
     }
+
+    override fun mapUnknown(record: JsonNode?, schema: ObjectNode): JsonNode? {
+        return serializeToJsonNode(record)
+    }
 }

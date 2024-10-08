@@ -6,11 +6,11 @@ from abc import ABC, abstractmethod
 from typing import Generic, Iterable, Optional, TypeVar
 
 from airbyte_cdk.connector import TConfig
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage, SyncMode, Type
 from airbyte_cdk.sources.embedded.catalog import create_configured_catalog, get_stream, get_stream_names
 from airbyte_cdk.sources.embedded.runner import SourceRunner
 from airbyte_cdk.sources.embedded.tools import get_defined_id
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
-from airbyte_protocol.models import AirbyteRecordMessage, AirbyteStateMessage, SyncMode, Type
 
 TOutput = TypeVar("TOutput")
 
@@ -43,7 +43,7 @@ class BaseEmbeddedIntegration(ABC, Generic[TConfig, TOutput]):
 
         for message in self.source.read(self.config, configured_catalog, state):
             if message.type == Type.RECORD:
-                output = self._handle_record(message.record, get_defined_id(stream, message.record.data))
+                output = self._handle_record(message.record, get_defined_id(stream, message.record.data))  # type: ignore[union-attr] # record has `data`
                 if output:
                     yield output
             elif message.type is Type.STATE and message.state:

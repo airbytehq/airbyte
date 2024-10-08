@@ -64,6 +64,36 @@ class ConstantBackoffStrategy(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class CursorPagination(BaseModel):
+    type: Literal['CursorPagination']
+    cursor_value: str = Field(
+        ...,
+        description='Value of the cursor defining the next page to fetch.',
+        examples=[
+            '{{ headers.link.next.cursor }}',
+            "{{ last_record['key'] }}",
+            "{{ response['nextPage'] }}",
+        ],
+        title='Cursor Value',
+    )
+    page_size: Optional[int] = Field(
+        None,
+        description='The number of records to include in each pages.',
+        examples=[100],
+        title='Page Size',
+    )
+    stop_condition: Optional[str] = Field(
+        None,
+        description='Template string evaluating when to stop paginating.',
+        examples=[
+            '{{ response.data.has_more is false }}',
+            "{{ 'next' not in headers['link'] }}",
+        ],
+        title='Stop Condition',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class CustomAuthenticator(BaseModel):
     class Config:
         extra = Extra.allow
@@ -507,6 +537,22 @@ class OAuthAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class DpathExtractor(BaseModel):
+    type: Literal['DpathExtractor']
+    field_path: List[str] = Field(
+        ...,
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
+        examples=[
+            ['data'],
+            ['data', 'records'],
+            ['data', '{{ parameters.name }}'],
+            ['data', '*', 'record'],
+        ],
+        title='Field Path',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class ExponentialBackoffStrategy(BaseModel):
     type: Literal['ExponentialBackoffStrategy']
     factor: Optional[Union[float, str]] = Field(
@@ -611,6 +657,11 @@ class JsonDecoder(BaseModel):
 
 class JsonlDecoder(BaseModel):
     type: Literal['JsonlDecoder']
+
+
+class KeysToLower(BaseModel):
+    type: Literal['KeysToLower']
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
 class IterableDecoder(BaseModel):
@@ -881,6 +932,14 @@ class LegacySessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class AsyncJobStatusMap(BaseModel):
+    type: Optional[Literal['AsyncJobStatusMap']] = None
+    running: List[str]
+    completed: List[str]
+    failed: List[str]
+    timeout: List[str]
+
+
 class ValueType(Enum):
     string = 'string'
     number = 'number'
@@ -1015,41 +1074,6 @@ class AuthFlow(BaseModel):
     oauth_config_specification: Optional[OAuthConfigSpecification] = None
 
 
-class CursorPagination(BaseModel):
-    type: Literal['CursorPagination']
-    cursor_value: str = Field(
-        ...,
-        description='Value of the cursor defining the next page to fetch.',
-        examples=[
-            '{{ headers.link.next.cursor }}',
-            "{{ last_record['key'] }}",
-            "{{ response['nextPage'] }}",
-        ],
-        title='Cursor Value',
-    )
-    page_size: Optional[int] = Field(
-        None,
-        description='The number of records to include in each pages.',
-        examples=[100],
-        title='Page Size',
-    )
-    stop_condition: Optional[str] = Field(
-        None,
-        description='Template string evaluating when to stop paginating.',
-        examples=[
-            '{{ response.data.has_more is false }}',
-            "{{ 'next' not in headers['link'] }}",
-        ],
-        title='Stop Condition',
-    )
-    decoder: Optional[JsonDecoder] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
 class DatetimeBasedCursor(BaseModel):
     type: Literal['DatetimeBasedCursor']
     cursor_field: str = Field(
@@ -1106,6 +1130,11 @@ class DatetimeBasedCursor(BaseModel):
         False,
         description='Set to True if the target API does not accept queries where the start time equal the end time.',
         title='Whether to skip requests if the start time equals the end time',
+    )
+    global_substream_cursor: Optional[bool] = Field(
+        False,
+        description='This setting optimizes performance when the parent stream has thousands of partitions by storing the cursor as a single value rather than per partition. Notably, the substream state is updated only at the end of the sync, which helps prevent data loss in case of a sync failure. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/incremental-syncs).',
+        title='Whether to store cursor as one value instead of per partition',
     )
     lookback_window: Optional[str] = Field(
         None,
@@ -1179,32 +1208,8 @@ class DefaultPaginator(BaseModel):
         description='Strategy defining how records are paginated.',
         title='Pagination Strategy',
     )
-    decoder: Optional[JsonDecoder] = Field(
-        None,
-        description='Component decoding the response so records can be extracted.',
-        title='Decoder',
-    )
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestOption, RequestPath]] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
-
-
-class DpathExtractor(BaseModel):
-    type: Literal['DpathExtractor']
-    field_path: List[str] = Field(
-        ...,
-        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
-        examples=[
-            ['data'],
-            ['data', 'records'],
-            ['data', '{{ parameters.name }}'],
-            ['data', '*', 'record'],
-        ],
-        title='Field Path',
-    )
-    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
-        None, title='Decoder'
-    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -1355,7 +1360,7 @@ class DeclarativeStream(BaseModel):
         extra = Extra.allow
 
     type: Literal['DeclarativeStream']
-    retriever: Union[CustomRetriever, SimpleRetriever] = Field(
+    retriever: Union[AsyncRetriever, CustomRetriever, SimpleRetriever] = Field(
         ...,
         description='Component used to coordinate how records are extracted across stream slices and request pages.',
         title='Retriever',
@@ -1381,7 +1386,7 @@ class DeclarativeStream(BaseModel):
         title='Schema Loader',
     )
     transformations: Optional[
-        List[Union[AddFields, CustomTransformation, RemoveFields]]
+        List[Union[AddFields, CustomTransformation, RemoveFields, KeysToLower]]
     ] = Field(
         None,
         description='A list of transformations to be applied to each output record.',
@@ -1434,6 +1439,9 @@ class SessionTokenAuthenticator(BaseModel):
         ...,
         description='Authentication method to use for requests sent to the API, specifying how to inject the session token.',
         title='Data Request Authentication',
+    )
+    decoder: Optional[JsonDecoder] = Field(
+        None, description='Component decoding the response', title='Decoder'
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
@@ -1607,6 +1615,70 @@ class SimpleRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
+class AsyncRetriever(BaseModel):
+    type: Literal['AsyncRetriever']
+    record_selector: RecordSelector = Field(
+        ...,
+        description='Component that describes how to extract records from a HTTP response.',
+    )
+    status_mapping: AsyncJobStatusMap = Field(
+        ..., description='Async Job Status to Airbyte CDK Async Job Status mapping.'
+    )
+    status_extractor: Union[CustomRecordExtractor, DpathExtractor] = Field(
+        ..., description='Responsible for fetching the actual status of the async job.'
+    )
+    urls_extractor: Union[CustomRecordExtractor, DpathExtractor] = Field(
+        ...,
+        description='Responsible for fetching the final result `urls` provided by the completed / finished / ready async job.',
+    )
+    creation_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to create the async server-side job.',
+    )
+    polling_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to fetch the status of the running async job.',
+    )
+    download_requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to download the data provided by the completed async job.',
+    )
+    download_paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
+        None,
+        description="Paginator component that describes how to navigate through the API's pages during download.",
+    )
+    abort_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
+        None,
+        description="Requester component that describes how to prepare HTTP requests to send to the source API to abort a job once it is timed out from the source's perspective.",
+    )
+    delete_requester: Optional[Union[CustomRequester, HttpRequester]] = Field(
+        None,
+        description='Requester component that describes how to prepare HTTP requests to send to the source API to delete a job once the records are extracted.',
+    )
+    partition_router: Optional[
+        Union[
+            CustomPartitionRouter,
+            ListPartitionRouter,
+            SubstreamPartitionRouter,
+            List[
+                Union[
+                    CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter
+                ]
+            ],
+        ]
+    ] = Field(
+        [],
+        description='PartitionRouter component that describes how to partition the stream, enabling incremental syncs and checkpointing.',
+        title='Partition Router',
+    )
+    decoder: Optional[Union[JsonDecoder, JsonlDecoder, IterableDecoder]] = Field(
+        None,
+        description='Component decoding the response so records can be extracted.',
+        title='Decoder',
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
+
+
 class SubstreamPartitionRouter(BaseModel):
     type: Literal['SubstreamPartitionRouter']
     parent_stream_configs: List[ParentStreamConfig] = Field(
@@ -1623,3 +1695,4 @@ SelectiveAuthenticator.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SessionTokenAuthenticator.update_forward_refs()
 SimpleRetriever.update_forward_refs()
+AsyncRetriever.update_forward_refs()

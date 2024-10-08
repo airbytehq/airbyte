@@ -10,7 +10,6 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
@@ -30,7 +29,7 @@ class RootReader(
     val resourceAcquisitionHeartbeat: Duration,
     val timeout: Duration,
     val outputConsumer: OutputConsumer,
-    val partitionsCreatorFactory: PartitionsCreatorFactory,
+    val partitionsCreatorFactories: List<PartitionsCreatorFactory>,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -51,6 +50,8 @@ class RootReader(
         }
     }
 
+    val streamStatusManager = StreamStatusManager(stateManager.feeds, outputConsumer::accept)
+
     /** Reads records from all [Feed]s. */
     suspend fun read(listener: suspend (Map<Feed, Job>) -> Unit = {}) {
         supervisorScope {
@@ -60,7 +61,7 @@ class RootReader(
             val feedJobs: Map<Feed, Job> =
                 feeds.associateWith { feed: Feed ->
                     val coroutineName = ThreadRenamingCoroutineName(feed.label)
-                    val handler = FeedExceptionHandler(feed, exceptions)
+                    val handler = FeedExceptionHandler(feed, streamStatusManager, exceptions)
                     launch(coroutineName + handler) { FeedReader(this@RootReader, feed).read() }
                 }
             // Call listener hook.
@@ -71,21 +72,6 @@ class RootReader(
                     feedJobs[it]?.join()
                     exceptions[it]
                 }
-            // Cancel any incomplete global feed job whose stream feed jobs have not all succeeded.
-            for ((global, globalJob) in feedJobs) {
-                if (global !is Global) continue
-                if (globalJob.isCompleted) continue
-                val globalStreamExceptions: List<Throwable> =
-                    global.streams.mapNotNull { streamExceptions[it] }
-                if (globalStreamExceptions.isNotEmpty()) {
-                    val cause: Throwable =
-                        globalStreamExceptions.reduce { acc: Throwable, exception: Throwable ->
-                            acc.addSuppressed(exception)
-                            acc
-                        }
-                    globalJob.cancel("at least one stream did non complete", cause)
-                }
-            }
             // Join on all global feeds and collect caught exceptions.
             val globalExceptions: Map<Global, Throwable?> =
                 feeds.filterIsInstance<Global>().associateWith {
@@ -109,6 +95,7 @@ class RootReader(
 
     class FeedExceptionHandler(
         val feed: Feed,
+        val streamStatusManager: StreamStatusManager,
         private val exceptions: ConcurrentHashMap<Feed, Throwable>,
     ) : CoroutineExceptionHandler {
         private val log = KotlinLogging.logger {}
@@ -121,6 +108,7 @@ class RootReader(
             exception: Throwable,
         ) {
             log.warn(exception) { "canceled feed '${feed.label}' due to thrown exception" }
+            streamStatusManager.notifyFailure(feed)
             exceptions[feed] = exception
         }
 

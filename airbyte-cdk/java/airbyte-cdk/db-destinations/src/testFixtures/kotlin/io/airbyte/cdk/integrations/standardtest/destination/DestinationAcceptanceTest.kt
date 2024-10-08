@@ -17,6 +17,8 @@ import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.Ar
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.BasicTestDataComparator
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator
 import io.airbyte.commons.features.EnvVariableFeatureFlags
+import io.airbyte.commons.features.FeatureFlags
+import io.airbyte.commons.features.FeatureFlagsWrapper
 import io.airbyte.commons.jackson.MoreMappers
 import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
@@ -30,6 +32,7 @@ import io.airbyte.configoss.WorkerDestinationConfig
 import io.airbyte.protocol.models.Field
 import io.airbyte.protocol.models.JsonSchemaType
 import io.airbyte.protocol.models.v0.AirbyteCatalog
+import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -98,6 +101,13 @@ abstract class DestinationAcceptanceTest(
     protected var testSchemas: HashSet<String> = HashSet()
 
     private lateinit var testEnv: TestDestinationEnv
+    protected open val isCloudTest: Boolean = true
+    protected val featureFlags: FeatureFlags =
+        if (isCloudTest) {
+            FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "CLOUD")
+        } else {
+            FeatureFlagsWrapper.overridingDeploymentMode(EnvVariableFeatureFlags(), "OSS")
+        }
 
     private lateinit var jobRoot: Path
     private lateinit var processFactory: ProcessFactory
@@ -643,13 +653,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(descriptor)
@@ -721,13 +738,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(
@@ -842,13 +866,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(descriptor)
@@ -1041,6 +1072,7 @@ abstract class DestinationAcceptanceTest(
                     )
                 )
                 .lines()
+                .filter { it.isNotEmpty() }
                 .map { Jsons.deserialize(it, AirbyteMessage::class.java) }
         val config = getConfig()
         runSyncAndVerifyStateOutput(
@@ -1095,7 +1127,13 @@ abstract class DestinationAcceptanceTest(
                     .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     )
             )
         runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false)
@@ -1486,7 +1524,7 @@ abstract class DestinationAcceptanceTest(
      */
     @Test
     @Throws(Exception::class)
-    fun testSyncNotFailsWithNewFields() {
+    open fun testSyncNotFailsWithNewFields() {
         if (!implementsOverwrite()) {
             LOGGER.info { "Destination's spec.json does not support overwrite sync mode." }
             return
@@ -1552,13 +1590,20 @@ abstract class DestinationAcceptanceTest(
                     .withType(Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(Jsons.jsonNode(ImmutableMap.of("checkpoint", 2)))
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(ImmutableMap.of("checkpoint", 2))
+                                    )
+                            )
                     ),
                 AirbyteMessage()
                     .withType(Type.TRACE)
                     .withTrace(
                         AirbyteTraceMessage()
                             .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                            .withEmittedAt(1234.0)
                             .withStreamStatus(
                                 AirbyteStreamStatusTraceMessage()
                                     .withStreamDescriptor(descriptor)
@@ -1602,7 +1647,7 @@ abstract class DestinationAcceptanceTest(
 
     @Test
     @Throws(Exception::class)
-    fun testAirbyteFields() {
+    open fun testAirbyteFields() {
         val configuredCatalog =
             Jsons.deserialize(
                 MoreResources.readResource("v0/users_with_generation_id_configured_catalog.json"),
@@ -1724,7 +1769,7 @@ abstract class DestinationAcceptanceTest(
     }
 
     @Test
-    fun testAirbyteTimeTypes() {
+    open fun testAirbyteTimeTypes() {
         val configuredCatalog =
             Jsons.deserialize(
                 MoreResources.readResource("v0/every_time_type_configured_catalog.json"),
@@ -1911,7 +1956,7 @@ abstract class DestinationAcceptanceTest(
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags
                     )
                 )
                 .run(JobGetSpecConfig().withDockerImage(imageName), jobRoot)
@@ -1931,7 +1976,7 @@ abstract class DestinationAcceptanceTest(
                     null,
                     null,
                     false,
-                    EnvVariableFeatureFlags()
+                    featureFlags
                 ),
                 mConnectorConfigUpdater
             )
@@ -1953,7 +1998,7 @@ abstract class DestinationAcceptanceTest(
                             null,
                             null,
                             false,
-                            EnvVariableFeatureFlags()
+                            featureFlags
                         ),
                         mConnectorConfigUpdater
                     )
@@ -1981,7 +2026,7 @@ abstract class DestinationAcceptanceTest(
                         null,
                         null,
                         false,
-                        EnvVariableFeatureFlags()
+                        featureFlags
                     )
             )
         }
@@ -1997,7 +2042,7 @@ abstract class DestinationAcceptanceTest(
                     null,
                     null,
                     false,
-                    EnvVariableFeatureFlags()
+                    featureFlags
                 )
         )
     }
@@ -2171,7 +2216,7 @@ abstract class DestinationAcceptanceTest(
     }
 
     // ignores emitted at.
-    protected fun assertSameMessages(
+    open protected fun assertSameMessages(
         expected: List<AirbyteMessage>,
         actual: List<AirbyteRecordMessage>,
         pruneAirbyteInternalFields: Boolean
@@ -2344,12 +2389,16 @@ abstract class DestinationAcceptanceTest(
                     .withType(AirbyteMessage.Type.STATE)
                     .withState(
                         AirbyteStateMessage()
-                            .withData(
-                                Jsons.jsonNode(
-                                    ImmutableMap.builder<Any, Any>()
-                                        .put("start_date", "2020-09-02")
-                                        .build()
-                                )
+                            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                            .withGlobal(
+                                AirbyteGlobalState()
+                                    .withSharedState(
+                                        Jsons.jsonNode(
+                                            ImmutableMap.builder<Any, Any>()
+                                                .put("start_date", "2020-09-02")
+                                                .build()
+                                        )
+                                    )
                             )
                     )
             try {

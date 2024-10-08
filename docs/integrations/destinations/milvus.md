@@ -116,6 +116,12 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                                                             |
 |:--------| :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.0.35 | 2024-10-05 | [46483](https://github.com/airbytehq/airbyte/pull/46483) | Update dependencies |
+| 0.0.34 | 2024-09-28 | [46165](https://github.com/airbytehq/airbyte/pull/46165) | Update dependencies |
+| 0.0.33 | 2024-09-21 | [45802](https://github.com/airbytehq/airbyte/pull/45802) | Update dependencies |
+| 0.0.32 | 2024-09-14 | [45573](https://github.com/airbytehq/airbyte/pull/45573) | Update dependencies |
+| 0.0.31 | 2024-09-07 | [45281](https://github.com/airbytehq/airbyte/pull/45281) | Update dependencies |
+| 0.0.30 | 2024-08-31 | [44960](https://github.com/airbytehq/airbyte/pull/44960) | Update dependencies |
 | 0.0.29 | 2024-08-24 | [44754](https://github.com/airbytehq/airbyte/pull/44754) | Update dependencies |
 | 0.0.28 | 2024-08-22 | [44530](https://github.com/airbytehq/airbyte/pull/44530) | Update test dependencies |
 | 0.0.27 | 2024-08-17 | [44242](https://github.com/airbytehq/airbyte/pull/44242) | Update dependencies |

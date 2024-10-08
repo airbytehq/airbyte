@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -48,15 +47,10 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
     private val outData: ObjectNode = Jsons.objectNode()
 
     private val msg =
-        AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(
-                AirbyteRecordMessage()
-                    .withEmittedAt(outputConsumer.emittedAt.toEpochMilli())
-                    .withStream(stream.name)
-                    .withNamespace(stream.namespace)
-                    .withData(outData)
-            )
+        AirbyteRecordMessage()
+            .withStream(stream.name)
+            .withNamespace(stream.namespace)
+            .withData(outData)
 
     val streamFieldNames: List<String> = stream.fields.map { it.id }
 
@@ -66,7 +60,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 }
 
 /** JDBC implementation of [PartitionReader] which reads the [partition] in its entirety. */
-class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
+open class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 
@@ -105,7 +99,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
  * JDBC implementation of [PartitionReader] which reads as much as possible of the [partition], in
  * order, before timing out.
  */
-class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
+open class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
     partition: P,
 ) : JdbcPartitionReader<P>(partition) {
 

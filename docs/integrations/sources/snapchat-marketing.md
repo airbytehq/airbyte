@@ -143,6 +143,12 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.2.11 | 2024-10-05 | [46419](https://github.com/airbytehq/airbyte/pull/46419) | Update dependencies |
+| 1.2.10 | 2024-09-28 | [46106](https://github.com/airbytehq/airbyte/pull/46106) | Update dependencies |
+| 1.2.9 | 2024-09-21 | [45780](https://github.com/airbytehq/airbyte/pull/45780) | Update dependencies |
+| 1.2.8 | 2024-09-14 | [45477](https://github.com/airbytehq/airbyte/pull/45477) | Update dependencies |
+| 1.2.7 | 2024-09-07 | [45278](https://github.com/airbytehq/airbyte/pull/45278) | Update dependencies |
+| 1.2.6 | 2024-08-31 | [44998](https://github.com/airbytehq/airbyte/pull/44998) | Update dependencies |
 | 1.2.5 | 2024-08-24 | [44735](https://github.com/airbytehq/airbyte/pull/44735) | Update dependencies |
 | 1.2.4 | 2024-08-17 | [43859](https://github.com/airbytehq/airbyte/pull/43859) | Update dependencies |
 | 1.2.3 | 2024-08-12 | [43826](https://github.com/airbytehq/airbyte/pull/43826) | Fixed the bug with the missing `spend` field to supported `*_stats_*` streams |
