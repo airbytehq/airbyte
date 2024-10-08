@@ -16,13 +16,13 @@ data:
   name: Yahoo Finance Price
   registryOverrides:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-yahoo-finance-price
   supportLevel: community
   tags:
