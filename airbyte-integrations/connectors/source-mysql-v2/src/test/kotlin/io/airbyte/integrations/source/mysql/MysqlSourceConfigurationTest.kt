@@ -9,6 +9,7 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.context.env.Environment
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import java.time.Duration
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -59,13 +60,16 @@ class MysqlSourceConfigurationTest {
         Assertions.assertEquals(config.jdbcProperties["user"], "FOO")
         Assertions.assertEquals(config.jdbcProperties["password"], "BAR")
         Assertions.assertEquals(config.jdbcProperties["sslMode"], "required")
-        Assertions.assertTrue(config.cursorMethodConfiguration is CdcCursor)
+        Assertions.assertTrue(config.incrementalConfiguration is CdcIncrementalConfiguration)
 
-        val cdcCursor = config.cursorMethodConfiguration as CdcCursor
+        val cdcCursor = config.incrementalConfiguration as CdcIncrementalConfiguration
 
-        Assertions.assertEquals(cdcCursor.initialWaitTimeInSeconds, 300)
-        Assertions.assertEquals(cdcCursor.initialLoadTimeoutHours, 8)
-        Assertions.assertEquals(cdcCursor.invalidCdcCursorPositionBehavior, "Re-sync data")
+        Assertions.assertEquals(cdcCursor.initialWaitDuration, Duration.ofSeconds(301))
+        Assertions.assertEquals(cdcCursor.initialLoadTimeout, Duration.ofHours(9))
+        Assertions.assertEquals(
+            cdcCursor.invalidCdcCursorPositionBehavior,
+            InvalidCdcCursorPositionBehavior.RESET_SYNC
+        )
 
         Assertions.assertTrue(config.sshTunnel is SshNoTunnelMethod)
     }
@@ -114,8 +118,8 @@ const val CONFIG_V1: String =
   },
   "replication_method": {
     "method": "CDC",
-    "initial_waiting_seconds": 300,
-    "initial_load_timeout_hours": 8,
+    "initial_waiting_seconds": 301,
+    "initial_load_timeout_hours": 9,
     "invalid_cdc_cursor_position_behavior": "Re-sync data"
   }
 }
