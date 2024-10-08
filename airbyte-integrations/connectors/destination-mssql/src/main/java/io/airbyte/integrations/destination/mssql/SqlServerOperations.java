@@ -5,16 +5,25 @@
 package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.async.model.PartialAirbyteMessage;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlServerOperations implements SqlOperations {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SqlServerOperations.class);
+  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
@@ -37,10 +46,12 @@ public class SqlServerOperations implements SqlOperations {
             + "CREATE TABLE %s.%s ( \n"
             + "%s VARCHAR(64) PRIMARY KEY,\n"
             + "%s NVARCHAR(MAX),\n" // Microsoft SQL Server specific: NVARCHAR can store Unicode meanwhile VARCHAR - not
-            + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET()\n"
+            + "%s DATETIMEOFFSET(7) DEFAULT SYSDATETIMEOFFSET(),\n"
+            + "%s DATETIMEOFFSET(7),\n"
+            + "%s NVARCHAR(MAX),\n"
             + ");\n",
-        schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        schemaName, tableName, schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, JavaBaseConstants.COLUMN_NAME_AB_META);
   }
 
   @Override
@@ -60,30 +71,60 @@ public class SqlServerOperations implements SqlOperations {
 
   @Override
   public void insertRecords(final JdbcDatabase database,
-                            final List<AirbyteRecordMessage> records,
+                            final List<PartialAirbyteMessage> records,
                             final String schemaName,
                             final String tempTableName)
       throws SQLException {
     // MSSQL has a limitation of 2100 parameters used in a query
     // Airbyte inserts data with 3 columns (raw table) this limits to 700 records.
     // Limited the variable to 500 records to
-    final int MAX_BATCH_SIZE = 500;
+    final int MAX_BATCH_SIZE = 400;
     final String insertQueryComponent = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s) VALUES\n",
+        "INSERT INTO %s.%s (%s, %s, %s, %s, %s) VALUES\n",
         schemaName,
         tempTableName,
-        JavaBaseConstants.COLUMN_NAME_AB_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
-        JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    final String recordQueryComponent = "(?, ?, ?),\n";
-    final List<List<AirbyteRecordMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
-    batches.forEach(record -> {
-      try {
-        SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, database, record);
-      } catch (final SQLException e) {
-        e.printStackTrace();
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_META);
+    final String recordQueryComponent = "(?, ?, ?, ?, ?),\n";
+    final List<List<PartialAirbyteMessage>> batches = Lists.partition(records, MAX_BATCH_SIZE);
+    for (List<PartialAirbyteMessage> batch : batches) {
+      if (batch.isEmpty()) {
+        continue;
       }
-    });
+      database.execute(connection -> {
+        final StringBuilder sqlStatement = new StringBuilder(insertQueryComponent);
+        for (PartialAirbyteMessage ignored : batch) {
+          sqlStatement.append(recordQueryComponent);
+        }
+        final var sql = sqlStatement.substring(0, sqlStatement.length() - 2) + ";";
+        try (final var statement = connection.prepareStatement(sql)) {
+          int i = 1;
+          for (PartialAirbyteMessage record : batch) {
+            final var id = UUID.randomUUID().toString();
+            statement.setString(i++, id);
+            statement.setString(i++, record.getSerialized());
+            statement.setTimestamp(i++, Timestamp.from(Instant.ofEpochMilli(Objects.requireNonNull(record.getRecord()).getEmittedAt())));
+            statement.setTimestamp(i++, null);
+            String metadata;
+            if (record.getRecord().getMeta() != null) {
+              try {
+                metadata = OBJECT_MAPPER.writeValueAsString(record.getRecord().getMeta());
+              } catch (Exception e) {
+                LOGGER.error("Failed to serialize record metadata for record {}", id, e);
+                metadata = null;
+              }
+            } else {
+              metadata = null;
+            }
+            statement.setString(i++, metadata);
+          }
+          statement.execute();
+        }
+      });
+    }
   }
 
   @Override

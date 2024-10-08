@@ -164,7 +164,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
-    final Process pr = run.exec(cmd);
+    final Process pr = run.exec(cmd.split(" "));
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

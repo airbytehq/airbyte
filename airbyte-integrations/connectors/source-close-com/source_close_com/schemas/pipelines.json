@@ -6,6 +6,9 @@
     "created_by": {
       "type": ["null", "string"]
     },
+    "updated_by": {
+      "type": ["null", "string"]
+    },
     "date_updated": {
       "type": ["null", "string"]
     },

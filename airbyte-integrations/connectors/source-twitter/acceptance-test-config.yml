@@ -5,7 +5,7 @@ test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_twitter/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -19,7 +19,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          bypass_reason: "Only one stream tweets available. Retrieving tweets cannot be more than 7 days in the past. So need skip for expected records, but not skip for basic read."
+          bypass_reason:
+            "Only one stream tweets available. Retrieving tweets cannot
+            be more than 7 days in the past. So need skip for expected records, but
+            not skip for basic read."
   incremental:
     tests:
       - config_path: "secrets/config.json"

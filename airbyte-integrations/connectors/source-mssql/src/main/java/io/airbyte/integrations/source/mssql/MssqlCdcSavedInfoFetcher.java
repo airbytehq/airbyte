@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.MssqlSource.IS_COMPRESSED;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 
@@ -17,11 +18,14 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
   private final JsonNode savedSchemaHistory;
+  private final boolean isSavedSchemaHistoryCompressed;
 
-  protected MssqlCdcSavedInfoFetcher(final CdcState savedState) {
+  public MssqlCdcSavedInfoFetcher(final CdcState savedState) {
     final boolean savedStatePresent = savedState != null && savedState.getState() != null;
     this.savedOffset = savedStatePresent ? savedState.getState().get(MSSQL_CDC_OFFSET) : null;
     this.savedSchemaHistory = savedStatePresent ? savedState.getState().get(MSSQL_DB_HISTORY) : null;
+    this.isSavedSchemaHistoryCompressed =
+        savedStatePresent && savedState.getState().has(IS_COMPRESSED) && savedState.getState().get(IS_COMPRESSED).asBoolean();
   }
 
   @Override
@@ -31,7 +35,7 @@ public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   @Override
   public SchemaHistory<Optional<JsonNode>> getSavedSchemaHistory() {
-    return new SchemaHistory<>(Optional.ofNullable(savedSchemaHistory), false);
+    return new SchemaHistory<>(Optional.ofNullable(savedSchemaHistory), isSavedSchemaHistoryCompressed);
   }
 
 }

@@ -149,11 +149,11 @@ class TestChromaIndexer(unittest.TestCase):
         self.mock_client.get_collection().delete.assert_not_called()
 
     def test_index_calls_insert(self):
-        self.chroma_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1, 2, 3])], [])
+        self.chroma_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1, 2, 3])], None, "some_stream")
 
         self.mock_client.get_collection().add.assert_called_once()
 
     def test_index_calls_delete(self):
-        self.chroma_indexer.index([], ["some_id"])
+        self.chroma_indexer.delete(["some_id"], None, "some_stream")
 
         self.mock_client.get_collection().delete.assert_called_with(where={"_ab_record_id": {"$in": ["some_id"]}})

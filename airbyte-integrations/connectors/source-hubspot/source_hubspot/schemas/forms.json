@@ -3,170 +3,248 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the form.",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the form.",
       "type": ["null", "string"]
     },
     "formType": {
+      "description": "Type of the form.",
       "type": ["null", "string"]
     },
     "createdAt": {
+      "description": "Date and time when the form was created.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "updatedAt": {
+      "description": "Date and time when the form was last updated.",
       "type": ["null", "string"],
       "format": "date-time"
     },
     "archived": {
+      "description": "Indicates whether the form is archived.",
       "type": ["null", "boolean"]
     },
     "deletedAt": {
+      "description": "Date and time when the form was deleted.",
       "type": ["null", "string"]
     },
     "fieldGroups": {
+      "description": "Groups containing fields of a form.",
       "type": ["null", "array"],
       "items": {
+        "description": "Field groups in the form.",
         "type": ["null", "object"],
         "properties": {
           "fields": {
             "type": ["null", "array"],
             "items": {
+              "description": "Properties of each field.",
               "type": ["null", "object"],
               "properties": {
                 "objectTypeId": {
+                  "description": "Object type ID for the field.",
                   "type": ["null", "string"]
                 },
                 "name": {
+                  "description": "Name of the field.",
                   "type": ["null", "string"]
                 },
                 "label": {
+                  "description": "Label for the field.",
                   "type": ["null", "string"]
                 },
                 "required": {
+                  "description": "Indicates whether the field is required.",
                   "type": ["null", "boolean"]
                 },
                 "hidden": {
+                  "description": "Indicates whether the field is hidden.",
                   "type": ["null", "boolean"]
                 },
                 "fieldType": {
+                  "description": "Type of the field.",
                   "type": ["null", "string"]
+                },
+                "validation": {
+                  "description": "Validation settings for the field.",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "blockedEmailDomains": {
+                      "description": "List of blocked email domains for validation.",
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "string"]
+                      }
+                    },
+                    "useDefaultBlockList": {
+                      "description": "Indicates whether to use the default block list for validation.",
+                      "type": ["null", "boolean"]
+                    }
+                  }
                 }
               }
             }
           },
           "groupType": {
+            "description": "Type of field group.",
             "type": ["null", "string"]
           },
           "richTextType": {
+            "description": "Type of rich text.",
             "type": ["null", "string"]
           }
         }
       }
     },
     "configuration": {
+      "description": "Configuration settings for the form.",
       "type": ["null", "object"],
       "properties": {
         "language": {
+          "description": "Language setting for the form.",
           "type": ["null", "string"]
         },
         "cloneable": {
+          "description": "Indicates whether the form is cloneable.",
           "type": ["null", "boolean"]
         },
         "postSubmitAction": {
+          "description": "Action to be taken after form submission.",
           "type": ["null", "object"],
           "properties": {
             "type": {
+              "description": "Type of post-submit action.",
               "type": ["null", "string"]
             },
             "value": {
+              "description": "Value of post-submit action.",
               "type": ["null", "string"]
             }
           }
         },
         "editable": {
+          "description": "Indicates whether the form is editable.",
           "type": ["null", "boolean"]
         },
         "archivable": {
+          "description": "Indicates whether the form is archivable.",
           "type": ["null", "boolean"]
         },
         "recaptchaEnabled": {
+          "description": "Indicates whether reCAPTCHA is enabled.",
           "type": ["null", "boolean"]
         },
         "notifyContactOwner": {
+          "description": "Notification setting for contacting the owner.",
           "type": ["null", "boolean"]
         },
         "notifyRecipients": {
+          "description": "Notification setting for recipients.",
           "type": ["null", "array"]
         },
         "createNewContactForNewEmail": {
+          "description": "Creates a new contact for a new email.",
           "type": ["null", "boolean"]
         },
         "prePopulateKnownValues": {
+          "description": "Pre-populates known values in the form.",
           "type": ["null", "boolean"]
         },
         "allowLinkToResetKnownValues": {
-          "type": ["null", "boolean"]
-        }
-      }
-    },
-    "displayOptions": {
-      "type": ["null", "object"],
-      "properties": {
-        "renderRawHtml": {
+          "description": "Allows resetting known values through a link.",
           "type": ["null", "boolean"]
         },
-        "theme": {
-          "type": ["null", "string"]
-        },
-        "submitButtonText": {
-          "type": ["null", "string"]
-        },
-        "style": {
-          "type": ["null", "object"],
-          "properties": {
-            "fontFamily": {
-              "type": ["null", "string"]
-            },
-            "backgroundWidth": {
-              "type": ["null", "string"]
-            },
-            "labelTextColor": {
-              "type": ["null", "string"]
-            },
-            "labelTextSize": {
-              "type": ["null", "string"]
-            },
-            "helpTextColor": {
-              "type": ["null", "string"]
-            },
-            "helpTextSize": {
-              "type": ["null", "string"]
-            },
-            "legalConsentTextColor": {
-              "type": ["null", "string"]
-            },
-            "legalConsentTextSize": {
-              "type": ["null", "string"]
-            },
-            "submitColor": {
-              "type": ["null", "string"]
-            },
-            "submitAlignment": {
-              "type": ["null", "string"]
-            },
-            "submitFontColor": {
-              "type": ["null", "string"]
-            },
-            "submitSize": {
-              "type": ["null", "string"]
-            }
+        "lifecycleStages": {
+          "description": "List of lifecycle stages.",
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
           }
         }
       }
     },
+    "displayOptions": {
+      "description": "Display options for the form.",
+      "type": ["null", "object"],
+      "properties": {
+        "renderRawHtml": {
+          "description": "Indicates whether to render raw HTML.",
+          "type": ["null", "boolean"]
+        },
+        "theme": {
+          "description": "Theme setting for the form.",
+          "type": ["null", "string"]
+        },
+        "submitButtonText": {
+          "description": "Text for the submit button.",
+          "type": ["null", "string"]
+        },
+        "style": {
+          "description": "Style settings for the form.",
+          "type": ["null", "object"],
+          "properties": {
+            "fontFamily": {
+              "description": "Font family style.",
+              "type": ["null", "string"]
+            },
+            "backgroundWidth": {
+              "description": "Background width style.",
+              "type": ["null", "string"]
+            },
+            "labelTextColor": {
+              "description": "Label text color style.",
+              "type": ["null", "string"]
+            },
+            "labelTextSize": {
+              "description": "Label text font size.",
+              "type": ["null", "string"]
+            },
+            "helpTextColor": {
+              "description": "Help text color style.",
+              "type": ["null", "string"]
+            },
+            "helpTextSize": {
+              "description": "Help text font size.",
+              "type": ["null", "string"]
+            },
+            "legalConsentTextColor": {
+              "description": "Legal consent text color style.",
+              "type": ["null", "string"]
+            },
+            "legalConsentTextSize": {
+              "description": "Legal consent text font size.",
+              "type": ["null", "string"]
+            },
+            "submitColor": {
+              "description": "Color of submit button.",
+              "type": ["null", "string"]
+            },
+            "submitAlignment": {
+              "description": "Alignment of submit button.",
+              "type": ["null", "string"]
+            },
+            "submitFontColor": {
+              "description": "Font color of submit button.",
+              "type": ["null", "string"]
+            },
+            "submitSize": {
+              "description": "Size of submit button.",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "cssClass": {
+          "description": "CSS class for styling the form.",
+          "type": ["null", "string"]
+        }
+      }
+    },
     "legalConsentOptions": {
+      "description": "Legal consent options for the form.",
       "type": ["null", "object"]
     }
   }

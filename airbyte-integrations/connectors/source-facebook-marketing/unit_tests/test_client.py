@@ -8,6 +8,7 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams import Activities, AdAccount, AdCreatives, Campaigns, Videos
@@ -41,7 +42,10 @@ def fb_call_rate_response_fixture():
 
 @pytest.fixture(name="fb_call_amount_data_response")
 def fb_call_amount_data_response_fixture():
-    error = {"message": "Please reduce the amount of data you're asking for, then retry your request", "code": 1}
+    error = {
+        "message": "Please reduce the amount of data you're asking for, then retry your request",
+        "code": 1,
+    }
 
     return {
         "json": {
@@ -52,27 +56,80 @@ def fb_call_amount_data_response_fixture():
 
 
 class TestBackoff:
-    def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id):
+    def test_limit_reached(self, mocker, requests_mock, api, fb_call_rate_response, account_id, some_config):
         """Error once, check that we retry and not fail"""
         # turn Campaigns into non batch mode to test non batch logic
         campaign_responses = [
             fb_call_rate_response,
             {
-                "json": {"data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}]},
+                "json": {
+                    "data": [
+                        {"id": 1, "updated_time": "2020-09-25T00:00:00Z"},
+                        {"id": 2, "updated_time": "2020-09-25T00:00:00Z"},
+                    ]
+                },
                 "status_code": 200,
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", campaign_responses)
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/", [{"status_code": 200}])
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/", [{"status_code": 200}])
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",
+            campaign_responses,
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/1/",
+            [{"status_code": 200}],
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/2/",
+            [{"status_code": 200}],
+        )
 
-        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False)
+        stream = Campaigns(
+            api=api,
+            account_ids=[account_id],
+            start_date=pendulum.now(),
+            end_date=pendulum.now(),
+        )
         try:
-            records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            records = list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
             assert records
         except FacebookRequestError:
             pytest.fail("Call rate error has not being handled")
+
+    def test_given_rate_limit_reached_when_read_then_raise_transient_traced_exception(self, requests_mock, api, fb_call_rate_response, account_id, some_config):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",
+            [fb_call_rate_response],
+        )
+
+        stream = Campaigns(
+            api=api,
+            account_ids=[account_id],
+            start_date=pendulum.now(),
+            end_date=pendulum.now(),
+        )
+
+        with pytest.raises(AirbyteTracedException) as exception:
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
+
+        assert exception.value.failure_type == FailureType.transient_error
 
     def test_batch_limit_reached(self, requests_mock, api, fb_call_rate_response, account_id):
         """Error once, check that we retry and not fail"""
@@ -101,22 +158,54 @@ class TestBackoff:
             fb_call_rate_response,
             {
                 "json": [
-                    {"body": json.dumps({"name": "creative 1"}), "code": 200, "headers": {}},
-                    {"body": json.dumps({"name": "creative 2"}), "code": 200, "headers": {}},
+                    {
+                        "body": json.dumps({"name": "creative 1"}),
+                        "code": 200,
+                        "headers": {},
+                    },
+                    {
+                        "body": json.dumps({"name": "creative 2"}),
+                        "code": 200,
+                        "headers": {},
+                    },
                 ]
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/adcreatives", responses)
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/adcreatives",
+            responses,
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/",
+            responses,
+        )
         requests_mock.register_uri("POST", FacebookSession.GRAPH + f"/{FB_API_VERSION}/", batch_responses)
 
-        stream = AdCreatives(api=api, include_deleted=False)
-        records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        stream = AdCreatives(api=api, account_ids=[account_id])
+        records = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_state={},
+                stream_slice={"account_id": account_id},
+            )
+        )
 
         assert records == [
-            {"id": "123", "object_type": "SHARE", "status": "ACTIVE"},
-            {"id": "1234", "object_type": "SHARE", "status": "ACTIVE"},
+            {
+                "account_id": "unknown_account",
+                "id": "123",
+                "object_type": "SHARE",
+                "status": "ACTIVE",
+            },
+            {
+                "account_id": "unknown_account",
+                "id": "1234",
+                "object_type": "SHARE",
+                "status": "ACTIVE",
+            },
         ]
 
     @pytest.mark.parametrize(
@@ -130,7 +219,12 @@ class TestBackoff:
     )
     def test_common_error_retry(self, error_response, requests_mock, api, account_id):
         """Error once, check that we retry and not fail"""
-        account_data = {"id": 1, "updated_time": "2020-09-25T00:00:00Z", "name": "Some name"}
+        account_data = {
+            "account_id": "unknown_account",
+            "id": 1,
+            "updated_time": "2020-09-25T00:00:00Z",
+            "name": "Some name",
+        }
         responses = [
             error_response,
             {
@@ -139,12 +233,30 @@ class TestBackoff:
             },
         ]
 
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/business_users", json={"data": []})
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
-        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/", responses)
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/business_users",
+            json={"data": []},
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/",
+            responses,
+        )
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/",
+            responses,
+        )
 
-        stream = AdAccount(api=api)
-        accounts = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        stream = AdAccount(api=api, account_ids=[account_id])
+        accounts = list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_state={},
+                stream_slice={"account_id": account_id},
+            )
+        )
 
         assert accounts == [account_data]
 
@@ -152,14 +264,34 @@ class TestBackoff:
         """Error every time, check limit parameter decreases by 2 times every new call"""
 
         res = requests_mock.register_uri(
-            "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns", [fb_call_amount_data_response]
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/campaigns",
+            [fb_call_amount_data_response],
         )
 
-        stream = Campaigns(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        stream = Campaigns(
+            api=api,
+            account_ids=[account_id],
+            start_date=pendulum.now(),
+            end_date=pendulum.now(),
+            page_size=100,
+        )
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
         except AirbyteTracedException:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
+            assert [x.qs.get("limit")[0] for x in res.request_history] == [
+                "100",
+                "50",
+                "25",
+                "12",
+                "6",
+            ]
 
     def test_limit_error_retry_revert_page_size(self, requests_mock, api, account_id):
         """Error every time, check limit parameter decreases by 2 times every new call"""
@@ -192,11 +324,28 @@ class TestBackoff:
             [error, success, error, success],
         )
 
-        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        stream = Activities(
+            api=api,
+            account_ids=[account_id],
+            start_date=pendulum.now(),
+            end_date=pendulum.now(),
+            page_size=100,
+        )
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
         except FacebookRequestError:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "100", "50"]
+            assert [x.qs.get("limit")[0] for x in res.request_history] == [
+                "100",
+                "50",
+                "100",
+                "50",
+            ]
 
     def test_start_date_not_provided(self, requests_mock, api, account_id):
         success = {
@@ -218,8 +367,20 @@ class TestBackoff:
             [success],
         )
 
-        stream = Activities(api=api, start_date=None, end_date=None, include_deleted=False, page_size=100)
-        list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+        stream = Activities(
+            api=api,
+            account_ids=[account_id],
+            start_date=None,
+            end_date=None,
+            page_size=100,
+        )
+        list(
+            stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_state={},
+                stream_slice={"account_id": account_id},
+            )
+        )
 
     def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
         """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
@@ -231,7 +392,10 @@ class TestBackoff:
             [
                 {
                     "json": {
-                        "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
+                        "data": [
+                            {"id": 1, "updated_time": "2020-09-25T00:00:00Z"},
+                            {"id": 2, "updated_time": "2020-09-25T00:00:00Z"},
+                        ],
                         "paging": {"next": f"{base_url}?after=after_page_1&limit=100"},
                     },
                     "status_code": 200,
@@ -240,8 +404,27 @@ class TestBackoff:
             ],
         )
 
-        stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+        stream = Videos(
+            api=api,
+            account_ids=[account_id],
+            start_date=pendulum.now(),
+            end_date=pendulum.now(),
+            page_size=100,
+        )
         try:
-            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
+            list(
+                stream.read_records(
+                    sync_mode=SyncMode.full_refresh,
+                    stream_state={},
+                    stream_slice={"account_id": account_id},
+                )
+            )
         except AirbyteTracedException:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6"]
+            assert [x.qs.get("limit")[0] for x in res.request_history] == [
+                "100",
+                "100",
+                "50",
+                "25",
+                "12",
+                "6",
+            ]

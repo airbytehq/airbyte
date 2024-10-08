@@ -79,15 +79,7 @@ class ListWithHashMixin(HashMixin, list):
     pass
 
 
-def delete_fields(obj: Mapping, path_list: List[str]) -> None:
-    for path in path_list:
-        try:
-            dpath.util.delete(obj, path)
-        except dpath.exceptions.PathNotFound:
-            pass
-
-
-def make_hashable(obj, exclude_fields: List[str] = None) -> str:
+def make_hashable(obj) -> str:
     """
     Simplify comparison of nested dicts/lists
     :param obj value for comparison
@@ -95,8 +87,6 @@ def make_hashable(obj, exclude_fields: List[str] = None) -> str:
     """
     if isinstance(obj, Mapping):
         # If value is Mapping, some fields can be excluded
-        if exclude_fields:
-            delete_fields(obj, exclude_fields)
         return DictWithHashMixin(obj)
     if isinstance(obj, List):
         return ListWithHashMixin(obj)

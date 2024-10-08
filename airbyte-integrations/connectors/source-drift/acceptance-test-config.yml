@@ -2,7 +2,7 @@ connector_image: airbyte/source-drift:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_drift/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -25,9 +25,7 @@ acceptance_tests:
             bypass_reason: "Sandbox account can't seed this stream"
   #        expect_records:
   #          path: "integration_tests/expected_records.jsonl"
-  #          extra_fields: no
   #          exact_order: no
-  #          extra_records: yes
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   # TODO uncomment this block this block if your connector implements incremental sync:

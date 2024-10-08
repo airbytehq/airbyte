@@ -4,12 +4,21 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.30.2'
     features = [
             'db-sources', // required for tests
             'db-destinations',
+            's3-destinations',
+            'typing-deduping'
     ]
     useLocalCdk = false
+}
+
+//remove once upgrading the CDK version to 0.4.x or later
+java {
+    compileJava {
+        options.compilerArgs.remove("-Werror")
+    }
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -20,13 +29,11 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-mssql')
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.testcontainers:mssqlserver:1.19.0'
 
 }

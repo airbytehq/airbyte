@@ -8,7 +8,7 @@ data:
   icon: file-csv.svg
   license: MIT
   name: Local CSV
-  registries:
+  registryOverrides:
     cloud:
       enabled: false
     oss:
@@ -21,4 +21,7 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
 metadataSpecVersion: "1.0"

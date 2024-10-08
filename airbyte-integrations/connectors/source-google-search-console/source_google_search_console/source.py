@@ -3,17 +3,17 @@
 #
 
 import json
+import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 import jsonschema
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_search_console.exceptions import (
     InvalidSiteURLValidationError,
@@ -108,7 +108,7 @@ class SourceGoogleSearchConsole(AbstractSource):
                         raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         return config
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             config = self._validate_and_transform(config)
             stream_kwargs = self.get_stream_kwargs(config)

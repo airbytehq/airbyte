@@ -2,13 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_milvus.config import ConfigModel
-from destination_milvus.destination import DestinationMilvus, embedder_map
+from destination_milvus.destination import DestinationMilvus
 
 
 class TestDestinationMilvus(unittest.TestCase):
@@ -28,14 +28,14 @@ class TestDestinationMilvus(unittest.TestCase):
             },
         }
         self.config_model = ConfigModel.parse_obj(self.config)
-        self.logger = AirbyteLogger()
+        self.logger = logging.getLogger("airbyte")
 
     @patch("destination_milvus.destination.MilvusIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check(self, MockedMilvusIndexer):
+    @patch("destination_milvus.destination.create_from_config")
+    def test_check(self, MockedEmbedder, MockedMilvusIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedMilvusIndexer.return_value = mock_indexer
 
         mock_embedder.check.return_value = None
@@ -49,11 +49,11 @@ class TestDestinationMilvus(unittest.TestCase):
         mock_indexer.check.assert_called_once()
 
     @patch("destination_milvus.destination.MilvusIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check_with_errors(self, MockedMilvusIndexer):
+    @patch("destination_milvus.destination.create_from_config")
+    def test_check_with_errors(self, MockedEmbedder, MockedMilvusIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedMilvusIndexer.return_value = mock_indexer
 
         embedder_error_message = "Embedder Error"
@@ -73,13 +73,13 @@ class TestDestinationMilvus(unittest.TestCase):
 
     @patch("destination_milvus.destination.Writer")
     @patch("destination_milvus.destination.MilvusIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_write(self, MockedMilvusIndexer, MockedWriter):
+    @patch("destination_milvus.destination.create_from_config")
+    def test_write(self, MockedEmbedder, MockedMilvusIndexer, MockedWriter):
         mock_embedder = Mock()
         mock_indexer = Mock()
         mock_writer = Mock()
 
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedMilvusIndexer.return_value = mock_indexer
         MockedWriter.return_value = mock_writer
 
@@ -91,7 +91,7 @@ class TestDestinationMilvus(unittest.TestCase):
         destination = DestinationMilvus()
         list(destination.write(self.config, configured_catalog, input_messages))
 
-        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128)
+        MockedWriter.assert_called_once_with(self.config_model.processing, mock_indexer, mock_embedder, batch_size=128, omit_raw_text=False)
         mock_writer.write.assert_called_once_with(configured_catalog, input_messages)
 
     def test_spec(self):

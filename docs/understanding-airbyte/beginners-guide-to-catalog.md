@@ -10,13 +10,13 @@ The goal of the `AirbyteCatalog` is to describe _what_ data is available in a so
 
 This article will illustrate how to use `AirbyteCatalog` via a series of examples. We recommend reading the [Database Example](#database-example) first. The other examples, will refer to knowledge described in that section. After that, jump around to whichever example is most pertinent to your inquiry.
 
-* [Postgres Example](#database-example)
-* [API Example](#api-examples)
-  * [Static Streams Example](#static-streams-example)
-  * [Dynamic Streams Example](#dynamic-streams-example)
-* [Nested Schema Example](#nested-schema-example)
+- [Postgres Example](#database-example)
+- [API Example](#api-examples)
+  - [Static Streams Example](#static-streams-example)
+  - [Dynamic Streams Example](#dynamic-streams-example)
+- [Nested Schema Example](#nested-schema-example)
 
-In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](connections/incremental-append.md).
+In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ## Database Example
 
@@ -91,10 +91,10 @@ The catalog is structured as a list of `AirbyteStream`. In the case of a databas
 
 Let's walk through what each field in a stream means.
 
-* `name` - The name of the stream.
-* `supported_sync_modes` - This field lists the type of data replication that this source supports. The possible values in this array include `FULL_REFRESH` \([docs](connections/full-refresh-overwrite.md)\) and `INCREMENTAL` \([docs](connections/incremental-append.md)\).
-* `source_defined_cursor` - If the stream supports `INCREMENTAL` replication, then this field signals whether the source can figure out how to detect new records on its own or not.
-* `json_schema` - This field is a [JsonSchema](https://json-schema.org/understanding-json-schema) object that describes the structure of the data. Notice that each key in the `properties` object corresponds to a column name in our database table.
+- `name` - The name of the stream.
+- `supported_sync_modes` - This field lists the type of data replication that this source supports. The possible values in this array include `FULL_REFRESH` \([docs](/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite.md)\) and `INCREMENTAL` \([docs](/using-airbyte/core-concepts/sync-modes/incremental-append.md)\).
+- `source_defined_cursor` - If the stream supports `INCREMENTAL` replication, then this field signals whether the source can figure out how to detect new records on its own or not.
+- `json_schema` - This field is a [JsonSchema](https://json-schema.org/understanding-json-schema) object that describes the structure of the data. Notice that each key in the `properties` object corresponds to a column name in our database table.
 
 Now we understand _what_ data is available from this source. Next we will configure _how_ we want to replicate that data.
 
@@ -135,9 +135,9 @@ Just as with the `AirbyteCatalog` the `ConfiguredAirbyteCatalog` contains a list
 
 Let's walk through each field in the `ConfiguredAirbyteStream`:
 
-* `sync_mode` - This field must be one of the values that was in `supported_sync_modes` in the `AirbyteStream` - Configures which sync mode will be used when data is replicated.
-* `stream` - Hopefully this one looks familiar! This field contains an `AirbyteStream`. It should be _identical_ to the one we saw in the `AirbyteCatalog`.
-* `cursor_field` - When `sync_mode` is `INCREMENTAL` and `source_defined_cursor = false`, this field configures which field in the stream will be used to determine if a record should be replicated or not. Read more about this concept in our [documentation of incremental replication](connections/incremental-append.md).
+- `sync_mode` - This field must be one of the values that was in `supported_sync_modes` in the `AirbyteStream` - Configures which sync mode will be used when data is replicated.
+- `stream` - Hopefully this one looks familiar! This field contains an `AirbyteStream`. It should be _identical_ to the one we saw in the `AirbyteCatalog`.
+- `cursor_field` - When `sync_mode` is `INCREMENTAL` and `source_defined_cursor = false`, this field configures which field in the stream will be used to determine if a record should be replicated or not. Read more about this concept in our [documentation of incremental replication](/using-airbyte/core-concepts/sync-modes/incremental-append.md).
 
 ### Summary of the Postgres Example
 
@@ -324,4 +324,3 @@ The `AirbyteCatalog` would look like this:
 ```
 
 Because Airbyte uses JsonSchema to model the schema of streams, it is able to handle arbitrary nesting of data in a way that a table / column based model cannot.
-

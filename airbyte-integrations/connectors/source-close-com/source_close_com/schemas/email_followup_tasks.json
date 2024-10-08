@@ -9,6 +9,12 @@
     "view": {
       "type": ["null", "string"]
     },
+    "total_emails_count_in_thread": {
+      "type": ["null", "integer"]
+    },
+    "updated_by_name": {
+      "type": ["null", "string"]
+    },
     "assigned_to": {
       "type": ["null", "string"]
     },

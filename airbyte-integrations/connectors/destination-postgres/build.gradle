@@ -1,18 +1,18 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = [
-            'db-sources', // required for tests
-            'db-destinations',
-    ]
+    cdkVersionRequired = '0.46.0'
+    features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
     useLocalCdk = false
 }
 
-airbyteJavaConnector.addCdkDependencies()
+compileKotlin {
+    compilerOptions {
+        allWarningsAsErrors = false
+    }
+}
 
 application {
     mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
@@ -20,10 +20,5 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
-    implementation libs.postgresql
-
-    testImplementation libs.testcontainers.postgresql
-
-    integrationTestJavaImplementation libs.testcontainers.postgresql
+    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
 }

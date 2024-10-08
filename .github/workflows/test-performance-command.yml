@@ -24,6 +24,10 @@ on:
       memorylimit:
         description: "Memory CPU limit"
         required: false
+      pr:
+        description: "PR Number (Unused)"
+        type: number
+        required: false
 
 jobs:
   start-test-runner:
@@ -84,7 +88,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
-          java-version: "17"
+          java-version: "21"
       - name: Install Python
         uses: actions/setup-python@v4
         with:

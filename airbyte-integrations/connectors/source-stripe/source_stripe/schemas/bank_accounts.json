@@ -2,49 +2,68 @@
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "description": "Unique identifier for the bank account.",
       "type": ["null", "string"]
     },
     "object": {
+      "description": "Type of object, in this case, 'bank_account'.",
       "type": ["null", "string"]
     },
     "account_holder_name": {
+      "description": "The name of the account holder associated with the bank account.",
       "type": ["null", "string"]
     },
     "account_holder_type": {
+      "description": "The type of account holder (individual or company) for the bank account.",
+      "type": ["null", "string"]
+    },
+    "account_type": {
+      "description": "The type of bank account (checking or savings).",
       "type": ["null", "string"]
     },
     "bank_name": {
+      "description": "The name of the bank associated with the bank account.",
       "type": ["null", "string"]
     },
     "country": {
+      "description": "The country where the bank account is located.",
       "type": ["null", "string"]
     },
     "currency": {
+      "description": "The currency associated with the bank account.",
       "type": ["null", "string"]
     },
     "customer": {
+      "description": "ID of the customer associated with the bank account.",
       "type": ["null", "string"]
     },
     "fingerprint": {
+      "description": "A unique identifier for the bank account.",
       "type": ["null", "string"]
     },
     "last4": {
+      "description": "Last 4 digits of the bank account number.",
       "type": ["null", "string"]
     },
     "metadata": {
+      "description": "Additional data related to the bank account.",
       "type": ["null", "object"],
       "properties": {}
     },
     "routing_number": {
+      "description": "The routing number of the bank associated with the bank account.",
       "type": ["null", "string"]
     },
     "status": {
+      "description": "Status of the bank account (e.g., verified, unverified).",
       "type": ["null", "string"]
     },
     "updated": {
+      "description": "Timestamp for when the bank account was last updated.",
       "type": ["null", "integer"]
     },
     "is_deleted": {
+      "description": "Indicates if the bank account has been deleted.",
       "type": ["null", "boolean"]
     }
   }

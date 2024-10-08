@@ -3,107 +3,141 @@
   "type": "object",
   "properties": {
     "call_recording_consent": {
+      "description": "Indicates whether consent for call recordings is given or not",
       "type": ["null", "string"]
     },
     "capabilities": {
+      "description": "Capabilities of the phone number",
       "type": ["null", "object"],
       "properties": {
         "mms": {
+          "description": "Indicates if MMS capability is enabled",
           "type": ["null", "boolean"]
         },
         "sms": {
+          "description": "Indicates if SMS capability is enabled",
           "type": ["null", "boolean"]
         },
         "voice": {
+          "description": "Indicates if voice calling capability is enabled",
           "type": ["null", "boolean"]
         }
       }
     },
     "categorised_greetings": {
+      "description": "Categorized greetings for the phone number",
       "type": ["null", "object"]
     },
     "categorised_greetings_with_sub_settings": {
+      "description": "Categorized greetings with sub-settings for the phone number",
       "type": ["null", "object"]
     },
     "country_code": {
+      "description": "Country code of the phone number",
       "type": ["null", "string"]
     },
     "created_at": {
+      "description": "Date and time when the phone number was created",
       "type": ["null", "string"]
     },
     "default_greeting_ids": {
+      "description": "IDs of default greetings for the phone number",
       "type": ["null", "array"],
       "items": {
+        "description": "ID of a default greeting",
         "type": "string"
       }
     },
     "default_group_id": {
+      "description": "ID of the default group assigned to the phone number",
       "type": ["null", "integer"]
     },
     "display_number": {
+      "description": "Phone number to be displayed",
       "type": ["null", "string"]
     },
     "external": {
+      "description": "Indicates if the phone number is external",
       "type": ["null", "boolean"]
     },
     "failover_number": {
+      "description": "Failover phone number",
       "type": ["null", "string"]
     },
     "greeting_ids": {
+      "description": "IDs of greetings associated with the phone number",
       "type": ["null", "array"]
     },
     "group_ids": {
+      "description": "IDs of groups associated with the phone number",
       "type": ["null", "array"]
     },
     "id": {
+      "description": "Unique identifier of the phone number",
       "type": ["null", "integer"]
     },
     "ivr_id": {
+      "description": "IVR (Interactive Voice Response) ID associated with the phone number",
       "type": ["null", "integer"]
     },
     "line_type": {
+      "description": "Type of telephone line (e.g., landline, mobile)",
       "type": ["null", "string"]
     },
     "location": {
+      "description": "Location of the phone number",
       "type": ["null", "string"]
     },
     "name": {
+      "description": "Name of the phone number",
       "type": ["null", "string"]
     },
     "nickname": {
+      "description": "Nickname of the phone number",
       "type": ["null", "string"]
     },
     "number": {
+      "description": "Actual phone number",
       "type": ["null", "string"]
     },
     "outbound_enabled": {
+      "description": "Indicates if outbound calling is enabled",
       "type": ["null", "boolean"]
     },
     "priority": {
+      "description": "Priority level of the phone number",
       "type": ["null", "integer"]
     },
     "recorded": {
+      "description": "Indicates if calls are recorded",
       "type": ["null", "boolean"]
     },
     "schedule_id": {
+      "description": "ID of the schedule associated with the phone number",
       "type": ["null", "integer"]
     },
     "sms_enabled": {
+      "description": "Indicates if SMS is enabled",
       "type": ["null", "boolean"]
     },
     "sms_group_id": {
+      "description": "ID of the group for SMS",
       "type": ["null", "integer"]
     },
     "token": {
+      "description": "Token associated with the phone number",
       "type": ["null", "string"]
     },
     "toll_free": {
+      "description": "Indicates if the phone number is a toll-free number",
       "type": ["null", "boolean"]
     },
     "transcription": {
+      "description": "Indicates if call transcription is enabled",
       "type": ["null", "boolean"]
     },
     "voice_enabled": {
+      "description": "Indicates if voice calling is enabled",
       "type": ["null", "boolean"]
     }
   }

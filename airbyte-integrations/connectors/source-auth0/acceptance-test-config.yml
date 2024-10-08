@@ -2,7 +2,7 @@ connector_image: airbyte/source-auth0:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_auth0/spec.yaml"
+      - spec_path: "manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -19,9 +19,7 @@ acceptance_tests:
         empty_streams: []
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
           exact_order: no
-          extra_records: yes
   incremental:
     # bypass_reason: "Connection check getting lost"
     tests:

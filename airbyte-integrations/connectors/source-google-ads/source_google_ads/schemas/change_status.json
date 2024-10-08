@@ -3,43 +3,27 @@
   "type": "object",
   "properties": {
     "change_status.last_change_date_time": {
+      "description": "The date and time when the last change was made.",
       "type": ["null", "string"]
     },
     "change_status.resource_type": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_AD",
-        "AD_GROUP_ASSET",
-        "AD_GROUP_BID_MODIFIER",
-        "AD_GROUP_CRITERION",
-        "AD_GROUP_FEED",
-        "ASSET",
-        "CAMPAIGN",
-        "CAMPAIGN_ASSET",
-        "CAMPAIGN_CRITERION",
-        "CAMPAIGN_FEED",
-        "CAMPAIGN_SHARED_SET",
-        "COMBINED_AUDIENCE",
-        "CUSTOMER_ASSET",
-        "FEED",
-        "FEED_ITEM",
-        "SHARED_SET",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "description": "The type of the resource that was changed.",
+      "type": ["null", "string"]
     },
     "change_status.resource_status": {
-      "type": ["null", "string"],
-      "enum": ["ADDED", "CHANGED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
+      "description": "The status of the resource after the change.",
+      "type": ["null", "string"]
     },
     "change_status.resource_name": {
+      "description": "The name of the resource that was changed.",
       "type": ["null", "string"]
     },
     "change_status.ad_group_criterion": {
+      "description": "The status of the ad group criterion that was changed.",
       "type": ["null", "string"]
     },
     "change_status.campaign_criterion": {
+      "description": "The status of the campaign criterion that was changed.",
       "type": ["null", "string"]
     }
   }

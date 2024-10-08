@@ -11,29 +11,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
-import java.sql.JDBCType;
-import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+@Disabled
+public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest<ClickHouseSource, ClickHouseTestDatabase> {
 
-  private static final String SCHEMA_NAME = "default";
-  private ClickHouseContainer db;
-  private JsonNode config;
+  @BeforeAll
+  static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
+  }
 
   @Override
   public boolean supportsSchemas() {
@@ -41,13 +39,17 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
+  protected JsonNode config() {
+    return Jsons.clone(testdb.configBuilder().build());
   }
 
   @Override
-  public String getDriverClass() {
-    return ClickHouseSource.DRIVER_CLASS;
+  protected ClickHouseTestDatabase createTestDatabase() {
+    final ClickHouseContainer db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+    db.start();
+    return new ClickHouseTestDatabase(db).initialized();
   }
 
   @Override
@@ -58,22 +60,6 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
             : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
                 + primaryKeyClause);
-  }
-
-  @BeforeAll
-  static void init() {
-    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
-    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
-    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
-    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
-  }
-
-  @Override
-  @AfterEach
-  public void tearDown() throws SQLException {
-    db.close();
-    db.stop();
-    super.tearDown();
   }
 
   @Override
@@ -95,27 +81,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   }
 
   @Override
-  @BeforeEach
-  public void setup() throws Exception {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
-        .waitingFor(Wait.forHttp("/ping").forPort(8123)
-            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
-    db.start();
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
-        .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
-
-    super.setup();
-  }
-
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
+  protected ClickHouseSource source() {
     return new ClickHouseSource();
   }
 

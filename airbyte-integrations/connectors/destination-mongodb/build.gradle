@@ -1,15 +1,18 @@
 plugins {
-    id 'application'
     id 'airbyte-java-connector'
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.19.0'
+    features = ['db-destinations', 'datastore-mongo']
     useLocalCdk = false
 }
 
-airbyteJavaConnector.addCdkDependencies()
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try"
+    }
+}
 
 application {
     mainClass = 'io.airbyte.integrations.destination.mongodb.MongodbDestination'
@@ -17,13 +20,7 @@ application {
 }
 
 dependencies {
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation libs.airbyte.protocol
+    implementation 'commons-codec:commons-codec:1.16.0'
 
-    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
-
-    testImplementation libs.testcontainers.mongodb
-
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mongodb')
+    testImplementation 'org.testcontainers:mongodb:1.19.0'
 }
