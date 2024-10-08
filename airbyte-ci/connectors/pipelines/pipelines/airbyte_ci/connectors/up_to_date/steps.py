@@ -16,31 +16,28 @@ from connector_ops.utils import POETRY_LOCK_FILE_NAME, PYPROJECT_FILE_NAME  # ty
 from deepdiff import DeepDiff  # type: ignore
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.models.steps import Step, StepResult, StepStatus
+from pipelines.models.steps import Step, StepModifyingFiles, StepResult, StepStatus
 
 if TYPE_CHECKING:
     from typing import List
 
 
-class PoetryUpdate(Step):
+class PoetryUpdate(StepModifyingFiles):
     context: ConnectorContext
     dev: bool
     specified_versions: dict[str, str]
-    modified_files: List[str]
     title = "Update versions of libraries in poetry."
 
     def __init__(
         self,
         context: PipelineContext,
+        connector_directory: dagger.Directory,
         dev: bool = False,
         specific_dependencies: List[str] | None = None,
-        connector_directory: dagger.Directory | None = None,
     ) -> None:
-        super().__init__(context)
+        super().__init__(context, connector_directory)
         self.dev = dev
         self.specified_versions = self.parse_specific_dependencies(specific_dependencies) if specific_dependencies else {}
-        self.connector_directory = connector_directory
-        self.modified_files = []
 
     @staticmethod
     def parse_specific_dependencies(specific_dependencies: List[str]) -> dict[str, str]:
@@ -56,7 +53,7 @@ class PoetryUpdate(Step):
         return versions
 
     async def _run(self) -> StepResult:
-        connector_directory = self.connector_directory or await self.context.get_connector_dir()
+        connector_directory = self.modified_directory
         if PYPROJECT_FILE_NAME not in await connector_directory.entries():
             return StepResult(step=self, status=StepStatus.SKIPPED, stderr=f"Connector does not have a {PYPROJECT_FILE_NAME}")
 

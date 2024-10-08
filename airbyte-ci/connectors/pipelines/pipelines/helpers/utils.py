@@ -26,6 +26,7 @@ if TYPE_CHECKING:
     from typing import Any, Callable, Generator, List, Optional, Set, Tuple
 
     from pipelines.airbyte_ci.connectors.context import ConnectorContext
+    from pipelines.models import StepModifyingFiles
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 METADATA_FILE_NAME = "metadata.yaml"

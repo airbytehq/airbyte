@@ -54,7 +54,7 @@ def filter_out_third_party_connectors(
     "--spec-cache-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting spec cache.",
     type=click.STRING,
-    required=True,
+    required=False,
     envvar="SPEC_CACHE_GCS_CREDENTIALS",
     callback=wrap_gcp_credentials_in_secret,
 )
@@ -62,14 +62,14 @@ def filter_out_third_party_connectors(
     "--spec-cache-bucket-name",
     help="The name of the GCS bucket where specs will be cached.",
     type=click.STRING,
-    required=True,
+    required=False,
     envvar="SPEC_CACHE_BUCKET_NAME",
 )
 @click.option(
     "--metadata-service-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting the metadata files.",
     type=click.STRING,
-    required=True,
+    required=False,
     envvar="METADATA_SERVICE_GCS_CREDENTIALS",
     callback=wrap_gcp_credentials_in_secret,
 )
@@ -77,7 +77,7 @@ def filter_out_third_party_connectors(
     "--metadata-service-bucket-name",
     help="The name of the GCS bucket where metadata files will be uploaded.",
     type=click.STRING,
-    required=True,
+    required=False,
     envvar="METADATA_SERVICE_BUCKET_NAME",
 )
 @click.option(
@@ -191,6 +191,7 @@ async def publish(
                 python_registry_url=python_registry_url,
                 python_registry_check_url=python_registry_check_url,
                 rollout_mode=rollout_mode,
+                ci_github_access_token=ctx.obj.get("ci_github_access_token"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
