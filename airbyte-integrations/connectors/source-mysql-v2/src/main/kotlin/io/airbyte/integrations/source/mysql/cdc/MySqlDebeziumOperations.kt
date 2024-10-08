@@ -26,8 +26,8 @@ import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
 import io.airbyte.cdk.read.cdc.DebeziumState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.mysql.CdcCursor
-import io.airbyte.integrations.source.mysql.FailSync
+import io.airbyte.integrations.source.mysql.CdcIncrementalConfiguration
+import io.airbyte.integrations.source.mysql.InvalidCdcCursorPositionBehavior
 import io.airbyte.integrations.source.mysql.MysqlSourceConfiguration
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMeta
@@ -134,15 +134,17 @@ class MySqlDebeziumOperations(
     }
 
     private fun abortCdcSync(): CdcStateValidateResult {
-        if (
-            (configuration.cursorConfiguration as CdcCursor)
-                .invalidCdcBehavior
-                .asInvalidCdcPositionBehavior() is FailSync
-        ) {
-            log.info { "Current position is invalid. Aborting sync." }
-            return CdcStateValidateResult.INVALID_ABORT
-        } else {
-            return CdcStateValidateResult.INVALID_RESET
+        val cdcIncrementalConfiguration: CdcIncrementalConfiguration =
+            configuration.incrementalConfiguration as CdcIncrementalConfiguration
+        return when (cdcIncrementalConfiguration.invalidCdcCursorPositionBehavior) {
+            InvalidCdcCursorPositionBehavior.FAIL_SYNC -> {
+                log.info { "Current position is invalid, aborting sync." }
+                CdcStateValidateResult.INVALID_ABORT
+            }
+            InvalidCdcCursorPositionBehavior.RESET_SYNC -> {
+                log.info { "Current position is invalid, resetting sync." }
+                CdcStateValidateResult.INVALID_RESET
+            }
         }
     }
 
