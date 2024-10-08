@@ -10,7 +10,7 @@ import io.airbyte.cdk.util.Jsons
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class JsonSchemaToAirbyteTypeTest {
+class JsonSchemaToAirbyteSchemaTypeTest {
     private fun ofType(type: String): ObjectNode {
         return JsonNodeFactory.instance.objectNode().put("type", type)
     }

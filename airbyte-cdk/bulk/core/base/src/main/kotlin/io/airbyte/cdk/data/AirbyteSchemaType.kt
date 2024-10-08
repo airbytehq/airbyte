@@ -12,7 +12,7 @@ import io.airbyte.protocol.models.JsonSchemaType
  * This maps to the subset of [JsonSchemaType] which is used in practice. Its main reason for
  * existing is to provide type-safety and convenient comparisons and string representations.
  */
-sealed interface AirbyteType {
+sealed interface AirbyteSchemaType {
     /** Unwraps the underlying Airbyte protocol type object. */
     fun asJsonSchemaType(): JsonSchemaType
 
@@ -20,18 +20,18 @@ sealed interface AirbyteType {
     fun asJsonSchema(): JsonNode = Jsons.valueToTree(asJsonSchemaType().jsonSchemaTypeMap)
 }
 
-data class ArrayAirbyteType(
-    val item: AirbyteType,
-) : AirbyteType {
+data class ArrayAirbyteSchemaType(
+    val item: AirbyteSchemaType,
+) : AirbyteSchemaType {
     override fun asJsonSchemaType(): JsonSchemaType =
         JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
             .withItems(item.asJsonSchemaType())
             .build()
 }
 
-enum class LeafAirbyteType(
+enum class LeafAirbyteSchemaType(
     private val jsonSchemaType: JsonSchemaType,
-) : AirbyteType {
+) : AirbyteSchemaType {
     BOOLEAN(JsonSchemaType.BOOLEAN),
     STRING(JsonSchemaType.STRING),
     BINARY(JsonSchemaType.STRING_BASE_64),

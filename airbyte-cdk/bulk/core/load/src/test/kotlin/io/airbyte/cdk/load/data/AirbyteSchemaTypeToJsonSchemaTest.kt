@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
-class AirbyteTypeToJsonSchemaTest {
+class AirbyteSchemaTypeToJsonSchemaTest {
     @Test
     fun testRoundTrip() {
         val schema = JsonNodeFactory.instance.objectNode()
